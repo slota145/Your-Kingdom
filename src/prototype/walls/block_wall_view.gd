@@ -3,6 +3,7 @@ extends Node2D
 ## Child of the y-sorted world; every piece is its own node with its own sort point.
 
 const Model := preload("res://src/prototype/walls/block_wall_model.gd")
+const _Props := preload("res://src/prototype/walls/pixellab_props.gd")
 
 const STONE := Color(0.66, 0.64, 0.6)
 const GATEHOUSE_STONE := Color(0.7, 0.66, 0.58)
@@ -14,16 +15,21 @@ const COURSE := 8.0
 const JOINT_PERIOD := 0.25
 
 
+## Optional textures cut from a PixelLab repaint (repaint_skin.gd); null = flat colours.
+var skin: RefCounted = null
+
+
 class PieceNode:
 	extends Node2D
 	var piece: Model.Piece
 	var color: Color
+	var skin: RefCounted = null
 
 	func _draw() -> void:
 		var poly := piece.poly
 		var n := poly.size()
 		var center := piece.centroid()
-		var outline := color.darkened(0.6)
+		var outline: Color = skin.outline if skin != null else color.darkened(0.6)
 		for i: int in n:
 			var state := piece.edges[i]
 			if state != Model.Edge.EXPOSED and state != Model.Edge.FACE_ONLY:
@@ -41,8 +47,11 @@ class PieceNode:
 			var sb := _screen(b)
 			var face := PackedVector2Array([sa - Vector2(0, piece.z0), sb - Vector2(0, piece.z0),
 					sb - Vector2(0, piece.z1), sa - Vector2(0, piece.z1)])
-			draw_colored_polygon(face, shade)
-			_courses(a, b, shade.darkened(0.18))
+			if skin != null:
+				_textured_face(face, a, b, normal)
+			else:
+				draw_colored_polygon(face, shade)
+				_courses(a, b, shade.darkened(0.18))
 			if piece.kind == &"gh_deck" and state == Model.Edge.EXPOSED:
 				_arch(a, b, shade)
 			elif piece.kind == &"gh_side" and state == Model.Edge.EXPOSED:
@@ -56,12 +65,42 @@ class PieceNode:
 		for p: Vector2 in poly:
 			top.append(_screen(p) - Vector2(0, piece.z1))
 		var is_roof := piece.kind == &"gh_side" or piece.kind == &"gh_deck"
-		draw_colored_polygon(top, ROOF_WOOD if is_roof else color.lightened(0.15))
+		if skin != null:
+			var t: RefCounted = skin.top
+			var uvs := PackedVector2Array()
+			for p: Vector2 in poly:
+				uvs.append((p - t.origin) / t.period)
+			draw_polygon(top, PackedColorArray([Color.WHITE]), uvs, t.texture)
+		else:
+			draw_colored_polygon(top, ROOF_WOOD if is_roof else color.lightened(0.15))
 		if is_roof:
 			_planks(top)
 		for i: int in n:
 			if piece.edges[i] == Model.Edge.EXPOSED:
 				draw_line(top[i], top[(i + 1) % n], outline)
+
+	## Face drawn with a repaint sample: lit sample for faces turned to grid +y (also the
+	## diagonal faces, slightly darker), dark sample for faces turned to grid +x.
+	func _textured_face(face: PackedVector2Array, a: Vector2, b: Vector2, normal: Vector2) -> void:
+		var s: RefCounted = skin.dark if normal.x > 0.9 else skin.lit
+		var ua: float
+		var ub: float
+		if normal.x > 0.9:
+			ua = a.y
+			ub = b.y
+		elif normal.y > 0.9:
+			ua = a.x
+			ub = b.x
+		else:
+			ua = a.x - a.y
+			ub = b.x - b.y
+		ua = (ua - (s.origin.y if normal.x > 0.9 else s.origin.x)) / s.period.x
+		ub = (ub - (s.origin.y if normal.x > 0.9 else s.origin.x)) / s.period.x
+		var v0: float = (s.height - piece.z0) / s.height
+		var v1: float = (s.height - piece.z1) / s.height
+		var uvs := PackedVector2Array([Vector2(ua, v0), Vector2(ub, v0), Vector2(ub, v1), Vector2(ua, v1)])
+		var tint := Color.WHITE if absf(normal.x) > 0.9 or absf(normal.y) > 0.9 else Color(0.9, 0.9, 0.9)
+		draw_polygon(face, PackedColorArray([tint]), uvs, s.texture)
 
 	## Wooden roof boards across the box (top polygon corners: back u0, back u1, front u1, front u0).
 	func _planks(top: PackedVector2Array) -> void:
@@ -150,11 +189,26 @@ func _init() -> void:
 func rebuild(model: Model) -> void:
 	for child: Node in get_children():
 		child.queue_free()
-	for piece: Model.Piece in model.build():
+	var pieces := model.build()
+	if skin != null:
+		for origin: Vector2i in model.gatehouses:
+			var flipped: bool = model.gatehouses[origin] != Vector2i(0, 1)
+			var tex: Texture2D = skin.gatehouse_flipped if flipped else skin.gatehouse
+			var pivot: Vector2i = skin.gatehouse_pivot
+			if flipped:
+				pivot.x = tex.get_width() - pivot.x
+			add_child(_Props.sliced(tex, origin, Vector2i(3, 3), pivot))
+	for piece: Model.Piece in pieces:
+		if skin != null and model.gatehouse_tiles.has(piece.tile):
+			continue
 		var node := PieceNode.new()
+		node.skin = null if piece.kind == &"merlon" else skin
+		node.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 		node.piece = piece
 		node.color = GATEHOUSE_STONE if String(piece.kind).begins_with("gh_") else STONE
 		if piece.kind == &"merlon" and model.gatehouse_tiles.has(piece.tile):
 			node.color = GATEHOUSE_STONE
+		if piece.kind == &"merlon" and skin != null:
+			node.color = skin.merlon_color
 		node.position = piece.sort_point
 		add_child(node)

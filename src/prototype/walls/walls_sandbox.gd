@@ -15,6 +15,7 @@ const Model := preload("res://src/prototype/walls/block_wall_model.gd")
 const View := preload("res://src/prototype/walls/block_wall_view.gd")
 const Props := preload("res://src/prototype/walls/pixellab_props.gd")
 const Reference := preload("res://src/prototype/walls/export_reference.gd")
+const RepaintSkin := preload("res://src/prototype/walls/repaint_skin.gd")
 const GATEHOUSE_ORIGIN := Vector2i(18, 38)
 const DIAGONAL_VARIANTS: Array[float] = [0.0, 0.5, 1.0]
 const DIAGONAL_NAMES: PackedStringArray = ["stairs", "chamfer 1/2", "straight (wedge 1)"]
@@ -48,6 +49,7 @@ var _drag_erase: bool = false
 var _drag_rect: bool = false
 var _shot_path: String = ""
 var _frames: int = 0
+var _skin: RefCounted
 
 
 class _TileOverlay:
@@ -124,11 +126,12 @@ func _ready() -> void:
 	world.add_child(wall_view)
 
 	_build_showcase()
-	var repaints := _add_repaint_layouts()
+	_skin = RepaintSkin.load_from(Props.DIR + "repaint/wall.png", Props.DIR + "repaint/gate.png")
+	if not "--code-walls" in OS.get_cmdline_user_args():
+		wall_view.skin = _skin
 	_apply_args()
 	_rebuild_walls()
 	_add_pixellab()
-	_show_repaints(repaints)
 
 	crowd = ProtoCrowd.new(nav, Rect2i(Vector2i(2, 2), map_size - Vector2i(4, 4)))
 	crowd.spawn(agent_count, [&"peasant"])
@@ -227,6 +230,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				_rebuild_walls()
 			KEY_H:
 				_toggle_gatehouse(_hovered_tile())
+			KEY_K:
+				wall_view.skin = null if wall_view.skin != null else _skin
+				_rebuild_walls()
 	var mb := event as InputEventMouseButton
 	if mb != null and mb.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 		if mb.pressed:
@@ -318,7 +324,7 @@ func _update_hud() -> void:
 		wall_view.get_child_count(), "PAUSED" if _paused else ""]
 	_hud.text += "diagonals: %s (V) | battlements: %s (B) | height: %d px (T)\n" % [
 		DIAGONAL_NAMES[_diag_index], "on" if model.battlements else "off", int(model.height)]
-	_hud.text += "LMB drag wall | Shift+LMB rectangle | RMB erase | G gate | H gatehouse | F grid | Space pause | Esc menu"
+	_hud.text += "LMB drag wall | Shift+LMB rectangle | RMB erase | G gate | H gatehouse | K PixelLab/code walls | F grid | Space pause | Esc menu"
 
 
 # --- Scene content -------------------------------------------------------------------
@@ -379,26 +385,6 @@ class _Field:
 		for x: int in range(tiles.position.x, tiles.end.x):
 			for y: int in range(tiles.position.y, tiles.end.y):
 				draw_texture(texture, IsoMath.grid_to_screen(Vector2(x, y)) - Vector2(32, 0))
-
-
-## Same layouts as the reference images sent to PixelLab, so the repainted images can be
-## laid exactly over the code-drawn walls. Returns image path -> grid focus point.
-func _add_repaint_layouts() -> Dictionary:
-	return {
-		Props.DIR + "repaint/gate.png": Reference.layout(model, "gate", Vector2i(8, 8)),
-		Props.DIR + "repaint/wall.png": Reference.layout(model, "wall", Vector2i(52, 36)),
-	}
-
-
-## Each repainted image as one sprite sorted at the front of its layout. Decorative: people
-## walking right next to it may sort wrongly (the final art would be cut into pieces).
-func _show_repaints(repaints: Dictionary) -> void:
-	for path: String in repaints:
-		var focus: Vector2 = repaints[path]
-		var tex := load(path) as Texture2D
-		var top_left := IsoMath.grid_to_screen(focus) - Vector2(0, 40) - Vector2(tex.get_size()) * 0.5
-		var front := IsoMath.grid_to_screen(focus + Vector2(1.5, 1.5))
-		world.add_child(Props.sprite(tex, front - top_left, front))
 
 
 func _add_pixellab() -> void:
