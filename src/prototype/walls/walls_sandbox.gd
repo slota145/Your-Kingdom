@@ -14,6 +14,7 @@ extends Node2D
 const Model := preload("res://src/prototype/walls/block_wall_model.gd")
 const View := preload("res://src/prototype/walls/block_wall_view.gd")
 const Props := preload("res://src/prototype/walls/pixellab_props.gd")
+const Reference := preload("res://src/prototype/walls/export_reference.gd")
 const GATEHOUSE_ORIGIN := Vector2i(18, 38)
 const DIAGONAL_VARIANTS: Array[float] = [0.0, 0.5, 1.0]
 const DIAGONAL_NAMES: PackedStringArray = ["stairs", "chamfer 1/2", "straight (wedge 1)"]
@@ -112,6 +113,8 @@ func _ready() -> void:
 	terrain = TerrainLayer.new()
 	add_child(terrain)
 	terrain.setup(map_size)
+	if not "--placeholder-grass" in OS.get_cmdline_user_args():
+		_use_pixellab_ground()
 	_overlay = _TileOverlay.new()
 	add_child(_overlay)
 	world = Node2D.new()
@@ -121,9 +124,11 @@ func _ready() -> void:
 	world.add_child(wall_view)
 
 	_build_showcase()
+	var repaints := _add_repaint_layouts()
 	_apply_args()
 	_rebuild_walls()
 	_add_pixellab()
+	_show_repaints(repaints)
 
 	crowd = ProtoCrowd.new(nav, Rect2i(Vector2i(2, 2), map_size - Vector2i(4, 4)))
 	crowd.spawn(agent_count, [&"peasant"])
@@ -352,6 +357,49 @@ func _build_showcase() -> void:
 
 
 # --- PixelLab art trial ---------------------------------------------------------------
+
+## Ground from the owner's top-down PixelLab tileset, projected onto the 2:1 diamond
+## (pixellab/terrain, see ART_SPEC §10.1), plus a ploughed field next to the village.
+func _use_pixellab_ground() -> void:
+	terrain._variants = [load(Props.DIR + "terrain/grass.png") as Texture2D]
+	for chunk: Node in terrain.get_children():
+		(chunk as Node2D).queue_redraw()
+	var field := _Field.new()
+	field.texture = load(Props.DIR + "terrain/soil.png") as Texture2D
+	field.tiles = Rect2i(42, 16, 7, 4)
+	add_child(field)
+
+
+class _Field:
+	extends Node2D
+	var texture: Texture2D
+	var tiles: Rect2i
+
+	func _draw() -> void:
+		for x: int in range(tiles.position.x, tiles.end.x):
+			for y: int in range(tiles.position.y, tiles.end.y):
+				draw_texture(texture, IsoMath.grid_to_screen(Vector2(x, y)) - Vector2(32, 0))
+
+
+## Same layouts as the reference images sent to PixelLab, so the repainted images can be
+## laid exactly over the code-drawn walls. Returns image path -> grid focus point.
+func _add_repaint_layouts() -> Dictionary:
+	return {
+		Props.DIR + "repaint/gate.png": Reference.layout(model, "gate", Vector2i(8, 8)),
+		Props.DIR + "repaint/wall.png": Reference.layout(model, "wall", Vector2i(52, 36)),
+	}
+
+
+## Each repainted image as one sprite sorted at the front of its layout. Decorative: people
+## walking right next to it may sort wrongly (the final art would be cut into pieces).
+func _show_repaints(repaints: Dictionary) -> void:
+	for path: String in repaints:
+		var focus: Vector2 = repaints[path]
+		var tex := load(path) as Texture2D
+		var top_left := IsoMath.grid_to_screen(focus) - Vector2(0, 40) - Vector2(tex.get_size()) * 0.5
+		var front := IsoMath.grid_to_screen(focus + Vector2(1.5, 1.5))
+		world.add_child(Props.sprite(tex, front - top_left, front))
+
 
 func _add_pixellab() -> void:
 	# Gatehouse in a 2-thick wall running screen-horizontal (PixelLab draws it facing the
