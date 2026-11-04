@@ -291,6 +291,16 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Pathfinding:** mur jest `solid`, a tryb `ONLY_IF_NO_OBSTACLES` uszczelnia przekątne.
 - **Bramy:** specjalny kafel z kierunkiem osiowym, przejezdny dla swoich, zamknięty dla wrogów. **Chodzenie po murach** [1.0] korzysta z osobnej warstwy nawigacji „na murze” z przejściami przez schody i baszty.
 
+**Mur kamienny: model bryłowy** (decyzja 2026-11-04, prototyp w `src/prototype/walls/`). Opisany wyżej model „linii” zostaje dla palisady.
+- Każdy kafel muru kamiennego to pełny blok 1×1. Ściany boczne i krawędzie korony (z blankami) rysujemy tylko tam, gdzie sąsiad nie jest murem. Równoległe rzędy zlewają się więc w jeden gruby mur.
+- **Przekątne, wariant „prosto”:** w wolnych kaflach między dwoma blokami po przekątnej stoją trójkątne kliny o przyprostokątnej 1 kafla, więc lico muru jest proste. Klin nie powstaje w narożniku 90° ani w trójniku, czyli wtedy, gdy mur biegnie dalej prosto przez drugi kafel pośredni. Kafle z klinami są w nawigacji `solid`. Mur ukośny jest przez to ok. √2 grubszy od osiowego.
+- **Sortowanie:** bloki, kliny i blanki są osobnymi kawałkami z punktem sortowania w środku ciężkości podstawy. Wyjątki:
+  - pomost bramy sortuje się na przedniej krawędzi przejścia,
+  - wszystko, co stoi na koronie (blanki, ludzie), sortuje się co najmniej 1 px za kawałkiem, na którym stoi.
+
+  Sprawdzone tą samą metodą co `test_sorting.gd`: 0 błędów dla postaci na ziemi.
+- **Brama** w murze kamiennym to tunel: dwa filary i pomost niosący koronę.
+
 ### 6.4 Postacie w widoku
 
 - `AgentViewPool`: pula węzłów `AgentSprite` (`Sprite2D` + własny odtwarzacz klatek). Węzeł dostaje postać tylko wtedy, gdy ta jest w prostokącie kamery powiększonym o margines. Pozostałe postacie nie mają węzłów.

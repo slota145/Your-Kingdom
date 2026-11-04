@@ -235,6 +235,13 @@ Zasada składania kawałków opisana jest w ARCHITECTURE §6.3. Dla każdego typ
 - Każdy plik ma płótno **64×96** z pivotem w punkcie (32, 80), czyli środku kafla. Wysokość muru kamiennego to ok. **56 px** nad ziemią (1,33× postaci), palisady ok. 48 px.
 - Półsegmenty przekątne (`ne`, `se`, `sw`, `nw` w siatce) biegną na ekranie poziomo lub pionowo. Muszą mieć **tę samą grubość wizualną** co osiowe, a końce stykać się bez szczelin z filarem i z półsegmentem sąsiada. **To główny cel prototypu M1.**
 - Korona muru (blanki) jest rysowana w każdym półsegmencie. Na filarze narożnym korona jest pełna.
+- **Zmiana 2026-11-04:** powyższe kawałki dotyczą palisady. Mur kamienny ma model bryłowy (ARCHITECTURE §6.3) i składa się z kawałków:
+  - wierzch bloku,
+  - dwie przednie ściany,
+  - krawędzie korony z blankami,
+  - kliny przekątne.
+
+  Dokładną listę plików ustalimy przy pierwszych grafikach muru.
 
 ---
 
