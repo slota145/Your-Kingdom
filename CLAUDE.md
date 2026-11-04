@@ -16,10 +16,12 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 
 ## Polecenia
 
-Godot 4.7.2 nie jest w PATH. Uwaga: `C:\Godot_v4.7.2-stable_win64.exe` to **folder**, a w nim są pliki wykonywalne. Do pracy w linii poleceń (Git Bash) używaj wersji `_console`:
+Godot 4.7.2 nie jest w PATH. Skąd go wziąć:
+- **Laptop właściciela (Windows):** `C:\Godot_v4.7.2-stable_win64.exe` to **folder**, a w nim są pliki wykonywalne. W Git Bash używaj wersji `_console`.
+- **Chmura (Linux):** hook `SessionStart` ustawia `$GODOT` sam. Jeśli go brak: `GODOT="$(tools/setup_godot.sh)"`. Konfiguracja środowiska: [docs/CLOUD_SETUP.md](docs/CLOUD_SETUP.md). W chmurze nie ma ekranu ani karty graficznej: benchmarków i oceny „na oko” nie robimy, prosimy o nie właściciela projektu na laptopie.
 
 ```bash
-GODOT="/c/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"
+GODOT="/c/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"   # tylko Windows
 "$GODOT" --path .                                                   # uruchomienie gry
 "$GODOT" --headless --path . --import                               # reimport zasobów i cache klas
 tools/run_tests.sh                                                  # wszystkie testy (gdUnit4 v6.2.2), headless

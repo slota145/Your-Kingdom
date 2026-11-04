@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 # Runs all gdUnit4 tests headless. Usage: tools/run_tests.sh [extra gdUnit4 args]
-# Set GODOT to the Godot 4.7 console executable if it is not at the default path.
+# GODOT may point to the Godot 4.7 executable. Otherwise the owner's Windows install is used
+# if present, and on Linux (cloud sessions) Godot is downloaded by tools/setup_godot.sh.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-GODOT="${GODOT:-/c/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe}"
+WINDOWS_GODOT="/c/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"
+if [ -z "${GODOT:-}" ]; then
+	if [ -x "$WINDOWS_GODOT" ]; then
+		GODOT="$WINDOWS_GODOT"
+	else
+		GODOT="$(tools/setup_godot.sh)"
+	fi
+fi
 
 # Refresh imports and the global class cache (needed after adding class_name scripts).
 "$GODOT" --headless --path . --import > /dev/null 2>&1
