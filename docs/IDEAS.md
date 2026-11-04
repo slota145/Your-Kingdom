@@ -18,3 +18,5 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 ## Klimat i immersja
 
 ## Animacje i detale
+
+- test chmury
