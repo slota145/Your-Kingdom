@@ -49,10 +49,12 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 - generator placeholderów (`tools/`), na razie kafel i postać-kapsuła.
 
 **DoD:**
-- [ ] `git status` czysty, `.gitignore` obejmuje `.godot/`.
-- [ ] Testy uruchamiane jednym poleceniem przechodzą (min. 5 testów z listy).
-- [ ] Scena startowa wyświetla przetłumaczony napis i działa przełącznik języka PL ↔ EN.
-- [ ] Wszystkie polskie znaki renderują się w wybranym foncie (test glifów).
+- [x] `git status` czysty, `.gitignore` obejmuje `.godot/`.
+- [x] Testy uruchamiane jednym poleceniem przechodzą (min. 5 testów z listy). Stan: 18/18 (`tools/run_tests.sh`).
+- [x] Scena startowa wyświetla przetłumaczony napis i działa przełącznik języka PL ↔ EN. Przełącznik czeka na ręczne kliknięcie przez właściciela projektu.
+- [x] Wszystkie polskie znaki renderują się w wybranym foncie (test glifów).
+
+**Uwaga z M0:** Pixelify Sans ma polskie znaki, ale przy obecnych rozmiarach słabo odróżnia „Z” od „2” i „5” od „S”. Wybór fontu wraca w M1 (test czytelności).
 
 ---
 

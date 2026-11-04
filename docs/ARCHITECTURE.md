@@ -430,7 +430,7 @@ Zasady:
 - [Oficjalny styl GDScript](https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_styleguide.html).
 - Nazwy plików `snake_case.gd` i `.tscn`, klasy `PascalCase` (`class_name`), funkcje i zmienne `snake_case`, stałe `UPPER_SNAKE`, prywatne z prefiksem `_`.
 - Sygnały w czasie przeszłym (`building_placed`).
-- **Statyczne typowanie jest obowiązkowe.** W ustawieniach projektu ostrzeżenia `untyped_declaration` i `unsafe_*` są ustawione jako błędy w `src/sim` i `src/core`.
+- **Statyczne typowanie jest obowiązkowe.** W ustawieniach projektu `untyped_declaration` jest błędem w całym projekcie (z wyłączeniem `addons/`), a `unsafe_*` to ostrzeżenia. Godot nie pozwala ustawić poziomów ostrzeżeń osobno dla folderów.
 - `src/sim/**` nie może importować niczego z `src/view`, `src/ui`, ani używać `Node`, `get_tree()` czy autoloadów widoku. Pilnuje tego test skanujący pliki.
 - Id definicji zapisujemy jako `StringName` (`&"bread"`), a często używane stałe trzymamy w `Ids` (klasa ze stałymi), żeby uniknąć literówek.
 - Komentarze i nazwy w kodzie po angielsku. Dokumentacja po polsku.

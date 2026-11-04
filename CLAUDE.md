@@ -12,22 +12,23 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
-**Bieżący etap:** M0 (fundament), czeka na zatwierdzenie dokumentacji.
+**Bieżący etap:** M0 (fundament) ukończony, czeka na akceptację. Następny: M1 (prototyp czytelności, sortowania i wydajności).
 
 ## Polecenia
 
-Godot nie jest w PATH. Ustaw zmienną `GODOT` na ścieżkę do pliku wykonywalnego Godot 4.7 (do uzupełnienia w M0).
+Godot 4.7.2 nie jest w PATH. Uwaga: `C:\Godot_v4.7.2-stable_win64.exe` to **folder**, a w nim są pliki wykonywalne. Do pracy w linii poleceń (Git Bash) używaj wersji `_console`:
 
 ```bash
-"$GODOT" --path .                       # uruchomienie gry
-"$GODOT" --headless --path . --import   # reimport zasobów (np. po podmianie grafik)
+GODOT="/c/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"
+"$GODOT" --path .                                                   # uruchomienie gry
+"$GODOT" --headless --path . --import                               # reimport zasobów i cache klas
+tools/run_tests.sh                                                  # wszystkie testy (gdUnit4 v6.2.2), headless
+"$GODOT" --headless --path . -s res://tools/generate_placeholders.gd   # generowanie placeholderów
 ```
 
-Testy (gdUnit4) — dokładne polecenie zostanie potwierdzone przy instalacji w M0:
+Raporty testów trafiają do `reports/` (ignorowane przez git). Nowy `class_name` wymaga importu, żeby trafił do cache klas. `run_tests.sh` robi to automatycznie. Przy ręcznym uruchamianiu najpierw zrób import.
 
-```bash
-"$GODOT" --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests
-```
+Repozytorium zdalne: `origin` = https://github.com/slota145/Your-Kingdom.git, gałąź `main`.
 
 ## Zasady pracy
 

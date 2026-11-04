@@ -1,0 +1,85 @@
+# Your Kingdom — English translation.
+msgid ""
+msgstr ""
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# --- UI: main screen ---
+
+msgid "ui.main.title"
+msgstr "Your Kingdom"
+
+msgid "ui.main.subtitle"
+msgstr "Milestone M0: project foundation"
+
+msgid "ui.main.toggle_language"
+msgstr "Change language: Polski"
+
+msgid "ui.main.plural_demo"
+msgstr "Plural forms example:"
+
+msgid "ui.main.glyph_test"
+msgstr "The quick brown fox jumps over the lazy dog"
+
+# --- Goods ---
+
+msgid "good.wood.name"
+msgstr "Wood"
+
+msgid "good.wood.desc"
+msgstr "Logs from the forest. Basic building material and fuel."
+
+msgid "good.wood.count"
+msgid_plural "good.wood.count_plural"
+msgstr[0] "%s log"
+msgstr[1] "%s logs"
+
+msgid "good.grain.name"
+msgstr "Grain"
+
+msgid "good.grain.desc"
+msgstr "Sheaves of grain from the fields. The mill grinds them into flour."
+
+msgid "good.grain.count"
+msgid_plural "good.grain.count_plural"
+msgstr[0] "%s sheaf"
+msgstr[1] "%s sheaves"
+
+msgid "good.flour.name"
+msgstr "Flour"
+
+msgid "good.flour.desc"
+msgstr "Sacks of flour from the mill. The baker turns it into bread."
+
+msgid "good.flour.count"
+msgid_plural "good.flour.count_plural"
+msgstr[0] "%s sack of flour"
+msgstr[1] "%s sacks of flour"
+
+msgid "good.bread.name"
+msgstr "Bread"
+
+msgid "good.bread.desc"
+msgstr "Fresh bread from the bakery. Staple food of your people."
+
+msgid "good.bread.count"
+msgid_plural "good.bread.count_plural"
+msgstr[0] "%s loaf"
+msgstr[1] "%s loaves"
+
+# --- Buildings ---
+
+msgid "building.woodcutter.name"
+msgstr "Woodcutter"
+
+msgid "building.woodcutter.desc"
+msgstr "The woodcutter fells nearby trees and carries the logs to the warehouse."
+
+msgid "building.bakery.name"
+msgstr "Bakery"
+
+msgid "building.bakery.desc"
+msgstr "The baker fetches flour, kneads the dough and bakes bread in the oven."
