@@ -5,6 +5,10 @@ extends Node2D
 const Model := preload("res://src/prototype/walls/block_wall_model.gd")
 
 const STONE := Color(0.66, 0.64, 0.6)
+const GATEHOUSE_STONE := Color(0.7, 0.66, 0.58)
+const ROOF_WOOD := Color(0.47, 0.36, 0.25)
+const DARK := Color(0.12, 0.1, 0.09)
+const IRON := Color(0.22, 0.2, 0.2)
 const DECK := Color(0.56, 0.54, 0.5)
 const COURSE := 8.0
 const JOINT_PERIOD := 0.25
@@ -39,6 +43,10 @@ class PieceNode:
 					sb - Vector2(0, piece.z1), sa - Vector2(0, piece.z1)])
 			draw_colored_polygon(face, shade)
 			_courses(a, b, shade.darkened(0.18))
+			if piece.kind == &"gh_deck" and state == Model.Edge.EXPOSED:
+				_arch(a, b, shade)
+			elif piece.kind == &"gh_side" and state == Model.Edge.EXPOSED:
+				_arrow_slit(a, b)
 			draw_line(face[0], face[1], outline)
 			if piece.edges[(i + n - 1) % n] != Model.Edge.JOINED:
 				draw_line(face[0], face[3], outline)
@@ -47,10 +55,53 @@ class PieceNode:
 		var top := PackedVector2Array()
 		for p: Vector2 in poly:
 			top.append(_screen(p) - Vector2(0, piece.z1))
-		draw_colored_polygon(top, color.lightened(0.15))
+		var is_roof := piece.kind == &"gh_side" or piece.kind == &"gh_deck"
+		draw_colored_polygon(top, ROOF_WOOD if is_roof else color.lightened(0.15))
+		if is_roof:
+			_planks(top)
 		for i: int in n:
 			if piece.edges[i] == Model.Edge.EXPOSED:
 				draw_line(top[i], top[(i + 1) % n], outline)
+
+	## Wooden roof boards across the box (top polygon corners: back u0, back u1, front u1, front u0).
+	func _planks(top: PackedVector2Array) -> void:
+		var line := ROOF_WOOD.darkened(0.3)
+		for k: int in range(1, 6):
+			var t := k / 6.0
+			draw_line(top[0].lerp(top[1], t), top[3].lerp(top[2], t), line)
+
+	## Arched opening on the face of a gatehouse deck: stone spandrels curving down from the
+	## lintel to the jambs, and a raised portcullis showing under the arch.
+	func _arch(a: Vector2, b: Vector2, shade: Color) -> void:
+		var lintel := piece.z0
+		var drop := 16.0
+		var curve := PackedVector2Array()
+		var steps := 12
+		for k: int in steps + 1:
+			var t := float(k) / steps
+			var u := absf(t - 0.5) * 2.0
+			curve.append(_screen(a.lerp(b, t)) - Vector2(0, lintel - drop * u * u * u))
+		# Portcullis bars hanging a little below the arch.
+		for k: int in range(1, steps):
+			var p := curve[k]
+			draw_line(p, p + Vector2(0, 7), IRON, 2.0)
+		draw_line(curve[1] + Vector2(0, 5), curve[steps - 1] + Vector2(0, 5), IRON)
+		for k: int in 2:
+			# Two halves keep each polygon simple (the arch is concave as a whole).
+			var half := PackedVector2Array()
+			var from := 0 if k == 0 else steps / 2
+			for m: int in range(from, from + steps / 2 + 1):
+				half.append(curve[m])
+			half.append(_screen(a.lerp(b, float(from + steps / 2) / steps)) - Vector2(0, lintel))
+			half.append(_screen(a.lerp(b, float(from) / steps)) - Vector2(0, lintel))
+			draw_colored_polygon(half, shade)
+		draw_polyline(curve, color.darkened(0.6))
+
+	## Cross-shaped arrow slit in the middle of a gatehouse face.
+	func _arrow_slit(a: Vector2, b: Vector2) -> void:
+		var mid := _screen((a + b) * 0.5) - Vector2(0, piece.z1 * 0.62)
+		draw_rect(Rect2(mid + Vector2(-1, -8), Vector2(2, 16)), DARK)
+		draw_rect(Rect2(mid + Vector2(-4, -3), Vector2(8, 2)), DARK)
 
 	## Mortar lines: horizontal courses, and staggered vertical joints on axis-aligned faces.
 	func _courses(a: Vector2, b: Vector2, mortar: Color) -> void:
@@ -102,6 +153,8 @@ func rebuild(model: Model) -> void:
 	for piece: Model.Piece in model.build():
 		var node := PieceNode.new()
 		node.piece = piece
-		node.color = STONE
+		node.color = GATEHOUSE_STONE if String(piece.kind).begins_with("gh_") else STONE
+		if piece.kind == &"merlon" and model.gatehouse_tiles.has(piece.tile):
+			node.color = GATEHOUSE_STONE
 		node.position = piece.sort_point
 		add_child(node)

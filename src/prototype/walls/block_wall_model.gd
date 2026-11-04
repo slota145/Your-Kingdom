@@ -16,6 +16,10 @@ enum Edge { JOINED, EXPOSED, FACE_ONLY, COVERED }
 const HEIGHT := 56.0
 const TALL_HEIGHT := 72.0
 const LINTEL_BOTTOM := 44.0
+## Gatehouse: 3x3 tiles, passage through the middle column, taller than the wall.
+const GATEHOUSE_SIZE := 3
+const GATEHOUSE_EXTRA := 32.0
+const GATEHOUSE_LINTEL := 50.0
 const PILLAR := 0.2
 const MERLON_HEIGHT := 9.0
 const MERLON_WIDTH := 0.14
@@ -68,10 +72,45 @@ var height: float = HEIGHT
 ## surface over each tile that people can stand on.
 var wedge_tiles: Dictionary[Vector2i, bool] = {}
 var crown_keys: Dictionary[Vector2i, float] = {}
+## Gatehouse origin (top tile of its 3x3 footprint) -> passage direction, (0, 1) or (1, 0).
+var gatehouses: Dictionary[Vector2i, Vector2i] = {}
+## Every gatehouse tile -> its origin. Kept in sync by add_gatehouse / remove_gatehouse.
+var gatehouse_tiles: Dictionary[Vector2i, Vector2i] = {}
 
 
 func is_wall(tile: Vector2i) -> bool:
-	return walls.has(tile)
+	return walls.has(tile) or gatehouse_tiles.has(tile)
+
+
+func gatehouse_height() -> float:
+	return height + GATEHOUSE_EXTRA
+
+
+## Places a gatehouse, removing the walls under it. Passage runs along [param along].
+func add_gatehouse(origin: Vector2i, along: Vector2i) -> void:
+	gatehouses[origin] = along
+	for x: int in GATEHOUSE_SIZE:
+		for y: int in GATEHOUSE_SIZE:
+			var tile := origin + Vector2i(x, y)
+			walls.erase(tile)
+			gatehouse_tiles[tile] = origin
+
+
+func remove_gatehouse(origin: Vector2i) -> void:
+	gatehouses.erase(origin)
+	for x: int in GATEHOUSE_SIZE:
+		for y: int in GATEHOUSE_SIZE:
+			gatehouse_tiles.erase(origin + Vector2i(x, y))
+
+
+## Passage tiles of a gatehouse: the middle column along its passage.
+func is_passage(tile: Vector2i) -> bool:
+	if not gatehouse_tiles.has(tile):
+		return false
+	var origin: Vector2i = gatehouse_tiles[tile]
+	var along: Vector2i = gatehouses[origin]
+	var local := tile - origin
+	return (local.x if along.y != 0 else local.y) == 1
 
 
 func is_gate(tile: Vector2i) -> bool:
@@ -84,6 +123,9 @@ func blocked_tiles() -> Dictionary[Vector2i, bool]:
 	var result: Dictionary[Vector2i, bool] = {}
 	for tile: Vector2i in walls:
 		if not walls[tile]:
+			result[tile] = true
+	for tile: Vector2i in gatehouse_tiles:
+		if not is_passage(tile):
 			result[tile] = true
 	if wedge_leg > 0.5:
 		for tile: Vector2i in wedge_tiles:
@@ -102,6 +144,8 @@ func build() -> Array[Piece]:
 			tops.append_array(_gate(tile, axis))
 		else:
 			tops.append(_core(tile))
+	for origin: Vector2i in gatehouses:
+		tops.append_array(_gatehouse(origin, gatehouses[origin]))
 	if wedge_leg > 0.0:
 		for tile: Vector2i in walls:
 			for d: Vector2i in [Vector2i(1, 1), Vector2i(-1, 1)]:
@@ -238,6 +282,32 @@ func _gate(tile: Vector2i, along: Vector2i) -> Array[Piece]:
 	return pieces
 
 
+## Gatehouse: side tiles are full-height blocks, the middle column is a passage with a
+## deck from the lintel up. Each deck tile sorts at its front edge, like the tunnel gate.
+func _gatehouse(origin: Vector2i, along: Vector2i) -> Array[Piece]:
+	var across := Vector2i(along.y, along.x)
+	var top := gatehouse_height()
+	var last := GATEHOUSE_SIZE - 1
+	var pieces: Array[Piece] = []
+	for i: int in GATEHOUSE_SIZE:          # across the passage
+		for j: int in GATEHOUSE_SIZE:      # along the passage
+			var tile := origin + across * i + along * j
+			var back := Edge.EXPOSED if j == 0 else Edge.JOINED
+			var front := Edge.EXPOSED if j == last else Edge.JOINED
+			if i == 1:
+				var deck := _box(&"gh_deck", tile, along, across, -0.5, 0.5, -0.5, 0.5,
+						[back, Edge.JOINED, front, Edge.JOINED], GATEHOUSE_LINTEL, top)
+				deck.sort_point.y = roundf(IsoMath.grid_to_screen(
+						IsoMath.tile_center(tile) + Vector2(along) * 0.5).y)
+				pieces.append(deck)
+				continue
+			var u0 := Edge.EXPOSED if i == 0 else Edge.FACE_ONLY
+			var u1 := Edge.FACE_ONLY if i == 0 else Edge.EXPOSED
+			pieces.append(_box(&"gh_side", tile, along, across, -0.5, 0.5, -0.5, 0.5,
+					[back, u1, front, u0], 0.0, top))
+	return pieces
+
+
 ## Box in tile-local (u across, v along) coordinates. Edge states in order:
 ## v = v0 (back), u = u1, v = v1 (front), u = u0.
 func _box(kind: StringName, tile: Vector2i, along: Vector2i, across: Vector2i,
@@ -256,8 +326,7 @@ func _box(kind: StringName, tile: Vector2i, along: Vector2i, across: Vector2i,
 ## Merlons along every exposed rim of a crown piece, sorted after the piece they stand on.
 func _merlons(support: Piece) -> Array[Piece]:
 	var result: Array[Piece] = []
-	if support.z1 != height:
-		return result
+	var base := support.z1
 	var center := support.centroid()
 	var n := support.poly.size()
 	for i: int in n:
@@ -275,7 +344,7 @@ func _merlons(support: Piece) -> Array[Piece]:
 			var poly := PackedVector2Array([m - w, m + w, m + w + inward * MERLON_DEPTH,
 					m - w + inward * MERLON_DEPTH])
 			var states := PackedByteArray([Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED])
-			var merlon := Piece.new(&"merlon", support.tile, poly, states, height, height + MERLON_HEIGHT)
+			var merlon := Piece.new(&"merlon", support.tile, poly, states, base, base + MERLON_HEIGHT)
 			merlon.sort_point.y = maxf(merlon.sort_point.y, support.sort_point.y + CROWN_BIAS)
 			result.append(merlon)
 	return result

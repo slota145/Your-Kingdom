@@ -28,6 +28,11 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 
 - [gracz] **Bramy większe od muru (wieża bramna):** brama to masywny budynek wyższy i szerszy od muru, jak w średniowieczu i w Twierdzy. Ma dwie flankujące wieże i portal z broną.
   - Ocena (Claude): pasuje i rozwiązuje słaby punkt z prototypu, w którym brama w grubym murze była słabo widoczna. Technicznie to budynek wielokaflowy, np. 3×2 lub 4×3, z przejściem przez środek. Wieże tniemy przez `BuildingSlicer`, a przejście i pomost działają jak w prototypie. Koszt: średni (grafika + sortowanie przejścia). Kiedy: M7, razem z basztami.
+  - Prototyp kodem (2026-11-04, klawisz H w piaskownicy murów), według zrzutu z Twierdzy podesłanego przez właściciela projektu:
+    - bryła 3×3 kafle, o 32 px wyższa od muru, drewniany dach z blankami dookoła, łukowe przejście z podniesioną broną i krzyżowe strzelnice,
+    - bez wieżyczek: baszty gracz stawia sam, jako osobne budynki (decyzja właściciela projektu),
+    - tylko 2 orientacje, przejście wzdłuż osi siatki, jak w Twierdzy,
+    - mury dowolnej grubości dochodzą do boków bez szczelin; sortowanie ze sprawdzeniem automatycznym: 0 błędów, także w przejściu.
 
 ## Klimat i immersja
 

@@ -4,7 +4,8 @@ extends Node2D
 ## hardcoded on purpose (prototype-only, see CLAUDE.md).
 ##
 ## Controls: WASD/arrows/middle-drag pan, wheel or 1-4 zoom, LMB drag = wall line,
-## Shift+LMB drag = filled rectangle (thick wall), RMB drag = erase, G = gate on hovered
+## Shift+LMB drag = filled rectangle (thick wall), RMB drag = erase, H = gatehouse (3x3)
+## centred on the hovered tile (again to remove), G = small tunnel gate on hovered
 ## wall, V = diagonal variant (stairs / chamfer / straight), B = battlements, T = tall
 ## walls, F = grid, Space = pause, Esc = back to menu.
 ##
@@ -219,6 +220,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_T:
 				model.height = Model.HEIGHT if model.height != Model.HEIGHT else Model.TALL_HEIGHT
 				_rebuild_walls()
+			KEY_H:
+				_toggle_gatehouse(_hovered_tile())
 	var mb := event as InputEventMouseButton
 	if mb != null and mb.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 		if mb.pressed:
@@ -229,12 +232,27 @@ func _unhandled_input(event: InputEvent) -> void:
 			for tile: Vector2i in _drag_tiles(_drag_start, _hovered_tile()):
 				if not nav.is_inside(tile):
 					continue
-				if _drag_erase:
+				if _drag_erase and model.gatehouse_tiles.has(tile):
+					model.remove_gatehouse(model.gatehouse_tiles[tile])
+				elif _drag_erase:
 					model.walls.erase(tile)
 				elif not model.is_wall(tile):
 					model.walls[tile] = false
 			_drag_start = Vector2i(-1, -1)
 			_rebuild_walls()
+
+
+## Removes the gatehouse under [param center], or builds one centred there. The passage
+## crosses the wall: walls on both x sides mean a passage along grid y, and vice versa.
+func _toggle_gatehouse(center: Vector2i) -> void:
+	if model.gatehouse_tiles.has(center):
+		model.remove_gatehouse(model.gatehouse_tiles[center])
+	else:
+		var along := Vector2i(0, 1)
+		if model.is_wall(center + Vector2i(0, -2)) and model.is_wall(center + Vector2i(0, 2)):
+			along = Vector2i(1, 0)
+		model.add_gatehouse(center - Vector2i.ONE, along)
+	_rebuild_walls()
 
 
 func _rebuild_walls() -> void:
@@ -295,7 +313,7 @@ func _update_hud() -> void:
 		wall_view.get_child_count(), "PAUSED" if _paused else ""]
 	_hud.text += "diagonals: %s (V) | battlements: %s (B) | height: %d px (T)\n" % [
 		DIAGONAL_NAMES[_diag_index], "on" if model.battlements else "off", int(model.height)]
-	_hud.text += "LMB drag wall | Shift+LMB rectangle | RMB erase | G gate | F grid | Space pause | Esc menu"
+	_hud.text += "LMB drag wall | Shift+LMB rectangle | RMB erase | G gate | H gatehouse | F grid | Space pause | Esc menu"
 
 
 # --- Scene content -------------------------------------------------------------------
@@ -317,11 +335,11 @@ func _build_showcase() -> void:
 	_rect(Vector2i(20, 30), Vector2i(33, 31))
 	_rect(Vector2i(20, 22), Vector2i(21, 29))
 	_rect(Vector2i(32, 22), Vector2i(33, 29))
-	model.walls[Vector2i(26, 30)] = true
-	model.walls[Vector2i(26, 31)] = true
+	model.add_gatehouse(Vector2i(25, 30), Vector2i(0, 1))    # front: passage along grid y
+	model.add_gatehouse(Vector2i(19, 24), Vector2i(1, 0))    # left: passage along grid x
 	# Single wall joining the ring (T junction), with a gate, turning into a diagonal.
 	_line(Vector2i(34, 25), Vector2i(1, 0), 10)
-	model.walls[Vector2i(39, 25)] = true
+	model.add_gatehouse(Vector2i(38, 24), Vector2i(0, 1))
 	_line(Vector2i(44, 26), Vector2i(1, 1), 7)
 	# Diagonal running screen-horizontal, single and double thick.
 	_line(Vector2i(36, 44), Vector2i(1, -1), 8)
@@ -422,15 +440,14 @@ func _free_around(tile: Vector2i, radius: int) -> bool:
 func _add_guards() -> void:
 	var blue := Color(0.6, 0.75, 1.0)
 	var red := Color(1.0, 0.65, 0.6)
-	_add_guard(_route(Vector2i(21, 31), Vector2i(1, 0), 12), 0.0, blue)    # front, outer row
-	_add_guard(_route(Vector2i(22, 30), Vector2i(1, 0), 10), 4.0, red)     # front, inner row
+	_add_guard(_route(Vector2i(21, 31), Vector2i(1, 0), 4), 0.0, blue)     # front, outer row
+	_add_guard(_route(Vector2i(28, 30), Vector2i(1, 0), 5), 2.0, red)      # front, inner row
 	_add_guard(_route(Vector2i(33, 21), Vector2i(0, 1), 10), 2.0, blue)    # right side
 	_add_guard(_route(Vector2i(32, 22), Vector2i(0, 1), 8), 6.0, red)
 	_add_guard(_route(Vector2i(22, 20), Vector2i(1, 0), 10), 3.0, blue)    # back side
-	_add_guard(_route(Vector2i(34, 25), Vector2i(1, 0), 10), 1.0, red)     # single wall
+	_add_guard(_route(Vector2i(34, 25), Vector2i(1, 0), 4), 1.0, red)      # single wall
 	_add_guard(_route(Vector2i(44, 26), Vector2i(1, 1), 7), 2.0, blue)     # diagonal
 	_add_guard(_route(Vector2i(36, 44), Vector2i(1, -1), 8), 3.0, red)     # thick diagonal
-	_add_guard([Vector2i(26, 31)], 0.0, blue)                             # over the gate
 	_add_guard([Vector2i(20, 31)], 0.0, red)                              # corner
 
 
