@@ -12,7 +12,7 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
-**Bieżący etap:** M1 (prototyp czytelności, sortowania i wydajności) prawie ukończony. Czeka na ocenę czytelności przez właściciela projektu i jego akceptację. Następne: A1 (pilot PixelLab) i M2 (rdzeń symulacji).
+**Bieżący etap:** M1 zaakceptowany. Następne: decyzja o modelu murów kamiennych (docs/IDEAS.md), potem A1 (pilot PixelLab) i M2 (rdzeń symulacji).
 
 ## Polecenia
 

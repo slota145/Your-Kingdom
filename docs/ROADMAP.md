@@ -81,7 +81,7 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 - [x] Mury łączą się bez szczelin w każdym z 8 kierunków, w narożnikach (90°, 45°, 135°), w trójnikach i na skrzyżowaniach (także ukośnych). Testy maski połączeń przechodzą.
 - [x] Postać nie przechodzi przez styk muru ukośnego (`test_nav_grid`).
 - [x] Benchmark: 500 postaci, 498 widocznych → 219 FPS, tick 0,64 ms. 2000 postaci → 91 FPS (ARCHITECTURE §9.3).
-- [ ] Przy 1× widać, co niesie postać, a przy 0,5× widać ruch. **Czeka na ocenę właściciela projektu na własnym ekranie** (piaskownica w menu gry).
+- [x] Przy 1× widać, co niesie postać, a przy 0,5× widać ruch. Zaakceptowane przez właściciela projektu („Jest super!”, 2026-11-04).
 - [x] Decyzje zapisane w dokumentach:
   - wzrost postaci 42 px (bez zmian),
   - widoczność: a + b, wariant c odłożony do M7,
