@@ -12,6 +12,8 @@ extends Node2D
 
 const Model := preload("res://src/prototype/walls/block_wall_model.gd")
 const View := preload("res://src/prototype/walls/block_wall_view.gd")
+const Props := preload("res://src/prototype/walls/pixellab_props.gd")
+const GATEHOUSE_ORIGIN := Vector2i(18, 38)
 const DIAGONAL_VARIANTS: Array[float] = [0.0, 0.5, 1.0]
 const DIAGONAL_NAMES: PackedStringArray = ["stairs", "chamfer 1/2", "straight (wedge 1)"]
 const GUARD_SPEED := 0.9
@@ -33,6 +35,8 @@ var _overlay: _TileOverlay
 var _hud: Label
 var _guards: Array[_Guard] = []
 var _nav_solid: Dictionary[Vector2i, bool] = {}
+## Tiles taken by PixelLab props (gatehouse, block walls, trees).
+var _prop_tiles: Dictionary[Vector2i, bool] = {}
 var _accumulator: float = 0.0
 var _time: float = 0.0
 var _paused: bool = false
@@ -118,6 +122,7 @@ func _ready() -> void:
 	_build_showcase()
 	_apply_args()
 	_rebuild_walls()
+	_add_pixellab()
 
 	crowd = ProtoCrowd.new(nav, Rect2i(Vector2i(2, 2), map_size - Vector2i(4, 4)))
 	crowd.spawn(agent_count, [&"peasant"])
@@ -326,6 +331,68 @@ func _build_showcase() -> void:
 	_line(Vector2i(8, 30), Vector2i(1, 1), 8)
 	_line(Vector2i(9, 30), Vector2i(1, 1), 8)
 	_rect(Vector2i(6, 20), Vector2i(14, 22))
+
+
+# --- PixelLab art trial ---------------------------------------------------------------
+
+func _add_pixellab() -> void:
+	# Gatehouse in a 2-thick wall running screen-horizontal (PixelLab draws it facing the
+	# camera, so it fits diagonal walls). Decorative: nobody walks through it here.
+	var footprint := Rect2i(GATEHOUSE_ORIGIN, Props.GATEHOUSE_FOOTPRINT)
+	for i: int in 17:
+		for t: Vector2i in [Vector2i(8 + i, 50 - i), Vector2i(9 + i, 50 - i)]:
+			if not footprint.has_point(t):
+				model.walls[t] = false
+	world.add_child(Props.gatehouse(GATEHOUSE_ORIGIN))
+	for x: int in range(footprint.position.x, footprint.end.x):
+		for y: int in range(footprint.position.y, footprint.end.y):
+			_take(Vector2i(x, y))
+	# Wall blocks from create_isometric_tile, 2 rows (variant a) and 1 row (variant b).
+	var blocks: Array[Texture2D] = [load(Props.DIR + "wall/block_a.png"), load(Props.DIR + "wall/block_b.png")]
+	for x: int in range(40, 48):
+		for y: int in [52, 53, 56]:
+			var tile := Vector2i(x, y)
+			var tex := blocks[0] if y < 56 else blocks[1]
+			world.add_child(Props.sprite(tex, Props.BLOCK_CENTER, IsoMath.tile_center_screen(tile)))
+			_take(tile)
+	_rebuild_walls()
+	# Trees and forest floor details from the owner's library, on free ground.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	var trees := Props.textures("trees")
+	var details := Props.textures("details")
+	var placed := 0
+	while placed < 45:
+		var tile := Vector2i(rng.randi_range(2, map_size.x - 3), rng.randi_range(2, map_size.y - 3))
+		if not _free_around(tile, 2):
+			continue
+		var tex := trees[rng.randi() % trees.size()]
+		world.add_child(Props.sprite(tex, Props.foot_of(tex), IsoMath.tile_center_screen(tile)))
+		_take(tile)
+		placed += 1
+	placed = 0
+	while placed < 90:
+		var tile := Vector2i(rng.randi_range(1, map_size.x - 2), rng.randi_range(1, map_size.y - 2))
+		if not _free_around(tile, 1):
+			continue
+		var tex := details[rng.randi() % details.size()]
+		var jitter := Vector2(rng.randf_range(-12, 12), rng.randf_range(-5, 5))
+		world.add_child(Props.sprite(tex, Props.foot_of(tex), IsoMath.tile_center_screen(tile) + jitter))
+		placed += 1
+
+
+func _take(tile: Vector2i) -> void:
+	_prop_tiles[tile] = true
+	nav.set_solid(tile, true)
+
+
+func _free_around(tile: Vector2i, radius: int) -> bool:
+	for dx: int in range(-radius, radius + 1):
+		for dy: int in range(-radius, radius + 1):
+			var t := tile + Vector2i(dx, dy)
+			if model.is_wall(t) or model.wedge_tiles.has(t) or _prop_tiles.has(t):
+				return false
+	return true
 
 
 func _add_guards() -> void:

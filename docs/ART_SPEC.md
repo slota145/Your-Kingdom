@@ -320,3 +320,12 @@ ok. 25 typów postaci cywilnych, 6 typów żołnierzy, ok. 40 budynków, 2 typy 
 - brak „pływania” stóp (pivot stały),
 - zgodność z płótnem i nazwami,
 - poprawne sortowanie w scenie testowej.
+
+### 10.1 Pierwsza próba (2026-11-04, początek A1)
+
+Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
+- **Drzewa i drobiazgi** z biblioteki właściciela projektu (widok RPG 3/4, 80×80 i 32×32) pasują do izometrii bez przeróbek. Skala względem postaci 42 px jest dobra. Część kandydatów jest przycięta na krawędzi płótna. Wykrywamy to automatycznie (nieprzezroczysty piksel na krawędzi) i odrzucamy albo poprawiamy.
+- **Budynki z widokiem od frontu** (np. „medieval village”) nie pasują: mają jedną ścianę zamiast dwóch pod kątem.
+- **`create_map_object`** z opisem „isometric … on a diamond base” (1 generacja) dał wieżę bramną na izometrycznej płycie. Romb ma proporcję ok. 1,8:1 zamiast 2:1, ale na placeholder wystarcza. Fasada jest zwrócona do kamery, więc obiekt pasuje do muru ukośnego (biegnącego poziomo na ekranie), a nie do osiowego. Bez słowa „diamond base” wychodzi czysty widok od frontu.
+- **`create_isometric_tile` (blok 64 px)** daje sześcian o wysokości ok. 32 px z konturem na każdej krawędzi. Sąsiednie bloki nie zlewają się w jeden mur, a wysokość nie zgadza się z 56 px. Do muru bryłowego potrzebne są kawałki według §6. Do sprawdzenia: inpainting na naszym placeholderze.
+- **Ograniczenie środowiska:** chmura nie może pobierać plików z `backblaze.pixellab.ai` (polityka sieci). Obrazy trafiają do projektu przez podglądy narzędzi PixelLab.
