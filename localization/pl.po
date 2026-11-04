@@ -14,13 +14,19 @@ msgid "ui.main.title"
 msgstr "Twoje Królestwo"
 
 msgid "ui.main.subtitle"
-msgstr "Etap M0: fundament projektu"
+msgstr "Etap M1: prototyp czytelności, sortowania i wydajności"
 
 msgid "ui.main.toggle_language"
 msgstr "Zmień język: English"
 
 msgid "ui.main.plural_demo"
 msgstr "Przykład form liczby mnogiej:"
+
+msgid "ui.main.open_sandbox"
+msgstr "Prototyp M1: piaskownica (sortowanie, mury, postacie)"
+
+msgid "ui.main.open_benchmark"
+msgstr "Prototyp M1: test wydajności (500 postaci)"
 
 msgid "ui.main.glyph_test"
 msgstr "Zażółć gęślą jaźń · ZAŻÓŁĆ GĘŚLĄ JAŹŃ"

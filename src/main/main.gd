@@ -2,6 +2,8 @@ extends Control
 ## M0 start screen: proves localization, plural forms, the font and the data registry.
 
 const PLURAL_SAMPLES: PackedInt32Array = [1, 2, 5, 12, 22, 1250]
+const SANDBOX_SCENE := "res://src/prototype/m1/m1_sandbox.tscn"
+const BENCHMARK_SCENE := "res://src/prototype/m1/m1_bench.tscn"
 
 @onready var _plural_list: Label = %PluralList
 @onready var _toggle_button: Button = %ToggleLanguageButton
@@ -9,8 +11,14 @@ const PLURAL_SAMPLES: PackedInt32Array = [1, 2, 5, 12, 22, 1250]
 
 func _ready() -> void:
 	_toggle_button.pressed.connect(Loc.cycle_locale)
+	(%SandboxButton as Button).pressed.connect(_open.bind(SANDBOX_SCENE))
+	(%BenchmarkButton as Button).pressed.connect(_open.bind(BENCHMARK_SCENE))
 	EventBus.language_changed.connect(_on_language_changed)
 	_refresh()
+
+
+func _open(scene: String) -> void:
+	get_tree().change_scene_to_file(scene)
 
 
 func _on_language_changed(_locale: String) -> void:

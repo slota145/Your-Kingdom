@@ -54,7 +54,7 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 - [x] Scena startowa wyświetla przetłumaczony napis i działa przełącznik języka PL ↔ EN. Przełącznik czeka na ręczne kliknięcie przez właściciela projektu.
 - [x] Wszystkie polskie znaki renderują się w wybranym foncie (test glifów).
 
-**Uwaga z M0:** Pixelify Sans ma polskie znaki, ale przy obecnych rozmiarach słabo odróżnia „Z” od „2” i „5” od „S”. Wybór fontu wraca w M1 (test czytelności).
+**Uwaga z M0:** Pixelify Sans ma polskie znaki, ale przy obecnych rozmiarach słabo odróżnia „Z” od „2” i „5” od „S”. Rozwiązane w M1: porównano 6 fontów i wybrano Jersey 10.
 
 ---
 
@@ -77,12 +77,24 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 **Scena testowa sortowania:** postać obchodzi budynek 4×4 dookoła, mur prosty, mur ukośny, narożnik 90° i narożnik 45°, przechodzi przez bramę. Nagrywamy lub robimy zrzuty z każdej strony.
 
 **DoD:**
-- [ ] Zero błędów sortowania w scenie testowej (postać zawsze poprawnie przed lub za budynkiem i murem) z każdej z 8 stron.
-- [ ] Mury łączą się bez szczelin i artefaktów w każdym z 8 kierunków, w narożnikach (90°, 45°, 135°), w trójnikach i na skrzyżowaniach. Testy jednostkowe maski połączeń przechodzą.
-- [ ] Postać nie przechodzi przez styk muru ukośnego.
-- [ ] Benchmark: ≥ 60 FPS przy 250 widocznych postaciach na 1×, tick ≤ 4 ms przy 500 postaciach. **Jeśli nie:** wdrażamy środki zaradcze z ARCHITECTURE §9.2 przed M2.
-- [ ] Przy 1× widać, co niesie postać (worek vs skrzynia, kolor towaru). Przy 0,5× widać ruch. Ocena na zrzutach z Twoją akceptacją.
-- [ ] **Decyzje zapisane w dokumentach:** ostateczny wzrost postaci, warianty widoczności (a/b/c), odbicia tak lub nie dla cywilów, renderer, nakładki towarów (A/B).
+- [x] Zero błędów sortowania w scenie testowej z każdej z 8 stron. Sprawdzone automatycznie względem prawdziwej głębi (`tests/unit/view/test_sorting.gd`) i wzrokowo na zrzutach.
+- [x] Mury łączą się bez szczelin w każdym z 8 kierunków, w narożnikach (90°, 45°, 135°), w trójnikach i na skrzyżowaniach (także ukośnych). Testy maski połączeń przechodzą.
+- [x] Postać nie przechodzi przez styk muru ukośnego (`test_nav_grid`).
+- [x] Benchmark: 500 postaci, 498 widocznych → 219 FPS, tick 0,64 ms. 2000 postaci → 91 FPS (ARCHITECTURE §9.3).
+- [ ] Przy 1× widać, co niesie postać, a przy 0,5× widać ruch. **Czeka na ocenę właściciela projektu na własnym ekranie** (piaskownica w menu gry).
+- [x] Decyzje zapisane w dokumentach:
+  - wzrost postaci 42 px (bez zmian),
+  - widoczność: a + b, wariant c odłożony do M7,
+  - odbicia: tak dla cywilów, 8 kierunków dla żołnierzy,
+  - renderer: Forward+,
+  - nakładki towarów: wariant A działa,
+  - skala: całkowita, baza 1280×720,
+  - font: Jersey 10.
+
+**Notatki z M1:**
+- Brama zmieniła formę: zamiast `gate_x/gate_y` jest złożona z kawałków (`gate_half_*`, `gate_lintel_*`), żeby postać w przejściu sortowała się poprawnie.
+- Tryb „obniżone budynki” daje schodkową linię cięcia. Do wygładzenia shaderem przy grafikach docelowych.
+- Kod prototypowy leży w `src/prototype/m1/` (ProtoCrowd, piaskownica, benchmark, porównania) i zostanie zastąpiony w M2. Kod docelowy (IsoMath, NavGrid, WallConnectivity, WallGeometry, BuildingSlicer, kamera, widoki) zostaje.
 
 ---
 

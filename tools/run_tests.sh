@@ -9,6 +9,9 @@ GODOT="${GODOT:-/c/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_conso
 # Refresh imports and the global class cache (needed after adding class_name scripts).
 "$GODOT" --headless --path . --import > /dev/null 2>&1
 
+# Default: the whole suite. Pass e.g. "-a res://tests/unit/view" to run a subset.
+if [ $# -eq 0 ]; then set -- -a res://tests; fi
+
 # --remote-debug to an unbound port avoids Godot's interactive debugger on script errors.
 "$GODOT" --headless --path . -s -d --remote-debug tcp://127.0.0.1:0 \
-	res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode -a res://tests "$@"
+	res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode "$@"

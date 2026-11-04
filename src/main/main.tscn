@@ -64,6 +64,20 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 autowrap_mode = 3
 
+[node name="SandboxButton" type="Button" parent="Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 28
+text = "ui.main.open_sandbox"
+
+[node name="BenchmarkButton" type="Button" parent="Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 28
+text = "ui.main.open_benchmark"
+
 [node name="ToggleLanguageButton" type="Button" parent="Margin/Content"]
 unique_name_in_owner = true
 layout_mode = 2

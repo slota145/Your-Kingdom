@@ -12,7 +12,7 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
-**Bieżący etap:** M0 (fundament) ukończony, czeka na akceptację. Następny: M1 (prototyp czytelności, sortowania i wydajności).
+**Bieżący etap:** M1 (prototyp czytelności, sortowania i wydajności) prawie ukończony. Czeka na ocenę czytelności przez właściciela projektu i jego akceptację. Następne: A1 (pilot PixelLab) i M2 (rdzeń symulacji).
 
 ## Polecenia
 
@@ -47,6 +47,9 @@ Repozytorium zdalne: `origin` = https://github.com/slota145/Your-Kingdom.git, ga
 - **Zero tekstów widocznych dla gracza na sztywno:** zawsze `tr()` lub `tr_n()` z kluczem (`ui.*`, `good.<id>.name`…), tłumaczenia w `localization/*.po`. Polski ma 3 formy liczby mnogiej.
 - **Statyczne typowanie wszędzie.** Pliki `snake_case`, klasy `PascalCase`, stałe `UPPER_SNAKE`, prywatne `_prefix`, sygnały w czasie przeszłym.
 - Siatka logiczna w przestrzeni kafli. Kafel ma 64×32 px. Konwersja tylko przez `IsoMath`.
+- `src/prototype/<etap>/` to kod jednorazowy (sceny testowe, benchmarki). Wolno w nim używać angielskich tekstów debugowych na sztywno. Nic z kodu docelowego nie może od niego zależeć.
+- Sortowanie głębi: wszystko, co stoi na mapie, jest dzieckiem jednego węzła z `y_sort_enabled`, a punkt sortowania to „stopa”. Nowe obiekty wielokaflowe tnij przez `BuildingSlicer` i dopisz przypadek do `test_sorting.gd`.
+- Placeholdery generuje `tools/generate_placeholders.gd`. Nie edytuj ręcznie `assets/_placeholder/`.
 - Zapis gry obejmuje tylko stan symulacji. Zmiana formatu oznacza podbicie `save_version`, dodanie migracji i testu.
 
 ## Styl współpracy

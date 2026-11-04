@@ -94,6 +94,11 @@ assets/
 
 0,5× jest jedynym zoomem niecałkowitym. Do weryfikacji w M1: filtr `Nearest` z ewentualnym pomniejszeniem przez mipmapy lub osobny „przeglądowy” zestaw grafik [PÓŹNIEJ].
 
+**Po M1:**
+- Zoom liczymy względem rozdzielczości logicznej 1280×720 ze skalą całkowitą (ARCHITECTURE §6.7). Tabela powyżej dotyczy skali płótna 1 (okno lub monitor ~1080p).
+- Na monitorach 1440p i 2560×1600 skala płótna wynosi 2, więc „1×” daje postać 84 px, a 0,5× jest wtedy ostre (1:1).
+- Ocena czytelności przy 1× i 2× na zrzutach z M1: czynność i niesiony towar są czytelne od 2× w górę, a przy 1× rozróżnialne po kolorze i kształcie. **Do potwierdzenia przez właściciela projektu na własnym ekranie.**
+
 ---
 
 ## 4. Animacje postaci
@@ -130,6 +135,12 @@ Rysujemy więc **5 kierunków zamiast 8**, czyli ok. 37% mniej grafik.
 - PixelLab może generować 8 kierunków od razu. Wtedy odbicia oszczędzają głównie kredyty, pamięć i czas poprawek spójności. **(M1)** porównamy postać odbitą z wygenerowaną.
 
 Arkusz z odbiciami ma 5 wierszy (S, SE, E, NE, N), a importer to wykrywa.
+
+**Wynik porównania M1** (`src/prototype/m1/mirror_lineup.tscn`, postać z narzędziem w prawej ręce):
+- W kierunkach NW, W i SW odbita postać trzyma narzędzie w **lewej** ręce i przed sobą. Wersja rysowana w 8 kierunkach chowa je poprawnie za ciałem.
+- Przy zoomie 3× różnicę widać, przy 1× jest praktycznie niezauważalna.
+- Decyzja bez zmian: cywile 5 kierunków + odbicia, żołnierze i postacie z wyraźnie asymetrycznym ekwipunkiem 8 kierunków.
+- Jeśli w pilocie A1 PixelLab da 8 spójnych kierunków bez dodatkowego kosztu, rozważymy 8 dla wszystkich (wyższa jakość przy zoomie 3×).
 
 ### 4.3 Stany i liczba klatek
 
@@ -215,7 +226,8 @@ Zasada składania kawałków opisana jest w ARCHITECTURE §6.3. Dla każdego typ
 |---|---|---|
 | `post.png` | 1–2 warianty | filar w środku kafla. Widoczny na końcach, narożnikach i skrzyżowaniach |
 | `half_<dir>.png` | 8 | półsegment od środka kafla do krawędzi w kierunku `<dir>` siatki: `n, ne, e, se, s, sw, w, nw` (kierunki **siatki**, nie ekranu) |
-| `gate_x.png`, `gate_y.png` | 2 × stany (`closed`, `open`, `broken`) | brama wzdłuż osi X lub Y siatki |
+| `gate_half_<dir>.png` | 4 (`n`, `e`, `s`, `w`) | filar bramy na zewnętrznej części półsegmentu (zmiana w M1: brama składa się z kawałków jak mur, dzięki czemu postać przechodząca przez bramę sortuje się poprawnie) |
+| `gate_lintel_x.png`, `gate_lintel_y.png` | 2 (+ stany `open`, `broken` [1.0]) | belka nad otworem bramy wzdłuż osi X lub Y siatki |
 | `tower.png` | 1 (+ `broken`) | baszta 2×2 |
 | `stairs_<dir>.png` | 4 | schody na mur [1.0] |
 | `damaged_` warianty | dla półsegmentów | [1.0] stany zniszczenia |
@@ -258,10 +270,15 @@ Zasada składania kawałków opisana jest w ARCHITECTURE §6.3. Dla każdego typ
 ### 9.1 Prototyp M1 (placeholdery generowane kodem)
 
 - kafel trawy i kafel siatki,
-- postać-kapsuła 42 px z kolorowym „nosem” wskazującym kierunek: 8 kierunków, animacje `idle`, `walk`, `walk_carry_sack`, `walk_carry_crate`,
-- budynek-pudełko 2×2 i 4×4 z wyraźnymi ścianami (L i P w różnych odcieniach) i dachem,
-- mur kamienny: `post`, 8 × `half_*`, `gate_x`, `gate_y`,
-- 3 ikony towarów i 3 nakładki towarów.
+- postać 42 px z czerwonym „nosem” wskazującym kierunek i narzędziem w prawej ręce:
+  - `peasant`: 8 kierunków rysowanych,
+  - `peasant_mirror`: 5 kierunków + odbicia,
+  - animacje `idle`, `walk`, `walk_carry_sack`, `walk_carry_basket`, `walk_carry_bundle`, każda z `.anchors.png`,
+- budynki-pudełka 2×2, 3×2 i 4×4 z dachem i drzwiami, a obok `base.json` (footprint, wejście, pivot),
+- mur kamienny: `post`, 8 × `half_*`, 4 × `gate_half_*`, 2 × `gate_lintel_*`,
+- 3 ikony towarów i 3 nakładki niesionych towarów: mąka (worek), chleb (kosz), zboże (snop).
+
+Wszystko generuje `tools/generate_placeholders.gd`.
 
 ### 9.2 Vertical slice M3
 
@@ -273,7 +290,7 @@ Zasada składania kawałków opisana jest w ARCHITECTURE §6.3. Dla każdego typ
 | Towary (5) | wood, grain, flour, bread, firewood (= wood w slice): ikony, nakładki, stosy |
 | Teren | trawa ×4, ziemia, piasek, woda płytka i głęboka, brzeg rzeki, droga ubita, pole ×5 faz |
 | Natura | drzewo liściaste (pełny cykl), 2 krzaki, 2 kamienie |
-| UI | panel 9-slice, przycisk ×3 stany, ikony kategorii budowy ×6, ikony statusów (brak pracowników, brak surowca, pauza), font PL |
+| UI | panel 9-slice, przycisk ×3 stany, ikony kategorii budowy ×6, ikony statusów (brak pracowników, brak surowca, pauza). Font: **Jersey 10** (OFL), wybrany w M1, z wyłączonym wygładzaniem. Pixelify Sans odrzucony, bo myli Z/2 i S/5 |
 
 ### 9.3 Wersja 1.0 (orientacyjnie)
 

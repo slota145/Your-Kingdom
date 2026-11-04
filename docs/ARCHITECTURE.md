@@ -21,7 +21,7 @@ Decyzje zapisuję w formacie **Decyzja → Uzasadnienie → Alternatywy**. Zmian
 Dodatkowe propozycje spoza briefu:
 - **Wzorzec komend** (§4.3). Daje jedno wejście do symulacji dla gracza, AI i testów, a w przyszłości także powtórki.
 - **Deterministyczny zegar z niezależnym od FPS tickiem symulacji** (§4.2). Zapewnia powtarzalne testy i stabilne przyspieszanie czasu.
-- **Renderer**: zostajemy przy Forward+ z projektu startowego. W M1 sprawdzimy tryb Compatibility (lżejszy, lepszy dla słabszych PC) i podejmiemy decyzję na podstawie pomiarów.
+- **Renderer: Forward+ (D3D12)**, decyzja z M1. W benchmarku 500 postaci Compatibility (OpenGL) był 2–3× wolniejszy (75 vs 219 FPS przy zoomie 0,5×), a Forward+ na zintegrowanej grafice Intela był równie szybki jak na RTX (§9.3).
 
 ---
 
@@ -269,6 +269,17 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **b)** klawisz „obniż budynki”: budynki rysują tylko parter lub obrys, jak spłaszczenie widoku w Twierdzy,
 - **c)** sylwetki zasłoniętych postaci rysowane przez shader. Budynki zapisują w `SubViewport` maskę z wartością głębi (y-sort) w kanałach koloru. Shader postaci porównuje własną głębię z maską i w zasłoniętych pikselach rysuje kontur lub sylwetkę w kolorze klasy lub frakcji. **Eksperyment M1:** jeśli działa wydajnie, zostaje jako domyślny tryb dla żołnierzy i postaci zaznaczonych.
 
+**Stan po M1:**
+- **Sortowanie jest zweryfikowane automatycznie.** Test `tests/unit/view/test_sorting.gd` porównuje punkty sortowania z prawdziwą głębią izometryczną (`DepthOracle`) dla każdej pozycji, w której może stanąć idąca postać. Sprawdzane przypadki:
+  - budynki od 1×1 do 4×4,
+  - mury proste, ukośne, narożniki 45°, 90° i 135°,
+  - trójniki, skrzyżowania (także ukośne) i bramy.
+
+  Wynik: 0 błędów. Próba kontrolna (celowo przesunięte punkty) jest wykrywana.
+- **Zapasy:** postać przed budynkiem ma co najmniej 8 px zapasu nad punktem sortowania paska, a za budynkiem ponad 16 px.
+- **Warianty a i b są zaimplementowane** (`BuildingView.set_faded`, `set_lowered`). Wariant b tnie każdy pasek osobno tuż nad przednią krawędzią, przez co powstaje schodkowa linia cięcia. Do wygładzenia shaderem przy grafikach docelowych.
+- **Wariant c odłożony.** Wymaga wspólnej maski głębi w `SubViewport`, a a+b wystarczają do sprawdzenia czytelności. Wracamy do niego w M7 (wojsko za murami).
+
 ### 6.3 Mury w 8 kierunkach
 
 - Mur zajmuje kafel. `WallConnectivity` liczy **8-bitową maskę połączeń** z sąsiadami murami w 8 kierunkach siatki (czysta funkcja, testowana).
@@ -301,8 +312,14 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 ### 6.7 Kamera i zoom
 
 - Zoom w krokach **0,5× · 1× · 2× · 3×** (kółko myszy), z animowanym przejściem i przyciąganiem do kroku na końcu animacji.
-- Przy 1× jeden piksel grafiki odpowiada jednemu pikselowi ekranu w rozdzielczości 1080p.
-- Przy 1440p i 4K stosujemy **skalę bazową** całkowitą (1× lub 2×) wynikającą z wysokości okna. Zoom gracza mnoży skalę bazową.
+- **Skala bazowa (decyzja M1):**
+  - rozdzielczość logiczna 1280×720, tryb `canvas_items`, `aspect = expand`, **`scale_mode = integer`**,
+  - Godot sam dobiera całkowitą skalę płótna do okna: 1080p → 1, 1440p i 2560×1600 → 2, 4K → 3,
+  - zoom gracza ją mnoży, więc piksel grafiki zawsze wypada na całkowitą liczbę pikseli ekranu (poza 0,5× przy skali 1).
+
+  Przykład na ekranie 2560×1600: zoom 1× daje 2 px ekranu na piksel grafiki (postać ma 84 px), a 0,5× daje 1:1.
+- **Interfejs** skaluje się razem z płótnem. Rozmiary fontów pikselowych dobieramy tak, żeby po skalowaniu były wielokrotnościami siatki fontu.
+- Tryb gracza: domyślnie pełny ekran w natywnej rozdzielczości [M10]. W trakcie produkcji okno ma 1600×900.
 - Przesuwanie kamery: WSAD lub strzałki, krawędź ekranu, przeciąganie środkowym przyciskiem myszy.
 
 ---
@@ -376,6 +393,29 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 | Skrypty GDScript w pętli ticku | GDScript jest wolniejszy od C#. | Statyczne typowanie (szybszy kod), tablice `Packed*` dla danych masowych. Rezerwa: przeniesienie gorących pętli (ruch, dopasowanie zadań) do GDExtension (C++), jeśli profiler to wskaże. |
 
 **Test wydajności (M1):** scena benchmarkowa z 500 postaciami chodzącymi losowo między 20 budynkami na mapie 192×192. Logujemy czasy ticku i FPS przy każdym poziomie zoomu.
+
+### 9.3 Wyniki M1
+
+Pomiar: `src/prototype/m1/m1_bench.tscn -- --bench`, okno 1600×900, vsync wyłączony, laptop z RTX 5070 Ti oraz zintegrowaną grafiką Intel.
+- Postacie chodzą między losowymi celami w obszarze 48×48 wokół 20 budynków i murów.
+- Pathfinding przez `NavGrid` (AStarGrid2D) z budżetem 32 zapytań na tick.
+- Pula sprite’ów tylko dla widocznych postaci.
+
+| Konfiguracja | Zoom | Widoczne | Śr. FPS | 99. percentyl klatki | Tick symulacji |
+|---|---|---|---|---|---|
+| 500 postaci, Forward+, RTX | 0,5× | 498 | 219 | 5,3 ms | 0,64 ms |
+| | 1× | 408 | 322 | 3,3 ms | 0,64 ms |
+| | 2× | 233 | 547 | 2,1 ms | 0,66 ms |
+| 500 postaci, Forward+, **Intel iGPU** | 0,5× | 498 | 223 | 4,8 ms | 0,63 ms |
+| 500 postaci, Compatibility, RTX | 0,5× | 498 | 75 | 15,0 ms | 0,64 ms |
+| **2000 postaci**, Forward+, RTX | 0,5× | 1983 | 91 | 13,6 ms | 1,84 ms (max 2,8) |
+| | 1× | 1511 | 103 | 11,7 ms | 2,37 ms |
+
+**Wnioski:**
+- Cel (250 widocznych przy 60 FPS, tick ≤ 4 ms przy 500 postaciach) jest spełniony z około 4× zapasem.
+- Wąskim gardłem jest CPU (skrypt widoku), a nie GPU: iGPU = RTX.
+- Rezerwy z §9.2 (flow fields, GDExtension) nie są na razie potrzebne. Ponowny pomiar w M4, z prawdziwymi zadaniami zamiast losowego chodzenia.
+- Zastrzeżenie: CPU laptopa jest szybszy niż „średni PC”. Przy 2× wolniejszym CPU szacujemy ok. 110 FPS przy 500 widocznych postaciach.
 
 ---
 

@@ -13,13 +13,19 @@ msgid "ui.main.title"
 msgstr "Your Kingdom"
 
 msgid "ui.main.subtitle"
-msgstr "Milestone M0: project foundation"
+msgstr "Milestone M1: readability, sorting and performance prototype"
 
 msgid "ui.main.toggle_language"
 msgstr "Change language: Polski"
 
 msgid "ui.main.plural_demo"
 msgstr "Plural forms example:"
+
+msgid "ui.main.open_sandbox"
+msgstr "M1 prototype: sandbox (sorting, walls, people)"
+
+msgid "ui.main.open_benchmark"
+msgstr "M1 prototype: performance test (500 people)"
 
 msgid "ui.main.glyph_test"
 msgstr "The quick brown fox jumps over the lazy dog"

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b4i0rhcqrdd1k"
-path="res://.godot/imported/walk.png-a1e688183921d96f614667a2e078a765.ctex"
+uid="uid://ducsxdac3ogwa"
+path="res://.godot/imported/half_ne.png-12f42b1a2240acada74cf3c2be2a4a97.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/_placeholder/characters/capsule/walk.png"
-dest_files=["res://.godot/imported/walk.png-a1e688183921d96f614667a2e078a765.ctex"]
+source_file="res://assets/_placeholder/walls/stone_wall/half_ne.png"
+dest_files=["res://.godot/imported/half_ne.png-12f42b1a2240acada74cf3c2be2a4a97.ctex"]
 
 [params]
 
