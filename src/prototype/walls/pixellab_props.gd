@@ -47,18 +47,23 @@ static func textures(folder: String) -> Array[Texture2D]:
 
 ## Gatehouse cut into half-tile strips like a building (ARCHITECTURE §6.2).
 static func gatehouse(origin: Vector2i) -> Node2D:
+	return sliced(load(DIR + "gate/gatehouse.png") as Texture2D, origin, GATEHOUSE_FOOTPRINT,
+			GATEHOUSE_PIVOT)
+
+
+## Building art on a [param footprint] at [param origin], with [param pivot] = front
+## (bottom) vertex of the footprint in image pixels, cut into strips (ARCHITECTURE §6.2).
+static func sliced(tex: Texture2D, origin: Vector2i, footprint: Vector2i, pivot: Vector2i) -> Node2D:
 	var root := Node2D.new()
 	root.y_sort_enabled = true
-	root.position = IsoMath.grid_to_screen(Vector2(origin + GATEHOUSE_FOOTPRINT))
-	var tex := load(DIR + "gate/gatehouse.png") as Texture2D
-	for strip: BuildingSlicer.Strip in BuildingSlicer.slices(GATEHOUSE_FOOTPRINT, GATEHOUSE_PIVOT,
-			Vector2i(tex.get_size())):
+	root.position = IsoMath.grid_to_screen(Vector2(origin + footprint))
+	for strip: BuildingSlicer.Strip in BuildingSlicer.slices(footprint, pivot, Vector2i(tex.get_size())):
 		var s := Sprite2D.new()
 		s.texture = tex
 		s.centered = false
 		s.region_enabled = true
 		s.region_rect = Rect2(strip.region)
 		s.position = strip.sort_offset
-		s.offset = Vector2(strip.region.position - GATEHOUSE_PIVOT) - strip.sort_offset
+		s.offset = Vector2(strip.region.position - pivot) - strip.sort_offset
 		root.add_child(s)
 	return root

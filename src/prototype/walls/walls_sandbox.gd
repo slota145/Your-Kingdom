@@ -356,6 +356,7 @@ func _add_pixellab() -> void:
 			world.add_child(Props.sprite(tex, Props.BLOCK_CENTER, IsoMath.tile_center_screen(tile)))
 			_take(tile)
 	_rebuild_walls()
+	_add_village()
 	# Trees and forest floor details from the owner's library, on free ground.
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 5
@@ -371,7 +372,7 @@ func _add_pixellab() -> void:
 		_take(tile)
 		placed += 1
 	placed = 0
-	while placed < 90:
+	while placed < 160:
 		var tile := Vector2i(rng.randi_range(1, map_size.x - 2), rng.randi_range(1, map_size.y - 2))
 		if not _free_around(tile, 1):
 			continue
@@ -379,6 +380,29 @@ func _add_pixellab() -> void:
 		var jitter := Vector2(rng.randf_range(-12, 12), rng.randf_range(-5, 5))
 		world.add_child(Props.sprite(tex, Props.foot_of(tex), IsoMath.tile_center_screen(tile) + jitter))
 		placed += 1
+
+
+## Huts from the owner's library on 2x2 footprints, each with a few props around it.
+func _add_village() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
+	var huts := Props.textures("buildings")
+	var props := Props.textures("props")
+	for i: int in huts.size():
+		var origin := Vector2i(41 + (i % 4) * 5, 3 + (i / 4) * 6)
+		var tex := huts[i]
+		world.add_child(Props.sliced(tex, origin, Vector2i(2, 2), Vector2i(Props.foot_of(tex))))
+		for x: int in 2:
+			for y: int in 2:
+				_take(origin + Vector2i(x, y))
+		var around: Array[Vector2i] = [origin + Vector2i(2, 0), origin + Vector2i(2, 2),
+				origin + Vector2i(0, 2), origin + Vector2i(-1, 1), origin + Vector2i(1, -1)]
+		for k: int in 3:
+			var tile: Vector2i = around[rng.randi() % around.size()]
+			around.erase(tile)
+			var ptex := props[rng.randi() % props.size()]
+			world.add_child(Props.sprite(ptex, Props.foot_of(ptex), IsoMath.tile_center_screen(tile)))
+			_take(tile)
 
 
 func _take(tile: Vector2i) -> void:
