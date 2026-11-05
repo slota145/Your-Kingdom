@@ -270,7 +270,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Podział na trzy części (decyzja właściciela projektu 2026-11-05).** Każda część kończy się Twoją grą i oceną. Powyższe DoD dotyczy całego M4b.
 - **M4b-1: patrycjusze i poprawki** (szczegóły niżej).
 - **M4b-1.5 „Miasto” (decyzja 2026-11-05, po ocenie M4b-1):** obracanie budynków przy stawianiu (wejście z wybranej strony), domy w dwóch rzędach plecami do siebie i przodem do drogi, nowe pierzeje mieszczan (biedniejsze) i patrycjuszy (bogatsze) z elementami narożnymi. Własny styl, inspiracja ilustracjami od właściciela projektu (Anno 1404), bez kopiowania.
-- **M4b-2:** mięso (chlew, rzeźnik, skóry), straganiarze na targowisku, kupiec wędrowny, który skupuje nadwyżki (ujście towarów z pełnych magazynów), okno „Zapasy królestwa” (suma ze wszystkich magazynów) oraz produkcja i zużycie na minutę (decyzja 2026-11-05).
+- **M4b-2:** mięso (chlew, rzeźnik, skóry), straganiarze na targowisku, kupiec wędrowny, który skupuje nadwyżki (ujście towarów z pełnych magazynów), okno „Zapasy królestwa” (suma ze wszystkich magazynów) oraz produkcja i zużycie na minutę (decyzja 2026-11-05). Na początku etapu (ankieta po ocenie M4b-1.5, 2026-11-05): **prywatny stos przy budynku produkcyjnym** (gdy magazyny są pełne, pracownik odkłada towar na stos przy swoim budynku, a gdy ten jest pełny, czeka; koniec zawalania ziemi drewnem) oraz **gęsty las**: drzewa przestają być przeszkodą (przez las idzie się wolniej), a leśniczy sadzi kafel w kafel jak las z mapy, nigdy na drogach, polach, kaflach przed drzwiami i tuż przy budynkach.
 - **M4b-3:** wozy i bruk, nowe tereny (jezioro, skały), duże miasto 400+ postaci i wydajność.
 
 #### M4b-1 — Patrycjusze i poprawki
