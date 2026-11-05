@@ -24,7 +24,7 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
       - **ścięcie ½:** kliny o przyprostokątnej ½ kafla, wychodzi poszarpane,
       - **prosto:** kliny o przyprostokątnej 1 kafla. Wygląda najczyściej, ale mur ukośny jest √2 grubszy i blokuje połówki sąsiednich kafli.
     - Brama w modelu bryłowym to tunel: dwa filary i pomost niosący koronę. Postać w przejściu jest zasłonięta pomostem. Słabo widać, że to brama, więc przy grafikach docelowych przyda się wyraźny portal.
-    - Blanki (2026-11-05, według zdjęcia makiety od właściciela projektu): przedpiersie 16 px będące przedłużeniem lica muru, na nim blanki 14 px, trzy na krawędź kafla, tak szerokie jak przerwy. Strażnik chowa się do ramion.
+    - Blanki (2026-11-05, według zdjęcia makiety od właściciela projektu): przedpiersie 16 px będące przedłużeniem lica muru, na nim blanki 14 px, trzy na krawędź kafla, tak szerokie jak przerwy, a w każdym zewnętrznym narożniku blanka narożna w kształcie litery L. Strażnik chowa się do ramion.
     - Grafiki docelowe dałoby się składać z kawałków: wierzch bloku, 2 przednie ściany, 4 krawędzie korony z blankami i kliny.
 
 - [gracz] **Bramy większe od muru (wieża bramna):** brama to masywny budynek wyższy i szerszy od muru, jak w średniowieczu i w Twierdzy. Ma dwie flankujące wieże i portal z broną.

@@ -29,6 +29,8 @@ const MERLON_HEIGHT := 14.0
 const MERLON_WIDTH := 0.2
 const MERLON_DEPTH := PARAPET_DEPTH
 const MERLON_PERIOD := 1.0 / 3.0
+## Smallest crenel between a corner merlon and the next ordinary one.
+const CORNER_GAP := 0.05
 ## Screen px an object on the crown sorts after the piece it stands on. People use three
 ## times this, so they come after the parapet (+1) and merlons (+2) behind them.
 const CROWN_BIAS := 1.0
@@ -358,8 +360,16 @@ func _merlons(support: Piece) -> Array[Piece]:
 		parapet.sort_point.y = maxf(parapet.sort_point.y, support.sort_point.y + CROWN_BIAS)
 		result.append(parapet)
 		var length := a.distance_to(b)
+		var ends_at_corner := support.edges[(i + 1) % n] == Edge.EXPOSED
+		# Outer corners get an L-shaped corner merlon (as on a real wall); ordinary merlons
+		# keep at least a crenel's width away from it.
+		var keep_off := MERLON_WIDTH + CORNER_GAP
+		if owned:
+			result.append_array(_corner_merlon(support, i, base))
 		for t: float in _merlon_positions(a, b):
-			if owned and t * length - MERLON_WIDTH * 0.5 < PARAPET_DEPTH - 0.001:
+			if owned and t * length - MERLON_WIDTH * 0.5 < keep_off:
+				continue
+			if ends_at_corner and (1.0 - t) * length - MERLON_WIDTH * 0.5 < keep_off:
 				continue
 			var m := a.lerp(b, t)
 			var w := dir * MERLON_WIDTH * 0.5
@@ -379,6 +389,35 @@ func _merlons(support: Piece) -> Array[Piece]:
 			if parapet.kind == &"parapet" and _distance(c, parapet.poly) < MERLON_WIDTH:
 				merlon.sort_point.y = maxf(merlon.sort_point.y, parapet.sort_point.y + CROWN_BIAS)
 	return result
+
+
+## L-shaped merlon on the outer corner where rim [param i] of [param support] starts: one
+## arm along the previous rim (it owns the corner square), one along rim i.
+func _corner_merlon(support: Piece, i: int, base: float) -> Array[Piece]:
+	var n := support.poly.size()
+	var v := support.poly[i]
+	var prev := support.poly[(i + n - 1) % n]
+	var next := support.poly[(i + 1) % n]
+	var dir_prev := (v - prev).normalized()
+	var dir := (next - v).normalized()
+	var in_prev := _inward(support, prev, v)
+	var in_cur := _inward(support, v, next)
+	var w := MERLON_WIDTH
+	var d := MERLON_DEPTH
+	var all_exposed := PackedByteArray([Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED])
+	var arm_a := Piece.new(&"merlon", support.tile, PackedVector2Array([v - dir_prev * w, v,
+			v + in_prev * d, v - dir_prev * w + in_prev * d]), all_exposed, base, base + MERLON_HEIGHT)
+	var arm_b := Piece.new(&"merlon", support.tile, PackedVector2Array([v + dir * d, v + dir * w,
+			v + dir * w + in_cur * d, v + dir * d + in_cur * d]),
+			PackedByteArray([Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED, Edge.JOINED]), base, base + MERLON_HEIGHT)
+	return [arm_a, arm_b]
+
+
+func _inward(support: Piece, a: Vector2, b: Vector2) -> Vector2:
+	var inward := (b - a).normalized().orthogonal()
+	if inward.dot(support.centroid() - (a + b) * 0.5) < 0.0:
+		inward = -inward
+	return inward
 
 
 static func _distance(p: Vector2, poly: PackedVector2Array) -> float:
