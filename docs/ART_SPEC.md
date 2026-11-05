@@ -235,6 +235,13 @@ Zasada składania kawałków opisana jest w ARCHITECTURE §6.3. Dla każdego typ
 - Każdy plik ma płótno **64×96** z pivotem w punkcie (32, 80), czyli środku kafla. Wysokość muru kamiennego to ok. **56 px** nad ziemią (1,33× postaci), palisady ok. 48 px.
 - Półsegmenty przekątne (`ne`, `se`, `sw`, `nw` w siatce) biegną na ekranie poziomo lub pionowo. Muszą mieć **tę samą grubość wizualną** co osiowe, a końce stykać się bez szczelin z filarem i z półsegmentem sąsiada. **To główny cel prototypu M1.**
 - Korona muru (blanki) jest rysowana w każdym półsegmencie. Na filarze narożnym korona jest pełna.
+- **Zmiana 2026-11-04:** powyższe kawałki dotyczą palisady. Mur kamienny ma model bryłowy (ARCHITECTURE §6.3) i składa się z kawałków:
+  - wierzch bloku,
+  - dwie przednie ściany,
+  - krawędzie korony z blankami,
+  - kliny przekątne.
+
+  Dokładną listę plików ustalimy przy pierwszych grafikach muru.
 
 ---
 
@@ -313,3 +320,21 @@ ok. 25 typów postaci cywilnych, 6 typów żołnierzy, ok. 40 budynków, 2 typy 
 - brak „pływania” stóp (pivot stały),
 - zgodność z płótnem i nazwami,
 - poprawne sortowanie w scenie testowej.
+
+### 10.1 Pierwsza próba (2026-11-04, początek A1)
+
+Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
+- **Drzewa i drobiazgi** z biblioteki właściciela projektu (widok RPG 3/4, 80×80 i 32×32) pasują do izometrii bez przeróbek. Skala względem postaci 42 px jest dobra. Część kandydatów jest przycięta na krawędzi płótna. Wykrywamy to automatycznie (nieprzezroczysty piksel na krawędzi) i odrzucamy albo poprawiamy.
+- **Budynki z widokiem od frontu** (np. „medieval village”) nie pasują: mają jedną ścianę zamiast dwóch pod kątem.
+- **`create_map_object`** z opisem „isometric … on a diamond base” (1 generacja) dał wieżę bramną na izometrycznej płycie. Romb ma proporcję ok. 1,8:1 zamiast 2:1, ale na placeholder wystarcza. Fasada jest zwrócona do kamery, więc obiekt pasuje do muru ukośnego (biegnącego poziomo na ekranie), a nie do osiowego. Bez słowa „diamond base” wychodzi czysty widok od frontu.
+- **`create_isometric_tile` (blok 64 px)** daje sześcian o wysokości ok. 32 px z konturem na każdej krawędzi. Sąsiednie bloki nie zlewają się w jeden mur, a wysokość nie zgadza się z 56 px. Do muru bryłowego potrzebne są kawałki według §6. Do sprawdzenia: inpainting na naszym placeholderze.
+- **Chaty z biblioteki** (słowiańskie z bali, kryte strzechą, ruiny farmy; 128×128) są narysowane izometrycznie z dwiema ścianami. Wchodzą na footprint 2×2 z pivotem w najniższym punkcie obrazka. Są trochę mniejsze od rombu 2×2, ale skala względem postaci jest dobra.
+- **Rekwizyty** (farma, warsztat, winnica; 64×64) też pasują. Z 9 przyciętych kandydatów 7 odrzucił import, a 2 dotykają tylko dolnej krawędzi i zostały. Import usuwa też drobne „okruchy” pikseli i kawałki sąsiednich kandydatów. Odrzucony został m.in. stóg siana z widłami: widły dotykają krawędzi.
+- **Przemalowanie naszego wzoru (`edit_image`, 10 generacji za obraz do 256×256) to najlepsza droga do murów i bram.** Wzór renderuje `src/prototype/walls/export_reference.gd` (mur i brama rysowane kodem, przezroczyste tło). PixelLab zachowuje obrys: 99,7% (brama) i 100% (mur) pikseli pokrywa się ze wzorem, a styl jest dużo bogatszy (jasny piaskowiec, drewniany dach, ostry łuk z broną). Wynik leży więc dokładnie na naszej geometrii i da się go pociąć na kawałki według §6. Do ustalenia: jak ciąć obraz na kawałki i jak zachować spójność między seriami (ten sam opis i ta sama referencja).
+- **Cięcie przemalowania na kawałki działa** (`src/prototype/walls/repaint_skin.gd`, klawisz K w piaskownicy przełącza mur z PixelLab i mur rysowany kodem):
+  - z przemalowanego muru wycinamy 3 próbki i prostujemy je do prostokątów: ścianę jasną (+y, 2 kafle), ścianę ciemną (+x, 1 kafel) i wierzch korony (2×1 kafla); kod rysuje nimi mur w dowolnym kształcie, a blanki dostają średni kolor kamienia,
+  - wieżę bramną wycinamy z przemalowania maską z rzutu jej kawałków i używamy jak grafiki budynku (paski z `BuildingSlicer`); druga orientacja to odbicie lustrzane, więc światło jest wtedy odwrócone (przy grafice docelowej: osobne przemalowanie drugiej orientacji),
+  - próbki muszą pochodzić z miejsc niczym nie zasłoniętych i w całości na obrazku, z dala od narożników (tam wzór ma kontury i cienie), inaczej wychodzą smugi albo pionowe linie co kafel,
+  - próbki są bezszwowe: wycinamy 8 px więcej i płynnie przenikamy nadmiar w początek próbki.
+- **Tilesety właściciela projektu są top-down (kwadratowe Wang, 64×64).** Jednolite kafle (trawa, zaorana ziemia) da się rzutować na romb 64×32 (obrót o 45° i spłaszczenie, próbkowanie najbliższym pikselem). Wychodzi bez szwów, a faktura trawy i bruzd wygląda naturalnie. Kafle przejść (brzegi) po rzutowaniu nie pasują do naszych sąsiedztw, więc przejścia trzeba robić osobno. Trawa jest bardziej nasycona niż paleta z §1.
+- **Sieć:** środowisko w chmurze ma dostęp do `backblaze.pixellab.ai` (Allowed domains), więc pliki pobieramy bezpośrednio.

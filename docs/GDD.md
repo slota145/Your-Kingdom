@@ -234,7 +234,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda i budynki blokują pr
 - Połączenia i narożniki dobierane są automatycznie na podstawie sąsiadów w 8 kierunkach (zob. ARCHITECTURE §6.3, ART_SPEC §6).
 - Elementy fortyfikacji:
   - palisada (drewno),
-  - mur kamienny,
+  - mur kamienny: można go stawiać w kilku równoległych rzędach, które zlewają się w jeden gruby mur (decyzja 2026-11-04, ARCHITECTURE §6.3),
   - brama: w dwóch orientacjach osiowych [1.0], po przekątnej [PÓŹNIEJ],
   - baszty,
   - schody na mur.
