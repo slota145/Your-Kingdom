@@ -14,6 +14,8 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 			return Status.DONE
 		if agent.is_carrying():
 			return failed(agent, &"hands_full")
+		if agent.task.kind == Task.KIND_RECIPE and not province.workshop_may_take(good, amount):
+			return failed(agent, &"kept_for_building")
 		var src := int(bb.get("from", 0))
 		if src == 0:
 			src = province.nearest_source(good, amount, agent.tile())

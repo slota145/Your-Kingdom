@@ -2,7 +2,8 @@ class_name BuildingPanel
 extends PanelContainer
 ## The selected building: what it is, what its people are doing right now ("Baker: bakes
 ## bread (60%)", "Waits for flour"), construction progress, household needs, stored goods.
-## Settings: work priority (workplaces), the wood reserve (storages), taxes (town hall).
+## Settings: work priority (workplaces), the wood reserve (storages), taxes (town hall), and
+## for workshops how much of each input the province keeps for building (one value per good).
 
 signal demolish_requested(building_id: int)
 signal add_fields_requested(farm_id: int)
@@ -27,6 +28,10 @@ var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
 var _reserve_label: Label
 var _reserve_slider: HSlider
+var _keep_box: VBoxContainer
+## Input goods the keep sliders are built for, and a slider per good.
+var _keep_goods: Array[StringName] = []
+var _keep_sliders: Dictionary[StringName, HSlider] = {}
 var _tax_box: Container
 var _tax_label: Label
 var _timer: float = 0.0
@@ -81,6 +86,8 @@ func _build_settings(box: VBoxContainer) -> void:
 		_reserve_label.text = tr("ui.reserve.wood") % int(value)
 		command_requested.emit(SetReserveCommand.new(building_id, &"wood", int(value))))
 	_reserve_box.add_child(_reserve_slider)
+	_keep_box = VBoxContainer.new()
+	box.add_child(_keep_box)
 	_tax_box = VBoxContainer.new()
 	box.add_child(_tax_box)
 	_tax_label = UiKit.label()
@@ -158,9 +165,67 @@ func _refresh_settings(b: BuildingState) -> void:
 		if not _reserve_slider.has_focus():
 			_reserve_slider.set_value_no_signal(reserve)
 		_reserve_label.text = tr("ui.reserve.wood") % int(_reserve_slider.value)
+	_refresh_keep(b)
 	_tax_box.visible = b.def.id == TOWN_HALL and b.is_complete() and treasury != null
 	if _tax_box.visible:
 		_tax_label.text = tr("ui.tax.title") % tr("ui.tax.%s" % ["low", "normal", "high"][treasury.tax_rate])
+
+
+## Goods a workshop fetches from storages (its recipe inputs).
+static func _input_goods(b: BuildingState) -> Array[StringName]:
+	var goods: Array[StringName] = []
+	if not b.is_complete() or b.def.recipe == null:
+		return goods
+	for step: StepDef in b.def.recipe.steps:
+		var fetch := step as FetchStepDef
+		if fetch != null and fetch.good != &"" and not goods.has(fetch.good):
+			goods.append(fetch.good)
+	return goods
+
+
+func _refresh_keep(b: BuildingState) -> void:
+	var goods := _input_goods(b)
+	if goods != _keep_goods:
+		_build_keep_rows(goods)
+	_keep_box.visible = not goods.is_empty()
+	for good: StringName in goods:
+		var slider := _keep_sliders[good]
+		if not slider.has_focus():
+			slider.set_value_no_signal(int(province.keep_for_building.get(good, 0)))
+		_keep_label(good).text = _keep_text(good, int(slider.value))
+
+
+func _build_keep_rows(goods: Array[StringName]) -> void:
+	for child: Node in _keep_box.get_children():
+		_keep_box.remove_child(child)
+		child.queue_free()
+	_keep_goods = goods
+	_keep_sliders.clear()
+	for good: StringName in goods:
+		var label := UiKit.label()
+		label.name = String(good)
+		_keep_box.add_child(label)
+		var slider := HSlider.new()
+		slider.min_value = 0
+		slider.max_value = SetKeepForBuildingCommand.MAX_KEEP
+		slider.step = 1
+		slider.custom_minimum_size.x = UiKit.PANEL_WIDTH - 24.0
+		slider.tooltip_text = "ui.keep.hint"
+		slider.value_changed.connect(func(value: float) -> void:
+			label.text = _keep_text(good, int(value))
+			command_requested.emit(SetKeepForBuildingCommand.new(good, int(value))))
+		_keep_box.add_child(slider)
+		_keep_sliders[good] = slider
+	if not goods.is_empty():
+		_keep_box.add_child(UiKit.label("ui.keep.hint"))
+
+
+func _keep_label(good: StringName) -> Label:
+	return _keep_box.get_node(NodePath(String(good))) as Label
+
+
+func _keep_text(good: StringName, amount: int) -> String:
+	return tr("ui.keep.for_building") % [tr(province.data.get_good(good).name_key()), amount]
 
 
 func _site_text(site: ConstructionSite) -> String:

@@ -140,6 +140,7 @@ Zasady:
 2. **Magazyn to fizyczne miejsce.** Plac składowy ma sloty. Każdy slot przechowuje jeden rodzaj towaru do określonej ilości i jest pokazany stosem w jednej z kilku faz zapełnienia. Pojemność magazynu wynika z liczby slotów.
 3. **Model transportu jest zbliżony do Twierdzy.** Pracownik budynku produkcyjnego sam przynosi surowce z magazynu i sam odnosi wyroby do magazynu. Tragarze magazynów zajmują się dostawami na budowy, przewozem między magazynami (później także wozami) i portem. W M4a każdy magazyn ma 2 miejsca dla tragarzy, a ratusz 2 tragarzy i budowniczego.
 5. **Opał przed budową (M4a):** budowy nie biorą z magazynu ostatnich 5 sztuk drewna. Ta rezerwa zostaje dla domów. Gracz zmienia ją suwakiem w panelu magazynu (0–60).
+6. **Zapas na budowy (M4a, wniosek z testów 2026-11-05):** gracz ustawia, ile sztuk towaru warsztaty mają zostawić w całym królestwie (np. tartak nie zje całego drewna). To jedno ustawienie na towar dla całej prowincji, a suwak jest w panelu warsztatu, który ten towar pobiera (0–60, domyślnie 0). Warsztat bierze tylko ponad ten zapas. Budowy i domy mogą brać do zera.
 4. **Każdy cykl produkcji składa się z etapów** zdefiniowanych w danych: przejście, pobranie, czynność z animacją, wytworzenie, odniesienie.
 
 ### 4.2 Lista towarów [1.0] (ok. 30)

@@ -234,6 +234,11 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Chłopi** jedzą chleb albo ryby (GDD §3.2), a kaplica to ich dodatkowa potrzeba.
 - **Targowisko** to na razie usługa z zasięgiem. Straganiarze są w IDEAS.
 
+**Wnioski z gry właściciela (2026-11-05):**
+- Budynku nie da się postawić tak, żeby wejście było nieosiągalne (np. chata rybaka drzwiami do rzeki) albo żeby odciął drogę innym. Budowniczy omija budowę, do której nie dojdzie (GDD §5.1).
+- Powrót do menu robi szybki zapis.
+- **Zapas na budowy:** warsztaty zostawiają w królestwie ustawioną liczbę sztuk towaru, np. tartak nie zje całego drewna (GDD §4.1, pkt 6). Zapis w wersji 4.
+
 **DoD:**
 - [x] Automatyczny gracz od startu dochodzi do 6 domów mieszczan ze wszystkimi potrzebami podstawowymi (chleb, ryby, piwo, opał, studnia) w **38. minucie** (`tests/scenario/test_slice_dod.gd`, limit 50 minut).
 - [x] Każdy nowy łańcuch (deski, kamień, ryby, chmiel, piwo) ma test scenariuszowy z licznikami zdarzeń (`tests/scenario/test_m4a_chains.gd`).
