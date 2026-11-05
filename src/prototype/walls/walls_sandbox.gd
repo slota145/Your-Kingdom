@@ -523,7 +523,7 @@ func _add_stockpiles() -> void:
 		for t: Vector2i in def.footprint_tiles(origin):
 			if model.is_wall(t) or model.wedge_tiles.has(t) or _prop_tiles.has(t):
 				clear = false
-		if not clear or sim.execute(PlaceBuildingCommand.new(&"stockpile", origin)) != &"":
+		if not clear or sim.execute(PlaceBuildingCommand.new(&"stockpile", origin, true)) != &"":
 			continue
 		var building := sim.province.buildings.get_building(sim.ids.next_id - 1)
 		for good: StringName in GOODS:

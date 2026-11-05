@@ -54,10 +54,11 @@ your-kingdom/
 │   │   ├── grid/               # TileGrid, ResourceField, IsoMath (czysta matematyka)
 │   │   ├── pathing/            # NavGrid (AStarGrid2D), PathRequestQueue
 │   │   ├── economy/            # Stockpile (sloty + rezerwacje), Reservation, StockpileLayout, GroundPile
-│   │   ├── buildings/          # BuildingState, BuildingStore, Construction, Production
+│   │   ├── buildings/          # BuildingState, BuildingStore, Construction, ConstructionSite
+│   │   ├── farming/            # FieldStore (kafle pól farm)
 │   │   ├── agents/             # Agent, AgentStore, Task, TaskRunner, Movement, steps/
 │   │   ├── jobs/               # JobBoard, TransportRequest
-│   │   ├── population/         # Household, Needs, Happiness, Workforce
+│   │   ├── population/         # Population, HouseState, ServiceCoverage
 │   │   ├── walls/              # WallGraph, WallConnectivity
 │   │   ├── province/           # ProvinceSim (szczegółowa), ProvinceAbstract (uproszczona)
 │   │   └── world/              # WorldSim, ProvinceGraph, Army, Fleet, TradeRoute
@@ -98,12 +99,12 @@ Sceny (`.tscn`) leżą **obok swoich skryptów** w `src/view` i `src/ui`. Nie ma
 | `RecipeDef` | `steps: Array[StepDef]` (M2). `inputs`/`outputs` jako podsumowanie dla UI dojdą w M3 |
 | `StepDef` (podklasy, czyste dane) | `GoToStepDef(target, resource)`, `FetchStepDef(good, amount)`, `WorkStepDef(activity, duration, spot)`, `GatherStepDef`, `ProduceStepDef(output, amount)`, `DeliverStepDef(drop_on_fail)`, później `FieldStepDef(action)`… Wykonuje je symulacja (`src/sim/agents/steps/`), definicje nie zawierają logiki |
 | `ResourceNodeDef` | `good`, `amount` (ile razem), `per_gather` (ile na kurs), `solid`. Drzewo: 3 kłody po 1, po ostatniej zostaje pniak (M2: bez odrastania) |
-| `BuildingDef` | `id`, `footprint: Vector2i`, `entrance: Vector2i`, `build_cost`, `build_steps`, `workers`, `recipe`, `work_radius`, `service_radius`, `storage_slots`, `category`, `unlock` |
-| `HouseLevelDef` | `level`, `capacity`, `needs: Array[NeedDef]`, `upgrade_cost`, `tax` |
-| `NeedDef` | `kind` (good/service), `goods: Array` (dowolny z listy), `consumption_rate`, `is_basic` |
+| `BuildingDef` | `id`, `footprint: Vector2i`, `entrance: Vector2i`, `build_cost`, `build_time`, `worker_kinds` (zawód na każde miejsce pracy), `staffing_priority`, `recipe`, `work_radius`, `max_fields`, `field_grow_time`, `service_radius`, `storage_slots`, `house_levels`, `category`, później `unlock` |
+| `HouseLevelDef` | `level`, `capacity`, `needs: Array[NeedDef]`, `supply_units` (spiżarnia), `upgrade_cost`, `upgrade_time`, później `tax` |
+| `NeedDef` | `kind` (good/service), `goods: Array` (dowolny z listy), `service` (id budynku), `per_resident_per_minute`, `weight` (punkty zadowolenia), `is_basic` |
 | `UnitDef`, `ShipDef` | statystyki, koszt, wymagane towary, `combat: CombatStatsDef` |
-| `TerrainDef` | `walkable`, `move_cost`, `buildable`, `resource` |
-| `ProvinceDef` / `MapDef` | typ, rozmiar, teren (z pliku mapy), złoża, rzadki surowiec |
+| `TerrainDef` | `index` (zapis w siatce), `walkable`, `move_cost`, `buildable`, `map_color`, `resource_node` (las → drzewo) |
+| `ProvinceDef` / `MapDef` | M3: `MapDef` = obrazek terenu, `entry_tile`, układ startowy (`StartBuildingDef`: budynek, mieszkańcy, towary). Później: typ, złoża, rzadki surowiec |
 
 **Identyfikatory:** `StringName` w `snake_case` (`bread`, `bakery`). Id są stałe po wydaniu, bo zapisy gry je przechowują.
 
@@ -231,13 +232,21 @@ Są dwa źródła pracy:
 
 Testy jednostkowe obejmują każdy z tych przypadków.
 
+**Realizacja (M3):**
+- **Budowa:** postawienie budynku tworzy `ConstructionSite` z własnym id i własnym `Stockpile` (adresowany jak magazyn). Plac zamawia od razu całe materiały przez `JobBoard`. Faza 1 i 2 zużywają po połowie kosztu (`BuildingDef.phase_cost`), czas `build_time` dzieli się po równo. Budowniczy (`builder`, pracownik ratusza) bierze najbliższy plac, na którym jest co robić (`Construction.site_for`), i wykonuje krok `build`. Awans domu to plac jednofazowy na gotowym domu. Rozbiórka: dostarczone materiały wracają w całości, zużyte w połowie, gotowy budynek oddaje połowę kosztu (kupy na ziemi).
+- **Magazyny publiczne i prywatne:** `nearest_source` i `nearest_sink` widzą tylko magazyny publiczne (`BuildingState.stock`) i kupy. Spiżarnia domu (`supply`) i plac budowy przyjmują dostawy tylko wtedy, gdy ktoś je wprost wskaże.
+- **Pola:** `FieldStore` trzyma kafle pól z farmą, etapem, czasem siewu i dojrzałości oraz roszczeniem rolnika. Wzrost nie wymaga pracy w ticku: kafel jest dojrzały, gdy `tick >= ripe_tick`. Krok `field` wybiera: żniwa > siew > orka, najbliższy kafel. Żniwa kończą się wiązaniem snopa, a następny krok receptury (`deliver`) niesie go do magazynu.
+- **Ludność** (`Population`, raz na sekundę): konsumpcja ułamkowa ze spiżarni, zadowolenie dąży do sumy wag spełnionych potrzeb (2 pkt/s), domownik (`householder`) wychodzi po towar, gdy zapas spada do połowy (niesie do 2 sztuk), awans po 60 s spełnionych potrzeb, ostrzeżenie po 60 s braków, spadek po 180 s. Nowi mieszkańcy (`settler`) przychodzą pieszo z `entry_tile` co 10 s do domu z wolnym miejscem i zadowoleniem ≥ 50. Pracuje połowa mieszkańców. Wolni dostają przydział do budynków z brakami według `staffing_priority` (ratusz 0), z najbliższego domu. Postać pracownika pojawia się w domu i idzie do pracy. Gdy dom traci ludzi, najnowsi pracownicy z niego tracą pracę (postać znika, niesiony towar ląduje na ziemi).
+- **Zasięg usług** (`ServiceCoverage`): Dijkstra z kopcem po kosztach ruchu od wejścia budynku usługowego. Liczony od nowa, gdy zmieni się siatka nawigacji albo zbiór budynków usługowych. Nie jest zapisywany, bo wynika ze stanu.
+- **Drogi:** warstwa w `TileGrid`, koszt 0,67 (+50% szybkości, GDD §5.2). Pole ma koszt 1,2.
+
 ### 5.3 Pathfinding
 
 **Decyzja:** `AStarGrid2D` (implementacja C++ w Godocie) na siatce kafli w **przestrzeni siatki, nie ekranu**, z 8 kierunkami ruchu i `DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES`, co zapobiega przechodzeniu „przez róg” między dwoma ukośnymi kaflami muru.
 
 | Element | Ustalenie |
 |---|---|
-| Koszty kafli | `weight_scale` z `TerrainDef.move_cost`: droga 0,6; bruk 0,5; trawa 1,0; pole 1,2; las 1,5. Woda i budynki są `solid`, z wyjątkiem kafla wejścia. |
+| Koszty kafli | `weight_scale` z `TerrainDef.move_cost`: droga ubita 0,67 (M3, zgodnie z GDD +50%); bruk 0,5; trawa i łąka 1,0; pole 1,2; las 1,5; bród 2,0. Woda i budynki są `solid`, z wyjątkiem kafla wejścia. |
 | Zmiany mapy | Budowa lub rozbiórka aktualizuje komórki (`set_point_solid`, `set_point_weight_scale`). Ścieżki niosą numer wersji siatki. Postać, której następny odcinek stał się nieprzejezdny, liczy ścieżkę od nowa. |
 | Budżet | Kolejka zapytań `PathRequestQueue` ma limit, wyjściowo **32 zapytania na tick**. Postać czeka na ścieżkę w stanie `idle` przez co najwyżej kilka ticków, co jest niewidoczne dla gracza. |
 | Pamięć podręczna | Częste trasy (budynek → najbliższy magazyn) są cache’owane per para (budynek, magazyn) i unieważniane przy zmianie wersji siatki w obszarze trasy. **W M2 jeszcze niepotrzebne** (500 tragarzy mieści się w budżecie, §9.3). Wracamy do tego w M4, jeśli pomiar pokaże piki. |
@@ -331,6 +340,14 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 
 `HouseRowResolver` (czysta funkcja w widoku, bo nie wpływa na logikę) dla każdego domu poziomu 2 lub wyższego sprawdza sąsiadów tego samego poziomu wzdłuż obu osi, przylegających pełną krawędzią i wyrównanych. Zwraca wariant `single`, `end_a`, `middle` albo `end_b` i oś. Grafiki wariantów opisuje ART_SPEC §7.
 
+### 6.6a Widok prowincji (M3)
+
+- `ProvinceView` składa warstwy: teren (`TerrainLayer`: teren, drogi i pola w kawałkach 16×16, przerysowywane tylko po zmianie), nakładki (`TileOverlay`: zasięg studni, kursor budowy), świat z `y_sort` (natura, `BuildingLayer`, kupy, postacie). Czyta stan symulacji co klatkę, a zmiany budynków robi po zdarzeniach.
+- `BuildingLayer` wybiera grafikę ze stanu: plac budowy fazy 1 lub 2 ze stosem materiałów, gotowy budynek, dom na swoim poziomie (wariant pierzei z `HouseRowResolver`), rusztowanie przy awansie, plac magazynu ze stosami. Nad budynkiem bez pracowników jest znak „!”.
+- `data/visuals/buildings/<id>.tres` (`BuildingVisualDef`): folder grafik, grafiki poziomów domu, od którego poziomu domy łączą się w pierzeję, przesunięcia punktów pracy (`spot_offsets`, np. piec i stół w piekarni). `data/visuals/agents/<kind>.tres` (`AgentVisualDef`): postać i kolor zawodu.
+- UI (`src/ui`) opisuje postać przez `AgentDescriber` z tych samych danych, które animuje widok (czynność, bieżący krok, niesiony towar), więc tekst zgadza się z obrazem.
+- Scena gry: `src/main/game_scene.tscn`. Gracz zmienia stan wyłącznie komendami. Szybki zapis to F5 albo przycisk, a odczyt F9, przycisk albo menu główne. Pseudolokalizacja do sprawdzania długości tekstów: F11.
+
 ### 6.7 Kamera i zoom
 
 - Zoom w krokach **0,5× · 1× · 2× · 3×** (kółko myszy), z animowanym przejściem i przyciąganiem do kroku na końcu animacji.
@@ -389,6 +406,8 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Ścieżki zapisujemy (decyzja z M2).** Liczenie ich od nowa w połowie drogi może przy remisach kosztów dać inną trasę. Wtedy wczytana gra rozjechałaby się z grą bez zapisu, a DoD wymaga identycznego przebiegu. Koszt: kilkadziesiąt liczb na idącą postać.
 - **Nie zapisujemy:** węzłów widoku, cache’y, kolejki zdarzeń (widok opróżnia ją co klatkę) ani komend czekających na następny tick. `prev_pos` po wczytaniu równa się `pos`.
 - **Liczby:** JSON zapisujemy z pełną precyzją (`full_precision`), żeby pozycje float wracały bit w bit. Wartości 64-bitowe (stan RNG) zapisujemy jako tekst. Siatki kafli zapisujemy jako base64.
+- **Wersja 2 (M3):** teren i drogi w siatce, place budowy, pola, wejście na mapę, dom postaci, stan domów. Migracja v1 → v2 w `SaveMigrations` (mapa v1 to sama trawa, wszystkie budynki gotowe). Fixtury: `tests/fixtures/saves/v1_woodcutter.json` i `v2_village.json`.
+- **Mapa** to obrazek PNG importowany jako `Image` (nie tekstura), więc symulacja czyta piksele bez widoku. Kolor piksela = `TerrainDef.map_color`. Zapis gry zawiera już gotowy teren, więc późniejsza zmiana obrazka nie psuje zapisów.
 - **Test round-trip:** stan → zapis → odczyt → zapis daje identyczny słownik. Dodatkowo test, w którym symulacja po wczytaniu idzie dalej deterministycznie tak samo jak bez zapisu.
 
 ---

@@ -102,7 +102,7 @@ Potrzeby dzielą się na **podstawowe**, bez których dom traci mieszkańców i 
 Zasady:
 - **Dostarczanie towarów do domów jest widoczne.** Domownik idzie do najbliższego magazynu lub targowiska po zapasy i niesie je do domu. Dom ma mały zapas, np. na 2–3 cykle konsumpcji. [SLICE]: zaopatrzenie z magazynu. Targowisko z zasięgiem i straganiarzami: [1.0].
 - **Usługi** (studnia, kaplica, kościół, łaźnia) działają przez **zasięg** liczony długością ścieżki od budynku usługowego.
-- **Zadowolenie** domu (0–100) wynika ze spełnienia potrzeb i wpływa na:
+- **Zadowolenie** domu (0–100) wynika ze spełnienia potrzeb (proste punkty: każda spełniona potrzeba daje swoją część, w slice’ie chleb 40, opał 30, studnia 30; zadowolenie dochodzi do celu płynnie, decyzja 2026-11-05) i wpływa na:
   - podatki,
   - napływ nowych mieszkańców (gdy w domu są wolne miejsca),
   - wydajność pracowników (±20% tempa pracy).
@@ -262,7 +262,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda i budynki blokują pr
 | Chata | 2×2 | dom poziomu 1 → 2 |
 | Studnia | 1×1 | usługa w zasięgu |
 | Drwal | 2×2 | drewno (ścina drzewa, wiąże kłody, niesie) |
-| Farma zbożowa | 2×2 + pola do 4×4 | zboże |
+| Farma zbożowa | 2×2 + do 16 kafli pola 1×1 stawianych osobno w zasięgu farmy (decyzja 2026-11-05) | zboże |
 | Młyn | 2×2 | mąka |
 | Piekarnia | 2×2 | chleb |
 

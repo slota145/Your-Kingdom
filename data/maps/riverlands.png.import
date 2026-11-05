@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://b1grrqaj5vf6s"
+path="res://.godot/imported/riverlands.png-6964378d9b2416162d45042575abd3ab.image"
+
+[deps]
+
+source_file="res://data/maps/riverlands.png"
+dest_files=["res://.godot/imported/riverlands.png-6964378d9b2416162d45042575abd3ab.image"]
+
+[params]
+

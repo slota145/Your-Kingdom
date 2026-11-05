@@ -21,16 +21,17 @@ func _init() -> void:
 	y_sort_enabled = true
 
 
-func setup(art_id: String, tile: Vector2i) -> void:
+## [param art]: art path without extension, e.g. "buildings/mill/base" (.png + .json).
+func setup(art: String, tile: Vector2i) -> void:
 	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(
-			ArtPaths.resolve("buildings/%s/base.json" % art_id)))
+			ArtPaths.resolve(art + ".json")))
 	var fp: Array = meta["footprint"]
 	var pv: Array = meta["pivot"]
 	footprint = Vector2i(int(fp[0]), int(fp[1]))
 	_pivot = Vector2i(int(pv[0]), int(pv[1]))
 	origin_tile = tile
 	position = IsoMath.grid_to_screen(Vector2(tile + footprint))
-	var tex := ArtPaths.texture("buildings/%s/base.png" % art_id)
+	var tex := ArtPaths.texture(art + ".png")
 	for strip: BuildingSlicer.Strip in BuildingSlicer.slices(footprint, _pivot, Vector2i(tex.get_size())):
 		var sprite := Sprite2D.new()
 		sprite.texture = tex

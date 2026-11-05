@@ -19,7 +19,7 @@ static func make_sim(size: Vector2i = Vector2i(32, 32), seed_value: int = 1) -> 
 
 ## Places a building directly and returns it; fails loudly when it does not fit.
 static func place(sim: Simulation, def_id: StringName, origin: Vector2i) -> BuildingState:
-	var command := PlaceBuildingCommand.new(def_id, origin)
+	var command := PlaceBuildingCommand.new(def_id, origin, true)
 	var error := sim.execute(command)
 	assert(error == &"", "cannot place %s at %s: %s" % [def_id, origin, error])
 	return sim.province.buildings.get_building(sim.ids.next_id - 1)
@@ -52,3 +52,35 @@ static func woodcutter_scene(sim: Simulation) -> Dictionary:
 ## Seconds of game time to ticks.
 static func ticks(seconds: float) -> int:
 	return roundi(seconds * SimClock.TICKS_PER_SECOND)
+
+
+## A finished hut with residents (and a full pantry unless [param pantry] is false).
+static func house(sim: Simulation, origin: Vector2i, residents: int = 4, pantry: bool = true) -> BuildingState:
+	var hut := place(sim, &"hut", origin)
+	hut.house.residents = residents
+	if pantry:
+		for good: StringName in hut.house_goods():
+			hut.supply.add(good, hut.level_def().supply_units)
+	return hut
+
+
+## Town hall, a stockpile with [param wood] wood and [param bread] bread, and 2 full huts
+## (8 residents = 4 workers: the builder and the porters of the town hall, plus one more).
+static func village(sim: Simulation, wood: int = 40, bread: int = 20) -> Dictionary:
+	var hall := place(sim, &"town_hall", Vector2i(2, 2))
+	var stock := place(sim, &"stockpile", Vector2i(8, 2))
+	stock.stock.add(&"wood", wood)
+	stock.stock.add(&"bread", bread)
+	var a := house(sim, Vector2i(2, 8))
+	var b := house(sim, Vector2i(5, 8))
+	return {"hall": hall, "stock": stock, "houses": [a, b]}
+
+
+## Runs until [param condition] is true or [param seconds] pass. Returns whether it became true.
+static func run_until(sim: Simulation, condition: Callable, seconds: float) -> bool:
+	for i: int in ticks(seconds):
+		sim.step()
+		sim.events.drain()
+		if condition.call():
+			return true
+	return false

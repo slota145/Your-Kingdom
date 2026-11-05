@@ -47,7 +47,17 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 - [Claude] **Leśnik i odrastanie lasu:** pniak po czasie zamienia się w sadzonkę, a ta w drzewo (fazy `growing_1..3` z ART_SPEC §8). Leśnik sadzi drzewa w promieniu chaty. W M2 drzewa nie odrastają (3 kłody, potem pniak).
   - Ocena: koszt mały (`ResourceField` ma już stan węzła, potrzebny jest licznik wzrostu w systemie „czas i wzrost” z §4.2). Bez tego las w długiej grze się kończy, więc warto to mieć najpóźniej w M4.
 
+- [gracz] **Skąd biorą się nowi mieszkańcy:** docelowo przybywają do miasta razem z okresami handlowymi (np. z kupcami) oraz przez symulowany przyrost naturalny. W M3 po prostu przychodzą pieszo z krawędzi mapy, gdy w domu jest wolne miejsce (decyzja 2026-11-05).
+  - Ocena (Claude): pasuje do klimatu i daje graczowi rytm („przyjechała karawana, przybyło 6 osób”). Przyrost naturalny łatwo policzyć na domach (np. szansa na dziecko zależna od zadowolenia), a dzieci dorastają w siłę roboczą po czasie. Naturalny etap: M4 (kupiec wędrowny) i M6 (ruch między prowincjami).
+
+- [Claude] **Opał przed budową:** automatyczny gracz pokazał, że przy jednym drwalu place budowy wyciągają z magazynu całe drewno, a domy marzną i podupadają. Pomysł: domownicy mają pierwszeństwo przy ostatnich sztukach drewna (np. budowy nie biorą ostatnich 5 kłód), albo gracz ustawia rezerwę w panelu magazynu.
+  - Ocena: koszt mały (próg w wyborze źródła dla zleceń budowy). Uczy gracza, że opał to podstawa. Do decyzji przy priorytetach w M4.
+- [Claude] **Tragarze także w magazynach:** dziś tragarze pracują tylko w ratuszu (2 osoby). Przy kilku placach budowy naraz to wąskie gardło. GDD §4.1 mówi o „tragarzach magazynów”, więc każdy magazyn mógłby mieć 1–2 miejsca dla tragarzy.
+  - Ocena: koszt mały (sloty pracy w danych), naturalnie pasuje do wozów w M4.
+
 ## Klimat i immersja
+
+- [Claude] **Efekty przy pracy:** dym z komina piekarni tylko wtedy, gdy piekarz piecze, śmigło młyna kręci się tylko przy mieleniu, a z pola przy żniwach lecą źdźbła. Widok ma już czynność postaci, więc efekt można włączać po `activity`. Koszt mały, a dużo daje dla „żywego” miasta.
 
 - [Claude] **Życie przy bramie:** strażnik obsługuje kołowrót przy podnoszeniu brony, a wozy zatrzymują się czasem do kontroli. Właściciel projektu jest na tak (2026-11-04). Kiedy: razem z wieżą bramną w M7.
 

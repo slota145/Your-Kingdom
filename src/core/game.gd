@@ -6,6 +6,8 @@ extends Node
 const SPEEDS: PackedFloat32Array = [1.0, 2.0, 4.0]
 
 var sim: Simulation
+## Set by the main menu before opening the game scene: {"load": path} or {} for a new game.
+var start_request: Dictionary = {}
 var paused: bool = false
 var speed_index: int = 0
 ## Average duration of one simulation tick in microseconds (debug HUD).

@@ -11,6 +11,8 @@ var id: int
 ## Profession or type: porter, woodcutter, peasant...
 var kind: StringName
 var workplace_id: int = 0
+## House the person lives in (workers, householders, newcomers); 0 = none.
+var home_id: int = 0
 ## Position in grid space (tile units, float).
 var pos: Vector2
 ## Position at the start of the last tick; the view interpolates prev_pos -> pos. Not saved.
@@ -22,6 +24,9 @@ var activity: StringName = &"idle"
 var task: Task
 ## Ticks to wait before taking a new task (after a failure).
 var cooldown: int = 0
+## Why the last task failed and which good it was about (UI only, not saved).
+var last_fail: StringName = &""
+var last_fail_good: StringName = &""
 ## Resource node tile claimed by this agent, NO_TILE if none.
 var claimed_node: Vector2i = NO_TILE
 
@@ -61,7 +66,7 @@ func clear_path() -> void:
 
 func to_dict() -> Dictionary:
 	var d := {
-		"id": id, "kind": String(kind), "workplace": workplace_id, "pos": SimCodec.vec2(pos),
+		"id": id, "kind": String(kind), "workplace": workplace_id, "home": home_id, "pos": SimCodec.vec2(pos),
 		"facing": facing, "carry": [String(carry_good), carry_amount], "activity": String(activity),
 		"cooldown": cooldown, "claim": SimCodec.vec2i(claimed_node),
 		"path": [path_state, SimCodec.vec2i(path_goal), SimCodec.tiles(path), path_index],
@@ -74,6 +79,7 @@ func to_dict() -> Dictionary:
 static func from_dict(d: Dictionary) -> Agent:
 	var a := Agent.new(int(d["id"]), StringName(String(d["kind"])), SimCodec.to_vec2(d["pos"]))
 	a.workplace_id = int(d.get("workplace", 0))
+	a.home_id = int(d.get("home", 0))
 	a.facing = int(d.get("facing", 0))
 	var carry: Array = d.get("carry", ["", 0])
 	a.carry_good = StringName(String(carry[0]))

@@ -4,7 +4,7 @@ extends Node
 ## A save is a compressed JSON document: {"header": {...}, "state": {...}} where state is
 ## Simulation.to_dict(). Migrations are added whenever SAVE_VERSION is bumped.
 
-const SAVE_VERSION := 1
+const SAVE_VERSION := SaveMigrations.CURRENT_VERSION
 const SAVE_DIR := "user://saves"
 const EXTENSION := ".sav"
 
@@ -65,6 +65,4 @@ func load_state(path: String) -> Dictionary:
 
 
 func _migrate(state: Dictionary, from_version: int) -> Dictionary:
-	var _version := from_version
-	# Add migrate_vN_to_vN+1 steps here when SAVE_VERSION changes.
-	return state
+	return SaveMigrations.migrate(state, from_version)

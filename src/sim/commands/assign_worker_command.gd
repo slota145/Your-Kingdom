@@ -20,7 +20,7 @@ func validate(sim: Simulation) -> StringName:
 		return &"unknown_building"
 	if building.workers.has(agent_id):
 		return &"already_assigned"
-	if building.workers.size() >= building.def.workers:
+	if building.workers.size() >= building.def.worker_count():
 		return &"no_worker_slot"
 	return &""
 

@@ -1,0 +1,133 @@
+extends GdUnitTestSuite
+## M3: households eat, fetch supplies, get happy, grow, decline; newcomers walk in; free
+## residents are handed to buildings missing workers.
+
+
+func _count(sim: Simulation, kind: StringName) -> int:
+	var n := 0
+	for agent: Agent in sim.province.agents.all():
+		if agent.kind == kind:
+			n += 1
+	return n
+
+
+func test_free_residents_staff_the_town_hall_first() -> void:
+	var sim := SimFixture.make_sim()
+	SimFixture.village(sim)
+	var mill := SimFixture.place(sim, &"mill", Vector2i(16, 16))
+	sim.run_ticks(Population.UPDATE_TICKS + 1)
+	# 8 residents -> 4 workers: builder + 2 porters first, then the miller.
+	assert_int(_count(sim, &"builder")).is_equal(1)
+	assert_int(_count(sim, &"porter")).is_equal(2)
+	assert_int(mill.workers.size()).is_equal(1)
+	var bakery := SimFixture.place(sim, &"bakery", Vector2i(20, 16))
+	sim.run_ticks(Population.UPDATE_TICKS)
+	assert_int(bakery.workers.size()).is_equal(0)
+	assert_int(Population.workforce(sim.province)).is_equal(4)
+
+
+func test_workers_lose_their_jobs_when_the_house_empties() -> void:
+	var sim := SimFixture.make_sim()
+	var village := SimFixture.village(sim)
+	sim.run_ticks(Population.UPDATE_TICKS + 1)
+	var houses: Array = village["houses"]
+	for house: BuildingState in houses:
+		house.house.residents = 0
+	sim.run_ticks(Population.UPDATE_TICKS)
+	assert_int(_count(sim, &"porter") + _count(sim, &"builder")).is_equal(0)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+func test_householder_fetches_bread_when_pantry_runs_low() -> void:
+	var sim := SimFixture.make_sim()
+	var stock := SimFixture.place(sim, &"stockpile", Vector2i(2, 2))
+	stock.stock.add(&"bread", 10)
+	stock.stock.add(&"wood", 10)
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 4, false)
+	var saw_householder := false
+	for i: int in SimFixture.ticks(60):
+		sim.step()
+		sim.events.drain()
+		if _count(sim, Population.HOUSEHOLDER_KIND) > 0:
+			saw_householder = true
+	assert_bool(saw_householder).is_true()
+	assert_int(hut.supply.total(&"bread")).is_greater(0)
+	assert_int(hut.supply.total(&"wood")).is_greater(0)
+	# Householders go back inside when done.
+	assert_int(_count(sim, Population.HOUSEHOLDER_KIND)).is_equal(0)
+
+
+func test_households_eat_their_pantry() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 4)
+	var bread := hut.supply.total(&"bread")
+	# 4 residents x 0.1 bread per minute: 1 loaf in 2.5 minutes.
+	sim.run_ticks(SimFixture.ticks(160))
+	assert_int(hut.supply.total(&"bread")).is_equal(bread - 1)
+
+
+func test_happiness_follows_satisfied_needs() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 4)
+	sim.run_ticks(SimFixture.ticks(60))
+	# Bread and wood but no well: 40 + 30.
+	assert_float(hut.house.happiness).is_equal_approx(70.0, 0.01)
+	SimFixture.place(sim, &"well", Vector2i(16, 12))
+	sim.run_ticks(SimFixture.ticks(30))
+	assert_float(hut.house.happiness).is_equal_approx(100.0, 0.01)
+	assert_bool(hut.house.satisfied[&"well_water"]).is_true()
+
+
+func test_newcomers_walk_in_to_free_places() -> void:
+	var sim := SimFixture.make_sim()
+	sim.province.entry_tile = Vector2i(0, 20)
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 0)
+	var settlers := 0
+	for i: int in SimFixture.ticks(120):
+		sim.step()
+		for event: Dictionary in sim.events.drain():
+			if event["type"] == &"agent_spawned" and event["kind"] == Population.SETTLER_KIND:
+				settlers += 1
+				assert_vector(event["tile"]).is_equal(Vector2i(0, 20))
+	assert_int(settlers).is_equal(4)
+	assert_int(hut.house.residents).is_equal(4)
+	assert_int(hut.house.incoming).is_equal(0)
+	assert_int(_count(sim, Population.SETTLER_KIND)).is_equal(0)
+
+
+func test_unhappy_house_gets_no_newcomers() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 1, false)
+	sim.run_ticks(SimFixture.ticks(120))
+	assert_float(hut.house.happiness).is_less(Population.IMMIGRATION_MIN_HAPPINESS)
+	assert_int(hut.house.residents + hut.house.incoming).is_equal(1)
+
+
+func test_hut_upgrades_after_needs_are_met_and_wood_is_delivered() -> void:
+	var sim := SimFixture.make_sim()
+	var village := SimFixture.village(sim, 40, 40)
+	var houses: Array = village["houses"]
+	var hut: BuildingState = houses[0]
+	SimFixture.place(sim, &"well", Vector2i(9, 9))
+	var upgraded := SimFixture.run_until(sim, func() -> bool: return hut.house.level == 2, 200)
+	assert_bool(upgraded).is_true()
+	assert_int(hut.capacity()).is_equal(8)
+	assert_int(hut.supply.stack_limit).is_equal(4)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+func test_house_declines_after_long_shortage() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 8, false)
+	hut.house.level = 2
+	var warned := false
+	var downgraded := false
+	for i: int in SimFixture.ticks(Population.DECLINE_AFTER + 5):
+		sim.step()
+		for event: Dictionary in sim.events.drain():
+			warned = warned or event["type"] == &"house_warning"
+			downgraded = downgraded or event["type"] == &"house_downgraded"
+	assert_bool(warned).is_true()
+	assert_bool(downgraded).is_true()
+	assert_int(hut.house.level).is_equal(1)
+	assert_int(hut.house.residents).is_equal(4)

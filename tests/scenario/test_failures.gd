@@ -53,7 +53,8 @@ func test_stockpile_demolished_during_delivery() -> void:
 	stock.stock.add(&"wood", 30)
 	for i: int in 6:
 		SimFixture.spawn(sim, &"porter", Vector2i(8 + i, 12))
-	var start := 30
+	# Demolition gives back half of the stockpile's building materials (GDD §5.1).
+	var start := 30 + int(Construction.refund(stock.def).get(&"wood", 0))
 	var counter := _wood_cut(sim)
 	var expected := func() -> int: return start + int(counter.call())
 	# Wait until the woodcutter walks to the stockpile with a log and has reserved space there.
@@ -82,7 +83,9 @@ func test_transport_source_demolished_while_porter_walks() -> void:
 	var ten := func() -> int: return 10
 	_run_checked(sim, SimFixture.ticks(600), &"bread", ten)
 	assert_int(b.stock.total(&"bread")).is_equal(10)
-	assert_int(sim.province.jobs.count()).is_equal(0)
+	# Only the demolition refund (wood) may still be waiting for porters.
+	for request: TransportRequest in sim.province.jobs.all():
+		assert_str(String(request.good)).is_equal("wood")
 
 
 func test_destination_demolished_while_porter_carries() -> void:
