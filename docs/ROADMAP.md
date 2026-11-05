@@ -342,7 +342,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Pierzeje mieszczan i patrycjuszy z rogami i końcami widoczne na zrzucie (`town_shot.tscn --layout`, na laptopie) w układzie: prosty rząd, róg, dwa rzędy plecami do siebie.
 - [x] Zapis z M4b-1 wczytuje się po migracji (v5 → v6) bez przesunięcia wejść, nowa fixtura `v6_town.json`.
 - [x] Wszystkie testy przechodzą, automatyczny gracz dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`).
-- [ ] **Twoja ocena gry** na laptopie, w tym wygląd kamienic (poprzednio 2/5).
+- [x] **Twoja ocena gry** na laptopie (2026-11-05): wygląd kamienic **5/5** (poprzednio 2/5); obracanie, wejścia, leśniczy i wyręby działają bardzo dobrze. Uwagi do M4b-2: drwale rąbią dalej przy pełnych magazynach i zawalają ziemię drewnem; leśnicy mogliby sadzić gęściej.
 
 **Ustalone przy realizacji (2026-11-05, do zmiany na prośbę):**
 - **Drzwi:** postacie wchodzą i wychodzą tylko przez kafel przed drzwiami. Przy stawianiu musi on być wolny (inaczej „ludzie nie dojdą” albo „wejście na wodę”) i potem nie da się go zabudować. W starych zapisach, gdzie jest zastawiony, ludzie używają innego wolnego boku wejścia.
