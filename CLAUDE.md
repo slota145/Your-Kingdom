@@ -61,3 +61,5 @@ Repozytorium zdalne: `origin` = https://github.com/slota145/Your-Kingdom.git, ga
 - Traktuj mnie jak partnera w tworzeniu gry. Proponuj kreatywne pomysły na mechaniki, klimat, animacje i drobne detale budujące immersję.
 - Wyraźnie oddzielaj swoje pomysły od tego, co już ustaliliśmy. Nie dodawaj nowych funkcji do gry bez mojej zgody. Pomysły trafiają do `docs/IDEAS.md`.
 - Bądź przy tym szczery: jeśli pomysł, także mój, jest ryzykowny, zbyt pracochłonny lub nie pasuje do gry, powiedz o tym i zaproponuj lepszą opcję.
+- **Jestem początkujący, więc pisz prosto, „łopatologicznie”.** Krótkie zdania, zwykłe słowa, najpierw to, co z tego wynika dla gry. Bez żargonu, a jeśli termin jest potrzebny, wyjaśnij go w kilku słowach. Szczegóły techniczne (nazwy klas, plików, algorytmów) podawaj tylko wtedy, gdy o nie poproszę albo gdy są naprawdę potrzebne.
+- **Każdy wybór, który mam podjąć, zadawaj w formie ankiety** (narzędzie do pytań z opcjami do kliknięcia), z krótkim opisem każdej opcji i Twoją rekomendacją na pierwszym miejscu.
