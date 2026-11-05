@@ -63,6 +63,7 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 
 - [gracz] **Stopnie transportu:** tragarz niesie 1 sztukę, mały wózek ręczny 3, duży wóz konny 5–6.
   - **Zatwierdzone 2026-11-05 (ładowności):** zapisane w GDD §5.2. Szybkości, czas załadunku i reguły dyspozytora z oceny poniżej czekają na decyzję (M4).
+  - **Przyjęte do M4b-3 (ankieta 2026-11-05):** wózek jako sprzęt tragarza magazynu (kupowany za deski), wóz konny ze stajnią i woźnicą (koń bez hodowli), wozy do dużych zleceń tragarzy, załadunek ok. 1 s na sztukę. Szczegóły w ROADMAP (M4b-3).
   - Ocena (Claude):
     - Dobre stopniowanie, widać postęp i pasuje do klimatu. Wózek ręczny to fajny etap pośredni, którego w GDD brakuje.
     - Sama ładowność wozu (6 przy tragarzu 1) to niewielki zysk wobec kosztu (drogi, koń, stajnia). Wóz zarabia na długich trasach, więc warto mu dać szybkość na drodze (np. 1,5× tragarza), a wózkowi ręcznemu odrobinę mniejszą niż pieszemu (np. 0,9×).

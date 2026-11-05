@@ -212,6 +212,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Opał:** domy dalej palą zwykłym drewnem. Osobnego drewna opałowego nie robimy.
 - **Złoto:** część większych budynków (np. kościół, browar, targowisko) kosztuje też złoto.
 - **Wozy:** w M4b razem z brukiem.
+- **M4b-3 przed oceną M4b-2 (2026-11-05):** M4b-3 zaczynamy, zanim właściciel projektu oceni M4b-2 na laptopie. Świadome ryzyko poprawek, szczegóły w sekcji M4b-3.
 
 ### M4a — Mieszczanie i porządek w logistyce
 
@@ -271,7 +272,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **M4b-1: patrycjusze i poprawki** (szczegóły niżej).
 - **M4b-1.5 „Miasto” (decyzja 2026-11-05, po ocenie M4b-1):** obracanie budynków przy stawianiu (wejście z wybranej strony), domy w dwóch rzędach plecami do siebie i przodem do drogi, nowe pierzeje mieszczan (biedniejsze) i patrycjuszy (bogatsze) z elementami narożnymi. Własny styl, inspiracja ilustracjami od właściciela projektu (Anno 1404), bez kopiowania.
 - **M4b-2:** mięso (chlew, rzeźnik, skóry), straganiarze na targowisku, kupiec wędrowny, który skupuje nadwyżki (ujście towarów z pełnych magazynów), okno „Zapasy królestwa” (suma ze wszystkich magazynów) oraz produkcja i zużycie na minutę (decyzja 2026-11-05). Na początku etapu (ankieta po ocenie M4b-1.5, 2026-11-05): **prywatny stos przy budynku produkcyjnym** (gdy magazyny są pełne, pracownik odkłada towar na stos przy swoim budynku, a gdy ten jest pełny, czeka; koniec zawalania ziemi drewnem) oraz **gęsty las**: drzewa przestają być przeszkodą (przez las idzie się wolniej), a leśniczy sadzi kafel w kafel jak las z mapy, nigdy na drogach, polach, kaflach przed drzwiami i tuż przy budynkach.
-- **M4b-3:** wozy i bruk, nowe tereny (jezioro, skały), duże miasto 400+ postaci i wydajność.
+- **M4b-3:** wozy i bruk, nowe tereny (jezioro, skały), duże miasto 400+ postaci i wydajność. Startuje przed oceną M4b-2 (decyzja 2026-11-05), szczegóły niżej.
 
 #### M4b-1 — Patrycjusze i poprawki
 
@@ -413,6 +414,50 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Kramy:** 6 sztuk każdego towaru, każdy towar na jednym kramie. Straganiarz bierze z magazynu 2 sztuki tego towaru, którego na kramach jest najmniej. Rezerwa „zapas na budowy” dotyczy też straganiarzy.
 - **Okno „Zapasy królestwa”** (przycisk „Zapasy” na górnym pasku albo „Zapasy i handel” w panelu targowiska): zapas, + /min, − /min, bilans i sprzedaż kupcowi (zaznaczenie i liczba). Do zużycia liczy się też sprzedaż kupcowi i towar wbudowany w budowy.
 - **Zapis w wersji 7.**
+
+#### M4b-3 — Wozy, bruk, nowa mapa i duże miasto
+
+**Start przed oceną M4b-2 (decyzja właściciela projektu 2026-11-05):** M4b-3 zaczynamy od razu, choć ocena gry M4b-2 na laptopie jeszcze czeka (lista „Do sprawdzenia przy ocenie gry” wyżej). M4b-2 zamkniemy po tej ocenie. Świadome ryzyko: jeśli w M4b-2 coś nie zagra (np. stos przy budynku, targ, kupiec), część M4b-3 może wymagać poprawek. Poprawki z oceny M4b-2 mają pierwszeństwo przed dalszą pracą nad M4b-3.
+
+**Decyzje (2026-11-05, ankieta z właścicielem projektu):**
+- **Wózek ręczny to sprzęt tragarza magazynu.** Gracz kupuje wózki w panelu magazynu za deski. Tragarz bierze wózek do zleceń od 2 sztuk i wiezie **3 sztuki**. Wózek jedzie wszędzie: na drodze tak szybko jak pieszy, poza drogą wolniej. Bez nowego budynku.
+- **Wóz konny wymaga stajni.** Nowy budynek „stajnia” (drewno, deski, złoto) ma wozy, a każdy prowadzi **woźnica** (pracownik stajni). Wóz wiezie **6 sztuk** i jeździ **tylko po drogach** (ubitych i brukowanych). Koń jest „w cenie” stajni, bez hodowli. Konie jako towar (stadnina★) dojdą z wojskiem w M7.
+- **Do czego jeżdżą wozy:** dyspozytor wysyła wóz do dużych zleceń tragarzy (od 4 sztuk, na dalsze trasy), wózek od 2 sztuk, a krótkie i drobne zostają pieszym. Duże zlecenia to: dostawy na budowy, odnoszenie stosów spod budynków do magazynu, ładunek na wóz kupca. Załadunek i rozładunek są widoczne (ok. 1 s na sztukę). Pracownicy warsztatów i domownicy dalej noszą sami.
+- **Bruk kosztuje 1 kamień na kafel i układa go budowniczy.** Gracz rysuje bruk jak drogę, tragarze przynoszą kamień, a budowniczy układa kafel po kaflu (widoczna praca). Na bruku pieszy jest szybszy o 80% (droga ubita: 50%), a wóz po bruku jedzie szybciej niż po ubitej. Droga ubita zostaje darmowa i od razu.
+- **Nowa mapa 128×128 obok dzisiejszej:** jezioro z trzcinami przy brzegu, rzeka wpadająca do jeziora, skaliste wzgórze i lasy. Jest na niej miejsce na miasto 400+ postaci. Jezioro działa jak rzeka (wędkarz, glinianka). Dzisiejsza mapa `riverlands`, stare zapisy i testy zostają bez zmian.
+- **Kamienisty grunt i skały:** nowy teren „kamienisty grunt”. Da się po nim przejść (nieco wolniej), budować i kłaść drogi, ale nie da się siać pól. Na nim leżą skupiska skał dla kamieniołomu. Wybrana skała zostawia kamienisty grunt.
+- **Duże miasto do testów to gotowy zapis.** Skrypt buduje na nowej mapie duże miasto (wszystkie łańcuchy, wozy, bruk, 400+ postaci) i zapisuje je jako fixturę. Na nim robimy test 2 godzin przy 4× i pomiar. Automatyczny gracz dalej sprawdza drogę od startu do patrycjuszy, ale nie musi dochodzić do 400 postaci.
+- **Pomiar wydajności na razie tylko w chmurze:** czas ticku symulacji na dużym mieście (cel z ARCHITECTURE §9.1: ≤ 4 ms przy 500 postaciach). **Pomiar FPS na laptopie zrobimy w osobnej sesji**, gdy właściciel projektu będzie przy laptopie: scena pomiaru (60 s przy 4×, trzy poziomy zbliżenia, wynik w konsoli) i wpis do ARCHITECTURE §9.3. Do tego czasu ten punkt DoD zostaje otwarty.
+
+**Wartości wyjściowe (do strojenia przy realizacji):**
+- wózek: 3 sztuki, 3 deski za wózek, najwyżej 2 wózki na magazyn (po jednym na tragarza), poza drogą 0,7× szybkości pieszego, na drodze 1×,
+- wóz: 6 sztuk, 1,3× szybkości pieszego na tej samej drodze, stajnia 3×3 z 2 wozami i 2 woźnicami, koszt np. 12 drewna, 8 desek, 40 złota,
+- bruk: koszt ruchu 0,55 (+80%), ułożenie kafla ok. 3 s pracy budowniczego,
+- kamienisty grunt: koszt ruchu 1,2.
+
+**Kolejność prac:** część 1 (transport: bruk, wózki, stajnia i wozy, sprawdzona testami przed resztą), część 2 (nowa mapa: jezioro, kamienisty grunt, skały, wybór mapy przy nowej grze), część 3 (duże miasto: skrypt zapisu, test 2 godzin, pomiar ticku i poprawki wydajności). Jedna ocena gry na końcu etapu.
+
+**Zakres:**
+- część 1: pojemność i szybkość nośnika (pieszy 1, wózek 3, wóz 6) w zleceniach `JobBoard`, dyspozytor wybierający nośnik według liczby sztuk i długości trasy, wozy tylko po drogach (osobna siatka ruchu albo koszt „poza drogą = zablokowane”); gdy cel nie ma drogi pod drzwiami, zlecenie biorą piesi; widoczny załadunek i rozładunek; wózki kupowane w panelu magazynu; stajnia z woźnicami, postój wozów przy stajni; bruk jako zlecenie budowy (kamień, budowniczy, kafel po kaflu; do ułożenia kafel działa jak droga ubita), rysowanie bruku w menu dróg,
+- część 2: nowa mapa 128×128 (jezioro z trzcinami, rzeka, skaliste wzgórze, lasy, start ratusza), teren „kamienisty grunt” (przechodni, bez pól), skupiska skał, wybór mapy przy nowej grze (menu),
+- część 3: skrypt budujący duże miasto 400+ postaci na nowej mapie i zapisujący fixturę, test 2 godzin przy 4× bez zakleszczeń, pomiar czasu ticku w chmurze; jeśli cel nie jest spełniony, środki z ARCHITECTURE §9.2 od najtańszych (np. pamięć tras budynek → magazyn),
+- grafika rysowana kodem: tragarz z wózkiem (8 kierunków, pusty i z ładunkiem), wóz konny z woźnicą (8 kierunków), stajnia, kafle bruku łączone jak droga, brzeg jeziora z trzcinami, kamienisty grunt, skupiska skał,
+- zapis: wersja 8 z migracją, fixturą i testem (wózki, wozy, place brukowania, mapa); teksty PL i EN; aktualizacja GDD §2.2, §5.2, §5.5, ARCHITECTURE §5.2, §5.3, §9.3 i ART_SPEC.
+
+**Poza zakresem:** przewozy między magazynami sterowane przez gracza („trzymaj tu N sztuk”), konie jako towar i stadnina (M7), wozy dla pracowników warsztatów i domowników, klify i poziomy terenu (IDEAS), mosty, szlaki handlowe między prowincjami (M6), pomiar FPS na laptopie (osobna sesja, patrz wyżej).
+
+**DoD:**
+- [ ] Tragarz z wózkiem wiezie 3 sztuki, wóz 6 sztuk tylko po drogach; dyspozytor daje drobne i krótkie zlecenia pieszym, a duże wozom i wózkom; przy celu bez drogi wóz nie dostaje zlecenia (testy jednostkowe logistyki).
+- [ ] Bruk kosztuje 1 kamień na kafel, układa go budowniczy, a pieszy i wóz jadą po nim szybciej niż po drodze ubitej (test jednostkowy i scenariuszowy).
+- [ ] Stajnia z woźnicami działa w grze: wozy wożą na budowy, odnoszą stosy i ładują wóz kupca (test scenariuszowy z licznikami).
+- [ ] Nowa mapa 128×128 z jeziorem i kamienistym gruntem: wędkarz i glinianka działają nad jeziorem, na kamienistym gruncie nie da się postawić pola, kamieniołom pracuje przy skałach (testy). Automatyczny gracz dochodzi na niej do patrycjuszy w limicie.
+- [ ] Duże miasto (400+ postaci, gotowy zapis): brak zakleszczeń przez 2 godziny przy 4×.
+- [ ] Wydajność według ARCHITECTURE §9.1: czas ticku ≤ 4 ms przy 500 postaciach (pomiar w chmurze, wynik w §9.3).
+- [ ] Pomiar FPS na laptopie na dużym mieście (osobna sesja z właścicielem projektu, wynik w §9.3).
+- [ ] Automatyczny gracz na mapie `riverlands` dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`).
+- [ ] Zapis z M4b-2 wczytuje się po migracji (v7 → v8) bez utraty towaru, nowa fixtura `v8_town.json`.
+- [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
+- [ ] **Twoja ocena gry.** Zamyka też całe M4b (DoD M4b wyżej).
 
 ---
 
