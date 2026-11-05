@@ -35,7 +35,8 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
     - tylko 2 orientacje, przejście wzdłuż osi siatki, jak w Twierdzy,
     - mury dowolnej grubości dochodzą do boków bez szczelin; sortowanie ze sprawdzeniem automatycznym: 0 błędów, także w przejściu.
 
-- [gracz] **Stopnie transportu:** tragarz niesie 1 sztukę, mały wózek ręczny 3, duży wóz konny 5–6. GDD §5.2 mówi dziś „wóz = 4× ładunek tragarza”, więc po zatwierdzeniu trzeba go poprawić.
+- [gracz] **Stopnie transportu:** tragarz niesie 1 sztukę, mały wózek ręczny 3, duży wóz konny 5–6.
+  - **Zatwierdzone 2026-11-05 (ładowności):** zapisane w GDD §5.2. Szybkości, czas załadunku i reguły dyspozytora z oceny poniżej czekają na decyzję (M4).
   - Ocena (Claude):
     - Dobre stopniowanie, widać postęp i pasuje do klimatu. Wózek ręczny to fajny etap pośredni, którego w GDD brakuje.
     - Sama ładowność wozu (6 przy tragarzu 1) to niewielki zysk wobec kosztu (drogi, koń, stajnia). Wóz zarabia na długich trasach, więc warto mu dać szybkość na drodze (np. 1,5× tragarza), a wózkowi ręcznemu odrobinę mniejszą niż pieszemu (np. 0,9×).
