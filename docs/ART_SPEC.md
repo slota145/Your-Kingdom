@@ -285,6 +285,7 @@ Teren **nie jest układany z kafli przejść** (autotile). Gracz nie widzi siatk
 - **Pasy przy granicach** rysuje shader: skarpa (`bank/a`) na lądzie przy rzece, ciemna linia cienia na wodzie przy skarpie, płycizna (`sea/shallow`) i piana przy plaży, wytarty, „rozsypany” brzeg drogi.
 - **Trawa** ma dodatkowo jaśniejsze i ciemniejsze plamy (`grass/light`, `grass/dark`), a kwiatki i koniczyna (`grass_decor/*`) leżą w przypadkowych miejscach, nie na środku kafla.
 - Brzegi plam są rozpraszane wzorem pikseli (dithering), a nie przez półprzezroczystość, więc teren zostaje ostrym pixel artem.
+- **Woda jest animowana** (decyzja 2026-11-05): tekstura rzeki i morza przesuwa się pod nieruchomym brzegiem o całe piksele (rzeka szybciej, bród wolniej, morze powoli w inną stronę), na wodzie migoczą pojedyncze jasne odblaski, a piana na plaży podchodzi i cofa się falami, nierówno wzdłuż brzegu. Bez nowych grafik.
 - **Pola** zostają kaflami (to dzieło ludzi, prostokątne z natury).
 - Nowy typ terenu: tekstura w `assets/terrain/<id>/` i miejsce (slot) w shaderze `src/view/terrain/organic_ground.gdshader` oraz w `TerrainLayer.SLOT_BY_TERRAIN`.
 

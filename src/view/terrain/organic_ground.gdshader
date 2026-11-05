@@ -30,6 +30,10 @@ uniform sampler2D road_alt_tex : filter_nearest;
 uniform float border_warp = 0.32;
 uniform float road_warp = 0.22;
 uniform bool organic = true;
+// Water flows (texture drift in whole pixels, so it stays crisp), glitters and laps the beach.
+uniform bool animated = true;
+uniform vec2 river_flow = vec2(7.0, 3.5);  // px per second
+uniform vec2 sea_drift = vec2(-4.0, 2.0);
 
 const int GRASS = 0;
 const int MEADOW = 1;
@@ -204,20 +208,35 @@ void fragment() {
 	}
 	vec2 here = organic ? smooth_sample(warped) : texel(floor(grid)) * vec2(255.0, 1.0);
 	int slot = int(round(here.x));
-	vec3 colour = ground_colour(slot, grid, pixel);
+	float t = animated ? TIME : 0.0;
+	// Water textures slide under a fixed shoreline.
+	vec2 flow = vec2(0.0);
+	if (slot == WATER) flow = floor(river_flow * t);
+	else if (slot == FORD) flow = floor(river_flow * 0.5 * t);
+	else if (slot == SEA) flow = floor(sea_drift * t);
+	vec2 moved_pixel = pixel - flow;
+	vec2 moved_grid = screen_to_grid(moved_pixel);
+	vec3 colour = ground_colour(slot, moved_grid, moved_pixel);
 	if (organic) {
 		if (is_water(slot)) {
 			if (slot == SEA) {
 				// Shallows along the shore, a dithered step towards deep water, surf on the sand.
 				if (land_near(warped, 0.9)) {
-					colour = sample_diamond(shallow_tex, grid).rgb;
+					colour = sample_diamond(shallow_tex, moved_grid).rgb;
 				} else if (land_near(warped, 1.5) && bayer4(pixel) < 0.5) {
-					colour = sample_diamond(shallow_tex, grid).rgb;
+					colour = sample_diamond(shallow_tex, moved_grid).rgb;
 				}
-				if (land_near(warped, 0.1)) colour = mix(colour, vec3(0.92, 0.95, 0.9), 0.55);
+				// Surf: the foam line runs up the sand and back, out of step along the coast.
+				float wave = 0.5 + 0.5 * sin(t * 1.2 + fbm(grid * 0.6) * 6.283);
+				if (land_near(warped, 0.05 + 0.13 * wave)) colour = mix(colour, vec3(0.92, 0.95, 0.9), 0.55);
 			} else if (land_near(warped, 0.07)) {
 				// Dark line where river water meets the bank, as if the bank threw a shadow.
 				colour *= 0.78;
+			}
+			// Glints: single bright pixels that flicker on and off.
+			vec2 cell = floor(pixel / vec2(2.0, 1.0));
+			if (hash(cell + floor(t * 1.5) * vec2(7.13, 3.71)) > 0.9965) {
+				colour = mix(colour, vec3(0.95, 0.98, 1.0), 0.7);
 			}
 		} else if (slot != SAND && water_near(warped, 0.2)) {
 			// Low earthen bank along rivers and lakes.

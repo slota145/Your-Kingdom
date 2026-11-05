@@ -7,7 +7,8 @@ extends Node2D
 ## Run: godot --path . res://src/prototype/terrain/terrain_sandbox.tscn
 ## Controls: WASD/arrows/middle-drag pan, wheel or 1-4 zoom, O = organic on/off,
 ## F = grid, Esc = quit.
-## Screenshot: -- --shot=<png> [--zoom=N] [--tile=X,Y] [--plain]
+## Screenshot: -- --shot=<png> [--zoom=N] [--tile=X,Y] [--plain] [--frames=N]
+## (--frames=N saves N shots 4 frames apart as <png>_00.png..., for an animation preview)
 
 const MAP_SIZE := Vector2i(64, 64)
 const SHOT_FRAMES := 20
@@ -18,6 +19,7 @@ var terrain: TerrainLayer
 var _hud: Label
 var _shot_path: String = ""
 var _frames: int = 0
+var _shot_count: int = 1
 
 
 func _ready() -> void:
@@ -49,6 +51,8 @@ func _ready() -> void:
 			camera.position = IsoMath.tile_center_screen(Vector2i(int(parts[0]), int(parts[1])))
 		elif arg == "--plain":
 			terrain.organic = false
+		elif arg.begins_with("--frames="):
+			_shot_count = int(arg.trim_prefix("--frames="))
 	_update_hud()
 
 
@@ -109,9 +113,15 @@ func _process(_delta: float) -> void:
 	_frames += 1
 	if _frames == SHOT_FRAMES:
 		_hud.visible = false
-	elif _frames == SHOT_FRAMES + 2:
-		get_viewport().get_texture().get_image().save_png(_shot_path)
-		get_tree().quit()
+	elif _frames > SHOT_FRAMES and (_frames - SHOT_FRAMES) % 4 == 0:
+		var index := (_frames - SHOT_FRAMES) / 4 - 1
+		var image := get_viewport().get_texture().get_image()
+		if _shot_count == 1:
+			image.save_png(_shot_path)
+		else:
+			image.save_png(_shot_path.get_basename() + "_%02d.png" % index)
+		if index + 1 >= _shot_count:
+			get_tree().quit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
