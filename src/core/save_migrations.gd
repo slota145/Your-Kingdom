@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 5
+const CURRENT_VERSION := 6
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -22,6 +22,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 5:
 		result = migrate_v4_to_v5(result)
 		version = 5
+	if version < 6:
+		result = migrate_v5_to_v6(result)
+		version = 6
 	return result
 
 
@@ -81,4 +84,13 @@ static func migrate_v4_to_v5(state: Dictionary) -> Dictionary:
 			var stock_slots: Array = (b["stock"] as Dictionary)["slots"]
 			while stock_slots.size() < 15:
 				stock_slots.append(["", 0])
+	return state
+
+
+## M4b-1.5: every building saves which way it is turned. Older buildings keep the entrance
+## they always had (orientation 0), so nothing moves.
+static func migrate_v5_to_v6(state: Dictionary) -> Dictionary:
+	var province: Dictionary = state["province"]
+	for building: Variant in province.get("buildings", []):
+		(building as Dictionary)["orient"] = 0
 	return state

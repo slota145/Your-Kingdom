@@ -10,6 +10,13 @@ extends Node2D
 const NO_WORKERS_MARK := "!"
 ## Marker shown over buildings whose production the player paused (M4b-1).
 const PAUSED_MARK := "II"
+## Art key suffix of a mirrored art (BuildingView.setup mirrored).
+const MIRROR_SUFFIX := "@m"
+## Opacity of the placement preview building.
+const GHOST_ALPHA := 0.6
+
+## Art path -> whether the file exists.
+static var _exists: Dictionary[String, bool] = {}
 
 var province: ProvinceSim
 
@@ -20,6 +27,8 @@ var _keys: Dictionary[int, String] = {}
 var _site_piles: Dictionary[int, StackSprite] = {}
 var _stockpiles: Array[StockpileView] = []
 var _marks: Dictionary[int, Label] = {}
+var _ghost: BuildingView
+var _ghost_key: String = ""
 
 
 func _init() -> void:
@@ -64,13 +73,14 @@ func update_view() -> void:
 		_update_mark(building)
 
 
-func _art_key(building: BuildingState, rows: Dictionary[int, Array]) -> String:
+func _art_key(building: BuildingState, rows: Dictionary[int, String]) -> String:
 	var visual := BuildingVisualDef.for_building(building.def.id)
 	var art_id := visual.art_id if visual != null else String(building.def.id)
+	var o := building.orientation
 	if building.under_construction:
 		var site := province.sites.get(building.site_id) as ConstructionSite
 		var phase := site.phase if site != null else 1
-		return "buildings/%s/construction_%d" % [art_id, mini(phase, 2)]
+		return oriented_art("buildings/%s/construction_%d" % [art_id, mini(phase, 2)], building.def, o)
 	if visual != null and visual.yard:
 		return "yard"
 	var name := "base"
@@ -78,15 +88,68 @@ func _art_key(building: BuildingState, rows: Dictionary[int, Array]) -> String:
 		var level := building.house.level
 		name = visual.level_art[clampi(level - 1, 0, visual.level_art.size() - 1)]
 		if visual.row_from_level > 0 and level >= visual.row_from_level and rows.has(building.id):
-			var row: Array = rows[building.id]
-			name = "%s_%s_%s" % [name, row[0], row[1]]
+			name = visual.row_variant_name("%s_%s" % [name, rows[building.id]], building.origin, building.look)
 	if visual != null:
-		name = visual.variant_name(name, building.origin)
-	var key := "buildings/%s/%s" % [art_id, name]
+		name = visual.variant_name(name, building.origin, building.look)
+	var key := oriented_art("buildings/%s/%s" % [art_id, name], building.def, o)
 	var site := province.sites.get(building.site_id) as ConstructionSite
 	if site != null and site.kind == ConstructionSite.KIND_UPGRADE:
-		key += "|buildings/%s/upgrade_scaffold" % art_id
+		key += "|" + oriented_art("buildings/%s/upgrade_scaffold" % art_id, building.def, o)
 	return key
+
+
+## Art key of [param art] for a building of [param def] turned to [param orientation]
+## (M4b-1.5): houses turned with the door to the back (2, 3) use the "_back" art when it
+## exists, and orientations 1 and 3 are drawn mirrored (key suffix "@m").
+static func oriented_art(art: String, def: BuildingDef, orientation: int) -> String:
+	if def.is_house() and orientation >= 2 and _art_exists(art + "_back"):
+		art += "_back"
+	return art + (MIRROR_SUFFIX if orientation % 2 == 1 else "")
+
+
+## The art a new building of [param def] at [param origin] shows when finished (level 1).
+static func base_art(def: BuildingDef, origin: Vector2i, orientation: int, look: int = 0) -> String:
+	var visual := BuildingVisualDef.for_building(def.id)
+	var art_id := visual.art_id if visual != null else String(def.id)
+	if visual != null and visual.yard:
+		return ""
+	var name := "base"
+	if visual != null and not visual.level_art.is_empty():
+		name = visual.level_art[0]
+	if visual != null:
+		name = visual.variant_name(name, origin, look)
+	return oriented_art("buildings/%s/%s" % [art_id, name], def, orientation)
+
+
+static func _art_exists(art: String) -> bool:
+	if not _exists.has(art):
+		_exists[art] = ResourceLoader.exists(ArtPaths.resolve(art + ".png"))
+	return _exists[art]
+
+
+## Adds a BuildingView for an art key part ("path" or "path@m") under [param parent].
+static func add_art(parent: Node, art: String, origin: Vector2i) -> BuildingView:
+	var view := BuildingView.new()
+	parent.add_child(view)
+	var mirrored := art.ends_with(MIRROR_SUFFIX)
+	view.setup(art.trim_suffix(MIRROR_SUFFIX), origin, mirrored)
+	return view
+
+
+## Shows a see-through building where the player is about to place one (M4b-1.5: the
+## preview shows which way the door faces). Empty [param art] hides it.
+func show_ghost(art: String, origin: Vector2i, ok: bool) -> void:
+	var key := "%s#%s#%s" % [art, origin, ok]
+	if key == _ghost_key:
+		return
+	_ghost_key = key
+	if _ghost != null:
+		_ghost.queue_free()
+		_ghost = null
+	if art.is_empty():
+		return
+	_ghost = add_art(self, art, origin)
+	_ghost.modulate = Color(1, 1, 1, GHOST_ALPHA) if ok else Color(1, 0.45, 0.4, GHOST_ALPHA)
 
 
 func _build(building: BuildingState, key: String) -> void:
@@ -102,13 +165,11 @@ func _build(building: BuildingState, key: String) -> void:
 		_stockpiles.append(yard)
 	else:
 		for art: String in key.split("|"):
-			var view := BuildingView.new()
-			holder.add_child(view)
-			view.setup(art, building.origin)
+			add_art(holder, art, building.origin)
 	if building.under_construction or building.site_id != 0:
 		var pile := StackSprite.new()
-		# Materials lie on the tile in front of the entrance.
-		pile.position = IsoMath.tile_center_screen(building.entrance_tile() + Vector2i(1, 1))
+		# Materials lie on the tile in front of the door.
+		pile.position = IsoMath.tile_center_screen(building.door_front_tile())
 		holder.add_child(pile)
 		_site_piles[building.id] = pile
 
@@ -128,13 +189,14 @@ func _drop(id: int) -> void:
 		_marks.erase(id)
 
 
-func _house_rows() -> Dictionary[int, Array]:
+func _house_rows() -> Dictionary[int, String]:
 	var houses: Array[Dictionary] = []
 	for building: BuildingState in province.buildings.all():
 		if building.house != null and not building.under_construction:
-			houses.append({"id": building.id, "origin": building.origin,
+			houses.append({"id": building.id, "origin": building.origin, "orientation": building.orientation,
 					"footprint": building.def.footprint, "level": building.house.level})
-	return HouseRowResolver.resolve(houses)
+	return HouseRowResolver.resolve(houses, func(t: Vector2i) -> bool:
+		return province.grid.is_inside(t) and province.grid.has_road(t))
 
 
 ## The building whose drawn art is under [param world_pos], the front one when several

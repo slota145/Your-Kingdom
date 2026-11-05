@@ -38,7 +38,8 @@ func setup(state: BuildingState) -> void:
 	add_child(yard)
 	for slot: int in state.stock.slot_count():
 		var sprite := StackSprite.new()
-		var tile := state.origin + StockpileLayout.slot_tile(slot, state.def.footprint, state.def.entrance)
+		var tile := state.origin + StockpileLayout.slot_tile(slot, state.def.footprint,
+				state.def.entrance_at(state.orientation))
 		sprite.position = IsoMath.tile_center_screen(tile)
 		add_child(sprite)
 		_stacks.append(sprite)

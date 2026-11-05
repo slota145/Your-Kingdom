@@ -335,14 +335,24 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Poza zakresem:** obracanie kamery i przechodzenie pod podcieniami (IDEAS), węższe domy 1×2, premie za pierzeje.
 
 **DoD:**
-- [ ] Każdy budynek da się postawić w każdej swojej orientacji. Postacie wchodzą do budynku od wybranej strony (testy symulacji dla każdej orientacji).
-- [ ] Dwa rzędy domów plecami do siebie, każdy przodem do swojej drogi, działają w grze: mieszkańcy się wprowadzają i są zaopatrywani (test scenariuszowy).
-- [ ] Podgląd sam obraca dom do przylegającej drogi, a R przełącza stronę (test widoku lub zrzut z prototypu).
-- [ ] Sortowanie bez błędów dla każdej orientacji, także dla rogów i rzędów plecami do siebie (`test_sorting.gd`).
-- [ ] Pierzeje mieszczan i patrycjuszy z rogami i końcami widoczne na zrzucie z chmury (`town_shot.tscn`) w układzie: prosty rząd, róg, dwa rzędy plecami do siebie.
-- [ ] Zapis z M4b-1 wczytuje się po migracji (v5 → v6) bez przesunięcia wejść, nowa fixtura `v6_town.json`.
-- [ ] Wszystkie testy przechodzą, automatyczny gracz dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`).
-- [ ] **Twoja ocena gry** na laptopie, w tym wygląd kamienic (poprzednio 2/5).
+- [x] Każdy budynek da się postawić w każdej swojej orientacji. Postacie wchodzą do budynku od wybranej strony (`test_orientation.gd`: każdy budynek i orientacja, wejście i wyjście przez kafel przed drzwiami).
+- [x] Dwa rzędy domów plecami do siebie, każdy przodem do swojej drogi, działają w grze: mieszkańcy się wprowadzają i są zaopatrywani (`test_town_rows.gd`).
+- [x] Podgląd sam obraca dom do przylegającej drogi, a R przełącza stronę (`test_orientation.gd`, `PlacementTurn`; w grze półprzezroczysty budynek pod kursorem i zaznaczony kafel przed drzwiami).
+- [x] Sortowanie bez błędów dla każdej orientacji, także dla rogów i rzędów plecami do siebie (`test_sorting.gd`, także pasek budynku z paskiem sąsiada).
+- [x] Pierzeje mieszczan i patrycjuszy z rogami i końcami widoczne na zrzucie (`town_shot.tscn --layout`, na laptopie) w układzie: prosty rząd, róg, dwa rzędy plecami do siebie.
+- [x] Zapis z M4b-1 wczytuje się po migracji (v5 → v6) bez przesunięcia wejść, nowa fixtura `v6_town.json`.
+- [x] Wszystkie testy przechodzą, automatyczny gracz dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`).
+- [x] **Twoja ocena gry** na laptopie (2026-11-05): wygląd kamienic **5/5** (poprzednio 2/5); obracanie, wejścia, leśniczy i wyręby działają bardzo dobrze. Uwagi do M4b-2: drwale rąbią dalej przy pełnych magazynach i zawalają ziemię drewnem; leśnicy mogliby sadzić gęściej.
+
+**Ustalone przy realizacji (2026-11-05, do zmiany na prośbę):**
+- **Drzwi:** postacie wchodzą i wychodzą tylko przez kafel przed drzwiami. Przy stawianiu musi on być wolny (inaczej „ludzie nie dojdą” albo „wejście na wodę”) i potem nie da się go zabudować. W starych zapisach, gdzie jest zastawiony, ludzie używają innego wolnego boku wejścia.
+- **Podgląd:** półprzezroczysty budynek w wybranej orientacji i zaznaczony kafel przed drzwiami. Wybór klawiszem R trwa do zmiany narzędzia (wygodne przy stawianiu całego rzędu). Bez drogi obok zostaje strona ostatnio postawionego budynku.
+- **Kamienice szczytem do ulicy** (poprawka właściciela po pierwszej wersji, szkic 2026-11-05): kalenica w głąb działki, szczyty od ulicy w 3 kształtach (mieszczanie: szachulec, wygięty, schodkowy; patrycjusze: ceglany schodkowy z blendami, wygięty, prosty). Sąsiedzi dostają różne szczyty według położenia. Róg ma dwa szczyty, u patrycjuszy wykusz z wieżyczką. Tył: prosty szczyt, tylne drzwi, beczka i drewno. Podcienia patrycjuszy na obu ulicach rogu.
+- **Działki z kilkoma domami** (druga poprawka właściciela, ankieta 2026-11-05): na działce 2×2 mieszczan stoją 1–3 węższe domy, na działce patrycjuszy 1–2 domy różnej wysokości. Fronty nie stoją w jednej linii (część domów lekko cofnięta). Między działkami mieszczan wąskie przerwy, całość na bruku; patrycjusze tworzą zwartą pierzeję. Każdy dom ma własny odcień z surowszej palety. Dachy: patrycjusze ciemny łupek, mieszczanie przygaszona dachówka, czasem łupek. Narożnik: ścięty róg z bramą i ukośnym szczytem nad nią (u patrycjuszy jeden z trzech wyglądów ma zamiast tego wykusz z wieżyczką). Dla gry to nadal jeden dom 2×2.
+- **Po pierwszej grze właściciela (ankieta 2026-11-05):** narożnik powstaje też wtedy, gdy dom z sąsiadem w rzędzie ma drogę przed drzwiami i drogę przy wolnym końcu. Podgląd stawiania wybiera stronę z drogą, a wśród nich tę, przy której dom tworzy rząd z sąsiadem; bez drogi bierze kierunek sąsiada w rzędzie. Postawiony dom bez drogi przed drzwiami sam obraca się do nowej drogi obok (domy z drogą nie obracają się). Wygląd domu: klawisz T przy stawianiu i przycisk „Zmień wygląd” w panelu; wybór zapisuje się w grze (`look`, zapis v6).
+- **Wejścia (druga gra właściciela, 2026-11-05):** magazyny mają drzwi z każdej strony, pozostałe budynki oprócz domów także po przeciwnej stronie (z tyłu, więc bez nowych grafik; wyjątek: ratusz ma drzwi narysowane tylko z jednej strony). Do stawiania i działania wystarczy jedne drzwi z wolnym kaflem przed nimi; ludzie wybierają drzwi bliższe celu. Cały budynek, także kafle wejść, jest nieprzechodni: na wejście wchodzi się tylko z kafla przed drzwiami, więc nikt nie skraca drogi przez róg budynku (ludzie „znikali pod budynkiem”). Panel budynku ma przycisk „Obróć”.
+- **Leśniczy i wejścia (trzecia gra właściciela, 2026-11-05):** postać wchodząca do budynku płynnie znika w drzwiach, a wychodząca pojawia się (tylko widok; ludzie odpoczywający w środku nie są rysowani, pracujący przy stanowisku tak). Leśniczy przy pełnym lesie (30 drzew w zasięgu) pisze „las w zasięgu jest pełny”, a gdy nie ma gdzie sadzić, „brak wolnego miejsca do sadzenia”. W panelu leśniczówki „Miejsce sadzenia”: przeciągasz myszą po kaflach w zasięgu i leśniczy sadzi tylko tam (zapis `plant_area`); „Wyczyść miejsce sadzenia” wraca do całego zasięgu. Ścięte drzewo zabrane z pniakiem zmienia ściółkę leśną pod sobą w trawę.
+- **Tawerna:** test daje 3 minuty na 2 podania zamiast 2,5 (droga przez drzwi jest odrobinę dłuższa).
 
 ---
 

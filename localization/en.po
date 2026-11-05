@@ -511,6 +511,51 @@ msgstr "This would block the way to other buildings."
 msgid "ui.command_error.entrance_faces_water"
 msgstr "The entrance would face the water."
 
+msgid "ui.command_error.bad_orientation"
+msgstr "This building cannot be turned that way."
+
+msgid "ui.reason.forest_full"
+msgstr "the forest in range is full"
+
+msgid "ui.reason.no_plant_spot"
+msgstr "no free place to plant"
+
+msgid "ui.building.plant_area"
+msgstr "Planting area"
+
+msgid "ui.building.plant_area_hint"
+msgstr "Drag over the tiles where the forester should plant. Without marks he plants anywhere in range."
+
+msgid "ui.building.plant_area_clear"
+msgstr "Clear planting area"
+
+msgid "ui.command_error.not_a_forester"
+msgstr "This building does not plant trees."
+
+msgid "ui.building.turn"
+msgstr "Turn"
+
+msgid "ui.building.turn_hint"
+msgstr "Turns the building so its entrance faces another side."
+
+msgid "ui.command_error.cannot_turn"
+msgstr "This building cannot be turned here."
+
+msgid "ui.building.change_look"
+msgstr "Change look"
+
+msgid "ui.building.change_look_hint"
+msgstr "Shows the next look of this house. Only the look changes."
+
+msgid "ui.command_error.not_a_house"
+msgstr "This is not a house."
+
+msgid "ui.command_error.bad_look"
+msgstr "There is no such look."
+
+msgid "ui.build.rotate_hint"
+msgstr "R: turn the entrance · T: change the look"
+
 msgid "ui.command_error.not_a_farm"
 msgstr "This is not a farm."
 

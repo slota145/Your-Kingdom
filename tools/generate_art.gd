@@ -14,6 +14,7 @@ extends SceneTree
 ## brightest (ART_SPEC §1).
 
 const OUT := "res://assets"
+const TownHouseArt := preload("res://tools/town_house_art.gd")
 
 const LIGHT_SW := 1.0
 const LIGHT_SE := 0.8
@@ -213,17 +214,32 @@ const BUILDINGS := {
 	"stockpile": [{"special": "yard"}],
 }
 
-## Burgher-house facade colours by row variant: neighbours in a row get different colours.
-const BURGHER_COLOURS := {
-	"single": Color(0.91, 0.86, 0.72), "end_a": Color(0.87, 0.74, 0.5),
-	"middle": Color(0.86, 0.72, 0.68), "end_b": Color(0.76, 0.8, 0.78),
-}
+## Row pieces of town houses (ART_SPEC §7, HouseRowResolver).
+const ROW_PIECES: Array[String] = ["single", "end_a", "middle", "end_b", "corner_a", "corner_b"]
 
-## Patrician townhouse colours: deeper, richer than the burghers' pastels.
-const PATRICIAN_COLOURS := {
-	"single": Color(0.95, 0.74, 0.42), "end_a": Color(0.86, 0.5, 0.42),
-	"middle": Color(0.62, 0.74, 0.6), "end_b": Color(0.66, 0.72, 0.9),
-}
+## Huts seen from the back (door away from the camera, M4b-1.5): the same houses turned
+## round, so the camera sees the back wall with a back door, the woodpile and the garden
+## instead of the front with its lean-to and flowers. One per look of "hut".
+const HUT_BACKS := [
+	{"volumes": [
+		{"kind": "house", "rect": [0.58, 0.14, 1.86, 1.86], "h": 39.0, "rh": 26.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "timber", "roof": "thatch",
+			"shutters": Color(0.35, 0.45, 0.3), "chimney": [1.3, 1.1]}],
+	 "props": [["garden_bed", 0.25, 1.2], ["log_stack", 0.35, 0.6], ["barrel", 1.9, 0.35]]},
+	{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.58, 1.86, 1.86], "h": 36.0, "rh": 24.0, "ridge": "x",
+			"ends": ["gable", "gable"], "walls": "logs", "roof": "shingle",
+			"shutters": Color(0.55, 0.25, 0.2), "chimney": [1.5, 1.4]}],
+	 "props": [["garden_bed", 1.1, 0.3], ["barrel", 0.3, 0.4]]},
+	{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.95, 1.86, 1.86], "h": 36.0, "rh": 22.0, "ridge": "x",
+			"ends": ["gable", "hip"], "walls": "plaster", "roof": "thatch",
+			"shutters": Color(0.3, 0.4, 0.6), "chimney": [1.4, 1.45]},
+		{"kind": "house", "rect": [0.14, 0.14, 1.05, 0.95], "h": 36.0, "rh": 20.0, "ridge": "y",
+			"ends": ["gable", "open"], "walls": "plaster", "roof": "thatch",
+			"shutters": Color(0.3, 0.4, 0.6)}],
+	 "props": [["garden_bed", 1.5, 0.45], ["log_stack", 1.8, 0.25]]},
+]
 
 var _entrance: Vector2i
 var _footprint: Vector2i
@@ -232,7 +248,13 @@ var _footprint: Vector2i
 func _init() -> void:
 	var registry := DataRegistry.new()
 	registry.load_from("res://data")
+	var only := ""
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--only="):
+			only = arg.trim_prefix("--only=")
 	for id: String in BUILDINGS:
+		if not only.is_empty() and id != only:
+			continue
 		var def := registry.get_building(StringName(id))
 		if def == null:
 			push_error("generate_art: unknown building %s" % id)
@@ -260,11 +282,18 @@ func _make(id: String, def: BuildingDef) -> void:
 				_write(id, name, _compose(look))
 	for phase: int in [1, 2]:
 		_write(id, "construction_%d" % phase, _site_image(phase, id))
+	if def.is_house():
+		# Houses turn four ways: the back of each look, site and scaffold (M4b-1.5).
+		for i: int in HUT_BACKS.size():
+			_write(id, ("base" if i == 0 else "base_%d" % (i + 1)) + "_back", _compose(HUT_BACKS[i]))
+		for phase: int in [1, 2]:
+			_write(id, "construction_%d_back" % phase, _site_image(phase, id, true))
 	if def.house_levels.size() > 1:
-		_burgher_rows(id)
+		_town_rows(id, 2)
 		if def.house_levels.size() > 2:
-			_burgher_rows(id, 3)
+			_town_rows(id, 3)
 		_write(id, "upgrade_scaffold", _scaffold_image())
+		_write(id, "upgrade_scaffold_back", _scaffold_image(true))
 
 
 # --- Composition ---------------------------------------------------------------------------
@@ -414,35 +443,17 @@ func _rect(vol: Dictionary) -> Rect2:
 	return Rect2(Vector2(r[0], r[1]), Vector2(float(r[2]) - float(r[0]), float(r[3]) - float(r[1])))
 
 
-## Row pieces of a town house level: level 2 = burgher house (two storeys, plaster), level 3 =
-## patrician townhouse (three storeys, ashlar ground floor, richer colours, steeper tiled roof).
-func _burgher_rows(id: String, level: int = 2) -> void:
-	var patrician := level >= 3
-	for variant: String in ["single", "end_a", "middle", "end_b"]:
-		for axis: String in ["x", "y"]:
-			var along_x := axis == "x"
-			var ends: Array = {"single": ["gable", "gable"], "end_a": ["gable", "open"],
-					"middle": ["open", "open"], "end_b": ["open", "gable"]}[variant]
-			# Inset only across the row; along it neighbours touch.
-			var a0 := INSET if ends[0] == "gable" else 0.0
-			var a1 := 2.0 - (INSET if ends[1] == "gable" else 0.0)
-			var rect := [a0, INSET, a1, 2.0 - INSET] if along_x else [INSET, a0, 2.0 - INSET, a1]
-			var house := {"kind": "house", "rect": rect, "h": 58.0, "rh": 24.0, "ridge": axis, "ends": ends,
-					"walls": "plaster_stone", "roof": "tile", "tint": BURGHER_COLOURS[variant],
-					"shutters": Color(0.3, 0.38, 0.5), "floors": 2}
-			if patrician:
-				house["h"] = 80.0
-				house["rh"] = 30.0
-				house["walls"] = "patrician"
-				house["tint"] = PATRICIAN_COLOURS[variant]
-				house["shutters"] = Color(0.2, 0.32, 0.25)
-				house["floors"] = 3
-			if variant != "middle":
-				house["chimney"] = [1.4, 0.6] if along_x else [0.6, 1.4]
-			var props: Array = [["flowers", 0.55, 1.9]] if along_x else [["flowers", 1.9, 0.55]]
-			if patrician:
-				props = [["lantern", 0.4, 1.9]] if along_x else [["lantern", 1.9, 0.4]]
-			_write(id, "level_%d_%s_%s" % [level, variant, axis], _compose({"volumes": [house], "props": props}))
+## Row pieces of a town house level (ART_SPEC §7): level 2 = burgher houses, level 3 =
+## patrician townhouses, gable to the street, 1-3 houses per lot, each piece in three looks
+## ("", "_2", "_3") from the front and from the back (tools/town_house_art.gd).
+func _town_rows(id: String, level: int) -> void:
+	var painter := TownHouseArt.new(self)
+	for piece: String in ROW_PIECES:
+		for look: int in 3:
+			for back: bool in [false, true]:
+				var name := "level_%d_%s%s%s" % [level, piece, "" if look == 0 else "_%d" % (look + 1),
+						"_back" if back else ""]
+				_write(id, name, painter.render(level, piece, back, look))
 
 
 # --- Houses --------------------------------------------------------------------------------
@@ -802,7 +813,9 @@ func _market(id: String) -> void:
 
 ## Construction site: phase 1 = foundation stones, stakes and string, piles of material;
 ## phase 2 = foundation plus a timber skeleton with rafters, half the infill and scaffolding.
-func _site_image(phase: int, id: String) -> Dictionary:
+## [param back]: a house turned with its door away from the camera; materials and the
+## ladder are on the far side, by the door.
+func _site_image(phase: int, id: String, back: bool = false) -> Dictionary:
 	var c := _canvas(78.0, 12)
 	var img: Image = c["img"]
 	var pivot: Vector2i = c["pivot"]
@@ -830,8 +843,11 @@ func _site_image(phase: int, id: String) -> Dictionary:
 		_prop(img, Vector2(pivot) + IsoMath.grid_to_screen(r.get_center() - f), "barrel")
 		_line(img, Vector2(pivot) + IsoMath.grid_to_screen(r.get_center() + Vector2(0.3, -0.2) - f),
 				Vector2(pivot) + IsoMath.grid_to_screen(r.get_center() + Vector2(0.5, -0.4) - f) - Vector2(0, 12), C_BEAM, 1)
-		_stone_pile(img, Vector2(pivot) + IsoMath.grid_to_screen(Vector2(r.end.x - 0.4, r.end.y + 0.02) - f))
-		_plank_pile(img, Vector2(pivot) + IsoMath.grid_to_screen(Vector2(r.position.x + 0.45, r.end.y + 0.02) - f))
+		if back:
+			_stone_pile(img, Vector2(pivot) + IsoMath.grid_to_screen(r.position + Vector2(0.45, 0.35) - f))
+		else:
+			_stone_pile(img, Vector2(pivot) + IsoMath.grid_to_screen(Vector2(r.end.x - 0.4, r.end.y + 0.02) - f))
+			_plank_pile(img, Vector2(pivot) + IsoMath.grid_to_screen(Vector2(r.position.x + 0.45, r.end.y + 0.02) - f))
 	else:
 		var along_x := f.x >= f.y
 		# Skeleton: posts every half tile on the visible walls, plates, braces.
@@ -867,6 +883,9 @@ func _site_image(phase: int, id: String) -> Dictionary:
 		var ridge_a := Vector3(r.position.x, r.get_center().y, h + 20.0) if along_x else Vector3(r.get_center().x, r.position.y, h + 20.0)
 		var ridge_b := Vector3(r.end.x, r.get_center().y, h + 20.0) if along_x else Vector3(r.get_center().x, r.end.y, h + 20.0)
 		_line(img, _scr(pivot, ridge_a), _scr(pivot, ridge_b), C_PLANK, 2)
+		if back:
+			_finish(img)
+			return {"img": img, "pivot": pivot}
 		# Scaffold plank and a ladder on the lit side.
 		var s0 := Vector2(pivot) + IsoMath.grid_to_screen(corners[3] + Vector2(0, 0.12) - f)
 		var s1 := Vector2(pivot) + IsoMath.grid_to_screen(corners[2] + Vector2(0, 0.12) - f)
@@ -893,7 +912,8 @@ func _plank_pile(img: Image, foot: Vector2) -> void:
 		_line(img, foot + Vector2(-11, -1 - i * 2), foot + Vector2(8, 8 - i * 2), C_PLANK.lightened(0.25 - 0.05 * i), 2)
 
 
-func _scaffold_image() -> Dictionary:
+## [param back]: the ladder leans on the right-hand wall (the door is away from the camera).
+func _scaffold_image(back: bool = false) -> Dictionary:
 	var c := _canvas(84.0, 12)
 	var img: Image = c["img"]
 	var pivot: Vector2i = c["pivot"]
@@ -908,7 +928,7 @@ func _scaffold_image() -> Dictionary:
 			var b := Vector2(pivot) + IsoMath.grid_to_screen(e[1] + Vector2(0.05, 0.05) - f) - Vector2(0, level)
 			_line(img, a, b, wood, 3)
 			_line(img, a + Vector2(0, 2), b + Vector2(0, 2), wood.darkened(0.3), 1)
-	var l := Vector2(pivot) + IsoMath.grid_to_screen(Vector2(-0.5, 0.05))
+	var l := Vector2(pivot) + IsoMath.grid_to_screen(Vector2(0.05, -0.5) if back else Vector2(-0.5, 0.05))
 	_line(img, l, l - Vector2(0, 46), wood, 1)
 	_line(img, l + Vector2(5, 0), l + Vector2(5, -46), wood, 1)
 	for k: int in 8:
@@ -1022,6 +1042,15 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 			_line(img, p + Vector2(-8, -4), p + Vector2(6, 3), C_PLANK.lightened(0.1), 2)
 			_line(img, p + Vector2(-7, -3), p + Vector2(-7, 1), C_BEAM, 1)
 			_line(img, p + Vector2(5, 3), p + Vector2(5, 7), C_BEAM, 1)
+		"garden_bed":
+			# A vegetable patch behind a house: dark soil in rows, green tufts.
+			var bed := PackedVector2Array([p + Vector2(-12, 0), p + Vector2(0, -6), p + Vector2(12, 0), p + Vector2(0, 6)])
+			_fill_shader(img, bed, func(x: int, y: int) -> Color:
+				return Color(0.36, 0.26, 0.17).darkened(0.18 * float((x + 2 * y) % 5 == 0)))
+			for k: int in 7:
+				var q := p + Vector2(-8 + k * 3, -1 + (k % 2) * 2)
+				_px(img, Vector2i(q), Color(0.32, 0.58, 0.26))
+				_px(img, Vector2i(q) + Vector2i(1, -1), Color(0.45, 0.68, 0.3))
 		"flowers":
 			for k: int in 6:
 				var q := p + Vector2(k * 3 - 8, (k % 3) - 1)

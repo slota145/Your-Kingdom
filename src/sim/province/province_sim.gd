@@ -81,11 +81,9 @@ func is_tile_solid(tile: Vector2i) -> bool:
 	var terrain := terrain_at(tile)
 	if terrain != null and not terrain.walkable:
 		return true
-	var owner := grid.occupant(tile)
-	if owner != 0:
-		var building := buildings.get_building(owner)
-		return building == null or building.entrance_tile() != tile
-	return false
+	# A whole building is solid, its entrances too: people step onto an entrance only from
+	# the tile in front of its door (find_path), never across a corner of the building.
+	return grid.occupant(tile) != 0
 
 
 func refresh_tile(tile: Vector2i) -> void:
@@ -173,10 +171,13 @@ func approach_tile(node: Vector2i, from: Vector2i) -> Vector2i:
 
 # --- Buildings -----------------------------------------------------------------------------
 
-## &"" when the building fits at [param origin], otherwise the reason.
-func placement_error(def: BuildingDef, origin: Vector2i) -> StringName:
+## &"" when the building fits at [param origin] turned to [param orientation], otherwise
+## the reason.
+func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -> StringName:
 	if def == null:
 		return &"unknown_building"
+	if orientation < 0 or orientation >= def.orientation_count():
+		return &"bad_orientation"
 	for tile: Vector2i in def.footprint_tiles(origin):
 		if not grid.is_inside(tile):
 			return &"outside_map"
@@ -189,39 +190,73 @@ func placement_error(def: BuildingDef, origin: Vector2i) -> StringName:
 			return &"tile_occupied"
 	if def.needs_terrain_near != &"" and not has_terrain_near(def, origin):
 		return StringName("no_%s_nearby" % def.needs_terrain_near)
-	var entrance := origin + def.entrance
+	var entrances: Array[Vector2i] = []
+	for o: int in def.door_orientations(orientation):
+		entrances.append(origin + def.entrance_at(o))
 	for agent: Agent in agents.all():
 		var t := agent.tile()
-		if t != entrance and t.x >= origin.x and t.y >= origin.y \
-				and t.x < origin.x + def.footprint.x and t.y < origin.y + def.footprint.y:
+		if not entrances.has(t) and t.x >= origin.x and t.y >= origin.y 				and t.x < origin.x + def.footprint.x and t.y < origin.y + def.footprint.y:
 			return &"tile_has_people"
-	return _access_error(def, origin)
+	return _access_error(def, origin, orientation)
 
 
-## People must be able to walk to the new building, and it must not wall off any entrance,
-## ground pile or person they could reach before (a sealed-off site stalls porters and
-## builders for good).
-func _access_error(def: BuildingDef, origin: Vector2i) -> StringName:
-	var entrance := origin + def.entrance
+## People must be able to walk to a door of the new building (one free door is enough), and
+## it must not wall off any building, ground pile or person they could reach before (a
+## sealed-off site stalls porters and builders for good).
+func _access_error(def: BuildingDef, origin: Vector2i, orientation: int) -> StringName:
+	var fronts: Array[Vector2i] = []
+	var water := false
+	for o: int in def.door_orientations(orientation):
+		var front := def.door_front(origin, o)
+		if nav.is_walkable(front) and grid.occupant(front) == 0:
+			fronts.append(front)
+		else:
+			var terrain := terrain_at(front) if grid.is_inside(front) else null
+			water = water or (terrain != null and terrain.id == &"water")
+	if fronts.is_empty():
+		return &"entrance_faces_water" if water else &"no_access"
 	var blocked: Dictionary[Vector2i, bool] = {}
 	for tile: Vector2i in def.footprint_tiles(origin):
-		if tile != entrance:
-			blocked[tile] = true
-	var entrances: Dictionary[Vector2i, bool] = {}
+		blocked[tile] = true
+	var door_owner: Dictionary[Vector2i, int] = {}
 	for building: BuildingState in buildings.all():
-		entrances[building.entrance_tile()] = true
-	if entrances.is_empty():
+		for door: Vector2i in door_tiles(building):
+			door_owner[door] = building.id
+	if door_owner.is_empty():
 		return &""
-	var targets: Dictionary[Vector2i, bool] = entrances.duplicate()
+	var targets: Dictionary[Vector2i, bool] = {}
+	for door: Vector2i in door_owner:
+		targets[door] = true
 	for pile: GroundPile in piles.values():
 		targets[pile.tile] = true
 	for agent: Agent in agents.all():
 		targets[agent.tile()] = true
-	var before := nav.reachable(entrance, targets)
-	var after := nav.reachable(entrance, before, blocked)
-	if not _has_any(after, entrances):
-		return &"entrance_faces_water" if _entrance_faces_water(entrance, blocked) else &"no_access"
-	return &"" if after.size() == before.size() else &"blocks_access"
+	# Some door must lead to the others.
+	var doors: Dictionary[Vector2i, bool] = {}
+	for door: Vector2i in door_owner:
+		doors[door] = true
+	var any_door := false
+	for front: Vector2i in fronts:
+		if not nav.reachable(front, doors, blocked).is_empty():
+			any_door = true
+			break
+	if not any_door:
+		return &"no_access"
+	# Nothing reachable before may be cut off. Seen from one side of the building (a building
+	# with doors on both sides of a gate must not join what it walls apart).
+	var before := nav.reachable(fronts[0], targets)
+	var after := nav.reachable(fronts[0], before, blocked)
+	var reached_before: Dictionary[int, bool] = {}
+	var reached_after: Dictionary[int, bool] = {}
+	for tile: Vector2i in before:
+		if door_owner.has(tile):
+			reached_before[door_owner[tile]] = true
+		elif not after.has(tile):
+			return &"blocks_access"   # a pile or a person would be walled in
+	for tile: Vector2i in after:
+		if door_owner.has(tile):
+			reached_after[door_owner[tile]] = true
+	return &"" if reached_after.size() == reached_before.size() else &"blocks_access"
 
 
 static func _has_any(tiles: Dictionary[Vector2i, bool], wanted: Dictionary[Vector2i, bool]) -> bool:
@@ -231,22 +266,196 @@ static func _has_any(tiles: Dictionary[Vector2i, bool], wanted: Dictionary[Vecto
 	return false
 
 
-## The entrance has no free tile to step out to, and water is in the way (a building
-## turned with its door to the river): the player gets a clearer hint than no_access.
-func _entrance_faces_water(entrance: Vector2i, blocked: Dictionary[Vector2i, bool]) -> bool:
-	var water := false
-	for step: Vector2i in [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.DOWN, Vector2i.UP]:
-		var next := entrance + step
-		if blocked.has(next):
+## The tiles people step through into [param building]: the free tiles in front of its
+## doors, or, when none is free (a town from before buildings could be turned), any free side
+## of its main entrance.
+func door_tiles(building: BuildingState) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for pair: Array in door_pairs(building):
+		result.append(pair[1])
+	return result
+
+
+## [entrance, tile in front] of every usable door of [param building].
+func door_pairs(building: BuildingState) -> Array[Array]:
+	var pairs: Array[Array] = []
+	for o: int in building.def.door_orientations(building.orientation):
+		var front := building.def.door_front(building.origin, o)
+		if nav.is_walkable(front) and grid.occupant(front) == 0:
+			pairs.append([building.origin + building.def.entrance_at(o), front])
+	if pairs.is_empty():
+		var entrance := building.entrance_tile()
+		for step: Vector2i in [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]:
+			var t := entrance + step
+			if nav.is_walkable(t):
+				pairs.append([entrance, t])
+				break
+	return pairs
+
+
+## The first door tile of [param building] (door_tiles), or Agent.NO_TILE.
+func door_tile(building: BuildingState) -> Vector2i:
+	var doors := door_tiles(building)
+	return doors[0] if not doors.is_empty() else Agent.NO_TILE
+
+
+## The building one of whose entrances is [param tile], or null.
+func building_entered_at(tile: Vector2i) -> BuildingState:
+	var owner := grid.occupant(tile) if grid.is_inside(tile) else 0
+	if owner == 0:
+		return null
+	var building := buildings.get_building(owner)
+	return building if building != null and building.is_entrance(tile) else null
+
+
+## Tile path from [param from] to [param to] (both ends included, empty when unreachable).
+## People go into and out of a building only through a door (M4b-1.5): a path into a
+## building ends at the entrance of its door nearest to the way (the walker then counts as
+## standing at [param to]), and one out of a building starts at the entrance of the door
+## nearest to where they go.
+func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
+	if from == to:
+		return [from]
+	var start := from
+	var goal := to
+	var head := Agent.NO_TILE
+	var tail := Agent.NO_TILE
+	var leaving := building_entered_at(from)
+	if leaving != null:
+		var pair := _nearest_door(leaving, to)
+		if not pair.is_empty():
+			head = pair[0]
+			start = pair[1]
+	var entering := building_entered_at(to)
+	if entering != null:
+		var pair := _nearest_door(entering, start)
+		if not pair.is_empty():
+			tail = pair[0]
+			goal = pair[1]
+	var path := nav.find_path(start, goal)
+	if path.is_empty():
+		return path
+	if head != Agent.NO_TILE:
+		path.push_front(head)
+	if tail != Agent.NO_TILE:
+		path.append(tail)
+	return path
+
+
+func _nearest_door(building: BuildingState, near: Vector2i) -> Array:
+	var best: Array = []
+	var best_d := 1 << 30
+	for pair: Array in door_pairs(building):
+		var d := ((pair[1] as Vector2i) - near).length_squared()
+		if d < best_d:
+			best_d = d
+			best = pair
+	return best
+
+
+## The orientation suggested for a building of [param def] at [param origin] (placement
+## preview, M4b-1.5). Of the turns it fits in, one with its door onto a road wins; among
+## those (or when no road is next to it) one that lines it up into a row with a neighbour of
+## the same kind turned the same way; then [param preferred] and the next ones in order.
+## -1 when neither a road nor a neighbour decides.
+func suggested_orientation(def: BuildingDef, origin: Vector2i, preferred: int = 0) -> int:
+	var count := def.orientation_count()
+	var best := -1
+	var best_score := 0
+	for i: int in count:
+		var o := (preferred + i) % count
+		var score := 0
+		for k: int in def.door_orientations(o):
+			var front := def.door_front(origin, k)
+			if grid.is_inside(front) and grid.has_road(front):
+				score = 2
+				break
+		if row_neighbours(def, origin, o) > 0:
+			score += 1
+		if score > best_score and placement_error(def, origin, o) == &"":
+			best = o
+			best_score = score
+	return best
+
+
+## Buildings of [param def] turned to [param orientation] standing right beside
+## [param origin] along the front of one so turned (where a row of them would continue).
+func row_neighbours(def: BuildingDef, origin: Vector2i, orientation: int) -> int:
+	var along := Vector2i(0, def.footprint.y) if orientation % 2 == 0 else Vector2i(def.footprint.x, 0)
+	var n := 0
+	for at: Vector2i in [origin - along, origin + along]:
+		var other := buildings.get_building(grid.occupant(at)) if grid.is_inside(at) else null
+		if other != null and other.origin == at and other.def == def and other.orientation == orientation:
+			n += 1
+	return n
+
+
+## Houses next to new road [param tiles] whose door does not open onto a road yet turn to
+## the new road when they can (M4b-1.5, owner's decision): rows that already face a road
+## never flip.
+func turn_houses_to_road(tiles: Array[Vector2i]) -> void:
+	var seen: Dictionary[int, bool] = {}
+	for tile: Vector2i in tiles:
+		for step: Vector2i in [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]:
+			var next := tile + step
+			var building := buildings.get_building(grid.occupant(next)) if grid.is_inside(next) else null
+			if building == null or seen.has(building.id) or not building.def.is_house():
+				continue
+			seen[building.id] = true
+			var front := building.door_front_tile()
+			if grid.is_inside(front) and grid.has_road(front):
+				continue
+			var count := building.def.orientation_count()
+			for i: int in range(1, count):
+				var o := (building.orientation + i) % count
+				var new_front := building.def.door_front(building.origin, o)
+				if grid.is_inside(new_front) and grid.has_road(new_front) and can_turn(building, o):
+					turn_building(building, o)
+					break
+
+
+## Whether [param building] may be turned to [param orientation]: one of its doors then has
+## free ground in front that leads to the other buildings. The building itself is solid
+## whichever way it is turned, so turning never blocks anybody else.
+func can_turn(building: BuildingState, orientation: int) -> bool:
+	var doors: Dictionary[Vector2i, bool] = {}
+	for other: BuildingState in buildings.all():
+		if other.id != building.id:
+			for door: Vector2i in door_tiles(other):
+				doors[door] = true
+	for o: int in building.def.door_orientations(orientation):
+		var front := building.def.door_front(building.origin, o)
+		if not nav.is_walkable(front) or grid.occupant(front) != 0:
 			continue
-		if nav.is_walkable(next):
-			return false
-		var terrain := terrain_at(next)
-		if terrain != null and terrain.id == &"water":
-			water = true
-	return water
+		if doors.is_empty() or not nav.reachable(front, doors).is_empty():
+			return true
+	return false
 
 
+## Turns a placed building. People inside (on an old entrance) move to the new main
+## entrance; those walking to it plan their way again.
+func turn_building(building: BuildingState, orientation: int) -> void:
+	var old := building.entrance_tiles()
+	building.orientation = orientation
+	var entrance := building.entrance_tile()
+	for agent: Agent in agents.all():
+		if old.has(agent.tile()):
+			agent.pos = IsoMath.tile_center(entrance)
+			agent.prev_pos = agent.pos
+		if old.has(agent.path_goal) or agent.path_state == Agent.PathState.MOVING \
+				and agent.path_index < agent.path.size() and old.has(agent.path[-1]):
+			var goal := entrance if old.has(agent.path_goal) else agent.path_goal
+			var walking := agent.path_state != Agent.PathState.NONE
+			agent.clear_path()
+			if walking:
+				agent.path_goal = goal
+				agent.path_state = Agent.PathState.WAITING
+				paths.push(agent.id)
+	nav.version += 1   # paths through the old doors are planned again
+	events.emit(&"building_turned", {"building": building.id, "orientation": orientation})
+
+
+## Turns a placed building. People inside (on the old entrance) step to the new one; those
 ## Whether a tile of terrain [member BuildingDef.needs_terrain_near] lies within the work
 ## radius of a building of [param def] placed at [param origin].
 func has_terrain_near(def: BuildingDef, origin: Vector2i) -> bool:
@@ -295,7 +504,8 @@ func shore_water(tile: Vector2i, terrain_id: StringName) -> Vector2i:
 
 # --- Forestry (M4b-1) -----------------------------------------------------------------------
 
-## Where a forester of [param building] plants next: the nearest stump of [param node_id]
+## Where a forester of [param building] plants next (only on its marked plant_area when the
+## player marked one, M4b-1.5): the nearest stump of [param node_id]
 ## within the work radius, else the nearest free ground there, nearest to [param from].
 ## Spots chosen by other foresters are skipped. Agent.NO_TILE if none.
 func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2i) -> Vector2i:
@@ -303,28 +513,44 @@ func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2
 	for agent: Agent in agents.all():
 		if agent.task != null and agent.task.bb.has("plant") and agent.task.bb.has("node"):
 			taken[SimCodec.to_vec2i(agent.task.bb["node"])] = true
-	var area := Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius) 			.intersection(Rect2i(Vector2i.ZERO, grid.size))
+	var area := _work_area(building)
+	if forest_full(building, node_id):
+		return Agent.NO_TILE
+	var candidates: Array[Vector2i] = building.plant_area.duplicate()
+	if candidates.is_empty():
+		for y: int in range(area.position.y, area.end.y):
+			for x: int in range(area.position.x, area.end.x):
+				candidates.append(Vector2i(x, y))
+	var best := Agent.NO_TILE
+	var best_d := 1 << 30
+	for tile: Vector2i in candidates:
+		if taken.has(tile) or not area.has_point(tile) or not can_plant(tile, node_id):
+			continue
+		var stump := resources.is_depleted(tile) and resources.def_at(tile).id == node_id
+		var d := (tile - from).length_squared() + (0 if stump else 1 << 20)
+		if d < best_d and approach_tile(tile, from) != Agent.NO_TILE:
+			best_d = d
+			best = tile
+	return best
+
+
+## Whether [param building] (a forester) has as many trees and saplings of [param node_id]
+## in its work area as it tends (FORESTER_MAX_TREES): then it waits.
+func forest_full(building: BuildingState, node_id: StringName) -> bool:
+	var area := _work_area(building)
 	var trees := 0
 	for y: int in range(area.position.y, area.end.y):
 		for x: int in range(area.position.x, area.end.x):
 			var def := resources.def_at(Vector2i(x, y))
 			if def != null and not resources.is_depleted(Vector2i(x, y)) 					and (def.id == node_id or def.grows_into == node_id):
 				trees += 1
-	if trees >= FORESTER_MAX_TREES:
-		return Agent.NO_TILE
-	var best := Agent.NO_TILE
-	var best_d := 1 << 30
-	for y: int in range(area.position.y, area.end.y):
-		for x: int in range(area.position.x, area.end.x):
-			var tile := Vector2i(x, y)
-			if taken.has(tile) or not can_plant(tile, node_id):
-				continue
-			var stump := resources.is_depleted(tile) and resources.def_at(tile).id == node_id
-			var d := (tile - from).length_squared() + (0 if stump else 1 << 20)
-			if d < best_d and approach_tile(tile, from) != Agent.NO_TILE:
-				best_d = d
-				best = tile
-	return best
+	return trees >= FORESTER_MAX_TREES
+
+
+## Tiles within the work radius of [param building], clipped to the map.
+func _work_area(building: BuildingState) -> Rect2i:
+	return Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius).intersection(
+			Rect2i(Vector2i.ZERO, grid.size))
 
 
 ## Whether a sapling may go on [param tile]: a stump of [param node_id] (old saves), or free
@@ -346,6 +572,18 @@ func can_plant(tile: Vector2i, node_id: StringName = &"tree") -> bool:
 			if grid.is_inside(next) and (grid.occupant(next) != 0 or grid.has_road(next)):
 				return false
 	return true
+
+
+## A felled tree taken with its stump leaves grass where the forest floor was (owner's
+## decision 2026-11-05): cleared land turns green.
+func clear_forest_floor(tile: Vector2i) -> void:
+	var terrain := terrain_at(tile)
+	if terrain == null or terrain.id != &"forest":
+		return
+	var grass := data.get_terrain(&"grass")
+	if grass != null:
+		grid.set_terrain(tile, grass.index)
+		refresh_tile(tile)
 
 
 func plant(tile: Vector2i, sapling: ResourceNodeDef) -> void:
@@ -374,11 +612,13 @@ func _grow_saplings() -> void:
 		events.emit(&"resource_grown", {"tile": tile, "node": young.grows_into})
 
 
-## Places a building. [param instant] finishes it at once (map start, tests); otherwise it
+## Places a building turned to [param orientation]. [param instant] finishes it at once (map start, tests); otherwise it
 ## becomes a construction site that porters and builders turn into the building (its gold
 ## cost is paid now; the command checked there is enough).
-func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false) -> BuildingState:
-	var building := BuildingState.new(ids.take(), def, origin)
+func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false,
+		orientation: int = 0, look: int = 0) -> BuildingState:
+	var building := BuildingState.new(ids.take(), def, origin, orientation)
+	building.look = look
 	if not instant:
 		treasury.pay(def.gold_cost)
 	buildings.add(building)
@@ -387,7 +627,7 @@ func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false) -> 
 		resources.clear(tile)
 		refresh_tile(tile)
 	events.emit(&"building_placed", {"building": building.id, "def": def.id, "origin": origin,
-			"instant": instant})
+			"orientation": orientation, "instant": instant})
 	if instant or def.build_cost.is_empty():
 		building.finish(data)
 		events.emit(&"building_completed", {"building": building.id, "def": def.id})

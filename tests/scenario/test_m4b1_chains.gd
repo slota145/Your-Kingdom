@@ -152,8 +152,9 @@ func test_tavern_reaches_houses_only_while_it_serves() -> void:
 	stock.stock.add(&"beer", 3)
 	stock.stock.add(&"mead", 3)
 	var mead_before := sim.province.goods_total(&"mead")
-	var counts := _run_counting(sim, 150)
-	print("tavern in 2.5 min: ", counts)
+	# One serving takes ~50 s plus the walk to the stockpile and back through the doors.
+	var counts := _run_counting(sim, 180)
+	print("tavern in 3 min: ", counts)
 	assert_int(int(counts.get("goods_served", 0))).is_greater_equal(2)
 	assert_bool(tavern.provides_service(sim.province.tick)).is_true()
 	assert_bool(sim.province.coverage.covers(&"tavern", tavern.entrance_tile(), size)).is_true()
@@ -273,3 +274,53 @@ func test_saplings_and_serving_survive_save_load() -> void:
 	loaded.run_ticks(SimFixture.ticks(60))
 	sim.run_ticks(SimFixture.ticks(60))
 	assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(SimCodec.canonical(sim.to_dict()))
+
+
+## M4b-1.5 (owner's play test): the player marks where the forester plants; with a full
+## forest around it the forester says so instead of "no trees in range".
+func test_forester_plants_only_in_the_marked_area() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	_village_with(sim, {})
+	var lodge := SimFixture.place(sim, &"forester", Vector2i(20, 20))
+	var marked: Array[Vector2i] = [Vector2i(26, 26), Vector2i(28, 26), Vector2i(26, 28), Vector2i(40, 40)]
+	assert_str(String(sim.execute(SetPlantAreaCommand.new(lodge.id, marked)))).is_equal("")
+	sim.run_ticks(1)
+	# The tile outside its work area is left out.
+	assert_int(lodge.plant_area.size()).is_equal(3)
+	var counts := _run_counting(sim, 90)
+	assert_int(int(counts.get("resource_planted", 0))).is_greater_equal(2)
+	for tile: Vector2i in sim.province.resources.tiles_with_nodes():
+		assert_bool(lodge.plant_area.has(tile)).override_failure_message("planted at %s" % tile).is_true()
+	var copy := Simulation.from_dict(JSON.parse_string(JSON.stringify(sim.to_dict())), SimFixture.registry())
+	assert_int(copy.province.buildings.get_building(lodge.id).plant_area.size()).is_equal(3)
+	var none: Array[Vector2i] = []
+	sim.execute(SetPlantAreaCommand.new(lodge.id, none))
+	sim.run_ticks(1)
+	assert_int(lodge.plant_area.size()).is_equal(0)
+
+
+func test_forester_in_a_full_forest_waits_and_says_why() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	_village_with(sim, {})
+	var lodge := SimFixture.place(sim, &"forester", Vector2i(20, 20))
+	SimFixture.plant_trees(sim, Rect2i(24, 14, 6, 6))
+	assert_bool(sim.province.forest_full(lodge, &"tree")).is_true()
+	var reasons: Dictionary = {}
+	for i: int in SimFixture.ticks(30):
+		sim.step()
+		for event: Dictionary in sim.events.drain():
+			if event["type"] == &"task_failed":
+				reasons[event.get("reason", &"")] = true
+	assert_bool(reasons.has(&"forest_full")).override_failure_message(str(reasons)).is_true()
+
+
+## A felled tree taken with its stump leaves grass where the forest floor was.
+func test_cut_forest_floor_turns_to_grass() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	var forest := SimFixture.registry().get_terrain(&"forest")
+	var tile := Vector2i(16, 8)
+	sim.province.grid.set_terrain(tile, forest.index)
+	sim.province.refresh_tile(tile)
+	sim.province.clear_forest_floor(tile)
+	assert_str(String(sim.province.terrain_at(tile).id)).is_equal("grass")
+	assert_float(sim.province.nav.get_cost(tile)).is_equal_approx(1.0, 0.001)

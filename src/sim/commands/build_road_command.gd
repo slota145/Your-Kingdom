@@ -20,9 +20,12 @@ func validate(sim: Simulation) -> StringName:
 
 
 func apply(sim: Simulation) -> void:
+	var built: Array[Vector2i] = []
 	for tile: Vector2i in tiles:
 		if sim.province.road_error(tile) == &"":
 			sim.province.set_road(tile, true)
+			built.append(tile)
+	sim.province.turn_houses_to_road(built)
 
 
 func get_name() -> StringName:

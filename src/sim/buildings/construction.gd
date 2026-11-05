@@ -76,8 +76,9 @@ static func _close(province: ProvinceSim, site: ConstructionSite, finished: bool
 		return
 	building.site_id = 0
 	var leftovers := site.stock.totals()
+	var door := province.door_tile(building)
 	for good: StringName in leftovers:
-		province.drop_goods(building.entrance_tile(), good, leftovers[good])
+		province.drop_goods(door if door != Agent.NO_TILE else building.entrance_tile(), good, leftovers[good])
 	if not finished:
 		return
 	if site.kind == ConstructionSite.KIND_UPGRADE:
@@ -137,6 +138,6 @@ static func site_for(province: ProvinceSim, builder: Agent) -> int:
 	candidates.sort_custom(func(a: Array, b: Array) -> bool:
 		return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
 	for candidate: Array in candidates:
-		if not province.nav.find_path(builder.tile(), candidate[2]).is_empty():
+		if not province.find_path(builder.tile(), candidate[2]).is_empty():
 			return candidate[1]
 	return 0

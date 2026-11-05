@@ -254,13 +254,16 @@ Pliki leżą w folderze budynku domu (`buildings/hut/`), a ich nazwy wskazuje `d
 | Poziom | Pliki |
 |---|---|
 | 1 (chata) | `base.png` (później warianty wyglądu `base_b`, `base_c`) |
-| 2 (dom mieszczański) | `level_2_single_x.png` (= `_y`), `level_2_end_a_x.png`, `level_2_middle_x.png`, `level_2_end_b_x.png`, analogicznie `_y` dla drugiej osi |
+| 1 (chata), od tyłu | `base_back.png`, `base_2_back.png`, `base_3_back.png` |
+| 2 (dom mieszczański) | `level_2_<fragment>.png`; fragmenty `single`, `end_a`, `middle`, `end_b`, `corner_a`, `corner_b`; inne kształty szczytu `level_2_<fragment>_2.png`, `_3.png` (`row_variants`); od tyłu z dopiskiem `_back` (np. `level_2_middle_2_back.png`) |
 | 3 (patrycjusze) | jak poziom 2 (`level_3_…`) |
-| Ulepszanie | `upgrade_scaffold.png` (rusztowanie nakładane na dom) |
-| Budowa | `construction_1.png` (fundament i rusztowanie), `construction_2.png` (ściany na rusztowaniu) — każdy budynek ma własne, w tym samym kadrze co `base` |
+| Ulepszanie | `upgrade_scaffold.png` (rusztowanie nakładane na dom), `upgrade_scaffold_back.png` |
+| Budowa | `construction_1.png` (fundament i rusztowanie), `construction_2.png` (ściany na rusztowaniu) — każdy budynek ma własne, w tym samym kadrze co `base`; domy także `construction_1_back.png`, `construction_2_back.png` |
 
-- `x` i `y` oznaczają oś siatki, wzdłuż której biegnie pierzeja. Fragmenty `end_a`, `middle` i `end_b` muszą stykać się ścianami szczytowymi bez szwów, a linia dachu musi być ciągła.
-- Domy mają footprint 2×2, więc fragment `middle` ma 128 px szerokości jak dom pojedynczy.
+- **Orientacje (M4b-1.5):** grafikę rysujemy dla orientacji 0 (drzwi na ścianie +x, prawej dolnej). Orientacja 1 to ta sama grafika w lustrze (odbija ją gra). Domy w orientacjach 2 i 3 używają grafiki `_back` (drzwi po stronie niewidocznej, od kamery tył: tylne drzwi, mniej ozdób), 3 w lustrze. Pozostałe budynki nie mają grafik `_back`.
+- Pierzeja na grafice biegnie wzdłuż osi y (front domu na ścianie +x); pierzeje wzdłuż x to lustro. `a` to koniec o mniejszej współrzędnej: `end_a` łączy się z sąsiadem tylko po stronie `b`, `end_b` tylko po stronie `a`, `corner_a` po stronie `a` i z tyłu (tam stoi dom drugiego rzędu), `corner_b` po stronie `b` i z tyłu.
+- **Kamienice stoją szczytem do ulicy:** kalenica od ulicy w głąb, dachy sąsiadów stykają się koszami. Jeden fragment (działka 2×2) to kilka węższych domów: mieszczanie 1–3, patrycjusze 1–2, każdy z własną wysokością, szczytem, odcieniem z surowej palety i lekko przesuniętym frontem. Cała działka jest wybrukowana; działki mieszczan mają między sobą wąskie przerwy, patrycjuszy stykają się. Róg ma dwa szczyty (na obie ulice) i ścięty narożnik z bramą pod ukośnym szczytem albo (patrycjusze, wygląd `_2`) wykusz z wieżyczką. Rysuje je `tools/town_house_art.gd` z buforem głębi (§10.3).
+- Domy mają footprint 2×2, więc każdy fragment ma 128 px szerokości (plus margines).
 
 ---
 

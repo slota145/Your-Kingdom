@@ -15,6 +15,12 @@ var id: int
 var def: BuildingDef
 ## Footprint origin in grid space (the tile with the smallest x and y).
 var origin: Vector2i
+## Which way the building is turned (BuildingDef.entrance_at): 0 as drawn, 1 mirrored,
+## 2 and 3 (houses only) with the door at the back.
+var orientation: int = 0
+## Look chosen by the player (M4b-1.5): 0 = picked by position, 1.. = that look. Only the
+## view reads it.
+var look: int = 0
 ## True from placement until the construction site is finished.
 var under_construction: bool = false
 ## Construction or upgrade site entity id, 0 = none.
@@ -31,16 +37,19 @@ var priority: Priority = Priority.NORMAL
 var paused: bool = false
 ## Service with def.service_needs_supply: tick until which it reaches houses (last serving).
 var serving_until: int = 0
+## Forester: tiles the player marked for planting (M4b-1.5); empty = anywhere in range.
+var plant_area: Array[Vector2i] = []
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
 var workers: Array[int] = []
 
 
-func _init(entity_id: int, building_def: BuildingDef, at: Vector2i) -> void:
+func _init(entity_id: int, building_def: BuildingDef, at: Vector2i, turned: int = 0) -> void:
 	id = entity_id
 	def = building_def
 	origin = at
+	orientation = turned
 
 
 ## Makes a finished building usable: storage, pantry, household.
@@ -71,7 +80,24 @@ func provides_service(tick: int) -> bool:
 
 
 func entrance_tile() -> Vector2i:
-	return origin + def.entrance
+	return origin + def.entrance_at(orientation)
+
+
+## The tile in front of the door, the only way in and out (BuildingDef.door_front).
+func door_front_tile() -> Vector2i:
+	return def.door_front(origin, orientation)
+
+
+## Entrance tiles of every door (the main one first).
+func entrance_tiles() -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for o: int in def.door_orientations(orientation):
+		tiles.append(origin + def.entrance_at(o))
+	return tiles
+
+
+func is_entrance(tile: Vector2i) -> bool:
+	return entrance_tiles().has(tile)
 
 
 func tiles() -> Array[Vector2i]:
@@ -103,7 +129,8 @@ func house_goods() -> Array[StringName]:
 
 
 func to_dict() -> Dictionary:
-	var d := {"id": id, "def": String(def.id), "origin": SimCodec.vec2i(origin), "workers": workers}
+	var d := {"id": id, "def": String(def.id), "origin": SimCodec.vec2i(origin), "orient": orientation,
+			"workers": workers}
 	if under_construction:
 		d["building"] = true
 	if site_id != 0:
@@ -123,6 +150,13 @@ func to_dict() -> Dictionary:
 		d["priority"] = priority
 	if paused:
 		d["paused"] = true
+	if look != 0:
+		d["look"] = look
+	if not plant_area.is_empty():
+		var area := []
+		for t: Vector2i in plant_area:
+			area.append(SimCodec.vec2i(t))
+		d["plant_area"] = area
 	if serving_until != 0:
 		d["serving_until"] = serving_until
 	return d
@@ -130,7 +164,7 @@ func to_dict() -> Dictionary:
 
 static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	var b := BuildingState.new(int(d["id"]), data.get_building(StringName(String(d["def"]))),
-			SimCodec.to_vec2i(d["origin"]))
+			SimCodec.to_vec2i(d["origin"]), int(d.get("orient", 0)))
 	b.workers = SimCodec.int_array(d.get("workers", []))
 	b.under_construction = bool(d.get("building", false))
 	b.site_id = int(d.get("site", 0))
@@ -146,6 +180,9 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	for good: Variant in r:
 		b.reserves[StringName(String(good))] = int(r[good])
 	b.paused = bool(d.get("paused", false))
+	b.look = int(d.get("look", 0))
+	for t: Variant in d.get("plant_area", []):
+		b.plant_area.append(SimCodec.to_vec2i(t))
 	b.serving_until = int(d.get("serving_until", 0))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

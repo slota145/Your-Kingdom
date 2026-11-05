@@ -31,6 +31,118 @@ func test_strips_cover_the_whole_image() -> void:
 		assert_int(strips[i].region.position.x).is_equal(strips[i - 1].region.end.x)
 
 
+## M4b-1.5: turned buildings (mirrored art: eaves swap sides), rows, corners and two rows
+## back to back. People around them and the buildings among themselves must sort right.
+func test_turned_buildings_rows_and_corners_sort_correctly() -> void:
+	var layouts: Dictionary[String, Array] = {
+		"single": [[Vector2i(10, 10), 0]],
+		"single mirrored": [[Vector2i(10, 10), 1]],
+		"single back": [[Vector2i(10, 10), 2]],
+		"single back mirrored": [[Vector2i(10, 10), 3]],
+		"row along y": [[Vector2i(10, 8), 0], [Vector2i(10, 10), 0], [Vector2i(10, 12), 0]],
+		"row along x": [[Vector2i(8, 10), 1], [Vector2i(10, 10), 1], [Vector2i(12, 10), 1]],
+		"corner": [[Vector2i(10, 6), 0], [Vector2i(10, 8), 0], [Vector2i(10, 10), 0],
+				[Vector2i(6, 10), 1], [Vector2i(8, 10), 1]],
+		"back corner": [[Vector2i(10, 10), 2], [Vector2i(10, 12), 2], [Vector2i(12, 10), 3], [Vector2i(14, 10), 3]],
+		"back to back": [[Vector2i(10, 8), 2], [Vector2i(10, 10), 2], [Vector2i(10, 12), 2],
+				[Vector2i(12, 8), 0], [Vector2i(12, 10), 0], [Vector2i(12, 12), 0]],
+		"back to back along x": [[Vector2i(8, 10), 3], [Vector2i(10, 10), 3], [Vector2i(8, 12), 1], [Vector2i(10, 12), 1]],
+	}
+	for name: String in layouts:
+		var failures := _check_layout(layouts[name])
+		assert_array(Array(failures)).override_failure_message(
+				"%s:\n%s" % [name, "\n".join(failures.slice(0, 10))]).is_empty()
+
+
+## Houses (2x2) given as [origin, orientation]. Each gets strips like BuildingView: the
+## art has wider eaves on its right (20 px) than on its left (8 px), and mirrored art
+## (orientations 1, 3) has them the other way round.
+func _check_layout(houses: Array) -> PackedStringArray:
+	var failures := PackedStringArray()
+	var fp := Vector2i(2, 2)
+	var items: Array[Dictionary] = []
+	var area := Rect2i(houses[0][0], fp)
+	for h: Array in houses:
+		var rect := Rect2i(h[0], fp)
+		area = area.merge(rect)
+		var mirrored := int(h[1]) % 2 == 1
+		var width := 32 * (fp.x + fp.y) + 28
+		var pivot := Vector2i(32 * fp.x + (20 if mirrored else 8), 120)
+		items.append({"rect": rect, "poly": _poly(rect), "b": IsoMath.grid_to_screen(Vector2(rect.end)),
+				"pivot": pivot, "strips": BuildingSlicer.slices(fp, pivot, Vector2i(width, 120))})
+	var blocked := func(t: Vector2i) -> bool:
+		for item: Dictionary in items:
+			if (item["rect"] as Rect2i).has_point(t):
+				return true
+		return false
+	# People walking around.
+	for p: Vector2 in DepthOracle.walk_samples(area.grow(3), blocked):
+		var a := IsoMath.grid_to_screen(p)
+		for item: Dictionary in items:
+			for strip: BuildingSlicer.Strip in item["strips"]:
+				var cols := _columns(item, strip)
+				var c0 := maxf(a.x - DepthOracle.AGENT_HALF_WIDTH, cols.x)
+				var c1 := minf(a.x + DepthOracle.AGENT_HALF_WIDTH, cols.y)
+				if c0 >= c1:
+					continue
+				var rel := DepthOracle.relation(p, item["poly"], c0, c1)
+				var key: float = (item["b"] as Vector2).y + strip.sort_offset.y
+				if (rel == DepthOracle.IN_FRONT and a.y <= key) or (rel == DepthOracle.BEHIND and a.y >= key):
+					failures.append("agent %s vs house %s" % [p, item["rect"]])
+	# Buildings among themselves: where two strips share screen columns and one footprint
+	# lies wholly behind the other there, its strip must sort first.
+	for i: int in items.size():
+		for j: int in items.size():
+			if i == j:
+				continue
+			for sa: BuildingSlicer.Strip in items[i]["strips"]:
+				for sb: BuildingSlicer.Strip in items[j]["strips"]:
+					var ca := _columns(items[i], sa)
+					var cb := _columns(items[j], sb)
+					var c0 := maxf(ca.x, cb.x)
+					var c1 := minf(ca.y, cb.y)
+					if c1 - c0 < 1.0:
+						continue
+					var da := _depth_range(items[i]["poly"], c0, c1)
+					var db := _depth_range(items[j]["poly"], c0, c1)
+					if da.x == INF or db.x == INF or da.y > db.x:
+						continue
+					var ka: float = (items[i]["b"] as Vector2).y + sa.sort_offset.y
+					var kb: float = (items[j]["b"] as Vector2).y + sb.sort_offset.y
+					if ka >= kb:
+						failures.append("house %s (key %.1f) drawn over %s (key %.1f)" % [
+							items[i]["rect"], ka, items[j]["rect"], kb])
+	return failures
+
+
+func _poly(rect: Rect2i) -> PackedVector2Array:
+	return PackedVector2Array([Vector2(rect.position), Vector2(rect.end.x, rect.position.y),
+			Vector2(rect.end), Vector2(rect.position.x, rect.end.y)])
+
+
+## Screen x range a strip covers.
+func _columns(item: Dictionary, strip: BuildingSlicer.Strip) -> Vector2:
+	var b: Vector2 = item["b"]
+	var pivot: Vector2i = item["pivot"]
+	return Vector2(b.x + strip.region.position.x - pivot.x, b.x + strip.region.end.x - pivot.x)
+
+
+## (min, max) of x + y over the ground polygon within screen columns [x0, x1]; INF if none.
+func _depth_range(poly: PackedVector2Array, x0: float, x1: float) -> Vector2:
+	var uv := PackedVector2Array()
+	for g: Vector2 in poly:
+		uv.append(Vector2((g.x - g.y) * IsoMath.HALF_W, g.x + g.y))
+	uv = DepthOracle._clip(DepthOracle._clip(uv, x0, 1.0), x1, -1.0)
+	if uv.is_empty():
+		return Vector2(INF, INF)
+	var lo := INF
+	var hi := -INF
+	for q: Vector2 in uv:
+		lo = minf(lo, q.y)
+		hi = maxf(hi, q.y)
+	return Vector2(lo, hi)
+
+
 func _check_building(origin: Vector2i, footprint: Vector2i, key_bias: float = 0.0) -> PackedStringArray:
 	var failures := PackedStringArray()
 	var rect := Rect2i(origin, footprint)

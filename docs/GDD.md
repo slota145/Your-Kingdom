@@ -117,7 +117,7 @@ Zasady:
   - zadowolenie spada powoli (1 pkt/s) i najwyżej do 20, więc dom płaci mniej podatku, a poniżej 50 nie przychodzą do niego nowi mieszkańcy,
   - po 60 s gracz dostaje ostrzeżenie,
   - po 180 s braku, jeśli zadowolenie jest poniżej 25, co 60 s wyprowadza się jeden mieszkaniec. Dom pustoszeje, ale zostaje na swoim poziomie. Gdy potrzeby wrócą, zadowolenie rośnie i dom się zapełnia.
-- **Łączenie w kamienice** (od poziomu 2): domy tego samego poziomu, ustawione obok siebie w jednej linii wzdłuż osi siatki i równo wyrównane, wizualnie łączą się w pierzeję. Zamiast osobnych budynków widać fragmenty: koniec lewy, środek i koniec prawy. Łączenie jest **wyłącznie wizualne** i nie zmienia symulacji. Rozważymy później premię (np. mniejsze zużycie opału) [PÓŹNIEJ]. Od M4b-1.5 łączą się tylko domy patrzące w tę samą stronę, dom na styku dwóch rzędów pod kątem prostym staje się narożnikiem, a dwa rzędy mogą stać plecami do siebie, każdy przodem do swojej drogi.
+- **Łączenie w kamienice** (od poziomu 2): domy tego samego poziomu, ustawione obok siebie w jednej linii wzdłuż osi siatki i równo wyrównane, wizualnie łączą się w pierzeję. Zamiast osobnych budynków widać fragmenty: koniec lewy, środek i koniec prawy. Łączenie jest **wyłącznie wizualne** i nie zmienia symulacji. Rozważymy później premię (np. mniejsze zużycie opału) [PÓŹNIEJ]. Od M4b-1.5 łączą się tylko domy patrzące w tę samą stronę, dom na styku dwóch rzędów pod kątem prostym staje się narożnikiem, a dwa rzędy mogą stać plecami do siebie, każdy przodem do swojej drogi. **Kamienice stoją szczytem do ulicy** (szkic właściciela 2026-11-05): każdy dom pokazuje ulicy własny szczyt (prosty, wygięty albo schodkowy, według położenia), kalenica biegnie w głąb działki, a dachy sąsiadów stykają się koszami. Dom na rogu ma dwa szczyty, po jednym na każdą ulicę, a często ścięty róg z bramą pod ukośnym szczytem. Na jednej działce stoi kilka węższych domów (mieszczanie 1–3, patrycjusze 1–2) o różnych kolorach i lekko przesuniętych frontach; dla symulacji to nadal jeden dom.
 
 ### 3.4 Ludność i praca
 
@@ -226,7 +226,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 
 ### 5.1 Zasady ogólne
 
-- Budynki zajmują prostokątny obszar kafli (footprint). Mają **wejście** na wskazanym kaflu krawędzi, w które postacie wchodzą i z którego wychodzą.
+- Budynki zajmują prostokątny obszar kafli (footprint). Mają **wejście** na wskazanym kaflu krawędzi, w które postacie wchodzą i z którego wychodzą, zawsze przez kafel przed drzwiami. Magazyny mają drzwi z każdej strony, inne budynki oprócz domów także z tyłu; wystarczy jedne drzwi z wolnym przejściem (M4b-1.5). Postawiony budynek można obrócić w jego panelu.
 - Budowa jest fizyczna: plac budowy, dostawa materiałów przez tragarzy, praca budowniczego i fazy budowy.
 - Budynku nie da się postawić tam, gdzie ludzie nie dojdą, ani tak, żeby odciął drogę do wejścia innego budynku, towarów na ziemi albo ludzi (decyzja 2026-11-05: zamurowany plac budowy blokował tragarzy i budowniczych). Budowniczy, który nie może dojść do placu, idzie na następny. Gdy wejście wypadłoby od strony wody (np. chata rybaka obrócona drzwiami do rzeki), gracz dostaje osobny komunikat.
 - **Obracanie (M4b-1.5, decyzja 2026-11-05):** gracz wybiera, z której strony budynek ma wejście. Domy mają 4 strony, pozostałe budynki 2 (wejście zawsze od strony kamery, żeby praca była widoczna). Podgląd sam obraca wejście do przylegającej drogi, a klawisz R zmienia stronę ręcznie.

@@ -310,6 +310,7 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 
   Wynik: 0 błędów. Próba kontrolna (celowo przesunięte punkty) jest wykrywana.
 - **Zapasy:** postać przed budynkiem ma co najmniej 8 px zapasu nad punktem sortowania paska, a za budynkiem ponad 16 px.
+- **M4b-1.5:** lustrzane grafiki tnie ten sam `BuildingSlicer` (piwot odbity w poziomie). `test_sorting.gd` sprawdza też domy w każdej orientacji (okapy szersze z jednej strony), rzędy, rogi i rzędy plecami do siebie, w tym kolejność pasków dwóch stykających się budynków.
 - **Warianty a i b są zaimplementowane** (`BuildingView.set_faded`, `set_lowered`). Wariant b tnie każdy pasek osobno tuż nad przednią krawędzią, przez co powstaje schodkowa linia cięcia. Do wygładzenia shaderem przy grafikach docelowych.
 - **Wariant c odłożony.** Wymaga wspólnej maski głębi w `SubViewport`, a a+b wystarczają do sprawdzenia czytelności. Wracamy do niego w M7 (wojsko za murami).
 
@@ -350,7 +351,9 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 
 ### 6.6 Łączenie domów w kamienice
 
-`HouseRowResolver` (czysta funkcja w widoku, bo nie wpływa na logikę) dla każdego domu poziomu 2 lub wyższego sprawdza sąsiadów tego samego poziomu wzdłuż obu osi, przylegających pełną krawędzią i wyrównanych. Zwraca wariant `single`, `end_a`, `middle` albo `end_b` i oś. Grafiki wariantów opisuje ART_SPEC §7.
+`HouseRowResolver` (czysta funkcja w widoku, bo nie wpływa na logikę) dla każdego domu poziomu 2 lub wyższego sprawdza sąsiadów tego samego poziomu i tej samej orientacji wzdłuż frontu domu (orientacje 0 i 2: oś y, 1 i 3: oś x), przylegających pełną krawędzią i wyrównanych. Dom z jednym sąsiadem w rzędzie, za którym stoi dom obrócony prostopadle, jest rogiem (`corner_a`/`corner_b`), a dom za nim łączy się z nim jak z sąsiadem. Wynik: `single`, `end_a`, `middle`, `end_b`, `corner_a` albo `corner_b`. `BuildingVisualDef.row_variant_name` dobiera kształt szczytu według położenia, a `BuildingLayer.oriented_art` grafikę `_back` i lustro (sufiks klucza `@m`; `BuildingView.setup(…, mirrored)` odbija teksturę i piwot). Grafiki opisuje ART_SPEC §7.
+
+**Orientacja (M4b-1.5):** `BuildingState.orientation` (domy 0–3, reszta 0–1). `BuildingDef.entrance_at` i `door_dir` obracają wejście (1 = zamiana x i y, 2 = obrót o 180°, 3 = oba); obrysy są kwadratowe, więc kafle się nie zmieniają. `ProvinceSim.find_path` prowadzi każdą ścieżkę do wejścia i z wejścia przez kafel przed drzwiami najbliższymi celu (`door_pairs`); cały obrys budynku, także wejścia, jest w `NavGrid` nieprzechodni. `BuildingDef.door_orientations` daje drzwi budynku (`door_sides`: domy jedne, magazyny z każdej strony, reszta z przodu i z tyłu); sprawdzanie miejsca wymaga jednych drzwi z dostępem i nie pozwala odciąć innych budynków. Obrót postawionego budynku: `RotateBuildingCommand`. Podgląd stawiania: `PlacementTurn` (UI) i `ProvinceSim.suggested_orientation` (droga przed drzwiami, potem rząd z sąsiadem). `BuildRoadCommand` obraca domy bez drogi przed drzwiami do nowej drogi (`turn_houses_to_road`, `turn_building`; zdarzenie `building_turned`). Wybrany wygląd domu to `BuildingState.look` (`SetLookCommand`), czytany tylko przez widok.
 
 ### 6.6a Widok prowincji (M3)
 
@@ -421,6 +424,7 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Wersja 2 (M3):** teren i drogi w siatce, place budowy, pola, wejście na mapę, dom postaci, stan domów. Migracja v1 → v2 w `SaveMigrations` (mapa v1 to sama trawa, wszystkie budynki gotowe). Fixtury: `tests/fixtures/saves/v1_woodcutter.json` i `v2_village.json`.
 - **Wersja 3 (M4a):** skarbiec (`treasury`), rezerwy magazynów, priorytety pracy, schowki warsztatów. Migracja v2 → v3 daje miastu z M3 100 złota, magazynom rezerwę 5 drewna, a spiżarniom chat sloty na nowe towary. `BuildingState.from_dict` dodatkowo poszerza spiżarnię, gdy dane dodadzą nowe towary. Fixtura: `tests/fixtures/saves/v3_town.json`.
 - **Wersja 4 (M4a, wnioski z testów):** zapas na budowy w prowincji (`keep_for_building`, towar → liczba sztuk). Migracja v3 → v4 daje pusty zapas, więc stara gra działa jak wcześniej. Fixtura: `tests/fixtures/saves/v4_town.json`.
+- **Wersja 6 (M4b-1.5):** każdy budynek zapisuje orientację (`orient`), dom wybrany wygląd (`look`, gdy różny od 0), a leśniczówka zaznaczone miejsce sadzenia (`plant_area`, gdy niepuste). Migracja v5 → v6 daje 0, czyli dotychczasowe wejście. Fixtura: `tests/fixtures/saves/v6_town.json`.
 - **Mapa** to obrazek PNG importowany jako `Image` (nie tekstura), więc symulacja czyta piksele bez widoku. Kolor piksela = `TerrainDef.map_color`. Zapis gry zawiera już gotowy teren, więc późniejsza zmiana obrazka nie psuje zapisów.
 - **Test round-trip:** stan → zapis → odczyt → zapis daje identyczny słownik. Dodatkowo test, w którym symulacja po wczytaniu idzie dalej deterministycznie tak samo jak bez zapisu.
 

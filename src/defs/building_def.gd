@@ -44,6 +44,11 @@ extends GameDef
 @export var service_needs_supply: bool = false
 ## Non-empty for houses: level 1, 2... (GDD §3.3).
 @export var house_levels: Array[HouseLevelDef] = []
+## Which sides have doors (M4b-1.5, owner's decision): &"one" (only the door the player
+## turns), &"opposite" (also the side across, so it can face a road on either side),
+## &"all" (every side). Empty = by kind: houses one, storages all, the rest opposite.
+## People need only one door with free ground in front of it.
+@export var door_sides: StringName = &""
 
 
 func get_kind() -> StringName:
@@ -56,6 +61,16 @@ func worker_count() -> int:
 
 func is_house() -> bool:
 	return not house_levels.is_empty()
+
+
+## Whether its workers plant trees (a forester): the player may mark where.
+func plants_trees() -> bool:
+	if recipe == null:
+		return false
+	for step: StepDef in recipe.steps:
+		if step is PlantStepDef:
+			return true
+	return false
 
 
 ## Goods used by construction phase [param phase] (1 or 2).
@@ -76,6 +91,69 @@ func footprint_tiles(origin: Vector2i) -> Array[Vector2i]:
 		for x: int in footprint.x:
 			tiles.append(origin + Vector2i(x, y))
 	return tiles
+
+
+## How many ways the building can be turned (GDD §5.1, M4b-1.5): houses 4 (door on any
+## side; 2 and 3 show the back to the camera), other buildings 2 (as drawn and mirrored, so
+## the work always faces the camera). Footprints are square, so turning never moves tiles.
+func orientation_count() -> int:
+	return 4 if is_house() else 2
+
+
+## Entrance tile (relative to the origin) of the building turned to [param orientation]:
+## 0 = as drawn, 1 = mirrored (x and y swapped), 2 = turned half round, 3 = both.
+func entrance_at(orientation: int) -> Vector2i:
+	var n := footprint.x - 1
+	match orientation:
+		1:
+			return Vector2i(entrance.y, entrance.x)
+		2:
+			return Vector2i(n - entrance.x, n - entrance.y)
+		3:
+			return Vector2i(n - entrance.y, n - entrance.x)
+	return entrance
+
+
+## Grid step out of the door of the building turned to [param orientation]. As drawn
+## (0) the door is on the side of the entrance tile that lies on the footprint edge, the
+## +x side (screen right) winning at a corner, like the art (ART_SPEC §3.2).
+func door_dir(orientation: int) -> Vector2i:
+	var d := Vector2i(0, 1)
+	if entrance.x == footprint.x - 1:
+		d = Vector2i(1, 0)
+	elif entrance.y == footprint.y - 1:
+		d = Vector2i(0, 1)
+	elif entrance.x == 0:
+		d = Vector2i(-1, 0)
+	elif entrance.y == 0:
+		d = Vector2i(0, -1)
+	match orientation:
+		1:
+			return Vector2i(d.y, d.x)
+		2:
+			return -d
+		3:
+			return -Vector2i(d.y, d.x)
+	return d
+
+
+## The tile just outside the door: people walk in and out of the building only through it.
+func door_front(origin: Vector2i, orientation: int) -> Vector2i:
+	return origin + entrance_at(orientation) + door_dir(orientation)
+
+
+## The doors of the building turned to [param orientation], each given as the orientation
+## whose main door it is (entrance_at, door_dir, door_front); the main door first.
+func door_orientations(orientation: int) -> Array[int]:
+	var sides := door_sides
+	if sides == &"":
+		sides = &"one" if is_house() else (&"all" if storage_slots > 0 else &"opposite")
+	match sides:
+		&"all":
+			return [orientation, (orientation + 1) % 4, (orientation + 2) % 4, (orientation + 3) % 4]
+		&"opposite":
+			return [orientation, (orientation + 2) % 4]
+	return [orientation]
 
 
 func is_entrance_on_edge() -> bool:

@@ -24,7 +24,9 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 		if not bb.has("stand"):
 			var spot := province.find_plant_spot(workplace, step.resource, agent.tile())
 			if spot == Agent.NO_TILE:
-				return failed(agent, &"no_resource")
+				if province.forest_full(workplace, step.resource):
+					return failed(agent, &"forest_full")
+				return failed(agent, &"no_plant_spot")
 			bb["plant"] = true
 			bb["node"] = SimCodec.vec2i(spot)
 			bb["stand"] = SimCodec.vec2i(province.approach_tile(spot, agent.tile()))

@@ -40,6 +40,13 @@ func test_building_entrance_on_footprint_edge() -> void:
 		).is_true()
 
 
+## Turning a building (M4b-1.5) swaps x and y: only square footprints keep their tiles.
+func test_building_footprints_are_square() -> void:
+	for building: BuildingDef in _registry.buildings():
+		assert_int(building.footprint.x).override_failure_message(
+				"%s: footprint %s is not square" % [building.id, building.footprint]).is_equal(building.footprint.y)
+
+
 func test_registry_rejects_duplicates_and_bad_ids() -> void:
 	var registry := DataRegistry.new()
 	var a := GoodDef.new()
@@ -178,13 +185,18 @@ func test_every_building_has_visuals_and_art() -> void:
 		for i: int in visual.level_art.size():
 			var art := visual.level_art[i]
 			if visual.row_from_level > 0 and i + 1 >= visual.row_from_level:
-				for variant: String in ["single", "end_a", "middle", "end_b"]:
-					for axis: String in ["x", "y"]:
-						names.append("%s_%s_%s" % [art, variant, axis])
+				for piece: String in ["single", "end_a", "middle", "end_b", "corner_a", "corner_b"]:
+					for look: int in visual.row_variants:
+						names.append("%s_%s%s" % [art, piece, "" if look == 0 else "_%d" % (look + 1)])
 			else:
 				names.append(art)
 		if building.house_levels.size() > 1:
 			names.append("upgrade_scaffold")
+		# Houses turn four ways (M4b-1.5): everything they show has a back view too.
+		if building.is_house():
+			var fronts := names.duplicate()
+			for front: String in fronts:
+				names.append(front + "_back")
 		for name: String in names:
 			for ext: String in [".png", ".json"]:
 				var path := ArtPaths.resolve("buildings/%s/%s%s" % [visual.art_id, name, ext])
