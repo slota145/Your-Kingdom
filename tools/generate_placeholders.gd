@@ -862,6 +862,15 @@ func _vehicles() -> void:
 	_ellipse(img, foot + Vector2(-8, -4), Vector2(5, 8), Color(0.35, 0.24, 0.14))
 	_ellipse(img, foot + Vector2(0, -26), Vector2(14, 9), Color(0.8, 0.28, 0.22))
 	_save(img, "vehicles/merchant_cart.png")
+	# Handcart (M4b-3): 5 rows (S, SE, E, NE, N) of 48x40, centre on the ground at (24, 30).
+	for state: String in ["empty", "loaded"]:
+		var sheet := _blank(Vector2i(48, 200))
+		for row: int in 5:
+			var centre := Vector2(24, 30 + row * 40)
+			_ellipse(sheet, centre + Vector2(0, -9), Vector2(13, 6), Color(0.55, 0.4, 0.25))
+			if state == "loaded":
+				_ellipse(sheet, centre + Vector2(0, -14), Vector2(8, 4), Color(0.86, 0.8, 0.64))
+		_save(sheet, "vehicles/handcart/%s.png" % state)
 
 
 func _save(img: Image, relative: String) -> void:

@@ -226,7 +226,7 @@ Są dwa źródła pracy:
 - Wykonawcy kroków są bezstanowi. Wszystko, co krok pamięta, jest w tablicy zadania (`Task.bb`), która trafia do zapisu. Klucze z `_` są lokalne dla kroku i znikają po jego zakończeniu.
 - Kiedy postać idzie, krok nie jest wywoływany co tick (oszczędność). Jeśli cel zniknie po drodze, rozbiórka sama przerywa zadania, które go dotyczą.
 - Po niepowodzeniu postać z towarem w rękach dostaje zadanie „odłóż” (`stash`): najbliższy magazyn z miejscem, a gdy go nie ma albo nie ma do niego drogi, kupa na ziemi. Kupa od razu tworzy zlecenie transportowe.
-- Tragarz niesie **1 sztukę** na kurs (`JobBoard.PORTER_LOAD`, potwierdzone przez właściciela projektu; większe ładunki dadzą wózki i wozy, zob. IDEAS). Rezerwacja pobrania powstaje już przy przydziale zlecenia, więc dwóch tragarzy nie dostanie tej samej sztuki.
+- Tragarz niesie **1 sztukę** na kurs (`JobBoard.PORTER_LOAD`, potwierdzone przez właściciela projektu; większe ładunki dają wózki i wozy od M4b-3). Rezerwacja pobrania powstaje już przy przydziale zlecenia, więc dwóch tragarzy nie dostanie tej samej sztuki.
 - Zlecenie niewykonalne (brak towaru albo miejsca) czeka, a po nieudanym kursie odpoczywa 5 s. Zlecenie z celem, który zniknął, jest anulowane.
 - Pracownicy w M2 pojawiają się przez `SpawnAgentCommand` + `AssignWorkerCommand`. Automatyczny przydział wolnego mieszkańca do nowego budynku przychodzi z populacją w M3.
 
@@ -262,6 +262,7 @@ Testy jednostkowe obejmują każdy z tych przypadków.
 
 **Realizacja (M4b-3):**
 - **Bruk:** `TileGrid` trzyma w warstwie dróg 0 (brak), 1 (ubita) albo 2 (bruk), więc format siatki się nie zmienia. `BuildPavingCommand` zamienia wolny teren w drogę ubitą i zakłada `PavingSite` (własne id, `Stockpile` na kamień, kolejka kafli), który zamawia 1 kamień na kafel przez `JobBoard` (z rezerwą magazynu jak budowa). `access_tile` placu to następny kafel do ułożenia, więc tragarze kładą kamień tam, gdzie pracuje budowniczy. `Construction.site_for` daje budowniczemu najpierw budowy, potem bruk; `BuildStep` idzie na kafel, pracuje 3 s i woła `ProvinceSim.pave_next`. Usunięcie drogi z zamówionego kafla zmniejsza zamówienie (`_withdraw_paving`); kamień, który został, ląduje na ziemi. Widok: niebieski kanał mapy terenu oznacza bruk, a shader rysuje go teksturą `terrain/paving`. Zapis v8 (`paving`).
+- **Wózki:** `BuildingDef.max_carts` (magazyn: 2), `BuildingState.carts` (kupione, `BuyCartCommand` zdejmuje 3 deski z najbliższych magazynów przez `take_from_storages`). `JobBoard._assign_one`: gdy zlecenie potrzebuje jeszcze ≥ 2 sztuk, a magazyn wybranego tragarza ma wolny wózek (`Carriers.has_free_handcart`: kupione minus używane przez jego tragarzy), ładunek rośnie do 3 (`_largest_load` sprawdza źródło i cel), a tragarz dostaje `Agent.vehicle = handcart`. Wózek zostaje przy tragarzu, dopóki ten ma towar w rękach (także przy odkładaniu po niepowodzeniu). `Movement` mnoży koszt kafla poza drogą przez 1/0,7. `Carriers.still_handling` dodaje w `FetchStep` i `DeliverStep` 1 s na sztukę (czynność `load`). Widok rysuje wózek przed postacią (`AgentSprite._update_vehicle`, arkusz 5 kierunków `vehicles/handcart/{empty,loaded}`).
 
 ### 5.3 Pathfinding
 

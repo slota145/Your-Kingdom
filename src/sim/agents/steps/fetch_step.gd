@@ -34,6 +34,8 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 	var status := Movement.walk(province, agent, province.access_tile(src_id))
 	if status != Status.DONE:
 		return status
+	if Carriers.still_handling(agent, amount):
+		return Status.RUNNING
 	var taken := source.commit(int(bb["_res"]))
 	agent.carry_good = good
 	agent.carry_amount = taken

@@ -38,6 +38,9 @@ var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
 var _reserve_label: Label
 var _reserve_slider: HSlider
+var _cart_row: HFlowContainer
+var _cart_label: Label
+var _cart_button: Button
 var _keep_box: VBoxContainer
 ## Input goods the keep sliders are built for, and a slider per good.
 var _keep_goods: Array[StringName] = []
@@ -125,6 +128,14 @@ func _build_settings(box: VBoxContainer) -> void:
 		_reserve_label.text = tr("ui.reserve.wood") % int(value)
 		command_requested.emit(SetReserveCommand.new(building_id, &"wood", int(value))))
 	_reserve_box.add_child(_reserve_slider)
+	_cart_row = HFlowContainer.new()
+	box.add_child(_cart_row)
+	_cart_label = UiKit.label()
+	_cart_row.add_child(_cart_label)
+	_cart_button = UiKit.button("ui.carts.buy", func() -> void:
+		command_requested.emit(BuyCartCommand.new(building_id)))
+	_cart_button.tooltip_text = "ui.carts.hint"
+	_cart_row.add_child(_cart_button)
 	_keep_box = VBoxContainer.new()
 	box.add_child(_keep_box)
 	_tax_box = VBoxContainer.new()
@@ -234,6 +245,11 @@ func _refresh_settings(b: BuildingState) -> void:
 		if not _reserve_slider.has_focus():
 			_reserve_slider.set_value_no_signal(reserve)
 		_reserve_label.text = tr("ui.reserve.wood") % int(_reserve_slider.value)
+	_cart_row.visible = b.def.max_carts > 0 and b.is_complete()
+	if _cart_row.visible:
+		_cart_label.text = tr("ui.carts.count") % [b.carts, b.def.max_carts]
+		_cart_button.disabled = b.carts >= b.def.max_carts \
+				or province.stored(&"planks") < int(Carriers.HANDCART_COST[&"planks"])
 	_refresh_keep(b)
 	_tax_box.visible = b.def.id == TOWN_HALL and b.is_complete() and treasury != null
 	if _tax_box.visible:

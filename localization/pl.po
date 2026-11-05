@@ -411,6 +411,9 @@ msgstr "wprowadza się do: %s"
 msgid "ui.activity.chop"
 msgstr "rąbie drzewo"
 
+msgid "ui.activity.load"
+msgstr "ładuje wózek"
+
 msgid "ui.activity.bind"
 msgstr "wiąże ładunek"
 
@@ -590,6 +593,15 @@ msgstr "Za daleko od farmy."
 
 msgid "ui.command_error.already_road"
 msgstr "Tu już jest droga."
+
+msgid "ui.command_error.carts_full"
+msgstr "Ten magazyn ma już wszystkie wózki."
+
+msgid "ui.command_error.not_enough_goods"
+msgstr "Za mało towaru w magazynach."
+
+msgid "ui.command_error.no_carts_here"
+msgstr "Tu nie kupisz wózka."
 
 msgid "ui.command_error.already_paved"
 msgstr "Tu już jest bruk."
@@ -796,6 +808,15 @@ msgstr "Budynki z wyższym priorytetem dostają pracowników pierwsze, w razie b
 
 msgid "ui.reserve.wood"
 msgstr "Drewno dla domów: %d (budowy go nie wezmą)"
+
+msgid "ui.carts.count"
+msgstr "Wózki: %d z %d"
+
+msgid "ui.carts.buy"
+msgstr "Kup wózek (3 deski)"
+
+msgid "ui.carts.hint"
+msgstr "Tragarz z wózkiem wiezie 3 sztuki zamiast 1, gdy zlecenie ma co najmniej 2. Na drodze jedzie jak pieszy, poza drogą wolniej. Każdy tragarz tego magazynu może wziąć jeden wózek."
 
 msgid "ui.tax.title"
 msgstr "Podatki: %s"

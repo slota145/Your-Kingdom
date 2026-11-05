@@ -158,12 +158,35 @@ func _assign_one(province: ProvinceSim, request: TransportRequest, idle: Array[A
 			best = i
 	var porter := idle[best]
 	idle.remove_at(best)
+	var vehicle := &""
+	if request.unassigned() >= Carriers.HANDCART_MIN and Carriers.has_free_handcart(province, porter):
+		var big := _largest_load(province, request, src, mini(Carriers.HANDCART_LOAD,
+				request.unassigned()), keep_reserve)
+		if big >= Carriers.HANDCART_MIN:
+			load = big
+			vehicle = Carriers.HANDCART
 	TaskRunner.start_transport(porter, request, load)
+	porter.vehicle = vehicle
 	porter.task.bb["from"] = src
 	porter.task.bb["_src"] = src
 	porter.task.bb["_res"] = source.reserve_out(request.good, load, porter.id)
 	request.in_flight += load
 	return true
+
+
+## The most units up to [param most] of [param request] that source [param src] can give in
+## one load and its destination (or some storage) can take; 1 when only that fits.
+static func _largest_load(province: ProvinceSim, request: TransportRequest, src: int, most: int,
+		keep_reserve: bool) -> int:
+	for load: int in range(most, 1, -1):
+		if not province.can_give(src, request.good, load, keep_reserve):
+			continue
+		if request.dest_id != 0:
+			if province.storage(request.dest_id).can_accept(request.good, load):
+				return load
+		elif province.nearest_sink(request.good, load, province.access_tile(src), src) != 0:
+			return load
+	return 1
 
 
 func to_dict() -> Dictionary:

@@ -84,6 +84,7 @@ func _init() -> void:
 	_rocks()
 	_trees()
 	_merchant_cart()
+	_handcart()
 	print("Goods and nature written to ", OUT)
 	quit()
 
@@ -369,6 +370,112 @@ func _merchant_cart() -> void:
 	_wheel(img, foot + Vector2(-8, -2))
 	_outline(img)
 	_save(img, "vehicles/merchant_cart.png")
+
+
+# --- Handcart (M4b-3) -----------------------------------------------------------------------
+
+## Frame of one direction of a vehicle sheet, and the ground point under the vehicle's centre.
+const CART_FRAME := Vector2i(48, 40)
+const CART_CENTRE := Vector2(24, 30)
+## Forward vector in grid space of rows S, SE, E, NE, N (the view mirrors the other three).
+const ROW_FORWARD: Array[Vector2] = [Vector2(0.7071, 0.7071), Vector2(1, 0), Vector2(0.7071, -0.7071),
+		Vector2(0, -1), Vector2(-0.7071, -0.7071)]
+
+
+## A two-wheeled handcart pushed by a porter: an open tray on two wheels with handles at the
+## back. vehicles/handcart/{empty,loaded}.png, 5 rows (S, SE, E, NE, N), 48x40 per frame,
+## the cart's centre on the ground at (24, 30).
+func _handcart() -> void:
+	for state: String in ["empty", "loaded"]:
+		var sheet := Image.create_empty(CART_FRAME.x, CART_FRAME.y * 5, false, Image.FORMAT_RGBA8)
+		for row: int in 5:
+			var img := Image.create_empty(CART_FRAME.x, CART_FRAME.y, false, Image.FORMAT_RGBA8)
+			var fwd := ROW_FORWARD[row]
+			var parts: Array = []   # [depth, callable]
+			for side: float in [-0.2, 0.2]:
+				var hub := Vector3(0.04, side, 6.0)
+				parts.append([_cart_depth(fwd, hub), _cart_wheel.bind(img, fwd, hub, 6.0)])
+			parts.append([_cart_depth(fwd, Vector3(0, 0, 10)) + 0.001, func() -> void:
+				_cart_box(img, fwd, Vector3(-0.22, -0.15, 8.0), Vector3(0.22, 0.15, 14.0),
+						C_PLANK.darkened(0.15), C_WOOD.darkened(0.25))
+				for side: float in [-0.1, 0.1]:
+					_line(img, _cart_point(fwd, Vector3(-0.2, side, 13.0)),
+							_cart_point(fwd, Vector3(-0.44, side, 16.0)), C_WOOD.darkened(0.1), 1)
+				if state == "loaded":
+					_cart_box(img, fwd, Vector3(-0.17, -0.12, 13.0), Vector3(0.01, 0.12, 18.0), C_SACK, C_SACK)
+					_cart_box(img, fwd, Vector3(0.02, -0.11, 13.0), Vector3(0.18, 0.1, 17.0), C_CRATE, C_CRATE)
+			])
+			parts.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+			for part: Array in parts:
+				(part[1] as Callable).call()
+			_outline(img)
+			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, CART_FRAME), Vector2i(0, row * CART_FRAME.y))
+		_save(sheet, "vehicles/handcart/%s.png" % state)
+
+
+## Screen point of a cart-local point (forward, side in tiles, height in px).
+func _cart_point(fwd: Vector2, p: Vector3) -> Vector2:
+	var side := Vector2(-fwd.y, fwd.x)
+	var g := fwd * p.x + side * p.y
+	return CART_CENTRE + Vector2((g.x - g.y) * 32.0, (g.x + g.y) * 16.0 - p.z)
+
+
+## Farther parts first: larger grid x + y is nearer the camera.
+func _cart_depth(fwd: Vector2, p: Vector3) -> float:
+	var side := Vector2(-fwd.y, fwd.x)
+	var g := fwd * p.x + side * p.y
+	return g.x + g.y
+
+
+## A box between two cart-local corners: faces turned to the camera, shaded by direction;
+## the top in [param top] (the inside of an open tray or the top of a load).
+func _cart_box(img: Image, fwd: Vector2, a: Vector3, b: Vector3, colour: Color, top: Color) -> void:
+	var side := Vector2(-fwd.y, fwd.x)
+	var faces := [
+		[Vector3(1, 0, 0), [Vector3(b.x, a.y, a.z), Vector3(b.x, b.y, a.z), Vector3(b.x, b.y, b.z), Vector3(b.x, a.y, b.z)]],
+		[Vector3(-1, 0, 0), [Vector3(a.x, a.y, a.z), Vector3(a.x, b.y, a.z), Vector3(a.x, b.y, b.z), Vector3(a.x, a.y, b.z)]],
+		[Vector3(0, 1, 0), [Vector3(a.x, b.y, a.z), Vector3(b.x, b.y, a.z), Vector3(b.x, b.y, b.z), Vector3(a.x, b.y, b.z)]],
+		[Vector3(0, -1, 0), [Vector3(a.x, a.y, a.z), Vector3(b.x, a.y, a.z), Vector3(b.x, a.y, b.z), Vector3(a.x, a.y, b.z)]],
+	]
+	for face: Array in faces:
+		var n: Vector3 = face[0]
+		var ng := fwd * n.x + side * n.y
+		if ng.x + ng.y <= 0.01:
+			continue
+		var shade := 0.0 if ng.x >= ng.y else 0.18
+		var points := PackedVector2Array()
+		for corner: Vector3 in face[1]:
+			points.append(_cart_point(fwd, corner))
+		_polygon(img, points, colour.darkened(shade))
+	var roof := PackedVector2Array([_cart_point(fwd, Vector3(a.x, a.y, b.z)), _cart_point(fwd, Vector3(b.x, a.y, b.z)),
+			_cart_point(fwd, Vector3(b.x, b.y, b.z)), _cart_point(fwd, Vector3(a.x, b.y, b.z))])
+	_polygon(img, roof, top.lightened(0.08))
+
+
+## A spoked wheel standing in the forward/up plane around [param hub].
+func _cart_wheel(img: Image, fwd: Vector2, hub: Vector3, radius: float) -> void:
+	var rim := PackedVector2Array()
+	for k: int in 16:
+		var t := k * TAU / 16.0
+		rim.append(_cart_point(fwd, hub + Vector3(cos(t) * radius / 36.0, 0.0, sin(t) * radius)))
+	_polygon(img, rim, C_WOOD.darkened(0.3))
+	var centre := _cart_point(fwd, hub)
+	for k: int in 3:
+		var t := k * PI / 3.0
+		var d := _cart_point(fwd, hub + Vector3(cos(t) * radius * 0.8 / 36.0, 0.0, sin(t) * radius * 0.8)) - centre
+		_line(img, centre - d, centre + d, C_WOOD_END.darkened(0.2), 1)
+	_pixel(img, centre, C_IRON)
+
+
+## Fills a polygon (pixel centres inside).
+func _polygon(img: Image, points: PackedVector2Array, colour: Color) -> void:
+	var box := Rect2(points[0], Vector2.ZERO)
+	for p: Vector2 in points:
+		box = box.expand(p)
+	for y: int in range(floori(box.position.y), ceili(box.end.y) + 1):
+		for x: int in range(floori(box.position.x), ceili(box.end.x) + 1):
+			if Geometry2D.is_point_in_polygon(Vector2(x + 0.5, y + 0.5), points):
+				_pixel(img, Vector2(x, y), colour)
 
 
 func _wheel(img: Image, centre: Vector2) -> void:

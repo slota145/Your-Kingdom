@@ -20,6 +20,8 @@ var prev_pos: Vector2
 var facing: int = IsoMath.Dir.S
 var carry_good: StringName = &""
 var carry_amount: int = 0
+## What the person moves goods with (M4b-3): &"" on foot, Carriers.HANDCART.
+var vehicle: StringName = &""
 var activity: StringName = &"idle"
 var task: Task
 ## Ticks to wait before taking a new task (after a failure).
@@ -73,6 +75,8 @@ func to_dict() -> Dictionary:
 	}
 	if task != null:
 		d["task"] = task.to_dict()
+	if vehicle != &"":
+		d["vehicle"] = String(vehicle)
 	return d
 
 
@@ -86,6 +90,7 @@ static func from_dict(d: Dictionary) -> Agent:
 	a.carry_amount = int(carry[1])
 	a.activity = StringName(String(d.get("activity", "idle")))
 	a.cooldown = int(d.get("cooldown", 0))
+	a.vehicle = StringName(String(d.get("vehicle", "")))
 	a.claimed_node = SimCodec.to_vec2i(d.get("claim", [-1, -1]))
 	var p: Array = d["path"]
 	a.path_state = int(p[0]) as PathState

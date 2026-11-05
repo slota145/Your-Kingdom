@@ -2,6 +2,9 @@ class_name BuildingDef
 extends GameDef
 ## A placeable building. Visual data lives separately in data/visuals (ARCHITECTURE §3.3).
 
+## Handcarts the player can buy for this storage's porters (M4b-3, GDD §5.2).
+@export_range(0, 9) var max_carts: int = 0
+
 ## Build menu category, e.g. &"housing", &"food", &"resources".
 @export var category: StringName = &""
 ## Size in tiles (grid space).

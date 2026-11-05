@@ -82,6 +82,8 @@ static func _advance(province: ProvinceSim, agent: Agent) -> void:
 		var delta := target - agent.pos
 		var length := delta.length()
 		var cost := province.nav.get_cost(agent.path[agent.path_index])
+		if agent.vehicle != &"":
+			cost *= Carriers.speed_penalty(province, agent, agent.path[agent.path_index])
 		var reach := budget / cost
 		if length <= reach:
 			agent.pos = target

@@ -106,6 +106,8 @@ static func fail(province: ProvinceSim, agent: Agent) -> void:
 	province.events.emit(&"task_failed", {"agent": agent.id, "task": task.kind,
 			"step": task.step_index, "reason": StringName(String(task.bb.get("fail_reason", "")))})
 	agent.task = null
+	if not agent.is_carrying():
+		agent.vehicle = &""
 	agent.clear_path()
 	agent.activity = &"idle"
 	agent.cooldown = RETRY_TICKS
@@ -173,6 +175,8 @@ static func merchant_steps() -> Array[StepDef]:
 
 
 static func _start_next(province: ProvinceSim, agent: Agent) -> void:
+	if not agent.is_carrying():
+		agent.vehicle = &""   # the handcart goes back to the storage's yard
 	if agent.is_carrying():
 		var stash := Task.new()
 		stash.kind = Task.KIND_STASH
@@ -245,6 +249,8 @@ static func _finish(province: ProvinceSim, agent: Agent) -> void:
 	if task.kind == Task.KIND_TRANSPORT:
 		province.jobs.on_completed(task.request_id, int(task.bb.get("amount", 1)))
 	agent.task = null
+	if not agent.is_carrying():
+		agent.vehicle = &""
 	if task.kind == Task.KIND_MERCHANT:
 		if province.merchant.agent_id == agent.id:
 			province.merchant.gone()

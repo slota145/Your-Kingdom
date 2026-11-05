@@ -245,7 +245,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 | Korzyść | Wartość wyjściowa (do strojenia) |
 |---|---|
 | Szybszy ruch pieszych | droga ubita +50% (darmowa, od razu), brukowana +80% (M4b-3: 1 kamień na kafel, tragarze przynoszą kamień, budowniczy układa kafel po kaflu; do tego czasu kafel jest drogą ubitą) |
-| **Wozy** (tylko po drogach) | stopnie transportu: tragarz niesie **1** sztukę, mały **wózek ręczny 3**, duży **wóz konny 5–6** (tylko po drogach); przewozy między magazynami, szlaki handlowe |
+| **Wozy** (tylko po drogach) | stopnie transportu: tragarz niesie **1** sztukę, mały **wózek ręczny 3**, duży **wóz konny 5–6** (tylko po drogach); przewozy między magazynami, szlaki handlowe. **Wózek (M4b-3):** sprzęt tragarza magazynu, kupowany w panelu magazynu za 3 deski (najwyżej 2 na magazyn); tragarz bierze go do zleceń od 2 sztuk; na drodze jedzie jak pieszy, poza drogą 0,7× szybkości; załadunek i rozładunek trwają 1 s na sztukę |
 | Zasięg usług | liczony długością ścieżki, więc drogi pośrednio poszerzają zasięg studni, targu i kościoła |
 | Dla obu stron | wrogie wojsko i bandyci też szybciej poruszają się po drogach, co jest decyzją taktyczną |
 

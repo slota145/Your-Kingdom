@@ -406,6 +406,9 @@ msgstr "moving into: %s"
 msgid "ui.activity.chop"
 msgstr "chopping a tree"
 
+msgid "ui.activity.load"
+msgstr "loading the cart"
+
 msgid "ui.activity.bind"
 msgstr "binding the load"
 
@@ -585,6 +588,15 @@ msgstr "Too far from the farm."
 
 msgid "ui.command_error.already_road"
 msgstr "There is a road here already."
+
+msgid "ui.command_error.carts_full"
+msgstr "This storage has all its handcarts already."
+
+msgid "ui.command_error.not_enough_goods"
+msgstr "Not enough goods in the storages."
+
+msgid "ui.command_error.no_carts_here"
+msgstr "No handcarts can be bought here."
 
 msgid "ui.command_error.already_paved"
 msgstr "This road is paved already."
@@ -791,6 +803,15 @@ msgstr "Buildings with a higher priority get workers first, if needed even from 
 
 msgid "ui.reserve.wood"
 msgstr "Wood kept for houses: %d (building sites leave it)"
+
+msgid "ui.carts.count"
+msgstr "Handcarts: %d of %d"
+
+msgid "ui.carts.buy"
+msgstr "Buy a handcart (3 planks)"
+
+msgid "ui.carts.hint"
+msgstr "A porter with a handcart carries 3 units instead of 1 when a job needs at least 2. On roads it keeps up with people on foot, off the road it is slower. Each porter of this storage can take one handcart."
 
 msgid "ui.tax.title"
 msgstr "Taxes: %s"

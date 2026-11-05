@@ -55,12 +55,15 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		var category := _category(good)
 		var anim := StringName("work_" + String(agent.activity))
 		if agent.activity == &"walk":
-			# A led animal walks beside a person with free hands (M4b-2).
-			anim = StringName("walk_carry_" + category) if good != &"" and category != "animal" else &"walk"
+			# A led animal walks beside a person with free hands (M4b-2); a handcart is pushed
+			# with free hands too (M4b-3).
+			anim = StringName("walk_carry_" + category) if good != &"" and category != "animal" \
+					and agent.vehicle == &"" else &"walk"
 		elif agent.activity == &"idle":
 			anim = &"idle"
 		sprite.show_state(CharacterVisual.get_visual(_character(agent.kind)), anim, agent.facing,
-				time + agent.id * 0.137, category, good if agent.activity == &"walk" else &"")
+				time + agent.id * 0.137, category, good if agent.activity == &"walk" else &"",
+				agent.vehicle, good != &"")
 	for j: int in range(used, _pool.size()):
 		_pool[j].visible = false
 	visible_count = used

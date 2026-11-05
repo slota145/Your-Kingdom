@@ -51,6 +51,8 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 		return _give_up(province, agent, step, &"no_path")
 	if status != Status.DONE:
 		return status
+	if Carriers.still_handling(agent, agent.carry_amount):
+		return Status.RUNNING
 	var good := agent.carry_good
 	var stored := target.commit(int(bb["_res"]))
 	province.events.emit(&"good_stored", {"agent": agent.id, "storage": dst_id,

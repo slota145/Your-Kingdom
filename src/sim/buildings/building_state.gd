@@ -50,6 +50,8 @@ var serving_until: int = 0
 var plant_area: Array[Vector2i] = []
 ## Herd (pigsty): ticks of breeding towards the next young animal.
 var breed_ticks: int = 0
+## Storage: handcarts bought for its porters (M4b-3, at most def.max_carts).
+var carts: int = 0
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
@@ -228,6 +230,8 @@ func to_dict() -> Dictionary:
 		d["serving_until"] = serving_until
 	if breed_ticks != 0:
 		d["breed"] = breed_ticks
+	if carts != 0:
+		d["carts"] = carts
 	return d
 
 
@@ -259,5 +263,6 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 		b.plant_area.append(SimCodec.to_vec2i(t))
 	b.serving_until = int(d.get("serving_until", 0))
 	b.breed_ticks = int(d.get("breed", 0))
+	b.carts = int(d.get("carts", 0))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

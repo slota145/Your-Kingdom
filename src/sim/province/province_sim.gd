@@ -1037,6 +1037,23 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 	return best
 
 
+## Takes [param amount] of [param good] straight out of the storages and yards nearest to
+## [param near] (a purchase paid in goods, e.g. a handcart). Returns what was taken.
+func take_from_storages(good: StringName, amount: int, near: Vector2i) -> int:
+	var taken := 0
+	while taken < amount:
+		var src := nearest_source(good, 1, near)
+		var store := storage(src)
+		if store == null or src == 0:
+			break
+		var got := store.remove(good, mini(amount - taken, store.available(good)))
+		if got <= 0:
+			break
+		taken += got
+	ledger.used(good, taken, tick)
+	return taken
+
+
 ## Units of [param good] in storage buildings and production yards that can still be taken.
 func stored(good: StringName) -> int:
 	var sum := 0

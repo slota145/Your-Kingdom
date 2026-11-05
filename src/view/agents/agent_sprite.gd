@@ -8,9 +8,19 @@ const CARRIED_FRAME := Vector2i(24, 24)
 ## a little behind, relative to the feet (the overlay is centred).
 const LED_OFFSET := Vector2(13.0, -7.0)
 
+## Vehicle sheets (M4b-3): 5 rows (S, SE, E, NE, N) of this size, the vehicle's centre on the
+## ground at VEHICLE_CENTRE; it stands VEHICLE_AHEAD tiles in front of the person's feet.
+const VEHICLE_FRAME := Vector2i(48, 40)
+const VEHICLE_CENTRE := Vector2(24, 30)
+const VEHICLE_AHEAD := 0.4
+## Forward vector in grid space of the vehicle rows (as in tools/generate_goods.gd).
+const ROW_FORWARD: Array[Vector2] = [Vector2(0.7071, 0.7071), Vector2(1, 0), Vector2(0.7071, -0.7071),
+		Vector2(0, -1), Vector2(-0.7071, -0.7071)]
+
 static var _carried_cache: Dictionary[StringName, Texture2D] = {}
 
 var _good_overlay: Sprite2D
+var _vehicle: Sprite2D
 var _sheet: CharacterSheet
 
 
@@ -20,11 +30,16 @@ func _init() -> void:
 	_good_overlay = Sprite2D.new()
 	_good_overlay.region_enabled = true
 	add_child(_good_overlay)
+	_vehicle = Sprite2D.new()
+	_vehicle.region_enabled = true
+	_vehicle.centered = false
+	_vehicle.visible = false
+	add_child(_vehicle)
 
 
 ## [param carry_category] and [param good] select the carried overlay; empty = hands free.
 func show_state(visual: CharacterVisual, anim: StringName, dir: int, time: float,
-		carry_category: String, good: StringName) -> void:
+		carry_category: String, good: StringName, vehicle: StringName = &"", loaded: bool = false) -> void:
 	var sheet := visual.get_sheet(anim)
 	if sheet != _sheet:
 		_sheet = sheet
@@ -35,7 +50,29 @@ func show_state(visual: CharacterVisual, anim: StringName, dir: int, time: float
 	var column := sheet.frame_at(time)
 	frame = row_flip.x * sheet.frames + column
 	flip_h = row_flip.y == 1
-	_update_good(sheet, row_flip, column, carry_category, good)
+	_update_vehicle(row_flip, vehicle, loaded)
+	_update_good(sheet, row_flip, column, carry_category, &"" if vehicle != &"" else good)
+
+
+## A handcart in front of the person (M4b-3), pushed by the handles; goods ride on it.
+func _update_vehicle(row_flip: Vector2i, vehicle: StringName, loaded: bool) -> void:
+	_vehicle.visible = vehicle != &""
+	if vehicle == &"":
+		return
+	var row := mini(row_flip.x, ROW_FORWARD.size() - 1)
+	_vehicle.texture = _carried_texture_at("vehicles/%s/%s.png" % [vehicle, "loaded" if loaded else "empty"])
+	_vehicle.region_rect = Rect2(0, row * VEHICLE_FRAME.y, VEHICLE_FRAME.x, VEHICLE_FRAME.y)
+	_vehicle.flip_h = row_flip.y == 1
+	var g := ROW_FORWARD[row] * VEHICLE_AHEAD
+	var ahead := Vector2((g.x - g.y) * IsoMath.HALF_W, (g.x + g.y) * IsoMath.HALF_W / 2.0)
+	var centre := VEHICLE_CENTRE
+	if row_flip.y == 1:
+		ahead.x = -ahead.x
+		centre.x = VEHICLE_FRAME.x - centre.x
+	# Children are placed from the node origin, which is the person's feet.
+	_vehicle.position = ahead - centre
+	# Going away from the camera the cart is behind the person.
+	_vehicle.show_behind_parent = row >= 3
 
 
 func _update_good(sheet: CharacterSheet, row_flip: Vector2i, column: int,
@@ -73,6 +110,13 @@ func _show_led(row_flip: Vector2i, carry_category: String, good: StringName) -> 
 	_good_overlay.flip_h = row_flip.y == 1
 	# Walking away from the camera the person hides the animal on his far side.
 	_good_overlay.show_behind_parent = good_row >= 3
+
+
+static func _carried_texture_at(path: String) -> Texture2D:
+	var key := StringName(path)
+	if not _carried_cache.has(key):
+		_carried_cache[key] = ArtPaths.texture(path)
+	return _carried_cache[key]
 
 
 static func _carried_texture(category: String, good: StringName) -> Texture2D:
