@@ -519,8 +519,20 @@ msgstr "Wejście wychodzi na wodę. Przesuń budynek."
 msgid "ui.command_error.bad_orientation"
 msgstr "Tego budynku nie da się tak obrócić."
 
+msgid "ui.building.change_look"
+msgstr "Zmień wygląd"
+
+msgid "ui.building.change_look_hint"
+msgstr "Pokazuje następny wygląd tego domu. Zmienia się tylko wygląd."
+
+msgid "ui.command_error.not_a_house"
+msgstr "To nie jest dom."
+
+msgid "ui.command_error.bad_look"
+msgstr "Nie ma takiego wyglądu."
+
 msgid "ui.build.rotate_hint"
-msgstr "R: obróć wejście"
+msgstr "R: obróć wejście · T: zmień wygląd"
 
 msgid "ui.command_error.not_a_farm"
 msgstr "To nie jest farma."

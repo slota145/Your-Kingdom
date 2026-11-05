@@ -4,7 +4,7 @@ extends Node2D
 ##
 ## Mouse: left = select / use the tool (drag for roads and fields), right or Esc = cancel the
 ## tool. Keys: WASD/arrows pan, wheel or 1-4 zoom, Space pause, +/- speed, F grid,
-## R turns the building being placed, F5 quick save, F9 quick load, F11 pseudolocalization
+## R turns the building being placed, T changes its look, F5 quick save, F9 quick load, F11 pseudolocalization
 ## (UI text-fit check).
 
 const START_MAP := &"riverlands"
@@ -212,7 +212,7 @@ func _update_preview() -> void:
 				tiles[t] = "ok" if ok else "bad"
 			# The tile in front of the door: where people will come and go.
 			tiles[def.door_front(origin, turn)] = "range"
-			ghost = BuildingLayer.base_art(def, origin, turn)
+			ghost = BuildingLayer.base_art(def, origin, turn, _turn.look)
 			ghost_origin = origin
 			ghost_ok = ok
 		&"road":
@@ -308,6 +308,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed(&"rotate_building") and _tool.get("kind", &"") == &"building":
 		_turn.rotate(sim.data.get_building(_tool["def"]))
 		_update_preview()
+	elif event.is_action_pressed(&"cycle_look") and _tool.get("kind", &"") == &"building":
+		var visual := BuildingVisualDef.for_building(_tool["def"])
+		if visual != null and sim.data.get_building(_tool["def"]).is_house():
+			_turn.cycle_look(visual.look_count(1))
+			_update_preview()
 	elif event.is_action_pressed(&"toggle_grid"):
 		view.terrain.show_grid = not view.terrain.show_grid
 	elif event is InputEventKey and event.pressed and not event.echo:
@@ -326,7 +331,7 @@ func _on_left_press() -> void:
 			var def := sim.data.get_building(_tool["def"])
 			var origin := _building_origin(def)
 			var turn := _turn.update(sim.province, def, origin)
-			if _execute(PlaceBuildingCommand.new(def.id, origin, false, turn)) == &"":
+			if _execute(PlaceBuildingCommand.new(def.id, origin, false, turn, _turn.look)) == &"":
 				_turn.placed()
 			_update_preview()
 		&"demolish":

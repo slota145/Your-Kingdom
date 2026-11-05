@@ -18,6 +18,9 @@ var origin: Vector2i
 ## Which way the building is turned (BuildingDef.entrance_at): 0 as drawn, 1 mirrored,
 ## 2 and 3 (houses only) with the door at the back.
 var orientation: int = 0
+## Look chosen by the player (M4b-1.5): 0 = picked by position, 1.. = that look. Only the
+## view reads it.
+var look: int = 0
 ## True from placement until the construction site is finished.
 var under_construction: bool = false
 ## Construction or upgrade site entity id, 0 = none.
@@ -133,6 +136,8 @@ func to_dict() -> Dictionary:
 		d["priority"] = priority
 	if paused:
 		d["paused"] = true
+	if look != 0:
+		d["look"] = look
 	if serving_until != 0:
 		d["serving_until"] = serving_until
 	return d
@@ -156,6 +161,7 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	for good: Variant in r:
 		b.reserves[StringName(String(good))] = int(r[good])
 	b.paused = bool(d.get("paused", false))
+	b.look = int(d.get("look", 0))
 	b.serving_until = int(d.get("serving_until", 0))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

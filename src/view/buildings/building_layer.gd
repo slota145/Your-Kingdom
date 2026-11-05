@@ -88,9 +88,9 @@ func _art_key(building: BuildingState, rows: Dictionary[int, String]) -> String:
 		var level := building.house.level
 		name = visual.level_art[clampi(level - 1, 0, visual.level_art.size() - 1)]
 		if visual.row_from_level > 0 and level >= visual.row_from_level and rows.has(building.id):
-			name = visual.row_variant_name("%s_%s" % [name, rows[building.id]], building.origin)
+			name = visual.row_variant_name("%s_%s" % [name, rows[building.id]], building.origin, building.look)
 	if visual != null:
-		name = visual.variant_name(name, building.origin)
+		name = visual.variant_name(name, building.origin, building.look)
 	var key := oriented_art("buildings/%s/%s" % [art_id, name], building.def, o)
 	var site := province.sites.get(building.site_id) as ConstructionSite
 	if site != null and site.kind == ConstructionSite.KIND_UPGRADE:
@@ -108,7 +108,7 @@ static func oriented_art(art: String, def: BuildingDef, orientation: int) -> Str
 
 
 ## The art a new building of [param def] at [param origin] shows when finished (level 1).
-static func base_art(def: BuildingDef, origin: Vector2i, orientation: int) -> String:
+static func base_art(def: BuildingDef, origin: Vector2i, orientation: int, look: int = 0) -> String:
 	var visual := BuildingVisualDef.for_building(def.id)
 	var art_id := visual.art_id if visual != null else String(def.id)
 	if visual != null and visual.yard:
@@ -117,7 +117,7 @@ static func base_art(def: BuildingDef, origin: Vector2i, orientation: int) -> St
 	if visual != null and not visual.level_art.is_empty():
 		name = visual.level_art[0]
 	if visual != null:
-		name = visual.variant_name(name, origin)
+		name = visual.variant_name(name, origin, look)
 	return oriented_art("buildings/%s/%s" % [art_id, name], def, orientation)
 
 
@@ -195,7 +195,8 @@ func _house_rows() -> Dictionary[int, String]:
 		if building.house != null and not building.under_construction:
 			houses.append({"id": building.id, "origin": building.origin, "orientation": building.orientation,
 					"footprint": building.def.footprint, "level": building.house.level})
-	return HouseRowResolver.resolve(houses)
+	return HouseRowResolver.resolve(houses, func(t: Vector2i) -> bool:
+		return province.grid.is_inside(t) and province.grid.has_road(t))
 
 
 ## The building whose drawn art is under [param world_pos], the front one when several

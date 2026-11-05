@@ -121,17 +121,17 @@ func test_preview_turns_the_door_to_an_adjacent_road() -> void:
 	var sim := SimFixture.make_sim()
 	var hut := SimFixture.registry().get_building(&"hut")
 	var origin := Vector2i(10, 10)
-	assert_int(sim.province.orientation_to_road(hut, origin)).is_equal(-1)
+	assert_int(sim.province.suggested_orientation(hut, origin)).is_equal(-1)
 	# A road behind the house (smaller x): the door turns to the back.
 	sim.execute(BuildRoadCommand.new([Vector2i(9, 10), Vector2i(9, 11)] as Array[Vector2i]))
-	assert_int(sim.province.orientation_to_road(hut, origin)).is_equal(2)
+	assert_int(sim.province.suggested_orientation(hut, origin)).is_equal(2)
 	# A road on the +y side too: the preferred side wins when it has a road.
 	sim.execute(BuildRoadCommand.new([Vector2i(10, 12), Vector2i(11, 12)] as Array[Vector2i]))
-	assert_int(sim.province.orientation_to_road(hut, origin, 1)).is_equal(1)
-	assert_int(sim.province.orientation_to_road(hut, origin, 2)).is_equal(2)
+	assert_int(sim.province.suggested_orientation(hut, origin, 1)).is_equal(1)
+	assert_int(sim.province.suggested_orientation(hut, origin, 2)).is_equal(2)
 	# A workshop has only the two front sides: the road behind does not count.
 	var bakery := SimFixture.registry().get_building(&"bakery")
-	assert_int(sim.province.orientation_to_road(bakery, origin)).is_equal(1)
+	assert_int(sim.province.suggested_orientation(bakery, origin)).is_equal(1)
 
 
 func test_placement_turn_auto_then_by_hand() -> void:
@@ -162,3 +162,55 @@ func test_orientation_is_saved() -> void:
 	assert_int(hut.orientation).is_equal(3)
 	assert_vector(hut.entrance_tile()).is_equal(Vector2i(10, 10))
 	assert_vector(hut.door_front_tile()).is_equal(Vector2i(10, 9))
+
+
+## Owner's feedback 2026-11-05: houses placed beside a row line up with it, and the end of
+## a row with a side street does not turn its side to the row.
+func test_preview_lines_up_with_a_row_neighbour() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.registry().get_building(&"hut")
+	SimFixture.place(sim, &"stockpile", Vector2i(2, 2))
+	sim.province.add_building(hut, Vector2i(10, 10), true, 2)
+	# No road: the neighbour along the row decides.
+	assert_int(sim.province.suggested_orientation(hut, Vector2i(10, 12))).is_equal(2)
+	# A road in front of the row (x = 9) and a side street (y = 14) at its end: the row wins.
+	var roads: Array[Vector2i] = []
+	for y: int in range(8, 15):
+		roads.append(Vector2i(9, y))
+	for x: int in range(9, 14):
+		roads.append(Vector2i(x, 14))
+	sim.execute(BuildRoadCommand.new(roads))
+	assert_int(sim.province.suggested_orientation(hut, Vector2i(10, 12), 1)).is_equal(2)
+
+
+func test_a_house_without_a_road_turns_to_a_new_road() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.registry().get_building(&"hut")
+	SimFixture.place(sim, &"stockpile", Vector2i(2, 2))
+	var lonely := sim.province.add_building(hut, Vector2i(10, 10), true, 0)
+	var facing := sim.province.add_building(hut, Vector2i(16, 10), true, 0)
+	sim.execute(BuildRoadCommand.new([Vector2i(18, 10), Vector2i(18, 11)] as Array[Vector2i]))
+	var someone := SimFixture.spawn(sim, &"porter", lonely.entrance_tile())
+	# A road behind both: the lonely house turns to it, the one with a road in front stays.
+	var behind: Array[Vector2i] = [Vector2i(9, 10), Vector2i(9, 11), Vector2i(15, 10), Vector2i(15, 11)]
+	sim.execute(BuildRoadCommand.new(behind))
+	assert_int(lonely.orientation).is_equal(2)
+	assert_int(facing.orientation).is_equal(0)
+	# Whoever was inside is at the new entrance; the old one is a wall again.
+	assert_vector(someone.tile()).is_equal(lonely.entrance_tile())
+	assert_bool(sim.province.nav.is_walkable(Vector2i(11, 11))).is_false()
+	assert_bool(sim.province.nav.is_walkable(lonely.entrance_tile())).is_true()
+	var path := sim.province.find_path(Vector2i(1, 20), lonely.entrance_tile())
+	assert_vector(path[-2]).is_equal(Vector2i(9, 10))
+
+
+func test_chosen_look_is_saved_and_only_for_houses() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.place(sim, &"hut", Vector2i(10, 10))
+	var well := SimFixture.place(sim, &"well", Vector2i(16, 10))
+	assert_str(String(sim.execute(SetLookCommand.new(well.id, 1)))).is_equal("not_a_house")
+	assert_str(String(sim.execute(SetLookCommand.new(hut.id, 2)))).is_equal("")
+	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"hut", Vector2i(10, 16), true, 0, 3)))).is_equal("")
+	var copy := Simulation.from_dict(JSON.parse_string(JSON.stringify(sim.to_dict())), SimFixture.registry())
+	assert_int(copy.province.buildings.get_building(hut.id).look).is_equal(2)
+	assert_int(copy.province.buildings.get_building(sim.ids.next_id - 1).look).is_equal(3)

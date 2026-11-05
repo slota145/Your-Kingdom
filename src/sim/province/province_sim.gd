@@ -252,24 +252,101 @@ func door_tile(building: BuildingState) -> Vector2i:
 	return Agent.NO_TILE
 
 
-## The orientation (M4b-1.5) in which the door of a building of [param def] at
-## [param origin] opens onto a road, for the placement preview. A turn in which the
-## building fits wins, then [param preferred], then the next ones in order. -1 when no
-## door side touches a road.
-func orientation_to_road(def: BuildingDef, origin: Vector2i, preferred: int = 0) -> int:
+## The orientation suggested for a building of [param def] at [param origin] (placement
+## preview, M4b-1.5). Of the turns it fits in, one with its door onto a road wins; among
+## those (or when no road is next to it) one that lines it up into a row with a neighbour of
+## the same kind turned the same way; then [param preferred] and the next ones in order.
+## -1 when neither a road nor a neighbour decides.
+func suggested_orientation(def: BuildingDef, origin: Vector2i, preferred: int = 0) -> int:
 	var count := def.orientation_count()
 	var best := -1
-	var best_fits := false
+	var best_score := 0
 	for i: int in count:
 		var o := (preferred + i) % count
+		var score := 0
 		var front := def.door_front(origin, o)
-		if not grid.is_inside(front) or not grid.has_road(front):
-			continue
-		var fits := placement_error(def, origin, o) == &""
-		if best < 0 or (fits and not best_fits):
+		if grid.is_inside(front) and grid.has_road(front):
+			score += 2
+		if row_neighbours(def, origin, o) > 0:
+			score += 1
+		if score > best_score and placement_error(def, origin, o) == &"":
 			best = o
-			best_fits = fits
+			best_score = score
 	return best
+
+
+## Buildings of [param def] turned to [param orientation] standing right beside
+## [param origin] along the front of one so turned (where a row of them would continue).
+func row_neighbours(def: BuildingDef, origin: Vector2i, orientation: int) -> int:
+	var along := Vector2i(0, def.footprint.y) if orientation % 2 == 0 else Vector2i(def.footprint.x, 0)
+	var n := 0
+	for at: Vector2i in [origin - along, origin + along]:
+		var other := buildings.get_building(grid.occupant(at)) if grid.is_inside(at) else null
+		if other != null and other.origin == at and other.def == def and other.orientation == orientation:
+			n += 1
+	return n
+
+
+## Houses next to new road [param tiles] whose door does not open onto a road yet turn to
+## the new road when they can (M4b-1.5, owner's decision): rows that already face a road
+## never flip.
+func turn_houses_to_road(tiles: Array[Vector2i]) -> void:
+	var seen: Dictionary[int, bool] = {}
+	for tile: Vector2i in tiles:
+		for step: Vector2i in [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]:
+			var next := tile + step
+			var building := buildings.get_building(grid.occupant(next)) if grid.is_inside(next) else null
+			if building == null or seen.has(building.id) or not building.def.is_house():
+				continue
+			seen[building.id] = true
+			var front := building.door_front_tile()
+			if grid.is_inside(front) and grid.has_road(front):
+				continue
+			var count := building.def.orientation_count()
+			for i: int in range(1, count):
+				var o := (building.orientation + i) % count
+				var new_front := building.def.door_front(building.origin, o)
+				if grid.is_inside(new_front) and grid.has_road(new_front) and can_turn(building, o):
+					turn_building(building, o)
+					break
+
+
+## Whether [param building] may be turned to [param orientation]: the tile in front of the
+## new door is free and leads to the other buildings.
+func can_turn(building: BuildingState, orientation: int) -> bool:
+	var front := building.def.door_front(building.origin, orientation)
+	if not nav.is_walkable(front) or grid.occupant(front) != 0:
+		return false
+	var doors: Dictionary[Vector2i, bool] = {}
+	for other: BuildingState in buildings.all():
+		if other.id != building.id:
+			var door := door_tile(other)
+			if door != Agent.NO_TILE:
+				doors[door] = true
+	return doors.is_empty() or not nav.reachable(front, doors).is_empty()
+
+
+## Turns a placed building. People inside (on the old entrance) step to the new one; those
+## walking there plan their way again.
+func turn_building(building: BuildingState, orientation: int) -> void:
+	var old := building.entrance_tile()
+	building.orientation = orientation
+	var entrance := building.entrance_tile()
+	refresh_tile(old)
+	refresh_tile(entrance)
+	for agent: Agent in agents.all():
+		if agent.tile() == old:
+			agent.pos = IsoMath.tile_center(entrance)
+			agent.prev_pos = agent.pos
+		if agent.path_goal == old or agent.tile() == entrance:
+			var goal := entrance if agent.path_goal == old else agent.path_goal
+			var walking := agent.path_state != Agent.PathState.NONE
+			agent.clear_path()
+			if walking:
+				agent.path_goal = goal
+				agent.path_state = Agent.PathState.WAITING
+				paths.push(agent.id)
+	events.emit(&"building_turned", {"building": building.id, "orientation": orientation})
 
 
 ## The building whose entrance is [param tile], or null.
@@ -439,8 +516,9 @@ func _grow_saplings() -> void:
 ## becomes a construction site that porters and builders turn into the building (its gold
 ## cost is paid now; the command checked there is enough).
 func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false,
-		orientation: int = 0) -> BuildingState:
+		orientation: int = 0, look: int = 0) -> BuildingState:
 	var building := BuildingState.new(ids.take(), def, origin, orientation)
+	building.look = look
 	if not instant:
 		treasury.pay(def.gold_cost)
 	buildings.add(building)

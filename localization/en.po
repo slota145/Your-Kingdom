@@ -514,8 +514,20 @@ msgstr "The entrance would face the water."
 msgid "ui.command_error.bad_orientation"
 msgstr "This building cannot be turned that way."
 
+msgid "ui.building.change_look"
+msgstr "Change look"
+
+msgid "ui.building.change_look_hint"
+msgstr "Shows the next look of this house. Only the look changes."
+
+msgid "ui.command_error.not_a_house"
+msgstr "This is not a house."
+
+msgid "ui.command_error.bad_look"
+msgstr "There is no such look."
+
 msgid "ui.build.rotate_hint"
-msgstr "R: turn the entrance"
+msgstr "R: turn the entrance · T: change the look"
 
 msgid "ui.command_error.not_a_farm"
 msgstr "This is not a farm."

@@ -45,7 +45,7 @@ const QUARTER: Array = [
 ]
 ## Road lines of the quarter: [from, to] (inclusive, offsets).
 const QUARTER_ROADS: Array = [
-	[Vector2i(-1, 2), Vector2i(8, 2)],
+	[Vector2i(-1, 2), Vector2i(8, 2)], [Vector2i(8, -1), Vector2i(8, 1)],
 	[Vector2i(16, -1), Vector2i(16, 7)], [Vector2i(9, 6), Vector2i(15, 6)],
 	[Vector2i(20, -1), Vector2i(20, 6)], [Vector2i(25, -1), Vector2i(25, 6)],
 	[Vector2i(-1, 8), Vector2i(6, 8)], [Vector2i(-1, 13), Vector2i(6, 13)],

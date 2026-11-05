@@ -71,3 +71,19 @@ func test_corner_at_the_start_of_a_row() -> void:
 	assert_str(rows[2]).is_equal("end_b")
 	# The corner is at its "b" end (larger x).
 	assert_str(rows[3]).is_equal("end_a")
+
+
+func test_end_of_a_row_between_two_roads_is_a_corner() -> void:
+	# Row along y facing +x, road in front (x = 2) and a side street at y = 4.
+	var roads: Dictionary[Vector2i, bool] = {}
+	for y: int in range(-1, 6):
+		roads[Vector2i(2, y)] = true
+	for x: int in range(0, 3):
+		roads[Vector2i(x, 4)] = true
+	var has_road := func(t: Vector2i) -> bool: return roads.has(t)
+	var rows := HouseRowResolver.resolve([_h(1, Vector2i(0, 0)), _h(2, Vector2i(0, 2))], has_road)
+	assert_str(rows[1]).is_equal("end_a")
+	assert_str(rows[2]).is_equal("corner_a")
+	# Without a neighbour in the row it stays a single house.
+	rows = HouseRowResolver.resolve([_h(2, Vector2i(0, 2))], has_road)
+	assert_str(rows[2]).is_equal("single")

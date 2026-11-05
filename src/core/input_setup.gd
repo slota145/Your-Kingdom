@@ -20,6 +20,7 @@ const DEFAULTS: Dictionary[StringName, Array] = {
 	&"game_speed_down": [KEY_MINUS, KEY_KP_SUBTRACT],
 	&"toggle_mirror_compare": [KEY_M],
 	&"rotate_building": [KEY_R],
+	&"cycle_look": [KEY_T],
 }
 
 

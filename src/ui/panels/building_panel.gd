@@ -25,6 +25,7 @@ var _stock: StockpilePanel
 var _fields_button: Button
 var _priority_row: Container
 var _pause_button: Button
+var _look_button: Button
 var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
 var _reserve_label: Label
@@ -59,6 +60,13 @@ func _init() -> void:
 			command_requested.emit(SetPausedCommand.new(building_id, not b.paused)))
 	_pause_button.tooltip_text = "ui.building.pause_hint"
 	buttons.add_child(_pause_button)
+	_look_button = UiKit.button("ui.building.change_look", func() -> void:
+		var b := province.buildings.get_building(building_id)
+		var visual := BuildingVisualDef.for_building(b.def.id) if b != null else null
+		if visual != null and b.house != null:
+			command_requested.emit(SetLookCommand.new(building_id, b.look % visual.look_count(b.house.level) + 1)))
+	_look_button.tooltip_text = "ui.building.change_look_hint"
+	buttons.add_child(_look_button)
 	buttons.add_child(UiKit.button("ui.building.demolish", func() -> void: demolish_requested.emit(building_id)))
 	buttons.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
 
@@ -165,6 +173,8 @@ func _refresh() -> void:
 	_fields_button.visible = b.is_complete() and b.def.max_fields > 0
 	_pause_button.visible = b.is_complete() and b.def.recipe != null
 	_pause_button.text = tr("ui.building.resume" if b.paused else "ui.building.pause")
+	var visual := BuildingVisualDef.for_building(b.def.id)
+	_look_button.visible = b.house != null and visual != null and visual.look_count(b.house.level) > 1
 	_refresh_settings(b)
 
 

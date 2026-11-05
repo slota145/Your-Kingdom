@@ -12,12 +12,15 @@ extends RefCounted
 ## Where two rows meet at a right angle, the last house of one row stands right in front
 ## of a house of the other row, which faces across it: that house becomes a corner (its
 ## roof turns round the corner) and the house behind it joins it without a gable.
+## A house at the end of a row with a road in front and a road beside its free end is a
+## corner too (owner's decision 2026-11-05): it shows a front to the side street.
 
 
 ## [param houses]: Array of {"id": int, "origin": Vector2i, "orientation": int,
 ## "footprint": Vector2i, "level": int}. Returns id -> piece: single, end_a, middle, end_b,
 ## corner_a (joined at the "a" end and at the back), corner_b.
-static func resolve(houses: Array[Dictionary]) -> Dictionary[int, String]:
+## [param has_road] (tile -> bool, optional) tells where roads are.
+static func resolve(houses: Array[Dictionary], has_road: Callable = Callable()) -> Dictionary[int, String]:
 	var at: Dictionary[Vector2i, Dictionary] = {}
 	for h: Dictionary in houses:
 		at[h["origin"]] = h
@@ -32,6 +35,8 @@ static func resolve(houses: Array[Dictionary]) -> Dictionary[int, String]:
 		if _same_kind(h, behind) and int(behind["orientation"]) % 2 != int(h["orientation"]) % 2:
 			corners[int(h["id"])] = "corner_a" if ends[0] else "corner_b"
 			joined_by_corner.get_or_add(int(behind["id"]), []).append(h["origin"])
+		elif has_road.is_valid() and _road_corner(h, ends[0], has_road):
+			corners[int(h["id"])] = "corner_a" if ends[0] else "corner_b"
 	var result: Dictionary[int, String] = {}
 	for h: Dictionary in houses:
 		var id := int(h["id"])
@@ -61,6 +66,27 @@ static func resolve(houses: Array[Dictionary]) -> Dictionary[int, String]:
 static func _row_ends(h: Dictionary, at: Dictionary[Vector2i, Dictionary]) -> Array[bool]:
 	var along := _along_step(h)
 	return [_joins(h, at.get(h["origin"] - along, {})), _joins(h, at.get(h["origin"] + along, {}))]
+
+
+## Roads along the front of [param h] and along its free end ([param joined_a]: the free
+## end is "b").
+static func _road_corner(h: Dictionary, joined_a: bool, has_road: Callable) -> bool:
+	var fp: Vector2i = h["footprint"]
+	var o := int(h["orientation"])
+	var origin: Vector2i = h["origin"]
+	var front: Array[Vector2i] = []
+	var side: Array[Vector2i] = []
+	var along := Vector2i(0, 1) if o % 2 == 0 else Vector2i(1, 0)
+	var across := Vector2i(1, 0) if o % 2 == 0 else Vector2i(0, 1)
+	var depth := fp.x if o % 2 == 0 else fp.y
+	var width := fp.y if o % 2 == 0 else fp.x
+	var front_at := depth if o < 2 else -1
+	var side_at := width if joined_a else -1
+	for i: int in width:
+		front.append(origin + across * front_at + along * i)
+	for i: int in depth:
+		side.append(origin + along * side_at + across * i)
+	return front.any(has_road) and side.any(has_road)
 
 
 ## One house step along the row.
