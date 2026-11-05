@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BuildingDef" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
 
 [ext_resource type="Script" path="res://src/defs/building_def.gd" id="1_bld"]
 [ext_resource type="Resource" path="res://data/recipes/woodcutting.tres" id="2_recipe"]
@@ -11,7 +11,8 @@ entrance = Vector2i(1, 1)
 build_cost = Dictionary[StringName, int]({
 &"wood": 4
 })
-workers = 1
+build_time = 16.0
+worker_kinds = Array[StringName]([&"woodcutter"])
 recipe = ExtResource("2_recipe")
 work_radius = 12
 id = &"woodcutter"

@@ -21,6 +21,16 @@ func _init(registry: DataRegistry, map_size: Vector2i = Vector2i(64, 64), seed_v
 	province = ProvinceSim.new(registry, map_size, events, ids)
 
 
+## A new game on a hand-made map (ROADMAP M3): terrain, trees and the start layout.
+## Problems with the map (unknown colours, start buildings that do not fit) go to [param problems].
+static func from_map(registry: DataRegistry, map: MapDef, seed_value: int = 1,
+		problems: PackedStringArray = PackedStringArray()) -> Simulation:
+	var sim := Simulation.new(registry, map.size(), seed_value)
+	problems.append_array(sim.province.load_map(map))
+	sim.events.drain()
+	return sim
+
+
 ## Queues a command for the start of the next tick.
 func submit(command: Command) -> void:
 	_commands.append(command)

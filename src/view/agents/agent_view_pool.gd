@@ -15,6 +15,11 @@ var last_update_usec: int = 0
 var _pool: Array[AgentSprite] = []
 var _categories: Dictionary[StringName, String] = {}
 var _characters: Dictionary[StringName, StringName] = {}
+var _tints: Dictionary[StringName, Color] = {}
+## Building def id -> its visual (work spot offsets).
+var _building_visuals: Dictionary[StringName, BuildingVisualDef] = {}
+## The province the agents live in (work spots); optional.
+var province: ProvinceSim
 
 
 func _init() -> void:
@@ -33,7 +38,8 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		used += 1
 		# Small stable offset so people sharing a tile do not overlap exactly (ARCHITECTURE §5.3).
 		var jitter := Vector2(float((agent.id * 7) % 9) - 4.0, float((agent.id * 5) % 5) - 2.0)
-		sprite.position = screen + jitter
+		sprite.position = screen + jitter + _spot_offset(agent)
+		sprite.self_modulate = _tint(agent.kind)
 		var good := agent.carry_good if agent.is_carrying() else &""
 		var category := _category(good)
 		var anim := StringName("work_" + String(agent.activity))
@@ -70,6 +76,31 @@ func _category(good: StringName) -> String:
 
 func _character(kind: StringName) -> StringName:
 	if not _characters.has(kind):
-		var has_art := not ArtPaths.list_files("characters/%s" % kind).is_empty()
-		_characters[kind] = kind if has_art else FALLBACK_CHARACTER
+		var visual := AgentVisualDef.for_kind(kind)
+		var id := visual.character if visual != null else kind
+		var has_art := not ArtPaths.list_files("characters/%s" % id).is_empty()
+		_characters[kind] = id if has_art else FALLBACK_CHARACTER
 	return _characters[kind]
+
+
+func _tint(kind: StringName) -> Color:
+	if not _tints.has(kind):
+		var visual := AgentVisualDef.for_kind(kind)
+		_tints[kind] = visual.tint if visual != null else Color.WHITE
+	return _tints[kind]
+
+
+## Pixel offset of the named work spot (oven, table...) while the agent works there.
+func _spot_offset(agent: Agent) -> Vector2:
+	if province == null or agent.task == null or agent.path_state == Agent.PathState.MOVING:
+		return Vector2.ZERO
+	var step := agent.task.current_step() as WorkStepDef
+	if step == null or step.spot == &"":
+		return Vector2.ZERO
+	var workplace := province.buildings.get_building(agent.workplace_id)
+	if workplace == null:
+		return Vector2.ZERO
+	if not _building_visuals.has(workplace.def.id):
+		_building_visuals[workplace.def.id] = BuildingVisualDef.for_building(workplace.def.id)
+	var visual := _building_visuals[workplace.def.id]
+	return visual.spot_offsets.get(step.spot, Vector2.ZERO) if visual != null else Vector2.ZERO

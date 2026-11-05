@@ -27,11 +27,13 @@ assets/
 ├── goods/carried/<carry_category>/<good_id>.png    # nakładka niesionego towaru (arkusz kierunków)
 ├── goods/stacks/<good_id>.png                      # stosy w magazynie: 4 fazy zapełnienia w poziomie
 ├── buildings/<building_id>/<state>.png             # base, construction_1, construction_2, upgrade_scaffold...
+├── buildings/<building_id>/<state>.json            # footprint, wejście, pivot (punkt B footprintu w obrazku)
 ├── buildings/<building_id>/fx_<name>.png           # animowane efekty: dym, ogień, śmigło młyna
-├── buildings/houses/<level>/<variant>_<axis>.png   # warianty łączenia kamienic (§7)
+├── buildings/<house_id>/level_<n>_<variant>_<axis>.png  # dom poziomu n i warianty pierzei (§7)
 ├── walls/<wall_type>/<piece>.png                   # filary, półsegmenty, bramy, baszty (§6)
 ├── terrain/<terrain_id>/<variant>.png              # kafle terenu
-├── terrain/fields/<crop_id>_<stage>.png            # fazy upraw
+├── terrain/field/<stage>.png                       # fazy pola zboża (M3): fallow, plowed, sown_1..3, ripe
+├── terrain/range/a.png, terrain/cursor/ok|bad.png  # nakładki: zasięg usługi, kursor budowy
 ├── nature/<object_id>/<state>.png                  # drzewa (rośnie / stoi / ścięte / pień), krzaki, skały
 ├── ships/<ship_id>/<anim>.png                      # arkusze kierunków jak postacie
 ├── ui/…                                            # 9-slice panele, przyciski, ikony
@@ -247,12 +249,15 @@ Zasada składania kawałków opisana jest w ARCHITECTURE §6.3. Dla każdego typ
 
 ## 7. Domy i kamienice
 
+Pliki leżą w folderze budynku domu (`buildings/hut/`), a ich nazwy wskazuje `data/visuals/buildings/hut.tres` (`level_art`, `row_from_level`). Stan z M3:
+
 | Poziom | Pliki |
 |---|---|
-| 1 (chata) | `houses/1/single.png` + 2–3 warianty wyglądu (`single_b`, `single_c`) |
-| 2 (dom mieszczański) | `houses/2/single.png`, `end_a_x.png`, `middle_x.png`, `end_b_x.png`, analogicznie `_y` dla drugiej osi |
-| 3 (patrycjusze) | jak poziom 2 |
-| Ulepszanie | `houses/<level>/upgrade_scaffold.png` (rusztowanie nakładane na dom) |
+| 1 (chata) | `base.png` (później warianty wyglądu `base_b`, `base_c`) |
+| 2 (dom mieszczański) | `level_2_single_x.png` (= `_y`), `level_2_end_a_x.png`, `level_2_middle_x.png`, `level_2_end_b_x.png`, analogicznie `_y` dla drugiej osi |
+| 3 (patrycjusze) | jak poziom 2 (`level_3_…`) |
+| Ulepszanie | `upgrade_scaffold.png` (rusztowanie nakładane na dom) |
+| Budowa | `construction_1.png` (fundament i rusztowanie), `construction_2.png` (ściany na rusztowaniu) — każdy budynek ma własne, w tym samym kadrze co `base` |
 
 - `x` i `y` oznaczają oś siatki, wzdłuż której biegnie pierzeja. Fragmenty `end_a`, `middle` i `end_b` muszą stykać się ścianami szczytowymi bez szwów, a linia dachu musi być ciągła.
 - Domy mają footprint 2×2, więc fragment `middle` ma 128 px szerokości jak dom pojedynczy.
@@ -265,7 +270,7 @@ Zasada składania kawałków opisana jest w ARCHITECTURE §6.3. Dla każdego typ
 |---|---|---|
 | Teren | trawa (4 warianty), ziemia, piasek nad rzeką, płytka i głęboka woda, brzeg (autotile 47 lub 16 kafli, **(M1)**: decyzja zestawu) | skała, bagno, morze, plaża, zbocza |
 | Drogi | ubita (autotile 16) | bruk |
-| Pola | `wheat_0` (zaorane), `wheat_1` (zasiane), `wheat_2` (rośnie), `wheat_3` (dojrzałe), `wheat_4` (ścierń) | chmiel, winorośl, len |
+| Pola | `terrain/field/`: `fallow` (ugór, też po żniwach), `plowed` (zaorane), `sown_1..3` (zasiane, rośnie, prawie dojrzałe), `ripe` (dojrzałe) | chmiel, winorośl, len (`terrain/field_<crop>/…`) |
 | Natura | drzewo liściaste: `growing_1..3`, `grown`, `falling` (anim.), `felled` (ścięte, leży, aż drwal zabierze ostatnią kłodę), `stump`. Krzaki, kamienie dekoracyjne | iglaste, skały ze złożem |
 | Stosy w magazynie | `stacks/<good_id>.png`: arkusz 4 faz (25/50/75/100%), każda faza 64×64 (romb 1 kafla + wysokość) | wszystkie towary |
 | Ikony towarów | 32×32 | wszystkie |

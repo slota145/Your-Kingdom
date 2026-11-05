@@ -12,6 +12,9 @@ var slot_amount: PackedInt32Array = PackedInt32Array()
 var slot_in: PackedInt32Array = PackedInt32Array()
 var slot_out: PackedInt32Array = PackedInt32Array()
 
+## When > 0, no slot holds more than this (a house pantry), whatever the good's stack size.
+var stack_limit: int = 0
+
 var _data: DataRegistry
 var _reservations: Dictionary[int, Reservation] = {}
 var _next_reservation: int = 1
@@ -32,7 +35,8 @@ func slot_count() -> int:
 
 func stack_size(good: StringName) -> int:
 	var def := _data.get_good(good)
-	return def.stack_size if def != null else 1
+	var size := def.stack_size if def != null else 1
+	return mini(size, stack_limit) if stack_limit > 0 else size
 
 
 func total(good: StringName) -> int:
@@ -174,6 +178,22 @@ func reservation_count() -> int:
 	return _reservations.size()
 
 
+## Takes unreserved goods directly, without carriers (households eating). Returns the amount taken.
+func remove(good: StringName, amount: int) -> int:
+	var left := amount
+	for s: int in slot_count():
+		if left == 0:
+			break
+		if slot_good[s] != good:
+			continue
+		var take := mini(left, slot_amount[s] - slot_out[s])
+		if take > 0:
+			slot_amount[s] -= take
+			left -= take
+			_tidy(s)
+	return amount - left
+
+
 ## Stores goods directly, without carriers (map setup, tests). Returns what did not fit.
 func add(good: StringName, amount: int) -> int:
 	var left := amount
@@ -226,12 +246,16 @@ func to_dict() -> Dictionary:
 	var reservations: Array = []
 	for res: Reservation in _reservations.values():
 		reservations.append(res.to_dict())
-	return {"slots": slots, "reservations": reservations, "next": _next_reservation}
+	var d := {"slots": slots, "reservations": reservations, "next": _next_reservation}
+	if stack_limit > 0:
+		d["limit"] = stack_limit
+	return d
 
 
 static func from_dict(d: Dictionary, data: DataRegistry) -> Stockpile:
 	var slots: Array = d.get("slots", [])
 	var stock := Stockpile.new(slots.size(), data)
+	stock.stack_limit = int(d.get("limit", 0))
 	for s: int in slots.size():
 		var entry: Array = slots[s]
 		stock.slot_good[s] = StringName(String(entry[0]))

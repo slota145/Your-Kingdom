@@ -13,6 +13,11 @@ const RETRY_TICKS := 30
 static var _executors: Dictionary[StringName, TaskStep] = {}
 static var _transport_steps: Array[StepDef] = []
 static var _stash_steps: Array[StepDef] = []
+static var _build_steps: Array[StepDef] = []
+static var _errand_steps: Array[StepDef] = []
+static var _move_in_steps: Array[StepDef] = []
+
+const BUILDER_KIND := &"builder"
 
 
 static func tick_agent(province: ProvinceSim, agent: Agent) -> void:
@@ -43,6 +48,7 @@ static func executor(kind: StringName) -> TaskStep:
 		_executors = {
 			&"go_to": GoToStep.new(), &"work": WorkStep.new(), &"gather": GatherStep.new(),
 			&"fetch": FetchStep.new(), &"produce": ProduceStep.new(), &"deliver": DeliverStep.new(),
+			&"build": BuildStep.new(), &"field": FieldStep.new(), &"move_in": MoveInStep.new(),
 		}
 	return _executors[kind]
 
@@ -55,6 +61,22 @@ static func start_transport(agent: Agent, request: TransportRequest, amount: int
 	task.bb = {"good": String(request.good), "amount": amount, "from": request.source_id,
 			"to": request.dest_id}
 	task.steps = transport_steps()
+	agent.task = task
+
+
+## Sends a householder for [param amount] of [param good] from the nearest storage to the house.
+static func start_errand(agent: Agent, good: StringName, amount: int, house_id: int) -> void:
+	var task := Task.new()
+	task.kind = Task.KIND_ERRAND
+	task.bb = {"good": String(good), "amount": amount, "to": house_id}
+	task.steps = errand_steps()
+	agent.task = task
+
+
+static func start_move_in(agent: Agent) -> void:
+	var task := Task.new()
+	task.kind = Task.KIND_MOVE_IN
+	task.steps = move_in_steps()
 	agent.task = task
 
 
@@ -71,6 +93,10 @@ static func fail(province: ProvinceSim, agent: Agent) -> void:
 			province.jobs.on_completed(task.request_id, amount)
 		else:
 			province.jobs.on_failed(province, task.request_id, amount)
+	agent.last_fail = StringName(String(task.bb.get("fail_reason", "")))
+	var step := task.current_step()
+	agent.last_fail_good = StringName(String(task.bb.get("good",
+			(step as FetchStepDef).good if step is FetchStepDef else "")))
 	province.events.emit(&"task_failed", {"agent": agent.id, "task": task.kind,
 			"step": task.step_index, "reason": StringName(String(task.bb.get("fail_reason", "")))})
 	agent.task = null
@@ -86,6 +112,12 @@ static func restore_steps(province: ProvinceSim, task: Task) -> bool:
 			task.steps = transport_steps()
 		Task.KIND_STASH:
 			task.steps = stash_steps()
+		Task.KIND_BUILD:
+			task.steps = build_steps()
+		Task.KIND_ERRAND:
+			task.steps = errand_steps()
+		Task.KIND_MOVE_IN:
+			task.steps = move_in_steps()
 		Task.KIND_RECIPE:
 			var recipe := province.data.get_recipe(task.recipe_id)
 			if recipe == null:
@@ -108,6 +140,24 @@ static func stash_steps() -> Array[StepDef]:
 	return _stash_steps
 
 
+static func build_steps() -> Array[StepDef]:
+	if _build_steps.is_empty():
+		_build_steps = [BuildStepDef.new()]
+	return _build_steps
+
+
+static func errand_steps() -> Array[StepDef]:
+	if _errand_steps.is_empty():
+		_errand_steps = [FetchStepDef.new(), DeliverStepDef.new()]
+	return _errand_steps
+
+
+static func move_in_steps() -> Array[StepDef]:
+	if _move_in_steps.is_empty():
+		_move_in_steps = [MoveInStepDef.new()]
+	return _move_in_steps
+
+
 static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 	if agent.is_carrying():
 		var stash := Task.new()
@@ -115,7 +165,30 @@ static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 		stash.steps = stash_steps()
 		agent.task = stash
 		return
+	match agent.kind:
+		Population.HOUSEHOLDER_KIND:
+			# Errand over (or impossible): the householder goes back inside.
+			province.remove_agent(agent)
+			return
+		Population.SETTLER_KIND:
+			var home := province.buildings.get_building(agent.home_id)
+			if home == null or home.house == null:
+				province.remove_agent(agent)
+			else:
+				start_move_in(agent)
+			return
 	var workplace := province.buildings.get_building(agent.workplace_id)
+	if workplace != null and not workplace.is_complete():
+		return
+	if agent.kind == BUILDER_KIND and workplace != null:
+		var site := Construction.site_for(province, agent)
+		if site != 0:
+			var build := Task.new()
+			build.kind = Task.KIND_BUILD
+			build.bb = {"site": site}
+			build.steps = build_steps()
+			agent.task = build
+		return
 	if workplace != null and workplace.def.recipe != null and not workplace.def.recipe.steps.is_empty():
 		var task := Task.new()
 		task.kind = Task.KIND_RECIPE
@@ -141,3 +214,5 @@ static func _finish(province: ProvinceSim, agent: Agent) -> void:
 	if task.kind == Task.KIND_TRANSPORT:
 		province.jobs.on_completed(task.request_id, int(task.bb.get("amount", 1)))
 	agent.task = null
+	if task.kind == Task.KIND_ERRAND or task.kind == Task.KIND_MOVE_IN:
+		province.remove_agent(agent)

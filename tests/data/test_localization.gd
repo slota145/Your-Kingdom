@@ -80,3 +80,29 @@ func test_number_formatting() -> void:
 	assert_str(LocFormat.number(12345, "pl")).is_equal("12 345")
 	assert_str(LocFormat.number(1234567, "en")).is_equal("1,234,567")
 	assert_str(LocFormat.number(-4500, "en_US")).is_equal("-4,500")
+
+
+## Keys the UI builds at run time: professions, visible activities, failure reasons.
+func test_dynamic_ui_keys_exist() -> void:
+	var registry := DataRegistry.new()
+	registry.load_from("res://data")
+	var keys: Array[String] = []
+	for file: String in DirAccess.get_files_at("res://data/visuals/agents"):
+		if file.ends_with(".tres"):
+			keys.append("ui.kind.%s" % file.get_basename())
+	for def: GameDef in registry.all_of(&"recipe"):
+		for step: StepDef in (def as RecipeDef).steps:
+			if step is WorkStepDef:
+				keys.append("ui.activity.%s" % (step as WorkStepDef).activity)
+	for activity: String in ["plow", "sow", "harvest", "bind", "build"]:
+		keys.append("ui.activity.%s" % activity)
+	for reason: String in ["no_source", "no_space", "no_path", "no_resource", "source_gone",
+			"target_gone", "hands_full", "field_gone", "no_workplace", "no_house"]:
+		keys.append("ui.reason.%s" % reason)
+	for error: String in ["outside_map", "tile_occupied", "terrain_not_buildable", "tile_has_people",
+			"not_a_farm", "too_many_fields", "out_of_range", "already_road", "no_road", "no_field"]:
+		keys.append("ui.command_error.%s" % error)
+	for locale: String in LOCALES:
+		for key: String in keys:
+			assert_bool(_po[locale].entries.has(key)).override_failure_message(
+					"%s.po: missing key '%s'" % [locale, key]).is_true()

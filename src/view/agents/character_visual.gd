@@ -23,6 +23,9 @@ func get_sheet(anim: StringName) -> CharacterSheet:
 	# A missing carry variant falls back to plain walking rather than failing.
 	if String(anim).begins_with("walk") and animations.has(&"walk"):
 		return animations[&"walk"]
+	# Professions share one generic work animation until they get their own (work_bake...).
+	if String(anim).begins_with("work") and animations.has(&"work"):
+		return animations[&"work"]
 	return animations.get(&"idle")
 
 

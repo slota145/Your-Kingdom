@@ -1,0 +1,22 @@
+class_name BuildingVisualDef
+extends Resource
+## How a building looks (ARCHITECTURE §3.3): which art folder, per-level art, and where
+## workers are drawn while working at a named spot. Not a GameDef: the simulation never
+## reads it. File: data/visuals/buildings/<building id>.tres.
+
+## Folder under buildings/ (ART_SPEC §2) with base, site_1, site_2 and level art.
+@export var art_id: String = ""
+## Art name per house level (index 0 = level 1). Empty = always "base".
+@export var level_art: Array[String] = []
+## From this house level on, neighbours of the same level join into a row
+## (art "<level art>_<single|end_a|middle|end_b>_<x|y>"); 0 = never.
+@export_range(0, 3) var row_from_level: int = 0
+## Drawn as an open yard with stacks instead of a box (stockpiles).
+@export var yard: bool = false
+## Work spot name -> pixel offset from the entrance tile centre where the worker is drawn.
+@export var spot_offsets: Dictionary[StringName, Vector2] = {}
+
+
+static func for_building(id: StringName) -> BuildingVisualDef:
+	var path := "res://data/visuals/buildings/%s.tres" % id
+	return load(path) as BuildingVisualDef if ResourceLoader.exists(path) else null

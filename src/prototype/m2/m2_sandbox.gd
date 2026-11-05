@@ -74,8 +74,8 @@ func _build_simulation() -> void:
 		sim.province.resources.place(t, tree)
 	sim.province.rebuild_nav()
 	for origin: Vector2i in STOCKPILES:
-		_execute(PlaceBuildingCommand.new(&"stockpile", origin))
-	_execute(PlaceBuildingCommand.new(&"woodcutter", WOODCUTTER_HUT))
+		_execute(PlaceBuildingCommand.new(&"stockpile", origin, true))
+	_execute(PlaceBuildingCommand.new(&"woodcutter", WOODCUTTER_HUT, true))
 	var hut := _last_building()
 	_execute(SpawnAgentCommand.new(&"woodcutter", hut.entrance_tile()))
 	_execute(AssignWorkerCommand.new(sim.ids.next_id - 1, hut.id))
@@ -122,7 +122,7 @@ func _build_view() -> void:
 		elif BUILDING_ART.has(building.def.id):
 			var b := BuildingView.new()
 			world.add_child(b)
-			b.setup(BUILDING_ART[building.def.id], building.origin)
+			b.setup("buildings/%s/base" % BUILDING_ART[building.def.id], building.origin)
 	piles_view = PileLayer.new()
 	world.add_child(piles_view)
 	agents_view = AgentViewPool.new()

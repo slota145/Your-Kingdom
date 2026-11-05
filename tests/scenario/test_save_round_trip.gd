@@ -78,10 +78,73 @@ func test_v1_fixture_loads_and_continues() -> void:
 	var document: Dictionary = JSON.parse_string(
 			FileAccess.get_file_as_string("res://tests/fixtures/saves/v1_woodcutter.json"))
 	assert_int(int(document["header"]["save_version"])).is_equal(1)
-	var sim := Simulation.from_dict(document["state"], SimFixture.registry())
-	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(document["state"]))
+	var state := SaveMigrations.migrate(document["state"], 1)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
 	var wood_before := sim.province.goods_total(&"wood")
 	sim.run_ticks(SimFixture.ticks(120))
 	assert_int(sim.province.goods_total(&"wood")).is_greater(wood_before)
 	assert_int(sim.province.goods_total(&"bread")).is_equal(12)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## M3: a village mid-work: construction site, farm with fields, households, roads.
+func _village_sim(seed_value: int) -> Simulation:
+	var sim := SimFixture.make_sim(Vector2i(40, 40), seed_value)
+	SimFixture.village(sim, 60, 10)
+	SimFixture.house(sim, Vector2i(8, 8), 4, false)
+	SimFixture.place(sim, &"well", Vector2i(9, 12))
+	var farm := SimFixture.place(sim, &"farm", Vector2i(18, 14))
+	for x: int in range(20, 24):
+		sim.execute(PlaceFieldCommand.new(farm.id, Vector2i(x, 13)))
+	SimFixture.place(sim, &"mill", Vector2i(14, 4))
+	var road: Array[Vector2i] = []
+	for x: int in range(2, 20):
+		road.append(Vector2i(x, 11))
+	sim.execute(BuildRoadCommand.new(road))
+	sim.execute(PlaceBuildingCommand.new(&"bakery", Vector2i(18, 4)))
+	sim.province.entry_tile = Vector2i(0, 30)
+	return sim
+
+
+func test_village_save_load_save_is_identical() -> void:
+	var sim := _village_sim(4)
+	var carried := false
+	for ticks: int in [1, 233, 600, 1500]:
+		sim.run_ticks(ticks)
+		for agent: Agent in sim.province.agents.all():
+			carried = carried or agent.is_carrying()
+		assert_str(SimCodec.canonical(_reload(sim).to_dict())).is_equal(SimCodec.canonical(sim.to_dict()))
+	assert_bool(carried).is_true()
+
+
+func test_village_continues_deterministically_after_load() -> void:
+	var original := _village_sim(8)
+	original.run_ticks(1111)
+	var goods_before := {}
+	for good: StringName in [&"wood", &"bread", &"grain"]:
+		goods_before[good] = original.province.goods_total(good)
+	var loaded := _reload(original)
+	for chunk: int in 8:
+		original.run_ticks(300)
+		loaded.run_ticks(300)
+		assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(SimCodec.canonical(original.to_dict()))
+	assert_array(Array(loaded.province.dangling_holds())).is_empty()
+
+
+## A save written by save_version 2 keeps loading unchanged.
+func test_v2_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v2_village.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(2)
+	var state := SaveMigrations.migrate(document["state"], 2)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	var people := 0
+	for b: BuildingState in sim.province.buildings.all():
+		if b.house != null:
+			people += b.house.residents
+	sim.run_ticks(SimFixture.ticks(120))
+	assert_int(sim.province.agents.count()).is_greater(0)
+	assert_int(people).is_greater(0)
 	assert_array(Array(sim.province.dangling_holds())).is_empty()

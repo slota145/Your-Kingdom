@@ -67,6 +67,25 @@ func get_resource_node(id: StringName) -> ResourceNodeDef:
 	return get_def(&"resource_node", id) as ResourceNodeDef
 
 
+func get_terrain(id: StringName) -> TerrainDef:
+	return get_def(&"terrain", id) as TerrainDef
+
+
+func get_map(id: StringName) -> MapDef:
+	return get_def(&"map", id) as MapDef
+
+
+## Terrains by TileGrid index; null where no terrain uses that index.
+func terrains_by_index() -> Array[TerrainDef]:
+	var result: Array[TerrainDef] = []
+	for def: GameDef in all_of(&"terrain"):
+		var terrain := def as TerrainDef
+		if result.size() <= terrain.index:
+			result.resize(terrain.index + 1)
+		result[terrain.index] = terrain
+	return result
+
+
 ## Adds a definition built in code (tests, tools). Problems end up in [member errors].
 func register(def: GameDef) -> void:
 	_register(def, "<code>")
