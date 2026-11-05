@@ -41,6 +41,8 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 		return _f("ui.doing.deliver", [_good(agent.carry_good), _storage_name(province, to)])
 	if step is GoToStepDef:
 		var go := step as GoToStepDef
+		if go.target == &"shore":
+			return _t("ui.doing.go_to_shore")
 		if go.target == &"resource":
 			return _f("ui.doing.go_to", [TranslationServer.translate(
 					StringName("resource_node.%s.name" % go.resource))])

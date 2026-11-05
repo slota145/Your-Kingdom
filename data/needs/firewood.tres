@@ -7,5 +7,6 @@ script = ExtResource("1_s")
 kind = "good"
 goods = Array[StringName]([&"wood"])
 per_resident_per_minute = 0.03
-weight = 30
+weight = 25
+is_basic = true
 id = &"firewood"

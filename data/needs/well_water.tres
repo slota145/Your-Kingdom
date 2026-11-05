@@ -6,5 +6,6 @@
 script = ExtResource("1_s")
 kind = "service"
 service = &"well"
-weight = 30
+weight = 25
+is_basic = true
 id = &"well_water"

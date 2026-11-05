@@ -15,7 +15,11 @@ func _init(building_id: StringName, at: Vector2i, finished: bool = false) -> voi
 
 
 func validate(sim: Simulation) -> StringName:
-	return sim.province.placement_error(sim.data.get_building(def_id), origin)
+	var def := sim.data.get_building(def_id)
+	var error := sim.province.placement_error(def, origin)
+	if error == &"" and not instant and not sim.treasury.can_pay(def.gold_cost):
+		return &"not_enough_gold"
+	return error
 
 
 func apply(sim: Simulation) -> void:

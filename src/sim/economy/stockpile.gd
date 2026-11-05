@@ -33,6 +33,19 @@ func slot_count() -> int:
 	return slot_good.size()
 
 
+## Adds empty slots up to [param slots] (a pantry after new goods were added to the data).
+func grow_to(slots: int) -> void:
+	var old := slot_count()
+	if slots <= old:
+		return
+	slot_good.resize(slots)
+	for s: int in range(old, slots):
+		slot_good[s] = &""
+	slot_amount.resize(slots)
+	slot_in.resize(slots)
+	slot_out.resize(slots)
+
+
 func stack_size(good: StringName) -> int:
 	var def := _data.get_good(good)
 	var size := def.stack_size if def != null else 1

@@ -6,7 +6,9 @@ extends RefCounted
 ## - happiness moves towards the sum of satisfied need weights,
 ## - all basic needs met long enough -> upgrade site; unmet too long -> warning, then decline,
 ## - newcomers walk in from the map edge to free places of happy houses,
-## - about half of the residents work: free ones are handed to buildings missing workers.
+## - houses pay taxes by class, happiness and the tax rate (GDD §3.5),
+## - about half of the residents work: free ones are handed to buildings missing workers,
+##   higher work priority first; a high-priority building may take a worker from a lower one.
 
 const UPDATE_TICKS := 10
 ## Happiness points per second towards the target.
@@ -51,11 +53,13 @@ static func _update_house(province: ProvinceSim, building: BuildingState) -> voi
 		var ok := _need_met(province, building, need)
 		house.satisfied[need.id] = ok
 		if ok:
-			target += need.weight
+			target += level.weight_of(need)
 		elif need.is_basic:
 			basic_met = false
+	target = clampf(target + province.treasury.rate_happiness(), 0.0, 100.0)
 	house.happiness = move_toward(house.happiness, target, HAPPINESS_SPEED)
 	_request_supplies(province, building)
+	_pay_taxes(province, building)
 	if house.residents == 0:
 		house.met_seconds = 0
 		house.unmet_seconds = 0
@@ -64,7 +68,8 @@ static func _update_house(province: ProvinceSim, building: BuildingState) -> voi
 		house.met_seconds += 1
 		house.unmet_seconds = 0
 		if house.met_seconds >= UPGRADE_AFTER and building.site_id == 0 \
-				and house.level < building.def.house_levels.size():
+				and house.level < building.def.house_levels.size() \
+				and next_level_available(province, building):
 			Construction.open_upgrade_site(province, building, building.def.house_levels[house.level])
 	else:
 		house.met_seconds = 0
@@ -73,6 +78,31 @@ static func _update_house(province: ProvinceSim, building: BuildingState) -> voi
 			province.events.emit(&"house_warning", {"building": building.id})
 		if house.unmet_seconds >= DECLINE_AFTER:
 			_decline(province, building)
+
+
+## Whether the town can already supply the basic goods of the next level: a full pantry of
+## each (the next level's supply units) in the pantry and the storages together. Without it a
+## house would upgrade, go short and decline again, wasting the materials (M4a balance, found
+## by the automatic player).
+static func next_level_available(province: ProvinceSim, building: BuildingState) -> bool:
+	var next := building.def.house_levels[building.house.level]
+	for need: NeedDef in next.needs:
+		if not need.is_basic or need.is_service():
+			continue
+		var found := 0
+		for good: StringName in need.goods:
+			found += building.supply.total(good) + province.stored(good)
+		if found < next.supply_units:
+			return false
+	return true
+
+
+## Taxes for one second: gold per resident per minute of the class, scaled by happiness
+## and the tax rate.
+static func _pay_taxes(province: ProvinceSim, building: BuildingState) -> void:
+	var house := building.house
+	var per_second := house.residents * building.level_def().tax_per_minute / 60.0
+	province.treasury.add(per_second * house.happiness / 100.0 * province.treasury.rate_factor())
 
 
 ## Eats from the pantry and tells whether the need is met right now.
@@ -183,7 +213,10 @@ static func employed_from(province: ProvinceSim, house_id: int) -> Array[Agent]:
 
 
 ## Fires workers of houses that shrank, then hands free residents to buildings missing
-## workers (lowest staffing priority first, then oldest building; nearest house first).
+## workers (player's work priority first, then the building's staffing priority, then the
+## oldest building; nearest house first). When nobody is free and a building stays short,
+## one worker of the lowest-priority building below it goes home, to be hired again next
+## second by the more important one.
 static func _balance_workforce(province: ProvinceSim) -> void:
 	var free: Dictionary[int, int] = {}
 	var houses: Array[BuildingState] = []
@@ -201,14 +234,12 @@ static func _balance_workforce(province: ProvinceSim) -> void:
 	for building: BuildingState in province.buildings.all():
 		if building.is_complete() and building.workers.size() < building.def.worker_count():
 			workplaces.append(building)
-	workplaces.sort_custom(func(a: BuildingState, b: BuildingState) -> bool:
-		if a.def.staffing_priority != b.def.staffing_priority:
-			return a.def.staffing_priority < b.def.staffing_priority
-		return a.id < b.id)
+	workplaces.sort_custom(_staffed_before)
 	for workplace: BuildingState in workplaces:
 		for kind: StringName in _missing_kinds(province, workplace):
 			var home := _nearest_free_house(houses, free, workplace.entrance_tile())
 			if home == null:
+				_free_worker_for(province, workplace)
 				return
 			free[home.id] -= 1
 			var agent := province.spawn_agent(kind, home.entrance_tile())
@@ -216,6 +247,33 @@ static func _balance_workforce(province: ProvinceSim) -> void:
 			province.assign_worker(agent, workplace)
 			province.events.emit(&"worker_hired", {"agent": agent.id, "building": workplace.id,
 					"home": home.id})
+
+
+static func _staffed_before(a: BuildingState, b: BuildingState) -> bool:
+	if a.priority != b.priority:
+		return a.priority < b.priority
+	if a.def.staffing_priority != b.def.staffing_priority:
+		return a.def.staffing_priority < b.def.staffing_priority
+	return a.id < b.id
+
+
+## Sends home one worker of the lowest-priority (then newest) building whose player priority
+## is below [param needy]'s.
+static func _free_worker_for(province: ProvinceSim, needy: BuildingState) -> void:
+	var victim: BuildingState = null
+	for building: BuildingState in province.buildings.all():
+		if building.priority <= needy.priority or building.workers.is_empty():
+			continue
+		if victim == null or building.priority > victim.priority \
+				or (building.priority == victim.priority and building.id > victim.id):
+			victim = building
+	if victim == null:
+		return
+	var agent := province.agents.get_agent(victim.workers[victim.workers.size() - 1])
+	if agent != null:
+		province.remove_agent(agent)
+		province.events.emit(&"worker_reassigned", {"agent": agent.id, "from": victim.id,
+				"to": needy.id})
 
 
 static func _missing_kinds(province: ProvinceSim, workplace: BuildingState) -> Array[StringName]:

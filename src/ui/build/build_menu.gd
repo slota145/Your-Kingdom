@@ -6,8 +6,9 @@ extends PanelContainer
 signal tool_selected(tool: Dictionary)
 
 ## Order of the buttons (ids missing from the data are skipped).
-const ORDER: Array[StringName] = [&"hut", &"well", &"woodcutter", &"farm", &"mill", &"bakery",
-		&"stockpile", &"town_hall"]
+const ORDER: Array[StringName] = [&"hut", &"well", &"chapel", &"church", &"market",
+		&"woodcutter", &"sawmill", &"quarry", &"farm", &"mill", &"bakery", &"fishing_hut",
+		&"hop_farm", &"brewery", &"stockpile", &"town_hall"]
 
 
 func setup(registry: DataRegistry) -> void:
@@ -22,6 +23,8 @@ func setup(registry: DataRegistry) -> void:
 		b.tooltip_text = def.desc_key()
 		b.mouse_entered.connect(func() -> void:
 			var lines := PackedStringArray([tr(def.desc_key()), tr("ui.build.cost") % UiKit.goods_list(def.build_cost)])
+			if def.gold_cost > 0:
+				lines.append(tr("ui.build.gold_cost") % def.gold_cost)
 			b.tooltip_text = "\n".join(lines))
 		row.add_child(b)
 	var road := UiKit.button("ui.build.road", func() -> void: tool_selected.emit({"kind": &"road"}))

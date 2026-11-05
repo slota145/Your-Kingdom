@@ -73,6 +73,8 @@ func _start(simulation: Simulation) -> void:
 	camera.make_current()
 	_top.province = sim.province
 	_top.clock = sim.clock
+	_top.treasury = sim.treasury
+	_building_panel.treasury = sim.treasury
 	_notes.province = sim.province
 	_close_panels()
 	_set_tool({})
@@ -113,6 +115,7 @@ func _build_ui() -> void:
 	_building_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	_building_panel.position.y = 64
 	_building_panel.closed.connect(_close_panels)
+	_building_panel.command_requested.connect(func(command: Command) -> void: _execute(command))
 	_building_panel.demolish_requested.connect(func(id: int) -> void:
 		_execute(DemolishCommand.new(id))
 		_close_panels())

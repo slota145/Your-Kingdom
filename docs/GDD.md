@@ -96,12 +96,13 @@ Potrzeby dzielą się na **podstawowe**, bez których dom traci mieszkańców i 
 | Klasa | Potrzeby podstawowe | Potrzeby dodatkowe |
 |---|---|---|
 | Chłopi | żywność (dowolna z: chleb, jabłka, ryby), drewno opałowe, studnia w zasięgu | kaplica w zasięgu |
-| Mieszczanie | chleb **oraz** (mięso lub ryby), piwo, drewno opałowe | kościół, targowisko w zasięgu |
+| Mieszczanie | chleb **oraz** (mięso lub ryby), piwo, drewno opałowe, studnia w zasięgu | kościół, targowisko w zasięgu |
 | Patrycjusze | jak mieszczanie + ubrania, wino lub miód pitny | łaźnia lub tawerna |
 
 Zasady:
 - **Dostarczanie towarów do domów jest widoczne.** Domownik idzie do najbliższego magazynu lub targowiska po zapasy i niesie je do domu. Dom ma mały zapas, np. na 2–3 cykle konsumpcji. [SLICE]: zaopatrzenie z magazynu. Targowisko z zasięgiem i straganiarzami: [1.0].
 - **Usługi** (studnia, kaplica, kościół, łaźnia) działają przez **zasięg** liczony długością ścieżki od budynku usługowego.
+- **Stan w M4a (2026-11-05):** chłopi jedzą chleb albo ryby (jabłka później). Wagi: chłopi żywność 35, opał 25, studnia 25, kaplica 15. Mieszczanie chleb 20, ryby 15, piwo 15, opał 15, studnia 15, kościół 10, targowisko 10. Mięso dojdzie w M4b. Targowisko w M4a to usługa z zasięgiem, bez straganiarzy.
 - **Zadowolenie** domu (0–100) wynika ze spełnienia potrzeb (proste punkty: każda spełniona potrzeba daje swoją część, w slice’ie chleb 40, opał 30, studnia 30; zadowolenie dochodzi do celu płynnie, decyzja 2026-11-05) i wpływa na:
   - podatki,
   - napływ nowych mieszkańców (gdy w domu są wolne miejsca),
@@ -109,7 +110,8 @@ Zasady:
 
 ### 3.3 Rozwój domów
 
-- Dom **awansuje**, gdy przez określony czas (domyślnie 60 s czasu gry) spełnia **wszystkie potrzeby podstawowe** swojej klasy, a materiały na ulepszenie zostaną **fizycznie dostarczone** (np. deski, cegły). W czasie ulepszenia na domu pojawia się rusztowanie.
+- Dom **awansuje**, gdy przez określony czas (domyślnie 60 s czasu gry) spełnia **wszystkie potrzeby podstawowe** swojej klasy, a materiały na ulepszenie zostaną **fizycznie dostarczone** (np. deski, cegły). W czasie ulepszenia na domu pojawia się rusztowanie. Chata → dom mieszczański kosztuje 4 deski (M4a).
+- **Awans czeka na towary nowej klasy (M4a, potwierdzone 2026-11-05):** dom zaczyna awans dopiero wtedy, gdy w magazynach jest po pełnej spiżarni każdego towaru podstawowego następnej klasy (np. 4 piwa, 4 ryby, 4 chleby). Panel domu mówi wtedy, na co czeka. Bez tej reguły domy awansowały, po 3 minutach bez piwa spadały i deski przepadały.
 - Dom **cofa się** o poziom, jeśli potrzeby podstawowe nie są spełniane przez dłuższy czas (domyślnie 180 s). Wcześniej gracz dostaje ostrzeżenie.
 - **Łączenie w kamienice** (od poziomu 2): domy tego samego poziomu, ustawione obok siebie w jednej linii wzdłuż osi siatki i równo wyrównane, wizualnie łączą się w pierzeję. Zamiast osobnych budynków widać fragmenty: koniec lewy, środek i koniec prawy. Łączenie jest **wyłącznie wizualne** i nie zmienia symulacji. Rozważymy później premię (np. mniejsze zużycie opału) [PÓŹNIEJ].
 
@@ -119,11 +121,12 @@ Zasady:
 - **Każdy zatrudniony pracownik jest widoczną postacią.** Pozostali mieszkańcy nie mają stałych postaci. Wyjątkiem są domownicy, którzy pojawiają się na czas wyjścia po zapasy, oraz kilku przechodniów dla ożywienia ulic.
 - Pracownik ma przypisany dom i miejsce pracy. Przy zatrudnieniu wychodzi z domu i idzie do pracy, potem już tam pozostaje. Nie ma cyklu dnia i nocy.
 - Brak siły roboczej oznacza, że budynki stoją puste i pokazują ikonę braku pracowników.
-- Priorytety zatrudnienia ustawia się na poziomie budynku: wysoki, normalny, niski. [1.0]
+- Priorytety zatrudnienia ustawia się na poziomie budynku: wysoki, normalny, niski. Budynek z wyższym priorytetem dostaje ludzi pierwszy, a gdy brakuje wolnych, zabiera pracownika budynkowi z niższym priorytetem. [M4a]
 
 ### 3.5 Podatki i złoto
 
 - Domy płacą podatek okresowo, zależnie od klasy i zadowolenia. Gracz ustawia stawkę: niska, normalna, wysoka. Stawka wpływa na zadowolenie.
+- **Stan w M4a:** podatek liczony co sekundę: chłop 0,25, mieszczanin 0,6 złota na minutę przy pełnym zadowoleniu. Stawka mnoży to przez 0,5 / 1 / 1,5 i zmienia zadowolenie o +10 / 0 / −15. Stawkę ustawia się w panelu ratusza. Na start 100 złota. Złotem płaci się za kaplicę (10), browar (30), targowisko (40) i kościół (60).
 - Złoto wydajemy na budowę części budynków, rekrutację, handel, wykup osad i utrzymanie wojska.
 - Złoto jest pulą globalną królestwa. To jedyny zasób globalny.
 
@@ -135,7 +138,8 @@ Zasady:
 
 1. **Każda prowincja ma własne magazyny.** Nie ma globalnej puli towarów. Towary między prowincjami przewożą konwoje i statki (§4.5).
 2. **Magazyn to fizyczne miejsce.** Plac składowy ma sloty. Każdy slot przechowuje jeden rodzaj towaru do określonej ilości i jest pokazany stosem w jednej z kilku faz zapełnienia. Pojemność magazynu wynika z liczby slotów.
-3. **Model transportu jest zbliżony do Twierdzy.** Pracownik budynku produkcyjnego sam przynosi surowce z magazynu i sam odnosi wyroby do magazynu. Tragarze magazynów zajmują się dostawami na budowy, przewozem między magazynami (później także wozami) i portem.
+3. **Model transportu jest zbliżony do Twierdzy.** Pracownik budynku produkcyjnego sam przynosi surowce z magazynu i sam odnosi wyroby do magazynu. Tragarze magazynów zajmują się dostawami na budowy, przewozem między magazynami (później także wozami) i portem. W M4a każdy magazyn ma 2 miejsca dla tragarzy, a ratusz 2 tragarzy i budowniczego.
+5. **Opał przed budową (M4a):** budowy nie biorą z magazynu ostatnich 5 sztuk drewna. Ta rezerwa zostaje dla domów. Gracz zmienia ją suwakiem w panelu magazynu (0–60).
 4. **Każdy cykl produkcji składa się z etapów** zdefiniowanych w danych: przejście, pobranie, czynność z animacją, wytworzenie, odniesienie.
 
 ### 4.2 Lista towarów [1.0] (ok. 30)
@@ -161,14 +165,17 @@ zboże (farma + pola) ──► młyn ──► mąka ──► piekarnia ──
 drwal ──► drewno ──► magazyn ──► budowy / dom (drewno opałowe w slice = drewno)
 studnia (usługa, bez towaru)
 
+[M4a]
+drewno ──► tartak ──► deski (1 kłoda = 2 deski)
+skały na mapie ──► kamieniołom ──► kamień
+wędkarz (nad rzeką) ──► ryby (później kutry na morzu, IDEAS)
+chmielnik + pola ──► chmiel
+zboże + chmiel ──► browar ──► piwo (1 + 1 = 2 beczki)
+
 [1.0]
-drewno ──► tartak ──► deski
 glina + drewno opałowe ──► cegielnia ──► cegły
-kamieniołom ──► kamień
 sad ──► jabłka
-wędkarz ──► ryby (później kutry na morzu, IDEAS)
 chlew ──► świnie ──► rzeźnik ──► mięso + skóry
-zboże + chmiel ──► browar ──► piwo
 pasieka ──► miód ──► miodosytnia ──► miód pitny
 winnica★ ──► winogrona ──► winiarnia ──► wino
 owczarnia ──► wełna ──► tkalnia ──► sukno ──► krawiec ──► ubrania
@@ -265,6 +272,14 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda i budynki blokują pr
 | Farma zbożowa | 2×2 + do 16 kafli pola 1×1 stawianych osobno w zasięgu farmy (decyzja 2026-11-05) | zboże |
 | Młyn | 2×2 | mąka |
 | Piekarnia | 2×2 | chleb |
+| Tartak [M4a] | 2×2 | deski |
+| Kamieniołom [M4a] | 2×2, skały w zasięgu 12 | kamień |
+| Chata wędkarza [M4a] | 2×2, woda w zasięgu 5 | ryby |
+| Chmielnik [M4a] | 2×2 + do 12 kafli pola | chmiel |
+| Browar [M4a] | 2×2, 30 złota | piwo |
+| Kaplica [M4a] | 2×2, 10 złota | usługa w zasięgu (chłopi) |
+| Kościół [M4a] | 3×3, 60 złota | usługa w zasięgu (mieszczanie) |
+| Targowisko [M4a] | 3×3, 40 złota | usługa w zasięgu (mieszczanie) |
 
 ---
 

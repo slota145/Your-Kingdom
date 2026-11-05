@@ -14,7 +14,7 @@ msgid "ui.main.title"
 msgstr "Twoje Królestwo"
 
 msgid "ui.main.subtitle"
-msgstr "Etap M3: pierwszy grywalny fragment"
+msgstr "Etap M4a: mieszczanie i logistyka"
 
 msgid "ui.main.toggle_language"
 msgstr "Zmień język: English"
@@ -209,7 +209,7 @@ msgid "need.food.name"
 msgstr "Żywność"
 
 msgid "need.food.desc"
-msgstr "Mieszkańcy jedzą chleb ze spiżarni domu."
+msgstr "Chłopi jedzą chleb albo ryby ze spiżarni domu."
 
 msgid "need.firewood.name"
 msgstr "Opał"
@@ -533,3 +533,293 @@ msgstr "Nic do zrobienia."
 
 msgid "ui.command_error.unknown_building"
 msgstr "Nie ma takiego budynku."
+
+# --- M4a ---
+
+msgid "good.planks.name"
+msgstr "Deski"
+
+msgid "good.planks.desc"
+msgstr "Deski z tartaku. Potrzebne do awansu chat i większych budowli."
+
+msgid "good.stone.name"
+msgstr "Kamień"
+
+msgid "good.stone.desc"
+msgstr "Ciosany kamień z kamieniołomu. Budulec kościoła i browaru."
+
+msgid "good.fish.name"
+msgstr "Ryby"
+
+msgid "good.fish.desc"
+msgstr "Ryby złowione wędką w rzece. Jedzą je chłopi i mieszczanie."
+
+msgid "good.hops.name"
+msgstr "Chmiel"
+
+msgid "good.hops.desc"
+msgstr "Szyszki chmielu z chmielnika. Bez nich nie ma piwa."
+
+msgid "good.beer.name"
+msgstr "Piwo"
+
+msgid "good.beer.desc"
+msgstr "Piwo z browaru, warzone ze zboża i chmielu. Mieszczanie bez niego nie wytrzymają."
+
+msgid "building.sawmill.name"
+msgstr "Tartak"
+
+msgid "building.sawmill.desc"
+msgstr "Tracz przynosi kłodę z magazynu, przecina ją na deski i odnosi je."
+
+msgid "building.quarry.name"
+msgstr "Kamieniołom"
+
+msgid "building.quarry.desc"
+msgstr "Kamieniarz odłupuje kamień ze skał w okolicy i odnosi go do magazynu."
+
+msgid "building.fishing_hut.name"
+msgstr "Chata wędkarza"
+
+msgid "building.fishing_hut.desc"
+msgstr "Wędkarz idzie nad wodę, zarzuca wędkę i czeka na branie. Stawiaj blisko rzeki."
+
+msgid "building.hop_farm.name"
+msgstr "Chmielnik"
+
+msgid "building.hop_farm.desc"
+msgstr "Chmielarz uprawia chmiel na polach wokół zagrody. Pola stawiasz sam, jak przy farmie."
+
+msgid "building.brewery.name"
+msgstr "Browar"
+
+msgid "building.brewery.desc"
+msgstr "Piwowar przynosi zboże i chmiel, zaciera, warzy i odnosi beczki piwa."
+
+msgid "building.chapel.name"
+msgstr "Kaplica"
+
+msgid "building.chapel.desc"
+msgstr "Mała kaplica. Chłopi w jej zasięgu są bardziej zadowoleni."
+
+msgid "building.church.name"
+msgstr "Kościół"
+
+msgid "building.church.desc"
+msgstr "Kamienny kościół z wieżą. Mieszczanie w jego zasięgu są bardziej zadowoleni."
+
+msgid "building.market.name"
+msgstr "Targowisko"
+
+msgid "building.market.desc"
+msgstr "Plac z kramami. Mieszczanie w jego zasięgu są bardziej zadowoleni."
+
+msgid "resource_node.rock.name"
+msgstr "Skała"
+
+msgid "resource_node.rock.desc"
+msgstr "Wychodnia skalna. Kamieniarz odłupuje z niej kamień, aż zostanie gruz."
+
+msgid "need.bread.name"
+msgstr "Chleb"
+
+msgid "need.bread.desc"
+msgstr "Mieszczanie chcą codziennie chleba."
+
+msgid "need.fish_or_meat.name"
+msgstr "Ryby lub mięso"
+
+msgid "need.fish_or_meat.desc"
+msgstr "Mieszczanie chcą też ryb (mięso dojdzie później)."
+
+msgid "need.beer.name"
+msgstr "Piwo"
+
+msgid "need.beer.desc"
+msgstr "Mieszczanie piją piwo z browaru."
+
+msgid "need.chapel.name"
+msgstr "Kaplica"
+
+msgid "need.chapel.desc"
+msgstr "Dodatkowa potrzeba chłopów: kaplica w zasięgu. Daje zadowolenie, ale nie blokuje awansu."
+
+msgid "need.church.name"
+msgstr "Kościół"
+
+msgid "need.church.desc"
+msgstr "Dodatkowa potrzeba mieszczan: kościół w zasięgu."
+
+msgid "need.market.name"
+msgstr "Targowisko"
+
+msgid "need.market.desc"
+msgstr "Dodatkowa potrzeba mieszczan: targowisko w zasięgu."
+
+msgid "ui.activity.saw"
+msgstr "tnie kłodę na deski"
+
+msgid "ui.activity.hew"
+msgstr "odłupuje kamień"
+
+msgid "ui.activity.shape"
+msgstr "ociosuje kamień"
+
+msgid "ui.activity.cast"
+msgstr "zarzuca wędkę"
+
+msgid "ui.activity.wait_bite"
+msgstr "czeka na branie"
+
+msgid "ui.activity.reel"
+msgstr "wyciąga rybę"
+
+msgid "ui.activity.mash"
+msgstr "zaciera słód w kadzi"
+
+msgid "ui.activity.brew"
+msgstr "warzy piwo w kotle"
+
+msgid "ui.kind.sawyer"
+msgstr "Tracz"
+
+msgid "ui.kind.stonecutter"
+msgstr "Kamieniarz"
+
+msgid "ui.kind.angler"
+msgstr "Wędkarz"
+
+msgid "ui.kind.hop_grower"
+msgstr "Chmielarz"
+
+msgid "ui.kind.brewer"
+msgstr "Piwowar"
+
+msgid "ui.doing.go_to_shore"
+msgstr "idzie nad wodę"
+
+msgid "ui.hud.gold"
+msgstr "Złoto: %d"
+
+msgid "ui.build.gold_cost"
+msgstr "Złoto: %d"
+
+msgid "ui.priority.title"
+msgstr "Priorytet pracy:"
+
+msgid "ui.priority.high"
+msgstr "Wysoki"
+
+msgid "ui.priority.normal"
+msgstr "Normalny"
+
+msgid "ui.priority.low"
+msgstr "Niski"
+
+msgid "ui.priority.hint"
+msgstr "Budynki z wyższym priorytetem dostają pracowników pierwsze, w razie braku nawet od tych z niższym."
+
+msgid "ui.reserve.wood"
+msgstr "Drewno dla domów: %d (budowy go nie wezmą)"
+
+msgid "ui.tax.title"
+msgstr "Podatki: %s"
+
+msgid "ui.tax.low"
+msgstr "Niskie"
+
+msgid "ui.tax.normal"
+msgstr "Normalne"
+
+msgid "ui.tax.high"
+msgstr "Wysokie"
+
+msgid "ui.tax.hint"
+msgstr "Wyższe podatki dają więcej złota, ale mieszkańcy są mniej zadowoleni."
+
+msgid "ui.building.inputs"
+msgstr "Surowce na miejscu: %s"
+
+msgid "ui.house.tax"
+msgstr "Podatek: %.1f złota na minutę"
+
+msgid "ui.note.worker_reassigned"
+msgstr "Pracownik przeszedł do ważniejszego budynku: %s"
+
+msgid "ui.command_error.not_enough_gold"
+msgstr "Za mało złota."
+
+msgid "ui.command_error.no_water_nearby"
+msgstr "Za daleko od wody."
+
+msgid "ui.command_error.not_a_storage"
+msgstr "To nie jest magazyn."
+
+msgid "ui.command_error.unknown_good"
+msgstr "Nie ma takiego towaru."
+
+msgid "ui.command_error.invalid_value"
+msgstr "Niepoprawna wartość."
+
+msgid "good.planks.count"
+msgid_plural "good.planks.count_plural"
+msgstr[0] "%s deska"
+msgstr[1] "%s deski"
+msgstr[2] "%s desek"
+
+msgid "good.stone.count"
+msgid_plural "good.stone.count_plural"
+msgstr[0] "%s kamień"
+msgstr[1] "%s kamienie"
+msgstr[2] "%s kamieni"
+
+msgid "good.fish.count"
+msgid_plural "good.fish.count_plural"
+msgstr[0] "%s ryba"
+msgstr[1] "%s ryby"
+msgstr[2] "%s ryb"
+
+msgid "good.hops.count"
+msgid_plural "good.hops.count_plural"
+msgstr[0] "%s snopek chmielu"
+msgstr[1] "%s snopki chmielu"
+msgstr[2] "%s snopków chmielu"
+
+msgid "good.beer.count"
+msgid_plural "good.beer.count_plural"
+msgstr[0] "%s beczka piwa"
+msgstr[1] "%s beczki piwa"
+msgstr[2] "%s beczek piwa"
+
+msgid "recipe.sawing.name"
+msgstr "Cięcie desek"
+
+msgid "recipe.sawing.desc"
+msgstr "Tracz kładzie kłodę na koziołku i przecina ją piłą na deski."
+
+msgid "recipe.quarrying.name"
+msgstr "Łupanie kamienia"
+
+msgid "recipe.quarrying.desc"
+msgstr "Kamieniarz odłupuje blok ze skały, ociosuje go i niesie do magazynu."
+
+msgid "recipe.fishing.name"
+msgstr "Wędkowanie"
+
+msgid "recipe.fishing.desc"
+msgstr "Wędkarz dwa razy zarzuca wędkę, czeka na branie i wyciąga rybę, a potem niesie kosz."
+
+msgid "recipe.hop_farming.name"
+msgstr "Uprawa chmielu"
+
+msgid "recipe.hop_farming.desc"
+msgstr "Chmielarz orze, sadzi, a dojrzały chmiel zbiera z tyczek."
+
+msgid "recipe.brewing.name"
+msgstr "Warzenie piwa"
+
+msgid "recipe.brewing.desc"
+msgstr "Piwowar zaciera zboże w kadzi, warzy z chmielem w kotle i wynosi beczki."
+
+msgid "ui.house.upgrade_waits"
+msgstr "Awans czeka, aż w magazynach będzie po %d sztuk każdego towaru mieszczan (chleb, ryby, piwo)."

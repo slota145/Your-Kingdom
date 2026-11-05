@@ -33,6 +33,8 @@ const CARRY := {
 	"basket": {"height": 20.0, "forward": 5.0, "right": 5.0, "behind_when_facing_camera": false},
 	"bundle": {"height": 30.0, "forward": -6.0, "right": 0.0, "behind_when_facing_camera": true},
 	"log": {"height": 30.0, "forward": 0.0, "right": 6.0, "behind_when_facing_camera": false},
+	"barrel": {"height": 20.0, "forward": 6.0, "right": 2.0, "behind_when_facing_camera": false},
+	"stone": {"height": 28.0, "forward": -1.0, "right": 7.0, "behind_when_facing_camera": false},
 }
 
 ## Good id -> (carry category, main colour, accent colour).
@@ -41,6 +43,11 @@ const CARRIED_GOODS := {
 	"bread": ["basket", Color(0.62, 0.42, 0.2), Color(0.86, 0.6, 0.3)],
 	"grain": ["bundle", Color(0.9, 0.75, 0.3), Color(0.7, 0.55, 0.2)],
 	"wood": ["log", Color(0.55, 0.36, 0.2), Color(0.85, 0.7, 0.45)],
+	"planks": ["log", Color(0.85, 0.68, 0.42), Color(0.95, 0.82, 0.58)],
+	"stone": ["stone", Color(0.6, 0.6, 0.62), Color(0.78, 0.78, 0.8)],
+	"fish": ["basket", Color(0.55, 0.4, 0.22), Color(0.65, 0.75, 0.82)],
+	"hops": ["bundle", Color(0.45, 0.68, 0.28), Color(0.3, 0.5, 0.2)],
+	"beer": ["barrel", Color(0.5, 0.32, 0.16), Color(0.3, 0.3, 0.32)],
 }
 
 ## Stacks and nature sprites keep the tile diamond in their bottom 32 px (ART_SPEC §2).
@@ -89,6 +96,14 @@ func _terrain() -> void:
 	_save(_furrows(Color(0.36, 0.5, 0.2), Color(0.3, 0.42, 0.16), Color(0.5, 0.7, 0.28)), "terrain/field/sown_2.png")
 	_save(_furrows(Color(0.52, 0.6, 0.24), Color(0.44, 0.52, 0.2), Color(0.72, 0.7, 0.3)), "terrain/field/sown_3.png")
 	_save(_furrows(Color(0.86, 0.72, 0.3), Color(0.74, 0.6, 0.24), Color(0.95, 0.82, 0.4)), "terrain/field/ripe.png")
+	# Hop garden: same soil, climbing green bines on poles that thicken with growth.
+	var soil := Color(0.42, 0.3, 0.18)
+	var furrow := Color(0.32, 0.22, 0.13)
+	_save(_diamond(Color(0.5, 0.42, 0.28), Color(0.44, 0.36, 0.24)), "terrain/field_hops/fallow.png")
+	_save(_furrows(soil, furrow, Color(0, 0, 0, 0)), "terrain/field_hops/plowed.png")
+	for stage: int in 4:
+		var name := "ripe" if stage == 3 else "sown_%d" % (stage + 1)
+		_save(_hop_poles(soil, furrow, stage), "terrain/field_hops/%s.png" % name)
 	# Coverage overlay of a service (well): a soft tinted diamond.
 	_save(_diamond(Color(0.35, 0.6, 1.0, 0.28), Color(0.35, 0.6, 1.0, 0.45)), "terrain/range/a.png")
 	_save(_diamond(Color(0.3, 1.0, 0.3, 0.35), Color(0.3, 1.0, 0.3, 0.9)), "terrain/cursor/ok.png")
@@ -108,6 +123,20 @@ func _furrows(soil: Color, furrow: Color, crop: Color) -> Image:
 			for j: int in range(1, 7):
 				var c := IsoMath.grid_to_screen(Vector2(j / 7.0, t)) + Vector2(32, -1)
 				_line(img, c, c - Vector2(0, 2 + (i % 2)), crop, 2)
+	return img
+
+
+## Hop poles on a field tile: [param stage] 0..3 = bines climbing, 3 = ripe cones.
+func _hop_poles(soil: Color, furrow: Color, stage: int) -> Image:
+	var img := _furrows(soil, furrow, Color(0, 0, 0, 0))
+	var green := Color(0.3, 0.55, 0.22).lightened(stage * 0.08)
+	for p: Vector2 in [Vector2(0.3, 0.3), Vector2(0.7, 0.3), Vector2(0.3, 0.7), Vector2(0.7, 0.7)]:
+		var foot := IsoMath.grid_to_screen(p) + Vector2(32, 0)
+		_line(img, foot, foot - Vector2(0, 10), Color(0.45, 0.32, 0.18), 1)
+		var top := foot - Vector2(0, 3 + stage * 2.5)
+		_line(img, foot, top, green, 2)
+		if stage == 3:
+			_ellipse(img, top, Vector2(2, 2), Color(0.75, 0.85, 0.4))
 	return img
 
 
@@ -141,6 +170,8 @@ func _characters() -> void:
 		"walk_carry_basket": [8, 2.0, "basket"],
 		"walk_carry_bundle": [8, 1.0, "bundle"],
 		"walk_carry_log": [8, 1.0, "log"],
+		"walk_carry_barrel": [8, 1.0, "barrel"],
+		"walk_carry_stone": [8, 1.0, "stone"],
 	}
 	_save(_work_sheet(4), "characters/peasant/work.png")
 	for anim: String in anims:
@@ -262,6 +293,13 @@ func _good_shape(category: String, main: Color, accent: Color, scale: float) -> 
 		"log":
 			_line(img, c + Vector2(-11, 4) * scale, c + Vector2(11, -4) * scale, main, roundi(6 * scale))
 			_ellipse(img, c + Vector2(11, -4) * scale, Vector2(3, 3) * scale, accent)
+		"barrel":
+			_ellipse(img, c, Vector2(7, 9) * scale, main)
+			_line(img, c + Vector2(-7, -4) * scale, c + Vector2(7, -4) * scale, accent, 2)
+			_line(img, c + Vector2(-7, 4) * scale, c + Vector2(7, 4) * scale, accent, 2)
+		"stone":
+			_ellipse(img, c + Vector2(0, 2) * scale, Vector2(9, 6) * scale, main)
+			_ellipse(img, c + Vector2(-2, 0) * scale, Vector2(4, 2) * scale, accent)
 		"bundle":
 			for i: int in 5:
 				var x := (i - 2) * 3.0 * scale
@@ -305,6 +343,17 @@ func _nature() -> void:
 	_line(stump, foot, foot - Vector2(0, 5), trunk, 7)
 	_ellipse(stump, foot - Vector2(0, 6), Vector2(4, 2), Color(0.8, 0.66, 0.42))
 	_save(stump, "nature/tree/stump.png")
+	# Rock outcrop: whole, half quarried, rubble.
+	var rock := Color(0.58, 0.57, 0.55)
+	for state: String in ["grown", "felled", "stump"]:
+		var img := _blank(TREE_FRAME)
+		var s: float = {"grown": 1.0, "felled": 0.65, "stump": 0.3}[state]
+		var base := PackedVector2Array([Vector2(-0.38, -0.38), Vector2(0.38, -0.38),
+				Vector2(0.38, 0.38), Vector2(-0.38, 0.38)])
+		_prism(img, Vector2i(foot), base, 0.0, 28.0 * s, rock)
+		_pyramid(img, Vector2i(foot), base, 28.0 * s, 10.0 * s, rock.lightened(0.15))
+		_ellipse(img, foot + Vector2(10, -3), Vector2(4, 2) * s + Vector2(1, 1), rock.darkened(0.2))
+		_save(img, "nature/rock/%s.png" % state)
 
 
 # --- Buildings -------------------------------------------------------------------------
@@ -355,6 +404,23 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.9, 0.88, 0.82), "roof_color": Color(0.45, 0.32, 0.22), "extra": "sails"},
 	"bakery": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
 			"wall": Color(0.8, 0.58, 0.42), "roof_color": Color(0.6, 0.25, 0.2), "extra": "chimney"},
+	# M4a
+	"sawmill": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 24.0, "roof": 18.0,
+			"wall": Color(0.7, 0.55, 0.36), "roof_color": Color(0.45, 0.35, 0.25), "extra": "planks"},
+	"quarry": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 22.0, "roof": 18.0,
+			"wall": Color(0.62, 0.6, 0.56), "roof_color": Color(0.4, 0.38, 0.36), "extra": "blocks"},
+	"fishing_hut": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 22.0, "roof": 20.0,
+			"wall": Color(0.6, 0.5, 0.38), "roof_color": Color(0.35, 0.45, 0.55), "extra": "nets"},
+	"hop_farm": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 28.0, "roof": 24.0,
+			"wall": Color(0.8, 0.74, 0.58), "roof_color": Color(0.35, 0.55, 0.28), "extra": "poles"},
+	"brewery": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 32.0, "roof": 22.0,
+			"wall": Color(0.74, 0.6, 0.46), "roof_color": Color(0.5, 0.28, 0.16), "extra": "barrels"},
+	"chapel": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 26.0,
+			"wall": Color(0.88, 0.86, 0.8), "roof_color": Color(0.42, 0.3, 0.24), "extra": "cross"},
+	"church": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 46.0, "roof": 34.0,
+			"wall": Color(0.82, 0.8, 0.74), "roof_color": Color(0.3, 0.32, 0.42), "extra": "steeple"},
+	"market": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 14.0, "roof": 12.0,
+			"wall": Color(0.7, 0.55, 0.38), "roof_color": Color(0.8, 0.3, 0.25), "extra": "stalls"},
 }
 
 
@@ -379,7 +445,7 @@ func _write_art(id: String, name: String, img: Image, footprint: Vector2i, entra
 func _building(id: String, footprint: Vector2i, entrance: Vector2i, wall_h: float, roof_h: float,
 		wall: Color, roof: Color, name: String = "base", roof_kind: String = "hip_both",
 		extra: String = "", eaves: int = 8) -> void:
-	var canvas := _canvas(footprint, wall_h + roof_h + (30.0 if extra == "tower" else 0.0), maxi(eaves, 8))
+	var canvas := _canvas(footprint, wall_h + roof_h + float({"tower": 30.0, "steeple": 46.0, "cross": 16.0}.get(extra, 0.0)), maxi(eaves, 8))
 	var pivot: Vector2i = canvas["pivot"]
 	var img := _blank(canvas["size"])
 	var base := _footprint_base(footprint)
@@ -493,6 +559,40 @@ func _extra(img: Image, pivot: Vector2i, footprint: Vector2i, wall_h: float, roo
 		"chimney":
 			var c := PackedVector2Array([Vector2(-1.5, -0.8), Vector2(-1.1, -0.8), Vector2(-1.1, -0.4), Vector2(-1.5, -0.4)])
 			_prism(img, pivot, c, wall_h, wall_h + roof_h + 8.0, Color(0.55, 0.3, 0.25))
+		"planks":
+			var p := front + IsoMath.grid_to_screen(Vector2(-0.4, -1.9))
+			for i: int in 4:
+				_line(img, p + Vector2(-9, -2 - i * 3), p + Vector2(9, 2 - i * 3), Color(0.88, 0.72, 0.46), 3)
+		"blocks":
+			var base := PackedVector2Array([Vector2(-0.3, -2.0), Vector2(0.3, -2.0), Vector2(0.3, -1.4), Vector2(-0.3, -1.4)])
+			_prism(img, pivot, base, 0.0, 10.0, Color(0.7, 0.7, 0.72))
+		"nets":
+			var n := front + IsoMath.grid_to_screen(Vector2(-1.9, -0.5)) - Vector2(0, 6)
+			for i: int in 4:
+				_line(img, n + Vector2(i * 4 - 6, 0), n + Vector2(i * 4 - 6, -14), Color(0.85, 0.82, 0.7), 1)
+			_line(img, n + Vector2(-7, -14), n + Vector2(8, -14), Color(0.45, 0.3, 0.18), 2)
+		"poles":
+			var h := front + IsoMath.grid_to_screen(Vector2(-1.9, -0.4))
+			for i: int in 3:
+				_line(img, h + Vector2(i * 6 - 6, 0), h + Vector2(i * 6 - 6, -20), Color(0.45, 0.32, 0.18), 2)
+				_line(img, h + Vector2(i * 6 - 6, 0), h + Vector2(i * 6 - 5, -16), Color(0.35, 0.6, 0.25), 2)
+		"barrels":
+			var b := front + IsoMath.grid_to_screen(Vector2(-0.4, -1.9))
+			for i: int in 2:
+				_ellipse(img, b + Vector2(i * 9 - 4, -6), Vector2(4, 6), Color(0.5, 0.32, 0.16))
+				_line(img, b + Vector2(i * 9 - 8, -6), b + Vector2(i * 9, -6), Color(0.3, 0.3, 0.32), 1)
+		"cross":
+			var top := center - Vector2(0, wall_h + roof_h + 2)
+			_line(img, top, top - Vector2(0, 12), Color(0.95, 0.85, 0.4), 2)
+			_line(img, top - Vector2(4, 8), top - Vector2(-4, 8), Color(0.95, 0.85, 0.4), 2)
+		"steeple":
+			var t := PackedVector2Array([Vector2(-2.8, -2.8), Vector2(-1.8, -2.8), Vector2(-1.8, -1.8), Vector2(-2.8, -1.8)])
+			_prism(img, pivot, t, wall_h, wall_h + roof_h + 16.0, Color(0.8, 0.78, 0.72))
+			_pyramid(img, pivot, t, wall_h + roof_h + 16.0, 26.0, Color(0.3, 0.32, 0.42))
+		"stalls":
+			for k: int in 3:
+				var s := front + IsoMath.grid_to_screen(Vector2(-0.6 - k * 0.9, -2.4 + k * 0.6)) - Vector2(0, wall_h + roof_h - 4)
+				_line(img, s + Vector2(-8, 0), s + Vector2(8, 0), [Color(0.9, 0.85, 0.75), Color(0.35, 0.5, 0.75), Color(0.85, 0.7, 0.3)][k], 4)
 
 
 ## Construction site art: phase 1 = foundation with poles, phase 2 = half-built walls with

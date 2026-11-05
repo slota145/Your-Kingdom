@@ -13,7 +13,7 @@ msgid "ui.main.title"
 msgstr "Your Kingdom"
 
 msgid "ui.main.subtitle"
-msgstr "Milestone M3: vertical slice"
+msgstr "Milestone M4a: burghers and logistics"
 
 msgid "ui.main.toggle_language"
 msgstr "Change language: Polski"
@@ -204,7 +204,7 @@ msgid "need.food.name"
 msgstr "Food"
 
 msgid "need.food.desc"
-msgstr "Residents eat bread from the house pantry."
+msgstr "Peasants eat bread or fish from the house pantry."
 
 msgid "need.firewood.name"
 msgstr "Firewood"
@@ -528,3 +528,288 @@ msgstr "Nothing to do."
 
 msgid "ui.command_error.unknown_building"
 msgstr "No such building."
+
+# --- M4a ---
+
+msgid "good.planks.name"
+msgstr "Planks"
+
+msgid "good.planks.desc"
+msgstr "Planks from the sawmill. Needed to upgrade huts and for larger buildings."
+
+msgid "good.stone.name"
+msgstr "Stone"
+
+msgid "good.stone.desc"
+msgstr "Hewn stone from the quarry. Used for the church and the brewery."
+
+msgid "good.fish.name"
+msgstr "Fish"
+
+msgid "good.fish.desc"
+msgstr "Fish caught with a rod in the river. Peasants and burghers eat them."
+
+msgid "good.hops.name"
+msgstr "Hops"
+
+msgid "good.hops.desc"
+msgstr "Hop cones from the hop garden. No beer without them."
+
+msgid "good.beer.name"
+msgstr "Beer"
+
+msgid "good.beer.desc"
+msgstr "Beer from the brewery, brewed from grain and hops. Burghers cannot do without it."
+
+msgid "building.sawmill.name"
+msgstr "Sawmill"
+
+msgid "building.sawmill.desc"
+msgstr "The sawyer brings a log from the stockpile, saws it into planks and takes them back."
+
+msgid "building.quarry.name"
+msgstr "Quarry"
+
+msgid "building.quarry.desc"
+msgstr "The stonecutter breaks stone off nearby rocks and takes it to the stockpile."
+
+msgid "building.fishing_hut.name"
+msgstr "Angler's hut"
+
+msgid "building.fishing_hut.desc"
+msgstr "The angler goes to the water, casts the rod and waits for a bite. Build it near the river."
+
+msgid "building.hop_farm.name"
+msgstr "Hop farm"
+
+msgid "building.hop_farm.desc"
+msgstr "The hop grower tends hops on fields around the farmstead. You place the fields, as with a farm."
+
+msgid "building.brewery.name"
+msgstr "Brewery"
+
+msgid "building.brewery.desc"
+msgstr "The brewer brings grain and hops, mashes, brews and takes barrels of beer to the stockpile."
+
+msgid "building.chapel.name"
+msgstr "Chapel"
+
+msgid "building.chapel.desc"
+msgstr "A small chapel. Peasants within its reach are happier."
+
+msgid "building.church.name"
+msgstr "Church"
+
+msgid "building.church.desc"
+msgstr "A stone church with a tower. Burghers within its reach are happier."
+
+msgid "building.market.name"
+msgstr "Market"
+
+msgid "building.market.desc"
+msgstr "A square with stalls. Burghers within its reach are happier."
+
+msgid "resource_node.rock.name"
+msgstr "Rock"
+
+msgid "resource_node.rock.desc"
+msgstr "A rock outcrop. The stonecutter breaks stone off it until only rubble is left."
+
+msgid "need.bread.name"
+msgstr "Bread"
+
+msgid "need.bread.desc"
+msgstr "Burghers want bread every day."
+
+msgid "need.fish_or_meat.name"
+msgstr "Fish or meat"
+
+msgid "need.fish_or_meat.desc"
+msgstr "Burghers also want fish (meat comes later)."
+
+msgid "need.beer.name"
+msgstr "Beer"
+
+msgid "need.beer.desc"
+msgstr "Burghers drink beer from the brewery."
+
+msgid "need.chapel.name"
+msgstr "Chapel"
+
+msgid "need.chapel.desc"
+msgstr "An extra need of peasants: a chapel in reach. Adds happiness, does not block upgrades."
+
+msgid "need.church.name"
+msgstr "Church"
+
+msgid "need.church.desc"
+msgstr "An extra need of burghers: a church in reach."
+
+msgid "need.market.name"
+msgstr "Market"
+
+msgid "need.market.desc"
+msgstr "An extra need of burghers: a market in reach."
+
+msgid "ui.activity.saw"
+msgstr "sawing a log into planks"
+
+msgid "ui.activity.hew"
+msgstr "breaking stone"
+
+msgid "ui.activity.shape"
+msgstr "shaping the stone"
+
+msgid "ui.activity.cast"
+msgstr "casting the rod"
+
+msgid "ui.activity.wait_bite"
+msgstr "waiting for a bite"
+
+msgid "ui.activity.reel"
+msgstr "reeling in a fish"
+
+msgid "ui.activity.mash"
+msgstr "mashing in the vat"
+
+msgid "ui.activity.brew"
+msgstr "brewing in the kettle"
+
+msgid "ui.kind.sawyer"
+msgstr "Sawyer"
+
+msgid "ui.kind.stonecutter"
+msgstr "Stonecutter"
+
+msgid "ui.kind.angler"
+msgstr "Angler"
+
+msgid "ui.kind.hop_grower"
+msgstr "Hop grower"
+
+msgid "ui.kind.brewer"
+msgstr "Brewer"
+
+msgid "ui.doing.go_to_shore"
+msgstr "going to the water"
+
+msgid "ui.hud.gold"
+msgstr "Gold: %d"
+
+msgid "ui.build.gold_cost"
+msgstr "Gold: %d"
+
+msgid "ui.priority.title"
+msgstr "Work priority:"
+
+msgid "ui.priority.high"
+msgstr "High"
+
+msgid "ui.priority.normal"
+msgstr "Normal"
+
+msgid "ui.priority.low"
+msgstr "Low"
+
+msgid "ui.priority.hint"
+msgstr "Buildings with a higher priority get workers first, if needed even from those with a lower one."
+
+msgid "ui.reserve.wood"
+msgstr "Wood kept for houses: %d (building sites leave it)"
+
+msgid "ui.tax.title"
+msgstr "Taxes: %s"
+
+msgid "ui.tax.low"
+msgstr "Low"
+
+msgid "ui.tax.normal"
+msgstr "Normal"
+
+msgid "ui.tax.high"
+msgstr "High"
+
+msgid "ui.tax.hint"
+msgstr "Higher taxes bring more gold, but residents are less happy."
+
+msgid "ui.building.inputs"
+msgstr "Inputs at hand: %s"
+
+msgid "ui.house.tax"
+msgstr "Tax: %.1f gold per minute"
+
+msgid "ui.note.worker_reassigned"
+msgstr "A worker moved to a more important building: %s"
+
+msgid "ui.command_error.not_enough_gold"
+msgstr "Not enough gold."
+
+msgid "ui.command_error.no_water_nearby"
+msgstr "Too far from water."
+
+msgid "ui.command_error.not_a_storage"
+msgstr "This is not a storage."
+
+msgid "ui.command_error.unknown_good"
+msgstr "No such good."
+
+msgid "ui.command_error.invalid_value"
+msgstr "Invalid value."
+
+msgid "good.planks.count"
+msgid_plural "good.planks.count_plural"
+msgstr[0] "%s plank"
+msgstr[1] "%s planks"
+
+msgid "good.stone.count"
+msgid_plural "good.stone.count_plural"
+msgstr[0] "%s stone"
+msgstr[1] "%s stones"
+
+msgid "good.fish.count"
+msgid_plural "good.fish.count_plural"
+msgstr[0] "%s fish"
+msgstr[1] "%s fish"
+
+msgid "good.hops.count"
+msgid_plural "good.hops.count_plural"
+msgstr[0] "%s bundle of hops"
+msgstr[1] "%s bundles of hops"
+
+msgid "good.beer.count"
+msgid_plural "good.beer.count_plural"
+msgstr[0] "%s barrel of beer"
+msgstr[1] "%s barrels of beer"
+
+msgid "recipe.sawing.name"
+msgstr "Sawing"
+
+msgid "recipe.sawing.desc"
+msgstr "The sawyer lays a log on the trestle and saws it into planks."
+
+msgid "recipe.quarrying.name"
+msgstr "Quarrying"
+
+msgid "recipe.quarrying.desc"
+msgstr "The stonecutter breaks a block off the rock, shapes it and carries it to the stockpile."
+
+msgid "recipe.fishing.name"
+msgstr "Angling"
+
+msgid "recipe.fishing.desc"
+msgstr "The angler casts twice, waits for a bite and reels in a fish, then carries the basket."
+
+msgid "recipe.hop_farming.name"
+msgstr "Hop growing"
+
+msgid "recipe.hop_farming.desc"
+msgstr "The hop grower ploughs, plants, and picks the ripe hops from the poles."
+
+msgid "recipe.brewing.name"
+msgstr "Brewing"
+
+msgid "recipe.brewing.desc"
+msgstr "The brewer mashes grain in the vat, brews it with hops in the kettle and carries out the barrels."
+
+msgid "ui.house.upgrade_waits"
+msgstr "The upgrade waits until the stockpiles hold %d of each burgher good (bread, fish, beer)."

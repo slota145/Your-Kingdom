@@ -2,6 +2,15 @@ class_name BuildingState
 extends RefCounted
 ## Runtime state of one placed building.
 
+## Work priority set by the player (GDD §3.4): staffed first, and may take workers from
+## buildings of a lower priority.
+enum Priority { HIGH, NORMAL, LOW }
+
+## Units of a workshop's input store per good.
+const INPUT_UNITS := 2
+## Highest reserve the player can set in a storage.
+const MAX_RESERVE := 60
+
 var id: int
 var def: BuildingDef
 ## Footprint origin in grid space (the tile with the smallest x and y).
@@ -12,8 +21,12 @@ var under_construction: bool = false
 var site_id: int = 0
 ## Public storage, present on finished buildings with def.storage_slots > 0.
 var stock: Stockpile
-## Private pantry of a house: only its householders deliver here, nobody takes from it.
+## Private pantry of a house (only its householders deliver here, nobody takes from it), or
+## the input store of a workshop with def.input_goods (only its workers use it).
 var supply: Stockpile
+## Storage: good -> units construction deliveries leave in place.
+var reserves: Dictionary[StringName, int] = {}
+var priority: Priority = Priority.NORMAL
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
@@ -31,6 +44,10 @@ func finish(data: DataRegistry) -> void:
 	under_construction = false
 	if def.storage_slots > 0 and stock == null:
 		stock = Stockpile.new(def.storage_slots, data)
+		reserves = def.default_reserves.duplicate()
+	if not def.input_goods.is_empty() and supply == null:
+		supply = Stockpile.new(def.input_goods.size(), data)
+		supply.stack_limit = INPUT_UNITS
 	if def.is_house() and house == null:
 		house = HouseState.new()
 		var goods := house_goods()
@@ -86,6 +103,13 @@ func to_dict() -> Dictionary:
 		d["supply"] = supply.to_dict()
 	if house != null:
 		d["house"] = house.to_dict()
+	if not reserves.is_empty():
+		var r := {}
+		for good: StringName in reserves:
+			r[String(good)] = reserves[good]
+		d["reserves"] = r
+	if priority != Priority.NORMAL:
+		d["priority"] = priority
 	return d
 
 
@@ -101,4 +125,10 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 		b.supply = Stockpile.from_dict(d["supply"], data)
 	if d.has("house"):
 		b.house = HouseState.from_dict(d["house"])
+		# A pantry needs a slot per good any level uses; the data may have added goods.
+		b.supply.grow_to(b.house_goods().size())
+	var r: Dictionary = d.get("reserves", {})
+	for good: Variant in r:
+		b.reserves[StringName(String(good))] = int(r[good])
+	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

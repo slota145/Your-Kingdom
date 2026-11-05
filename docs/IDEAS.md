@@ -83,6 +83,18 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 - [gracz] **Kutry rybackie na morzu:** w M4a ryby łowi wędkarz przy rzece. Później chcę też kutry na morzu, wydajniejsze od wędkarza (2026-11-05).
   - Ocena (Claude): dobra ścieżka rozwoju: tani wędkarz na start, droższy kuter z portem i stocznią dla większego miasta. Naturalny etap: M5 (woda, porty i statki). Zmieni GDD §5.4 (dziś jest tam „łódź rybacka” przypisana do rybaka).
 
+- [Claude] **Leśniczy (sadzenie drzew):** automatyczny gracz w M4a pokazał, że lasy przy mieście znikają po ok. 45 minutach, a drwale stoją („brak drzew”). Leśniczy sadzi sadzonki w zasięgu, które po kilku minutach rosną w drzewa.
+  - Ocena: koszt średni (nowy krok „sadź”, wzrost węzła jak pole). Bardzo pasuje do immersji i daje graczowi decyzję o lesie.
+  - **Przyjęte do M4b (2026-11-05).**
+- [Claude] **Wstrzymanie produkcji:** dziś budynek pracuje zawsze. Tartak i kamieniołom zapełniają magazyny deskami i kamieniem, aż zabraknie miejsca na inne towary. Przycisk „wstrzymaj” w panelu budynku (pracownik zostaje, ale nie zaczyna cyklu) albo limit („pracuj, gdy w magazynie mniej niż N”).
+  - Ocena: koszt mały. Ważne przy większym mieście.
+  - **Przyjęte do M4b (2026-11-05).**
+- [Claude] **Straganiarze na targowisku:** w M4a targowisko jest tylko usługą z zasięgiem. Docelowo (GDD §3.2) straganiarze przynoszą towary z magazynu na kramy, a domownicy kupują na targu zamiast chodzić do magazynu.
+  - Ocena: koszt średni. Dużo życia na ulicach.
+  - **Przyjęte do M4b (2026-11-05).**
+- [Claude] **Na co wydawać złoto:** w M4a złota szybko przybywa (po godzinie ok. 1000), a wydaje się je tylko na 4 budynki. Kupiec wędrowny (M4b) i utrzymanie budynków dadzą mu sens.
+  - Ocena: do strojenia razem z kupcem w M4b.
+
 ## Klimat i immersja
 
 - [Claude] **Efekty przy pracy:** dym z komina piekarni tylko wtedy, gdy piekarz piecze, śmigło młyna kręci się tylko przy mieleniu, a z pola przy żniwach lecą źdźbła. Widok ma już czynność postaci, więc efekt można włączać po `activity`. Koszt mały, a dużo daje dla „żywego” miasta.

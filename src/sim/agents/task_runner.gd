@@ -49,6 +49,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"go_to": GoToStep.new(), &"work": WorkStep.new(), &"gather": GatherStep.new(),
 			&"fetch": FetchStep.new(), &"produce": ProduceStep.new(), &"deliver": DeliverStep.new(),
 			&"build": BuildStep.new(), &"field": FieldStep.new(), &"move_in": MoveInStep.new(),
+			&"deposit": DepositStep.new(),
 		}
 	return _executors[kind]
 

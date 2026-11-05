@@ -13,6 +13,7 @@ const MESSAGES: Dictionary[StringName, String] = {
 	&"house_downgraded": "ui.note.house_downgraded",
 	&"house_warning": "ui.note.house_warning",
 	&"resident_left": "ui.note.resident_left",
+	&"worker_reassigned": "ui.note.worker_reassigned",
 }
 
 var province: ProvinceSim
@@ -27,7 +28,7 @@ func on_sim_event(event: Dictionary) -> void:
 		return
 	if type == &"building_completed" and province.tick == 0:
 		return
-	var b := province.buildings.get_building(int(event.get("building", 0)))
+	var b := province.buildings.get_building(int(event.get("building", event.get("to", 0))))
 	var name := "?"
 	if b != null:
 		name = tr(b.level_def().name_key() if b.house != null else b.def.name_key())

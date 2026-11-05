@@ -11,6 +11,15 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 		return failed(agent, &"no_workplace")
 	if step.target == &"workplace":
 		return Movement.walk(province, agent, workplace.entrance_tile())
+	if step.target == &"shore":
+		if not bb.has("stand"):
+			var shore := province.find_shore(workplace, agent.tile())
+			if shore == Agent.NO_TILE:
+				return failed(agent, &"no_resource")
+			bb["stand"] = SimCodec.vec2i(shore)
+			# Work steps face "node": the angler looks at the water.
+			bb["node"] = SimCodec.vec2i(province.shore_water(shore, workplace.def.needs_terrain_near))
+		return Movement.walk(province, agent, SimCodec.to_vec2i(bb["stand"]))
 	if not bb.has("stand"):
 		var node := agent.claimed_node
 		if node == Agent.NO_TILE or not province.resources.has_node(node, step.resource):
