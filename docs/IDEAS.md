@@ -52,6 +52,14 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
     - Koszt: mały do średniego (zależy od tego, kiedy). Ryzyko: małe.
   - Decyzja właściciela projektu (2026-11-05): na razie tylko pomysł, bez zmian w planie.
 
+- [gracz] **Fikcyjne okręty w stylu Anno i drzewko rozwoju okrętów:** zamiast samej kogi mamy okręty fikcyjne, inspirowane prawdziwymi okresami: od kogi przez karawelę i karakę aż po duży okręt podobny do galeonu. Zamiast armat ma balisty i skorpiony. Na koniec drzewka mógłby się pojawić galeon z armatami (2026-11-05). Bez decyzji.
+  - Ocena (Claude):
+    - Fikcyjne okręty pasują: świat jest fikcyjny, a karawele i karaki to XV wiek, czyli jeszcze średniowiecze. Do tego właśnie takimi statkami kolonizowano nowe lądy, więc dobrze łączą się ze scenariuszem kolonizacji.
+    - Drzewko rozwoju daje graczowi cel na długą grę. Propozycja: łódź rybacka → koga (tania, na start) → karawela (szybka, do zwiadu i zasiedlania) → karaka (duża, handel i wojsko) → wielki okręt z balistami i skorpionami.
+    - **Uwaga na armaty:** jeśli są na okręcie, gracz zapyta, czemu nie ma ich w zamku. Proch zmienia też sens murów i oblężeń, czyli serca gry. Bezpieczniej zakończyć drzewko wielkim okrętem z ciężkimi balistami, a armaty potraktować jako osobną, późną decyzję dla całej gry (ląd i morze razem).
+    - Koszt: średni (każdy okręt to grafika z animacją kołysania, budowa w stoczni etapami i dane jednostki). Kiedy: M5.
+    - Zmieni GDD §5.4 (rodzaje statków), gdy właściciel projektu zdecyduje.
+
 ## Klimat i immersja
 
 - [Claude] **Życie przy bramie:** strażnik obsługuje kołowrót przy podnoszeniu brony, a wozy zatrzymują się czasem do kontroli. Właściciel projektu jest na tak (2026-11-04). Kiedy: razem z wieżą bramną w M7.
