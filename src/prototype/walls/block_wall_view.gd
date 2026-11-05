@@ -200,7 +200,12 @@ func rebuild(model: Model) -> void:
 			add_child(_Props.sliced(tex, origin, Vector2i(3, 3), pivot))
 	for piece: Model.Piece in pieces:
 		if skin != null and model.gatehouse_tiles.has(piece.tile):
-			continue
+			if String(piece.kind).begins_with("gh_"):
+				continue
+			# Battlements on top of gatehouse art: drawn after the whole building.
+			var origin: Vector2i = model.gatehouse_tiles[piece.tile]
+			var front := IsoMath.grid_to_screen(Vector2(origin + Vector2i(3, 3))).y
+			piece.sort_point.y = maxf(piece.sort_point.y, front + 1.0)
 		var node := PieceNode.new()
 		node.skin = skin
 		node.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED

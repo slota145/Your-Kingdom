@@ -170,6 +170,7 @@ func build() -> Array[Piece]:
 	if battlements:
 		for piece: Piece in tops:
 			pieces.append_array(_merlons(piece))
+		pieces.append_array(_inner_corners())
 	return pieces
 
 
@@ -359,6 +360,30 @@ func _merlons(support: Piece) -> Array[Piece]:
 			var merlon := Piece.new(&"merlon", support.tile, poly, states, base, base + MERLON_HEIGHT)
 			merlon.sort_point.y = maxf(merlon.sort_point.y, parapet.sort_point.y + CROWN_BIAS)
 			result.append(merlon)
+	return result
+
+
+## Parapet blocks filling inner (concave) corners: there the parapets of the two rims end
+## at the corner and would leave a square hole between them.
+func _inner_corners() -> Array[Piece]:
+	var result: Array[Piece] = []
+	for tile: Vector2i in walls:
+		if walls[tile] or not crown_keys.has(tile):
+			continue
+		for d: Vector2i in [Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)]:
+			var corner_tile := tile + d
+			if is_wall(corner_tile) or wedge_tiles.has(corner_tile):
+				continue
+			if not walls.has(tile + Vector2i(d.x, 0)) or not walls.has(tile + Vector2i(0, d.y)):
+				continue
+			var c := IsoMath.tile_center(tile) + Vector2(d) * 0.5
+			var k := -Vector2(d) * PARAPET_DEPTH
+			var poly := PackedVector2Array([c, c + Vector2(k.x, 0), c + k, c + Vector2(0, k.y)])
+			var block := Piece.new(&"parapet", tile, poly,
+					PackedByteArray([Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED]),
+					height, height + PARAPET_HEIGHT)
+			block.sort_point.y = maxf(block.sort_point.y, crown_keys[tile] + CROWN_BIAS)
+			result.append(block)
 	return result
 
 

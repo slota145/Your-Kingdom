@@ -97,7 +97,9 @@ func _cut_gatehouse(img: Image) -> void:
 	var focus := Reference.layout(model, "gate", Vector2i.ZERO)
 	var mask := Image.create_empty(img.get_width(), img.get_height(), false, Image.FORMAT_RGBA8)
 	for piece: Model.Piece in model.build():
-		if not model.gatehouse_tiles.has(piece.tile):
+		# The body only: the repaint's own small merlons are dropped, the view stands the
+		# current parapet and merlons on top instead.
+		if not model.gatehouse_tiles.has(piece.tile) or not String(piece.kind).begins_with("gh_"):
 			continue
 		var z0 := piece.z0 - 16.0 if piece.kind == &"gh_deck" else piece.z0
 		var pts := PackedVector2Array()
