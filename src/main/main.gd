@@ -1,9 +1,9 @@
 extends Control
-## M0 start screen: proves localization, plural forms, the font and the data registry.
+## Start screen: proves localization, plural forms, the font and the data registry.
 
 const PLURAL_SAMPLES: PackedInt32Array = [1, 2, 5, 12, 22, 1250]
-const SANDBOX_SCENE := "res://src/prototype/m1/m1_sandbox.tscn"
-const BENCHMARK_SCENE := "res://src/prototype/m1/m1_bench.tscn"
+const SANDBOX_SCENE := "res://src/prototype/m2/m2_sandbox.tscn"
+const BENCHMARK_SCENE := "res://src/prototype/m2/m2_bench.tscn"
 
 @onready var _plural_list: Label = %PluralList
 @onready var _toggle_button: Button = %ToggleLanguageButton

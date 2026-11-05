@@ -32,6 +32,7 @@ const CARRY := {
 	"sack": {"height": 26.0, "forward": -1.0, "right": 8.0, "behind_when_facing_camera": false},
 	"basket": {"height": 20.0, "forward": 5.0, "right": 5.0, "behind_when_facing_camera": false},
 	"bundle": {"height": 30.0, "forward": -6.0, "right": 0.0, "behind_when_facing_camera": true},
+	"log": {"height": 30.0, "forward": 0.0, "right": 6.0, "behind_when_facing_camera": false},
 }
 
 ## Good id -> (carry category, main colour, accent colour).
@@ -39,13 +40,20 @@ const CARRIED_GOODS := {
 	"flour": ["sack", Color(0.95, 0.94, 0.9), Color(0.7, 0.68, 0.62)],
 	"bread": ["basket", Color(0.62, 0.42, 0.2), Color(0.86, 0.6, 0.3)],
 	"grain": ["bundle", Color(0.9, 0.75, 0.3), Color(0.7, 0.55, 0.2)],
+	"wood": ["log", Color(0.55, 0.36, 0.2), Color(0.85, 0.7, 0.45)],
 }
+
+## Stacks and nature sprites keep the tile diamond in their bottom 32 px (ART_SPEC §2).
+const STACK_FRAME := Vector2i(64, 64)
+const TREE_FRAME := Vector2i(64, 96)
 
 
 func _init() -> void:
 	_terrain()
 	_characters()
 	_goods()
+	_stacks()
+	_nature()
 	_buildings()
 	_walls()
 	print("Placeholders written to ", OUT)
@@ -82,6 +90,7 @@ func _characters() -> void:
 		"walk_carry_sack": [8, 1.0, "sack"],
 		"walk_carry_basket": [8, 2.0, "basket"],
 		"walk_carry_bundle": [8, 1.0, "bundle"],
+		"walk_carry_log": [8, 1.0, "log"],
 	}
 	for anim: String in anims:
 		var spec: Array = anims[anim]
@@ -181,12 +190,52 @@ func _good_shape(category: String, main: Color, accent: Color, scale: float) -> 
 		"basket":
 			_ellipse(img, c + Vector2(0, -2) * scale, Vector2(8, 4) * scale, accent)
 			img.fill_rect(Rect2i(Vector2i(c + Vector2(-10, 0) * scale), Vector2i(Vector2(20, 9) * scale)), main)
+		"log":
+			_line(img, c + Vector2(-11, 4) * scale, c + Vector2(11, -4) * scale, main, roundi(6 * scale))
+			_ellipse(img, c + Vector2(11, -4) * scale, Vector2(3, 3) * scale, accent)
 		"bundle":
 			for i: int in 5:
 				var x := (i - 2) * 3.0 * scale
 				_line(img, c + Vector2(x, 10 * scale), c + Vector2(x * 1.6, -11 * scale), main, 2)
 			_line(img, c + Vector2(-6, 1) * scale, c + Vector2(6, 1) * scale, accent, 2)
 	return img
+
+
+## Stockpile stacks: 4 fill stages side by side, each a growing heap on one tile.
+func _stacks() -> void:
+	for good: String in CARRIED_GOODS:
+		var spec: Array = CARRIED_GOODS[good]
+		var sheet := _blank(Vector2i(STACK_FRAME.x * 4, STACK_FRAME.y))
+		for stage: int in 4:
+			var frame := _blank(STACK_FRAME)
+			var foot := Vector2(STACK_FRAME.x / 2.0, STACK_FRAME.y - 16.0)
+			var base := PackedVector2Array([Vector2(-0.32, -0.32), Vector2(0.32, -0.32),
+					Vector2(0.32, 0.32), Vector2(-0.32, 0.32)])
+			_prism(frame, Vector2i(foot), base, 0.0, 6.0 + stage * 7.0, spec[1])
+			_ellipse(frame, foot - Vector2(0, 8.0 + stage * 7.0), Vector2(6, 3), spec[2])
+			sheet.blit_rect(frame, Rect2i(Vector2i.ZERO, STACK_FRAME), Vector2i(stage * STACK_FRAME.x, 0))
+		_save(sheet, "goods/stacks/%s.png" % good)
+
+
+## Tree states: grown, felled (trunk on the ground), stump.
+func _nature() -> void:
+	var foot := Vector2(TREE_FRAME.x / 2.0, TREE_FRAME.y - 16.0)
+	var trunk := Color(0.42, 0.28, 0.16)
+	var leaves := Color(0.2, 0.42, 0.18)
+	var grown := _blank(TREE_FRAME)
+	_line(grown, foot, foot - Vector2(0, 34), trunk, 6)
+	_ellipse(grown, foot - Vector2(0, 52), Vector2(20, 24), leaves)
+	_ellipse(grown, foot - Vector2(-6, 60), Vector2(8, 8), leaves.lightened(0.15))
+	_save(grown, "nature/tree/grown.png")
+	var felled := _blank(TREE_FRAME)
+	_line(felled, foot + Vector2(-4, 2), foot + Vector2(22, -10), trunk, 6)
+	_ellipse(felled, foot + Vector2(26, -14), Vector2(10, 7), leaves)
+	_ellipse(felled, foot - Vector2(4, 2), Vector2(5, 3), Color(0.8, 0.66, 0.42))
+	_save(felled, "nature/tree/felled.png")
+	var stump := _blank(TREE_FRAME)
+	_line(stump, foot, foot - Vector2(0, 5), trunk, 7)
+	_ellipse(stump, foot - Vector2(0, 6), Vector2(4, 2), Color(0.8, 0.66, 0.42))
+	_save(stump, "nature/tree/stump.png")
 
 
 # --- Buildings -------------------------------------------------------------------------

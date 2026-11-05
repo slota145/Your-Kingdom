@@ -12,7 +12,7 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
-**Bieżący etap:** M1 zaakceptowany. Mury kamienne i wieża bramna gotowe w prototypie (ARCHITECTURE §6.3, `src/prototype/walls/`). A1 częściowo: mur, budynek i trawa działają, brakuje postaci (stan w ROADMAP, A1). Następne: M2 (rdzeń symulacji), a równolegle postać do A1.
+**Bieżący etap:** M2 (rdzeń symulacji) zrobiony, czeka na akceptację i pomiar FPS na laptopie (`src/prototype/m2/m2_bench.tscn`). Mury kamienne i wieża bramna gotowe w prototypie (`src/prototype/walls/`). A1 częściowo: brakuje postaci (ROADMAP, A1). Następne: M3 (vertical slice).
 
 ## Polecenia
 
