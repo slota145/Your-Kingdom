@@ -25,6 +25,7 @@ func run(province: ProvinceSim, agent: Agent, _def: StepDef) -> Status:
 		agent.claimed_node = Agent.NO_TILE
 		if node_def.remove_when_depleted:
 			province.resources.clear(node)
+			province.clear_forest_floor(node)
 		province.refresh_tile(node)
 		province.events.emit(&"resource_depleted", {"tile": node, "node": node_def.id})
 	return Status.DONE

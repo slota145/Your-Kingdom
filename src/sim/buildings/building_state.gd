@@ -37,6 +37,8 @@ var priority: Priority = Priority.NORMAL
 var paused: bool = false
 ## Service with def.service_needs_supply: tick until which it reaches houses (last serving).
 var serving_until: int = 0
+## Forester: tiles the player marked for planting (M4b-1.5); empty = anywhere in range.
+var plant_area: Array[Vector2i] = []
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
@@ -150,6 +152,11 @@ func to_dict() -> Dictionary:
 		d["paused"] = true
 	if look != 0:
 		d["look"] = look
+	if not plant_area.is_empty():
+		var area := []
+		for t: Vector2i in plant_area:
+			area.append(SimCodec.vec2i(t))
+		d["plant_area"] = area
 	if serving_until != 0:
 		d["serving_until"] = serving_until
 	return d
@@ -174,6 +181,8 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 		b.reserves[StringName(String(good))] = int(r[good])
 	b.paused = bool(d.get("paused", false))
 	b.look = int(d.get("look", 0))
+	for t: Variant in d.get("plant_area", []):
+		b.plant_area.append(SimCodec.to_vec2i(t))
 	b.serving_until = int(d.get("serving_until", 0))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

@@ -514,6 +514,24 @@ msgstr "The entrance would face the water."
 msgid "ui.command_error.bad_orientation"
 msgstr "This building cannot be turned that way."
 
+msgid "ui.reason.forest_full"
+msgstr "the forest in range is full"
+
+msgid "ui.reason.no_plant_spot"
+msgstr "no free place to plant"
+
+msgid "ui.building.plant_area"
+msgstr "Planting area"
+
+msgid "ui.building.plant_area_hint"
+msgstr "Drag over the tiles where the forester should plant. Without marks he plants anywhere in range."
+
+msgid "ui.building.plant_area_clear"
+msgstr "Clear planting area"
+
+msgid "ui.command_error.not_a_forester"
+msgstr "This building does not plant trees."
+
 msgid "ui.building.turn"
 msgstr "Turn"
 

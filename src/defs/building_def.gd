@@ -63,6 +63,16 @@ func is_house() -> bool:
 	return not house_levels.is_empty()
 
 
+## Whether its workers plant trees (a forester): the player may mark where.
+func plants_trees() -> bool:
+	if recipe == null:
+		return false
+	for step: StepDef in recipe.steps:
+		if step is PlantStepDef:
+			return true
+	return false
+
+
 ## Goods used by construction phase [param phase] (1 or 2).
 func phase_cost(phase: int) -> Dictionary[StringName, int]:
 	var result: Dictionary[StringName, int] = {}

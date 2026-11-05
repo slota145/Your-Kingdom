@@ -7,6 +7,7 @@ extends PanelContainer
 
 signal demolish_requested(building_id: int)
 signal add_fields_requested(farm_id: int)
+signal plant_area_requested(building_id: int)
 ## A setting changed by the player; the game scene executes the command.
 signal command_requested(command: Command)
 signal closed
@@ -27,6 +28,8 @@ var _priority_row: Container
 var _pause_button: Button
 var _look_button: Button
 var _turn_button: Button
+var _plant_button: Button
+var _plant_clear_button: Button
 var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
 var _reserve_label: Label
@@ -55,6 +58,13 @@ func _init() -> void:
 	box.add_child(buttons)
 	_fields_button = UiKit.button("ui.building.add_fields", func() -> void: add_fields_requested.emit(building_id))
 	buttons.add_child(_fields_button)
+	_plant_button = UiKit.button("ui.building.plant_area", func() -> void: plant_area_requested.emit(building_id))
+	_plant_button.tooltip_text = "ui.building.plant_area_hint"
+	buttons.add_child(_plant_button)
+	_plant_clear_button = UiKit.button("ui.building.plant_area_clear", func() -> void:
+		var none: Array[Vector2i] = []
+		command_requested.emit(SetPlantAreaCommand.new(building_id, none)))
+	buttons.add_child(_plant_clear_button)
 	_pause_button = UiKit.button("ui.building.pause", func() -> void:
 		var b := province.buildings.get_building(building_id)
 		if b != null:
@@ -176,6 +186,8 @@ func _refresh() -> void:
 	_stock.visible = b.stock != null
 	_stock.stock = b.stock
 	_fields_button.visible = b.is_complete() and b.def.max_fields > 0
+	_plant_button.visible = b.def.plants_trees()
+	_plant_clear_button.visible = b.def.plants_trees() and not b.plant_area.is_empty()
 	_pause_button.visible = b.is_complete() and b.def.recipe != null
 	_pause_button.text = tr("ui.building.resume" if b.paused else "ui.building.pause")
 	var visual := BuildingVisualDef.for_building(b.def.id)

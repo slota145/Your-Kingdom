@@ -504,7 +504,8 @@ func shore_water(tile: Vector2i, terrain_id: StringName) -> Vector2i:
 
 # --- Forestry (M4b-1) -----------------------------------------------------------------------
 
-## Where a forester of [param building] plants next: the nearest stump of [param node_id]
+## Where a forester of [param building] plants next (only on its marked plant_area when the
+## player marked one, M4b-1.5): the nearest stump of [param node_id]
 ## within the work radius, else the nearest free ground there, nearest to [param from].
 ## Spots chosen by other foresters are skipped. Agent.NO_TILE if none.
 func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2i) -> Vector2i:
@@ -512,28 +513,44 @@ func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2
 	for agent: Agent in agents.all():
 		if agent.task != null and agent.task.bb.has("plant") and agent.task.bb.has("node"):
 			taken[SimCodec.to_vec2i(agent.task.bb["node"])] = true
-	var area := Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius) 			.intersection(Rect2i(Vector2i.ZERO, grid.size))
+	var area := _work_area(building)
+	if forest_full(building, node_id):
+		return Agent.NO_TILE
+	var candidates: Array[Vector2i] = building.plant_area.duplicate()
+	if candidates.is_empty():
+		for y: int in range(area.position.y, area.end.y):
+			for x: int in range(area.position.x, area.end.x):
+				candidates.append(Vector2i(x, y))
+	var best := Agent.NO_TILE
+	var best_d := 1 << 30
+	for tile: Vector2i in candidates:
+		if taken.has(tile) or not area.has_point(tile) or not can_plant(tile, node_id):
+			continue
+		var stump := resources.is_depleted(tile) and resources.def_at(tile).id == node_id
+		var d := (tile - from).length_squared() + (0 if stump else 1 << 20)
+		if d < best_d and approach_tile(tile, from) != Agent.NO_TILE:
+			best_d = d
+			best = tile
+	return best
+
+
+## Whether [param building] (a forester) has as many trees and saplings of [param node_id]
+## in its work area as it tends (FORESTER_MAX_TREES): then it waits.
+func forest_full(building: BuildingState, node_id: StringName) -> bool:
+	var area := _work_area(building)
 	var trees := 0
 	for y: int in range(area.position.y, area.end.y):
 		for x: int in range(area.position.x, area.end.x):
 			var def := resources.def_at(Vector2i(x, y))
 			if def != null and not resources.is_depleted(Vector2i(x, y)) 					and (def.id == node_id or def.grows_into == node_id):
 				trees += 1
-	if trees >= FORESTER_MAX_TREES:
-		return Agent.NO_TILE
-	var best := Agent.NO_TILE
-	var best_d := 1 << 30
-	for y: int in range(area.position.y, area.end.y):
-		for x: int in range(area.position.x, area.end.x):
-			var tile := Vector2i(x, y)
-			if taken.has(tile) or not can_plant(tile, node_id):
-				continue
-			var stump := resources.is_depleted(tile) and resources.def_at(tile).id == node_id
-			var d := (tile - from).length_squared() + (0 if stump else 1 << 20)
-			if d < best_d and approach_tile(tile, from) != Agent.NO_TILE:
-				best_d = d
-				best = tile
-	return best
+	return trees >= FORESTER_MAX_TREES
+
+
+## Tiles within the work radius of [param building], clipped to the map.
+func _work_area(building: BuildingState) -> Rect2i:
+	return Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius).intersection(
+			Rect2i(Vector2i.ZERO, grid.size))
 
 
 ## Whether a sapling may go on [param tile]: a stump of [param node_id] (old saves), or free
@@ -555,6 +572,18 @@ func can_plant(tile: Vector2i, node_id: StringName = &"tree") -> bool:
 			if grid.is_inside(next) and (grid.occupant(next) != 0 or grid.has_road(next)):
 				return false
 	return true
+
+
+## A felled tree taken with its stump leaves grass where the forest floor was (owner's
+## decision 2026-11-05): cleared land turns green.
+func clear_forest_floor(tile: Vector2i) -> void:
+	var terrain := terrain_at(tile)
+	if terrain == null or terrain.id != &"forest":
+		return
+	var grass := data.get_terrain(&"grass")
+	if grass != null:
+		grid.set_terrain(tile, grass.index)
+		refresh_tile(tile)
 
 
 func plant(tile: Vector2i, sapling: ResourceNodeDef) -> void:

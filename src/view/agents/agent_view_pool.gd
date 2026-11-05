@@ -8,6 +8,9 @@ const VIEW_MARGIN := 96.0
 ## Used when a profession has no art of its own yet.
 const FALLBACK_CHARACTER := &"peasant"
 
+## How far into a building (tiles) a person walking in has faded out completely.
+const DOORWAY_FADE := 0.4
+
 var visible_count: int = 0
 ## Duration of the last update in microseconds.
 var last_update_usec: int = 0
@@ -31,15 +34,23 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 	var rect := world_rect.grow(VIEW_MARGIN)
 	var used := 0
 	for agent: Agent in agents.all():
-		var screen := IsoMath.grid_to_screen(agent.prev_pos.lerp(agent.pos, alpha))
+		var at := agent.prev_pos.lerp(agent.pos, alpha)
+		var screen := IsoMath.grid_to_screen(at)
 		if not rect.has_point(screen):
+			continue
+		var spot := _spot_offset(agent)
+		# Going in through a door: the last step fades out (owner's decision 2026-11-05), and
+		# people resting inside are not drawn. Workers at a work spot stay visible.
+		var fade := _doorway_fade(at) if spot == Vector2.ZERO else 1.0
+		if fade <= 0.0:
 			continue
 		var sprite := _sprite(used)
 		used += 1
 		# Small stable offset so people sharing a tile do not overlap exactly (ARCHITECTURE §5.3).
 		var jitter := Vector2(float((agent.id * 7) % 9) - 4.0, float((agent.id * 5) % 5) - 2.0)
-		sprite.position = screen + jitter + _spot_offset(agent)
+		sprite.position = screen + jitter + spot
 		sprite.self_modulate = _tint(agent.kind)
+		sprite.modulate.a = fade
 		var good := agent.carry_good if agent.is_carrying() else &""
 		var category := _category(good)
 		var anim := StringName("work_" + String(agent.activity))
@@ -53,6 +64,19 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		_pool[j].visible = false
 	visible_count = used
 	last_update_usec = Time.get_ticks_usec() - start
+
+
+## 1 outside buildings, falling to 0 within [constant DOORWAY_FADE] tiles inside a footprint.
+func _doorway_fade(at: Vector2) -> float:
+	var tile := Vector2i(floori(at.x), floori(at.y))
+	if province == null or not province.grid.is_inside(tile):
+		return 1.0
+	var building := province.buildings.get_building(province.grid.occupant(tile))
+	if building == null:
+		return 1.0
+	var rect := Rect2(Vector2(building.origin), Vector2(building.def.footprint))
+	var depth := minf(minf(at.x - rect.position.x, rect.end.x - at.x), minf(at.y - rect.position.y, rect.end.y - at.y))
+	return clampf(1.0 - depth / DOORWAY_FADE, 0.0, 1.0)
 
 
 func _sprite(index: int) -> AgentSprite:

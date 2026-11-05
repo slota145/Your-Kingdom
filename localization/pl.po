@@ -519,6 +519,24 @@ msgstr "Wejście wychodzi na wodę. Przesuń budynek."
 msgid "ui.command_error.bad_orientation"
 msgstr "Tego budynku nie da się tak obrócić."
 
+msgid "ui.reason.forest_full"
+msgstr "las w zasięgu jest pełny"
+
+msgid "ui.reason.no_plant_spot"
+msgstr "brak wolnego miejsca do sadzenia"
+
+msgid "ui.building.plant_area"
+msgstr "Miejsce sadzenia"
+
+msgid "ui.building.plant_area_hint"
+msgstr "Przeciągnij myszą po kaflach, na których leśniczy ma sadzić. Bez zaznaczenia sadzi w całym zasięgu."
+
+msgid "ui.building.plant_area_clear"
+msgstr "Wyczyść miejsce sadzenia"
+
+msgid "ui.command_error.not_a_forester"
+msgstr "Ten budynek nie sadzi drzew."
+
 msgid "ui.building.turn"
 msgstr "Obróć"
 

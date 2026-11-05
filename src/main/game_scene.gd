@@ -125,6 +125,8 @@ func _build_ui() -> void:
 		_close_panels())
 	_building_panel.add_fields_requested.connect(func(id: int) -> void:
 		_set_tool({"kind": &"field", "farm": id}))
+	_building_panel.plant_area_requested.connect(func(id: int) -> void:
+		_set_tool({"kind": &"plant", "building": id}))
 	root.add_child(_building_panel)
 	_agent_panel = AgentPanel.new()
 	_agent_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
@@ -229,6 +231,17 @@ func _update_preview() -> void:
 							tiles[Vector2i(x, y)] = "range"
 				for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
 					tiles[t] = "ok" if sim.province.field_error(farm.id, t) == &"" else "bad"
+		&"plant":
+			var forester := sim.province.buildings.get_building(int(_tool["building"]))
+			if forester != null:
+				var work := Rect2i(forester.origin, forester.def.footprint).grow(forester.def.work_radius)
+				for y: int in range(work.position.y, work.end.y):
+					for x: int in range(work.position.x, work.end.x):
+						tiles[Vector2i(x, y)] = "range"
+				for t: Vector2i in forester.plant_area:
+					tiles[t] = "ok"
+				for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
+					tiles[t] = "ok" if work.has_point(t) else "bad"
 		&"demolish":
 			if _demolish_target(_hover) != null:
 				tiles[_hover] = "bad"
@@ -237,6 +250,9 @@ func _update_preview() -> void:
 				var b := sim.province.buildings.get_building(_building_panel.building_id)
 				if b != null and b.def.service_radius > 0:
 					_add_range(tiles, b.def.id)
+				if b != null:
+					for t: Vector2i in b.plant_area:
+						tiles[t] = "ok"
 	view.overlay.show_tiles(tiles)
 	view.buildings.show_ghost(ghost, ghost_origin, ghost_ok)
 
@@ -339,7 +355,7 @@ func _on_left_press() -> void:
 			var command := _demolish_target(_hover)
 			if command != null:
 				_execute(command)
-		&"road", &"field":
+		&"road", &"field", &"plant":
 			_dragging = true
 			_drag_tiles = [_hover]
 			_update_preview()
@@ -357,6 +373,9 @@ func _on_left_release() -> void:
 				tiles.append(t)
 		if not tiles.is_empty():
 			_execute(BuildRoadCommand.new(tiles))
+	elif kind == &"plant":
+		var marked: Array[Vector2i] = _drag_tiles.duplicate()
+		_execute(SetPlantAreaCommand.new(int(_tool["building"]), marked))
 	elif kind == &"field":
 		for t: Vector2i in _drag_tiles:
 			if sim.province.field_error(int(_tool["farm"]), t) == &"":
