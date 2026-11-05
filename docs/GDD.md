@@ -397,6 +397,11 @@ Szczegóły i kryteria ukończenia: [ROADMAP.md](ROADMAP.md), etap M3. W skróci
 - PL i EN,
 - wszystko na placeholderach, ale w docelowej skali.
 
+**Wnioski z gry właściciela projektu (2026-11-05, M3 i M4a):**
+- **M3: 5/5.** „Super się ogląda”, jak mieszkańcy chodzą i wykonują swoje zadania. Filar „widoczna praca” (§1.1) działa i zostaje głównym źródłem frajdy.
+- W 20–30 minut da się dojść do 6 domów poziomu 2. Łańcuch chleba widać w trybie „śledź” od pola do kosza. Opis postaci zawsze zgadza się z tym, co robi. Teksty w PL i EN bez uwag.
+- **M4a: 4/5.** Mieszczanie, ryby, piwo i logistyka działają. Brakuje „autentyczności”, bo grafiki to wciąż placeholdery. To nie jest problem rozgrywki, tylko grafiki: wzmacnia sens etapu M9 (produkcja grafik, ROADMAP).
+
 ### 11.2 Odłożone [PÓŹNIEJ]
 
 - interaktywne bitwy morskie (zaplanowane jako osobny etap po 1.0),

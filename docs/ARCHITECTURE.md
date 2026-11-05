@@ -481,7 +481,15 @@ Pomiar: `src/prototype/m1/m1_bench.tscn -- --bench` (scena usunięta w M2), okno
 | 200 tragarzy + drwal | 1,1 ms |
 | 500 tragarzy + drwal (`--porters=500`) | 2,1 ms |
 
-Cel ≤ 4 ms przy 500 postaciach jest spełniony. Pomiar FPS na laptopie robi właściciel projektu (DoD M2: płynność przy 4× z 200 postaciami).
+Cel ≤ 4 ms przy 500 postaciach jest spełniony.
+
+**Pomiar M2 (laptop, 2026-11-05):** ta sama scena z oknem, `--resolution 1600x900 ... -- --bench`, vsync wyłączony, Forward+ (D3D12), RTX 5070 Ti. 200 tragarzy, prędkość 4×, 60 s pomiaru.
+
+| Śr. FPS | Najgorsza klatka | Tick symulacji (śr.) |
+|---|---|---|
+| 713 | 3,2 ms | 0,54 ms |
+
+DoD M2 (płynność przy 4× z 200 postaciami) jest spełniony z dużym zapasem. Najgorsza klatka mieści się ok. 5× w budżecie 60 FPS.
 
 ---
 
