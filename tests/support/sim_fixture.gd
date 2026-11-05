@@ -32,10 +32,16 @@ static func spawn(sim: Simulation, kind: StringName, tile: Vector2i) -> Agent:
 
 
 static func plant_trees(sim: Simulation, rect: Rect2i) -> void:
-	var tree := registry().get_resource_node(&"tree")
+	place_nodes(sim, rect, &"tree")
+
+
+## Resource nodes of [param node_id] on every tile of [param rect] (rocks block the way,
+## trees do not since M4b-2).
+static func place_nodes(sim: Simulation, rect: Rect2i, node_id: StringName) -> void:
+	var node := registry().get_resource_node(node_id)
 	for y: int in range(rect.position.y, rect.end.y):
 		for x: int in range(rect.position.x, rect.end.x):
-			sim.province.resources.place(Vector2i(x, y), tree)
+			sim.province.resources.place(Vector2i(x, y), node)
 			sim.province.refresh_tile(Vector2i(x, y))
 
 

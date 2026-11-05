@@ -26,6 +26,10 @@ var paths: PathRequestQueue = PathRequestQueue.new()
 var treasury: Treasury = Treasury.new()
 ## Derived from buildings and the map; not saved.
 var coverage: ServiceCoverage = ServiceCoverage.new()
+## The travelling merchant (M4b-2).
+var merchant: Merchant = Merchant.new()
+## Goods made and used per minute (statistics for the player, M4b-2); not saved.
+var ledger: GoodsLedger = GoodsLedger.new()
 ## Where newcomers enter the province.
 var entry_tile: Vector2i = Vector2i.ZERO
 ## Units of a good workshops leave in the province for construction and households
@@ -40,9 +44,6 @@ const ROAD_COST := 0.67
 const FIELD_COST := 1.2
 ## How often young trees are checked for growing up (1 s).
 const GROW_CHECK_TICKS := 10
-## A forester stops planting when this many trees and saplings stand in his work area, so a
-## forest never swallows the town.
-const FORESTER_MAX_TREES := 30
 
 
 func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entity_ids: EntityIds) -> void:
@@ -65,6 +66,10 @@ func step() -> void:
 	_remove_empty_piles()
 	if tick % GROW_CHECK_TICKS == 0:
 		_grow_saplings()
+		_breed_herds()
+		_update_markets()
+		merchant.update(self)
+		jobs.trim_yard_requests(self)
 	Population.update(self)
 
 
@@ -97,6 +102,10 @@ func refresh_tile(tile: Vector2i) -> void:
 		var terrain := terrain_at(tile)
 		if terrain != null:
 			cost = terrain.move_cost
+		# Trees are walkable but slow people down like the forest floor (M4b-2).
+		var node := resources.def_at(tile)
+		if node != null and node.move_cost > cost and not resources.is_depleted(tile):
+			cost = node.move_cost
 	if not is_equal_approx(nav.get_cost(tile), cost):
 		nav.set_cost(tile, cost)
 
@@ -507,15 +516,14 @@ func shore_water(tile: Vector2i, terrain_id: StringName) -> Vector2i:
 ## Where a forester of [param building] plants next (only on its marked plant_area when the
 ## player marked one, M4b-1.5): the nearest stump of [param node_id]
 ## within the work radius, else the nearest free ground there, nearest to [param from].
-## Spots chosen by other foresters are skipped. Agent.NO_TILE if none.
+## Spots chosen by other foresters are skipped. Agent.NO_TILE if none. There is no limit on
+## trees (M4b-2): he plants while there is room.
 func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2i) -> Vector2i:
 	var taken: Dictionary[Vector2i, bool] = {}
 	for agent: Agent in agents.all():
 		if agent.task != null and agent.task.bb.has("plant") and agent.task.bb.has("node"):
 			taken[SimCodec.to_vec2i(agent.task.bb["node"])] = true
 	var area := _work_area(building)
-	if forest_full(building, node_id):
-		return Agent.NO_TILE
 	var candidates: Array[Vector2i] = building.plant_area.duplicate()
 	if candidates.is_empty():
 		for y: int in range(area.position.y, area.end.y):
@@ -534,19 +542,6 @@ func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2
 	return best
 
 
-## Whether [param building] (a forester) has as many trees and saplings of [param node_id]
-## in its work area as it tends (FORESTER_MAX_TREES): then it waits.
-func forest_full(building: BuildingState, node_id: StringName) -> bool:
-	var area := _work_area(building)
-	var trees := 0
-	for y: int in range(area.position.y, area.end.y):
-		for x: int in range(area.position.x, area.end.x):
-			var def := resources.def_at(Vector2i(x, y))
-			if def != null and not resources.is_depleted(Vector2i(x, y)) 					and (def.id == node_id or def.grows_into == node_id):
-				trees += 1
-	return trees >= FORESTER_MAX_TREES
-
-
 ## Tiles within the work radius of [param building], clipped to the map.
 func _work_area(building: BuildingState) -> Rect2i:
 	return Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius).intersection(
@@ -554,22 +549,23 @@ func _work_area(building: BuildingState) -> Rect2i:
 
 
 ## Whether a sapling may go on [param tile]: a stump of [param node_id] (old saves), or free
-## buildable ground on every second tile in both directions, so planted trees always leave
-## walkable lanes; never next to a building or a road (a tree must not block an entrance).
+## buildable ground. Trees are walkable (M4b-2), so a forester plants tile by tile like the
+## forest of the map; never on a road or a field and never next to a building (the tile in
+## front of a door stays free).
 func can_plant(tile: Vector2i, node_id: StringName = &"tree") -> bool:
 	if not grid.is_inside(tile):
 		return false
 	if resources.def_at(tile) != null:
 		if not resources.is_depleted(tile) or resources.def_at(tile).id != node_id:
 			return false
-	elif _free_ground_error(tile) != &"" or tile.x % 2 != 0 or tile.y % 2 != 0:
+	elif _free_ground_error(tile) != &"":
 		return false
 	if grid.is_blocked(tile) or fields.has_field(tile) or grid.has_road(tile):
 		return false
 	for dy: int in range(-1, 2):
 		for dx: int in range(-1, 2):
 			var next := tile + Vector2i(dx, dy)
-			if grid.is_inside(next) and (grid.occupant(next) != 0 or grid.has_road(next)):
+			if grid.is_inside(next) and grid.occupant(next) != 0:
 				return false
 	return true
 
@@ -592,18 +588,58 @@ func plant(tile: Vector2i, sapling: ResourceNodeDef) -> void:
 	events.emit(&"resource_planted", {"tile": tile, "node": sapling.id})
 
 
-## Grows due saplings into trees. One waits while somebody stands on its tile (a tree there
-## would trap them).
+## A market reaches houses while its stalls hold goods (M4b-2, like a tavern serving).
+func _update_markets() -> void:
+	for building: BuildingState in buildings.all():
+		if not building.def.stall_goods.is_empty() and building.supply != null 				and building.supply.total_amount() > 0:
+			building.serving_until = tick + GROW_CHECK_TICKS * 2
+
+
+## The market a householder of [param house] buys [param amount] of [param good] at: the
+## nearest one whose range reaches the house and whose stalls have it (M4b-2); 0 if none.
+func market_source(good: StringName, amount: int, house: BuildingState) -> int:
+	var best := 0
+	var best_d := 1 << 30
+	for market: BuildingState in buildings.all():
+		if market.def.stall_goods.is_empty() or market.supply == null 				or not market.supply.can_supply(good, amount):
+			continue
+		var reached := false
+		for door: Vector2i in door_tiles(house):
+			if coverage.covers(market.def.id, door, grid.size):
+				reached = true
+				break
+		var d := (market.entrance_tile() - house.entrance_tile()).length_squared()
+		if reached and d < best_d:
+			best_d = d
+			best = market.id
+	return best
+
+
+## Herds with 2 or more animals, a worker and room breed (M4b-2): one young animal every
+## breed_time seconds with 2 animals, faster in a bigger herd (the time over half the herd).
+func _breed_herds() -> void:
+	for building: BuildingState in buildings.all():
+		var good := building.def.herd_good
+		if good == &"" or building.yard == null or building.paused or building.workers.is_empty():
+			continue
+		var herd := building.yard.total(good)
+		if herd < 2 or building.yard.free_space(good) <= 0:
+			building.breed_ticks = 0
+			continue
+		building.breed_ticks += GROW_CHECK_TICKS
+		var due := maxi(roundi(SimClock.seconds_to_ticks(building.def.breed_time) * 2.0 / herd), 1)
+		if building.breed_ticks >= due:
+			building.breed_ticks = 0
+			building.yard.add(good, 1)
+			ledger.made(good, 1, tick)
+			events.emit(&"animal_born", {"building": building.id, "good": good, "herd": herd + 1})
+
+
+## Grows due saplings into trees (walkable, so people standing there are not trapped).
 func _grow_saplings() -> void:
 	if resources.growing_count() == 0:
 		return
-	var occupied: Dictionary[Vector2i, bool] = {}
 	for tile: Vector2i in resources.due_to_grow(tick):
-		if occupied.is_empty():
-			for agent: Agent in agents.all():
-				occupied[agent.tile()] = true
-		if occupied.has(tile):
-			continue
 		var young := resources.def_at(tile)
 		if young == null or young.grows_into == &"":
 			continue
@@ -656,16 +692,17 @@ func remove_building(id: int) -> void:
 	Construction.cancel_site(self, building)
 	buildings.remove(id)
 	jobs.cancel_for_entity(id)
+	jobs.cancel_for_entity(yard_id(id))
 	for agent: Agent in agents.all():
-		if agent.task != null and (int(agent.task.bb.get("_src", 0)) == id \
-				or int(agent.task.bb.get("_dst", 0)) == id):
+		if agent.task != null and (absi(int(agent.task.bb.get("_src", 0))) == id \
+				or absi(int(agent.task.bb.get("_dst", 0))) == id):
 			TaskRunner.fail(self, agent)
 	var tiles := building.tiles()
 	for tile: Vector2i in tiles:
 		grid.set_occupant(tile, 0)
 		refresh_tile(tile)
 	var i := 0
-	for store: Stockpile in [building.stock, building.supply]:
+	for store: Stockpile in [building.stock, building.supply, building.yard]:
 		if store == null:
 			continue
 		for slot: int in store.slot_count():
@@ -803,11 +840,20 @@ func drop_carried(agent: Agent) -> void:
 
 # --- Storages ------------------------------------------------------------------------------
 
+## Storage id of the production yard of building [param building_id] (M4b-2): the negative
+## building id, so a yard needs no entity id of its own.
+static func yard_id(building_id: int) -> int:
+	return -building_id
+
+
 ## Any stockpile addressed by entity id: a storage building, a house pantry, a construction
-## site or a ground pile.
+## site, a ground pile or (negative id) a workshop's production yard.
 func storage(id: int) -> Stockpile:
 	if id == 0:
 		return null
+	if id < 0:
+		var owner := buildings.get_building(-id)
+		return owner.yard if owner != null else null
 	var building := buildings.get_building(id)
 	if building != null:
 		return building.stock if building.stock != null else building.supply
@@ -815,7 +861,9 @@ func storage(id: int) -> Stockpile:
 	if site != null:
 		return site.stock
 	var pile := piles.get(id) as GroundPile
-	return pile.stock if pile != null else null
+	if pile != null:
+		return pile.stock
+	return merchant.wagon if id == merchant.wagon_id and merchant.wagon != null else null
 
 
 ## Every stockpile by entity id, in a stable order (accounting, reservations).
@@ -825,14 +873,20 @@ func all_storages() -> Dictionary[int, Stockpile]:
 		var store := storage(building.id)
 		if store != null:
 			result[building.id] = store
+		if building.yard != null:
+			result[yard_id(building.id)] = building.yard
 	for site: ConstructionSite in sites.values():
 		result[site.id] = site.stock
 	for pile: GroundPile in piles.values():
 		result[pile.id] = pile.stock
+	if merchant.wagon != null:
+		result[merchant.wagon_id] = merchant.wagon
 	return result
 
 
 func accepts_deliveries(id: int) -> bool:
+	if id < 0 or (id == merchant.wagon_id and merchant.wagon != null):
+		return storage(id) != null
 	var building := buildings.get_building(id)
 	if building != null:
 		return building.stock != null or building.supply != null
@@ -840,7 +894,7 @@ func accepts_deliveries(id: int) -> bool:
 
 
 func access_tile(id: int) -> Vector2i:
-	var building := buildings.get_building(id)
+	var building := buildings.get_building(absi(id))
 	if building != null:
 		return building.entrance_tile()
 	var site := sites.get(id) as ConstructionSite
@@ -848,7 +902,9 @@ func access_tile(id: int) -> Vector2i:
 		var target := buildings.get_building(site.building_id)
 		return target.entrance_tile() if target != null else Agent.NO_TILE
 	var pile := piles.get(id) as GroundPile
-	return pile.tile if pile != null else Agent.NO_TILE
+	if pile != null:
+		return pile.tile
+	return merchant.stand if id == merchant.wagon_id and merchant.wagon != null else Agent.NO_TILE
 
 
 ## Nearest storage (building or pile) able to give [param amount] of [param good]; 0 if none.
@@ -870,15 +926,45 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 			if d < best_d:
 				best_d = d
 				best = pile.id
+	for building: BuildingState in buildings.all():
+		var yard := yard_id(building.id)
+		# A herd always keeps its last animals for breeding (M4b-2).
+		var keep := building.def.herd_keep if building.def.herd_good == good else 0
+		if building.yard != null and yard != exclude and building.yard.can_supply(good, amount) 				and building.yard.available(good) - keep >= amount:
+			var d := (building.entrance_tile() - from).length_squared()
+			if d < best_d:
+				best_d = d
+				best = yard
 	return best
 
 
-## Units of [param good] in storage buildings that can still be taken.
+## Units of [param good] in storage buildings and production yards that can still be taken.
 func stored(good: StringName) -> int:
 	var sum := 0
 	for building: BuildingState in buildings.all():
 		if building.stock != null:
 			sum += building.stock.available(good)
+		if building.yard != null:
+			sum += building.yard.available(good)
+		if not building.def.stall_goods.is_empty() and building.supply != null:
+			sum += building.supply.available(good)
+	return sum
+
+
+## Units of [param good] the kingdom holds (the "Kingdom stocks" window, M4b-2): storages,
+## production yards and herds, market stalls and ground piles; not house pantries, building
+## sites or goods in hands.
+func kingdom_stock(good: StringName) -> int:
+	var sum := 0
+	for building: BuildingState in buildings.all():
+		if building.stock != null:
+			sum += building.stock.total(good)
+		if building.yard != null:
+			sum += building.yard.total(good)
+		if not building.def.stall_goods.is_empty() and building.supply != null:
+			sum += building.supply.total(good)
+	for pile: GroundPile in piles.values():
+		sum += pile.stock.total(good)
 	return sum
 
 
@@ -909,10 +995,21 @@ func can_give(id: int, good: StringName, amount: int, keep_reserve: bool = false
 	return not keep_reserve or store.available(good) - reserve_of(id, good) >= amount
 
 
-## Nearest storage building with room for [param amount] of [param good]; 0 if none.
+## Nearest storage building with room for [param amount] of [param good]; 0 if none. Live
+## animals go to the nearest herd of their kind instead (M4b-2), never into a storage.
 func nearest_sink(good: StringName, amount: int, from: Vector2i, exclude: int = 0) -> int:
 	var best := 0
 	var best_d := 1 << 30
+	var good_def := data.get_good(good)
+	if good_def != null and good_def.is_live():
+		for building: BuildingState in buildings.all():
+			var herd := yard_id(building.id)
+			if building.def.herd_good == good and building.yard != null and herd != exclude 					and building.yard.can_accept(good, amount):
+				var d := (building.entrance_tile() - from).length_squared()
+				if d < best_d:
+					best_d = d
+					best = herd
+		return best
 	for building: BuildingState in buildings.all():
 		if building.stock != null and building.id != exclude and building.stock.can_accept(good, amount):
 			var d := (building.entrance_tile() - from).length_squared()
@@ -958,6 +1055,19 @@ func _remove_empty_piles() -> void:
 			piles.erase(pile.id)
 			jobs.cancel_for_entity(pile.id)
 			events.emit(&"pile_removed", {"pile": pile.id, "tile": pile.tile})
+
+
+## Whether the workers of [param building] should not start a new cycle: its production yard
+## is full of a good no storage has room for (M4b-2). They wait at the building.
+func yard_blocked(building: BuildingState) -> bool:
+	var yard := building.yard
+	if yard == null or building.def.herd_good != &"":
+		return false
+	for slot: int in yard.slot_count():
+		var good := yard.slot_good[slot]
+		if good != &"" and yard.free_space(good) <= 0 				and nearest_sink(good, 1, building.entrance_tile()) == 0:
+			return true
+	return false
 
 
 # --- Accounting (tests, debug) -------------------------------------------------------------
@@ -1035,6 +1145,7 @@ func to_dict() -> Dictionary:
 		"fields": fields.to_dict(),
 		"entry": SimCodec.vec2i(entry_tile),
 		"keep_for_building": _keep_to_dict(),
+		"merchant": merchant.to_dict(),
 		"agents": agents.to_dict(),
 		"jobs": jobs.to_dict(),
 		"path_queue": paths.to_dict(),
@@ -1069,6 +1180,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 	var keep: Dictionary = d.get("keep_for_building", {})
 	for good: Variant in keep:
 		province.keep_for_building[StringName(String(good))] = int(keep[good])
+	province.merchant = Merchant.from_dict(d.get("merchant", {}), registry)
 	province.agents = AgentStore.from_dict(d["agents"])
 	for agent: Agent in province.agents.all():
 		if agent.task != null and not TaskRunner.restore_steps(province, agent.task):

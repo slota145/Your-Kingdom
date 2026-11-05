@@ -8,6 +8,8 @@ extends PanelContainer
 signal demolish_requested(building_id: int)
 signal add_fields_requested(farm_id: int)
 signal plant_area_requested(building_id: int)
+## The market's "Kingdom stocks and trade" button.
+signal stocks_requested
 ## A setting changed by the player; the game scene executes the command.
 signal command_requested(command: Command)
 signal closed
@@ -30,6 +32,8 @@ var _look_button: Button
 var _turn_button: Button
 var _plant_button: Button
 var _plant_clear_button: Button
+var _pig_button: Button
+var _trade_button: Button
 var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
 var _reserve_label: Label
@@ -65,6 +69,11 @@ func _init() -> void:
 		var none: Array[Vector2i] = []
 		command_requested.emit(SetPlantAreaCommand.new(building_id, none)))
 	buttons.add_child(_plant_clear_button)
+	_pig_button = UiKit.button("", func() -> void: command_requested.emit(BuyPigCommand.new()))
+	_pig_button.tooltip_text = "ui.market.buy_pig_hint"
+	buttons.add_child(_pig_button)
+	_trade_button = UiKit.button("ui.market.trade", func() -> void: stocks_requested.emit())
+	buttons.add_child(_trade_button)
 	_pause_button = UiKit.button("ui.building.pause", func() -> void:
 		var b := province.buildings.get_building(building_id)
 		if b != null:
@@ -175,17 +184,36 @@ func _refresh() -> void:
 		if b.def.service_radius > 0:
 			lines.append(tr("ui.building.service_range"))
 			if b.def.service_needs_supply and not b.provides_service(province.tick):
-				lines.append(tr("ui.building.service_needs_supply"))
+				lines.append(tr("ui.building.stalls_empty" if not b.def.stall_goods.is_empty() 						else "ui.building.service_needs_supply"))
 		if b.house != null:
 			lines.append_array(_house_lines(b))
-		elif b.supply != null:
+		elif b.supply != null and b.def.stall_goods.is_empty():
 			var inputs := b.supply.totals()
 			lines.append(tr("ui.building.inputs") % (UiKit.goods_list(inputs) if not inputs.is_empty() \
+					else tr("ui.stockpile.empty")))
+		if not b.def.stall_goods.is_empty() and b.supply != null:
+			lines.append_array(_market_lines(b))
+		if b.def.herd_good != &"" and b.yard != null:
+			var herd := b.yard.total(b.def.herd_good)
+			lines.append(tr("ui.building.herd") % [herd, b.def.herd_capacity, b.def.herd_keep])
+			if herd < 2:
+				lines.append(tr("ui.building.herd_too_small"))
+		elif b.yard != null:
+			var piled := b.yard.totals()
+			lines.append(tr("ui.building.yard") % (UiKit.goods_list(piled) if not piled.is_empty() \
 					else tr("ui.stockpile.empty")))
 	_body.text = "\n".join(lines)
 	_stock.visible = b.stock != null
 	_stock.stock = b.stock
 	_fields_button.visible = b.is_complete() and b.def.max_fields > 0
+	var market := b.is_complete() and not b.def.stall_goods.is_empty()
+	_trade_button.visible = market
+	_pig_button.visible = market and province.merchant.is_trading()
+	if _pig_button.visible:
+		_pig_button.text = tr("ui.market.buy_pig") % [Merchant.PIG_PRICE, province.merchant.pigs_left]
+		var why := province.merchant.pig_error(province)
+		_pig_button.disabled = why != &""
+		_pig_button.tooltip_text = tr("ui.command_error.%s" % why) if why != &"" else tr("ui.market.buy_pig_hint")
 	_plant_button.visible = b.def.plants_trees()
 	_plant_clear_button.visible = b.def.plants_trees() and not b.plant_area.is_empty()
 	_pause_button.visible = b.is_complete() and b.def.recipe != null
@@ -267,6 +295,28 @@ func _keep_label(good: StringName) -> Label:
 
 func _keep_text(good: StringName, amount: int) -> String:
 	return tr("ui.keep.for_building") % [tr(province.data.get_good(good).name_key()), amount]
+
+
+## Market: what is on the stalls and where the travelling merchant is.
+func _market_lines(b: BuildingState) -> PackedStringArray:
+	var lines := PackedStringArray()
+	var stalls := b.supply.totals()
+	lines.append(tr("ui.market.stalls") % (UiKit.goods_list(stalls) if not stalls.is_empty() 			else tr("ui.stockpile.empty")))
+	var merchant := province.merchant
+	match merchant.state:
+		Merchant.State.AWAY:
+			var minutes := ceili(maxf(merchant.next_visit - province.tick, 0) / 600.0)
+			lines.append(tr("ui.market.merchant_due") % maxi(minutes, 1))
+		Merchant.State.COMING:
+			lines.append(tr("ui.market.merchant_coming"))
+		Merchant.State.TRADING:
+			var seconds := maxi(roundi((merchant.leave_at - province.tick) / 10.0), 0)
+			lines.append(tr("ui.market.merchant_here") % [seconds, merchant.earned])
+			if merchant.sell_above.is_empty():
+				lines.append(tr("ui.market.nothing_for_sale"))
+		Merchant.State.LEAVING:
+			lines.append(tr("ui.market.merchant_leaving") % merchant.earned)
+	return lines
 
 
 func _site_text(site: ConstructionSite) -> String:

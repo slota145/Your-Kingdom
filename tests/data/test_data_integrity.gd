@@ -66,12 +66,16 @@ func test_recipes_reference_existing_goods_and_nodes() -> void:
 	for def: GameDef in _registry.all_of(&"recipe"):
 		var recipe := def as RecipeDef
 		assert_array(recipe.steps).override_failure_message("%s: no steps" % recipe.id).is_not_empty()
+		var chooses := false
 		for step: StepDef in recipe.steps:
+			chooses = chooses or step is ChooseStallStepDef
 			assert_str(String(step.get_step_kind())).override_failure_message(
 					"%s: step without kind" % recipe.id).is_not_empty()
 			var goods: Array[StringName] = []
 			if step is FetchStepDef:
-				goods.append((step as FetchStepDef).good)
+				# After a ChooseStallStepDef the fetched good is chosen at run time (M4b-2).
+				if not (chooses and (step as FetchStepDef).good == &""):
+					goods.append((step as FetchStepDef).good)
 			elif step is ProduceStepDef:
 				goods.append((step as ProduceStepDef).output)
 			elif step is GoToStepDef and (step as GoToStepDef).target == &"resource":

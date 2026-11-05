@@ -107,3 +107,14 @@ func test_random_operations_keep_invariants() -> void:
 		assert_bool(stock.is_consistent()).is_true()
 	for good: StringName in goods:
 		assert_int(stock.total(good)).is_equal(expected.get(good, 0))
+
+
+func test_one_slot_per_good_keeps_a_good_to_one_stack() -> void:
+	var stock := Stockpile.new(3, SimFixture.registry())
+	stock.stack_limit = 6
+	stock.one_slot_per_good = true
+	assert_int(stock.add(&"bread", 10)).is_equal(4)
+	assert_int(stock.free_space(&"bread")).is_equal(0)
+	assert_bool(stock.can_accept(&"bread", 1)).is_false()
+	assert_int(stock.free_space(&"fish")).is_equal(6)
+	assert_bool(stock.can_accept(&"fish", 2)).is_true()

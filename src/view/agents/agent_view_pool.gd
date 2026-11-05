@@ -55,7 +55,8 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		var category := _category(good)
 		var anim := StringName("work_" + String(agent.activity))
 		if agent.activity == &"walk":
-			anim = StringName("walk_carry_" + category) if good != &"" else &"walk"
+			# A led animal walks beside a person with free hands (M4b-2).
+			anim = StringName("walk_carry_" + category) if good != &"" and category != "animal" else &"walk"
 		elif agent.activity == &"idle":
 			anim = &"idle"
 		sprite.show_state(CharacterVisual.get_visual(_character(agent.kind)), anim, agent.facing,

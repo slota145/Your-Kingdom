@@ -74,6 +74,18 @@ const PEOPLE := {
 			"hat": "", "beard": true, "apron": Color(0.55, 0.38, 0.22), "tool": "spade"},
 	"innkeeper": {"shirt": Color(0.6, 0.2, 0.2), "legs": Color(0.32, 0.26, 0.22), "hair": Color(0.45, 0.3, 0.18),
 			"hat": "", "beard": true, "apron": Color(0.95, 0.93, 0.88), "tool": "mug"},
+	# M4b-2 (meat)
+	"swineherd": {"shirt": Color(0.6, 0.52, 0.36), "legs": Color(0.38, 0.3, 0.22), "hair": Color(0.55, 0.38, 0.2),
+			"hat": "straw", "tool": "spade"},
+	"butcher": {"shirt": Color(0.78, 0.74, 0.68), "legs": Color(0.3, 0.26, 0.24), "hair": Color(0.22, 0.15, 0.1),
+			"hat": "", "beard": true, "apron": Color(0.88, 0.8, 0.78), "tool": "axe"},
+	# M4b-2 (market and merchant)
+	"stallholder": {"shirt": Color(0.75, 0.45, 0.25), "legs": Color(0.42, 0.3, 0.36), "hair": Color(0.5, 0.3, 0.15),
+			"hat": "kerchief", "hat_colour": Color(0.3, 0.45, 0.65), "dress": true,
+			"apron": Color(0.92, 0.88, 0.78), "tool": ""},
+	"merchant": {"shirt": Color(0.35, 0.22, 0.45), "legs": Color(0.28, 0.24, 0.22), "hair": Color(0.3, 0.2, 0.12),
+			"hat": "wide", "hat_colour": Color(0.4, 0.15, 0.15), "beard": true,
+			"cloak": Color(0.55, 0.18, 0.16), "tool": "staff"},
 }
 
 ## Activity -> motion and the tool it uses (empty = the profession's own).
@@ -88,6 +100,7 @@ const WORK := {
 	"sew": ["stir", ""], "tend_hives": ["low", "smoker"], "collect_honey": ["bend", ""],
 	"mix": ["stir", "paddle"], "ferment": ["push", ""], "mould": ["push", ""], "fire": ["push", "spade"],
 	"serve": ["push", "mug"],
+	"sell": ["throw", ""], "feed": ["throw", ""], "muck": ["low", "spade"], "slaughter": ["overhead", "axe"], "skin": ["push", ""],
 }
 
 ## Activities each profession performs (recipes, fields, building).
@@ -99,6 +112,8 @@ const ACTIVITIES := {
 	"forester": ["dig", "plant", "rest"], "shepherd": ["herd", "shear"], "weaver": ["spin", "weave"],
 	"tailor": ["cut", "sew"], "beekeeper": ["tend_hives", "collect_honey"], "mead_maker": ["mix", "ferment"],
 	"clay_digger": ["dig"], "brickmaker": ["mould", "fire"], "innkeeper": ["serve"],
+	"swineherd": ["feed", "muck"], "butcher": ["slaughter", "skin"], "stallholder": ["sell"],
+	"merchant": [],
 }
 
 ## Carry category -> hands (side, front, height) for both hands, the good's anchor and

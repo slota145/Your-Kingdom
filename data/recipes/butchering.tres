@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/fetch_step_def.gd" id="2_fetch"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/produce_step_def.gd" id="5_produce"]
+[ext_resource type="Script" path="res://src/defs/steps/deliver_step_def.gd" id="6_deliver"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+[ext_resource type="Script" path="res://src/defs/steps/deposit_step_def.gd" id="9_deposit"]
+
+[sub_resource type="Resource" id="fetch_pig"]
+script = ExtResource("2_fetch")
+good = &"pig"
+amount = 1
+skip_if_stocked = true
+
+[sub_resource type="Resource" id="go_home"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="deposit"]
+script = ExtResource("9_deposit")
+
+[sub_resource type="Resource" id="slaughter"]
+script = ExtResource("4_work")
+activity = &"slaughter"
+duration = 6.0
+spot = &"block"
+
+[sub_resource type="Resource" id="produce_meat"]
+script = ExtResource("5_produce")
+output = &"meat"
+amount = 2
+consume = Dictionary[StringName, int]({
+&"pig": 1
+})
+
+[sub_resource type="Resource" id="deliver"]
+script = ExtResource("6_deliver")
+
+[sub_resource type="Resource" id="skin"]
+script = ExtResource("4_work")
+activity = &"skin"
+duration = 4.0
+spot = &"rack"
+
+[sub_resource type="Resource" id="produce_hides"]
+script = ExtResource("5_produce")
+output = &"hides"
+amount = 1
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("fetch_pig"), SubResource("go_home"), SubResource("deposit"), SubResource("slaughter"), SubResource("produce_meat"), SubResource("deliver"), SubResource("go_home"), SubResource("skin"), SubResource("produce_hides"), SubResource("deliver")])
+id = &"butchering"

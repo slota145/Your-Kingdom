@@ -38,6 +38,7 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 				province.fields.set_stage(tile, FieldStore.Stage.FALLOW)
 				agent.carry_good = step.harvest_good
 				agent.carry_amount = step.harvest_amount
+				province.ledger.made(step.harvest_good, step.harvest_amount, province.tick)
 				province.events.emit(&"good_harvested", {"agent": agent.id, "tile": tile,
 						"good": step.harvest_good, "amount": step.harvest_amount})
 				province.events.emit(&"field_changed", {"tile": tile})

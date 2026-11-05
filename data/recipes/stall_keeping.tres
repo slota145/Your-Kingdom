@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/fetch_step_def.gd" id="2_fetch"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+[ext_resource type="Script" path="res://src/defs/steps/deposit_step_def.gd" id="9_deposit"]
+[ext_resource type="Script" path="res://src/defs/steps/choose_stall_step_def.gd" id="10_choose"]
+
+[sub_resource type="Resource" id="choose"]
+script = ExtResource("10_choose")
+load = 2
+
+[sub_resource type="Resource" id="fetch"]
+script = ExtResource("2_fetch")
+amount = 1
+
+[sub_resource type="Resource" id="go_home"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="deposit"]
+script = ExtResource("9_deposit")
+
+[sub_resource type="Resource" id="sell"]
+script = ExtResource("4_work")
+activity = &"sell"
+duration = 4.0
+spot = &"stall"
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("choose"), SubResource("fetch"), SubResource("go_home"), SubResource("deposit"), SubResource("sell")])
+id = &"stall_keeping"

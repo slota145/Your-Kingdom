@@ -30,19 +30,22 @@ func _wood_cut(sim: Simulation) -> Callable:
 		return start - left
 
 
-func test_full_stockpile_puts_wood_on_ground_then_porters_store_it() -> void:
+func test_full_stockpile_puts_wood_on_its_yard_then_porters_store_it() -> void:
 	var sim := SimFixture.make_sim()
 	var scene := SimFixture.woodcutter_scene(sim)
 	var stock: BuildingState = scene["stock"]
+	var hut: BuildingState = scene["hut"]
 	for slot: int in stock.stock.slot_count():
 		stock.stock.add(&"bread", 20)
 	var bread := stock.stock.slot_count() * 20
 	var cut := _wood_cut(sim)
 	_run_checked(sim, SimFixture.ticks(90), &"wood", cut)
 	assert_int(stock.stock.total(&"wood")).is_equal(0)
-	assert_int(sim.province.piles.size()).is_greater(0)
+	# M4b-2: the wood goes on the stack by the woodcutter's hut, not on the ground.
+	assert_int(hut.yard.total(&"wood")).is_greater(0)
+	assert_int(sim.province.piles.size()).is_equal(0)
 	assert_int(sim.province.goods_total(&"bread")).is_equal(bread)
-	# A new stockpile and a porter: the dropped wood is collected.
+	# A new stockpile and a porter: the yard is emptied into it.
 	var second := SimFixture.place(sim, &"stockpile", Vector2i(4, 16))
 	SimFixture.spawn(sim, &"porter", Vector2i(10, 12))
 	_run_checked(sim, SimFixture.ticks(120), &"wood", cut)

@@ -36,6 +36,7 @@ assets/
 ├── terrain/range/a.png, terrain/cursor/ok|bad.png  # nakładki: zasięg usługi, kursor budowy
 ├── nature/<object_id>/<state>.png                  # drzewa (rośnie / stoi / ścięte / pień), krzaki, skały
 ├── ships/<ship_id>/<anim>.png                      # arkusze kierunków jak postacie
+├── vehicles/<vehicle_id>.png                       # pojazdy bez kierunków, np. wóz kupca (M4b-2), stopa w (48, 64)
 ├── ui/…                                            # 9-slice panele, przyciski, ikony
 ├── fonts/
 └── _placeholder/                                   # LUSTRZANY układ wszystkich powyższych
@@ -215,6 +216,8 @@ Klatka ma 64×64. Arkusz to wiersze kierunków × kolumny klatek. Wartości FPS 
   - **zaleta:** 7 animacji noszenia × postacie + 1 mały sprite na towar zamiast pełnych animacji na każdy towar,
   - **wada:** wymaga mapy punktów zaczepienia, którą PixelLab nie wygeneruje sam. Trzeba ją dorysować albo wyznaczyć narzędziem.
 - **B (rezerwa) — towar wypieczony w animacji.** Dla kategorii, w których towar wizualnie się nie różni (kłody, kamień), nakładka nie jest potrzebna: `walk_carry_log` zawiera już kłodę. Flaga `baked_good: true`.
+
+- **Zwierzę prowadzone (M4b-2): kategoria `animal`.** Postać idzie zwykłym `walk` z wolnymi rękami, a zwierzę z `goods/carried/animal/<good_id>.png` (5 kierunków: przód, trzy widoki z boku, tył) idzie obok jej stopy (`AgentSprite.LED_OFFSET`), za postacią przy kierunkach od kamery. Stos takiego towaru (`goods/stacks/pig.png`) to 1–4 stojące zwierzęta zamiast sterty.
 
 **Rozróżnialność towarów** w tej samej kategorii zapewnia kolor i znak na worku lub beczce. Muszą być czytelne przy 1×.
 

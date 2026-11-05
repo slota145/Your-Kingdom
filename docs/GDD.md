@@ -100,9 +100,10 @@ Potrzeby dzielą się na **podstawowe**, bez których dom traci mieszkańców i 
 | Patrycjusze | jak mieszczanie + ubrania, miód pitny (wino później, M6) | tawerna w zasięgu (+ kościół, targowisko) |
 
 Zasady:
-- **Dostarczanie towarów do domów jest widoczne.** Domownik idzie do najbliższego magazynu lub targowiska po zapasy i niesie je do domu. Dom ma mały zapas, np. na 2–3 cykle konsumpcji. [SLICE]: zaopatrzenie z magazynu. Targowisko z zasięgiem i straganiarzami: [1.0].
+- **Dostarczanie towarów do domów jest widoczne.** Domownik idzie do najbliższego magazynu lub targowiska po zapasy i niesie je do domu. Dom ma mały zapas, np. na 2–3 cykle konsumpcji. [SLICE]: zaopatrzenie z magazynu. **Od M4b-2** targowisko ma 2 straganiarzy: noszą z magazynów na kramy chleb, ryby, mięso, piwo, miód pitny, ubrania i drewno (do 6 sztuk każdego), a domownik z domu w zasięgu targowiska kupuje na kramach, gdy jest tam towar. Targowisko działa w zasięgu tylko wtedy, gdy kramy mają towar.
 - **Usługi** (studnia, kaplica, kościół, tawerna) działają przez **zasięg** liczony długością ścieżki od budynku usługowego.
 - **Stan w M4a (2026-11-05):** chłopi jedzą chleb albo ryby (jabłka później). Wagi: chłopi żywność 35, opał 25, studnia 25, kaplica 15. Mieszczanie chleb 20, ryby 15, piwo 15, opał 15, studnia 15, kościół 10, targowisko 10. Mięso dojdzie w M4b. Targowisko w M4a to usługa z zasięgiem, bez straganiarzy.
+- **Stan w M4b-2 (decyzje 2026-11-05):** mieszczanie i patrycjusze jedzą mięso albo ryby (jedna potrzeba „ryby lub mięso”).
 - **Stan w M4b-1 (decyzje 2026-11-05):** tawerna zamiast łaźni. Karczmarz przynosi piwo i miód pitny, a tawerna działa w zasięgu tylko wtedy, gdy niedawno podawała napitki. Wagi patrycjuszy: chleb 15, ubrania 15, ryby 10, piwo 10, miód pitny 10, opał 10, studnia 10, tawerna 10, kościół 5, targowisko 5. Awans do kamienicy kosztuje 6 cegieł i 4 deski.
 - **Zadowolenie** domu (0–100) wynika ze spełnienia potrzeb (proste punkty: każda spełniona potrzeba daje swoją część, w slice’ie chleb 40, opał 30, studnia 30; zadowolenie dochodzi do celu płynnie, decyzja 2026-11-05) i wpływa na:
   - podatki,
@@ -145,6 +146,7 @@ Zasady:
 3. **Model transportu jest zbliżony do Twierdzy.** Pracownik budynku produkcyjnego sam przynosi surowce z magazynu i sam odnosi wyroby do magazynu. Tragarze magazynów zajmują się dostawami na budowy, przewozem między magazynami (później także wozami) i portem. W M4a każdy magazyn ma 2 miejsca dla tragarzy, a ratusz 2 tragarzy i budowniczego.
 5. **Opał przed budową (M4a):** budowy nie biorą z magazynu ostatnich 5 sztuk drewna. Ta rezerwa zostaje dla domów. Gracz zmienia ją suwakiem w panelu magazynu (0–60).
 6. **Zapas na budowy (M4a, wniosek z testów 2026-11-05):** gracz ustawia, ile sztuk towaru warsztaty mają zostawić w całym królestwie (np. tartak nie zje całego drewna). To jedno ustawienie na towar dla całej prowincji, a suwak jest w panelu warsztatu, który ten towar pobiera (0–60, domyślnie 0). Warsztat bierze tylko ponad ten zapas. Budowy i domy mogą brać do zera.
+7. **Stos przy budynku (M4b-2, decyzja 2026-11-05):** gdy żaden magazyn nie ma miejsca, pracownik odkłada wyrób na stos przy swoim budynku (pół pola magazynu, np. 10 drewna). Gdy stos jest pełny, pracownik czeka przy budynku. Ze stosu każdy może brać jak z magazynu (warsztaty, domownicy, budowy, kupiec), a tragarze odnoszą go do magazynu, gdy zwolni się miejsce. Na ziemi nie lądują wyroby z produkcji.
 4. **Każdy cykl produkcji składa się z etapów** zdefiniowanych w danych: przejście, pobranie, czynność z animacją, wytworzenie, odniesienie.
 
 ### 4.2 Lista towarów [1.0] (ok. 30)
@@ -183,9 +185,12 @@ owczarnia ──► wełna ──► tkalnia ──► sukno ──► krawiec �
 pasieka ──► miód ──► miodosytnia ──► miód pitny
 leśniczy sadzi sadzonki ──► drzewa (dla drwala)
 
+[M4b-2]
+chlew (stado, od 2 świń rośnie samo) ──► świnia ──► rzeźnia ──► 2 mięsa + 1 skóra
+pierwsze świnie od kupca wędrownego (30 złota sztuka); ostatnie 2 świnie zawsze zostają
+
 [1.0]
 sad ──► jabłka
-chlew ──► świnie ──► rzeźnik ──► mięso + skóry
 winnica★ ──► winogrona ──► winiarnia ──► wino
 drewno ──► węglarz ──► węgiel drzewny
 kopalnia★ ──► ruda żelaza + węgiel ──► huta ──► żelazo ──► kowal ──► narzędzia / miecze / włócznie
@@ -218,6 +223,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 ### 4.6 Handel zewnętrzny [1.0]
 
 - **Kupcy wędrowni** odwiedzają targowisko lub port co pewien czas, z ograniczoną ofertą kupna i sprzedaży.
+- **Stan w M4b-2 (decyzje 2026-11-05):** kupiec przyjeżdża z krawędzi mapy co ok. 10 minut gry i stoi 3 minuty przy targowisku (bez targowiska nie przyjeżdża). Kupuje po stałych cenach (cena bazowa towaru) wszystko, co magazyny mają ponad próg ustawiony przez gracza przy towarze w oknie „Zapasy królestwa”; domyślnie nic. Tragarze noszą towar do jego wozu. Sprzedaje tylko świnie (4 na wizytę, 30 złota), które tragarz prowadzi do chlewu.
 - W prowincjach z portem dostępny jest handel z obcymi portami: stałe ceny z wahaniami.
 
 ---
@@ -243,7 +249,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 | Zasięg usług | liczony długością ścieżki, więc drogi pośrednio poszerzają zasięg studni, targu i kościoła |
 | Dla obu stron | wrogie wojsko i bandyci też szybciej poruszają się po drogach, co jest decyzją taktyczną |
 
-Teren też ma koszt ruchu: las i pole spowalniają, a woda i budynki blokują przejście.
+Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blokują przejście. **Drzewa da się przejść (M4b-2):** przez las idzie się 1,5× wolniej niż po trawie, także przez drzewa posadzone na trawie. Leśniczy sadzi kafel w kafel, bez limitu drzew, ale nigdy na drogach, polach ani tuż przy budynkach.
 
 ### 5.3 Mury i fortyfikacje [1.0, prototyp wcześniej]
 
@@ -289,7 +295,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda i budynki blokują pr
 | Browar [M4a] | 2×2, 30 złota | piwo |
 | Kaplica [M4a] | 2×2, 10 złota | usługa w zasięgu (chłopi) |
 | Kościół [M4a] | 3×3, 60 złota | usługa w zasięgu (mieszczanie) |
-| Targowisko [M4a] | 3×3, 40 złota | usługa w zasięgu (mieszczanie) |
+| Targowisko [M4a] | 3×3, 40 złota | usługa w zasięgu (mieszczanie); od M4b-2 2 straganiarzy i kramy, przy nim staje kupiec |
 | Leśniczówka [M4b-1] | 2×2, zasięg 8 | sadzi drzewa |
 | Glinianka [M4b-1] | 2×2, woda w zasięgu 5 | glina |
 | Cegielnia [M4b-1] | 2×2 | cegły |
@@ -299,6 +305,8 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda i budynki blokują pr
 | Pasieka [M4b-1] | 2×2 | miód |
 | Miodosytnia [M4b-1] | 2×2, 30 złota | miód pitny |
 | Tawerna [M4b-1] | 2×2, 40 złota | usługa w zasięgu (patrycjusze), zużywa piwo i miód pitny |
+| Chlew [M4b-2] | 3×3, stado do 12 świń | świnie (świniarz karmi stado) |
+| Rzeźnia [M4b-2] | 2×2 | mięso i skóry ze świni |
 
 ---
 

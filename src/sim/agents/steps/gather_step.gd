@@ -19,6 +19,7 @@ func run(province: ProvinceSim, agent: Agent, _def: StepDef) -> Status:
 		return failed(agent, &"no_resource")
 	agent.carry_good = node_def.good
 	agent.carry_amount += taken
+	province.ledger.made(node_def.good, taken, province.tick)
 	province.events.emit(&"good_gathered", {"agent": agent.id, "tile": node, "good": node_def.good,
 			"amount": taken})
 	if province.resources.is_depleted(node):

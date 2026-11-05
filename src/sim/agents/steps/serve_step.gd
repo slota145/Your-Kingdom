@@ -15,6 +15,7 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 			return failed(agent, &"no_source")
 	for good: StringName in step.consume:
 		workplace.supply.remove(good, step.consume[good])
+		province.ledger.used(good, step.consume[good], province.tick)
 	workplace.serving_until = province.tick + SimClock.seconds_to_ticks(step.hold)
 	province.events.emit(&"goods_served", {"agent": agent.id, "building": workplace.id,
 			"goods": step.consume.duplicate()})

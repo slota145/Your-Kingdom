@@ -14,6 +14,11 @@ var slot_out: PackedInt32Array = PackedInt32Array()
 
 ## When > 0, no slot holds more than this (a house pantry), whatever the good's stack size.
 var stack_limit: int = 0
+## Each slot holds the good's stack size divided by this (rounded up): a production yard
+## holds half a storage slot (M4b-2).
+var stack_divisor: int = 1
+## Each good keeps to one slot (market stalls, M4b-2): no second stack of a good it holds.
+var one_slot_per_good: bool = false
 
 var _data: DataRegistry
 var _reservations: Dictionary[int, Reservation] = {}
@@ -49,6 +54,8 @@ func grow_to(slots: int) -> void:
 func stack_size(good: StringName) -> int:
 	var def := _data.get_good(good)
 	var size := def.stack_size if def != null else 1
+	if stack_divisor > 1:
+		size = maxi(ceili(float(size) / stack_divisor), 1)
 	return mini(size, stack_limit) if stack_limit > 0 else size
 
 
@@ -97,11 +104,18 @@ func available(good: StringName) -> int:
 func free_space(good: StringName) -> int:
 	var stack := stack_size(good)
 	var sum := 0
+	var held := false
 	for s: int in slot_count():
 		if slot_good[s] == good:
 			sum += stack - slot_amount[s] - slot_in[s]
-		elif slot_good[s] == &"":
+			held = true
+	if held and one_slot_per_good:
+		return sum
+	for s: int in slot_count():
+		if slot_good[s] == &"":
 			sum += stack
+			if one_slot_per_good:
+				break
 	return sum
 
 
@@ -212,6 +226,8 @@ func add(good: StringName, amount: int) -> int:
 	var left := amount
 	var stack := stack_size(good)
 	for pass_empty: bool in [false, true]:
+		if pass_empty and one_slot_per_good and slot_good.has(good):
+			return left
 		for s: int in slot_count():
 			if left == 0:
 				return 0
@@ -224,6 +240,8 @@ func add(good: StringName, amount: int) -> int:
 			slot_good[s] = good
 			slot_amount[s] += put
 			left -= put
+			if one_slot_per_good:
+				return left
 	return left
 
 
@@ -262,6 +280,10 @@ func to_dict() -> Dictionary:
 	var d := {"slots": slots, "reservations": reservations, "next": _next_reservation}
 	if stack_limit > 0:
 		d["limit"] = stack_limit
+	if stack_divisor > 1:
+		d["div"] = stack_divisor
+	if one_slot_per_good:
+		d["single"] = true
 	return d
 
 
@@ -269,6 +291,8 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> Stockpile:
 	var slots: Array = d.get("slots", [])
 	var stock := Stockpile.new(slots.size(), data)
 	stock.stack_limit = int(d.get("limit", 0))
+	stock.stack_divisor = maxi(int(d.get("div", 1)), 1)
+	stock.one_slot_per_good = bool(d.get("single", false))
 	for s: int in slots.size():
 		var entry: Array = slots[s]
 		stock.slot_good[s] = StringName(String(entry[0]))
@@ -291,6 +315,10 @@ func _slot_for_incoming(good: StringName, amount: int) -> int:
 			return s
 	if amount > stack:
 		return -1
+	if one_slot_per_good:
+		for s: int in slot_count():
+			if slot_good[s] == good:
+				return -1
 	for s: int in slot_count():
 		if slot_good[s] == &"":
 			return s

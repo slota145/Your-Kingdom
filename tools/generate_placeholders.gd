@@ -56,6 +56,10 @@ const CARRIED_GOODS := {
 	"mead": ["barrel", Color(0.5, 0.32, 0.16), Color(0.85, 0.65, 0.25)],
 	"clay": ["sack", Color(0.68, 0.52, 0.42), Color(0.55, 0.4, 0.32)],
 	"bricks": ["stone", Color(0.72, 0.35, 0.24), Color(0.85, 0.5, 0.38)],
+	# M4b-2 (meat)
+	"meat": ["basket", Color(0.6, 0.44, 0.26), Color(0.72, 0.3, 0.26)],
+	"hides": ["bundle", Color(0.55, 0.38, 0.24), Color(0.8, 0.65, 0.45)],
+	"pig": ["animal", Color(0.93, 0.68, 0.64), Color(0.75, 0.45, 0.45)],
 }
 
 ## Stacks and nature sprites keep the tile diamond in their bottom 32 px (ART_SPEC §2).
@@ -71,6 +75,7 @@ func _init() -> void:
 	_nature()
 	_buildings()
 	_walls()
+	_vehicles()
 	print("Placeholders written to ", OUT)
 	quit()
 
@@ -308,6 +313,10 @@ func _good_shape(category: String, main: Color, accent: Color, scale: float) -> 
 		"stone":
 			_ellipse(img, c + Vector2(0, 2) * scale, Vector2(9, 6) * scale, main)
 			_ellipse(img, c + Vector2(-2, 0) * scale, Vector2(4, 2) * scale, accent)
+		"animal":
+			_ellipse(img, c + Vector2(0, 3) * scale, Vector2(9, 5) * scale, main)
+			_ellipse(img, c + Vector2(8, 1) * scale, Vector2(3, 3) * scale, main)
+			_ellipse(img, c + Vector2(10, 2) * scale, Vector2(1.5, 1.5) * scale, accent)
 		"bundle":
 			for i: int in 5:
 				var x := (i - 2) * 3.0 * scale
@@ -466,6 +475,11 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.8, 0.68, 0.48), "roof_color": Color(0.78, 0.62, 0.3), "extra": "barrels"},
 	"clay_pit": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 20.0, "roof": 16.0,
 			"wall": Color(0.6, 0.48, 0.34), "roof_color": Color(0.75, 0.64, 0.36), "extra": "mounds"},
+	# M4b-2 (meat)
+	"pigsty": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 20.0, "roof": 18.0,
+			"wall": Color(0.58, 0.44, 0.3), "roof_color": Color(0.8, 0.68, 0.36), "extra": "sheep"},
+	"slaughterhouse": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
+			"wall": Color(0.75, 0.7, 0.62), "roof_color": Color(0.6, 0.28, 0.2), "extra": "barrels"},
 	"brickworks": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 18.0,
 			"wall": Color(0.62, 0.46, 0.3), "roof_color": Color(0.42, 0.36, 0.3), "extra": "kiln"},
 	"tavern": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 44.0, "roof": 26.0,
@@ -836,6 +850,17 @@ func _ellipse(img: Image, center: Vector2, radius: Vector2, color: Color) -> voi
 
 func _blank(size: Vector2i) -> Image:
 	return Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)
+
+
+## The travelling merchant's cart (M4b-2): a box on two wheels under a red cover.
+func _vehicles() -> void:
+	var img := _blank(Vector2i(96, 80))
+	var foot := Vector2(48, 64)
+	var base := PackedVector2Array([Vector2(-0.5, -0.3), Vector2(0.5, -0.3), Vector2(0.5, 0.3), Vector2(-0.5, 0.3)])
+	_prism(img, Vector2i(foot), base, 4.0, 16.0, Color(0.6, 0.45, 0.28))
+	_ellipse(img, foot + Vector2(-8, -4), Vector2(5, 8), Color(0.35, 0.24, 0.14))
+	_ellipse(img, foot + Vector2(0, -26), Vector2(14, 9), Color(0.8, 0.28, 0.22))
+	_save(img, "vehicles/merchant_cart.png")
 
 
 func _save(img: Image, relative: String) -> void:

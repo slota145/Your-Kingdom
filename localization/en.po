@@ -370,6 +370,12 @@ msgstr "construction site (%s)"
 msgid "ui.doing.ground"
 msgstr "onto the ground"
 
+msgid "ui.doing.yard"
+msgstr "the stack by the building"
+
+msgid "ui.doing.yard_full"
+msgstr "waits: the stack by the building is full"
+
 msgid "ui.doing.go_to"
 msgstr "walking to: %s"
 
@@ -514,8 +520,8 @@ msgstr "The entrance would face the water."
 msgid "ui.command_error.bad_orientation"
 msgstr "This building cannot be turned that way."
 
-msgid "ui.reason.forest_full"
-msgstr "the forest in range is full"
+msgid "ui.reason.yard_full"
+msgstr "the stack by the building is full"
 
 msgid "ui.reason.no_plant_spot"
 msgstr "no free place to plant"
@@ -658,7 +664,7 @@ msgid "building.market.name"
 msgstr "Market"
 
 msgid "building.market.desc"
-msgstr "A square with stalls. Burghers within its reach are happier."
+msgstr "A square with stalls. Stallholders bring food, drink, clothes and firewood from storages; households within reach buy there and are happier. The travelling merchant stops here."
 
 msgid "resource_node.rock.name"
 msgstr "Rock"
@@ -1210,3 +1216,199 @@ msgstr "Textiles"
 
 msgid "ui.build.tab.storage"
 msgstr "Storage"
+
+# M4b-2: meat
+
+msgid "good.pig.name"
+msgstr "Pigs"
+
+msgid "good.pig.desc"
+msgstr "Raised in the pigsty. The butcher leads a pig to the slaughterhouse. The travelling merchant sells the first pigs."
+
+msgid "good.meat.name"
+msgstr "Meat"
+
+msgid "good.meat.desc"
+msgstr "From the slaughterhouse. Burghers and patricians eat it instead of fish."
+
+msgid "good.hides.name"
+msgstr "Hides"
+
+msgid "good.hides.desc"
+msgstr "From the slaughterhouse. For now they sell well to the travelling merchant."
+
+msgid "building.pigsty.name"
+msgstr "Pigsty"
+
+msgid "building.pigsty.desc"
+msgstr "The swineherd feeds the pigs in the pen. From 2 pigs the herd grows by itself, the faster the bigger it is. The last 2 pigs always stay."
+
+msgid "building.slaughterhouse.name"
+msgstr "Slaughterhouse"
+
+msgid "building.slaughterhouse.desc"
+msgstr "The butcher leads a pig from the pigsty, makes 2 meat and a hide of it and carries them to a storage."
+
+msgid "recipe.pig_keeping.name"
+msgstr "Pig keeping"
+
+msgid "recipe.pig_keeping.desc"
+msgstr "The swineherd feeds the pigs and mucks out the sty. The herd grows when it has at least 2 pigs."
+
+msgid "recipe.butchering.name"
+msgstr "Butchering"
+
+msgid "recipe.butchering.desc"
+msgstr "The butcher leads a pig in and makes meat and a hide of it."
+
+msgid "ui.kind.swineherd"
+msgstr "Swineherd"
+
+msgid "ui.kind.butcher"
+msgstr "Butcher"
+
+msgid "ui.activity.feed"
+msgstr "feeding the pigs"
+
+msgid "ui.activity.muck"
+msgstr "mucking out the sty"
+
+msgid "ui.activity.slaughter"
+msgstr "butchering a pig"
+
+msgid "ui.activity.skin"
+msgstr "dressing a hide"
+
+msgid "good.pig.count"
+msgid_plural "good.pig.count_plural"
+msgstr[0] "%s pig"
+msgstr[1] "%s pigs"
+
+msgid "good.meat.count"
+msgid_plural "good.meat.count_plural"
+msgstr[0] "%s side of meat"
+msgstr[1] "%s sides of meat"
+
+msgid "good.hides.count"
+msgid_plural "good.hides.count_plural"
+msgstr[0] "%s hide"
+msgstr[1] "%s hides"
+
+msgid "ui.building.herd"
+msgstr "Pigs in the herd: %d of %d (the last %d always stay)"
+
+msgid "ui.building.herd_too_small"
+msgstr "The herd grows from 2 pigs. Buy them from the travelling merchant."
+
+msgid "ui.building.yard"
+msgstr "Stack by the building: %s"
+
+# M4b-2: market, merchant, stocks
+
+msgid "ui.hud.stocks"
+msgstr "Stocks"
+
+msgid "ui.stocks.title"
+msgstr "Kingdom stocks"
+
+msgid "ui.stocks.hint"
+msgstr "Stocks add up storages, stacks by buildings, pigsties, stalls and the ground. Made and used per minute are averages of the last 5 minutes. Tick a good and the travelling merchant buys everything above the number."
+
+msgid "ui.stocks.good"
+msgstr "Good"
+
+msgid "ui.stocks.stock"
+msgstr "Stock"
+
+msgid "ui.stocks.made"
+msgstr "+ /min"
+
+msgid "ui.stocks.used"
+msgstr "− /min"
+
+msgid "ui.stocks.balance"
+msgstr "Balance"
+
+msgid "ui.stocks.sell"
+msgstr "Sell to the merchant"
+
+msgid "ui.stocks.sell_hint"
+msgstr "The merchant buys everything above this number. Untick to sell nothing."
+
+msgid "ui.stocks.price"
+msgstr "at %d gold"
+
+msgid "ui.stocks.not_for_sale"
+msgstr "not for sale"
+
+msgid "ui.market.trade"
+msgstr "Stocks and trade"
+
+msgid "ui.market.buy_pig"
+msgstr "Buy a pig (%d gold, %d left)"
+
+msgid "ui.market.buy_pig_hint"
+msgstr "A porter leads the pig to the nearest pigsty with room."
+
+msgid "ui.market.stalls"
+msgstr "On the stalls: %s"
+
+msgid "ui.market.merchant_due"
+msgstr "The travelling merchant comes in about %d min."
+
+msgid "ui.market.merchant_coming"
+msgstr "The travelling merchant is on his way to the market."
+
+msgid "ui.market.merchant_here"
+msgstr "The merchant trades for %d more s. Earned: %d gold."
+
+msgid "ui.market.nothing_for_sale"
+msgstr "You sell nothing. Tick goods in the "Stocks and trade" window."
+
+msgid "ui.market.merchant_leaving"
+msgstr "The merchant is leaving. Earned: %d gold."
+
+msgid "ui.note.merchant_arrived"
+msgstr "The travelling merchant has set up by the market."
+
+msgid "ui.note.merchant_left"
+msgstr "The travelling merchant has left. Earned: %d gold."
+
+msgid "ui.command_error.merchant_away"
+msgstr "The merchant is not at the market now."
+
+msgid "ui.command_error.no_pigs_left"
+msgstr "The merchant has no pigs left."
+
+msgid "ui.command_error.no_room_for_pigs"
+msgstr "No pigsty has room."
+
+msgid "ui.command_error.not_for_sale"
+msgstr "This good is not sold to the merchant."
+
+msgid "ui.reason.stalls_full"
+msgstr "the stalls are full"
+
+msgid "ui.kind.merchant"
+msgstr "Travelling merchant"
+
+msgid "ui.kind.stallholder"
+msgstr "Stallholder"
+
+msgid "ui.activity.sell"
+msgstr "crying his wares"
+
+msgid "recipe.stall_keeping.name"
+msgstr "Market trading"
+
+msgid "recipe.stall_keeping.desc"
+msgstr "The stallholder brings the good the stalls have least of from a storage and cries it to buyers."
+
+msgid "ui.stocks.rate"
+msgstr "%.1f"
+
+msgid "ui.stocks.balance_value"
+msgstr "%+.1f"
+
+msgid "ui.building.stalls_empty"
+msgstr "Not working: the stalls are empty. The stallholders bring goods from storages."

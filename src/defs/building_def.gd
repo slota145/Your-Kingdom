@@ -44,6 +44,19 @@ extends GameDef
 @export var service_needs_supply: bool = false
 ## Non-empty for houses: level 1, 2... (GDD §3.3).
 @export var house_levels: Array[HouseLevelDef] = []
+## Market (M4b-2): goods its stallholders bring from storages to the stalls; householders in
+## its range buy them there instead of going to a storage. Empty = no stalls.
+@export var stall_goods: Array[StringName] = []
+## Live animals the building keeps and breeds (a pigsty, M4b-2): its herd is a store of
+## this good that anybody may take from, never below [member herd_keep]. Empty = none.
+@export var herd_good: StringName = &""
+## Animals the herd holds at most.
+@export_range(0, 99) var herd_capacity: int = 0
+## Animals always left for breeding (owner's decision 2026-11-05: the last 2 pigs stay).
+@export_range(0, 99) var herd_keep: int = 2
+## Seconds for one young animal with 2 in the herd; a bigger herd breeds faster (the time is
+## divided by half the herd). Breeding needs at least 2 animals and a worker at work.
+@export_range(1.0, 3600.0) var breed_time: float = 90.0
 ## Which sides have doors (M4b-1.5, owner's decision): &"one" (only the door the player
 ## turns), &"opposite" (also the side across, so it can face a road on either side),
 ## &"all" (every side). Empty = by kind: houses one, storages all, the rest opposite.

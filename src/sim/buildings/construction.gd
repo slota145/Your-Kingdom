@@ -47,6 +47,7 @@ static func start_phase(province: ProvinceSim, site: ConstructionSite) -> void:
 	var cost := site.current_cost()
 	for good: StringName in cost:
 		site.stock.remove(good, int(cost[good]))
+		province.ledger.used(good, int(cost[good]), province.tick)
 	site.phase_started = true
 	site.work_left = site.phase_ticks
 	province.events.emit(&"site_phase_started", {"site": site.id, "building": site.building_id,

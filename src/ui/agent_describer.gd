@@ -40,6 +40,8 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 		var good := StringName(String(task.bb.get("good", (step as FetchStepDef).good)))
 		return _f("ui.doing.fetch", [_good(good)])
 	if step is DeliverStepDef:
+		if task.bb.has("_yard_full"):
+			return _t("ui.doing.yard_full")
 		if not agent.is_carrying():
 			return _t("ui.doing.idle")
 		var to := int(task.bb.get("_dst", task.bb.get("to", 0)))
@@ -79,6 +81,8 @@ static func _storage_name(province: ProvinceSim, id: int) -> String:
 		return _f("ui.doing.site_of", [_building_name(province, province.sites[id].building_id)])
 	if province.piles.has(id):
 		return _t("ui.doing.ground")
+	if id < 0:
+		return _t("ui.doing.yard")
 	return _building_name(province, id)
 
 

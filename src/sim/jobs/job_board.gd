@@ -25,6 +25,44 @@ func add(good: StringName, amount: int, source_id: int, dest_id: int) -> int:
 	return request.id
 
 
+## Like [method add], but grows an open request with the same good, source and destination
+## (a production yard filling up unit by unit keeps one request per good).
+func add_or_merge(good: StringName, amount: int, source_id: int, dest_id: int) -> int:
+	for request: TransportRequest in _requests.values():
+		if request.good == good and request.source_id == source_id and request.dest_id == dest_id:
+			request.amount += amount
+			return request.id
+	return add(good, amount, source_id, dest_id)
+
+
+## Makes the request for [param good] from [param source_id] to [param dest_id] ask for
+## [param wanted] more units than are already on the way (the merchant's wagon, M4b-2);
+## dropped when nothing is wanted or carried any more.
+func set_amount(good: StringName, source_id: int, dest_id: int, wanted: int) -> void:
+	for request: TransportRequest in _requests.values():
+		if request.good == good and request.source_id == source_id and request.dest_id == dest_id:
+			request.amount = request.in_flight + maxi(wanted, 0)
+			if request.amount <= 0:
+				_requests.erase(request.id)
+			return
+	if wanted > 0:
+		add(good, wanted, source_id, dest_id)
+
+
+## Shrinks requests out of a production yard (negative source id) to what the yard still
+## holds: others may take from a yard directly (M4b-2). Empty ones are dropped.
+func trim_yard_requests(province: ProvinceSim) -> void:
+	for request: TransportRequest in all():
+		if request.source_id >= 0:
+			continue
+		var yard := province.storage(request.source_id)
+		var left := yard.available(request.good) if yard != null else 0
+		if request.unassigned() > left:
+			request.amount = request.in_flight + left
+			if request.amount <= 0:
+				_requests.erase(request.id)
+
+
 func get_request(id: int) -> TransportRequest:
 	return _requests.get(id) as TransportRequest
 

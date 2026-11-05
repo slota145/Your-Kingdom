@@ -36,6 +36,10 @@ const C_CLOTH := Color(0.74, 0.27, 0.23)
 const C_HONEY := Color(0.96, 0.72, 0.18)
 const C_CLAY := Color(0.68, 0.5, 0.4)
 const C_BRICK := Color(0.74, 0.36, 0.25)
+const C_MEAT := Color(0.72, 0.3, 0.26)
+const C_FAT := Color(0.95, 0.86, 0.78)
+const C_HIDE := Color(0.55, 0.38, 0.24)
+const C_PIG := Color(0.93, 0.68, 0.64)
 
 ## Good -> look of one unit: item kind and carry category.
 const GOODS := {
@@ -56,6 +60,12 @@ const GOODS := {
 	"mead": {"item": "mead_barrel", "carry": "barrel"},
 	"clay": {"item": "clay_sack", "carry": "sack"},
 	"bricks": {"item": "brick_pile", "carry": "stone"},
+	# M4b-2 (meat)
+	"meat": {"item": "meat_crate", "carry": "basket"},
+	"hides": {"item": "hide_bundle", "carry": "bundle"},
+	# A live pig: led beside the butcher (carried/animal: rows S, SE, E, NE, N), and a herd
+	# grazing on its tile instead of a heap (1 to 4 pigs).
+	"pig": {"item": "pig", "carry": "animal"},
 }
 
 ## Item -> positions [grid x, grid y, z] in fill order (a quarter of them per stage).
@@ -73,6 +83,7 @@ func _init() -> void:
 		_icon(good, String(spec["item"]))
 	_rocks()
 	_trees()
+	_merchant_cart()
 	print("Goods and nature written to ", OUT)
 	quit()
 
@@ -99,6 +110,9 @@ func _build_layouts() -> void:
 			for x: int in 2:
 				grid.append(Vector3(-0.18 + x * 0.36, -0.18 + y * 0.36, layer))
 	_layouts["grid"] = grid
+	# Pigs stand on the ground, one more per stage.
+	_layouts["pig"] = [Vector3(-0.12, -0.15, 0), Vector3(0.2, 0.12, 0), Vector3(-0.25, 0.22, 0),
+			Vector3(0.18, -0.25, 0)]
 
 
 func _positions(item: String) -> Array:
@@ -107,6 +121,8 @@ func _positions(item: String) -> Array:
 			return _layouts["log"]
 		"plank":
 			return _layouts["plank"]
+		"pig":
+			return _layouts["pig"]
 	return _layouts["grid"]
 
 
@@ -160,8 +176,44 @@ func _single(item: String, at: Vector2, scale: float, row: int) -> void:
 				for k: int in 3:
 					var o := Vector2(0, -k * 2.0 * scale)
 					_beam(img, at + o - Vector2(9, 3) * scale, at + o + Vector2(9, 3) * scale, 2.0 * scale, C_PLANK.darkened(0.05 * k)))
+		"pig":
+			# Rows S, SE, E, NE, N: front, three-quarter and side views, back.
+			_queue(0.0, func(img: Image) -> void: _pig(img, at + Vector2(0, 4), scale, row))
 		_:
 			_queue(0.0, func(img: Image) -> void: _draw_item(img, item, at, scale, 0))
+
+
+## A pig seen from direction row 0..4 (S, SE, E, NE, N; facing right in the side views).
+func _pig(img: Image, foot: Vector2, s: float, row: int) -> void:
+	var leg := C_PIG.darkened(0.25)
+	if row == 0 or row == 4:
+		# Front or back: a round body, legs under it; snout or curly tail.
+		for lx: float in [-3.0, 3.0]:
+			_line(img, foot + Vector2(lx, -3) * s, foot + Vector2(lx, 0) * s, leg, 1)
+		_ellipse(img, foot - Vector2(0, 6) * s, Vector2(5.5, 5.0) * s, C_PIG)
+		if row == 0:
+			_ellipse(img, foot - Vector2(0, 5) * s, Vector2(2.2, 1.6) * s, C_PIG.darkened(0.15))
+			_pixel(img, foot + Vector2(-1, -5) * s, Color(0.45, 0.2, 0.2))
+			_pixel(img, foot + Vector2(1, -5) * s, Color(0.45, 0.2, 0.2))
+			_pixel(img, foot + Vector2(-2, -8) * s, Color(0.1, 0.08, 0.08))
+			_pixel(img, foot + Vector2(2, -8) * s, Color(0.1, 0.08, 0.08))
+			_line(img, foot + Vector2(-5, -11) * s, foot + Vector2(-3, -9) * s, C_PIG.darkened(0.1), 1)
+			_line(img, foot + Vector2(5, -11) * s, foot + Vector2(3, -9) * s, C_PIG.darkened(0.1), 1)
+		else:
+			_pixel(img, foot + Vector2(0, -7) * s, C_PIG.darkened(0.3))
+			_pixel(img, foot + Vector2(1, -8) * s, C_PIG.darkened(0.3))
+		return
+	var tilt := {1: 1.5, 2: 0.0, 3: -1.5}[row] as float
+	for lx: float in [-4.0, -2.0, 3.0, 5.0]:
+		_line(img, foot + Vector2(lx, -3 + tilt * lx / 6.0) * s, foot + Vector2(lx, tilt * lx / 6.0) * s, leg, 1)
+	_ellipse(img, foot + Vector2(0, -6 + tilt * 0.2) * s, Vector2(7.0, 4.2) * s, C_PIG)
+	_ellipse(img, foot + Vector2(-1, -8 + tilt * 0.2) * s, Vector2(4.0, 1.6) * s, C_PIG.lightened(0.12))
+	var head := foot + Vector2(7, -6 + tilt) * s
+	_ellipse(img, head, Vector2(3.0, 2.8) * s, C_PIG)
+	_ellipse(img, head + Vector2(2.5, 0.8) * s, Vector2(1.4, 1.3) * s, C_PIG.darkened(0.15))
+	_pixel(img, head + Vector2(0, -1) * s, Color(0.1, 0.08, 0.08))
+	_line(img, head + Vector2(-1, -2) * s, head + Vector2(-2, -4) * s, C_PIG.darkened(0.1), 1)
+	_pixel(img, foot + Vector2(-7.5, -8) * s, C_PIG.darkened(0.3))
 
 
 # --- Items on a stack ----------------------------------------------------------------------
@@ -188,7 +240,8 @@ func _place(item: String, p: Vector3, index: int) -> void:
 func _item_height(item: String) -> float:
 	return {"flour_sack": 7.0, "sheaf": 12.0, "bread_crate": 7.0, "fish_crate": 7.0, "hop_basket": 8.0,
 			"barrel": 11.0, "block": 7.0, "wool_bale": 8.0, "cloth_bolt": 5.0, "clothes_basket": 8.0,
-			"honey_pot": 9.0, "mead_barrel": 11.0, "clay_sack": 7.0, "brick_pile": 6.0}.get(item, 7.0)
+			"honey_pot": 9.0, "mead_barrel": 11.0, "clay_sack": 7.0, "brick_pile": 6.0,
+			"meat_crate": 7.0, "hide_bundle": 4.0}.get(item, 7.0)
 
 
 func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -> void:
@@ -267,9 +320,64 @@ func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -
 			_ellipse(img, foot - Vector2(0, 4.5) * s, Vector2(6.5, 5.0) * s, C_SACK.darkened(0.15 + v))
 			_ellipse(img, foot - Vector2(0, 8.5) * s, Vector2(4.0, 2.0) * s, C_CLAY)
 			_ellipse(img, foot - Vector2(1, 9.5) * s, Vector2(2.0, 1.2) * s, C_CLAY.lightened(0.12))
+		"pig":
+			_pig(img, foot, s, 1 if index % 2 == 0 else 2)
+		"meat_crate":
+			# A crate with a ham and a side of bacon.
+			_box(img, foot, Vector2(14, 7) * s, 5.0 * s, C_CRATE.darkened(v), "planks")
+			var top := foot - Vector2(0, 5.0 * s + 3.0 * s)
+			_ellipse(img, top + Vector2(-2.5, 0.3) * s, Vector2(3.6, 2.4) * s, C_MEAT)
+			_ellipse(img, top + Vector2(-3.5, -0.4) * s, Vector2(1.6, 1.0) * s, C_FAT)
+			_line(img, top + Vector2(0.5, -1.0) * s, top + Vector2(5.0, 1.0) * s, C_MEAT.lightened(0.08), maxi(1, roundi(2 * s)))
+			_line(img, top + Vector2(0.5, -2.0) * s, top + Vector2(5.0, 0.0) * s, C_FAT, 1)
+		"hide_bundle":
+			# Folded hides: brown skins with pale undersides showing at the edges.
+			for k: int in 3:
+				var o := foot - Vector2(0, 1.5 + k * 1.6) * s
+				_ellipse(img, o + Vector2((k % 2) * 1.0, 0) * s, Vector2(6.5, 2.6) * s, C_HIDE.darkened(v + 0.06 * k))
+				_line(img, o + Vector2(-6, 0.5) * s, o + Vector2(-3, 1.8) * s, C_HIDE.lightened(0.35), 1)
+			_line(img, foot - Vector2(1, 7) * s, foot - Vector2(1, 1) * s, Color(0.35, 0.25, 0.15), 1)
 		"brick_pile":
 			for k: int in 2:
 				_box(img, foot - Vector2(0, k * 3.0) * s, Vector2(12, 6) * s, 3.0 * s, C_BRICK.darkened(v + 0.06 * k), "brick")
+
+
+# --- Vehicles ------------------------------------------------------------------------------
+
+## The travelling merchant's covered cart (M4b-2): 96x80, the ground point under its middle at
+## (48, 64). Two big wheels, a plank box with crates and sacks, a striped canvas cover, shafts.
+func _merchant_cart() -> void:
+	var img := Image.create_empty(96, 80, false, Image.FORMAT_RGBA8)
+	var foot := Vector2(48, 64)
+	# Shafts reaching forward to the left (along grid y).
+	_line(img, foot + Vector2(-14, -10), foot + Vector2(-40, 3), C_WOOD.darkened(0.1), 2)
+	_line(img, foot + Vector2(-6, -6), foot + Vector2(-32, 7), C_WOOD.darkened(0.2), 2)
+	# Far wheel, box, near wheel.
+	_wheel(img, foot + Vector2(10, -12))
+	_box(img, foot + Vector2(0, -6), Vector2(40, 18), 12.0, C_PLANK.darkened(0.1), "planks")
+	var top := foot + Vector2(0, -18)
+	_box(img, top + Vector2(-8, -2), Vector2(10, 6), 6.0, C_CRATE, "planks")
+	_ellipse(img, top + Vector2(6, -5), Vector2(4, 3), C_SACK)
+	_ellipse(img, top + Vector2(-1, -7), Vector2(3.5, 3), C_BARREL)
+	# Striped canvas cover over the back half, an arch.
+	for k: int in 14:
+		var t := float(k) / 13.0
+		var base := top + Vector2(2, -3).lerp(Vector2(18, -11), t)
+		var col := Color(0.82, 0.25, 0.2) if k % 4 < 2 else Color(0.94, 0.9, 0.78)
+		_line(img, base, base + Vector2(-10, -16), col, 2)
+	_line(img, top + Vector2(-8, -19), top + Vector2(8, -27), Color(0.55, 0.4, 0.3), 1)
+	_wheel(img, foot + Vector2(-8, -2))
+	_outline(img)
+	_save(img, "vehicles/merchant_cart.png")
+
+
+func _wheel(img: Image, centre: Vector2) -> void:
+	_ellipse(img, centre, Vector2(6, 9), C_WOOD.darkened(0.25))
+	_ellipse(img, centre, Vector2(4.5, 7), C_WOOD.lightened(0.05))
+	for a: float in [0.0, PI / 3.0, 2.0 * PI / 3.0]:
+		var d := Vector2(cos(a) * 4.0, sin(a) * 6.5)
+		_line(img, centre - d, centre + d, C_WOOD.darkened(0.3), 1)
+	_ellipse(img, centre, Vector2(1.5, 2), C_IRON)
 
 
 # --- Nature --------------------------------------------------------------------------------

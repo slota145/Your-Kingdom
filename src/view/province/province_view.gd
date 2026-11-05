@@ -6,6 +6,10 @@ extends Node2D
 
 ## Seconds between redraws of growing fields.
 const FIELD_REDRAW := 1.0
+## The merchant's cart stands beside him, to the right of the tile in front of the market.
+const CART_OFFSET := Vector2(22.0, 4.0)
+## Ground point of the cart image (vehicles/merchant_cart.png).
+const CART_FOOT := Vector2(48.0, 64.0)
 
 var province: ProvinceSim
 var terrain: TerrainLayer
@@ -15,6 +19,8 @@ var nature: NatureLayer
 var buildings: BuildingLayer
 var piles: PileLayer
 var agents: AgentViewPool
+## The travelling merchant's cart while he trades (M4b-2).
+var cart: Sprite2D
 
 var _field_timer: float = 0.0
 var _buildings_dirty: bool = false
@@ -44,6 +50,12 @@ func setup(source: ProvinceSim) -> void:
 	agents = AgentViewPool.new()
 	agents.province = province
 	world.add_child(agents)
+	cart = Sprite2D.new()
+	cart.centered = false
+	cart.offset = -CART_FOOT
+	cart.texture = ArtPaths.texture("vehicles/merchant_cart.png")
+	cart.visible = false
+	world.add_child(cart)
 
 
 func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -> void:
@@ -52,7 +64,12 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 		buildings.refresh_all()
 	agents.update_view(province.agents, alpha, visible_rect, time)
 	piles.update_view(province.piles)
+	piles.update_yards(province.buildings)
 	buildings.update_view()
+	var merchant := province.merchant
+	cart.visible = merchant.is_trading()
+	if cart.visible:
+		cart.position = IsoMath.tile_center_screen(merchant.stand) + CART_OFFSET
 	_field_timer += delta
 	if _field_timer >= FIELD_REDRAW:
 		_field_timer = 0.0

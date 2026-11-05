@@ -23,6 +23,7 @@ var _top: TopBar
 var _build: BuildMenu
 var _building_panel: BuildingPanel
 var _agent_panel: AgentPanel
+var _stocks: KingdomStockWindow
 var _notes: Notifications
 var _tool: Dictionary = {}
 var _hover: Vector2i = Vector2i(-999, -999)
@@ -80,6 +81,7 @@ func _start(simulation: Simulation) -> void:
 	_top.treasury = sim.treasury
 	_building_panel.treasury = sim.treasury
 	_notes.province = sim.province
+	_stocks.visible = false
 	_close_panels()
 	_set_tool({})
 	Game.start(sim)
@@ -107,6 +109,7 @@ func _build_ui() -> void:
 	_top.save_requested.connect(_quick_save)
 	_top.load_requested.connect(_quick_load)
 	_top.menu_requested.connect(_back_to_menu)
+	_top.stocks_requested.connect(_toggle_stocks)
 	root.add_child(_top)
 	_build = BuildMenu.new()
 	_build.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
@@ -127,7 +130,16 @@ func _build_ui() -> void:
 		_set_tool({"kind": &"field", "farm": id}))
 	_building_panel.plant_area_requested.connect(func(id: int) -> void:
 		_set_tool({"kind": &"plant", "building": id}))
+	_building_panel.stocks_requested.connect(_toggle_stocks)
 	root.add_child(_building_panel)
+	_stocks = KingdomStockWindow.new()
+	_stocks.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_stocks.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_stocks.position.y = 64
+	_stocks.visible = false
+	_stocks.closed.connect(func() -> void: _stocks.visible = false)
+	_stocks.command_requested.connect(func(command: Command) -> void: _execute(command))
+	root.add_child(_stocks)
 	_agent_panel = AgentPanel.new()
 	_agent_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_agent_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
@@ -140,6 +152,13 @@ func _build_ui() -> void:
 	_notes.position = Vector2(12, 64)
 	_notes.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_notes)
+
+
+func _toggle_stocks() -> void:
+	if _stocks.visible:
+		_stocks.visible = false
+	else:
+		_stocks.open(sim.province)
 
 
 func _close_panels() -> void:

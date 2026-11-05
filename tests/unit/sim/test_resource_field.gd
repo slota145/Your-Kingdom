@@ -10,7 +10,8 @@ func test_tree_gives_logs_then_becomes_stump() -> void:
 	var field := _field()
 	var tree := SimFixture.registry().get_resource_node(&"tree")
 	field.place(Vector2i(3, 3), tree)
-	assert_bool(field.blocks_movement(Vector2i(3, 3))).is_true()
+	# Trees are walkable since M4b-2 (a dense forest only slows people down).
+	assert_bool(field.blocks_movement(Vector2i(3, 3))).is_false()
 	for i: int in tree.amount:
 		assert_int(field.take(Vector2i(3, 3))).is_equal(tree.per_gather)
 	assert_int(field.take(Vector2i(3, 3))).is_equal(0)
@@ -42,3 +43,10 @@ func test_round_trip() -> void:
 	assert_str(JSON.stringify(back.to_dict())).is_equal(text)
 	assert_int(back.amount(Vector2i(4, 2))).is_equal(tree.amount - 1)
 	assert_int(back.claimant(Vector2i(1, 2))).is_equal(33)
+
+
+func test_rock_blocks_movement_until_quarried() -> void:
+	var field := _field()
+	var rock := SimFixture.registry().get_resource_node(&"rock")
+	field.place(Vector2i(4, 4), rock)
+	assert_bool(field.blocks_movement(Vector2i(4, 4))).is_true()

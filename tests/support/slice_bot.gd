@@ -12,6 +12,9 @@ var sim: Simulation
 ## Seconds of game time -> actions still to do, in order.
 var _plan: Array[Dictionary] = []
 var log: PackedStringArray = PackedStringArray()
+## Units produced and sold to the merchant so far, by good (from the events).
+var produced: Dictionary[StringName, int] = {}
+var sold: Dictionary[StringName, int] = {}
 
 
 func _init(simulation: Simulation) -> void:
@@ -76,6 +79,11 @@ func _init(simulation: Simulation) -> void:
 		{"at": 3360, "build": &"brewery", "near": town + Vector2i(-2, -14)},
 		{"at": 3600, "build": &"meadery", "near": town + Vector2i(12, -14)},
 		{"at": 3600, "build": &"apiary", "near": town + Vector2i(22, 24)},
+		# M4b-2: meat (pigs bought from the travelling merchant) and selling surplus to him.
+		{"at": 1500, "build": &"pigsty", "near": town + Vector2i(-14, 22)},
+		{"at": 1560, "build": &"slaughterhouse", "near": town + Vector2i(-9, 23)},
+		{"at": 1560, "buy_pigs": 3},
+		{"at": 1560, "sell": {&"hides": 0, &"planks": 60, &"stone": 60}},
 	]
 	_plan.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["at"]) < int(b["at"]))
 
@@ -85,8 +93,13 @@ func run(seconds: int, on_minute: Callable = Callable()) -> void:
 	for second: int in seconds:
 		while not _plan.is_empty() and int(_plan[0]["at"]) <= second:
 			_do(_plan.pop_front())
-		sim.run_ticks(SimClock.TICKS_PER_SECOND)
-		sim.events.drain()
+		for i: int in SimClock.TICKS_PER_SECOND:
+			sim.step()
+			for e: Dictionary in sim.events.drain():
+				if e["type"] == &"good_produced":
+					produced[e["good"]] = produced.get(e["good"], 0) + int(e["amount"])
+				elif e["type"] == &"goods_sold":
+					sold[e["good"]] = sold.get(e["good"], 0) + int(e["amount"])
 		if second % 60 == 59 and on_minute.is_valid():
 			on_minute.call(second / 60 + 1)
 
@@ -114,7 +127,27 @@ func houses_at_level(level: int) -> int:
 	return n
 
 
+## Does the action later (not enough gold, the merchant not there yet).
+func _retry(action: Dictionary) -> void:
+	action["at"] = int(action["at"]) + GOLD_RETRY
+	_plan.append(action)
+	_plan.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["at"]) < int(b["at"]))
+
+
 func _do(action: Dictionary) -> void:
+	if action.has("sell"):
+		var sell: Dictionary = action["sell"]
+		for good: StringName in sell:
+			sim.execute(SetSellAboveCommand.new(good, int(sell[good])))
+		return
+	if action.has("buy_pigs"):
+		var left := int(action["buy_pigs"])
+		while left > 0 and sim.execute(BuyPigCommand.new()) == &"":
+			left -= 1
+		if left > 0:
+			action["buy_pigs"] = left
+			_retry(action)
+		return
 	var def := sim.data.get_building(action["build"])
 	var spot := find_spot(def, action["near"])
 	if spot == Agent.NO_TILE:
@@ -122,9 +155,7 @@ func _do(action: Dictionary) -> void:
 		return
 	var error := sim.execute(PlaceBuildingCommand.new(def.id, spot))
 	if error == &"not_enough_gold":
-		action["at"] = int(action["at"]) + GOLD_RETRY
-		_plan.append(action)
-		_plan.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["at"]) < int(b["at"]))
+		_retry(action)
 		return
 	if error != &"":
 		log.append("%s at %s: %s" % [def.id, spot, error])

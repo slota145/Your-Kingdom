@@ -13,6 +13,8 @@ const KIND_BUILD := &"build"
 const KIND_ERRAND := &"errand"
 ## A newcomer walking to their new house (agent.home_id).
 const KIND_MOVE_IN := &"move_in"
+## The travelling merchant's visit (M4b-2, ProvinceSim.merchant).
+const KIND_MERCHANT := &"merchant"
 
 var kind: StringName
 ## Recipe id for KIND_RECIPE.

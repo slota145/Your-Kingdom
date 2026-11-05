@@ -130,6 +130,7 @@ static func _need_met(province: ProvinceSim, building: BuildingState, need: Need
 	for good: StringName in need.goods:
 		while hunger >= 1.0 and building.supply.remove(good, 1) == 1:
 			hunger -= 1.0
+			province.ledger.used(good, 1, province.tick)
 			province.events.emit(&"good_consumed", {"building": building.id, "good": good,
 					"amount": 1})
 	# Unfed hunger does not pile up beyond one unit: the house is simply short.
@@ -156,13 +157,18 @@ static func _request_supplies(province: ProvinceSim, building: BuildingState) ->
 			if have * 2 > limit:
 				continue
 			var amount := mini(limit - have, ERRAND_LOAD)
-			while amount > 0 and province.nearest_source(good, amount, building.entrance_tile()) == 0:
+			# A market in range with the good on its stalls comes first (M4b-2).
+			var market := 0
+			while amount > 0:
+				market = province.market_source(good, amount, building)
+				if market != 0 or province.nearest_source(good, amount, building.entrance_tile()) != 0:
+					break
 				amount -= 1
 			if amount <= 0 or not building.supply.can_accept(good, amount):
 				continue
 			var agent := province.spawn_agent(HOUSEHOLDER_KIND, building.entrance_tile())
 			agent.home_id = building.id
-			TaskRunner.start_errand(agent, good, amount, building.id)
+			TaskRunner.start_errand(agent, good, amount, building.id, market)
 			house.errands[good] = agent.id
 
 

@@ -96,21 +96,21 @@ func test_demolishing_a_finished_building_refunds_half() -> void:
 	assert_int(sim.province.goods_total(&"wood")).is_equal(4)
 
 
-## Trees around [param rect] (its border), except the [param gaps].
-func _tree_ring(sim: Simulation, rect: Rect2i, gaps: Array[Vector2i] = []) -> void:
+## Rocks around [param rect] (its border), except the [param gaps]: a wall nobody passes.
+func _rock_ring(sim: Simulation, rect: Rect2i, gaps: Array[Vector2i] = []) -> void:
 	for y: int in range(rect.position.y, rect.end.y):
 		for x: int in range(rect.position.x, rect.end.x):
 			var tile := Vector2i(x, y)
 			var border := x == rect.position.x or y == rect.position.y \
 					or x == rect.end.x - 1 or y == rect.end.y - 1
 			if border and not gaps.has(tile):
-				SimFixture.plant_trees(sim, Rect2i(tile, Vector2i.ONE))
+				SimFixture.place_nodes(sim, Rect2i(tile, Vector2i.ONE), &"rock")
 
 
 func test_building_people_cannot_reach_is_refused() -> void:
 	var sim := SimFixture.make_sim()
 	SimFixture.village(sim)
-	_tree_ring(sim, Rect2i(18, 18, 7, 7))
+	_rock_ring(sim, Rect2i(18, 18, 7, 7))
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"well", Vector2i(21, 21))))) \
 			.is_equal("no_access")
 
@@ -120,7 +120,7 @@ func test_building_that_walls_off_an_entrance_is_refused() -> void:
 	SimFixture.village(sim)
 	# A walled garden with a 2-tile gate and a well inside.
 	var gate: Array[Vector2i] = [Vector2i(21, 18), Vector2i(22, 18)]
-	_tree_ring(sim, Rect2i(18, 18, 7, 7), gate)
+	_rock_ring(sim, Rect2i(18, 18, 7, 7), gate)
 	SimFixture.place(sim, &"well", Vector2i(21, 21))
 	# A hut in the gate, its door to the garden, would seal the well off.
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"woodcutter", Vector2i(21, 17), false, 1)))) \
@@ -140,9 +140,9 @@ func test_builder_skips_a_site_they_cannot_reach() -> void:
 	var near: BuildingState = sim.province.buildings.get_building(sim.ids.next_id - 2)
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"well", Vector2i(20, 14))))).is_equal("")
 	var far: BuildingState = sim.province.buildings.get_building(sim.ids.next_id - 2)
-	# The near site has its materials but trees grew all around it (no way in).
+	# The near site has its materials but rocks lie all around it (no way in).
 	_site_of(sim, near).stock.add(&"wood", 2)
-	_tree_ring(sim, Rect2i(13, 7, 3, 3))
+	_rock_ring(sim, Rect2i(13, 7, 3, 3))
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return far.is_complete(), 120)).is_true()
 	assert_bool(near.is_complete()).is_false()
 	assert_array(Array(sim.province.dangling_holds())).is_empty()

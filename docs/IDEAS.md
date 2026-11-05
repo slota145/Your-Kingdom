@@ -91,11 +91,15 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
   - **Przyjęte do M4b (2026-11-05).**
 - [Claude] **Straganiarze na targowisku:** w M4a targowisko jest tylko usługą z zasięgiem. Docelowo (GDD §3.2) straganiarze przynoszą towary z magazynu na kramy, a domownicy kupują na targu zamiast chodzić do magazynu.
   - Ocena: koszt średni. Dużo życia na ulicach.
-  - **Przyjęte do M4b (2026-11-05).**
+  - **Przyjęte do M4b (2026-11-05).** Zrobione w M4b-2: 2 straganiarzy, kramy z jedzeniem, napitkami, ubraniami i opałem.
 - [Claude] **Na co wydawać złoto:** w M4a złota szybko przybywa (po godzinie ok. 1000), a wydaje się je tylko na 4 budynki. Kupiec wędrowny (M4b) i utrzymanie budynków dadzą mu sens.
   - Ocena: do strojenia razem z kupcem w M4b.
+  - M4b-2: kupiec kupuje nadwyżki (złoto przybywa) i sprzedaje świnie po 30 złota (złoto ubywa). Utrzymanie budynków nadal czeka.
 - [Właściciel] **Pola przy pasiece i owczarni** (2026-11-05): tak jak farma, pasieka i owczarnia stawiają kafelki 1×1 w swoim zasięgu. Pasieka stawia ule, a owczarnia kawałki zagrody z owcami. Sąsiednie kafelki owczarni łączą się w jedną zagrodę z płotem tylko na obwodzie.
   - Otwarte: czy owce pojawiają się same, czy trzeba je kupić od kupca wędrownego (M4b-2).
+  - [Właściciel] **Świnie w zagrodach** (2026-11-05): świnie żyją w zagrodach jak owce. Na start kupujemy od kupca co najmniej 2 świnie, potem się rozmnażają; więcej świń = szybsze rozmnażanie, można dokupić. Suwak „ile świń zostawiamy do rozmnażania”. Rzeźnik albo kupiec zabiera dorosłą świnię.
+    - **Przyjęte częściowo do M4b-2 (ankieta 2026-11-05):** wersja prosta (chlew jako żywy magazyn świń, rozmnażanie do pojemności chlewu, kupno od kupca, ostatnie 2 świnie zostają, rzeźnik prowadzi świnię). Zagrody kafelkami z płotem, zwierzęta chodzące po zagrodzie i suwak stada: osobny etap razem z owcami.
+    - Ocena (Claude): suwak stada to zabezpieczenie przed wybiciem stada, a rozmnażanie musi mieć górną granicę (pojemność zagrody). Zagrody wspólne dla świń i owiec: robimy raz, używamy dwa razy.
   - Ocena (Claude): dobrze pasuje do „widocznej pracy”. Pasterz chodzi między owcami w zagrodzie, a pszczelarz od ula do ula. Kafelki to te same pola co przy farmie, więc reszta logiki jest gotowa. Nowe są grafiki ula i zagrody (płot łączony jak mury) oraz owce jako małe postacie, które chodzą po zagrodzie. Koszt średni. Propozycja do decyzji: owce rozmnażają się same w zagrodzie, a pierwsze 2 owce przynosi kupiec. Wtedy kupiec ma sens, a gracz nie musi ich ciągle dokupywać. Kiedy: razem z M4b-2 (kupiec) albo zaraz po M4b-1.5.
 
 - [Claude] **Obracanie budynków (np. klawisz R):** gracz sam wybiera, z której strony budynek ma wejście. Pomysł powstał po błędzie z chatą rybaka, która stała drzwiami do rzeki (2026-11-05). Właściciel projektu chce go zapisać.

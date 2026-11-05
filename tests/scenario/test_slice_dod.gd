@@ -65,7 +65,7 @@ func test_two_hours_without_deadlocks() -> void:
 		if not holds.is_empty():
 			stuck.append("minute %d: %s" % [minute, ", ".join(holds)])
 		for agent: Agent in sim.province.agents.all():
-			if agent.task == null:
+			if agent.task == null or _waits_for_room(sim, agent):
 				seen.erase(agent.id)
 				continue
 			var last: Array = seen.get(agent.id, [])
@@ -81,9 +81,24 @@ func test_two_hours_without_deadlocks() -> void:
 					for need: NeedDef in b.level_def().needs:
 						if need.is_basic and not b.house.satisfied.get(need.id, false):
 							unmet[need.id] = int(unmet.get(need.id, 0)) + 1
-			produced[minute] = "bread %d, wood %d, supplied %d, unmet %s" % [sim.province.goods_total(&"bread"),
-					sim.province.goods_total(&"wood"), bot.supplied_houses(2), unmet])
+			produced[minute] = "bread %d, wood %d, pigs %d, meat made %d, supplied %d, unmet %s" % [
+					sim.province.goods_total(&"bread"), sim.province.goods_total(&"wood"),
+					sim.province.goods_total(&"pig"), bot.produced.get(&"meat", 0), bot.supplied_houses(2), unmet])
 	assert_array(stuck).is_empty()
+	# M4b-2: the meat chain runs on pigs bought from the merchant, who also buys the surplus.
+	print("sold to the merchant: ", bot.sold)
+	assert_int(int(bot.produced.get(&"meat", 0))).is_greater(0)
+	assert_int(sim.province.goods_total(&"pig")).is_greater_equal(2)
+	assert_int(int(bot.sold.get(&"hides", 0))).is_greater(0)
 	# Goods keep flowing late in the game: burghers are still supplied after 2 hours.
 	print("every 20 minutes: ", produced)
 	assert_int(bot.supplied_houses(2)).is_greater_equal(6)
+
+
+## A worker waiting with his output because every storage and his yard are full is not stuck
+## (M4b-2): he goes on as soon as there is room.
+func _waits_for_room(sim: Simulation, agent: Agent) -> bool:
+	if not agent.task.bb.has("_yard_full"):
+		return false
+	var yard := sim.province.storage(ProvinceSim.yard_id(agent.workplace_id))
+	return yard != null and not yard.can_accept(agent.carry_good, agent.carry_amount) 			and sim.province.nearest_sink(agent.carry_good, agent.carry_amount, agent.tile()) == 0

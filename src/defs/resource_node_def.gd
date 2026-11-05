@@ -10,6 +10,9 @@ extends GameDef
 @export_range(1, 99) var per_gather: int = 1
 ## Whether a non-depleted node blocks movement.
 @export var solid: bool = true
+## Walking cost of the tile while the node stands on it (a forest slows people down, M4b-2);
+## 0 = the terrain's cost.
+@export_range(0.0, 10.0) var move_cost: float = 0.0
 ## The last gathering also takes what is left (the stump of a tree goes with the last log),
 ## so the tile becomes free ground (owner decision 2026-11-05).
 @export var remove_when_depleted: bool = false

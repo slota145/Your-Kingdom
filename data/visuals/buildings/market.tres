@@ -5,3 +5,6 @@
 [resource]
 script = ExtResource("1_vis")
 art_id = "market"
+spot_offsets = Dictionary[StringName, Vector2]({
+&"stall": Vector2(-8, -12)
+})

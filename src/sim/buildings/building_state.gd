@@ -8,8 +8,13 @@ enum Priority { HIGH, NORMAL, LOW }
 
 ## Units of a workshop's input store per good.
 const INPUT_UNITS := 2
+## Units a market stall holds per good (M4b-2).
+const STALL_UNITS := 6
 ## Highest reserve the player can set in a storage.
 const MAX_RESERVE := 60
+## A production yard holds this share of a storage slot (half a stack, M4b-2). A herd (a
+## pigsty's animals) is a yard too.
+const YARD_DIVISOR := 2
 
 var id: int
 var def: BuildingDef
@@ -30,6 +35,10 @@ var stock: Stockpile
 ## Private pantry of a house (only its householders deliver here, nobody takes from it), or
 ## the input store of a workshop with def.input_goods (only its workers use it).
 var supply: Stockpile
+## Production yard (M4b-2): the stack beside a workshop where its workers put their output
+## while no storage has room. Anybody may take from it; porters bring it to a storage once
+## there is room. Addressed as storage id -id (ProvinceSim.yard_id).
+var yard: Stockpile
 ## Storage: good -> units construction deliveries leave in place.
 var reserves: Dictionary[StringName, int] = {}
 var priority: Priority = Priority.NORMAL
@@ -39,6 +48,8 @@ var paused: bool = false
 var serving_until: int = 0
 ## Forester: tiles the player marked for planting (M4b-1.5); empty = anywhere in range.
 var plant_area: Array[Vector2i] = []
+## Herd (pigsty): ticks of breeding towards the next young animal.
+var breed_ticks: int = 0
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
@@ -61,11 +72,64 @@ func finish(data: DataRegistry) -> void:
 	if not def.input_goods.is_empty() and supply == null:
 		supply = Stockpile.new(def.input_goods.size(), data)
 		supply.stack_limit = INPUT_UNITS
+	ensure_stalls(data)
+	ensure_yard(data)
 	if def.is_house() and house == null:
 		house = HouseState.new()
 		var goods := house_goods()
 		supply = Stockpile.new(maxi(goods.size(), 1), data)
 		supply.stack_limit = level_def().supply_units
+
+
+## Gives a finished market its stalls (also for saves from before M4b-2): a slot per stall
+## good, STALL_UNITS each. Only its stallholders fill them, householders buy from them.
+func ensure_stalls(data: DataRegistry) -> void:
+	if def.stall_goods.is_empty() or supply != null or under_construction:
+		return
+	supply = Stockpile.new(def.stall_goods.size(), data)
+	supply.stack_limit = STALL_UNITS
+	supply.one_slot_per_good = true
+
+
+## Gives a finished workshop its production yard (also for saves from before M4b-2).
+func ensure_yard(data: DataRegistry) -> void:
+	if yard != null or under_construction:
+		return
+	if def.herd_good != &"":
+		# A herd is a yard of one slot holding up to herd_capacity animals.
+		yard = Stockpile.new(1, data)
+		yard.stack_limit = def.herd_capacity
+		return
+	var goods := yard_goods(def, data)
+	if goods.is_empty():
+		return
+	yard = Stockpile.new(goods.size(), data)
+	yard.stack_divisor = YARD_DIVISOR
+
+
+## What the workers of a building of [param building_def] bring to storages (one yard slot
+## each); empty for storages, houses and buildings whose cycle delivers nothing.
+static func yard_goods(building_def: BuildingDef, data: DataRegistry) -> Array[StringName]:
+	var goods: Array[StringName] = []
+	if building_def.recipe == null or building_def.storage_slots > 0 or building_def.is_house():
+		return goods
+	var delivers := false
+	for step: StepDef in building_def.recipe.steps:
+		var good: StringName = &""
+		if step is DeliverStepDef:
+			delivers = true
+		elif step is ProduceStepDef:
+			good = (step as ProduceStepDef).output
+		elif step is FieldStepDef:
+			good = (step as FieldStepDef).harvest_good
+		elif step is GoToStepDef and (step as GoToStepDef).target == &"resource":
+			var node := data.get_resource_node((step as GoToStepDef).resource)
+			good = node.good if node != null else &""
+		if good != &"" and not goods.has(good):
+			goods.append(good)
+	if not delivers:
+		goods.clear()
+	return goods
 
 
 func is_complete() -> bool:
@@ -139,6 +203,9 @@ func to_dict() -> Dictionary:
 		d["stock"] = stock.to_dict()
 	if supply != null:
 		d["supply"] = supply.to_dict()
+	if yard != null and not yard.is_empty():
+		# An empty yard is rebuilt from the data on load (saves stay as before M4b-2).
+		d["yard"] = yard.to_dict()
 	if house != null:
 		d["house"] = house.to_dict()
 	if not reserves.is_empty():
@@ -159,6 +226,8 @@ func to_dict() -> Dictionary:
 		d["plant_area"] = area
 	if serving_until != 0:
 		d["serving_until"] = serving_until
+	if breed_ticks != 0:
+		d["breed"] = breed_ticks
 	return d
 
 
@@ -172,6 +241,11 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 		b.stock = Stockpile.from_dict(d["stock"], data)
 	if d.has("supply"):
 		b.supply = Stockpile.from_dict(d["supply"], data)
+	if d.has("yard"):
+		b.yard = Stockpile.from_dict(d["yard"], data)
+	else:
+		b.ensure_yard(data)
+	b.ensure_stalls(data)
 	if d.has("house"):
 		b.house = HouseState.from_dict(d["house"])
 		# A pantry needs a slot per good any level uses; the data may have added goods.
@@ -184,5 +258,6 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	for t: Variant in d.get("plant_area", []):
 		b.plant_area.append(SimCodec.to_vec2i(t))
 	b.serving_until = int(d.get("serving_until", 0))
+	b.breed_ticks = int(d.get("breed", 0))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

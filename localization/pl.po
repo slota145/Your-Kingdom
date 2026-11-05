@@ -375,6 +375,12 @@ msgstr "plac budowy (%s)"
 msgid "ui.doing.ground"
 msgstr "na ziemię"
 
+msgid "ui.doing.yard"
+msgstr "stos przy budynku"
+
+msgid "ui.doing.yard_full"
+msgstr "czeka: stos przy budynku jest pełny"
+
 msgid "ui.doing.go_to"
 msgstr "idzie do: %s"
 
@@ -519,8 +525,8 @@ msgstr "Wejście wychodzi na wodę. Przesuń budynek."
 msgid "ui.command_error.bad_orientation"
 msgstr "Tego budynku nie da się tak obrócić."
 
-msgid "ui.reason.forest_full"
-msgstr "las w zasięgu jest pełny"
+msgid "ui.reason.yard_full"
+msgstr "stos przy budynku jest pełny"
 
 msgid "ui.reason.no_plant_spot"
 msgstr "brak wolnego miejsca do sadzenia"
@@ -663,7 +669,7 @@ msgid "building.market.name"
 msgstr "Targowisko"
 
 msgid "building.market.desc"
-msgstr "Plac z kramami. Mieszczanie w jego zasięgu są bardziej zadowoleni."
+msgstr "Plac z kramami. Straganiarze przynoszą z magazynów jedzenie, napitki, ubrania i opał. Domy w zasięgu kupują tutaj i są bardziej zadowolone. Tu staje kupiec wędrowny."
 
 msgid "resource_node.rock.name"
 msgstr "Skała"
@@ -1227,3 +1233,202 @@ msgstr "Tekstylia"
 
 msgid "ui.build.tab.storage"
 msgstr "Magazyny"
+
+# M4b-2: meat
+
+msgid "good.pig.name"
+msgstr "Świnie"
+
+msgid "good.pig.desc"
+msgstr "Hodowane w chlewie. Rzeźnik prowadzi świnię do rzeźni. Pierwsze świnie sprzedaje kupiec wędrowny."
+
+msgid "good.meat.name"
+msgstr "Mięso"
+
+msgid "good.meat.desc"
+msgstr "Z rzeźni. Mieszczanie i patrycjusze jedzą je zamiast ryb."
+
+msgid "good.hides.name"
+msgstr "Skóry"
+
+msgid "good.hides.desc"
+msgstr "Z rzeźni. Na razie dobrze sprzedają się kupcowi wędrownemu."
+
+msgid "building.pigsty.name"
+msgstr "Chlew"
+
+msgid "building.pigsty.desc"
+msgstr "Świniarz karmi świnie w zagrodzie. Od 2 świń stado samo się powiększa, tym szybciej, im jest większe. Ostatnie 2 świnie zawsze zostają."
+
+msgid "building.slaughterhouse.name"
+msgstr "Rzeźnia"
+
+msgid "building.slaughterhouse.desc"
+msgstr "Rzeźnik prowadzi świnię z chlewu, robi z niej 2 mięsa i skórę, i odnosi je do magazynu."
+
+msgid "recipe.pig_keeping.name"
+msgstr "Hodowla świń"
+
+msgid "recipe.pig_keeping.desc"
+msgstr "Świniarz karmi świnie i sprząta chlew. Stado rośnie, gdy ma co najmniej 2 świnie."
+
+msgid "recipe.butchering.name"
+msgstr "Ubój"
+
+msgid "recipe.butchering.desc"
+msgstr "Rzeźnik prowadzi świnię, robi z niej mięso i skórę."
+
+msgid "ui.kind.swineherd"
+msgstr "Świniarz"
+
+msgid "ui.kind.butcher"
+msgstr "Rzeźnik"
+
+msgid "ui.activity.feed"
+msgstr "karmi świnie"
+
+msgid "ui.activity.muck"
+msgstr "sprząta chlew"
+
+msgid "ui.activity.slaughter"
+msgstr "rozbiera świnię"
+
+msgid "ui.activity.skin"
+msgstr "oprawia skórę"
+
+msgid "good.pig.count"
+msgid_plural "good.pig.count_plural"
+msgstr[0] "%s świnia"
+msgstr[1] "%s świnie"
+msgstr[2] "%s świń"
+
+msgid "good.meat.count"
+msgid_plural "good.meat.count_plural"
+msgstr[0] "%s połeć mięsa"
+msgstr[1] "%s połcie mięsa"
+msgstr[2] "%s połci mięsa"
+
+msgid "good.hides.count"
+msgid_plural "good.hides.count_plural"
+msgstr[0] "%s skóra"
+msgstr[1] "%s skóry"
+msgstr[2] "%s skór"
+
+msgid "ui.building.herd"
+msgstr "Świnie w stadzie: %d z %d (ostatnie %d zawsze zostają)"
+
+msgid "ui.building.herd_too_small"
+msgstr "Stado rośnie od 2 świń. Kupisz je u kupca wędrownego."
+
+msgid "ui.building.yard"
+msgstr "Stos przy budynku: %s"
+
+# M4b-2: market, merchant, stocks
+
+msgid "ui.hud.stocks"
+msgstr "Zapasy"
+
+msgid "ui.stocks.title"
+msgstr "Zapasy królestwa"
+
+msgid "ui.stocks.hint"
+msgstr "Zapasy to suma z magazynów, stosów przy budynkach, chlewów, kramów i ziemi. Produkcja i zużycie na minutę to średnia z ostatnich 5 minut. Zaznacz towar, a kupiec wędrowny kupi wszystko, co jest ponad wpisaną liczbę."
+
+msgid "ui.stocks.good"
+msgstr "Towar"
+
+msgid "ui.stocks.stock"
+msgstr "Zapas"
+
+msgid "ui.stocks.made"
+msgstr "+ /min"
+
+msgid "ui.stocks.used"
+msgstr "− /min"
+
+msgid "ui.stocks.balance"
+msgstr "Bilans"
+
+msgid "ui.stocks.sell"
+msgstr "Sprzedaż kupcowi"
+
+msgid "ui.stocks.sell_hint"
+msgstr "Kupiec kupi wszystko ponad tę liczbę sztuk. Odznacz, żeby nic nie sprzedawać."
+
+msgid "ui.stocks.price"
+msgstr "po %d zł"
+
+msgid "ui.stocks.not_for_sale"
+msgstr "nie na sprzedaż"
+
+msgid "ui.market.trade"
+msgstr "Zapasy i handel"
+
+msgid "ui.market.buy_pig"
+msgstr "Kup świnię (%d zł, zostało %d)"
+
+msgid "ui.market.buy_pig_hint"
+msgstr "Tragarz zaprowadzi świnię do najbliższego chlewu z miejscem."
+
+msgid "ui.market.stalls"
+msgstr "Na kramach: %s"
+
+msgid "ui.market.merchant_due"
+msgstr "Kupiec wędrowny przyjedzie za ok. %d min."
+
+msgid "ui.market.merchant_coming"
+msgstr "Kupiec wędrowny jedzie na targ."
+
+msgid "ui.market.merchant_here"
+msgstr "Kupiec handluje jeszcze %d s. Zarobek: %d zł."
+
+msgid "ui.market.nothing_for_sale"
+msgstr "Nic nie sprzedajesz. Zaznacz towary w oknie „Zapasy i handel”."
+
+msgid "ui.market.merchant_leaving"
+msgstr "Kupiec odjeżdża. Zarobek: %d zł."
+
+msgid "ui.note.merchant_arrived"
+msgstr "Kupiec wędrowny rozłożył się przy targowisku."
+
+msgid "ui.note.merchant_left"
+msgstr "Kupiec wędrowny odjechał. Zarobek: %d zł."
+
+msgid "ui.command_error.merchant_away"
+msgstr "Kupca nie ma teraz na targu."
+
+msgid "ui.command_error.no_pigs_left"
+msgstr "Kupiec nie ma już świń."
+
+msgid "ui.command_error.no_room_for_pigs"
+msgstr "Brak chlewu z wolnym miejscem."
+
+msgid "ui.command_error.not_for_sale"
+msgstr "Tego towaru nie sprzedaje się kupcowi."
+
+msgid "ui.reason.stalls_full"
+msgstr "kramy są pełne"
+
+msgid "ui.kind.merchant"
+msgstr "Kupiec wędrowny"
+
+msgid "ui.kind.stallholder"
+msgstr "Straganiarz"
+
+msgid "ui.activity.sell"
+msgstr "zachwala towar"
+
+msgid "recipe.stall_keeping.name"
+msgstr "Handel na targu"
+
+msgid "recipe.stall_keeping.desc"
+msgstr "Straganiarz przynosi z magazynu towar, którego na kramach jest najmniej, i zachwala go kupującym."
+
+msgid "ui.stocks.rate"
+msgstr "%.1f"
+
+msgid "ui.stocks.balance_value"
+msgstr "%+.1f"
+
+msgid "ui.building.stalls_empty"
+msgstr "Nie działa: kramy są puste. Straganiarze przyniosą towar z magazynów."

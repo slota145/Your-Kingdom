@@ -15,7 +15,10 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 				return failed(agent, &"no_source")
 		for good: StringName in step.consume:
 			store.remove(good, step.consume[good])
+			province.ledger.used(good, step.consume[good], province.tick)
 	var used := agent.carry_good
+	province.ledger.used(used, agent.carry_amount, province.tick)
+	province.ledger.made(step.output, step.amount, province.tick)
 	agent.carry_good = step.output
 	agent.carry_amount = step.amount
 	province.events.emit(&"good_produced", {"agent": agent.id, "good": step.output,

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BuildingDef" format=3]
 
 [ext_resource type="Script" path="res://src/defs/building_def.gd" id="1_bld"]
-
+[ext_resource type="Resource" path="res://data/recipes/stall_keeping.tres" id="2_recipe"]
 
 [resource]
 script = ExtResource("1_bld")
@@ -14,6 +14,9 @@ build_cost = Dictionary[StringName, int]({
 })
 build_time = 30.0
 gold_cost = 40
+worker_kinds = Array[StringName]([&"stallholder", &"stallholder"])
+recipe = ExtResource("2_recipe")
+stall_goods = Array[StringName]([&"bread", &"fish", &"meat", &"beer", &"mead", &"clothes", &"wood"])
 service_radius = 22
-
+service_needs_supply = true
 id = &"market"

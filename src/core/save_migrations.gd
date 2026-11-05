@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 6
+const CURRENT_VERSION := 7
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -25,6 +25,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 6:
 		result = migrate_v5_to_v6(result)
 		version = 6
+	if version < 7:
+		result = migrate_v6_to_v7(result)
+		version = 7
 	return result
 
 
@@ -93,4 +96,20 @@ static func migrate_v5_to_v6(state: Dictionary) -> Dictionary:
 	var province: Dictionary = state["province"]
 	for building: Variant in province.get("buildings", []):
 		(building as Dictionary)["orient"] = 0
+	return state
+
+
+## M4b-2: hut pantries get a slot for meat (burghers and patricians eat meat or fish), and
+## the travelling merchant is away, due for his first visit 10 minutes into the game (at once
+## in an older town) with nothing to sell. Production yards, herds and breeding start empty
+## and are not written while empty.
+static func migrate_v6_to_v7(state: Dictionary) -> Dictionary:
+	var province: Dictionary = state["province"]
+	province["merchant"] = {"state": 0, "next": 6000}
+	for building: Variant in province.get("buildings", []):
+		var b := building as Dictionary
+		if b["def"] == "hut" and b.has("supply"):
+			var slots: Array = (b["supply"] as Dictionary)["slots"]
+			while slots.size() < 7:
+				slots.append(["", 0])
 	return state

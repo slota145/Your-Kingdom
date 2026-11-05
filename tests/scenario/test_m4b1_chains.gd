@@ -299,19 +299,24 @@ func test_forester_plants_only_in_the_marked_area() -> void:
 	assert_int(lodge.plant_area.size()).is_equal(0)
 
 
-func test_forester_in_a_full_forest_waits_and_says_why() -> void:
+func test_forester_without_room_waits_and_says_why() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	_village_with(sim, {})
 	var lodge := SimFixture.place(sim, &"forester", Vector2i(20, 20))
-	SimFixture.plant_trees(sim, Rect2i(24, 14, 6, 6))
-	assert_bool(sim.province.forest_full(lodge, &"tree")).is_true()
+	# No limit on trees since M4b-2: he waits only when every free tile in range is a tree.
+	var area := Rect2i(lodge.origin, lodge.def.footprint).grow(lodge.def.work_radius) 			.intersection(Rect2i(Vector2i.ZERO, Vector2i(40, 40)))
+	for y: int in range(area.position.y, area.end.y):
+		for x: int in range(area.position.x, area.end.x):
+			if sim.province.can_plant(Vector2i(x, y)):
+				SimFixture.plant_trees(sim, Rect2i(Vector2i(x, y), Vector2i.ONE))
+	assert_bool(sim.province.find_plant_spot(lodge, &"tree", lodge.entrance_tile()) == Agent.NO_TILE).is_true()
 	var reasons: Dictionary = {}
 	for i: int in SimFixture.ticks(30):
 		sim.step()
 		for event: Dictionary in sim.events.drain():
 			if event["type"] == &"task_failed":
 				reasons[event.get("reason", &"")] = true
-	assert_bool(reasons.has(&"forest_full")).override_failure_message(str(reasons)).is_true()
+	assert_bool(reasons.has(&"no_plant_spot")).override_failure_message(str(reasons)).is_true()
 
 
 ## A felled tree taken with its stump leaves grass where the forest floor was.

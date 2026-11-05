@@ -5,7 +5,8 @@ extends GameDef
 ## Grouping used by UI and needs, e.g. &"building_material", &"food".
 @export var category: StringName = &""
 ## How a person carries it; selects the walk_carry_<category> animation (ART_SPEC §4.3).
-@export_enum("sack", "crate", "barrel", "log", "basket", "bundle", "stone")
+## "animal": a live animal led beside the person (M4b-2), kept only in herds (a pigsty).
+@export_enum("sack", "crate", "barrel", "log", "basket", "bundle", "stone", "animal")
 var carry_category: String = "crate"
 ## Units per stockpile slot.
 @export_range(1, 999) var stack_size: int = 20
@@ -13,6 +14,11 @@ var carry_category: String = "crate"
 @export_range(0, 9999) var base_price: int = 1
 ## Rare goods exist only in some provinces.
 @export var is_rare: bool = false
+
+
+## Whether it is a live animal: it lives in a herd, never in a storage (M4b-2).
+func is_live() -> bool:
+	return carry_category == "animal"
 
 
 func get_kind() -> StringName:

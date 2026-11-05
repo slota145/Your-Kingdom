@@ -354,6 +354,66 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Leśniczy i wejścia (trzecia gra właściciela, 2026-11-05):** postać wchodząca do budynku płynnie znika w drzwiach, a wychodząca pojawia się (tylko widok; ludzie odpoczywający w środku nie są rysowani, pracujący przy stanowisku tak). Leśniczy przy pełnym lesie (30 drzew w zasięgu) pisze „las w zasięgu jest pełny”, a gdy nie ma gdzie sadzić, „brak wolnego miejsca do sadzenia”. W panelu leśniczówki „Miejsce sadzenia”: przeciągasz myszą po kaflach w zasięgu i leśniczy sadzi tylko tam (zapis `plant_area`); „Wyczyść miejsce sadzenia” wraca do całego zasięgu. Ścięte drzewo zabrane z pniakiem zmienia ściółkę leśną pod sobą w trawę.
 - **Tawerna:** test daje 3 minuty na 2 podania zamiast 2,5 (droga przez drzwi jest odrobinę dłuższa).
 
+#### M4b-2 — Mięso, targ i kupiec
+
+**Decyzje (2026-11-05, ankieta z właścicielem projektu):**
+- **Stos przy budynku:** gdy żaden magazyn nie ma miejsca, pracownik odkłada wyrób na stos przy swoim budynku. Stos mieści **pół pola magazynu** danego towaru (np. 10 drewna, 6 piw). Gdy stos jest pełny, pracownik czeka przy budynku (powód w panelu). Stos jest **wspólny**: warsztaty, domownicy i budowy biorą z niego jak z magazynu, a tragarze odnoszą go do magazynu, gdy zwolni się miejsce. Koniec zawalania ziemi drewnem.
+- **Gęsty las:** **wszystkie** drzewa (z mapy i posadzone) są przechodnie. Przez las idzie się **1,5× wolniej** niż po trawie, tak jak dziś po ściółce. Kafel z drzewem nadal blokuje stawianie budynków, dróg i pól.
+- **Leśniczy sadzi kafel w kafel, bez limitu drzew:** sadzi, dopóki ma wolne miejsce w zasięgu albo w „Miejscu sadzenia”. Nigdy na drogach, polach, kaflach przed drzwiami ani tuż przy budynkach.
+- **Świnie (wersja prosta):** chlew jest „żywym magazynem” świń. Świnie rozmnażają się same, tym szybciej, im więcej ich jest, aż do pojemności chlewu. Pierwsze 2 świnie trzeba **kupić od kupca**, potem można dokupić więcej, żeby stado rosło szybciej. **Ostatnie 2 świnie zawsze zostają** (zabezpieczenie przed wybiciem stada). Rzeźnik przychodzi do chlewu po dorosłą świnię i **prowadzi ją do rzeźni** (świnia idzie obok niego jak niesiony towar). Rzeźnik robi mięso i skóry.
+- **Później, osobny etap razem z owcami:** zagrody stawiane kafelkami z płotem, zwierzęta chodzące po zagrodzie i suwak „ile świń zostawiamy do rozmnażania” (IDEAS).
+- **Skóry** w M4b-2 służą tylko na sprzedaż kupcowi. Garbarz i zbroje skórzane dojdą z wojskiem (M7).
+- **Kupiec wędrowny:** wóz przyjeżdża z krawędzi mapy **co ok. 10 minut** gry i stoi **3 minuty przy targowisku**. Bez targowiska nie przyjeżdża. Tragarze noszą do wozu nadwyżki z magazynów (widoczna praca).
+- **Ceny stałe, próg gracza:** każdy towar ma stałą cenę skupu według długości łańcucha. Gracz ustawia przy towarze „sprzedawaj powyżej N sztuk”. Domyślnie kupiec nic nie skupuje.
+- **Kupiec sprzedaje tylko świnie** (przycisk w panelu targowiska). Inne towary na sprzedaż później.
+- **Straganiarze:** noszą z magazynu na kramy wszystko, czego potrzebują domy: chleb, ryby, mięso, piwo, miód pitny, ubrania i drewno opałowe. Domownicy w zasięgu targowiska kupują na kramach zamiast iść do magazynu. Targowisko działa w zasięgu tylko wtedy, gdy kramy mają towar (jak tawerna).
+- **Okno „Zapasy królestwa”:** przycisk na górnym pasku. Dla każdego towaru: ile jest we wszystkich magazynach i na stosach, ile powstaje i ile się zużywa na minutę (**średnia z ostatnich 5 minut** gry), a różnica na zielono lub czerwono.
+
+**Kolejność prac:** najpierw stos przy budynku i gęsty las (część 1, sprawdzona testami przed resztą), potem mięso (część 2), na końcu targ, kupiec i okno zapasów (część 3). Jedna ocena gry na końcu etapu.
+
+**Zakres:**
+- część 1: stos przy budynku produkcyjnym (nowy rodzaj magazynu przy budynku: źródło dla wszystkich, zlecenia tragarzy do magazynu), czekanie pracownika przy pełnym stosie, grafika stosu przy budynku; drzewa przechodnie z kosztem lasu, leśniczy sadzący kafel w kafel bez limitu,
+- część 2: chlew (świnie, rozmnażanie, pojemność, rezerwa 2 świń), rzeźnia (świnia → mięso + skóry), rzeźnik prowadzący świnię, mięso jako potrzeba mieszczan i patrycjuszy („mięso lub ryby”, GDD §3.2), nowe towary: świnie, mięso, skóry,
+- część 3: kupiec wędrowny (przyjazd, postój przy targowisku, skup według progów, sprzedaż świń, złoto), panel targowiska z progami sprzedaży i kupnem świń, straganiarze i kramy, zakupy domowników na targu, okno „Zapasy królestwa” z licznikami na minutę,
+- grafika rysowana kodem: chlew, rzeźnia, świnia (prowadzona), wóz kupca, kramy z towarem, stos przy budynku, zawody: świniarz, rzeźnik, straganiarz, kupiec,
+- zapis: wersja 7 z migracją, fixturą i testem; teksty PL i EN; aktualizacja GDD §3.2, §4.1, §4.3, §4.6 i ARCHITECTURE §5.2, §5.3, §8.
+
+**Poza zakresem:** zagrody kafelkami i zwierzęta chodzące po zagrodzie, suwak stada, owce od kupca, garbarz, kupiec sprzedający inne towary niż świnie, wahania cen, wozy i bruk (M4b-3).
+
+**DoD:**
+- [x] Przy pełnych magazynach pracownicy odkładają wyroby na stos przy budynku i czekają, gdy stos jest pełny. Na ziemi nie ma kup z produkcji. Po zwolnieniu miejsca tragarze odnoszą stosy do magazynu (`tests/unit/sim/economy/test_yard.gd`, `test_failures.gd`).
+- [x] Postacie przechodzą przez las wolniej niż po trawie. Leśniczy sadzi kafel w kafel i nigdy na drogach, polach, kaflach przed drzwiami ani tuż przy budynkach (`tests/unit/sim/test_forest.gd`). Las przy drwalu nie znika przez 2 godziny gry (`test_m4b1_chains.gd`).
+- [x] Łańcuch mięsa ma test scenariuszowy z licznikami: kupno świń, rozmnażanie do pojemności, rzeźnik prowadzi świnię, mięso i skóry w magazynie, ostatnie 2 świnie zostają (`tests/scenario/test_m4b2_chains.gd`).
+- [x] Kupiec przyjeżdża co ok. 10 minut, skupuje tylko ponad progi gracza i płaci złotem; bez targowiska nie przyjeżdża (`test_m4b2_chains.gd`).
+- [x] Domownicy w zasięgu targowiska z towarem kupują na kramach, a bez towaru na kramach idą do magazynu (`test_m4b2_chains.gd`).
+- [x] Okno „Zapasy królestwa” pokazuje sumę ze wszystkich magazynów i stosów, zgodną z symulacją, oraz produkcję i zużycie na minutę (`test_goods_ledger.gd`; okno obejrzane na zrzucie z laptopa, `town_shot.tscn --stocks`).
+- [x] Automatyczny gracz dalej dochodzi do patrycjuszy w limicie (6 domów mieszczan w 29. minucie, 4 kamienice w 72.), a mieszczanie jedzą też mięso: chlew i rzeźnia od 25. minuty, w 2 godziny 86 mięsa (`test_slice_dod.gd`).
+- [x] Brak zakleszczeń przez 2 godziny przy 4×, także przy pełnych magazynach (`test_slice_dod.gd`; czekanie przy pełnym stosie nie jest zakleszczeniem). Kupiec kupił w tym czasie 58 desek i 22 skóry.
+- [x] Zapis z M4b-1.5 wczytuje się po migracji (v6 → v7) bez utraty towaru, nowa fixtura `v7_town.json` (`test_save_round_trip.gd`).
+- [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń (test kluczy; panele chlewu i targu obejrzane na zrzutach w PL).
+- [ ] **Twoja ocena gry.**
+
+**Do sprawdzenia przy ocenie gry (lista na laptop):**
+- Stos przy budynku: czy przy pełnych magazynach drwal przestaje rąbać, stos widać przy chacie, a tragarze go odnoszą, gdy zrobi się miejsce. Czy panel mówi „czeka: stos przy budynku jest pełny”.
+- Gęsty las: czy leśniczy sadzi kafel w kafel i nie zarasta dróg, pól ani wejść. Czy ludzie chodzący przez las wyglądają dobrze i nie są za wolni.
+- Świnie: kupno pierwszych 2 świń u kupca (panel targu), czy tragarz prowadzi je do chlewu, czy stado rośnie i widać je w zagrodzie. Czy rzeźnik z prowadzoną świnią wygląda czytelnie.
+- Kupiec: czy przyjeżdża co ok. 10 minut, czy wóz stoi w dobrym miejscu przy targu, czy sprzedaż ponad próg w oknie „Zapasy” jest zrozumiała.
+- **Targ:** działa teraz tylko z towarem na kramach. W dużym mieście (ok. 120 mieszkańców) 2 straganiarzy nie nadąża i kramy bywają puste. Do decyzji: więcej straganiarzy, większe kramy albo zostawić.
+- Okno „Zapasy”: czy liczby na minutę są czytelne i przydatne. Uwaga: po wczytaniu gry przez pierwsze minuty pokazują zera (liczniki nie są zapisywane).
+- Stary zapis: po wczytaniu gry sprzed M4b-2 kupiec przyjeżdża od razu (gdy jest targowisko).
+- Drewno: w grze automatycznego gracza drewna stale brakuje na budowy (było tak już wcześniej; chlew kosztuje 8 drewna). Czy w Twojej grze to przeszkadza.
+
+**Ustalone przy realizacji (2026-11-05, do zmiany na prośbę):**
+- **Stos przy budynku** mieści pół pola magazynu (drewno 10, piwo 6). Pracownik niesie wyrób na stos tylko wtedy, gdy żaden magazyn nie ma miejsca; gdy stos jest pełny, czeka pod budynkiem z towarem w rękach i nie zaczyna nowego cyklu (panel: „czeka: stos przy budynku jest pełny”). Stos widać na przednich kaflach budynku, a panel warsztatu pokazuje, co na nim leży.
+- **Las:** drzewo spowalnia jak ściółka (1,5× wolniej), także posadzone na trawie. Leśniczy może sadzić tuż przy drodze (nie na niej). Skały dalej blokują przejście.
+- **Chlew:** 3×3, stado do 12 świń. Przy 2 świniach nowa co 2 minuty, przy 6 co 40 s, przy 12 co 20 s (czas dzielony przez połowę stada). Stado rośnie tylko, gdy w chlewie pracuje świniarz. Ostatnie 2 świnie zostają. Świnie stojące w chlewie widać na jego przednich kaflach (1–4 świnie).
+- **Rzeźnia:** rzeźnik prowadzi świnię z chlewu, rozbiera ją (6 s), odnosi 2 mięsa, potem oprawia skórę (4 s) i odnosi 1 skórę.
+- **Ceny skupu** to ceny bazowe towarów z danych (np. drewno 2, deski 4, kamień 3, chleb 6, ryby 5, mięso 5, skóry 6, ubrania 12, miód pitny 12 złota). Świnia u kupca 30 złota, 4 na wizytę; nieodprowadzone do chlewu świnie kupiec oddaje w złocie przy odjeździe (czeka na nie do 2 minut).
+- **Kupiec** pierwszy raz przyjeżdża w 10. minucie gry, potem co 10 minut. Stoi przed drzwiami targowiska, obok jego wozu. W starym zapisie przyjeżdża od razu po wczytaniu (gdy jest targowisko).
+- **Kramy:** 6 sztuk każdego towaru, każdy towar na jednym kramie. Straganiarz bierze z magazynu 2 sztuki tego towaru, którego na kramach jest najmniej. Rezerwa „zapas na budowy” dotyczy też straganiarzy.
+- **Okno „Zapasy królestwa”** (przycisk „Zapasy” na górnym pasku albo „Zapasy i handel” w panelu targowiska): zapas, + /min, − /min, bilans i sprzedaż kupcowi (zaznaczenie i liczba). Do zużycia liczy się też sprzedaż kupcowi i towar wbudowany w budowy.
+- **Zapis w wersji 7.**
+
 ---
 
 ## M5 — Woda, porty i statki

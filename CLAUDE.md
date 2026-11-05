@@ -12,7 +12,7 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
-**Bieżący etap:** M4b-2 (mięso, straganiarze, kupiec wędrowny, „Zapasy królestwa”, produkcja na minutę): zakres w ROADMAP, do rozpisania DoD i akceptacji przed kodem. M4b-1.5 „Miasto” zamknięty 2026-11-05 (kamienice 5/5). Zrzut kwartału kamienic: `town_shot.tscn -- --minutes=85 --layout --focus=<all|row|corner|back|patrician_back|burgher_corner> [--zoom=2]`. Do zrzutów: `src/prototype/m4a/town_shot.tscn -- --minutes=85 --select=<id>` (w chmurze przez `xvfb-run -a "$GODOT" --path . --rendering-driver opengl3 …`). Mury i wieża bramna są w prototypie (`src/prototype/walls/`). A1 częściowo: brakuje postaci (ROADMAP, A1).
+**Bieżący etap:** M4b-2 (stos przy budynku, gęsty las, mięso, straganiarze, kupiec wędrowny, „Zapasy królestwa”): kod gotowy, DoD odhaczone poza oceną gry; czeka na ocenę właściciela na laptopie. Zrzut z oknem zapasów: `town_shot.tscn -- --minutes=62 --stocks`. M4b-1.5 „Miasto” zamknięty 2026-11-05 (kamienice 5/5). Zrzut kwartału kamienic: `town_shot.tscn -- --minutes=85 --layout --focus=<all|row|corner|back|patrician_back|burgher_corner> [--zoom=2]`. Do zrzutów: `src/prototype/m4a/town_shot.tscn -- --minutes=85 --select=<id>` (w chmurze przez `xvfb-run -a "$GODOT" --path . --rendering-driver opengl3 …`). Mury i wieża bramna są w prototypie (`src/prototype/walls/`). A1 częściowo: brakuje postaci (ROADMAP, A1).
 
 ## Polecenia
 

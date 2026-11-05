@@ -166,6 +166,22 @@ const BUILDINGS := {
 			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2)}],
 		"pens": [[1.28, 0.12, 1.94, 1.05, "sheep"], [0.12, 1.58, 1.0, 1.94, "sheep"]],
 		"props": [["hay", 1.55, 1.75]]}],
+	# M4b-2 (meat): a pigsty with a muddy pen, a stone slaughterhouse with an open shed.
+	"pigsty": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.5], "h": 30.0, "rh": 22.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.55, 0.35, 0.2)},
+		{"kind": "lean", "rect": [1.3, 0.2, 2.2, 1.0], "low": "y", "h": 20.0, "hh": 28.0,
+			"roof": "thatch", "walls": "planks", "open": true, "inside": [["hay", 1.75, 0.75]]}],
+		"pens": [[1.25, 1.1, 2.9, 2.9, "pigs"], [0.12, 1.6, 1.15, 2.9, "pigs"]],
+		"props": [["trough", 2.2, 1.35], ["bucket", 1.05, 2.98]]}],
+	"slaughterhouse": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.15], "h": 40.0, "rh": 22.0, "ridge": "x",
+			"ends": ["gable", "hip"], "walls": "timber_stone", "roof": "tile",
+			"shutters": Color(0.55, 0.22, 0.2), "chimney": [1.4, 0.5]},
+		{"kind": "lean", "rect": [0.3, 1.15, 1.86, 1.86], "low": "y", "h": 28.0, "hh": 38.0,
+			"roof": "tile", "walls": "timber", "open": true,
+			"inside": [["butcher_block", 0.75, 1.65], ["meat_hooks", 1.45, 1.6]]}],
+		"props": [["hide_rack", 1.98, 0.5], ["barrel", 0.2, 1.98]]}],
 	"weaver": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.35, 1.86], "h": 42.0, "rh": 22.0, "ridge": "y",
 			"ends": ["gable", "gable"], "walls": "timber", "roof": "shingle",
@@ -339,6 +355,8 @@ func _pen(img: Image, pivot: Vector2i, r: Rect2, contents: String) -> void:
 	var c3 := Vector2(r.position.x, r.end.y)
 	var ground := PackedVector2Array([s.call(c0), s.call(c1), s.call(c2), s.call(c3)])
 	var floor_col := Color(0.5, 0.56, 0.3) if contents == "sheep" else Color(0.45, 0.34, 0.22)
+	if contents == "pigs":
+		floor_col = Color(0.4, 0.31, 0.22)   # trodden mud
 	_fill_shader(img, ground, func(x: int, y: int) -> Color:
 		if contents != "sheep" and y % 3 == 0:
 			return floor_col.darkened(0.15)
@@ -352,6 +370,12 @@ func _pen(img: Image, pivot: Vector2i, r: Rect2, contents: String) -> void:
 			for k: int in n:
 				var g: Vector2 = r.position + r.size * (spots[k] as Vector2)
 				_sheep(img, s.call(g), k % 2 == 0)
+		"pigs":
+			# Mud puddles only: the live herd (1 to 4 pigs by its size) stands on the front tiles,
+			# so an empty sty looks empty.
+			for k: int in 2:
+				var g: Vector2 = r.position + r.size * Vector2(0.3 + 0.4 * k, 0.35 + 0.3 * k)
+				_ellipse(img, s.call(g) + Vector2(3, -1), Vector2(6, 2.5), Color(0.33, 0.26, 0.2))
 		"saplings":
 			var rows := maxi(1, int(r.size.y / 0.3))
 			var cols := maxi(1, int(r.size.x / 0.3))
@@ -1070,6 +1094,33 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 			_line(img, p + Vector2(0, -2), p + Vector2(2, -18), C_PLANK.lightened(0.1), 1)
 			_line(img, p + Vector2(1, -18), p + Vector2(4, -18), C_PLANK.lightened(0.1), 1)
 			_fill(img, PackedVector2Array([p + Vector2(-2, -4), p + Vector2(2, -4), p + Vector2(1, 2), p + Vector2(-1, 2)]), C_IRON.lightened(0.35))
+		"trough":
+			_box(img, p, Vector2(16, 6), 4.0, C_PLANK.darkened(0.1))
+			_line(img, p + Vector2(-6, -4), p + Vector2(6, -2), Color(0.62, 0.55, 0.3), 1)
+		"bucket":
+			_ellipse(img, p - Vector2(0, 3), Vector2(3, 3.5), C_PLANK)
+			_line(img, p - Vector2(3, 5), p - Vector2(-3, 5), C_IRON, 1)
+			_line(img, p - Vector2(3, 6), p - Vector2(0, 9), C_IRON, 1)
+		"butcher_block":
+			_box(img, p, Vector2(10, 5), 7.0, C_LOG.darkened(0.05))
+			_ellipse(img, p - Vector2(0, 8), Vector2(4, 1.6), Color(0.62, 0.28, 0.24))
+			_line(img, p + Vector2(2, -9), p + Vector2(6, -14), C_BEAM.lightened(0.2), 1)
+			_line(img, p + Vector2(5, -15), p + Vector2(8, -12), C_IRON.lightened(0.35), 2)
+		"meat_hooks":
+			_line(img, p + Vector2(-8, -26), p + Vector2(8, -22), C_BEAM, 1)
+			for k: int in 3:
+				var hook := p + Vector2(-5 + k * 5, -24 + k * 1.2)
+				_line(img, hook, hook + Vector2(0, 3), C_IRON, 1)
+				_ellipse(img, hook + Vector2(0, 7), Vector2(2.2, 3.5), Color(0.72, 0.3, 0.26).darkened(0.08 * k))
+				_px(img, Vector2i(hook + Vector2(-1, 6)), Color(0.95, 0.86, 0.78))
+		"hide_rack":
+			for side: float in [-7.0, 7.0]:
+				_line(img, p + Vector2(side, 0), p + Vector2(side, -18), C_BEAM, 1)
+			_line(img, p + Vector2(-8, -17), p + Vector2(8, -17), C_BEAM, 1)
+			var hide := PackedVector2Array([p + Vector2(-6, -16), p + Vector2(6, -16), p + Vector2(5, -5),
+					p + Vector2(0, -3), p + Vector2(-5, -5)])
+			_fill(img, hide, Color(0.55, 0.38, 0.24))
+			_outline(img, hide, Color(0.35, 0.24, 0.15))
 		"hay":
 			_ellipse(img, p - Vector2(0, 6), Vector2(9, 6), Color(0.86, 0.74, 0.38))
 			_ellipse(img, p - Vector2(2, 10), Vector2(5, 3), Color(0.93, 0.82, 0.45))

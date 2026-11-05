@@ -4,6 +4,9 @@ extends Sprite2D
 ## carried good on the frame's anchor (ART_SPEC §4, §5). The node's position is the feet.
 
 const CARRIED_FRAME := Vector2i(24, 24)
+## Where a led animal walks (carry category "animal", M4b-2): beside the person's right hand,
+## a little behind, relative to the feet (the overlay is centred).
+const LED_OFFSET := Vector2(13.0, -7.0)
 
 static var _carried_cache: Dictionary[StringName, Texture2D] = {}
 
@@ -38,6 +41,9 @@ func show_state(visual: CharacterVisual, anim: StringName, dir: int, time: float
 func _update_good(sheet: CharacterSheet, row_flip: Vector2i, column: int,
 		carry_category: String, good: StringName) -> void:
 	var index := row_flip.x * sheet.frames + column
+	if good != &"" and carry_category == "animal":
+		_show_led(row_flip, carry_category, good)
+		return
 	if good == &"" or sheet.anchors.is_empty() or index >= sheet.anchors.size():
 		_good_overlay.visible = false
 		return
@@ -51,6 +57,22 @@ func _update_good(sheet: CharacterSheet, row_flip: Vector2i, column: int,
 	_good_overlay.position = anchor
 	_good_overlay.flip_h = row_flip.y == 1
 	_good_overlay.show_behind_parent = sheet.anchor_behind[index] == 1
+
+
+## A live animal walking beside the person (a pig led to the slaughterhouse): the same
+## 5-row overlay sheet, placed by the feet instead of on a hand anchor.
+func _show_led(row_flip: Vector2i, carry_category: String, good: StringName) -> void:
+	_good_overlay.visible = true
+	_good_overlay.texture = _carried_texture(carry_category, good)
+	var good_row := mini(row_flip.x, 4)
+	_good_overlay.region_rect = Rect2(0, good_row * CARRIED_FRAME.y, CARRIED_FRAME.x, CARRIED_FRAME.y)
+	var at := LED_OFFSET
+	if row_flip.y == 1:
+		at.x = -at.x
+	_good_overlay.position = at
+	_good_overlay.flip_h = row_flip.y == 1
+	# Walking away from the camera the person hides the animal on his far side.
+	_good_overlay.show_behind_parent = good_row >= 3
 
 
 static func _carried_texture(category: String, good: StringName) -> Texture2D:

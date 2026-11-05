@@ -279,3 +279,36 @@ func test_v6_fixture_loads_and_continues() -> void:
 	assert_array(turned.keys()).contains_exactly_in_any_order([0, 1, 2, 3])
 	sim.run_ticks(SimFixture.ticks(60))
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## A save written by save_version 7 (M4b-2: a woodcutter's yard with wood, a pigsty herd,
+## market stalls, the merchant trading with a pig bought and planks for sale) loads
+## unchanged and keeps playing.
+func test_v7_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v7_town.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(7)
+	var state := SaveMigrations.migrate(document["state"], 7)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	assert_bool(sim.province.merchant.is_trading()).is_true()
+	assert_dict(sim.province.merchant.sell_above).is_equal({&"planks": 20})
+	var herds := 0
+	for b: BuildingState in sim.province.buildings.all():
+		if b.def.herd_good == &"pig":
+			herds += b.yard.total(&"pig")
+	assert_int(herds).is_greater_equal(5)
+	sim.run_ticks(SimFixture.ticks(60))
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## M4b-1.5 town (v6): after the migration huts have a pantry slot for meat and the merchant
+## is away, due for a visit.
+func test_v6_save_gets_meat_slot_and_merchant() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v6_town.json"))
+	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 6), SimFixture.registry())
+	assert_int(sim.province.merchant.state).is_equal(Merchant.State.AWAY)
+	for b: BuildingState in sim.province.buildings.all():
+		if b.house != null:
+			assert_bool(b.supply.slot_count() >= b.house_goods().size()).is_true()
