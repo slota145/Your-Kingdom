@@ -214,20 +214,6 @@ const BUILDINGS := {
 	"stockpile": [{"special": "yard"}],
 }
 
-## Burgher-house facade colours by row piece: neighbours in a row get different colours.
-const BURGHER_COLOURS := {
-	"single": Color(0.91, 0.86, 0.72), "end_a": Color(0.87, 0.74, 0.5),
-	"middle": Color(0.86, 0.72, 0.68), "end_b": Color(0.76, 0.8, 0.78),
-	"corner_a": Color(0.93, 0.8, 0.6), "corner_b": Color(0.8, 0.82, 0.66),
-}
-
-## Patrician townhouse colours: deeper, richer than the burghers' pastels.
-const PATRICIAN_COLOURS := {
-	"single": Color(0.95, 0.74, 0.42), "end_a": Color(0.86, 0.5, 0.42),
-	"middle": Color(0.62, 0.74, 0.6), "end_b": Color(0.66, 0.72, 0.9),
-	"corner_a": Color(0.9, 0.62, 0.5), "corner_b": Color(0.8, 0.7, 0.86),
-}
-
 ## Row pieces of town houses (ART_SPEC §7, HouseRowResolver).
 const ROW_PIECES: Array[String] = ["single", "end_a", "middle", "end_b", "corner_a", "corner_b"]
 
@@ -458,21 +444,16 @@ func _rect(vol: Dictionary) -> Rect2:
 
 
 ## Row pieces of a town house level (ART_SPEC §7): level 2 = burgher houses, level 3 =
-## patrician townhouses, gable to the street, each piece in three gable looks ("", "_2",
-## "_3") from the front and from the back (tools/town_house_art.gd).
+## patrician townhouses, gable to the street, 1-3 houses per lot, each piece in three looks
+## ("", "_2", "_3") from the front and from the back (tools/town_house_art.gd).
 func _town_rows(id: String, level: int) -> void:
 	var painter := TownHouseArt.new(self)
-	var colours: Dictionary = PATRICIAN_COLOURS if level >= 3 else BURGHER_COLOURS
-	var styles: Array = [TownHouseArt.STYLE_STEPPED, TownHouseArt.STYLE_CURVED, TownHouseArt.STYLE_PLAIN] 			if level >= 3 else [TownHouseArt.STYLE_PLAIN, TownHouseArt.STYLE_CURVED, TownHouseArt.STYLE_STEPPED]
 	for piece: String in ROW_PIECES:
-		for look: int in styles.size():
+		for look: int in 3:
 			for back: bool in [false, true]:
 				var name := "level_%d_%s%s%s" % [level, piece, "" if look == 0 else "_%d" % (look + 1),
 						"_back" if back else ""]
-				var tint: Color = colours[piece]
-				if look > 0:
-					tint = tint.lerp(colours[ROW_PIECES[(ROW_PIECES.find(piece) + look * 2) % ROW_PIECES.size()]], 0.6)
-				_write(id, name, painter.render(level, piece, back, tint, int(styles[look])))
+				_write(id, name, painter.render(level, piece, back, look))
 
 
 # --- Houses --------------------------------------------------------------------------------

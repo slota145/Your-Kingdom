@@ -1,53 +1,61 @@
 extends RefCounted
 ## Row-house art for M4b-1.5 "Town" (ART_SPEC §7), used by tools/generate_art.gd.
 ##
-## Town houses stand gable to the street (owner's sketch 2026-11-05): the ridge runs from
-## the street to the back, every house shows the street a tall gable of its own, and the
-## roofs of neighbours meet in valleys. Burgher houses (level 2: plaster, timber or simple
-## gables) and patrician townhouses (level 3: ashlar ground floor with arcades, three
-## storeys, stepped brick or curved gables, an oriel turret on the corner).
+## Town houses stand gable to the street (owner's sketch 2026-11-05) on a cobbled lot.
+## One 2x2 lot holds several narrow houses (owner's decision 2026-11-05, inspired by
+## illustrations of the owner's choice, own style): burghers 1-3 houses with fronts set
+## back by different amounts and narrow gaps between lots, patricians 1-2 taller houses
+## forming a closed row. Each house has its own height, gable (plain with timber, curved,
+## stepped), plaster colour from a muted palette and roof (burghers dull red tile or slate,
+## patricians slate). The corner house turns round the corner with a gable on each street
+## and either a cut-off corner with an entrance bay under its own diagonal gable or (one
+## look of the patricians) an oriel turret.
 ##
-## Six row pieces: single, end_a, middle, end_b, corner_a, corner_b, each in three gable
-## styles, seen from the front (door to grid +x) and from the back (door to -x: the camera
-## sees the plain back gable with a back door). Rows along grid x use the same art mirrored.
-## Own style; the owner's illustrations were only an inspiration.
+## Six pieces (single, end_a, middle, end_b, corner_a, corner_b) in three looks each,
+## seen from the front (door to grid +x) and from the back (door to -x: the camera sees
+## the plain back gables with back doors). Rows along grid x use the same art mirrored.
 ##
-## Drawn with a depth buffer: every surface (walls with gables, roof as a height field,
-## chimney, turret) is sampled densely in 3D and each sample keeps its pixel only if it is
-## nearer to the camera. Edges between surfaces get a 1 px dark line.
+## Drawn with a depth buffer: every surface is sampled densely in 3D and each sample keeps
+## its pixel only if it is nearer to the camera. Edges between surfaces get a dark line.
 ##
-## Local frame of a piece: t across the house from the back (0) to the street (2), s along
+## Local frame of a piece: t across the lot from the back (0) to the street (2), s along
 ## the row (0..2), z up in pixels. Front art: grid = (t, s). Back art: grid = (2 - t, 2 - s).
 
-## Pixels of material per tile along a wall or roof.
 const U_PX := 36.0
-## Insets of the walls from the footprint edge, in tiles.
-const FRONT_INSET := 0.16
-const BACK_INSET := 0.04
-const END_INSET := 0.14
-## Roof overhang at an eave or over a plain gable, in tiles.
-const OVERHANG := 0.1
-## Sampling steps: along surfaces in tiles, up walls in pixels.
 const STEP := 0.007
 const STEP_Z := 0.5
-## Gable styles (three looks per piece, picked by position on the map).
+const OVERHANG := 0.08
+## Gap between burgher lots: each side of a joined lot is set in by this much.
+const BURGHER_GAP := 0.07
+const BACK_INSET := 0.04
+
 const STYLE_PLAIN := 0
 const STYLE_STEPPED := 1
 const STYLE_CURVED := 2
 
-## Same light and colours as generate_art.gd (ART_SPEC §1).
 const LIGHT_SW := 1.0
 const LIGHT_SE := 0.8
 const LIGHT_ROOF_SW := 1.06
 const LIGHT_ROOF_SE := 0.86
 const LIGHT_ROOF_BACK := 0.72
-const C_BEAM := Color(0.33, 0.21, 0.13)
-const C_PLASTER := Color(0.9, 0.85, 0.73)
+const C_BEAM := Color(0.3, 0.2, 0.13)
 const C_GLASS := Color(0.16, 0.2, 0.26)
-const C_BRICK := Color(0.63, 0.3, 0.22)
-const C_SLATE := Color(0.33, 0.37, 0.45)
-const C_ARCADE := Color(0.16, 0.13, 0.12)
-const C_STONE_TRIM := Color(0.88, 0.85, 0.78)
+const C_BRICK := Color(0.56, 0.3, 0.23)
+const C_SLATE := Color(0.3, 0.32, 0.37)
+const C_TILE_DULL := Color(0.55, 0.32, 0.25)
+const C_ARCADE := Color(0.15, 0.13, 0.12)
+const C_STONE_TRIM := Color(0.82, 0.79, 0.72)
+const C_COBBLE := Color(0.6, 0.57, 0.52)
+
+## Muted plasters: sand, stone grey, ochre, sage, pale terracotta, oat, grey blue, buff.
+const BURGHER_PALETTE: Array[Color] = [
+	Color(0.84, 0.78, 0.64), Color(0.76, 0.75, 0.71), Color(0.8, 0.68, 0.48), Color(0.68, 0.72, 0.62),
+	Color(0.8, 0.64, 0.54), Color(0.86, 0.82, 0.72), Color(0.66, 0.7, 0.74), Color(0.78, 0.72, 0.6),
+]
+const PATRICIAN_PALETTE: Array[Color] = [
+	Color(0.84, 0.8, 0.7), Color(0.7, 0.72, 0.74), Color(0.8, 0.7, 0.54), Color(0.74, 0.6, 0.5),
+	Color(0.66, 0.68, 0.6), Color(0.88, 0.84, 0.76), Color(0.7, 0.62, 0.58),
+]
 
 var art: Object
 
@@ -59,30 +67,9 @@ var _w: int
 var _h: int
 var _back: bool
 var _next_surface: int = 1
-
-# The piece being drawn.
-var _wall_h: float
-var _roof_h: float
-var _floors: int
 var _patrician: bool
-var _style: int
-var _tint: Color
+var _seed: int
 var _shutters: Color
-var _tb: float
-var _tf: float
-var _s0: float
-var _s1: float
-var _j0: bool
-var _j1: bool
-var _corner: bool
-## Corner: which end of the row is open (the side street): 1 = s1, -1 = s0.
-var _open_side: int = 0
-## Main roof: ridge along t at _sc, half width _hs (to the eaves on the sides).
-var _sc: float
-var _hs: float
-## Corner wing roof: ridge along s at _tc, half width _ht.
-var _tc: float
-var _ht: float
 
 
 func _init(generator: Object) -> void:
@@ -90,35 +77,18 @@ func _init(generator: Object) -> void:
 
 
 ## Draws one piece. [param piece]: single, end_a, middle, end_b, corner_a, corner_b (grid
-## names: "a" is the end with the smaller grid y). [param style]: STYLE_*. Returns
-## {"img", "pivot"}.
-func render(level: int, piece: String, back: bool, tint: Color, style: int) -> Dictionary:
+## names: "a" is the end with the smaller grid y). [param look]: 0..2. Returns {"img", "pivot"}.
+func render(level: int, piece: String, back: bool, look: int) -> Dictionary:
 	_patrician = level >= 3
 	_back = back
-	_style = style
-	_wall_h = 76.0 if _patrician else 54.0
-	_roof_h = 46.0 if _patrician else 34.0
-	_floors = 3 if _patrician else 2
-	_tint = tint
-	_shutters = Color(0.2, 0.32, 0.25) if _patrician else Color(0.3, 0.38, 0.5)
+	_seed = ["single", "end_a", "middle", "end_b", "corner_a", "corner_b"].find(piece) * 7 + look * 31 + level * 101
+	_shutters = Color(0.24, 0.3, 0.26) if _patrician else Color(0.3, 0.34, 0.4)
 	var joined_low_y := piece in ["end_b", "middle", "corner_a"]
 	var joined_high_y := piece in ["end_a", "middle", "corner_b"]
-	_corner = piece.begins_with("corner")
-	_j0 = joined_high_y if back else joined_low_y
-	_j1 = joined_low_y if back else joined_high_y
-	_open_side = 0
-	if _corner:
-		_open_side = -1 if _j1 else 1
-	_tb = 0.0 if _corner else BACK_INSET
-	_tf = 2.0 - FRONT_INSET
-	_s0 = 0.0 if _j0 else (FRONT_INSET if _corner else END_INSET)
-	_s1 = 2.0 if _j1 else 2.0 - (FRONT_INSET if _corner else END_INSET)
-	_sc = (_s0 + _s1) * 0.5
-	_hs = (_s1 - _s0) * 0.5
-	_tc = (_tb + _tf) * 0.5
-	_ht = (_tf - _tb) * 0.5
+	var j0 := joined_high_y if back else joined_low_y
+	var j1 := joined_low_y if back else joined_high_y
 
-	var c: Dictionary = art._canvas(_wall_h + _roof_h + 40.0, 6)
+	var c: Dictionary = art._canvas(150.0 if _patrician else 118.0, 6)
 	_img = c["img"]
 	_pivot = c["pivot"]
 	_w = _img.get_width()
@@ -130,15 +100,80 @@ func render(level: int, piece: String, back: bool, tint: Color, style: int) -> D
 	_surf.resize(_w * _h)
 	_next_surface = 1
 
-	_draw_roof()
-	_draw_walls()
-	_draw_chimney()
-	if _patrician and _corner and not back:
-		_draw_turret()
+	_draw_cobbles()
+	if piece.begins_with("corner"):
+		_draw_corner(-1 if j1 else 1, look)
+	else:
+		for house: Dictionary in _lot_houses(j0, j1, look):
+			_draw_house(house)
 	_draw_edges()
-	_draw_props()
+	_draw_props(piece.begins_with("corner"))
 	art._finish(_img)
 	return {"img": _img, "pivot": _pivot}
+
+
+# --- Lot layout ----------------------------------------------------------------------------
+
+func _rand(k: int) -> float:
+	return art._hash(_seed, k, 913)
+
+
+func _palette(k: int) -> Color:
+	var pal: Array[Color] = PATRICIAN_PALETTE if _patrician else BURGHER_PALETTE
+	return pal[int(_rand(k) * 997.0) % pal.size()]
+
+
+## The houses standing on the lot, side by side along s.
+func _lot_houses(j0: bool, j1: bool, look: int) -> Array[Dictionary]:
+	var count: int
+	if _patrician:
+		count = [1, 2, 2][look]
+	else:
+		count = [2, 3, 1][look]
+	var gap := 0.0 if _patrician else BURGHER_GAP
+	var lo := (gap if j0 else 0.12)
+	var hi := 2.0 - (gap if j1 else 0.12)
+	# Unequal widths: a narrow house beside a wider one.
+	var weights: Array[float] = []
+	var total := 0.0
+	for i: int in count:
+		var wgt := 1.0 + 0.45 * (_rand(10 + i) - 0.5)
+		weights.append(wgt)
+		total += wgt
+	var houses: Array[Dictionary] = []
+	var s := lo
+	for i: int in count:
+		var width := (hi - lo) * weights[i] / total
+		var h := {}
+		h["sa"] = s
+		h["sb"] = s + width
+		h["exposed_a"] = i > 0 or not j0 or gap > 0.0
+		h["exposed_b"] = i < count - 1 or not j1 or gap > 0.0
+		h["end_a"] = i == 0 and not j0
+		h["end_b"] = i == count - 1 and not j1
+		# Fronts not in one line: some houses stand a little back from the street.
+		var setback: float = [0.1, 0.24, 0.16][(i + look) % 3] if count > 1 or not _patrician else 0.12
+		if _patrician:
+			setback = [0.1, 0.18][(i + look) % 2]
+		h["tf"] = 2.0 - setback
+		h["tb"] = BACK_INSET
+		var tall := _rand(20 + i)
+		if _patrician:
+			h["floors"] = 3 if tall > 0.35 or count == 1 else 2
+			h["wall"] = 76.0 if h["floors"] == 3 else 58.0
+			h["arcade"] = h["floors"] == 2 or count == 1 or tall > 0.7
+		else:
+			h["floors"] = 2
+			h["wall"] = 50.0 + 8.0 * tall
+			h["arcade"] = false
+		var half := width * 0.5
+		h["rh"] = minf(half * (66.0 if _patrician else 58.0), 46.0 if _patrician else 36.0)
+		h["style"] = [STYLE_PLAIN, STYLE_CURVED, STYLE_STEPPED][(i + look + (1 if _patrician else 0)) % 3]
+		h["tint"] = _palette(30 + i)
+		h["slate"] = _patrician or _rand(40 + i) > 0.72
+		houses.append(h)
+		s += width
+	return houses
 
 
 # --- Projection ----------------------------------------------------------------------------
@@ -147,19 +182,18 @@ func _grid(t: float, s: float) -> Vector2:
 	return Vector2(2.0 - t, 2.0 - s) if _back else Vector2(t, s)
 
 
-## Grid direction of a local direction (dt, ds).
 func _grid_dir(d: Vector2) -> Vector2:
 	return -d if _back else d
 
 
-func _splat(t: float, s: float, z: float, colour: Color, surface: int) -> void:
+func _splat(t: float, s: float, z: float, colour: Color, surface: int, bias: float = 0.0) -> void:
 	var g := _grid(t, s)
 	var x := int(floor(float(_pivot.x) + (g.x - g.y) * 32.0))
 	var y := int(floor(float(_pivot.y) + (g.x + g.y - 4.0) * 16.0 - z))
 	if x < 0 or y < 0 or x >= _w or y >= _h:
 		return
 	var i := y * _w + x
-	var d := (g.x + g.y) * 16.0 + z * 0.999
+	var d := (g.x + g.y) * 16.0 + z * 0.999 + bias
 	if d > _depth[i]:
 		_depth[i] = d
 		_surf[i] = surface
@@ -171,13 +205,17 @@ func _new_surface() -> int:
 	return _next_surface
 
 
-## Light of a vertical face whose outward local normal is [param n].
 func _wall_light(n: Vector2) -> float:
 	var g := _grid_dir(n)
+	if g.x > 0.5 and g.y > 0.5:
+		return 0.9
 	if g.y > 0.5:
 		return LIGHT_SW
 	if g.x > 0.5:
 		return LIGHT_SE
+	var gd := g.normalized()
+	if gd.x + gd.y > 0.9:
+		return 0.92
 	return 0.62
 
 
@@ -187,6 +225,8 @@ func _roof_light(n: Vector2) -> float:
 		return LIGHT_ROOF_SW
 	if g.x > 0.5:
 		return LIGHT_ROOF_SE
+	if g.x + g.y > 0.5:
+		return 0.96
 	return LIGHT_ROOF_BACK
 
 
@@ -195,212 +235,197 @@ func _faces_camera(n: Vector2) -> bool:
 	return g.x + g.y > 0.1
 
 
-# --- Roof ----------------------------------------------------------------------------------
-
-## Main roof (ridge from the street to the back) at s.
-func _main_z(s: float) -> float:
-	return _wall_h + _roof_h * (1.0 - absf(s - _sc) / _hs)
-
-
-## Corner wing (ridge along the row, gable to the side street) at t.
-func _wing_z(t: float) -> float:
-	return _wall_h + _roof_h * (1.0 - absf(t - _tc) / _ht)
-
-
-## Whether s lies in the corner wing, i.e. on the side-street half of the house.
-func _in_wing(s: float) -> bool:
-	return _corner and ((s >= _sc) if _open_side > 0 else (s <= _sc))
+func _roof_colour(slate: bool, along: float, v: float, length: float, light: float) -> Color:
+	var col: Color = art._roof_material("slate" if slate else "tile", along * U_PX, v, length)
+	if not slate:
+		# Dull, weathered tiles instead of bright red.
+		col = col.lerp(C_TILE_DULL * (col.get_luminance() / C_TILE_DULL.get_luminance()), 0.55)
+		col = col.lerp(Color(col.get_luminance(), col.get_luminance(), col.get_luminance()), 0.2)
+	else:
+		col = col.lerp(C_SLATE * (col.get_luminance() / C_SLATE.get_luminance()), 0.5)
+	col.a = 1.0
+	return art._lit(col, light)
 
 
-## The roof over a plain front gable overhangs it; a decorative gable rises above the roof.
-func _front_overhang() -> float:
-	return OVERHANG if _style == STYLE_PLAIN else 0.0
+# --- Ground --------------------------------------------------------------------------------
 
-
-func _draw_roof() -> void:
-	var ov0 := 0.0 if _j0 else OVERHANG
-	var ov1 := 0.0 if _j1 else OVERHANG
-	var t_hi := _tf + _front_overhang()
-	var main := {Vector2(0, 1): _new_surface(), Vector2(0, -1): _new_surface()}
-	var wing := {Vector2(1, 0): _new_surface(), Vector2(-1, 0): _new_surface()}
+## The whole lot is paved: cobbles show in front of set-back houses and between lots.
+func _draw_cobbles() -> void:
+	var surface := _new_surface()
 	var t := 0.0
-	while t <= _tf + OVERHANG + 0.0001:
-		var s := _s0 - ov0
-		while s <= _s1 + ov1 + 0.0001:
-			var z := _main_z(s)
-			var d := Vector2(0, 1) if s > _sc else Vector2(0, -1)
-			var surface: int = main[d]
-			var along := t
-			var draw := t <= t_hi
-			if _in_wing(s):
-				var zw := _wing_z(t)
-				if zw > z or not draw:
-					z = zw
-					d = Vector2(1, 0) if t > _tc else Vector2(-1, 0)
-					surface = wing[d]
-					along = s
-					draw = true
-			if draw:
-				var v := (z - (_wall_h - 8.0)) * 1.15
-				var col: Color = art._roof_material("tile", along * U_PX, v, (_roof_h + 8.0) * 1.15)
-				_splat(t, s, z, art._lit(col, _roof_light(d)), surface)
+	while t <= 2.0:
+		var s := 0.0
+		while s <= 2.0:
+			var cu := int(t * 14.0 + (0.5 if int(s * 14.0) % 2 == 1 else 0.0))
+			var cv := int(s * 14.0)
+			var fu := fposmod(t * 14.0 + (0.5 if cv % 2 == 1 else 0.0), 1.0)
+			var fv := fposmod(s * 14.0, 1.0)
+			var col := C_COBBLE.darkened(0.14 * art._hash(cu, cv, 333))
+			if fu < 0.14 or fv < 0.14:
+				col = C_COBBLE.darkened(0.35)
+			_splat(t, s, 0.0, art._lit(col, 1.0), surface, -2.0)
 			s += STEP
 		t += STEP
 
 
-# --- Gable profiles ------------------------------------------------------------------------
+# --- One house of a lot --------------------------------------------------------------------
 
-## Height above the eaves of a gable of [param style] at p (0 at the sides, 1 at the ridge).
-func _gable_rise(p: float, style: int) -> float:
+func _gable_rise(p: float, style: int, rh: float) -> float:
 	match style:
 		STYLE_STEPPED:
-			return 4.0 + (_roof_h + 6.0) * ceilf(p * 4.0 - 0.001) / 4.0
+			return 4.0 + (rh + 6.0) * ceilf(p * 4.0 - 0.001) / 4.0
 		STYLE_CURVED:
-			# Scrolls on the shoulders, a tall middle with a small pediment on top.
 			if p < 0.45:
-				return _roof_h * (0.15 + 0.4 * sqrt(p / 0.45)) + 3.0
+				return rh * (0.15 + 0.4 * sqrt(p / 0.45)) + 3.0
 			if p < 0.6:
-				return _roof_h * 0.55 + 3.0 + (_roof_h * 0.3) * ((p - 0.45) / 0.15)
-			return _roof_h * 0.85 + 3.0 + _roof_h * 0.32 * (p - 0.6) / 0.4
-	return _roof_h * p
+				return rh * 0.55 + 3.0 + (rh * 0.3) * ((p - 0.45) / 0.15)
+			return rh * 0.85 + 3.0 + rh * 0.32 * (p - 0.6) / 0.4
+	return rh * p
 
 
-## Top of the front gable at s.
-func _front_top(s: float) -> float:
-	var p := clampf(1.0 - absf(s - _sc) / _hs, 0.0, 1.0)
-	return _wall_h + _gable_rise(p, _style)
+func _draw_house(h: Dictionary) -> void:
+	var sa: float = h["sa"]
+	var sb: float = h["sb"]
+	var tf: float = h["tf"]
+	var tb: float = h["tb"]
+	var wall: float = h["wall"]
+	var rh: float = h["rh"]
+	var sc := (sa + sb) * 0.5
+	var hs := (sb - sa) * 0.5
+	var style: int = h["style"]
+	var slate: bool = h["slate"]
+	# Roof: ridge from the street to the back.
+	var faces := {Vector2(0, 1): _new_surface(), Vector2(0, -1): _new_surface()}
+	var ov_a := OVERHANG if h["exposed_a"] else 0.0
+	var ov_b := OVERHANG if h["exposed_b"] else 0.0
+	var t_hi := tf + (OVERHANG if style == STYLE_PLAIN else 0.0)
+	var t := 0.0
+	while t <= t_hi:
+		var s := sa - ov_a
+		while s <= sb + ov_b:
+			var z := wall + rh * (1.0 - absf(s - sc) / hs)
+			var d := Vector2(0, 1) if s > sc else Vector2(0, -1)
+			var v := (z - (wall - 8.0)) * 1.15
+			_splat(t, s, z, _roof_colour(slate, t, v, (rh + 8.0) * 1.15, _roof_light(d)), faces[d])
+			s += STEP
+		t += STEP
+	# Walls.
+	var front_top := func(s: float) -> float:
+		var p := clampf(1.0 - absf(s - sc) / hs, 0.0, 1.0)
+		return wall + _gable_rise(p, style, rh)
+	var back_top := func(s: float) -> float:
+		return wall + rh * clampf(1.0 - absf(s - sc) / hs, 0.0, 1.0)
+	var flat := func(_x: float) -> float:
+		return wall
+	_wall(h, Vector2(tf, sa), Vector2(tf, sb), Vector2(1, 0), "front", front_top)
+	_wall(h, Vector2(tb, sa), Vector2(tb, sb), Vector2(-1, 0), "back", back_top)
+	_wall(h, Vector2(tb, sa), Vector2(tf, sa), Vector2(0, -1), "side", flat)
+	_wall(h, Vector2(tb, sb), Vector2(tf, sb), Vector2(0, 1), "side", flat)
+	_chimney(Vector2(0.5 + 0.3 * _rand(int(sa * 100.0)), sc + hs * 0.35), wall + rh * 0.65 - 2.0, wall + rh + 8.0)
 
 
-# --- Walls ---------------------------------------------------------------------------------
-
-func _draw_walls() -> void:
-	# Street front with its gable (drawn even facing away: a tall gable shows over the roof).
-	_wall(Vector2(_tf, _s0), Vector2(_tf, _s1), Vector2(1, 0), "front")
-	if not _corner:
-		_wall(Vector2(_tb, _s0), Vector2(_tb, _s1), Vector2(-1, 0), "back")
-		# Free ends of a row: side walls under the eaves.
-		if not _j0:
-			_wall(Vector2(_tb, _s0), Vector2(_tf, _s0), Vector2(0, -1), "side")
-		if not _j1:
-			_wall(Vector2(_tb, _s1), Vector2(_tf, _s1), Vector2(0, 1), "side")
-	else:
-		var s_open := _s1 if _open_side > 0 else _s0
-		_wall(Vector2(_tb, s_open), Vector2(_tf, s_open), Vector2(0, _open_side), "corner_side")
-
-
-## A vertical wall from local [param a] to [param b] with outward normal [param n].
-func _wall(a: Vector2, b: Vector2, n: Vector2, kind: String) -> void:
+## A wall from [param a] to [param b] (local) with outward normal [param n]; its top at
+## each point along it comes from [param top] (called with s for walls across the lot,
+## with t for walls along it).
+func _wall(h: Dictionary, a: Vector2, b: Vector2, n: Vector2, kind: String, top: Callable) -> void:
 	var seen := _faces_camera(n)
 	if not seen and kind != "front":
 		return
 	var surface := _new_surface()
 	var light := _wall_light(n) if seen else 0.62
 	var tiles := a.distance_to(b)
+	if tiles < 0.01:
+		return
 	var length := tiles * U_PX
-	var holes := _holes(kind, tiles, a, b)
+	var wall: float = h["wall"]
+	var holes := _holes(h, kind, tiles)
 	var material := "patrician" if _patrician else "plaster_stone"
-	if kind == "back" and not _patrician:
-		material = "plaster"
 	var k := 0.0
 	while k <= tiles + 0.0001:
 		var p := a.lerp(b, k / tiles)
 		var u := k * U_PX
-		var top := _wall_h
-		match kind:
-			"front":
-				top = _front_top(p.y)
-			"back":
-				top = _main_z(p.y)
-			"corner_side":
-				top = _wing_z(p.x)
-		# Facing away only the part of the gable above the roof can show.
-		var z := 0.0 if seen else _wall_h
-		while z <= top:
+		var zt: float = top.call(p.y if absf(a.x - b.x) < 0.001 else p.x)
+		var z := 0.0 if seen else wall
+		while z <= zt:
 			var col: Color
-			if z > _wall_h + 0.5:
-				col = _gable_px(kind, u, z, length, top)
+			if z > wall + 0.5:
+				col = _gable_px(h, kind, u, z, length, zt)
 			else:
-				col = _wall_px(material, kind, u, z, length, holes)
+				col = _wall_px(h, material, kind, u, z, length, holes)
 			if col.a > 0.0:
 				_splat(p.x, p.y, z, art._lit(col, light), surface)
 			z += STEP_Z
 		k += STEP
 
 
-## Openings of a wall: [u0, v0, u1, v1, kind] in pixels.
-func _holes(kind: String, tiles: float, a: Vector2, b: Vector2) -> Array:
+func _holes(h: Dictionary, kind: String, tiles: float) -> Array:
 	var holes: Array = []
 	var length := tiles * U_PX
+	var wall: float = h["wall"]
+	var floors: int = h["floors"]
 	var door_u := -100.0
-	# The door is on the entrance tile: local s in 1..2 (grid y in front art).
 	if kind == "front" or kind == "back":
-		door_u = (1.5 - a.y) / (b.y - a.y) * length
-	var ground := _wall_h * 0.34
-	if _patrician and (kind == "front" or kind == "corner_side"):
-		var n := maxi(2, int(round(tiles / 0.62)))
+		door_u = length * (0.5 if tiles < 1.2 else 0.68)
+	var ground := wall * 0.34
+	var arcade: bool = h["arcade"] and kind == "front"
+	if arcade:
+		var n := maxi(1, int(round(tiles / 0.58)))
 		for i: int in n:
 			var mid := (i + 0.5) * length / n
-			holes.append([mid - 7.0, 0.0, mid + 7.0, ground - 3.0, "arcade"])
+			holes.append([mid - 7.0, 0.0, mid + 7.0, ground - 2.0, "arcade"])
 	elif kind == "front":
-		holes.append([door_u - 6.0, 3.0, door_u + 6.0, 28.0, "door"])
+		holes.append([door_u - 6.0, 3.0, door_u + 6.0, 27.0, "door"])
 	elif kind == "back":
-		holes.append([door_u - 5.0, 3.0, door_u + 5.0, 24.0, "door"])
-	var spacing := 0.75
-	if kind == "back" or kind == "side":
-		spacing = 1.1
+		holes.append([door_u - 5.0, 3.0, door_u + 5.0, 23.0, "door"])
+	var spacing := 0.42 if kind == "front" else 0.8
 	var columns := maxi(1, int(round(tiles / spacing)))
 	for i: int in columns:
 		var mid := (i + 0.5) * length / columns
-		for f: int in _floors:
+		for f: int in floors:
 			var v0: float
 			var wh := 12.0
-			if _patrician:
-				if f == 0 and kind != "back" and kind != "side":
-					continue   # the arcade
-				v0 = [_wall_h * 0.12, _wall_h * 0.43, _wall_h * 0.71][f]
+			if floors == 3:
+				v0 = [wall * 0.12, wall * 0.43, wall * 0.71][f]
 				wh = [10.0, 15.0, 12.0][f]
 			else:
-				v0 = _wall_h * 0.14 if f == 0 else _wall_h * 0.6
-			if absf(mid - door_u) < 13.0 and v0 < 30.0:
+				v0 = wall * 0.14 if f == 0 else wall * 0.6
+				if _patrician:
+					wh = 14.0
+			if f == 0 and arcade:
 				continue
-			holes.append([mid - 4.5, v0, mid + 4.5, v0 + wh, "window"])
+			if absf(mid - door_u) < 11.0 and v0 < 30.0:
+				continue
+			holes.append([mid - 4.0, v0, mid + 4.0, v0 + wh, "window"])
 	return holes
 
 
-func _wall_px(material: String, kind: String, u: float, v: float, length: float, holes: Array) -> Color:
+func _wall_px(h: Dictionary, material: String, kind: String, u: float, v: float, length: float, holes: Array) -> Color:
 	for hole: Array in holes:
 		if u >= hole[0] and u < hole[2] and v >= hole[1] and v < hole[3]:
 			var hu: float = u - hole[0]
 			var hv: float = v - hole[1]
-			var hw: float = hole[2] - hole[0]
-			var hh: float = hole[3] - hole[1]
 			if hole[4] == "arcade":
-				var ac := _arcade_px(hu, hv, hw, hh)
+				var ac := _arcade_px(hu, hv, hole[2] - hole[0], hole[3] - hole[1])
 				if ac.a > 0.0:
 					return ac
 				continue
-			var c: Color = art._opening(hu, hv, hw, hh, hole[4], _shutters)
+			var c: Color = art._opening(hu, hv, hole[2] - hole[0], hole[3] - hole[1], hole[4], _shutters)
 			if c.a > 0.0:
 				return c
-	var tint := _tint if kind != "back" else _tint.darkened(0.06)
-	var col: Color = art._wall_material(material, u, v, _wall_h, length, tint)
-	var plain := kind == "back" or kind == "side"
+	var tint: Color = h["tint"]
+	var col: Color = art._wall_material(material, u, v, float(h["wall"]), length, tint)
+	var plain := kind != "front"
 	for hole: Array in holes:
 		if hole[4] != "window":
 			continue
-		if not plain and v >= hole[1] and v < hole[3] \
+		if not plain and not _patrician and v >= hole[1] and v < hole[3] \
 				and (u >= hole[0] - 3.0 and u < hole[0] or u >= hole[2] and u < hole[2] + 3.0):
 			return _shutters.darkened(0.15 * float(int(v) % 3 == 0))
-		if kind == "front" and not _patrician and v >= hole[1] - 2.0 and v < hole[1] \
-				and u >= hole[0] - 1.0 and u < hole[2] + 1.0 and hole[1] > 20.0:
-			return Color(0.75, 0.3, 0.3) if int(u) % 3 != 0 else Color(0.35, 0.55, 0.25)
-		if _patrician and not plain and v >= hole[3] and v < hole[3] + 2.0 \
-				and u >= hole[0] - 2.0 and u < hole[2] + 2.0:
-			return C_STONE_TRIM
+		if not plain and v >= hole[3] and v < hole[3] + 2.0 and u >= hole[0] - 1.0 and u < hole[2] + 1.0:
+			return C_STONE_TRIM.darkened(0.08)
 	return col
 
 
-## A ground-floor arch of the arcade: stone arch, the shaded walk behind.
 func _arcade_px(hu: float, hv: float, hw: float, hh: float) -> Color:
 	var r := hw * 0.5
 	var spring := hh - r
@@ -409,47 +434,42 @@ func _arcade_px(hu: float, hv: float, hw: float, hh: float) -> Color:
 		if d > r:
 			return Color(0, 0, 0, 0)
 		if d > r - 1.5:
-			return Color(0.86, 0.83, 0.76)
+			return Color(0.8, 0.77, 0.7)
 	if hu < 1.0 or hu >= hw - 1.0:
-		return Color(0.7, 0.67, 0.6)
+		return Color(0.66, 0.63, 0.57)
 	if hv < 1.0:
-		return Color(0.5, 0.47, 0.42)
+		return Color(0.48, 0.45, 0.4)
 	return C_ARCADE.lightened(0.08 * (1.0 - hv / hh))
 
 
-## The gable above the eaves: attic windows, the style's surface and trim.
-func _gable_px(kind: String, u: float, v: float, length: float, top: float) -> Color:
+func _gable_px(h: Dictionary, kind: String, u: float, v: float, length: float, top: float) -> Color:
 	var mid := length * 0.5
-	var g := v - _wall_h
+	var wall: float = h["wall"]
+	var g := v - wall
 	var front := kind == "front"
-	var style := _style if front else STYLE_PLAIN
-	if front or kind == "corner_side":
-		for wu: float in [mid - 9.0, mid + 3.0]:
+	var style: int = h["style"] if front else STYLE_PLAIN
+	var tint: Color = h["tint"]
+	if front:
+		var two := length > 30.0
+		for wu: float in ([mid - 8.0, mid + 2.0] if two else [mid - 3.0]):
 			if u >= wu and u < wu + 6.0 and g >= 6.0 and g < 15.0:
 				return art._opening(u - wu, g - 6.0, 6.0, 9.0, "window", _shutters)
-		if u >= mid - 3.0 and u < mid + 3.0 and g >= 22.0 and g < 29.0 and top - v > 6.0:
-			return art._opening(u - mid + 3.0, g - 22.0, 6.0, 7.0, "window", _shutters)
-	elif Vector2(u - mid, g - 10.0).length() < 2.6:
+		if u >= mid - 2.5 and u < mid + 2.5 and g >= 21.0 and g < 27.0 and top - v > 6.0:
+			return art._opening(u - mid + 2.5, g - 21.0, 5.0, 6.0, "window", _shutters)
+	elif Vector2(u - mid, g - 9.0).length() < 2.3:
 		return C_GLASS
 	if top - v < 2.0:
 		return C_BEAM if style == STYLE_PLAIN and not _patrician else C_STONE_TRIM
-	if _patrician:
-		if style == STYLE_STEPPED and front:
-			# Brick with white blind niches, like the gables of the Baltic towns.
-			if fposmod(u, 11.0) > 3.5 and fposmod(u, 11.0) < 8.5 and g > 18.0 and top - v > 5.0:
-				return C_STONE_TRIM.darkened(0.06 * float(int(g) % 4 == 0))
-			return _brick_px(u, v)
-		if front and absf(g - 17.0) < 1.0:
-			return C_STONE_TRIM
-		return art._plaster(int(u), int(v), Color(0.94, 0.92, 0.86) * _tint)
-	if style == STYLE_PLAIN:
-		# Timber framing in the gable.
-		if absf(g - 18.0) < 1.0 or fposmod(u, 12.0) < 1.5:
+	if style == STYLE_STEPPED and front and (_patrician or int(_rand(int(mid)) * 2.0) == 0):
+		if _patrician and fposmod(u, 11.0) > 3.5 and fposmod(u, 11.0) < 8.5 and g > 16.0 and top - v > 5.0:
+			return C_STONE_TRIM.darkened(0.06 * float(int(g) % 4 == 0))
+		return _brick_px(u, v)
+	if style == STYLE_PLAIN and not _patrician:
+		if absf(g - 16.0) < 1.0 or fposmod(u, 11.0) < 1.5:
 			return C_BEAM
-		return art._plaster(int(u), int(v), C_PLASTER * _tint)
-	if front and absf(g - 18.0) < 0.8:
-		return (C_PLASTER * _tint).darkened(0.25)
-	return art._plaster(int(u), int(v), Color(0.94, 0.92, 0.86) * _tint)
+	if front and absf(g - 16.0) < 0.8:
+		return Color(tint.r * 0.7, tint.g * 0.7, tint.b * 0.7)
+	return art._plaster(int(u), int(v), Color(tint.r * 0.96, tint.g * 0.96, tint.b * 0.96))
 
 
 func _brick_px(u: float, v: float) -> Color:
@@ -457,18 +477,12 @@ func _brick_px(u: float, v: float) -> Color:
 	var iv := int(v)
 	var row := iv / 3
 	if iv % 3 == 0 or (iu + (row % 2) * 3) % 6 == 0:
-		return Color(0.78, 0.72, 0.64)
+		return Color(0.72, 0.67, 0.6)
 	return C_BRICK.darkened(0.12 * art._hash((iu + (row % 2) * 3) / 6, row, 77))
 
 
-# --- Chimney, turret -----------------------------------------------------------------------
-
-func _draw_chimney() -> void:
-	var t_c := 0.5
-	var s_c := _sc + 0.22
-	var base := _main_z(s_c + 0.1) - 2.0
-	var top := _wall_h + _roof_h + 9.0
-	var hw := 0.08
+func _chimney(at: Vector2, base: float, top: float) -> void:
+	var hw := 0.07
 	for n: Vector2 in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
 		if not _faces_camera(n):
 			continue
@@ -476,28 +490,166 @@ func _draw_chimney() -> void:
 		var light := _wall_light(n)
 		var k := -hw
 		while k <= hw:
-			var t := t_c + (n.x * hw if n.x != 0.0 else k)
-			var s := s_c + (n.y * hw if n.y != 0.0 else k)
+			var t := at.x + (n.x * hw if n.x != 0.0 else k)
+			var s := at.y + (n.y * hw if n.y != 0.0 else k)
 			var z := base
 			while z <= top:
 				var col := _brick_px(k * U_PX + 20.0, z)
 				if z > top - 2.5:
-					col = Color(0.55, 0.5, 0.46)
+					col = Color(0.5, 0.46, 0.43)
 				_splat(t, s, z, art._lit(col, light), surface)
 				z += STEP_Z
 			k += STEP
 
 
-## Patrician corner: a round oriel on the outer corner from the first floor up, with a
-## pointed slate roof.
-func _draw_turret() -> void:
-	var s_corner := _s1 if _open_side > 0 else _s0
-	var centre := Vector2(_tf - 0.04, s_corner - 0.04 * _open_side)
+# --- Corner --------------------------------------------------------------------------------
+
+## The corner house: a wing along the row (gable to the main street) and a wing to the side
+## street (gable there), roofs meeting in a cross; either the corner is cut off with an
+## entrance bay under its own diagonal gable, or (patricians, look 1) an oriel turret.
+func _draw_corner(o: int, look: int) -> void:
+	var wall := 76.0 if _patrician else 54.0
+	var rh := 44.0 if _patrician else 32.0
+	var floors := 3 if _patrician else 2
+	var tf := 1.86
+	var s_open := 1.86 if o > 0 else 0.14
+	var s_joined := 0.0 if o > 0 else 2.0
+	var sc := (s_open + s_joined) * 0.5
+	var hs := absf(s_open - s_joined) * 0.5
+	var tc := tf * 0.5
+	var ht := tf * 0.5
+	var turret := _patrician and look == 1
+	var chamfer := 0.0 if turret else 0.42
+	var bay_style := STYLE_CURVED if look != 2 else STYLE_STEPPED
+	var slate := _patrician or look == 2
+	var tint := _palette(50)
+	var tint_side := _palette(51)
+	var h_main := {"wall": wall, "floors": floors, "tint": tint, "arcade": _patrician, "style": STYLE_STEPPED if _patrician else STYLE_PLAIN, "rh": rh}
+	var h_side := h_main.duplicate()
+	h_side["tint"] = tint_side
+	h_side["style"] = STYLE_CURVED if look == 0 else STYLE_STEPPED
+	# Diagonal cut: the points of the cut-off corner and the bay axis.
+	var ca := Vector2(tf, s_open - o * chamfer)
+	var cb := Vector2(tf - chamfer, s_open)
+	var mid := (ca + cb) * 0.5
+	var inward := Vector2(-1, -o).normalized()
+	var across := Vector2(1, -o).normalized()
+	var cut := func(t: float, s: float) -> bool:
+		return chamfer > 0.0 and (Vector2(t, s) - mid).dot(-inward) > 0.0
+	# Roofs: main (ridge along t over the row wing), side wing (ridge along s), cross.
+	var main := {Vector2(0, 1): _new_surface(), Vector2(0, -1): _new_surface()}
+	var wing := {Vector2(1, 0): _new_surface(), Vector2(-1, 0): _new_surface()}
+	var t := 0.0
+	while t <= tf + OVERHANG:
+		var s := minf(s_joined, s_open) - (OVERHANG if o < 0 else 0.0)
+		var s_end := maxf(s_joined, s_open) + (OVERHANG if o > 0 else 0.0)
+		while s <= s_end:
+			if cut.call(t, s):
+				s += STEP
+				continue
+			var zm := wall + rh * (1.0 - absf(s - sc) / hs)
+			var zw := wall + rh * (1.0 - absf(t - tc) / ht)
+			var in_side_half := (s - sc) * o > 0.0
+			var use_wing := in_side_half and zw > zm
+			if t > tf + 0.001 and not use_wing:
+				s += STEP
+				continue
+			var z := zw if use_wing else zm
+			var d: Vector2
+			if use_wing:
+				d = Vector2(1, 0) if t > tc else Vector2(-1, 0)
+			else:
+				d = Vector2(0, 1) if s > sc else Vector2(0, -1)
+			var v := (z - (wall - 8.0)) * 1.15
+			_splat(t, s, z, _roof_colour(slate, s if use_wing else t, v, (rh + 8.0) * 1.15, _roof_light(d)),
+					wing[d] if use_wing else main[d])
+			s += STEP
+		t += STEP
+	# Front (main street) wall with its gable, side-street wall with the wing's gable.
+	var front_top := func(s: float) -> float:
+		var p := clampf(1.0 - absf(s - sc) / hs, 0.0, 1.0)
+		return wall + _gable_rise(p, h_main["style"], rh)
+	var side_top := func(tt: float) -> float:
+		var p := clampf(1.0 - absf(tt - tc) / ht, 0.0, 1.0)
+		return wall + _gable_rise(p, h_side["style"], rh)
+	_wall(h_main, Vector2(tf, s_joined), ca, Vector2(1, 0), "front", front_top)
+	_wall(h_side, Vector2(0.0, s_open), cb, Vector2(0, o), "front", side_top)
+	_chimney(Vector2(0.45, sc - o * hs * 0.4), wall + rh * 0.6, wall + rh + 8.0)
+	if turret:
+		_turret(Vector2(tf - 0.04, s_open - 0.04 * o), wall)
+	elif chamfer > 0.0:
+		_bay(ca, cb, inward, across, wall, rh, bay_style, slate)
+
+
+## Entrance bay on the cut-off corner: a tall diagonal wall with a portal and its own
+## gable, and a roof running from it into the corner.
+func _bay(ca: Vector2, cb: Vector2, inward: Vector2, across: Vector2, wall: float, rh: float, style: int,
+		slate: bool) -> void:
+	var mid := (ca + cb) * 0.5
+	var half := ca.distance_to(cb) * 0.5
+	var bw := wall + 6.0
+	var brh := rh * 0.8
+	var roof := {Vector2(1, 0): _new_surface(), Vector2(-1, 0): _new_surface()}
+	var a := 0.0
+	while a <= 1.1:
+		var c := -half - OVERHANG * 0.5
+		while c <= half + OVERHANG * 0.5:
+			var p := mid + inward * a + across * c
+			var z := bw + brh * (1.0 - absf(c) / half)
+			var d := Vector2(1, 0) if c > 0.0 else Vector2(-1, 0)
+			var light := _roof_light(Vector2(1, 1)) * (1.04 if c < 0.0 else 0.92)
+			var col := _roof_colour(slate, c + 2.0, (z - (bw - 6.0)) * 1.15, (brh + 6.0) * 1.15, light)
+			_splat(p.x, p.y, z, col, roof[d])
+			c += STEP
+		a += STEP
+	var h := {"wall": bw, "floors": 3 if _patrician else 2, "tint": _palette(52), "arcade": false,
+			"style": style, "rh": brh}
+	# The diagonal wall is sampled along its own length; the gable follows the bay roof.
+	var surface := _new_surface()
+	var n := -inward
+	var light := _wall_light(n)
+	var length := 2.0 * half * U_PX
+	var holes := _bay_holes(h, length)
+	var k := 0.0
+	while k <= 2.0 * half:
+		var p := ca.lerp(cb, k / (2.0 * half))
+		var c := k - half
+		var pz := clampf(1.0 - absf(c) / half, 0.0, 1.0)
+		var zt := bw + _gable_rise(pz, style, brh)
+		var u := k * U_PX
+		var z := 0.0
+		while z <= zt:
+			var col: Color
+			if z > bw + 0.5:
+				col = _gable_px(h, "front", u, z, length, zt)
+			else:
+				col = _wall_px(h, "patrician" if _patrician else "plaster_stone", "front", u, z, length, holes)
+			if col.a > 0.0:
+				_splat(p.x, p.y, z, art._lit(col, light), surface)
+			z += STEP_Z
+		k += STEP
+
+
+func _bay_holes(h: Dictionary, length: float) -> Array:
+	var wall: float = h["wall"]
+	var mid := length * 0.5
+	# A round-headed portal and tall windows above it.
+	var holes: Array = [[mid - 8.0, 0.0, mid + 8.0, 30.0, "arcade"]]
+	var floors: int = h["floors"]
+	for f: int in range(1, floors):
+		var v0: float = wall * (0.43 if floors == 3 and f == 1 else (0.71 if floors == 3 else 0.6))
+		holes.append([mid - 4.5, v0, mid + 4.5, v0 + 14.0, "window"])
+	return holes
+
+
+## Patrician corner: a round oriel on the outer corner, with a pointed slate roof.
+func _turret(centre: Vector2, wall: float) -> void:
 	var r := 0.24
-	var z0 := _wall_h * 0.4
-	var z1 := _wall_h + 4.0
+	var z0 := wall * 0.4
+	var z1 := wall + 4.0
 	var apex := z1 + 34.0
-	var wall := _new_surface()
+	var tint := _palette(53)
+	var surface := _new_surface()
 	var a := 0.0
 	while a < TAU:
 		var n := Vector2(cos(a), sin(a))
@@ -505,12 +657,18 @@ func _draw_turret() -> void:
 		var p := centre + n * r
 		var z := z0
 		while z <= z1:
-			_splat(p.x, p.y, z, art._lit(_turret_px(a * r * U_PX, z, a), light), wall)
+			var u := a * r * U_PX
+			var col: Color = art._plaster(int(u), int(z), tint)
+			var g := _grid_dir(n)
+			for v0: float in [wall * 0.48, wall * 0.74]:
+				if z >= v0 and z < v0 + 12.0 and fposmod(u, 14.0) < 7.0 and g.x + g.y > 0.6:
+					col = art._opening(fposmod(u, 14.0), z - v0, 7.0, 12.0, "window", _shutters)
+			_splat(p.x, p.y, z, art._lit(col, light), surface)
 			z += STEP_Z
 		z = z0 - 12.0
 		while z < z0:
 			var q := centre + n * (r * (z - (z0 - 12.0)) / 12.0)
-			_splat(q.x, q.y, z, art._lit(Color(0.8, 0.77, 0.7), light * 0.9), wall)
+			_splat(q.x, q.y, z, art._lit(C_STONE_TRIM, light * 0.9), surface)
 			z += STEP_Z
 		a += 0.012
 	var roof := _new_surface()
@@ -525,26 +683,10 @@ func _draw_turret() -> void:
 			_splat(centre.x + n.x * rr, centre.y + n.y * rr, z, art._lit(col, light), roof)
 			a += 0.02 / maxf(rr, 0.05)
 		z += STEP_Z * 0.6
-	var ball := _new_surface()
-	for k: int in 30:
-		var ang := k * TAU / 30.0
-		for zz: float in [apex + 1.0, apex + 2.0, apex + 3.0]:
-			_splat(centre.x + cos(ang) * 0.025, centre.y + sin(ang) * 0.025, zz, Color(0.86, 0.7, 0.3), ball)
-
-
-func _turret_px(u: float, z: float, a: float) -> Color:
-	var g := _grid_dir(Vector2(cos(a), sin(a)))
-	for v0: float in [_wall_h * 0.48, _wall_h * 0.74]:
-		if z >= v0 and z < v0 + 12.0 and fposmod(u, 14.0) < 7.0 and g.x + g.y > 0.6:
-			return art._opening(fposmod(u, 14.0), z - v0, 7.0, 12.0, "window", _shutters)
-	if absf(z - _wall_h * 0.68) < 1.0:
-		return (C_PLASTER * _tint).darkened(0.3)
-	return art._plaster(int(u), int(z), Color(0.94, 0.92, 0.86) * _tint)
 
 
 # --- Edges and props -----------------------------------------------------------------------
 
-## A dark line where one surface ends in front of another (silhouettes, ridges, valleys).
 func _draw_edges() -> void:
 	var dark: Array[int] = []
 	for y: int in _h:
@@ -565,16 +707,16 @@ func _draw_edges() -> void:
 		_img.set_pixel(i % _w, i / _w, c.darkened(0.45))
 
 
-func _draw_props() -> void:
+func _draw_props(corner: bool) -> void:
 	var props: Array = []
 	if _back:
-		if not _corner:
-			props = [["barrel", Vector2(1.98, 0.3)], ["log_stack", Vector2(1.99, 1.15)]]
+		if not corner:
+			props = [["barrel", Vector2(1.98, 0.3)]]
 	elif _patrician:
-		if not _corner:
+		if not corner:
 			props = [["lantern", Vector2(1.94, 0.3)]]
 	else:
-		props = [["flowers", Vector2(1.92, 0.55)]]
+		props = [["flowers", Vector2(1.95, 0.55)]]
 	for prop: Array in props:
 		var p: Vector2 = prop[1]
 		art._prop(_img, Vector2(_pivot) + IsoMath.grid_to_screen(p - Vector2(2, 2)), String(prop[0]))
