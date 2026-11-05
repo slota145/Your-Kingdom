@@ -25,7 +25,7 @@ func update(province: ProvinceSim) -> void:
 	var sources: Array[BuildingState] = []
 	var parts := PackedStringArray()
 	for building: BuildingState in province.buildings.all():
-		if building.def.service_radius > 0 and building.is_complete():
+		if building.provides_service(province.tick):
 			sources.append(building)
 			parts.append("%d" % building.id)
 	var signature := ",".join(parts)

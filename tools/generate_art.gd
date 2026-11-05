@@ -153,6 +153,61 @@ const BUILDINGS := {
 		{"kind": "tower", "rect": [2.45, 2.3, 3.35, 3.2], "h": 106.0, "spire": 34.0, "walls": "timber_stone",
 			"roof": "tile", "cross": false, "clock": true}],
 		"props": [["banner", 0.35, 3.86], ["bench", 3.4, 3.7]]}],
+	# M4b (patricians): textiles, honey and mead, clay and bricks, forester, tavern.
+	"forester": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.2, 1.6], "h": 36.0, "rh": 22.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "logs", "roof": "shingle", "shutters": Color(0.3, 0.45, 0.25),
+			"chimney": [0.6, 0.5]}],
+		"pens": [[1.3, 0.15, 1.92, 1.05, "saplings"]],
+		"props": [["sapling_pots", 0.55, 1.95], ["spade", 1.4, 1.75]]}],
+	"sheep_farm": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.2, 1.5], "h": 34.0, "rh": 24.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2)}],
+		"pens": [[1.28, 0.12, 1.94, 1.05, "sheep"], [0.12, 1.58, 1.0, 1.94, "sheep"]],
+		"props": [["hay", 1.55, 1.75]]}],
+	"weaver": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.35, 1.86], "h": 42.0, "rh": 22.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "timber", "roof": "shingle",
+			"shutters": Color(0.3, 0.38, 0.6), "chimney": [0.5, 0.6]},
+		{"kind": "lean", "rect": [1.35, 0.3, 1.86, 1.86], "low": "x", "h": 30.0, "hh": 38.0,
+			"roof": "shingle", "walls": "timber", "open": true,
+			"inside": [["spinning_wheel", 1.62, 0.9], ["loom", 1.62, 1.62]]}],
+		"props": [["cloth_bolts", 0.5, 2.0], ["sign_cloth", 1.95, 0.25]]}],
+	"tailor": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.2], "h": 44.0, "rh": 22.0, "ridge": "x",
+			"ends": ["gable", "gable"], "walls": "plaster", "roof": "tile",
+			"shutters": Color(0.55, 0.3, 0.55), "chimney": [1.3, 0.55]},
+		{"kind": "lean", "rect": [0.3, 1.2, 1.86, 1.86], "low": "y", "h": 30.0, "hh": 40.0,
+			"roof": "tile", "walls": "timber", "open": true,
+			"inside": [["cutting_table", 1.1, 1.7], ["cloth_bolts", 0.55, 1.7]]}],
+		"props": [["clothes_line", 1.95, 1.3], ["sign_shirt", 0.2, 1.95]]}],
+	"apiary": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.15, 1.5], "h": 30.0, "rh": 22.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.75, 0.6, 0.2)}],
+		"props": [["skeps", 1.65, 0.45], ["skeps", 1.62, 1.25], ["skeps", 0.55, 1.85], ["flowers", 1.2, 1.95],
+			["honey_pots", 1.35, 1.75]]}],
+	"meadery": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.2], "h": 42.0, "rh": 24.0, "ridge": "x",
+			"ends": ["hip", "gable"], "walls": "timber_stone", "roof": "thatch",
+			"shutters": Color(0.7, 0.5, 0.15), "chimney": [0.5, 0.6]},
+		{"kind": "lean", "rect": [0.3, 1.2, 1.86, 1.86], "low": "y", "h": 30.0, "hh": 38.0,
+			"roof": "thatch", "walls": "timber", "open": true,
+			"inside": [["mead_vat", 0.8, 1.7], ["cask_rack", 1.45, 1.7]]}],
+		"props": [["barrel", 0.2, 1.98], ["honey_pots", 1.95, 0.6]]}],
+	"clay_pit": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.15, 1.45], "h": 30.0, "rh": 20.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.45, 0.3, 0.18)}],
+		"props": [["clay_pit", 1.58, 0.62], ["clay_mound", 0.6, 1.85], ["clay_mound", 1.62, 1.5], ["spade", 1.25, 1.85]]}],
+	"brickworks": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.25, 1.86], "h": 36.0, "rh": 20.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "planks", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)}],
+		"props": [["kiln", 1.62, 0.7], ["mould_table", 1.62, 1.72], ["brick_stack", 0.55, 2.0]]}],
+	"tavern": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.5, 1.86], "h": 58.0, "rh": 28.0, "ridge": "y",
+			"ends": ["hip", "gable"], "walls": "timber_stone", "roof": "tile",
+			"shutters": Color(0.25, 0.45, 0.3), "floors": 2, "chimney": [0.55, 0.5]}],
+		"props": [["bar_counter", 1.72, 0.55], ["tavern_table", 1.75, 1.62], ["tavern_table", 0.75, 2.02],
+			["sign_mug", 1.55, 1.0]]}],
 	"well": [{"special": "well"}],
 	"market": [{"special": "market"}],
 	"stockpile": [{"special": "yard"}],
@@ -162,6 +217,12 @@ const BUILDINGS := {
 const BURGHER_COLOURS := {
 	"single": Color(0.91, 0.86, 0.72), "end_a": Color(0.87, 0.74, 0.5),
 	"middle": Color(0.86, 0.72, 0.68), "end_b": Color(0.76, 0.8, 0.78),
+}
+
+## Patrician townhouse colours: deeper, richer than the burghers' pastels.
+const PATRICIAN_COLOURS := {
+	"single": Color(0.95, 0.74, 0.42), "end_a": Color(0.86, 0.5, 0.42),
+	"middle": Color(0.62, 0.74, 0.6), "end_b": Color(0.66, 0.72, 0.9),
 }
 
 var _entrance: Vector2i
@@ -201,6 +262,8 @@ func _make(id: String, def: BuildingDef) -> void:
 		_write(id, "construction_%d" % phase, _site_image(phase, id))
 	if def.house_levels.size() > 1:
 		_burgher_rows(id)
+		if def.house_levels.size() > 2:
+			_burgher_rows(id, 3)
 		_write(id, "upgrade_scaffold", _scaffold_image())
 
 
@@ -227,10 +290,77 @@ func _compose(look: Dictionary) -> Dictionary:
 				_round(img, pivot, vol)
 			"tower":
 				_tower(img, pivot, vol)
+	for pen: Array in look.get("pens", []):
+		_pen(img, pivot, Rect2(Vector2(pen[0], pen[1]), Vector2(float(pen[2]) - float(pen[0]), float(pen[3]) - float(pen[1]))),
+				String(pen[4]))
 	for prop: Array in look.get("props", []):
 		_prop(img, Vector2(pivot) + IsoMath.grid_to_screen(Vector2(prop[1], prop[2]) - Vector2(_footprint)), String(prop[0]))
 	_finish(img)
 	return {"img": img, "pivot": pivot}
+
+
+## A fenced enclosure on the ground (grid rect): back fences, the contents (sheep grazing on
+## trodden grass, saplings in rows), then the front fences over them.
+func _pen(img: Image, pivot: Vector2i, r: Rect2, contents: String) -> void:
+	var f := Vector2(_footprint)
+	var s := func(p: Vector2) -> Vector2: return Vector2(pivot) + IsoMath.grid_to_screen(p - f)
+	var c0: Vector2 = r.position
+	var c1 := Vector2(r.end.x, r.position.y)
+	var c2: Vector2 = r.end
+	var c3 := Vector2(r.position.x, r.end.y)
+	var ground := PackedVector2Array([s.call(c0), s.call(c1), s.call(c2), s.call(c3)])
+	var floor_col := Color(0.5, 0.56, 0.3) if contents == "sheep" else Color(0.45, 0.34, 0.22)
+	_fill_shader(img, ground, func(x: int, y: int) -> Color:
+		if contents != "sheep" and y % 3 == 0:
+			return floor_col.darkened(0.15)
+		return floor_col.darkened(0.1 * _hash(x / 2, y / 2, 73)))
+	_fence(img, s.call(c0), s.call(c1))
+	_fence(img, s.call(c0), s.call(c3))
+	match contents:
+		"sheep":
+			var spots := [Vector2(0.3, 0.3), Vector2(0.7, 0.45), Vector2(0.35, 0.72), Vector2(0.75, 0.8)]
+			var n := 4 if r.size.x * r.size.y > 0.45 else 3
+			for k: int in n:
+				var g: Vector2 = r.position + r.size * (spots[k] as Vector2)
+				_sheep(img, s.call(g), k % 2 == 0)
+		"saplings":
+			var rows := maxi(1, int(r.size.y / 0.3))
+			var cols := maxi(1, int(r.size.x / 0.3))
+			for j: int in rows:
+				for i: int in cols:
+					var g := r.position + Vector2((i + 0.5) * r.size.x / cols, (j + 0.5) * r.size.y / rows)
+					_sapling(img, s.call(g), 7.0 + 3.0 * _hash(i, j, 5))
+	_fence(img, s.call(c1), s.call(c2))
+	_fence(img, s.call(c3), s.call(c2))
+
+
+## Post-and-rail fence between two ground points.
+func _fence(img: Image, a: Vector2, b: Vector2) -> void:
+	var n := maxi(1, int(a.distance_to(b) / 7.0))
+	for k: int in n + 1:
+		var p := a.lerp(b, float(k) / n)
+		_line(img, p, p - Vector2(0, 8), C_BEAM.lightened(0.15), 1)
+	_line(img, a - Vector2(0, 7), b - Vector2(0, 7), C_PLANK.lightened(0.15), 1)
+	_line(img, a - Vector2(0, 4), b - Vector2(0, 4), C_PLANK, 1)
+
+
+## A sheep: woolly body, dark head and legs.
+func _sheep(img: Image, foot: Vector2, facing_left: bool) -> void:
+	var dir := -1.0 if facing_left else 1.0
+	for lx: float in [-3.0, -1.0, 2.0, 4.0]:
+		_line(img, foot + Vector2(lx * dir, -3), foot + Vector2(lx * dir, 0), Color(0.2, 0.17, 0.15), 1)
+	_ellipse(img, foot - Vector2(0, 6), Vector2(6, 4), Color(0.93, 0.91, 0.84))
+	_ellipse(img, foot + Vector2(-2, -8), Vector2(3, 2), Color(0.98, 0.97, 0.92))
+	_ellipse(img, foot + Vector2(6 * dir, -7), Vector2(2.2, 2.2), Color(0.22, 0.19, 0.17))
+	_px(img, Vector2i(foot + Vector2(7 * dir, -8)), Color(0.1, 0.08, 0.06))
+
+
+## A young tree tied to a stake.
+func _sapling(img: Image, foot: Vector2, height: float) -> void:
+	_line(img, foot, foot - Vector2(-2, height + 2), C_PLANK.lightened(0.2), 1)
+	_line(img, foot, foot - Vector2(0, height), Color(0.42, 0.3, 0.18), 1)
+	_ellipse(img, foot - Vector2(0, height + 1), Vector2(3, 3), Color(0.32, 0.55, 0.25))
+	_px(img, Vector2i(foot - Vector2(1, height + 2)), Color(0.5, 0.72, 0.35))
 
 
 ## Volumes in drawing order. A volume lying wholly behind another one's wall (at smaller
@@ -284,7 +414,10 @@ func _rect(vol: Dictionary) -> Rect2:
 	return Rect2(Vector2(r[0], r[1]), Vector2(float(r[2]) - float(r[0]), float(r[3]) - float(r[1])))
 
 
-func _burgher_rows(id: String) -> void:
+## Row pieces of a town house level: level 2 = burgher house (two storeys, plaster), level 3 =
+## patrician townhouse (three storeys, ashlar ground floor, richer colours, steeper tiled roof).
+func _burgher_rows(id: String, level: int = 2) -> void:
+	var patrician := level >= 3
 	for variant: String in ["single", "end_a", "middle", "end_b"]:
 		for axis: String in ["x", "y"]:
 			var along_x := axis == "x"
@@ -297,10 +430,19 @@ func _burgher_rows(id: String) -> void:
 			var house := {"kind": "house", "rect": rect, "h": 58.0, "rh": 24.0, "ridge": axis, "ends": ends,
 					"walls": "plaster_stone", "roof": "tile", "tint": BURGHER_COLOURS[variant],
 					"shutters": Color(0.3, 0.38, 0.5), "floors": 2}
+			if patrician:
+				house["h"] = 80.0
+				house["rh"] = 30.0
+				house["walls"] = "patrician"
+				house["tint"] = PATRICIAN_COLOURS[variant]
+				house["shutters"] = Color(0.2, 0.32, 0.25)
+				house["floors"] = 3
 			if variant != "middle":
 				house["chimney"] = [1.4, 0.6] if along_x else [0.6, 1.4]
 			var props: Array = [["flowers", 0.55, 1.9]] if along_x else [["flowers", 1.9, 0.55]]
-			_write(id, "level_2_%s_%s" % [variant, axis], _compose({"volumes": [house], "props": props}))
+			if patrician:
+				props = [["lantern", 0.4, 1.9]] if along_x else [["lantern", 1.9, 0.4]]
+			_write(id, "level_%d_%s_%s" % [level, variant, axis], _compose({"volumes": [house], "props": props}))
 
 
 # --- Houses --------------------------------------------------------------------------------
@@ -372,7 +514,11 @@ func _wall_face(img: Image, pivot: Vector2i, a: Vector2, b: Vector2, z0: float, 
 		var mid := (k + 0.5) * length / count
 		for floor_i: int in floors:
 			var v0: float = h * 0.36 if floors == 1 else (h * 0.14 if floor_i == 0 else h * 0.6)
+			if floors >= 3:
+				v0 = [h * 0.09, h * 0.42, h * 0.7][mini(floor_i, 2)]
 			var wh := 12.0 if not tall else h * 0.45
+			if floors >= 3 and floor_i == 1:
+				wh = 14.0   # piano nobile: taller windows on the main floor
 			if tall:
 				v0 = h * 0.3
 			if door_at >= 0.0 and absf(mid - door_u) < 14.0 and v0 < 30.0:
@@ -886,6 +1032,155 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 				var q := p + Vector2(k * 6, k * 3)
 				_line(img, q, q - Vector2(0, 7), C_BEAM.lightened(0.15), 1)
 			_line(img, p - Vector2(0, 5), p + Vector2(24, 7), C_PLANK.lightened(0.1), 1)
+		"sapling_pots":
+			for k: int in 3:
+				var q := p + Vector2(k * 7 - 7, k * 2 - 2)
+				_sapling(img, q - Vector2(0, 4), 8.0 + k)
+				_box(img, q, Vector2(6, 3), 4.0, Color(0.68, 0.38, 0.26))
+		"spade":
+			_line(img, p + Vector2(0, -2), p + Vector2(2, -18), C_PLANK.lightened(0.1), 1)
+			_line(img, p + Vector2(1, -18), p + Vector2(4, -18), C_PLANK.lightened(0.1), 1)
+			_fill(img, PackedVector2Array([p + Vector2(-2, -4), p + Vector2(2, -4), p + Vector2(1, 2), p + Vector2(-1, 2)]), C_IRON.lightened(0.35))
+		"hay":
+			_ellipse(img, p - Vector2(0, 6), Vector2(9, 6), Color(0.86, 0.74, 0.38))
+			_ellipse(img, p - Vector2(2, 10), Vector2(5, 3), Color(0.93, 0.82, 0.45))
+			_line(img, p + Vector2(-6, -6), p + Vector2(6, -5), Color(0.7, 0.58, 0.28), 1)
+		"spinning_wheel":
+			_line(img, p + Vector2(-5, 0), p + Vector2(-2, -8), C_BEAM, 1)
+			_line(img, p + Vector2(5, 0), p + Vector2(2, -8), C_BEAM, 1)
+			_ring(img, p - Vector2(0, 12), 5.0, C_PLANK.lightened(0.15))
+			for k: int in 3:
+				var a := k * PI / 3.0
+				_line(img, p - Vector2(0, 12) - Vector2(cos(a), sin(a)) * 4.0, p - Vector2(0, 12) + Vector2(cos(a), sin(a)) * 4.0, C_BEAM, 1)
+			_ellipse(img, p + Vector2(7, -9), Vector2(2, 1.5), Color(0.95, 0.93, 0.86))
+		"loom":
+			for s: float in [-8.0, 8.0]:
+				_line(img, p + Vector2(s, 2 if s > 0 else -2), p + Vector2(s, -20 + (2 if s > 0 else -2)), C_BEAM, 2)
+			_line(img, p + Vector2(-8, -20), p + Vector2(8, -16), C_BEAM, 2)
+			_line(img, p + Vector2(-8, -6), p + Vector2(8, -2), C_BEAM, 2)
+			for k: int in 7:
+				var x := -6.0 + k * 2.0
+				_line(img, p + Vector2(x, -19 + k * 0.5), p + Vector2(x, -6 + k * 0.5), Color(0.92, 0.88, 0.78), 1)
+			_fill(img, PackedVector2Array([p + Vector2(-7, -12), p + Vector2(7, -9), p + Vector2(7, -5), p + Vector2(-7, -8)]), Color(0.7, 0.3, 0.25))
+		"cloth_bolts":
+			var colours := [Color(0.75, 0.25, 0.22), Color(0.3, 0.42, 0.7), Color(0.9, 0.86, 0.72), Color(0.4, 0.6, 0.35)]
+			for k: int in 4:
+				# Two bolts at the bottom, two on top of them.
+				var q := p + Vector2((k % 2) * 7 - 4, -2 - (k / 2) * 5 + (k % 2) * 2)
+				_line(img, q + Vector2(-5, 2), q + Vector2(5, -2), colours[k], 3)
+				_ellipse(img, q + Vector2(5, -2), Vector2(1.5, 1.5), Color(colours[k]).lightened(0.25))
+		"sign_cloth", "sign_shirt", "sign_mug":
+			_line(img, p, p + Vector2(0, -32), C_BEAM, 2)
+			_line(img, p + Vector2(0, -32), p + Vector2(11, -32), C_IRON, 1)
+			_line(img, p + Vector2(3, -32), p + Vector2(3, -28), C_IRON, 1)
+			_line(img, p + Vector2(10, -32), p + Vector2(10, -28), C_IRON, 1)
+			var board := PackedVector2Array([p + Vector2(1, -28), p + Vector2(12, -28), p + Vector2(12, -19), p + Vector2(1, -19)])
+			_fill(img, board, C_PLANK.lightened(0.15))
+			_outline(img, board, C_BEAM)
+			var m := p + Vector2(6.5, -23.5)
+			match prop:
+				"sign_cloth":
+					_line(img, m + Vector2(-3, 1), m + Vector2(3, -1), Color(0.75, 0.25, 0.22), 3)
+				"sign_shirt":
+					_fill(img, PackedVector2Array([m + Vector2(-4, -3), m + Vector2(4, -3), m + Vector2(2, 3), m + Vector2(-2, 3)]), Color(0.3, 0.42, 0.7))
+					_line(img, m + Vector2(-4, -3), m + Vector2(-4, 0), Color(0.3, 0.42, 0.7), 1)
+					_line(img, m + Vector2(4, -3), m + Vector2(4, 0), Color(0.3, 0.42, 0.7), 1)
+				"sign_mug":
+					_fill(img, PackedVector2Array([m + Vector2(-3, -3), m + Vector2(2, -3), m + Vector2(2, 3), m + Vector2(-3, 3)]), Color(0.85, 0.7, 0.3))
+					_line(img, m + Vector2(-3, -3), m + Vector2(2, -3), Color(0.97, 0.95, 0.88), 1)
+					_ring(img, m + Vector2(3.5, 0), 1.8, Color(0.85, 0.7, 0.3))
+		"cutting_table":
+			_box(img, p, Vector2(16, 7), 7.0, C_PLANK, "planks")
+			_fill(img, PackedVector2Array([p + Vector2(-6, -9), p + Vector2(0, -12), p + Vector2(6, -9), p + Vector2(0, -7)]), Color(0.3, 0.42, 0.7))
+			_line(img, p + Vector2(2, -10), p + Vector2(5, -12), C_IRON.lightened(0.4), 1)
+		"clothes_line":
+			_line(img, p + Vector2(-8, 4), p + Vector2(-8, -20), C_BEAM, 1)
+			_line(img, p + Vector2(8, -4), p + Vector2(8, -28), C_BEAM, 1)
+			_line(img, p + Vector2(-8, -19), p + Vector2(8, -27), Color(0.85, 0.82, 0.72), 1)
+			var cols := [Color(0.75, 0.25, 0.22), Color(0.92, 0.9, 0.82), Color(0.4, 0.55, 0.3)]
+			for k: int in 3:
+				var q := p + Vector2(-5 + k * 5, -19 - k * 2.5)
+				_fill(img, PackedVector2Array([q + Vector2(-2, -1), q + Vector2(2, -2), q + Vector2(2, 5), q + Vector2(-2, 6)]), cols[k])
+		"skeps":
+			_line(img, p + Vector2(-11, -2), p + Vector2(9, 4), C_PLANK, 2)
+			_line(img, p + Vector2(-10, -1), p + Vector2(-10, 3), C_BEAM, 1)
+			_line(img, p + Vector2(8, 5), p + Vector2(8, 9), C_BEAM, 1)
+			for k: int in 3:
+				var q := p + Vector2(-7 + k * 7, -3 + k * 2)
+				_ellipse(img, q - Vector2(0, 5), Vector2(4, 5), Color(0.85, 0.68, 0.32))
+				for b: int in 3:
+					_line(img, q + Vector2(-4, -2 - b * 3), q + Vector2(4, -2 - b * 3), Color(0.65, 0.48, 0.2), 1)
+				_px(img, Vector2i(q + Vector2(0, -1)), Color(0.15, 0.1, 0.05))
+				_px(img, Vector2i(q + Vector2(3, -11)), Color(0.95, 0.8, 0.2))
+		"honey_pots":
+			for k: int in 3:
+				var q := p + Vector2(k * 5 - 5, k * 1.5)
+				_ellipse(img, q - Vector2(0, 3), Vector2(2.5, 3), Color(0.7, 0.42, 0.28))
+				_ellipse(img, q - Vector2(0, 6), Vector2(1.8, 0.8), Color(0.95, 0.72, 0.2))
+		"mead_vat":
+			_ellipse(img, p - Vector2(0, 6), Vector2(9, 7), Color(0.55, 0.36, 0.2))
+			_line(img, p + Vector2(-9, -9), p + Vector2(9, -9), C_IRON, 1)
+			_line(img, p + Vector2(-9, -3), p + Vector2(9, -3), C_IRON, 1)
+			_ellipse(img, p - Vector2(0, 12), Vector2(8, 3), Color(0.66, 0.46, 0.28))
+			_ellipse(img, p - Vector2(0, 12), Vector2(6, 2), Color(0.88, 0.66, 0.22))
+		"cask_rack":
+			_line(img, p + Vector2(-10, -1), p + Vector2(10, 3), C_BEAM, 2)
+			for k: int in 2:
+				var q := p + Vector2(k * 9 - 5, k * 2)
+				_ellipse(img, q - Vector2(0, 7), Vector2(5, 5), Color(0.55, 0.36, 0.2))
+				_ellipse(img, q - Vector2(-1, 7), Vector2(2.5, 3), Color(0.66, 0.46, 0.28))
+				_px(img, Vector2i(q - Vector2(-1, 7)), Color(0.9, 0.7, 0.25))
+			_barrel(img, p + Vector2(0, -8))
+		"clay_pit":
+			var pit := PackedVector2Array()
+			for k: int in 16:
+				var a := k * TAU / 16.0
+				pit.append(p + Vector2(cos(a) * 17.0, sin(a) * 8.5) * (0.9 + 0.12 * _hash(k, 3, 7)))
+			_fill_shader(img, pit, func(x: int, y: int) -> Color:
+				var d := Vector2((x - p.x) / 17.0, (y - p.y) / 8.5)
+				if d.length() < 0.35:
+					return Color(0.3, 0.42, 0.5).lightened(0.12 * float(_hash(x, y, 9) > 0.8))
+				if d.y < -0.2:
+					return Color(0.42, 0.3, 0.22).darkened(0.1 * _hash(x / 2, y, 8))
+				return Color(0.62, 0.48, 0.4).darkened(0.12 * _hash(x / 2, y / 2, 8)))
+			_outline(img, pit, Color(0.35, 0.26, 0.18))
+			for k: int in 4:
+				_line(img, p + Vector2(-12 + k * 6, -6 + absf(k - 1.5)), p + Vector2(-10 + k * 6, -4 + absf(k - 1.5)), Color(0.5, 0.36, 0.28), 1)
+		"clay_mound":
+			_ellipse(img, p - Vector2(0, 4), Vector2(8, 5), Color(0.66, 0.5, 0.42))
+			_ellipse(img, p - Vector2(1, 7), Vector2(5, 3), Color(0.72, 0.56, 0.46))
+			_px(img, Vector2i(p + Vector2(-3, -6)), Color(0.8, 0.66, 0.55))
+		"kiln":
+			_box(img, p, Vector2(22, 11), 14.0, Color(0.68, 0.34, 0.24), "brick")
+			_ellipse(img, p - Vector2(0, 19), Vector2(10, 6), Color(0.66, 0.33, 0.24))
+			_ellipse(img, p + Vector2(-5, -5), Vector2(3, 3.5), Color(0.15, 0.08, 0.05))
+			_ellipse(img, p + Vector2(-5, -4), Vector2(2, 2), Color(0.98, 0.6, 0.2))
+			_box(img, p - Vector2(-2, 22), Vector2(6, 3), 16.0, Color(0.6, 0.3, 0.22), "brick")
+		"mould_table":
+			_box(img, p, Vector2(14, 6), 7.0, C_PLANK, "planks")
+			for k: int in 3:
+				_box(img, p + Vector2(-4 + k * 4, -8 + k), Vector2(3, 1.5), 1.5, Color(0.72, 0.56, 0.46))
+		"brick_stack":
+			_box(img, p + Vector2(-6, 0), Vector2(12, 6), 9.0, Color(0.74, 0.36, 0.25), "brick")
+			_box(img, p + Vector2(6, 1), Vector2(12, 6), 6.0, Color(0.7, 0.34, 0.24), "brick")
+		"bar_counter":
+			_box(img, p, Vector2(16, 8), 9.0, C_PLANK.darkened(0.1), "planks")
+			_barrel(img, p + Vector2(-2, -9))
+			_ellipse(img, p + Vector2(5, -11), Vector2(1.5, 2), Color(0.85, 0.7, 0.3))
+		"tavern_table":
+			# Bench behind, table, bench in front; two mugs on the table.
+			_box(img, p + Vector2(4, -5), Vector2(14, 4), 4.0, C_PLANK.darkened(0.1))
+			_box(img, p, Vector2(16, 7), 8.0, C_PLANK.lightened(0.05), "planks")
+			_ellipse(img, p + Vector2(-2, -11), Vector2(1.5, 2), Color(0.85, 0.7, 0.3))
+			_px(img, Vector2i(p + Vector2(-2, -13)), Color(0.97, 0.95, 0.88))
+			_ellipse(img, p + Vector2(3, -12), Vector2(1.5, 2), Color(0.85, 0.7, 0.3))
+			_px(img, Vector2i(p + Vector2(3, -14)), Color(0.97, 0.95, 0.88))
+			_box(img, p + Vector2(-5, 5), Vector2(14, 4), 4.0, C_PLANK.darkened(0.1))
+		"lantern":
+			_line(img, p, p + Vector2(0, -26), C_IRON, 1)
+			_line(img, p + Vector2(0, -26), p + Vector2(4, -26), C_IRON, 1)
+			_fill(img, PackedVector2Array([p + Vector2(2, -25), p + Vector2(6, -25), p + Vector2(6, -20), p + Vector2(2, -20)]), Color(0.98, 0.82, 0.4))
+			_outline(img, PackedVector2Array([p + Vector2(2, -25), p + Vector2(6, -25), p + Vector2(6, -20), p + Vector2(2, -20)]), C_IRON)
 		"banner":
 			_line(img, p, p + Vector2(0, -30), C_IRON, 1)
 			_fill(img, PackedVector2Array([p + Vector2(1, -30), p + Vector2(10, -28), p + Vector2(1, -22)]), Color(0.75, 0.15, 0.2))
@@ -931,6 +1226,25 @@ func _wall_material(material: String, u: float, v: float, h: float, length: floa
 			if fposmod(u, length) < 2.0 or u > length - 2.0:
 				return _stone(iu, iv, 9).lightened(0.05)
 			return _plaster(iu, iv, Color(0.9, 0.87, 0.8) * tint)
+		"patrician":
+			# Ashlar ground floor with a cornice, tinted plaster above with string courses,
+			# stone quoins at the corners and a moulded eave.
+			var ground := h * 0.34
+			if v < ground:
+				var row := iv / 5
+				var shift := (row % 2) * 6
+				if iv % 5 == 0 or (iu + shift) % 12 == 0:
+					return C_MORTAR.lightened(0.15)
+				return Color(0.78, 0.74, 0.66).darkened(0.1 * _hash((iu + shift) / 12, row, 91))
+			if v < ground + 2.5:
+				return Color(0.86, 0.83, 0.76) if v > ground + 1.0 else Color(0.6, 0.57, 0.52)
+			if v > h - 3.0:
+				return Color(0.86, 0.83, 0.76) if v < h - 1.0 else Color(0.6, 0.57, 0.52)
+			if absf(v - h * 0.66) < 1.0:
+				return (C_PLASTER * tint).darkened(0.3)
+			if u < 4.0 or u > length - 4.0:
+				return Color(0.84, 0.8, 0.72) if int(v / 4.0) % 2 == 0 else Color(0.74, 0.7, 0.63)
+			return _plaster(iu, iv, Color(0.94, 0.92, 0.86) * tint)
 		"plaster", "plaster_stone":
 			if v < 5.0:
 				return _stone(iu, iv, 5)
@@ -1059,6 +1373,14 @@ func _gable(img: Image, pivot: Vector2i, a: Vector3, b: Vector3, apex: Vector3, 
 		var p := Vector2(x + 0.5, y + 0.5) - sa
 		var u := clampf(p.x / eu.x, 0.0, 1.0) * length if absf(eu.x) > 0.01 else 0.0
 		var v := -(p.y - eu.y * (u / maxf(length, 0.01)))
+		if material == "patrician":
+			# Plastered gable with a small round window.
+			var mid_p := length * 0.5
+			if Vector2(u - mid_p, v - 9.0).length() < 2.6:
+				return _lit(C_GLASS, light)
+			if Vector2(u - mid_p, v - 9.0).length() < 3.8:
+				return _lit(Color(0.84, 0.8, 0.72), light)
+			return _lit(_plaster(int(u), int(v), Color(0.94, 0.92, 0.86) * tint), light)
 		if gable_material.begins_with("gable_"):
 			# Timber gable: vertical boards, a small round window in the middle.
 			var mid := length * 0.5

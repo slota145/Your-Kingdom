@@ -8,6 +8,8 @@ extends Node2D
 
 ## Marker shown over buildings that miss workers (GDD §3.4).
 const NO_WORKERS_MARK := "!"
+## Marker shown over buildings whose production the player paused (M4b-1).
+const PAUSED_MARK := "II"
 
 var province: ProvinceSim
 
@@ -135,16 +137,29 @@ func _house_rows() -> Dictionary[int, Array]:
 	return HouseRowResolver.resolve(houses)
 
 
+## The building whose drawn art is under [param world_pos], the front one when several
+## overlap; 0 = none (then the tile under the cursor decides).
+func building_at(world_pos: Vector2) -> int:
+	var best := 0
+	var best_y := -INF
+	for id: int in _views:
+		for child: Node in _views[id].get_children():
+			var view := child as BuildingView
+			if view != null and view.position.y > best_y and view.is_opaque_at(world_pos):
+				best = id
+				best_y = view.position.y
+	return best
+
+
 func _update_mark(building: BuildingState) -> void:
 	var missing := building.is_complete() and building.workers.size() < building.def.worker_count()
 	var mark: Label = _marks.get(building.id)
-	if not missing:
+	if not missing and not building.paused:
 		if mark != null:
 			mark.visible = false
 		return
 	if mark == null:
 		mark = Label.new()
-		mark.text = NO_WORKERS_MARK
 		mark.add_theme_font_size_override(&"font_size", 32)
 		mark.add_theme_color_override(&"font_color", Color(1, 0.3, 0.2))
 		mark.add_theme_color_override(&"font_outline_color", Color.BLACK)
@@ -154,4 +169,7 @@ func _update_mark(building: BuildingState) -> void:
 		mark.z_index = 10
 		add_child(mark)
 		_marks[building.id] = mark
+	# Paused shows first: its workers are idle on purpose.
+	mark.text = PAUSED_MARK if building.paused else NO_WORKERS_MARK
+	mark.add_theme_color_override(&"font_color", Color(1, 0.8, 0.2) if building.paused else Color(1, 0.3, 0.2))
 	mark.visible = true

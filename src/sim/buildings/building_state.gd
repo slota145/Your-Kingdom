@@ -27,6 +27,10 @@ var supply: Stockpile
 ## Storage: good -> units construction deliveries leave in place.
 var reserves: Dictionary[StringName, int] = {}
 var priority: Priority = Priority.NORMAL
+## Production paused by the player: workers do not start a new cycle (M4b-1).
+var paused: bool = false
+## Service with def.service_needs_supply: tick until which it reaches houses (last serving).
+var serving_until: int = 0
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
@@ -57,6 +61,13 @@ func finish(data: DataRegistry) -> void:
 
 func is_complete() -> bool:
 	return not under_construction
+
+
+## Whether this finished service building reaches houses right now (at [param tick]).
+func provides_service(tick: int) -> bool:
+	if def.service_radius <= 0 or under_construction:
+		return false
+	return not def.service_needs_supply or tick < serving_until
 
 
 func entrance_tile() -> Vector2i:
@@ -110,6 +121,10 @@ func to_dict() -> Dictionary:
 		d["reserves"] = r
 	if priority != Priority.NORMAL:
 		d["priority"] = priority
+	if paused:
+		d["paused"] = true
+	if serving_until != 0:
+		d["serving_until"] = serving_until
 	return d
 
 
@@ -130,5 +145,7 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	var r: Dictionary = d.get("reserves", {})
 	for good: Variant in r:
 		b.reserves[StringName(String(good))] = int(r[good])
+	b.paused = bool(d.get("paused", false))
+	b.serving_until = int(d.get("serving_until", 0))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="AgentVisualDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/visuals/agent_visual_def.gd" id="1_vis"]
+
+[resource]
+script = ExtResource("1_vis")
+character = &"mead_maker"

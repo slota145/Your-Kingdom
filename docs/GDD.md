@@ -97,12 +97,13 @@ Potrzeby dzielą się na **podstawowe**, bez których dom traci mieszkańców i 
 |---|---|---|
 | Chłopi | żywność (dowolna z: chleb, jabłka, ryby), drewno opałowe, studnia w zasięgu | kaplica w zasięgu |
 | Mieszczanie | chleb **oraz** (mięso lub ryby), piwo, drewno opałowe, studnia w zasięgu | kościół, targowisko w zasięgu |
-| Patrycjusze | jak mieszczanie + ubrania, wino lub miód pitny | łaźnia lub tawerna |
+| Patrycjusze | jak mieszczanie + ubrania, miód pitny (wino później, M6) | tawerna w zasięgu (+ kościół, targowisko) |
 
 Zasady:
 - **Dostarczanie towarów do domów jest widoczne.** Domownik idzie do najbliższego magazynu lub targowiska po zapasy i niesie je do domu. Dom ma mały zapas, np. na 2–3 cykle konsumpcji. [SLICE]: zaopatrzenie z magazynu. Targowisko z zasięgiem i straganiarzami: [1.0].
-- **Usługi** (studnia, kaplica, kościół, łaźnia) działają przez **zasięg** liczony długością ścieżki od budynku usługowego.
+- **Usługi** (studnia, kaplica, kościół, tawerna) działają przez **zasięg** liczony długością ścieżki od budynku usługowego.
 - **Stan w M4a (2026-11-05):** chłopi jedzą chleb albo ryby (jabłka później). Wagi: chłopi żywność 35, opał 25, studnia 25, kaplica 15. Mieszczanie chleb 20, ryby 15, piwo 15, opał 15, studnia 15, kościół 10, targowisko 10. Mięso dojdzie w M4b. Targowisko w M4a to usługa z zasięgiem, bez straganiarzy.
+- **Stan w M4b-1 (decyzje 2026-11-05):** tawerna zamiast łaźni. Karczmarz przynosi piwo i miód pitny, a tawerna działa w zasięgu tylko wtedy, gdy niedawno podawała napitki. Wagi patrycjuszy: chleb 15, ubrania 15, ryby 10, piwo 10, miód pitny 10, opał 10, studnia 10, tawerna 10, kościół 5, targowisko 5. Awans do kamienicy kosztuje 6 cegieł i 4 deski.
 - **Zadowolenie** domu (0–100) wynika ze spełnienia potrzeb (proste punkty: każda spełniona potrzeba daje swoją część, w slice’ie chleb 40, opał 30, studnia 30; zadowolenie dochodzi do celu płynnie, decyzja 2026-11-05) i wpływa na:
   - podatki,
   - napływ nowych mieszkańców (gdy w domu są wolne miejsca),
@@ -176,13 +177,16 @@ wędkarz (nad rzeką) ──► ryby (później kutry na morzu, IDEAS)
 chmielnik + pola ──► chmiel
 zboże + chmiel ──► browar ──► piwo (1 + 1 = 2 beczki)
 
+[M4b-1]
+glinianka (nad wodą) ──► glina; glina + drewno ──► cegielnia ──► cegły
+owczarnia ──► wełna ──► tkalnia ──► sukno ──► krawiec ──► ubrania
+pasieka ──► miód ──► miodosytnia ──► miód pitny
+leśniczy sadzi sadzonki ──► drzewa (dla drwala)
+
 [1.0]
-glina + drewno opałowe ──► cegielnia ──► cegły
 sad ──► jabłka
 chlew ──► świnie ──► rzeźnik ──► mięso + skóry
-pasieka ──► miód ──► miodosytnia ──► miód pitny
 winnica★ ──► winogrona ──► winiarnia ──► wino
-owczarnia ──► wełna ──► tkalnia ──► sukno ──► krawiec ──► ubrania
 drewno ──► węglarz ──► węgiel drzewny
 kopalnia★ ──► ruda żelaza + węgiel ──► huta ──► żelazo ──► kowal ──► narzędzia / miecze / włócznie
 drewno ──► łuczarz ──► łuki
@@ -270,7 +274,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda i budynki blokują pr
 | Budynek | Rozmiar (kafle) | Funkcja |
 |---|---|---|
 | Ratusz | 4×4 | start osady, siedziba tragarzy |
-| Magazyn (plac składowy) | 4×4, 12 slotów | składowanie towarów |
+| Magazyn (plac składowy) | 4×4, 15 slotów (od M4b-1; wcześniej 12) | składowanie towarów |
 | Chata | 2×2 | dom poziomu 1 → 2 |
 | Studnia | 1×1 | usługa w zasięgu |
 | Drwal | 2×2 | drewno (ścina drzewa, wiąże kłody, niesie) |
@@ -285,6 +289,15 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda i budynki blokują pr
 | Kaplica [M4a] | 2×2, 10 złota | usługa w zasięgu (chłopi) |
 | Kościół [M4a] | 3×3, 60 złota | usługa w zasięgu (mieszczanie) |
 | Targowisko [M4a] | 3×3, 40 złota | usługa w zasięgu (mieszczanie) |
+| Leśniczówka [M4b-1] | 2×2, zasięg 8 | sadzi drzewa |
+| Glinianka [M4b-1] | 2×2, woda w zasięgu 5 | glina |
+| Cegielnia [M4b-1] | 2×2 | cegły |
+| Owczarnia [M4b-1] | 2×2 | wełna |
+| Tkalnia [M4b-1] | 2×2 | sukno |
+| Krawiec [M4b-1] | 2×2, 20 złota | ubrania |
+| Pasieka [M4b-1] | 2×2 | miód |
+| Miodosytnia [M4b-1] | 2×2, 30 złota | miód pitny |
+| Tawerna [M4b-1] | 2×2, 40 złota | usługa w zasięgu (patrycjusze), zużywa piwo i miód pitny |
 
 ---
 
@@ -401,6 +414,7 @@ Szczegóły i kryteria ukończenia: [ROADMAP.md](ROADMAP.md), etap M3. W skróci
 - **M3: 5/5.** „Super się ogląda”, jak mieszkańcy chodzą i wykonują swoje zadania. Filar „widoczna praca” (§1.1) działa i zostaje głównym źródłem frajdy.
 - W 20–30 minut da się dojść do 6 domów poziomu 2. Łańcuch chleba widać w trybie „śledź” od pola do kosza. Opis postaci zawsze zgadza się z tym, co robi. Teksty w PL i EN bez uwag.
 - **M4a: 4/5.** Mieszczanie, ryby, piwo i logistyka działają. Brakuje „autentyczności”, bo grafiki to wciąż placeholdery. To nie jest problem rozgrywki, tylko grafiki: wzmacnia sens etapu M9 (produkcja grafik, ROADMAP).
+- **M4b-1: 4/5, wygląd kamienic 2/5.** Patrycjusze osiągalne, tawerna działa. Wnioski: miasto ma wyglądać jak zwarte pierzeje z narożnikami, domy przodem do drogi (etap M4b-1.5), a gospodarka potrzebuje ujścia nadwyżek i podglądu zapasów oraz produkcji (M4b-2).
 
 ### 11.2 Odłożone [PÓŹNIEJ]
 

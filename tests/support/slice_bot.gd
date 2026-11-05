@@ -1,6 +1,6 @@
 class_name SliceBot
 extends RefCounted
-## A scripted player for the DoD scenarios (M3 bread chain, M4a burghers): on the real start
+## A scripted player for the DoD scenarios (M3 bread chain, M4a burghers, M4b-1 patricians): on the real start
 ## map it builds what a sensible player would, using only commands. Spots are searched near
 ## anchor tiles, so small map edits do not break it. A building it cannot afford yet is
 ## tried again later (taxes bring gold in).
@@ -54,6 +54,28 @@ func _init(simulation: Simulation) -> void:
 		{"at": 690, "build": &"stockpile", "near": town + Vector2i(18, -6)},
 		{"at": 720, "build": &"church", "near": town + Vector2i(-6, 18)},
 		{"at": 1200, "build": &"stockpile", "near": town + Vector2i(-4, -12)},
+		# M4b-1 (after the burghers are settled, minute 45): patricians (bricks, clothes, mead,
+		# a tavern) and foresters for the woodcutters.
+		{"at": 2700, "build": &"forester", "near": town + Vector2i(-10, -6)},
+		{"at": 2700, "build": &"forester", "near": town + Vector2i(-10, 6)},
+		{"at": 2760, "build": &"clay_pit", "near": town + Vector2i(21, 3)},
+		{"at": 2820, "build": &"brickworks", "near": town + Vector2i(16, -2)},
+		{"at": 2880, "build": &"sheep_farm", "near": town + Vector2i(-12, 12)},
+		{"at": 2880, "build": &"apiary", "near": town + Vector2i(18, 24)},
+		{"at": 2940, "build": &"weaver", "near": town + Vector2i(-6, 12)},
+		{"at": 2940, "build": &"apiary", "near": town + Vector2i(12, 25)},
+		{"at": 3000, "build": &"tailor", "near": town + Vector2i(-3, 12)},
+		{"at": 3000, "build": &"sheep_farm", "near": town + Vector2i(-14, 17)},
+		{"at": 3060, "build": &"meadery", "near": town + Vector2i(8, -14)},
+		{"at": 3120, "build": &"tavern", "near": town + Vector2i(8, 21)},
+		{"at": 3180, "build": &"hut", "near": town + Vector2i(-2, 19)},
+		{"at": 3180, "build": &"hut", "near": town + Vector2i(1, 19)},
+		{"at": 3240, "build": &"hut", "near": town + Vector2i(4, 19)},
+		{"at": 3240, "build": &"hut", "near": town + Vector2i(7, 19)},
+		{"at": 3300, "build": &"hop_farm", "near": town + Vector2i(-4, 26), "fields": 12},
+		{"at": 3360, "build": &"brewery", "near": town + Vector2i(-2, -14)},
+		{"at": 3600, "build": &"meadery", "near": town + Vector2i(12, -14)},
+		{"at": 3600, "build": &"apiary", "near": town + Vector2i(22, 24)},
 	]
 	_plan.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["at"]) < int(b["at"]))
 

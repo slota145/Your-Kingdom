@@ -205,3 +205,42 @@ func test_v4_fixture_loads_and_continues() -> void:
 	assert_int(sim.province.keep_for_building[&"wood"]).is_equal(10)
 	sim.run_ticks(SimFixture.ticks(60))
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## v4 -> v5: hut pantries get slots for clothes and mead; nothing is paused, no tavern has
+## served and no saplings grow.
+func test_v4_migration_adds_patrician_pantry_slots() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v4_town.json"))
+	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 4), SimFixture.registry())
+	assert_int(sim.province.resources.growing_count()).is_equal(0)
+	for b: BuildingState in sim.province.buildings.all():
+		assert_bool(b.paused).is_false()
+		assert_int(b.serving_until).is_equal(0)
+		if b.house != null:
+			assert_int(b.supply.slot_count()).is_equal(b.house_goods().size())
+		if b.def.id == &"stockpile":
+			assert_int(b.stock.slot_count()).is_equal(15)
+
+
+## A save written by save_version 5 (M4b-1: saplings growing, a paused tailor, a tavern that
+## has served, a patrician house) loads unchanged and keeps playing.
+func test_v5_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v5_town.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(5)
+	var state := SaveMigrations.migrate(document["state"], 5)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	assert_int(sim.province.resources.growing_count()).is_greater(0)
+	var levels: Array[int] = []
+	for b: BuildingState in sim.province.buildings.all():
+		if b.def.id == &"tailor":
+			assert_bool(b.paused).is_true()
+		if b.def.id == &"tavern":
+			assert_int(b.serving_until).is_greater(0)
+		if b.house != null:
+			levels.append(b.house.level)
+	assert_array(levels).contains([3])
+	sim.run_ticks(SimFixture.ticks(60))
+	assert_array(Array(sim.province.dangling_holds())).is_empty()

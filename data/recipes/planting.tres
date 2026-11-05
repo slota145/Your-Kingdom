@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+[ext_resource type="Script" path="res://src/defs/steps/plant_step_def.gd" id="10_plant"]
+
+[sub_resource type="Resource" id="goto_spot"]
+script = ExtResource("3_goto")
+target = &"plant_spot"
+resource = &"tree"
+
+[sub_resource type="Resource" id="dig"]
+script = ExtResource("4_work")
+activity = &"dig"
+duration = 3.0
+
+[sub_resource type="Resource" id="plant"]
+script = ExtResource("4_work")
+activity = &"plant"
+duration = 2.0
+
+[sub_resource type="Resource" id="place"]
+script = ExtResource("10_plant")
+sapling = &"sapling"
+
+[sub_resource type="Resource" id="go_home"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="rest"]
+script = ExtResource("4_work")
+activity = &"rest"
+duration = 4.0
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("goto_spot"), SubResource("dig"), SubResource("plant"), SubResource("place"), SubResource("go_home"), SubResource("rest")])
+id = &"planting"

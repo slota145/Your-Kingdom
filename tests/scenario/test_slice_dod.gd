@@ -6,6 +6,10 @@ extends GdUnitTestSuite
 ##   the chains keep producing.
 
 
+## Minutes the bot may take to reach 4 supplied patrician houses.
+const PATRICIAN_LIMIT := 90
+
+
 func _new_game() -> Simulation:
 	var registry := SimFixture.registry()
 	var problems := PackedStringArray()
@@ -27,6 +31,25 @@ func test_six_supplied_burgher_houses_within_50_minutes() -> void:
 	assert_array(Array(bot.log)).is_empty()
 	assert_int(int(result["minute"])).is_between(1, 50)
 	assert_int(bot.supplied_houses(2)).is_greater_equal(6)
+
+
+## M4b-1: patrician townhouses with every basic need met (also clothes and mead).
+func test_four_supplied_patrician_houses() -> void:
+	var sim := _new_game()
+	var bot := SliceBot.new(sim)
+	var result := {"minute": -1}
+	var trace := PackedStringArray()
+	bot.run(PATRICIAN_LIMIT * 60, func(minute: int) -> void:
+		if minute % 10 == 0:
+			trace.append("min %d: L3 %d (supplied %d), bricks %d, clothes %d, mead %d, gold %d" % [minute,
+					bot.houses_at_level(3), bot.supplied_houses(3), sim.province.goods_total(&"bricks"),
+					sim.province.goods_total(&"clothes"), sim.province.goods_total(&"mead"), sim.treasury.gold])
+		if result["minute"] == -1 and bot.supplied_houses(3) >= 4:
+			result["minute"] = minute)
+	print("4 supplied patrician houses at minute ", result["minute"], "; bot log: ", bot.log)
+	print("\n".join(trace))
+	assert_array(Array(bot.log)).is_empty()
+	assert_int(int(result["minute"])).is_between(1, PATRICIAN_LIMIT)
 
 
 func test_two_hours_without_deadlocks() -> void:
@@ -52,8 +75,15 @@ func test_two_hours_without_deadlocks() -> void:
 				stuck.append("minute %d: %s %d on %s step %d" % [minute, agent.kind, agent.id,
 						agent.task.kind, agent.task.step_index])
 		if minute % 20 == 0:
-			produced[minute] = sim.province.goods_total(&"bread"))
+			var unmet := {}
+			for b: BuildingState in sim.province.buildings.all():
+				if b.house != null and b.house.level >= 2:
+					for need: NeedDef in b.level_def().needs:
+						if need.is_basic and not b.house.satisfied.get(need.id, false):
+							unmet[need.id] = int(unmet.get(need.id, 0)) + 1
+			produced[minute] = "bread %d, wood %d, supplied %d, unmet %s" % [sim.province.goods_total(&"bread"),
+					sim.province.goods_total(&"wood"), bot.supplied_houses(2), unmet])
 	assert_array(stuck).is_empty()
 	# Goods keep flowing late in the game: burghers are still supplied after 2 hours.
-	print("bread in the province every 20 minutes: ", produced)
+	print("every 20 minutes: ", produced)
 	assert_int(bot.supplied_houses(2)).is_greater_equal(6)

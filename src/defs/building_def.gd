@@ -39,6 +39,9 @@ extends GameDef
 @export_range(0.0, 3600.0) var field_grow_time: float = 0.0
 ## Path length (cost units) a service reaches from the entrance; 0 = no service.
 @export_range(0, 128) var service_radius: int = 0
+## The service reaches houses only while its workers keep serving goods (a tavern needs beer
+## and mead, see ServeStepDef); false = always while finished.
+@export var service_needs_supply: bool = false
 ## Non-empty for houses: level 1, 2... (GDD §3.3).
 @export var house_levels: Array[HouseLevelDef] = []
 

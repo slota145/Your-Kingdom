@@ -44,6 +44,7 @@ func _ready() -> void:
 	if benchmark:
 		porter_count = 200
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		Engine.max_fps = 0
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--porters="):
 			porter_count = int(arg.trim_prefix("--porters="))

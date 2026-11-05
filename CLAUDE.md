@@ -12,7 +12,7 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
-**Bieżący etap:** M3 (vertical slice) zrobiony w kodzie, czeka na Twoją grę i ocenę (scena `src/main/game_scene.tscn`, „Nowa gra” w menu). Decyzje i stan DoD są w ROADMAP, M3. **M4a** (mieszczanie i logistyka) zrobione w kodzie, czeka na Twoją grę i ocenę (ROADMAP, M4a). Do podglądu w chmurze: `src/prototype/m4a/town_shot.tscn`. Otwarte z M2: pomiar FPS na laptopie (`src/prototype/m2/m2_bench.tscn`). Mury i wieża bramna są w prototypie (`src/prototype/walls/`). A1 częściowo: brakuje postaci (ROADMAP, A1).
+**Bieżący etap:** M4b-1 (patrycjusze i poprawki) zrobione w kodzie, czeka na Twoją grę i ocenę (ROADMAP, M4b-1). Następnie M4b-2 (mięso, straganiarze, kupiec wędrowny). M2, M3 i M4a ocenione 2026-11-05. Do zrzutów: `src/prototype/m4a/town_shot.tscn -- --minutes=85 --select=<id>`. Mury i wieża bramna są w prototypie (`src/prototype/walls/`). A1 częściowo: brakuje postaci (ROADMAP, A1).
 
 ## Polecenia
 

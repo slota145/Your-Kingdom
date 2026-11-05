@@ -18,12 +18,16 @@ func _run_checked(sim: Simulation, ticks: int, good: StringName, expected: Calla
 			return
 
 
+## Wood taken from the trees so far (felled trees disappear, so count against the start).
 func _wood_cut(sim: Simulation) -> Callable:
+	var start := 0
+	for tile: Vector2i in sim.province.resources.tiles_with_nodes():
+		start += sim.province.resources.amount(tile)
 	return func() -> int:
-		var cut := 0
+		var left := 0
 		for tile: Vector2i in sim.province.resources.tiles_with_nodes():
-			cut += sim.province.resources.def_at(tile).amount - sim.province.resources.amount(tile)
-		return cut
+			left += sim.province.resources.amount(tile)
+		return start - left
 
 
 func test_full_stockpile_puts_wood_on_ground_then_porters_store_it() -> void:
@@ -32,15 +36,16 @@ func test_full_stockpile_puts_wood_on_ground_then_porters_store_it() -> void:
 	var stock: BuildingState = scene["stock"]
 	for slot: int in stock.stock.slot_count():
 		stock.stock.add(&"bread", 20)
-	var bread := 12 * 20
-	_run_checked(sim, SimFixture.ticks(90), &"wood", _wood_cut(sim))
+	var bread := stock.stock.slot_count() * 20
+	var cut := _wood_cut(sim)
+	_run_checked(sim, SimFixture.ticks(90), &"wood", cut)
 	assert_int(stock.stock.total(&"wood")).is_equal(0)
 	assert_int(sim.province.piles.size()).is_greater(0)
 	assert_int(sim.province.goods_total(&"bread")).is_equal(bread)
 	# A new stockpile and a porter: the dropped wood is collected.
 	var second := SimFixture.place(sim, &"stockpile", Vector2i(4, 16))
 	SimFixture.spawn(sim, &"porter", Vector2i(10, 12))
-	_run_checked(sim, SimFixture.ticks(120), &"wood", _wood_cut(sim))
+	_run_checked(sim, SimFixture.ticks(120), &"wood", cut)
 	assert_int(second.stock.total(&"wood")).is_greater(0)
 
 

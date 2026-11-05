@@ -201,3 +201,14 @@ func test_every_profession_has_a_visual() -> void:
 	for kind: StringName in kinds:
 		assert_object(AgentVisualDef.for_kind(kind)).override_failure_message(
 				"no data/visuals/agents/%s.tres" % kind).is_not_null()
+
+
+## Every building can be built from some tab of the build menu.
+func test_every_building_is_in_the_build_menu() -> void:
+	var listed: Array[StringName] = []
+	for tab: Dictionary in BuildMenu.TABS:
+		for id: StringName in tab["buildings"]:
+			listed.append(id)
+	for building: BuildingDef in _registry.buildings():
+		assert_bool(listed.has(building.id)).override_failure_message(
+				"%s is in no build menu tab" % building.id).is_true()

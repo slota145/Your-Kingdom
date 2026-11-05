@@ -29,7 +29,9 @@ func test_wood_reaches_stockpile_within_five_minutes() -> void:
 	assert_int(stock.stock.totals().get(&"wood", 0)).is_equal(from_stacks)
 
 
-func test_trees_become_stumps_after_three_logs() -> void:
+## The last of the three logs takes the stump too: free ground is left (owner decision
+## 2026-11-05).
+func test_felled_trees_disappear_after_three_logs() -> void:
 	var sim := SimFixture.make_sim()
 	SimFixture.woodcutter_scene(sim)
 	var depleted: Array[Vector2i] = []
@@ -40,7 +42,7 @@ func test_trees_become_stumps_after_three_logs() -> void:
 				depleted.append(event["tile"])
 	assert_array(depleted).is_not_empty()
 	for tile: Vector2i in depleted:
-		assert_bool(sim.province.resources.is_depleted(tile)).is_true()
+		assert_object(sim.province.resources.def_at(tile)).is_null()
 		assert_bool(sim.province.nav.is_walkable(tile)).is_true()
 
 

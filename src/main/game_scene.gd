@@ -9,7 +9,9 @@ extends Node2D
 const START_MAP := &"riverlands"
 const QUICK_SLOT := "quick"
 ## Screen pixels around a person's feet that count as clicking them.
-const PICK_RADIUS := 18.0
+## A person is picked only when clicked close to the body, so clicks near people still
+## reach the building behind them (owner feedback 2026-11-05).
+const PICK_RADIUS := 9.0
 
 var sim: Simulation
 var view: ProvinceView
@@ -365,7 +367,10 @@ func _select_at(world_pos: Vector2) -> void:
 	if best != null:
 		_agent_panel.show_agent(sim.province, best.id)
 		return
-	var owner := sim.province.grid.occupant(ProvinceView.tile_at(world_pos))
+	# The building drawn under the cursor wins; the tile under it is only the fallback.
+	var owner := view.buildings.building_at(world_pos)
+	if owner == 0:
+		owner = sim.province.grid.occupant(ProvinceView.tile_at(world_pos))
 	if owner != 0:
 		_building_panel.show_building(sim.province, owner)
 	_update_preview()

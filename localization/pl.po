@@ -841,3 +841,344 @@ msgstr "%s na budowy: %d (warsztaty tego nie ruszą)"
 
 msgid "ui.keep.hint"
 msgstr "Jedno ustawienie dla całego królestwa. Budowy i domy mogą brać dalej."
+
+# --- M4b-1: patricians, textiles, mead, bricks, tavern, forester, pause ---
+
+msgid "good.wool.name"
+msgstr "Wełna"
+
+msgid "good.wool.desc"
+msgstr "Strzyżona z owiec w owczarni. Tkacz przędzie z niej nić i tka sukno."
+
+msgid "good.cloth.name"
+msgstr "Sukno"
+
+msgid "good.cloth.desc"
+msgstr "Tkane w tkalni z wełny. Krawiec szyje z niego ubrania."
+
+msgid "good.clothes.name"
+msgstr "Ubrania"
+
+msgid "good.clothes.desc"
+msgstr "Szyte przez krawca. Patrycjusze bez nich nie wyjdą z domu."
+
+msgid "good.honey.name"
+msgstr "Miód"
+
+msgid "good.honey.desc"
+msgstr "Zbierany z uli w pasiece. Miodosytnik robi z niego miód pitny."
+
+msgid "good.mead.name"
+msgstr "Miód pitny"
+
+msgid "good.mead.desc"
+msgstr "Napój patrycjuszy. Podaje go też karczmarz w tawernie."
+
+msgid "good.clay.name"
+msgstr "Glina"
+
+msgid "good.clay.desc"
+msgstr "Kopana nad wodą w gliniance. Cegielnia wypala z niej cegły."
+
+msgid "good.bricks.name"
+msgstr "Cegły"
+
+msgid "good.bricks.desc"
+msgstr "Wypalane z gliny w cegielni. Z nich stawia się kamienice patrycjuszy."
+
+msgid "building.forester.name"
+msgstr "Leśniczówka"
+
+msgid "building.forester.desc"
+msgstr "Leśniczy sadzi sadzonki w pobliżu, najpierw na pniakach. Po kilku minutach rosną z nich drzewa dla drwala."
+
+msgid "building.sheep_farm.name"
+msgstr "Owczarnia"
+
+msgid "building.sheep_farm.desc"
+msgstr "Pasterz pilnuje owiec w zagrodzie, strzyże je i odnosi wełnę."
+
+msgid "building.weaver.name"
+msgstr "Tkalnia"
+
+msgid "building.weaver.desc"
+msgstr "Tkacz przynosi wełnę, przędzie ją na kołowrotku, tka na krośnie i odnosi sukno."
+
+msgid "building.tailor.name"
+msgstr "Krawiec"
+
+msgid "building.tailor.desc"
+msgstr "Krawiec przynosi sukno, kroi je i szyje ubrania dla patrycjuszy."
+
+msgid "building.apiary.name"
+msgstr "Pasieka"
+
+msgid "building.apiary.desc"
+msgstr "Pszczelarz dogląda uli, zbiera miód i odnosi go do magazynu."
+
+msgid "building.meadery.name"
+msgstr "Miodosytnia"
+
+msgid "building.meadery.desc"
+msgstr "Miodosytnik przynosi miód, miesza go z wodą w kadzi, syci w beczkach i odnosi miód pitny."
+
+msgid "building.clay_pit.name"
+msgstr "Glinianka"
+
+msgid "building.clay_pit.desc"
+msgstr "Kopacz wydobywa glinę na brzegu wody. Stawiaj blisko rzeki."
+
+msgid "building.brickworks.name"
+msgstr "Cegielnia"
+
+msgid "building.brickworks.desc"
+msgstr "Ceglarz przynosi glinę i drewno, formuje cegły i wypala je w piecu."
+
+msgid "building.tavern.name"
+msgstr "Tawerna"
+
+msgid "building.tavern.desc"
+msgstr "Karczmarz przynosi piwo i miód pitny i podaje gościom. Tawerna działa w zasięgu tylko wtedy, gdy ma czym częstować."
+
+msgid "recipe.planting.name"
+msgstr "Sadzenie drzew"
+
+msgid "recipe.planting.desc"
+msgstr "Leśniczy kopie dołek, sadzi sadzonkę i wraca odpocząć."
+
+msgid "recipe.sheep_farming.name"
+msgstr "Hodowla owiec"
+
+msgid "recipe.sheep_farming.desc"
+msgstr "Pasterz pilnuje owiec, strzyże je i odnosi wełnę."
+
+msgid "recipe.weaving.name"
+msgstr "Tkanie"
+
+msgid "recipe.weaving.desc"
+msgstr "Z 2 worków wełny tkacz robi belę sukna."
+
+msgid "recipe.tailoring.name"
+msgstr "Szycie"
+
+msgid "recipe.tailoring.desc"
+msgstr "Z beli sukna krawiec szyje 2 kosze ubrań."
+
+msgid "recipe.beekeeping.name"
+msgstr "Pszczelarstwo"
+
+msgid "recipe.beekeeping.desc"
+msgstr "Pszczelarz dogląda uli i zbiera beczułkę miodu."
+
+msgid "recipe.mead_making.name"
+msgstr "Sycenie miodu"
+
+msgid "recipe.mead_making.desc"
+msgstr "Z beczułki miodu miodosytnik robi 2 beczki miodu pitnego."
+
+msgid "recipe.clay_digging.name"
+msgstr "Kopanie gliny"
+
+msgid "recipe.clay_digging.desc"
+msgstr "Kopacz idzie nad wodę i wykopuje 2 worki gliny."
+
+msgid "recipe.brickmaking.name"
+msgstr "Wypalanie cegieł"
+
+msgid "recipe.brickmaking.desc"
+msgstr "Z worka gliny i kłody drewna na opał ceglarz robi 2 palety cegieł."
+
+msgid "recipe.serving.name"
+msgstr "Podawanie napitków"
+
+msgid "recipe.serving.desc"
+msgstr "Karczmarz przynosi piwo i miód pitny i podaje gościom."
+
+msgid "resource_node.sapling.name"
+msgstr "Sadzonka"
+
+msgid "resource_node.sapling.desc"
+msgstr "Młode drzewko posadzone przez leśniczego. Po kilku minutach wyrośnie w drzewo."
+
+msgid "need.clothes.name"
+msgstr "Ubrania"
+
+msgid "need.clothes.desc"
+msgstr "Patrycjusze noszą ubrania od krawca."
+
+msgid "need.mead.name"
+msgstr "Miód pitny"
+
+msgid "need.mead.desc"
+msgstr "Patrycjusze piją miód pitny."
+
+msgid "need.tavern.name"
+msgstr "Tawerna"
+
+msgid "need.tavern.desc"
+msgstr "Patrycjusze lubią mieć tawernę w zasięgu."
+
+msgid "house_level.patrician_house.name"
+msgstr "Kamienica patrycjuszowska"
+
+msgid "house_level.patrician_house.desc"
+msgstr "Poziom 3. Mieszka tu 12 patrycjuszy. Stojące obok siebie kamienice łączą się w pierzeję."
+
+msgid "ui.kind.forester"
+msgstr "Leśniczy"
+
+msgid "ui.kind.shepherd"
+msgstr "Pasterz"
+
+msgid "ui.kind.weaver"
+msgstr "Tkacz"
+
+msgid "ui.kind.tailor"
+msgstr "Krawiec"
+
+msgid "ui.kind.beekeeper"
+msgstr "Pszczelarz"
+
+msgid "ui.kind.mead_maker"
+msgstr "Miodosytnik"
+
+msgid "ui.kind.clay_digger"
+msgstr "Kopacz gliny"
+
+msgid "ui.kind.brickmaker"
+msgstr "Ceglarz"
+
+msgid "ui.kind.innkeeper"
+msgstr "Karczmarz"
+
+msgid "ui.activity.dig"
+msgstr "kopie"
+
+msgid "ui.activity.plant"
+msgstr "sadzi drzewko"
+
+msgid "ui.activity.rest"
+msgstr "odpoczywa"
+
+msgid "ui.activity.herd"
+msgstr "pilnuje owiec"
+
+msgid "ui.activity.shear"
+msgstr "strzyże owcę"
+
+msgid "ui.activity.spin"
+msgstr "przędzie wełnę"
+
+msgid "ui.activity.weave"
+msgstr "tka na krośnie"
+
+msgid "ui.activity.cut"
+msgstr "kroi sukno"
+
+msgid "ui.activity.sew"
+msgstr "szyje"
+
+msgid "ui.activity.tend_hives"
+msgstr "dogląda uli"
+
+msgid "ui.activity.collect_honey"
+msgstr "zbiera miód"
+
+msgid "ui.activity.mix"
+msgstr "miesza miód w kadzi"
+
+msgid "ui.activity.ferment"
+msgstr "syci miód w beczkach"
+
+msgid "ui.activity.mould"
+msgstr "formuje cegły"
+
+msgid "ui.activity.fire"
+msgstr "wypala cegły w piecu"
+
+msgid "ui.activity.serve"
+msgstr "podaje gościom"
+
+msgid "ui.doing.go_plant"
+msgstr "idzie posadzić drzewko"
+
+msgid "ui.doing.paused"
+msgstr "czeka, produkcja wstrzymana"
+
+msgid "ui.building.pause"
+msgstr "Wstrzymaj produkcję"
+
+msgid "ui.building.resume"
+msgstr "Wznów produkcję"
+
+msgid "ui.building.pause_hint"
+msgstr "Pracownik zostaje w budynku, ale nie zaczyna nowej pracy. Przydaje się, gdy magazyny są pełne."
+
+msgid "ui.building.paused"
+msgstr "Produkcja wstrzymana."
+
+msgid "ui.building.service_needs_supply"
+msgstr "Nie działa: brak napitków do podania."
+
+msgid "ui.command_error.no_production"
+msgstr "Ten budynek niczego nie produkuje."
+
+msgid "good.wool.count"
+msgid_plural "good.wool.count_plural"
+msgstr[0] "%s worek wełny"
+msgstr[1] "%s worki wełny"
+msgstr[2] "%s worków wełny"
+
+msgid "good.cloth.count"
+msgid_plural "good.cloth.count_plural"
+msgstr[0] "%s bela sukna"
+msgstr[1] "%s bele sukna"
+msgstr[2] "%s bel sukna"
+
+msgid "good.clothes.count"
+msgid_plural "good.clothes.count_plural"
+msgstr[0] "%s kosz ubrań"
+msgstr[1] "%s kosze ubrań"
+msgstr[2] "%s koszy ubrań"
+
+msgid "good.honey.count"
+msgid_plural "good.honey.count_plural"
+msgstr[0] "%s beczułka miodu"
+msgstr[1] "%s beczułki miodu"
+msgstr[2] "%s beczułek miodu"
+
+msgid "good.mead.count"
+msgid_plural "good.mead.count_plural"
+msgstr[0] "%s beczka miodu pitnego"
+msgstr[1] "%s beczki miodu pitnego"
+msgstr[2] "%s beczek miodu pitnego"
+
+msgid "good.clay.count"
+msgid_plural "good.clay.count_plural"
+msgstr[0] "%s worek gliny"
+msgstr[1] "%s worki gliny"
+msgstr[2] "%s worków gliny"
+
+msgid "good.bricks.count"
+msgid_plural "good.bricks.count_plural"
+msgstr[0] "%s paleta cegieł"
+msgstr[1] "%s palety cegieł"
+msgstr[2] "%s palet cegieł"
+
+msgid "ui.build.tab.housing"
+msgstr "Mieszkańcy i usługi"
+
+msgid "ui.build.tab.resources"
+msgstr "Surowce"
+
+msgid "ui.build.tab.food"
+msgstr "Żywność"
+
+msgid "ui.build.tab.drink"
+msgstr "Napoje"
+
+msgid "ui.build.tab.textiles"
+msgstr "Tekstylia"
+
+msgid "ui.build.tab.storage"
+msgstr "Magazyny"

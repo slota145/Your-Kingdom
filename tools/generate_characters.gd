@@ -54,6 +54,26 @@ const PEOPLE := {
 			"hat": "kerchief", "hat_colour": Color(0.92, 0.9, 0.82), "dress": true, "apron": Color(0.92, 0.9, 0.84), "tool": ""},
 	"settler": {"shirt": Color(0.45, 0.4, 0.32), "legs": Color(0.36, 0.3, 0.24), "hair": Color(0.3, 0.22, 0.14),
 			"hat": "hood", "hat_colour": Color(0.4, 0.36, 0.3), "cloak": Color(0.4, 0.36, 0.3), "tool": "staff"},
+	# M4b (patricians)
+	"forester": {"shirt": Color(0.3, 0.5, 0.28), "legs": Color(0.36, 0.3, 0.22), "hair": Color(0.4, 0.26, 0.14),
+			"hat": "cap", "hat_colour": Color(0.22, 0.38, 0.2), "tool": "spade"},
+	"shepherd": {"shirt": Color(0.72, 0.66, 0.54), "legs": Color(0.42, 0.36, 0.28), "hair": Color(0.5, 0.45, 0.4),
+			"hat": "wide", "hat_colour": Color(0.45, 0.35, 0.24), "beard": true,
+			"cloak": Color(0.55, 0.5, 0.42), "tool": "crook"},
+	"weaver": {"shirt": Color(0.38, 0.42, 0.7), "legs": Color(0.5, 0.36, 0.45), "hair": Color(0.55, 0.32, 0.16),
+			"hat": "kerchief", "hat_colour": Color(0.85, 0.75, 0.45), "dress": true, "tool": ""},
+	"tailor": {"shirt": Color(0.55, 0.28, 0.5), "legs": Color(0.3, 0.28, 0.3), "hair": Color(0.2, 0.15, 0.12),
+			"hat": "cap", "hat_colour": Color(0.3, 0.2, 0.35), "tool": "shears"},
+	"beekeeper": {"shirt": Color(0.9, 0.86, 0.72), "legs": Color(0.6, 0.55, 0.45), "hair": Color(0.45, 0.3, 0.15),
+			"hat": "veil", "hat_colour": Color(0.88, 0.78, 0.48), "tool": "smoker"},
+	"mead_maker": {"shirt": Color(0.85, 0.65, 0.3), "legs": Color(0.42, 0.32, 0.24), "hair": Color(0.35, 0.22, 0.12),
+			"hat": "cap", "hat_colour": Color(0.6, 0.4, 0.15), "apron": Color(0.5, 0.34, 0.2), "tool": "paddle"},
+	"clay_digger": {"shirt": Color(0.66, 0.5, 0.4), "legs": Color(0.45, 0.35, 0.28), "hair": Color(0.25, 0.18, 0.12),
+			"hat": "kerchief", "hat_colour": Color(0.55, 0.4, 0.3), "tool": "spade"},
+	"brickmaker": {"shirt": Color(0.72, 0.36, 0.26), "legs": Color(0.35, 0.3, 0.26), "hair": Color(0.3, 0.22, 0.15),
+			"hat": "", "beard": true, "apron": Color(0.55, 0.38, 0.22), "tool": "spade"},
+	"innkeeper": {"shirt": Color(0.6, 0.2, 0.2), "legs": Color(0.32, 0.26, 0.22), "hair": Color(0.45, 0.3, 0.18),
+			"hat": "", "beard": true, "apron": Color(0.95, 0.93, 0.88), "tool": "mug"},
 }
 
 ## Activity -> motion and the tool it uses (empty = the profession's own).
@@ -63,6 +83,11 @@ const WORK := {
 	"saw": ["push", "saw"], "knead": ["push", ""], "bake": ["push", "peel"], "grind": ["stir", ""],
 	"mash": ["stir", "paddle"], "brew": ["stir", "paddle"], "sow": ["throw", ""], "bind": ["bend", ""],
 	"cast": ["cast", "rod"], "wait_bite": ["hold", "rod"], "reel": ["reel", "rod"],
+	"dig": ["low", "spade"], "plant": ["bend", ""], "rest": ["rest", ""], "herd": ["rest", "crook"],
+	"shear": ["low", "shears"], "spin": ["stir", ""], "weave": ["push", ""], "cut": ["push", "shears"],
+	"sew": ["stir", ""], "tend_hives": ["low", "smoker"], "collect_honey": ["bend", ""],
+	"mix": ["stir", "paddle"], "ferment": ["push", ""], "mould": ["push", ""], "fire": ["push", "spade"],
+	"serve": ["push", "mug"],
 }
 
 ## Activities each profession performs (recipes, fields, building).
@@ -71,6 +96,9 @@ const ACTIVITIES := {
 	"miller": ["grind"], "baker": ["knead", "bake"], "woodcutter": ["chop", "bind"],
 	"builder": ["build"], "sawyer": ["saw"], "stonecutter": ["hew", "shape"],
 	"angler": ["cast", "wait_bite", "reel"], "brewer": ["mash", "brew"],
+	"forester": ["dig", "plant", "rest"], "shepherd": ["herd", "shear"], "weaver": ["spin", "weave"],
+	"tailor": ["cut", "sew"], "beekeeper": ["tend_hives", "collect_honey"], "mead_maker": ["mix", "ferment"],
+	"clay_digger": ["dig"], "brickmaker": ["mould", "fire"], "innkeeper": ["serve"],
 }
 
 ## Carry category -> hands (side, front, height) for both hands, the good's anchor and
@@ -213,7 +241,7 @@ func _person(img: Image, foot: Vector2, pose: Dictionary) -> void:
 		_blob(foot, hand, Vector2(1.5, 1.5), SKIN)
 	var tool := String(pose.get("tool", ""))
 	if tool == "" and work == "" and not pose.has("carry"):
-		tool = String(_look["tool"]) if _look["tool"] in ["staff"] else ""
+		tool = String(_look["tool"]) if _look["tool"] in ["staff", "crook"] else ""
 	if tool != "":
 		_tool(foot, tool, hands[0], hands[1], work, t)
 	# Head, hair, face, hat.
@@ -327,6 +355,15 @@ func _draw_head(foot: Vector2, head: Vector3, hair: Color, hat: String, hat_colo
 			_ellipse(brim, Vector2(8.5, 3.0), Color(0.88, 0.76, 0.42))
 			_ellipse(brim - Vector2(0, 2.0), Vector2(4.2, 2.6), Color(0.92, 0.8, 0.46))
 			_line(brim - Vector2(4, 0.5), brim + Vector2(4, -0.5), Color(0.6, 0.35, 0.2), 1)
+		"veil":
+			# Beekeeper: pale wide hat with a mesh veil over the face (dithered, not translucent).
+			var vb := c - Vector2(0, 3.5)
+			for y: int in range(int(vb.y), int(c.y + 5.0)):
+				for x: int in range(int(c.x - 5.0), int(c.x + 6.0)):
+					if (x + y) % 2 == 0:
+						_pixel(Vector2(x, y), Color(0.82, 0.8, 0.74))
+			_ellipse(vb, Vector2(8.0, 2.8), hat_colour)
+			_ellipse(vb - Vector2(0, 2.0), Vector2(4.0, 2.4), hat_colour.lightened(0.08))
 		"wide":
 			var brim := c - Vector2(0, 3.5)
 			_ellipse(brim, Vector2(7.5, 2.6), hat_colour)
@@ -423,6 +460,31 @@ func _draw_tool(tool: String, h: Vector2, dir: Vector2, work: String, t: float) 
 				_pixel(bob, Color(0.9, 0.25, 0.2))
 		"staff":
 			_line(h + Vector2(0, 14), h - Vector2(0, 10), C_WOOD.lightened(0.1), 1)
+		"crook":
+			_line(h + Vector2(0, 14), h - Vector2(0, 14), C_WOOD.lightened(0.1), 1)
+			var top := h - Vector2(0, 14)
+			for k: int in 5:
+				var a := PI + k * PI / 4.0
+				_pixel(top + Vector2(2.0 + cos(a) * 2.0, sin(a) * 2.5), C_WOOD.lightened(0.1))
+		"spade":
+			var tip := h + dir * 13.0
+			var side := dir.orthogonal()
+			_line(h - dir * 4.0, tip, C_WOOD.lightened(0.1), 1)
+			_line(h - dir * 4.0 - side * 1.5, h - dir * 4.0 + side * 1.5, C_WOOD, 1)
+			_polygon(PackedVector2Array([tip - side * 2.0, tip + side * 2.0, tip + dir * 4.0 + side * 1.5,
+					tip + dir * 4.0 - side * 1.5]), C_IRON)
+		"shears":
+			var tip := h + dir * 5.0
+			_line(h, tip + dir.orthogonal(), C_IRON, 1)
+			_line(h, tip - dir.orthogonal(), C_IRON.darkened(0.2), 1)
+		"smoker":
+			_ellipse(h + Vector2(0, 2.5), Vector2(2.0, 3.0), Color(0.6, 0.45, 0.28))
+			_line(h - Vector2(0, 0.5), h - Vector2(-1, 3), C_IRON, 1)
+			_pixel(h - Vector2(-2, 5.0 + sin(TAU * t)), Color(0.82, 0.82, 0.8))
+		"mug":
+			_ellipse(h - Vector2(0, 1.5), Vector2(1.6, 2.2), Color(0.8, 0.62, 0.3))
+			_pixel(h - Vector2(0, 4), Color(0.97, 0.95, 0.88))
+			_pixel(h - Vector2(-2, 1.5), Color(0.6, 0.45, 0.2))
 
 
 

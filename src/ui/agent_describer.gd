@@ -23,6 +23,9 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 		if agent.cooldown > 0 and agent.last_fail != &"":
 			return _f("ui.doing.waiting", [TranslationServer.translate(
 					StringName("ui.reason.%s" % agent.last_fail))])
+		var workplace := province.buildings.get_building(agent.workplace_id)
+		if workplace != null and workplace.paused:
+			return _t("ui.doing.paused")
 		return _t("ui.doing.idle")
 	var step := task.current_step()
 	var walking := agent.path_state == Agent.PathState.MOVING or agent.path_state == Agent.PathState.WAITING
@@ -45,6 +48,8 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 		var go := step as GoToStepDef
 		if go.target == &"shore":
 			return _t("ui.doing.go_to_shore")
+		if go.target == &"plant_spot":
+			return _t("ui.doing.go_plant")
 		if go.target == &"resource":
 			return _f("ui.doing.go_to", [TranslationServer.translate(
 					StringName("resource_node.%s.name" % go.resource))])
