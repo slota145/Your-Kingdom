@@ -26,6 +26,7 @@ const TEXTURES: Dictionary[String, String] = {
 	"forest_tex": "terrain/forest/a.png", "water_tex": "terrain/water/a.png",
 	"water_alt_tex": "terrain/water/b.png", "sea_alt_tex": "terrain/sea/b.png",
 	"road_alt_tex": "terrain/road/b.png",
+	"paving_tex": "terrain/paving/a.png", "paving_alt_tex": "terrain/paving/b.png",
 	"ford_tex": "terrain/ford/a.png", "sea_tex": "terrain/sea/a.png",
 	"shallow_tex": "terrain/sea/shallow.png", "sand_tex": "terrain/sand/a.png",
 	"bank_tex": "terrain/bank/a.png", "road_tex": "terrain/road/a.png",
@@ -119,7 +120,7 @@ class _Overlay:
 
 ## Plain grass map (prototypes).
 func setup(size: Vector2i) -> void:
-	_map_image = Image.create(size.x, size.y, false, Image.FORMAT_RG8)
+	_map_image = Image.create(size.x, size.y, false, Image.FORMAT_RGB8)
 	_build(size)
 
 
@@ -188,15 +189,15 @@ static func slot_table(terrains: Array[TerrainDef]) -> PackedInt32Array:
 	return table
 
 
-## Map texel of one tile: R = art slot / 255, G = 1 on roads.
+## Map texel of one tile: R = art slot / 255, G = 1 on roads, B = 1 on paved roads.
 static func map_texel(grid: TileGrid, slots: PackedInt32Array, tile: Vector2i) -> Color:
 	var index := grid.terrain(tile)
 	var slot := slots[index] if index < slots.size() else Slot.GRASS
-	return Color(slot / 255.0, 1.0 if grid.has_road(tile) else 0.0, 0.0)
+	return Color(slot / 255.0, 1.0 if grid.has_road(tile) else 0.0, 1.0 if grid.is_paved(tile) else 0.0)
 
 
 static func build_map_image(grid: TileGrid, slots: PackedInt32Array) -> Image:
-	var image := Image.create(grid.size.x, grid.size.y, false, Image.FORMAT_RG8)
+	var image := Image.create(grid.size.x, grid.size.y, false, Image.FORMAT_RGB8)
 	for y: int in grid.size.y:
 		for x: int in grid.size.x:
 			image.set_pixel(x, y, map_texel(grid, slots, Vector2i(x, y)))

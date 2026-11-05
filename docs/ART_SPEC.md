@@ -275,7 +275,7 @@ Pliki leżą w folderze budynku domu (`buildings/hut/`), a ich nazwy wskazuje `d
 | Kategoria | Zawartość [SLICE] | [1.0] |
 |---|---|---|
 | Teren | tekstury terenu organicznego (§8.1): `grass/a`, `grass/light`, `grass/dark`, `meadow/a`, `forest/a` (ściółka), `water/a`, `water/b`, `ford/a`, `bank/a` (skarpa brzegu); ozdoby `grass_decor/*` | `sea/a`, `sea/b`, `sea/shallow`, `sand/a` (gotowe w prototypie), skała, bagno, zbocza |
-| Drogi | ubita: `road/a`, `road/b` (tekstury, kształt drogi rysuje shader) | bruk |
+| Drogi | ubita: `road/a`, `road/b`; bruk: `paving/a` (PixelLab, ten sam zestaw `create_tiles_pro` co woda i droga, kafel 14 „cobblestone pavement”, krawędzie wyrównane `pixellab_tile_edges.py`), `paving/b` (lustro `a`); kształt drogi rysuje shader | |
 | Pola | `terrain/field/`: `fallow` (ugór, też po żniwach), `plowed` (zaorane), `sown_1..3` (zasiane, rośnie, prawie dojrzałe), `ripe` (dojrzałe) | chmiel, winorośl, len (`terrain/field_<crop>/…`) |
 | Natura | drzewo liściaste: `growing_1..3`, `grown`, `falling` (anim.), `felled` (ścięte, leży, aż drwal zabierze ostatnią kłodę), `stump`. Krzaki, kamienie dekoracyjne | iglaste, skały ze złożem |
 | Stosy w magazynie | `stacks/<good_id>.png`: arkusz 4 faz (25/50/75/100%), każda faza 64×64 (romb 1 kafla + wysokość) | wszystkie towary |

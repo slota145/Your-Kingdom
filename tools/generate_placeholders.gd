@@ -93,6 +93,7 @@ func _terrain() -> void:
 		"bank/a": Color(0.45, 0.35, 0.22), "road/a": Color(0.6, 0.5, 0.36),
 		"water/b": Color(0.21, 0.42, 0.68), "sea/b": Color(0.13, 0.29, 0.52),
 		"road/b": Color(0.58, 0.48, 0.34),
+		"paving/a": Color(0.6, 0.58, 0.54), "paving/b": Color(0.56, 0.54, 0.5),
 	}
 	for name: String in ground:
 		_save(_diamond(ground[name], ground[name]), "terrain/%s.png" % name)

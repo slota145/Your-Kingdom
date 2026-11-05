@@ -291,6 +291,12 @@ msgstr "Droga"
 msgid "ui.build.road_tip"
 msgstr "Ubita droga. Przeciągnij myszą. Ludzie chodzą po niej o połowę szybciej."
 
+msgid "ui.build.paving"
+msgstr "Bruk"
+
+msgid "ui.build.paving_tip"
+msgstr "Bruk z kamienia: 1 kamień na kafel. Przeciągnij myszą po drodze albo po wolnym terenie. Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej."
+
 msgid "ui.build.demolish"
 msgstr "Rozbiórka"
 
@@ -375,6 +381,9 @@ msgstr "plac budowy (%s)"
 msgid "ui.doing.ground"
 msgstr "na ziemię"
 
+msgid "ui.doing.paving"
+msgstr "na bruk"
+
 msgid "ui.doing.yard"
 msgstr "stos przy budynku"
 
@@ -392,6 +401,9 @@ msgstr "idzie na pole"
 
 msgid "ui.doing.go_build"
 msgstr "idzie budować: %s"
+
+msgid "ui.doing.go_pave"
+msgstr "idzie układać bruk"
 
 msgid "ui.doing.move_in"
 msgstr "wprowadza się do: %s"
@@ -578,6 +590,12 @@ msgstr "Za daleko od farmy."
 
 msgid "ui.command_error.already_road"
 msgstr "Tu już jest droga."
+
+msgid "ui.command_error.already_paved"
+msgstr "Tu już jest bruk."
+
+msgid "ui.command_error.already_ordered"
+msgstr "Ten kafel czeka już na bruk."
 
 msgid "ui.command_error.no_road"
 msgstr "Tu nie ma drogi."

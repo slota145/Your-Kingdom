@@ -286,6 +286,12 @@ msgstr "Road"
 msgid "ui.build.road_tip"
 msgstr "Dirt road. Drag with the mouse. People walk half again as fast on it."
 
+msgid "ui.build.paving"
+msgstr "Paving"
+
+msgid "ui.build.paving_tip"
+msgstr "Cobbled road: 1 stone per tile. Drag with the mouse over a road or free ground. Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles."
+
 msgid "ui.build.demolish"
 msgstr "Demolish"
 
@@ -370,6 +376,9 @@ msgstr "construction site (%s)"
 msgid "ui.doing.ground"
 msgstr "onto the ground"
 
+msgid "ui.doing.paving"
+msgstr "to the paving"
+
 msgid "ui.doing.yard"
 msgstr "the stack by the building"
 
@@ -387,6 +396,9 @@ msgstr "walking to the field"
 
 msgid "ui.doing.go_build"
 msgstr "going to build: %s"
+
+msgid "ui.doing.go_pave"
+msgstr "going to lay cobbles"
 
 msgid "ui.doing.move_in"
 msgstr "moving into: %s"
@@ -573,6 +585,12 @@ msgstr "Too far from the farm."
 
 msgid "ui.command_error.already_road"
 msgstr "There is a road here already."
+
+msgid "ui.command_error.already_paved"
+msgstr "This road is paved already."
+
+msgid "ui.command_error.already_ordered"
+msgstr "This tile is already waiting for cobbles."
 
 msgid "ui.command_error.no_road"
 msgstr "There is no road here."

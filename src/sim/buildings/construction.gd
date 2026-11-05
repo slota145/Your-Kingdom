@@ -126,8 +126,8 @@ static func refund(def: BuildingDef) -> Dictionary[StringName, int]:
 	return result
 
 
-## The nearest site a builder can work on now and walk to; 0 if none. A site cut off from
-## the builder is skipped, so it never holds up the others.
+## The nearest site a builder can work on now and walk to (buildings first, then paving);
+## 0 if none. A site cut off from the builder is skipped, so it never holds up the others.
 static func site_for(province: ProvinceSim, builder: Agent) -> int:
 	var candidates: Array[Array] = []
 	for site: ConstructionSite in province.sites.values():
@@ -136,8 +136,17 @@ static func site_for(province: ProvinceSim, builder: Agent) -> int:
 		var building := province.buildings.get_building(site.building_id)
 		candidates.append([(building.entrance_tile() - builder.tile()).length_squared(), site.id,
 				building.entrance_tile()])
+	# Paving (M4b-3) comes after buildings: a builder lays cobbles when no site needs him.
+	var paving: Array[Array] = []
+	for paving_site: PavingSite in province.paving.values():
+		if paving_site.is_workable():
+			paving.append([(paving_site.next_tile() - builder.tile()).length_squared(),
+					paving_site.id, paving_site.next_tile()])
 	candidates.sort_custom(func(a: Array, b: Array) -> bool:
 		return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
+	paving.sort_custom(func(a: Array, b: Array) -> bool:
+		return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
+	candidates.append_array(paving)
 	for candidate: Array in candidates:
 		if not province.find_path(builder.tile(), candidate[2]).is_empty():
 			return candidate[1]

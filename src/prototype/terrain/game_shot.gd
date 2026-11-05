@@ -3,7 +3,8 @@ extends Node
 ## small square, moves the camera and saves a screenshot. For checking ground art in the cloud.
 ##
 ## Run: godot --path . res://src/prototype/terrain/game_shot.tscn -- --shot=<png>
-##      [--tile=X,Y] [--zoom=N] [--roads] [--plain]
+##      [--tile=X,Y] [--zoom=N] [--roads [--paved]] [--plain]
+## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
 const SETTLE_FRAMES := 10
@@ -16,6 +17,7 @@ var _tile: Vector2i = Vector2i(-1, -1)
 var _zoom: int = 1
 var _roads: bool = false
 var _plain: bool = false
+var _paved: bool = false
 
 
 func _ready() -> void:
@@ -31,6 +33,8 @@ func _ready() -> void:
 			_roads = true
 		elif arg == "--plain":
 			_plain = true
+		elif arg == "--paved":
+			_paved = true
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D
 	add_child(_game)
 
@@ -64,4 +68,7 @@ func _arrange() -> void:
 				tiles.append(centre + Vector2i(x, y))
 		sim.execute(BuildRoadCommand.new(tiles))
 		for tile: Vector2i in tiles:
+			if _paved and tile.x - centre.x >= -2:
+				sim.province.grid.set_paved(tile, true)
+				sim.province.refresh_tile(tile)
 			view.terrain.refresh_tile(tile)

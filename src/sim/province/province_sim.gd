@@ -19,6 +19,8 @@ var agents: AgentStore = AgentStore.new()
 var piles: Dictionary[int, GroundPile] = {}
 ## Construction and upgrade sites by entity id.
 var sites: Dictionary[int, ConstructionSite] = {}
+## Road tiles waiting for cobbles, by entity id (M4b-3).
+var paving: Dictionary[int, PavingSite] = {}
 var fields: FieldStore = FieldStore.new()
 var jobs: JobBoard = JobBoard.new()
 var paths: PathRequestQueue = PathRequestQueue.new()
@@ -40,6 +42,8 @@ var terrains: Array[TerrainDef] = []
 
 ## Walking cost on a dirt road: +50% speed (GDD §5.2).
 const ROAD_COST := 0.67
+## Walking cost on a paved road: +80% speed (GDD §5.2, M4b-3).
+const PAVED_COST := 0.55
 ## Walking cost on a field tile (ARCHITECTURE §5.3).
 const FIELD_COST := 1.2
 ## How often young trees are checked for growing up (1 s).
@@ -95,7 +99,7 @@ func refresh_tile(tile: Vector2i) -> void:
 	nav.set_solid(tile, is_tile_solid(tile))
 	var cost := 1.0
 	if grid.has_road(tile):
-		cost = ROAD_COST
+		cost = PAVED_COST if grid.is_paved(tile) else ROAD_COST
 	elif fields.has_field(tile):
 		cost = FIELD_COST
 	else:
@@ -775,8 +779,95 @@ func road_error(tile: Vector2i) -> StringName:
 
 func set_road(tile: Vector2i, road: bool) -> void:
 	grid.set_road(tile, road)
+	if not road:
+		_withdraw_paving(tile)
 	refresh_tile(tile)
-	events.emit(&"road_changed", {"tile": tile, "road": road})
+	events.emit(&"road_changed", {"tile": tile, "road": road, "paved": false})
+
+
+## &"" when [param tile] can be ordered paved: a dirt road not ordered yet, or free ground
+## (it becomes dirt road at once).
+func paving_error(tile: Vector2i) -> StringName:
+	if not grid.is_inside(tile):
+		return &"outside_map"
+	if grid.is_paved(tile):
+		return &"already_paved"
+	if paving_site_at(tile) != 0:
+		return &"already_ordered"
+	if grid.has_road(tile):
+		return &""
+	return _free_ground_error(tile)
+
+
+## The paving site that still has [param tile] to pave, 0 if none.
+func paving_site_at(tile: Vector2i) -> int:
+	for paving_site: PavingSite in paving.values():
+		if paving_site.tiles.has(tile):
+			return paving_site.id
+	return 0
+
+
+## Orders [param tiles] paved (checked with paving_error): free ground becomes dirt road now,
+## porters bring the stone and a builder lays the cobbles. Returns the site id.
+func order_paving(tiles: Array[Vector2i]) -> int:
+	if tiles.is_empty():
+		return 0
+	for tile: Vector2i in tiles:
+		if not grid.has_road(tile):
+			set_road(tile, true)
+	var paving_site := PavingSite.new(ids.take(), tiles.duplicate(), data)
+	paving[paving_site.id] = paving_site
+	jobs.add(PavingSite.GOOD, tiles.size() * PavingSite.STONE_PER_TILE, 0, paving_site.id)
+	events.emit(&"paving_ordered", {"site": paving_site.id, "tiles": tiles.size()})
+	return paving_site.id
+
+
+## Lays the cobbles of the next tile of [param paving_site] with its stone.
+func pave_next(paving_site: PavingSite) -> void:
+	var tile := paving_site.tiles.pop_front() as Vector2i
+	paving_site.stock.remove(PavingSite.GOOD, PavingSite.STONE_PER_TILE)
+	ledger.used(PavingSite.GOOD, PavingSite.STONE_PER_TILE, tick)
+	paving_site.work_left = PavingSite.tile_ticks()
+	grid.set_paved(tile, true)
+	refresh_tile(tile)
+	events.emit(&"road_changed", {"tile": tile, "road": true, "paved": true})
+	if paving_site.tiles.is_empty():
+		_close_paving(paving_site, tile)
+
+
+## A road tile removed before it was paved leaves its site (stone not needed any more is
+## not asked for; stone already there goes on the ground when the site closes).
+func _withdraw_paving(tile: Vector2i) -> void:
+	var id := paving_site_at(tile)
+	if id == 0:
+		return
+	var paving_site := paving[id]
+	var first := paving_site.next_tile() == tile
+	paving_site.tiles.erase(tile)
+	if paving_site.tiles.is_empty():
+		_close_paving(paving_site, tile)
+		return
+	if first:
+		paving_site.work_left = PavingSite.tile_ticks()
+		# Porters on the way head for the new next tile on arrival (access_tile).
+	for request: TransportRequest in jobs.all():
+		if request.dest_id == id:
+			jobs.set_amount(PavingSite.GOOD, request.source_id, id,
+					paving_site.stone_missing() - request.in_flight)
+
+
+## Removes a paving site; stone left over goes on the ground at [param at] (its last tile).
+func _close_paving(paving_site: PavingSite, at: Vector2i = Agent.NO_TILE) -> void:
+	paving.erase(paving_site.id)
+	jobs.cancel_for_entity(paving_site.id)
+	for agent: Agent in agents.all():
+		# Builders finish on their own when they find the site gone.
+		if agent.task != null and int(agent.task.bb.get("_dst", 0)) == paving_site.id:
+			TaskRunner.fail(self, agent)
+	var leftovers := paving_site.stock.totals()
+	for good: StringName in leftovers:
+		drop_goods(at if at != Agent.NO_TILE else entry_tile, good, leftovers[good])
+	events.emit(&"paving_closed", {"site": paving_site.id})
 
 
 func _free_ground_error(tile: Vector2i) -> StringName:
@@ -860,6 +951,9 @@ func storage(id: int) -> Stockpile:
 	var site := sites.get(id) as ConstructionSite
 	if site != null:
 		return site.stock
+	var paving_site := paving.get(id) as PavingSite
+	if paving_site != null:
+		return paving_site.stock
 	var pile := piles.get(id) as GroundPile
 	if pile != null:
 		return pile.stock
@@ -877,6 +971,8 @@ func all_storages() -> Dictionary[int, Stockpile]:
 			result[yard_id(building.id)] = building.yard
 	for site: ConstructionSite in sites.values():
 		result[site.id] = site.stock
+	for paving_site: PavingSite in paving.values():
+		result[paving_site.id] = paving_site.stock
 	for pile: GroundPile in piles.values():
 		result[pile.id] = pile.stock
 	if merchant.wagon != null:
@@ -890,7 +986,7 @@ func accepts_deliveries(id: int) -> bool:
 	var building := buildings.get_building(id)
 	if building != null:
 		return building.stock != null or building.supply != null
-	return sites.has(id)
+	return sites.has(id) or paving.has(id)
 
 
 func access_tile(id: int) -> Vector2i:
@@ -901,6 +997,9 @@ func access_tile(id: int) -> Vector2i:
 	if site != null:
 		var target := buildings.get_building(site.building_id)
 		return target.entrance_tile() if target != null else Agent.NO_TILE
+	var paving_site := paving.get(id) as PavingSite
+	if paving_site != null:
+		return paving_site.next_tile()
 	var pile := piles.get(id) as GroundPile
 	if pile != null:
 		return pile.tile
@@ -1136,12 +1235,16 @@ func to_dict() -> Dictionary:
 	var site_list: Array = []
 	for site: ConstructionSite in sites.values():
 		site_list.append(site.to_dict())
+	var paving_list: Array = []
+	for paving_site: PavingSite in paving.values():
+		paving_list.append(paving_site.to_dict())
 	return {
 		"grid": grid.to_dict(),
 		"resources": resources.to_dict(),
 		"buildings": buildings.to_dict(),
 		"piles": pile_list,
 		"sites": site_list,
+		"paving": paving_list,
 		"fields": fields.to_dict(),
 		"entry": SimCodec.vec2i(entry_tile),
 		"keep_for_building": _keep_to_dict(),
@@ -1175,6 +1278,9 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 	for sd: Variant in d.get("sites", []):
 		var site := ConstructionSite.from_dict(sd, registry)
 		province.sites[site.id] = site
+	for pd: Variant in d.get("paving", []):
+		var paving_site := PavingSite.from_dict(pd, registry)
+		province.paving[paving_site.id] = paving_site
 	province.fields = FieldStore.from_dict(d.get("fields", []))
 	province.entry_tile = SimCodec.to_vec2i(d.get("entry", [0, 0]))
 	var keep: Dictionary = d.get("keep_for_building", {})

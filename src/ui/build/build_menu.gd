@@ -49,6 +49,9 @@ func setup(registry: DataRegistry) -> void:
 	var road := UiKit.button("ui.build.road", func() -> void: tool_selected.emit({"kind": &"road"}))
 	road.tooltip_text = "ui.build.road_tip"
 	tabs.add_child(road)
+	var paving := UiKit.button("ui.build.paving", func() -> void: tool_selected.emit({"kind": &"paving"}))
+	paving.tooltip_text = "ui.build.paving_tip"
+	tabs.add_child(paving)
 	var demolish := UiKit.button("ui.build.demolish", func() -> void: tool_selected.emit({"kind": &"demolish"}))
 	demolish.tooltip_text = "ui.build.demolish_tip"
 	tabs.add_child(demolish)

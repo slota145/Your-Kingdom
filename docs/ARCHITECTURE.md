@@ -260,13 +260,16 @@ Testy jednostkowe obejmują każdy z tych przypadków.
 - **Kupiec (`Merchant`, `ProvinceSim.merchant`):** stany `AWAY → COMING → TRADING → LEAVING`. Postać `merchant` z zadaniem `KIND_MERCHANT` (`MerchantStep`). Przy targowisku otwiera wóz: `Stockpile` z własnym id encji (`wagon_id`), adresowany jak magazyn (`storage`, `access_tile` = miejsce wozu). Co 1 s płaci za towar dowieziony na wóz (cena bazowa) i ustawia zlecenia „z dowolnego magazynu na wóz” na nadwyżkę ponad próg gracza (`JobBoard.set_amount`). `BuyPigCommand` płaci i dodaje świnię na wóz ze zleceniem do chlewu; nieodebrane świnie są zwracane w złocie, gdy kupiec odjeżdża. Progi: `SetSellAboveCommand` (`Merchant.sell_above`).
 - **Liczniki:** `GoodsLedger` (`ProvinceSim.ledger`) liczy towary wytworzone (zbiór, żniwa, produkcja, narodziny, kupno) i zużyte (jedzenie, przetwarzanie, budowy, tawerna, sprzedaż) w 5 minutowych kubełkach. Tylko statystyka dla okna „Zapasy królestwa”, nie trafia do zapisu.
 
+**Realizacja (M4b-3):**
+- **Bruk:** `TileGrid` trzyma w warstwie dróg 0 (brak), 1 (ubita) albo 2 (bruk), więc format siatki się nie zmienia. `BuildPavingCommand` zamienia wolny teren w drogę ubitą i zakłada `PavingSite` (własne id, `Stockpile` na kamień, kolejka kafli), który zamawia 1 kamień na kafel przez `JobBoard` (z rezerwą magazynu jak budowa). `access_tile` placu to następny kafel do ułożenia, więc tragarze kładą kamień tam, gdzie pracuje budowniczy. `Construction.site_for` daje budowniczemu najpierw budowy, potem bruk; `BuildStep` idzie na kafel, pracuje 3 s i woła `ProvinceSim.pave_next`. Usunięcie drogi z zamówionego kafla zmniejsza zamówienie (`_withdraw_paving`); kamień, który został, ląduje na ziemi. Widok: niebieski kanał mapy terenu oznacza bruk, a shader rysuje go teksturą `terrain/paving`. Zapis v8 (`paving`).
+
 ### 5.3 Pathfinding
 
 **Decyzja:** `AStarGrid2D` (implementacja C++ w Godocie) na siatce kafli w **przestrzeni siatki, nie ekranu**, z 8 kierunkami ruchu i `DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES`, co zapobiega przechodzeniu „przez róg” między dwoma ukośnymi kaflami muru.
 
 | Element | Ustalenie |
 |---|---|
-| Koszty kafli | `weight_scale` z `TerrainDef.move_cost`: droga ubita 0,67 (M3, zgodnie z GDD +50%); bruk 0,5; trawa i łąka 1,0; pole 1,2; las 1,5 (także drzewo na trawie, M4b-2); bród 2,0. Woda, skały i budynki są `solid`; drzewa nie (M4b-2). |
+| Koszty kafli | `weight_scale` z `TerrainDef.move_cost`: droga ubita 0,67 (M3, zgodnie z GDD +50%); bruk 0,55 (M4b-3, +80%); trawa i łąka 1,0; pole 1,2; las 1,5 (także drzewo na trawie, M4b-2); bród 2,0. Woda, skały i budynki są `solid`; drzewa nie (M4b-2). |
 | Zmiany mapy | Budowa lub rozbiórka aktualizuje komórki (`set_point_solid`, `set_point_weight_scale`). Ścieżki niosą numer wersji siatki. Postać, której następny odcinek stał się nieprzejezdny, liczy ścieżkę od nowa. |
 | Budżet | Kolejka zapytań `PathRequestQueue` ma limit, wyjściowo **32 zapytania na tick**. Postać czeka na ścieżkę w stanie `idle` przez co najwyżej kilka ticków, co jest niewidoczne dla gracza. |
 | Pamięć podręczna | Częste trasy (budynek → najbliższy magazyn) są cache’owane per para (budynek, magazyn) i unieważniane przy zmianie wersji siatki w obszarze trasy. **W M2 jeszcze niepotrzebne** (500 tragarzy mieści się w budżecie, §9.3). Wracamy do tego w M4, jeśli pomiar pokaże piki. |

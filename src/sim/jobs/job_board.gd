@@ -138,7 +138,7 @@ func _assign_one(province: ProvinceSim, request: TransportRequest, idle: Array[A
 		_requests.erase(request.id)
 		return false
 	# Construction leaves each storage's reserve alone (firewood for houses, ROADMAP M4).
-	var keep_reserve := province.sites.has(request.dest_id)
+	var keep_reserve := province.sites.has(request.dest_id) or province.paving.has(request.dest_id)
 	var src := request.source_id
 	if src == 0:
 		src = province.nearest_source(request.good, load, province.access_tile(request.dest_id),

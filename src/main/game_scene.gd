@@ -240,6 +240,9 @@ func _update_preview() -> void:
 		&"road":
 			for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
 				tiles[t] = "ok" if sim.province.road_error(t) == &"" else "bad"
+		&"paving":
+			for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
+				tiles[t] = "ok" if sim.province.paving_error(t) == &"" else "bad"
 		&"field":
 			var farm := sim.province.buildings.get_building(int(_tool["farm"]))
 			if farm != null:
@@ -374,7 +377,7 @@ func _on_left_press() -> void:
 			var command := _demolish_target(_hover)
 			if command != null:
 				_execute(command)
-		&"road", &"field", &"plant":
+		&"road", &"paving", &"field", &"plant":
 			_dragging = true
 			_drag_tiles = [_hover]
 			_update_preview()
@@ -392,6 +395,13 @@ func _on_left_release() -> void:
 				tiles.append(t)
 		if not tiles.is_empty():
 			_execute(BuildRoadCommand.new(tiles))
+	elif kind == &"paving":
+		var to_pave: Array[Vector2i] = []
+		for t: Vector2i in _drag_tiles:
+			if sim.province.paving_error(t) == &"":
+				to_pave.append(t)
+		if not to_pave.is_empty():
+			_execute(BuildPavingCommand.new(to_pave))
 	elif kind == &"plant":
 		var marked: Array[Vector2i] = _drag_tiles.duplicate()
 		_execute(SetPlantAreaCommand.new(int(_tool["building"]), marked))
