@@ -12,10 +12,25 @@ extends GameDef
 @export var build_cost: Dictionary[StringName, int] = {}
 ## Number of worker slots.
 @export_range(0, 64) var workers: int = 0
+## Number of stockpile slots; > 0 makes the building a storage (GDD §4.2).
+@export_range(0, 64) var storage_slots: int = 0
+## Work cycle of the workers; null for buildings without production.
+@export var recipe: RecipeDef
+## How far (tiles, from the entrance) workers look for resource nodes.
+@export_range(0, 64) var work_radius: int = 0
 
 
 func get_kind() -> StringName:
 	return &"building"
+
+
+## Footprint tiles in grid space for a building placed at [param origin].
+func footprint_tiles(origin: Vector2i) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for y: int in footprint.y:
+		for x: int in footprint.x:
+			tiles.append(origin + Vector2i(x, y))
+	return tiles
 
 
 func is_entrance_on_edge() -> bool:

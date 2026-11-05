@@ -95,6 +95,7 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 - Brama zmieniła formę: zamiast `gate_x/gate_y` jest złożona z kawałków (`gate_half_*`, `gate_lintel_*`), żeby postać w przejściu sortowała się poprawnie.
 - Tryb „obniżone budynki” daje schodkową linię cięcia. Do wygładzenia shaderem przy grafikach docelowych.
 - Kod prototypowy leży w `src/prototype/m1/` (ProtoCrowd, piaskownica, benchmark, porównania) i zostanie zastąpiony w M2. Kod docelowy (IsoMath, NavGrid, WallConnectivity, WallGeometry, BuildingSlicer, kamera, widoki) zostaje.
+  - M2: piaskownicę i benchmark M1 zastąpiła `src/prototype/m2/` (prawdziwa symulacja). Piaskownica murów też działa już na prawdziwej symulacji (tragarze między magazynami przechodzą przez bramy), a `ProtoCrowd` został usunięty.
 
 ---
 
@@ -126,16 +127,16 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 - `Simulation`, `SimClock` (10 Hz, pauza, 1×/2×/4×), `SimRng`, komendy i zdarzenia,
 - `TileGrid`, `NavGrid` z budżetem zapytań, aktualizacja przy budowie,
 - `BuildingStore`, komenda budowy (na razie natychmiastowej), `AgentStore`, `TaskRunner` z krokami `GoTo`, `Fetch`, `Work`, `Produce` i `Deliver`,
-- `Inventory` z rezerwacjami, `Stockpile` ze slotami, `StockpileLayout`,
+- `Inventory` z rezerwacjami, `Stockpile` ze slotami, `StockpileLayout` (rezerwacje są częścią `Stockpile`, zob. ARCHITECTURE §5.2),
 - `JobBoard` i `TransportRequest` z dopasowaniem tragarzy,
 - widok: `AgentViewPool`, interpolacja ruchu, stosy w magazynie, lista towarów w UI z tych samych danych,
 - `SaveService`: zapis i odczyt z wersją, test round-trip.
 
 **DoD:**
-- [ ] Test scenariuszowy: drwal ścina drzewa i odnosi drewno do magazynu. Po 5 min gry w magazynie jest > 0 drewna, a liczba w UI = suma stosów.
-- [ ] Testy błędów: magazyn pełny, cel zburzony w trakcie, brak ścieżki. Za każdym razem brak utraty towaru i zawieszonych rezerwacji.
-- [ ] Zapis → odczyt → zapis daje identyczny wynik, a symulacja po wczytaniu przebiega deterministycznie tak samo.
-- [ ] Gra przy 4× działa płynnie z 200 postaciami (tragarze z losowymi zleceniami).
+- [x] Test scenariuszowy: drwal ścina drzewa i odnosi drewno do magazynu. Po 5 min gry w magazynie jest > 0 drewna, a liczba w UI = suma stosów. (`tests/scenario/test_woodcutter.gd`: ok. 10 kłód w 5 min)
+- [x] Testy błędów: magazyn pełny, cel zburzony w trakcie, brak ścieżki. Za każdym razem brak utraty towaru i zawieszonych rezerwacji. (`tests/scenario/test_failures.gd`: niezmiennik sprawdzany w każdym ticku)
+- [x] Zapis → odczyt → zapis daje identyczny wynik, a symulacja po wczytaniu przebiega deterministycznie tak samo. (`tests/scenario/test_save_round_trip.gd`, fixtura zapisu v1)
+- [ ] Gra przy 4× działa płynnie z 200 postaciami (tragarze z losowymi zleceniami). Headless: tick 1,1 ms przy 200 i 2,1 ms przy 500 tragarzach (ARCHITECTURE §9.3). **Czeka na pomiar FPS na laptopie** (`m2_bench.tscn`).
 
 ---
 
@@ -163,7 +164,7 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
   - zadowolenie,
   - awans chaty do domu mieszczańskiego po dostarczeniu desek lub drewna,
   - łączenie domów poziomu 2 w pierzeję,
-- **ludność:** napływ do wolnych miejsc, siła robocza, przydział pracowników,
+- **ludność:** napływ do wolnych miejsc, siła robocza, przydział pracowników (domyślnie wolny mieszkaniec sam dostaje przydział do nowo postawionego budynku; w M2 robi to jeszcze komenda),
 - drogi (ubite): przyspieszenie ruchu, bez wozów,
 - **UI:**
   - menu budowy,

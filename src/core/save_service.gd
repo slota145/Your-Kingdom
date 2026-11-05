@@ -1,9 +1,8 @@
 extends Node
 ## Autoload "SaveService": writes and reads save files (ARCHITECTURE §8).
 ##
-## A save is a compressed JSON document: {"header": {...}, "state": {...}}.
-## The simulation state itself (to_dict/from_dict) is wired in M2; migrations
-## are added whenever SAVE_VERSION is bumped.
+## A save is a compressed JSON document: {"header": {...}, "state": {...}} where state is
+## Simulation.to_dict(). Migrations are added whenever SAVE_VERSION is bumped.
 
 const SAVE_VERSION := 1
 const SAVE_DIR := "user://saves"
@@ -12,6 +11,18 @@ const EXTENSION := ".sav"
 
 func slot_path(slot_name: String) -> String:
 	return SAVE_DIR.path_join(slot_name + EXTENSION)
+
+
+func save_simulation(path: String, sim: Simulation) -> Error:
+	return save_state(path, sim.to_dict())
+
+
+## Returns null when the file cannot be read.
+func load_simulation(path: String, registry: DataRegistry) -> Simulation:
+	var state := load_state(path)
+	if state.is_empty():
+		return null
+	return Simulation.from_dict(state, registry)
 
 
 func save_state(path: String, state: Dictionary) -> Error:
@@ -27,7 +38,8 @@ func save_state(path: String, state: Dictionary) -> Error:
 		},
 		"state": state,
 	}
-	file.store_string(JSON.stringify(document))
+	# Full precision: positions are floats and must come back bit-identical (determinism).
+	file.store_string(JSON.stringify(document, "", false, true))
 	file.close()
 	return OK
 

@@ -14,7 +14,7 @@ msgid "ui.main.title"
 msgstr "Twoje Królestwo"
 
 msgid "ui.main.subtitle"
-msgstr "Etap M1: prototyp czytelności, sortowania i wydajności"
+msgstr "Etap M2: rdzeń symulacji"
 
 msgid "ui.main.toggle_language"
 msgstr "Zmień język: English"
@@ -23,10 +23,10 @@ msgid "ui.main.plural_demo"
 msgstr "Przykład form liczby mnogiej:"
 
 msgid "ui.main.open_sandbox"
-msgstr "Prototyp M1: piaskownica (sortowanie, mury, postacie)"
+msgstr "Prototyp M2: drwal, magazyny i tragarze"
 
 msgid "ui.main.open_benchmark"
-msgstr "Prototyp M1: test wydajności (500 postaci)"
+msgstr "Prototyp M2: test wydajności (200 tragarzy, 4×)"
 
 msgid "ui.main.glyph_test"
 msgstr "Zażółć gęślą jaźń · ZAŻÓŁĆ GĘŚLĄ JAŹŃ"
@@ -94,3 +94,33 @@ msgstr "Piekarnia"
 
 msgid "building.bakery.desc"
 msgstr "Piekarz przynosi mąkę, zagniata ciasto i wypieka chleb w piecu."
+
+msgid "building.stockpile.name"
+msgstr "Magazyn"
+
+msgid "building.stockpile.desc"
+msgstr "Plac składowy. Towary leżą tu w stosach, a tragarze je przynoszą i zabierają."
+
+# --- Recipes ---
+
+msgid "recipe.woodcutting.name"
+msgstr "Wyrąb drewna"
+
+msgid "recipe.woodcutting.desc"
+msgstr "Drwal idzie do drzewa, rąbie je, wiąże kłodę i niesie ją do magazynu."
+
+# --- Resource nodes ---
+
+msgid "resource_node.tree.name"
+msgstr "Drzewo"
+
+msgid "resource_node.tree.desc"
+msgstr "Daje kilka kłód drewna. Po ścięciu zostaje pniak."
+
+# --- UI: stockpile panel ---
+
+msgid "ui.stockpile.title"
+msgstr "Magazyn"
+
+msgid "ui.stockpile.empty"
+msgstr "Pusto"

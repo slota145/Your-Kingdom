@@ -222,7 +222,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 | Korzyść | Wartość wyjściowa (do strojenia) |
 |---|---|
 | Szybszy ruch pieszych | droga ubita +50%, brukowana +80% |
-| **Wozy** (tylko po drogach) | 4× ładunek tragarza; przewozy między magazynami, szlaki handlowe |
+| **Wozy** (tylko po drogach) | stopnie transportu: tragarz niesie **1** sztukę, mały **wózek ręczny 3**, duży **wóz konny 5–6** (tylko po drogach); przewozy między magazynami, szlaki handlowe |
 | Zasięg usług | liczony długością ścieżki, więc drogi pośrednio poszerzają zasięg studni, targu i kościoła |
 | Dla obu stron | wrogie wojsko i bandyci też szybciej poruszają się po drogach, co jest decyzją taktyczną |
 

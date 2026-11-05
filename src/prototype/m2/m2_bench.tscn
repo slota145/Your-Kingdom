@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/prototype/m2/m2_sandbox.gd" id="1_sandbox"]
+
+[node name="M2Bench" type="Node2D"]
+script = ExtResource("1_sandbox")
+benchmark = true

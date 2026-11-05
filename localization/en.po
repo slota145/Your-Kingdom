@@ -13,7 +13,7 @@ msgid "ui.main.title"
 msgstr "Your Kingdom"
 
 msgid "ui.main.subtitle"
-msgstr "Milestone M1: readability, sorting and performance prototype"
+msgstr "Milestone M2: simulation core"
 
 msgid "ui.main.toggle_language"
 msgstr "Change language: Polski"
@@ -22,10 +22,10 @@ msgid "ui.main.plural_demo"
 msgstr "Plural forms example:"
 
 msgid "ui.main.open_sandbox"
-msgstr "M1 prototype: sandbox (sorting, walls, people)"
+msgstr "M2 prototype: woodcutter, stockpiles and porters"
 
 msgid "ui.main.open_benchmark"
-msgstr "M1 prototype: performance test (500 people)"
+msgstr "M2 prototype: performance test (200 porters, 4x)"
 
 msgid "ui.main.glyph_test"
 msgstr "The quick brown fox jumps over the lazy dog"
@@ -89,3 +89,33 @@ msgstr "Bakery"
 
 msgid "building.bakery.desc"
 msgstr "The baker fetches flour, kneads the dough and bakes bread in the oven."
+
+msgid "building.stockpile.name"
+msgstr "Stockpile"
+
+msgid "building.stockpile.desc"
+msgstr "A storage yard. Goods lie here in stacks; porters bring them in and take them out."
+
+# --- Recipes ---
+
+msgid "recipe.woodcutting.name"
+msgstr "Woodcutting"
+
+msgid "recipe.woodcutting.desc"
+msgstr "The woodcutter walks to a tree, chops it, binds a log and carries it to the stockpile."
+
+# --- Resource nodes ---
+
+msgid "resource_node.tree.name"
+msgstr "Tree"
+
+msgid "resource_node.tree.desc"
+msgstr "Gives a few logs of wood. A stump is left once it is cut down."
+
+# --- UI: stockpile panel ---
+
+msgid "ui.stockpile.title"
+msgstr "Stockpile"
+
+msgid "ui.stockpile.empty"
+msgstr "Empty"

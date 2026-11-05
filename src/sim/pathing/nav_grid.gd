@@ -48,6 +48,10 @@ func set_cost(tile: Vector2i, cost: float) -> void:
 		version += 1
 
 
+func get_cost(tile: Vector2i) -> float:
+	return _astar.get_point_weight_scale(tile) if is_inside(tile) else 1.0
+
+
 ## Tile path including both ends, or empty when unreachable.
 func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 	if not is_walkable(from) or not is_walkable(to):
