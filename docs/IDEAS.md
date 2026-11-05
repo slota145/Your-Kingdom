@@ -35,6 +35,14 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
     - tylko 2 orientacje, przejście wzdłuż osi siatki, jak w Twierdzy,
     - mury dowolnej grubości dochodzą do boków bez szczelin; sortowanie ze sprawdzeniem automatycznym: 0 błędów, także w przejściu.
 
+- [gracz] **Wysokość terenu (wysokie klify, płaskowyże, wodospady):** mapa nie powinna być płaska. Teren ma kilka poziomów oddzielonych skalnymi ścianami, a rzeka spada z wyższego poziomu wodospadem. Właściciel projektu uważa, że kiedyś trzeba to dodać (2026-11-05).
+  - Ocena (Claude):
+    - Pasuje do gry z oblężeniami: obrona na wzgórzu, wąskie przejścia, naturalne mury. Daje też dużo klimatu.
+    - To osobna mechanika, nie sam tileset. Klif blokuje ruch, więc postacie i tragarze muszą go obchodzić albo wchodzić po zboczach i schodach. Budynki nie mogą stać na krawędzi. Dochodzą zasłanianie postaci przez wyższy teren, sortowanie głębi na kilku poziomach i generator mapy, który układa płaskowyże z sensem.
+    - Grafika jest tania: ściana klifu w kawałkach (proste w obu skosach, narożniki wypukłe i wklęsłe) i animowany wodospad to ok. 60–100 generacji PixelLab.
+    - Koszt: duży (nawigacja, sortowanie, generator). Ryzyko: średnie. Kiedy: osobny etap po rdzeniu symulacji, przed generatorem map.
+  - Niski brzeg rzeki (woda kilka pikseli poniżej trawy, ziemna skarpa wzdłuż brzegu) to **tylko grafika** i nie wymaga tej mechaniki. ART_SPEC §3.1 już przewiduje takie kafle (64×48).
+
 ## Klimat i immersja
 
 - [Claude] **Życie przy bramie:** strażnik obsługuje kołowrót przy podnoszeniu brony, a wozy zatrzymują się czasem do kontroli. Właściciel projektu jest na tak (2026-11-04). Kiedy: razem z wieżą bramną w M7.
