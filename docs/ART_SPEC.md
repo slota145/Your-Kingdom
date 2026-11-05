@@ -377,7 +377,7 @@ Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
 - Światło według §1, kontur 1 px w ciemniejszym odcieniu własnego koloru. Rozmiary i pivoty jak w §3.2. Plik `.json` obok każdego `.png`.
 - **Skala (2026-11-05):** ściany parteru 36–42 px, drzwi ok. 26 px, okna ok. 9×12 px, dom mieszczański 58 px (dwa piętra), żeby pasowały do postaci 34 px (§3.1).
 - **Ograniczenie:** rysunek z prostych brył, czytelny, ale nie ręcznie malowany. Każdy plik można później podmienić lepszą grafiką bez zmian w kodzie.
-- **Jeszcze niezrobione:** stosy towarów w magazynie, skały i drzewa, plac magazynu, niesione towary.
+- **Jeszcze niezrobione:** plac magazynu (rysuje go widok jako brązowy romb).
 
 ### 10.4 Postacie rysowane kodem (2026-11-05)
 
@@ -387,4 +387,12 @@ Narzędzie: `tools/generate_characters.gd`, wynik w `assets/characters/<zawód>/
 - Stroje według §4.4: rolnik i chmielarz w słomkowym kapeluszu, młynarz w białym fartuchu i czapce, piekarz w białym czepku i fartuchu, drwal w czerwonej koszuli z brodą, tragarz z czerwoną chustą, budowniczy w skórzanym fartuchu, wędkarz w kapeluszu z szerokim rondem, domowniczka w sukience z chustką, przybysz w kapturze z kosturem.
 - Animacje: `idle` (4 klatki), `walk` i wszystkie `walk_carry_*` (8 klatek, z mapą zaczepień), `work` (ogólna) i `work_<czynność>` dla czynności zawodu: zamach nad głową (rąbanie, kucie, orka, budowa), praca nisko (żniwa, ociosywanie), pchanie (piła, ciasto, łopata do pieca), mieszanie (żarna, kadź, kocioł), siew, wiązanie, zarzucanie wędki, czekanie na branie, wyciąganie ryby.
 - **Ograniczenie:** postać 42 px rysowana z kształtów. Czytelna przy zoomie 1–2×, ale mimika i drobne ruchy są uproszczone. Warianty kolorów (§4.4) jeszcze nie.
+
+### 10.5 Towary i natura rysowane kodem (2026-11-05)
+
+Narzędzie: `tools/generate_goods.gd`, wynik w `assets/goods/` i `assets/nature/`.
+
+- **Stosy w magazynie** (4 etapy zapełnienia): kłody w piramidzie z widocznymi czołami, deski w równych warstwach, worki mąki, snopy zboża, skrzynie z chlebem i rybami, kosze chmielu, beczki piwa, bloki kamienia. Przedmioty to małe bryły ułożone na kaflu od tyłu do przodu, więc stos rośnie jak prawdziwa sterta.
+- **Towary w rękach** (§5, 5 wierszy po 24×24) i **ikony** 32×32 rysowane tymi samymi kształtami.
+- **Skały:** grupa głazów ze światłem z góry, pęknięciami i mchem; po wydobyciu mniejsze głazy, na końcu gruz. **Drzewo:** pień z gałęziami i korona z kęp liści; ścięte leży obok pnia; zostaje pień z korzeniami.
 

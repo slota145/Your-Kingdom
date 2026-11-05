@@ -28,6 +28,7 @@ tools/run_tests.sh                                                  # wszystkie 
 "$GODOT" --headless --path . -s res://tools/generate_placeholders.gd   # generowanie placeholderów
 "$GODOT" --headless --path . -s res://tools/generate_art.gd            # grafiki budynków rysowane kodem (assets/buildings)
 "$GODOT" --headless --path . -s res://tools/generate_characters.gd     # postacie rysowane kodem (assets/characters)
+"$GODOT" --headless --path . -s res://tools/generate_goods.gd          # towary, skały i drzewa rysowane kodem (assets/goods, assets/nature)
 ```
 
 Raporty testów trafiają do `reports/` (ignorowane przez git). Nowy `class_name` wymaga importu, żeby trafił do cache klas. `run_tests.sh` robi to automatycznie. Przy ręcznym uruchamianiu najpierw zrób import.
