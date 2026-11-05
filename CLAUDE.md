@@ -12,7 +12,7 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
-**Bieżący etap:** M1 zaakceptowany. Mur kamienny ma model bryłowy z przekątnymi „prosto” (ARCHITECTURE §6.3). Następne: A1 (pilot PixelLab) i M2 (rdzeń symulacji).
+**Bieżący etap:** M1 zaakceptowany. Mury kamienne i wieża bramna gotowe w prototypie (ARCHITECTURE §6.3, `src/prototype/walls/`). A1 częściowo: mur, budynek i trawa działają, brakuje postaci (stan w ROADMAP, A1). Następne: M2 (rdzeń symulacji), a równolegle postać do A1.
 
 ## Polecenia
 
@@ -40,6 +40,7 @@ Repozytorium zdalne: `origin` = https://github.com/slota145/Your-Kingdom.git, ga
 - Zmiana decyzji z dokumentów oznacza aktualizację odpowiedniego dokumentu w tym samym commicie.
 - Każda zmiana w `src/sim` ma testy. Testy muszą przechodzić przed commitem.
 - Commity tylko na prośbę użytkownika albo na końcu zatwierdzonego etapu. Bez wysyłania na zdalne repozytorium, dopóki użytkownik o to nie poprosi.
+- **Po dużym zadaniu albo etapie** (jeśli jest następny krok) przygotuj gotowy prompt do wklejenia w nowej sesji, żeby oszczędzać tokeny. Ma być krótki i samodzielny: cel i zakres z ROADMAP, dokumenty do przeczytania, stan po poprzedniej sesji, otwarte decyzje i to, gdzie się zatrzymać. Nie przepisuj dokumentów, tylko na nie wskaż.
 
 ## Kluczowe konwencje
 
