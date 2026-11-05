@@ -33,7 +33,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
 | Czas | rzeczywisty, z pauzą i prędkościami 1×/2×/4×, jeden zegar dla całej gry |
 | Perspektywa | izometria 2D 2:1, stała kamera bez obrotu, zoom 0,5×/1×/2×/3× |
 | Grafika | pixel art: najpierw placeholdery, docelowo grafiki z PixelLab |
-| Świat | fikcyjny, w stylu środkowoeuropejskiego średniowiecza (XII–XIV w.), z delikatnym słowiańskim klimatem |
+| Świat | fikcyjny, w stylu ogólnego europejskiego średniowiecza (XII–XIV w.), bez wyraźnych akcentów narodowych (decyzja 2026-11-05) |
 | Języki | polski (domyślny), angielski |
 | Tryb gry | sandbox [1.0], kampania [PÓŹNIEJ] |
 

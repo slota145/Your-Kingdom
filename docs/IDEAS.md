@@ -43,6 +43,15 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
     - Koszt: duży (nawigacja, sortowanie, generator). Ryzyko: średnie. Kiedy: osobny etap po rdzeniu symulacji, przed generatorem map.
   - Niski brzeg rzeki (woda kilka pikseli poniżej trawy, ziemna skarpa wzdłuż brzegu) to **tylko grafika** i nie wymaga tej mechaniki. ART_SPEC §3.1 już przewiduje takie kafle (64×48).
 
+- [gracz] **Scenariusz kolonizacji:** podstawowy start gry to lądowanie statkiem na dziewiczym kontynencie z zamiarem jego skolonizowania (fikcyjne średniowiecze, więc wolno). Statek przypływa do brzegu i wyładowuje osadników z zestawem startowym (2026-11-05).
+  - Ocena (Claude):
+    - Pasuje do inspiracji Anno i do istniejącego zasiedlania pustych prowincji (GDD §2.1): kolejne prowincje zasiedlamy tak samo, tylko pierwsza przychodzi z morza.
+    - Wymaga mapy przybrzeżnej i statku na starcie. Dziś pierwszy grywalny kawałek ma mapę śródlądową z rzeką, a morze i statki są w M5.
+    - Najtańsza wersja: statek przy brzegu tylko wyładowuje osadników (animacja), bez portu i handlu. Pełna wersja przychodzi razem z M5.
+    - Do przemyślenia: czy kontynent jest zupełnie pusty, czy są na nim osady neutralne i władcy AI, którzy przybyli wcześniej.
+    - Koszt: mały do średniego (zależy od tego, kiedy). Ryzyko: małe.
+  - Decyzja właściciela projektu (2026-11-05): na razie tylko pomysł, bez zmian w planie.
+
 ## Klimat i immersja
 
 - [Claude] **Życie przy bramie:** strażnik obsługuje kołowrót przy podnoszeniu brony, a wozy zatrzymują się czasem do kontroli. Właściciel projektu jest na tak (2026-11-04). Kiedy: razem z wieżą bramną w M7.
