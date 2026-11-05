@@ -94,6 +94,9 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
   - **Przyjęte do M4b (2026-11-05).**
 - [Claude] **Na co wydawać złoto:** w M4a złota szybko przybywa (po godzinie ok. 1000), a wydaje się je tylko na 4 budynki. Kupiec wędrowny (M4b) i utrzymanie budynków dadzą mu sens.
   - Ocena: do strojenia razem z kupcem w M4b.
+- [Właściciel] **Pola przy pasiece i owczarni** (2026-11-05): tak jak farma, pasieka i owczarnia stawiają kafelki 1×1 w swoim zasięgu. Pasieka stawia ule, a owczarnia kawałki zagrody z owcami. Sąsiednie kafelki owczarni łączą się w jedną zagrodę z płotem tylko na obwodzie.
+  - Otwarte: czy owce pojawiają się same, czy trzeba je kupić od kupca wędrownego (M4b-2).
+  - Ocena (Claude): dobrze pasuje do „widocznej pracy”. Pasterz chodzi między owcami w zagrodzie, a pszczelarz od ula do ula. Kafelki to te same pola co przy farmie, więc reszta logiki jest gotowa. Nowe są grafiki ula i zagrody (płot łączony jak mury) oraz owce jako małe postacie, które chodzą po zagrodzie. Koszt średni. Propozycja do decyzji: owce rozmnażają się same w zagrodzie, a pierwsze 2 owce przynosi kupiec. Wtedy kupiec ma sens, a gracz nie musi ich ciągle dokupywać. Kiedy: razem z M4b-2 (kupiec) albo zaraz po M4b-1.5.
 
 - [Claude] **Obracanie budynków (np. klawisz R):** gracz sam wybiera, z której strony budynek ma wejście. Pomysł powstał po błędzie z chatą rybaka, która stała drzwiami do rzeki (2026-11-05). Właściciel projektu chce go zapisać.
   - Ocena (Claude): wygodne, ale kosztowne. Każdy budynek potrzebuje grafik z 2 albo 4 stron, a do tego trzeba obrócić obrys i wejście w danych, w zapisie gry i w cięciu do sortowania (`BuildingSlicer`). Na razie wystarcza komunikat „Wejście wychodzi na wodę” i przesunięcie budynku. Tańszy wariant: tylko 2 orientacje (odbicie lustrzane), bo grafikę da się wtedy odwrócić bez rysowania nowej. Kiedy: najwcześniej przy grafikach docelowych budynków.
