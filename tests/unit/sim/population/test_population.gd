@@ -70,10 +70,11 @@ func test_happiness_follows_satisfied_needs() -> void:
 	var sim := SimFixture.make_sim()
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 4)
 	sim.run_ticks(SimFixture.ticks(60))
-	# Food and firewood, no well, no chapel: 35 + 25.
-	assert_float(hut.house.happiness).is_equal_approx(60.0, 0.01)
+	# Food and firewood but no well, a basic need: happiness sinks to the shortage cap.
+	assert_float(hut.house.happiness).is_equal_approx(Population.SHORTAGE_HAPPINESS, 0.01)
 	SimFixture.place(sim, &"well", Vector2i(16, 12))
-	sim.run_ticks(SimFixture.ticks(30))
+	sim.run_ticks(SimFixture.ticks(40))
+	# Food, firewood and the well, no chapel: 35 + 25 + 25.
 	assert_float(hut.house.happiness).is_equal_approx(85.0, 0.01)
 	assert_bool(hut.house.satisfied[&"well_water"]).is_true()
 	# The chapel is an extra need: it adds happiness but does not block upgrades.
@@ -86,6 +87,8 @@ func test_newcomers_walk_in_to_free_places() -> void:
 	var sim := SimFixture.make_sim()
 	sim.province.entry_tile = Vector2i(0, 20)
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 0)
+	# With every basic need met (a house without a well turns unhappy and stops attracting).
+	SimFixture.place(sim, &"well", Vector2i(16, 12))
 	var settlers := 0
 	for i: int in SimFixture.ticks(120):
 		sim.step()
@@ -157,18 +160,46 @@ func test_no_upgrade_while_the_town_lacks_burgher_goods() -> void:
 	assert_bool(upgraded).is_true()
 
 
-func test_house_declines_after_long_shortage() -> void:
+func test_house_keeps_its_level_but_loses_residents_in_a_shortage() -> void:
 	var sim := SimFixture.make_sim()
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 8, false)
 	hut.house.level = 2
+	hut.house.happiness = 80.0
 	var warned := false
-	var downgraded := false
-	for i: int in SimFixture.ticks(Population.DECLINE_AFTER + 5):
+	var left := 0
+	for i: int in SimFixture.ticks(Population.LEAVE_AFTER + Population.LEAVE_EVERY + 5):
 		sim.step()
 		for event: Dictionary in sim.events.drain():
 			warned = warned or event["type"] == &"house_warning"
-			downgraded = downgraded or event["type"] == &"house_downgraded"
+			if event["type"] == &"resident_left":
+				left += 1
 	assert_bool(warned).is_true()
-	assert_bool(downgraded).is_true()
-	assert_int(hut.house.level).is_equal(1)
-	assert_int(hut.house.residents).is_equal(4)
+	# Gentle: happiness sinks at 1 point/s (to 20 at most); after 3 minutes below 25 one
+	# resident leaves a minute.
+	assert_int(hut.house.level).is_equal(2)
+	assert_float(hut.house.happiness).is_less(Population.LEAVE_BELOW)
+	assert_int(left).is_equal(2)
+	assert_int(hut.house.residents).is_equal(6)
+	# Nobody leaves while the house is still fairly happy.
+	var calm := SimFixture.house(sim, Vector2i(16, 16), 4, false)
+	calm.house.happiness = 100.0
+	calm.house.unmet_seconds = Population.LEAVE_AFTER - 1
+	sim.run_ticks(SimFixture.ticks(2))
+	assert_int(calm.house.residents).is_equal(4)
+
+
+func test_house_with_needs_met_stops_losing_residents() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 4, false)
+	hut.house.happiness = 0.0
+	sim.run_ticks(SimFixture.ticks(Population.LEAVE_AFTER + 10))
+	var residents := hut.house.residents
+	assert_int(residents).is_less(4)
+	# Pantry filled and a well nearby: the shortage ends, happiness climbs, nobody else leaves.
+	SimFixture.place(sim, &"well", Vector2i(10, 10))
+	for good: StringName in hut.house_goods():
+		hut.supply.add(good, hut.level_def().supply_units)
+	sim.run_ticks(SimFixture.ticks(120))
+	assert_int(hut.house.residents).is_greater_equal(residents)
+	assert_int(hut.house.unmet_seconds).is_equal(0)
+	assert_float(hut.house.happiness).is_greater(Population.LEAVE_BELOW)

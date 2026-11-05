@@ -92,6 +92,8 @@ func test_angler_catches_fish_at_the_shore() -> void:
 func test_hop_farm_grows_hops_on_its_fields() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	SimFixture.village(sim, 30, 20)
+	# A well keeps the village happy, so it keeps its workers for the 5 minutes.
+	SimFixture.place(sim, &"well", Vector2i(9, 9))
 	var farm := SimFixture.place(sim, &"hop_farm", Vector2i(18, 14))
 	for x: int in range(20, 24):
 		assert_str(String(sim.execute(PlaceFieldCommand.new(farm.id, Vector2i(x, 13))))).is_equal("")

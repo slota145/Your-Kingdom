@@ -4,7 +4,9 @@ extends RefCounted
 ## second of game time (step 8 of ARCHITECTURE §4.2):
 ## - households eat from their pantry; a householder fetches more when it runs low,
 ## - happiness moves towards the sum of satisfied need weights,
-## - all basic needs met long enough -> upgrade site; unmet too long -> warning, then decline,
+## - all basic needs met long enough -> upgrade site; a house never goes back a level: unmet
+##   basic needs pull happiness down, then a warning, and an unhappy house loses residents
+##   one by one (it fills up again once the needs are met; decision 2026-11-05),
 ## - newcomers walk in from the map edge to free places of happy houses,
 ## - houses pay taxes by class, happiness and the tax rate (GDD §3.5),
 ## - about half of the residents work: free ones are handed to buildings missing workers,
@@ -15,10 +17,15 @@ const UPDATE_TICKS := 10
 const HAPPINESS_SPEED := 2.0
 ## Seconds with all basic needs met before a house starts upgrading (GDD §3.3).
 const UPGRADE_AFTER := 60
-## Seconds with unmet basic needs before a warning / before decline (GDD §3.3).
+## Seconds with unmet basic needs before a warning (GDD §3.3).
 const WARN_AFTER := 60
-const DECLINE_AFTER := 180
-## A level-1 house in decline loses one resident this often (seconds).
+## While a basic need is unmet, happiness sinks towards this cap, at this (gentler) speed.
+const SHORTAGE_HAPPINESS := 20.0
+const SHORTAGE_SPEED := 1.0
+## Below this happiness, with a basic need unmet for LEAVE_AFTER s or more, one resident
+## moves out every LEAVE_EVERY s.
+const LEAVE_BELOW := 25.0
+const LEAVE_AFTER := 180
 const LEAVE_EVERY := 60
 ## Newcomers: at most one every IMMIGRATION_EVERY seconds, only to houses this happy.
 const IMMIGRATION_EVERY := 10
@@ -57,7 +64,11 @@ static func _update_house(province: ProvinceSim, building: BuildingState) -> voi
 		elif need.is_basic:
 			basic_met = false
 	target = clampf(target + province.treasury.rate_happiness(), 0.0, 100.0)
-	house.happiness = move_toward(house.happiness, target, HAPPINESS_SPEED)
+	var speed := HAPPINESS_SPEED
+	if not basic_met and house.residents > 0:
+		target = minf(target, SHORTAGE_HAPPINESS)
+		speed = SHORTAGE_SPEED
+	house.happiness = move_toward(house.happiness, target, speed)
 	_request_supplies(province, building)
 	_pay_taxes(province, building)
 	if house.residents == 0:
@@ -76,8 +87,10 @@ static func _update_house(province: ProvinceSim, building: BuildingState) -> voi
 		house.unmet_seconds += 1
 		if house.unmet_seconds == WARN_AFTER:
 			province.events.emit(&"house_warning", {"building": building.id})
-		if house.unmet_seconds >= DECLINE_AFTER:
-			_decline(province, building)
+		if house.happiness < LEAVE_BELOW and house.unmet_seconds >= LEAVE_AFTER \
+				and (house.unmet_seconds - LEAVE_AFTER) % LEAVE_EVERY == 0:
+			house.residents -= 1
+			province.events.emit(&"resident_left", {"building": building.id})
 
 
 ## Whether the town can already supply the basic goods of the next level: a full pantry of
@@ -148,33 +161,6 @@ static func _request_supplies(province: ProvinceSim, building: BuildingState) ->
 			agent.home_id = building.id
 			TaskRunner.start_errand(agent, good, amount, building.id)
 			house.errands[good] = agent.id
-
-
-static func _decline(province: ProvinceSim, building: BuildingState) -> void:
-	var house := building.house
-	if house.level > 1:
-		if house.unmet_seconds == DECLINE_AFTER:
-			house.level -= 1
-			building.supply.stack_limit = building.level_def().supply_units
-			_trim_pantry(province, building)
-			var excess := house.residents - building.capacity()
-			if excess > 0:
-				house.residents -= excess
-			house.unmet_seconds = 0
-			province.events.emit(&"house_downgraded", {"building": building.id, "level": house.level})
-	elif (house.unmet_seconds - DECLINE_AFTER) % LEAVE_EVERY == 0 and house.residents > 0:
-		house.residents -= 1
-		province.events.emit(&"resident_left", {"building": building.id})
-
-
-## Goods above the smaller pantry go on the ground for porters.
-static func _trim_pantry(province: ProvinceSim, building: BuildingState) -> void:
-	for good: StringName in building.house_goods():
-		var extra := building.supply.total(good) - building.level_def().supply_units
-		if extra > 0:
-			var taken := building.supply.remove(good, extra)
-			if taken > 0:
-				province.drop_goods(building.entrance_tile(), good, taken)
 
 
 # --- Newcomers -----------------------------------------------------------------------------

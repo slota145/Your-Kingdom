@@ -63,7 +63,7 @@ func on_sim_event(event: Dictionary) -> void:
 	nature.on_sim_event(event)
 	match event["type"]:
 		&"building_placed", &"building_removed", &"building_completed", &"site_opened", \
-				&"site_phase_started", &"site_phase_finished", &"house_upgraded", &"house_downgraded":
+				&"site_phase_started", &"site_phase_finished", &"house_upgraded":
 			_buildings_dirty = true
 		&"road_changed", &"field_changed", &"resource_depleted":
 			terrain.refresh_tile(event["tile"])

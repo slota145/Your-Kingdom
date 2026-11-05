@@ -237,6 +237,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Wnioski z gry właściciela (2026-11-05):**
 - Budynku nie da się postawić tak, żeby wejście było nieosiągalne (np. chata rybaka drzwiami do rzeki) albo żeby odciął drogę innym. Budowniczy omija budowę, do której nie dojdzie (GDD §5.1).
 - Powrót do menu robi szybki zapis.
+- **Domy się nie cofają:** brak potrzeby podstawowej obniża zadowolenie (mniejsze podatki, brak nowych mieszkańców), a przy bardzo niskim zadowoleniu ludzie powoli się wyprowadzają. Wariant łagodny (GDD §3.3).
 - **Zapas na budowy:** warsztaty zostawiają w królestwie ustawioną liczbę sztuk towaru, np. tartak nie zje całego drewna (GDD §4.1, pkt 6). Zapis w wersji 4.
 
 **DoD:**
