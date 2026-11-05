@@ -59,6 +59,7 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
     - **Uwaga na armaty:** jeśli są na okręcie, gracz zapyta, czemu nie ma ich w zamku. Proch zmienia też sens murów i oblężeń, czyli serca gry. Bezpieczniej zakończyć drzewko wielkim okrętem z ciężkimi balistami, a armaty potraktować jako osobną, późną decyzję dla całej gry (ląd i morze razem).
     - Koszt: średni (każdy okręt to grafika z animacją kołysania, budowa w stoczni etapami i dane jednostki). Kiedy: M5.
     - Zmieni GDD §5.4 (rodzaje statków), gdy właściciel projektu zdecyduje.
+  - Prototyp (2026-11-05, `src/prototype/ships/`): koga narysowana kodem w 8 kierunkach (bryły 3D „fotografowane” w rzucie izometrycznym), z kasztelem z blankami, tarczami i pasiastym żaglem w kolorze frakcji (magenta). Wszystkie kierunki są spójne, a kolejne okręty drzewka da się zrobić, zmieniając wymiary i części w skrypcie.
 
 - [gracz] **Stopnie transportu:** tragarz niesie 1 sztukę, mały wózek ręczny 3, duży wóz konny 5–6.
   - **Zatwierdzone 2026-11-05 (ładowności):** zapisane w GDD §5.2. Szybkości, czas załadunku i reguły dyspozytora z oceny poniżej czekają na decyzję (M4).
