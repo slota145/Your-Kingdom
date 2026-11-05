@@ -367,9 +367,28 @@ func _merlons(support: Piece) -> Array[Piece]:
 					m - w + inward * MERLON_DEPTH])
 			var states := PackedByteArray([Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED])
 			var merlon := Piece.new(&"merlon", support.tile, poly, states, base, base + MERLON_HEIGHT)
-			merlon.sort_point.y = maxf(merlon.sort_point.y, parapet.sort_point.y + CROWN_BIAS)
 			result.append(merlon)
+	# A merlon sorts after every parapet it touches: at an outer corner the parapet of the
+	# next rim would otherwise cut into the corner merlon of the previous one. Only touching
+	# ones, so back merlons stay behind people standing on the crown.
+	for merlon: Piece in result:
+		if merlon.kind != &"merlon":
+			continue
+		var c := merlon.centroid()
+		for parapet: Piece in result:
+			if parapet.kind == &"parapet" and _distance(c, parapet.poly) < MERLON_WIDTH:
+				merlon.sort_point.y = maxf(merlon.sort_point.y, parapet.sort_point.y + CROWN_BIAS)
 	return result
+
+
+static func _distance(p: Vector2, poly: PackedVector2Array) -> float:
+	if Geometry2D.is_point_in_polygon(p, poly):
+		return 0.0
+	var best := INF
+	for i: int in poly.size():
+		var q := Geometry2D.get_closest_point_to_segment(p, poly[i], poly[(i + 1) % poly.size()])
+		best = minf(best, p.distance_to(q))
+	return best
 
 
 ## Parapet blocks filling inner (concave) corners: there the parapets of the two rims end
