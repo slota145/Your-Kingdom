@@ -345,13 +345,22 @@ func _merlons(support: Piece) -> Array[Piece]:
 		var inward := dir.orthogonal()
 		if inward.dot(center - (a + b) * 0.5) < 0.0:
 			inward = -inward
-		var parapet := Piece.new(&"parapet", support.tile, PackedVector2Array([a, b,
-				b + inward * PARAPET_DEPTH, a + inward * PARAPET_DEPTH]),
-				PackedByteArray([Edge.EXPOSED, Edge.JOINED, Edge.EXPOSED, Edge.JOINED]),
+		# At an outer corner the previous rim's parapet owns the corner square: this one
+		# starts after it, so the two neither overlap nor cut into each other.
+		var owned := support.edges[(i + n - 1) % n] == Edge.EXPOSED
+		var start := a + dir * PARAPET_DEPTH if owned else a
+		# The parapet owning the corner at its end shows its end face there.
+		var owns_end := Edge.EXPOSED if support.edges[(i + 1) % n] == Edge.EXPOSED else Edge.JOINED
+		var parapet := Piece.new(&"parapet", support.tile, PackedVector2Array([start, b,
+				b + inward * PARAPET_DEPTH, start + inward * PARAPET_DEPTH]),
+				PackedByteArray([Edge.EXPOSED, owns_end, Edge.EXPOSED, Edge.JOINED]),
 				support.z1, base)
 		parapet.sort_point.y = maxf(parapet.sort_point.y, support.sort_point.y + CROWN_BIAS)
 		result.append(parapet)
+		var length := a.distance_to(b)
 		for t: float in _merlon_positions(a, b):
+			if owned and t * length - MERLON_WIDTH * 0.5 < PARAPET_DEPTH - 0.001:
+				continue
 			var m := a.lerp(b, t)
 			var w := dir * MERLON_WIDTH * 0.5
 			var poly := PackedVector2Array([m - w, m + w, m + w + inward * MERLON_DEPTH,
