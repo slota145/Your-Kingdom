@@ -87,8 +87,92 @@ func test_gathering_buildings_have_work_radius_and_workers() -> void:
 	for building: BuildingDef in _registry.buildings():
 		if building.recipe == null:
 			continue
-		assert_int(building.workers).is_greater(0)
+		assert_int(building.worker_count()).is_greater(0)
 		for step: StepDef in building.recipe.steps:
 			if step is GoToStepDef and (step as GoToStepDef).target == &"resource":
 				assert_int(building.work_radius).override_failure_message(
 						"%s gathers but has no work_radius" % building.id).is_greater(0)
+
+
+func test_house_levels_are_consistent() -> void:
+	for building: BuildingDef in _registry.buildings():
+		for i: int in building.house_levels.size():
+			var level := building.house_levels[i]
+			assert_int(level.level).is_equal(i + 1)
+			var weights := 0
+			for need: NeedDef in level.needs:
+				weights += need.weight
+				for good: StringName in need.goods:
+					assert_bool(_registry.has_def(&"good", good)).is_true()
+				if need.is_service():
+					var service := _registry.get_building(need.service)
+					assert_object(service).is_not_null()
+					assert_int(service.service_radius).is_greater(0)
+			assert_int(weights).override_failure_message("%s: weights must sum to 100" % level.id) \
+					.is_equal(100)
+			for good: StringName in level.upgrade_cost:
+				assert_bool(_registry.has_def(&"good", good)).is_true()
+			if i > 0:
+				assert_dict(level.upgrade_cost).is_not_empty()
+
+
+func test_terrain_indices_are_unique_and_dense() -> void:
+	var by_index := _registry.terrains_by_index()
+	assert_int(by_index.size()).is_equal(_registry.all_of(&"terrain").size())
+	for terrain: TerrainDef in by_index:
+		assert_object(terrain).is_not_null()
+		if terrain.resource_node != &"":
+			assert_bool(_registry.has_def(&"resource_node", terrain.resource_node)).is_true()
+
+
+func test_slice_buildings_exist() -> void:
+	for id: StringName in [&"town_hall", &"stockpile", &"hut", &"well", &"woodcutter", &"farm",
+			&"mill", &"bakery"]:
+		assert_bool(_registry.has_def(&"building", id)).override_failure_message(
+				"missing building '%s'" % id).is_true()
+
+
+func test_farms_can_have_fields() -> void:
+	for building: BuildingDef in _registry.buildings():
+		if building.max_fields > 0:
+			assert_int(building.work_radius).is_greater(0)
+			assert_float(building.field_grow_time).is_greater(0.0)
+
+
+## Every building has a visual definition whose art exists for every state it can be in:
+## construction phases, finished (or yard), house levels with row variants, scaffolding.
+func test_every_building_has_visuals_and_art() -> void:
+	for building: BuildingDef in _registry.buildings():
+		var visual := BuildingVisualDef.for_building(building.id)
+		assert_object(visual).override_failure_message("%s: no data/visuals entry" % building.id).is_not_null()
+		if visual == null:
+			continue
+		var names: Array[String] = ["construction_1", "construction_2"]
+		if not visual.yard:
+			names.append("base")
+		for i: int in visual.level_art.size():
+			var art := visual.level_art[i]
+			if visual.row_from_level > 0 and i + 1 >= visual.row_from_level:
+				for variant: String in ["single", "end_a", "middle", "end_b"]:
+					for axis: String in ["x", "y"]:
+						names.append("%s_%s_%s" % [art, variant, axis])
+			else:
+				names.append(art)
+		if building.house_levels.size() > 1:
+			names.append("upgrade_scaffold")
+		for name: String in names:
+			for ext: String in [".png", ".json"]:
+				var path := ArtPaths.resolve("buildings/%s/%s%s" % [visual.art_id, name, ext])
+				assert_bool(FileAccess.file_exists(path) or ResourceLoader.exists(path)) \
+						.override_failure_message("missing art " + path).is_true()
+
+
+func test_every_profession_has_a_visual() -> void:
+	var kinds: Array[StringName] = [Population.HOUSEHOLDER_KIND, Population.SETTLER_KIND]
+	for building: BuildingDef in _registry.buildings():
+		for kind: StringName in building.worker_kinds:
+			if not kinds.has(kind):
+				kinds.append(kind)
+	for kind: StringName in kinds:
+		assert_object(AgentVisualDef.for_kind(kind)).override_failure_message(
+				"no data/visuals/agents/%s.tres" % kind).is_not_null()

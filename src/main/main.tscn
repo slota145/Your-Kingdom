@@ -64,6 +64,20 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 autowrap_mode = 3
 
+[node name="NewGameButton" type="Button" parent="Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 32
+text = "ui.main.new_game"
+
+[node name="LoadGameButton" type="Button" parent="Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 32
+text = "ui.main.load_game"
+
 [node name="SandboxButton" type="Button" parent="Margin/Content"]
 unique_name_in_owner = true
 layout_mode = 2

@@ -15,7 +15,7 @@ resource = &"tree"
 [sub_resource type="Resource" id="chop"]
 script = ExtResource("3_work")
 activity = &"chop"
-duration = 6.0
+duration = 4.0
 
 [sub_resource type="Resource" id="gather"]
 script = ExtResource("4_gather")
@@ -23,7 +23,7 @@ script = ExtResource("4_gather")
 [sub_resource type="Resource" id="bind"]
 script = ExtResource("3_work")
 activity = &"bind"
-duration = 3.0
+duration = 2.0
 
 [sub_resource type="Resource" id="deliver"]
 script = ExtResource("5_deliver")

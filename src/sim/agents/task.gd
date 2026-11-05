@@ -7,6 +7,12 @@ const KIND_RECIPE := &"recipe"
 const KIND_TRANSPORT := &"transport"
 ## Carrying goods left over from a failed task to a storage (or the ground).
 const KIND_STASH := &"stash"
+## A builder working at a construction site (bb "site").
+const KIND_BUILD := &"build"
+## A householder fetching goods for the pantry (bb "good", "amount", "to").
+const KIND_ERRAND := &"errand"
+## A newcomer walking to their new house (agent.home_id).
+const KIND_MOVE_IN := &"move_in"
 
 var kind: StringName
 ## Recipe id for KIND_RECIPE.

@@ -2,6 +2,7 @@ extends Control
 ## Start screen: proves localization, plural forms, the font and the data registry.
 
 const PLURAL_SAMPLES: PackedInt32Array = [1, 2, 5, 12, 22, 1250]
+const GAME_SCENE := "res://src/main/game_scene.tscn"
 const SANDBOX_SCENE := "res://src/prototype/m2/m2_sandbox.tscn"
 const BENCHMARK_SCENE := "res://src/prototype/m2/m2_bench.tscn"
 
@@ -11,6 +12,10 @@ const BENCHMARK_SCENE := "res://src/prototype/m2/m2_bench.tscn"
 
 func _ready() -> void:
 	_toggle_button.pressed.connect(Loc.cycle_locale)
+	(%NewGameButton as Button).pressed.connect(_start_game.bind(""))
+	var quick := SaveService.slot_path("quick")
+	(%LoadGameButton as Button).pressed.connect(_start_game.bind(quick))
+	(%LoadGameButton as Button).disabled = not FileAccess.file_exists(quick)
 	(%SandboxButton as Button).pressed.connect(_open.bind(SANDBOX_SCENE))
 	(%BenchmarkButton as Button).pressed.connect(_open.bind(BENCHMARK_SCENE))
 	EventBus.language_changed.connect(_on_language_changed)
@@ -19,6 +24,11 @@ func _ready() -> void:
 
 func _open(scene: String) -> void:
 	get_tree().change_scene_to_file(scene)
+
+
+func _start_game(load_path: String) -> void:
+	Game.start_request = {"load": load_path} if load_path != "" else {}
+	_open(GAME_SCENE)
 
 
 func _on_language_changed(_locale: String) -> void:

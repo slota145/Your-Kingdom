@@ -66,7 +66,40 @@ func _terrain() -> void:
 	_save(_diamond(Color(0.36, 0.55, 0.25), Color(0.32, 0.5, 0.22)), "terrain/grass/a.png")
 	_save(_diamond(Color(0.38, 0.57, 0.26), Color(0.34, 0.52, 0.23)), "terrain/grass/b.png")
 	_save(_diamond(Color(0, 0, 0, 0), Color(1, 1, 1, 0.3)), "terrain/grid/a.png")
+	_save(_diamond(Color(0.55, 0.68, 0.32), Color(0.5, 0.63, 0.29)), "terrain/meadow/a.png")
+	_save(_diamond(Color(0.57, 0.7, 0.34), Color(0.52, 0.65, 0.3)), "terrain/meadow/b.png")
+	_save(_diamond(Color(0.22, 0.38, 0.18), Color(0.2, 0.34, 0.16)), "terrain/forest/a.png")
+	_save(_diamond(Color(0.24, 0.4, 0.19), Color(0.21, 0.36, 0.17)), "terrain/forest/b.png")
+	_save(_diamond(Color(0.2, 0.4, 0.66), Color(0.18, 0.36, 0.6)), "terrain/water/a.png")
+	_save(_diamond(Color(0.22, 0.43, 0.69), Color(0.19, 0.38, 0.62)), "terrain/water/b.png")
+	_save(_diamond(Color(0.47, 0.64, 0.78), Color(0.42, 0.58, 0.7)), "terrain/ford/a.png")
+	_save(_diamond(Color(0.6, 0.5, 0.36), Color(0.52, 0.43, 0.3)), "terrain/road/a.png")
+	_save(_diamond(Color(0.5, 0.42, 0.28), Color(0.44, 0.36, 0.24)), "terrain/field/fallow.png")
+	_save(_furrows(Color(0.42, 0.3, 0.18), Color(0.32, 0.22, 0.13), Color(0, 0, 0, 0)), "terrain/field/plowed.png")
+	_save(_furrows(Color(0.42, 0.3, 0.18), Color(0.32, 0.22, 0.13), Color(0.45, 0.62, 0.25)), "terrain/field/sown_1.png")
+	_save(_furrows(Color(0.36, 0.5, 0.2), Color(0.3, 0.42, 0.16), Color(0.5, 0.7, 0.28)), "terrain/field/sown_2.png")
+	_save(_furrows(Color(0.52, 0.6, 0.24), Color(0.44, 0.52, 0.2), Color(0.72, 0.7, 0.3)), "terrain/field/sown_3.png")
+	_save(_furrows(Color(0.86, 0.72, 0.3), Color(0.74, 0.6, 0.24), Color(0.95, 0.82, 0.4)), "terrain/field/ripe.png")
+	# Coverage overlay of a service (well): a soft tinted diamond.
+	_save(_diamond(Color(0.35, 0.6, 1.0, 0.28), Color(0.35, 0.6, 1.0, 0.45)), "terrain/range/a.png")
+	_save(_diamond(Color(0.3, 1.0, 0.3, 0.35), Color(0.3, 1.0, 0.3, 0.9)), "terrain/cursor/ok.png")
+	_save(_diamond(Color(1.0, 0.25, 0.2, 0.35), Color(1.0, 0.25, 0.2, 0.9)), "terrain/cursor/bad.png")
 	_save(_diamond(Color(1, 1, 0.6, 0.35), Color(1, 1, 0.6, 0.9)), "terrain/cursor/a.png")
+
+
+## A field tile: soil diamond with furrows along grid x; [param crop] dots on the ridges.
+func _furrows(soil: Color, furrow: Color, crop: Color) -> Image:
+	var img := _diamond(soil, furrow)
+	for i: int in range(1, 6):
+		var t := i / 6.0
+		var a := IsoMath.grid_to_screen(Vector2(0.08, t)) + Vector2(32, 0)
+		var b := IsoMath.grid_to_screen(Vector2(0.92, t)) + Vector2(32, 0)
+		_line(img, a, b, furrow, 1)
+		if crop.a > 0.0:
+			for j: int in range(1, 7):
+				var c := IsoMath.grid_to_screen(Vector2(j / 7.0, t)) + Vector2(32, -1)
+				_line(img, c, c - Vector2(0, 2 + (i % 2)), crop, 2)
+	return img
 
 
 ## Isometric 2:1 diamond filling the 64x32 tile, with a 1 px border.
@@ -92,6 +125,7 @@ func _characters() -> void:
 		"walk_carry_bundle": [8, 1.0, "bundle"],
 		"walk_carry_log": [8, 1.0, "log"],
 	}
+	_save(_work_sheet(4), "characters/peasant/work.png")
 	for anim: String in anims:
 		var spec: Array = anims[anim]
 		var sheets := _character_sheet(spec[0], spec[1], spec[2])
@@ -152,6 +186,24 @@ func _draw_person(img: Image, foot: Vector2, forward: Vector2, right: Vector2,
 	img.fill_rect(Rect2i(Vector2i(nose.round()) - Vector2i.ONE, Vector2i(3, 3)), Color(1, 0.15, 0.15))
 	if tool_in_front and not carrying:
 		_draw_tool(img, hand)
+
+
+## Generic work animation: standing person swinging the tool up and down (all 8 directions).
+func _work_sheet(frames: int) -> Image:
+	var sheet := _blank(Vector2i(FRAME.x * frames, FRAME.y * IsoMath.DIR_COUNT))
+	for dir: int in IsoMath.DIR_COUNT:
+		var angle := PI / 2.0 - dir * TAU / IsoMath.DIR_COUNT
+		var forward := Vector2(cos(angle), sin(angle))
+		var right := Vector2(-forward.y, forward.x)
+		for frame: int in frames:
+			var foot := Vector2(Vector2i(frame * FRAME.x, dir * FRAME.y) + FOOT)
+			_draw_person(sheet, foot, forward, right, 0.0, true)
+			var swing := sin(frame * TAU / frames)
+			var hand := foot + Vector2(0, -22) + _squash(forward * 6.0)
+			var tip := hand + Vector2(0, -10 - 6 * swing) + _squash(forward * (6.0 + 6.0 * swing))
+			_line(sheet, hand, tip, TOOL, 2)
+			sheet.fill_rect(Rect2i(Vector2i(tip.round()) - Vector2i(3, 2), Vector2i(6, 4)), TOOL_HEAD)
+	return sheet
 
 
 func _draw_tool(img: Image, hand: Vector2) -> void:
@@ -244,24 +296,99 @@ func _buildings() -> void:
 	_building("hut_box", Vector2i(2, 2), Vector2i(1, 1), 30.0, 26.0, Color(0.78, 0.7, 0.55), Color(0.62, 0.3, 0.22))
 	_building("hall_box", Vector2i(4, 4), Vector2i(3, 3), 48.0, 40.0, Color(0.7, 0.68, 0.64), Color(0.35, 0.38, 0.5))
 	_building("workshop_box", Vector2i(3, 2), Vector2i(2, 1), 36.0, 28.0, Color(0.74, 0.62, 0.48), Color(0.5, 0.35, 0.22))
+	# M3 slice buildings: own colours and one telling detail each (data/visuals points here).
+	for id: String in SLICE_BUILDINGS:
+		var b: Dictionary = SLICE_BUILDINGS[id]
+		var fp: Vector2i = b["footprint"]
+		var entrance: Vector2i = b["entrance"]
+		if b["walls"] > 0.0:
+			_building(id, fp, entrance, b["walls"], b["roof"], b["wall"], b["roof_color"],
+					"base", "hip_both", b.get("extra", ""))
+		_site(id, fp, 1)
+		_site(id, fp, 2)
+	# House level 2 (burgher house) and its row variants (ARCHITECTURE §6.6, ART_SPEC §7).
+	var house_wall := Color(0.86, 0.8, 0.66)
+	var house_roof := Color(0.55, 0.22, 0.18)
+	for variant: String in ["single", "end_a", "middle", "end_b"]:
+		for axis: String in ["x", "y"]:
+			var roof: String = {"single": "hip_both", "end_a": "hip_start", "middle": "hip_none",
+					"end_b": "hip_end"}[variant]
+			_building("hut", Vector2i(2, 2), Vector2i(1, 1), 44.0, 24.0, house_wall, house_roof,
+					"level_2_%s_%s" % [variant, axis], roof + "_" + axis, "",
+					0 if variant != "single" else 8)
+	_scaffold("hut", Vector2i(2, 2), 54.0)
 
 
-## Box building with a pyramid roof. Writes base.png and base.json (footprint, pivot).
-func _building(id: String, footprint: Vector2i, entrance: Vector2i, wall_h: float, roof_h: float,
-		wall: Color, roof: Color) -> void:
-	var eaves := 8
+## id -> footprint, entrance, wall height, roof height, colours, detail. Walls 0 = no box
+## (the stockpile is a yard drawn by the view).
+const SLICE_BUILDINGS := {
+	"town_hall": {"footprint": Vector2i(4, 4), "entrance": Vector2i(1, 3), "walls": 50.0, "roof": 42.0,
+			"wall": Color(0.72, 0.7, 0.66), "roof_color": Color(0.3, 0.36, 0.55), "extra": "tower"},
+	"stockpile": {"footprint": Vector2i(4, 4), "entrance": Vector2i(1, 3), "walls": 0.0, "roof": 0.0,
+			"wall": Color.WHITE, "roof_color": Color.WHITE},
+	"hut": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 26.0,
+			"wall": Color(0.76, 0.66, 0.48), "roof_color": Color(0.78, 0.66, 0.32)},
+	"well": {"footprint": Vector2i(1, 1), "entrance": Vector2i(0, 0), "walls": 10.0, "roof": 20.0,
+			"wall": Color(0.62, 0.62, 0.64), "roof_color": Color(0.5, 0.32, 0.2), "extra": "well"},
+	"woodcutter": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 22.0,
+			"wall": Color(0.55, 0.4, 0.26), "roof_color": Color(0.32, 0.45, 0.25), "extra": "logs"},
+	"farm": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 28.0, "roof": 24.0,
+			"wall": Color(0.82, 0.76, 0.6), "roof_color": Color(0.85, 0.7, 0.3), "extra": "sheaf"},
+	"mill": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 44.0, "roof": 24.0,
+			"wall": Color(0.9, 0.88, 0.82), "roof_color": Color(0.45, 0.32, 0.22), "extra": "sails"},
+	"bakery": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
+			"wall": Color(0.8, 0.58, 0.42), "roof_color": Color(0.6, 0.25, 0.2), "extra": "chimney"},
+}
+
+
+func _canvas(footprint: Vector2i, height: float, eaves: int) -> Dictionary:
 	var size := Vector2i(32 * (footprint.x + footprint.y) + eaves * 2,
-			16 * (footprint.x + footprint.y) + int(wall_h + roof_h) + 4)
-	var pivot := Vector2i(32 * footprint.x + eaves, size.y - 2)
-	var img := _blank(size)
-	var rect := PackedVector2Array([Vector2(0, 0), Vector2(footprint.x, 0),
-			Vector2(footprint), Vector2(0, footprint.y)])
-	# Footprint corners relative to B (front vertex).
-	var base := PackedVector2Array()
-	for p: Vector2 in rect:
-		base.append(p - Vector2(footprint))
+			16 * (footprint.x + footprint.y) + int(height) + 4)
+	return {"size": size, "pivot": Vector2i(32 * footprint.x + eaves, size.y - 2)}
+
+
+func _write_art(id: String, name: String, img: Image, footprint: Vector2i, entrance: Vector2i,
+		pivot: Vector2i) -> void:
+	_save(img, "buildings/%s/%s.png" % [id, name])
+	var meta := {"footprint": [footprint.x, footprint.y], "entrance": [entrance.x, entrance.y],
+			"pivot": [pivot.x, pivot.y]}
+	var file := FileAccess.open(OUT.path_join("buildings/%s/%s.json" % [id, name]), FileAccess.WRITE)
+	file.store_string(JSON.stringify(meta, "\t"))
+
+
+## Box building with a roof. Writes <name>.png and <name>.json (footprint, entrance, pivot).
+## [param roof_kind]: "hip_both" (pyramid-like) or "<hip_start|hip_end|hip_none>_<x|y>"
+## for houses joined into a row along a grid axis.
+func _building(id: String, footprint: Vector2i, entrance: Vector2i, wall_h: float, roof_h: float,
+		wall: Color, roof: Color, name: String = "base", roof_kind: String = "hip_both",
+		extra: String = "", eaves: int = 8) -> void:
+	var canvas := _canvas(footprint, wall_h + roof_h + (30.0 if extra == "tower" else 0.0), maxi(eaves, 8))
+	var pivot: Vector2i = canvas["pivot"]
+	var img := _blank(canvas["size"])
+	var base := _footprint_base(footprint)
 	_prism(img, pivot, base, 0.0, wall_h, wall)
-	# Door on the entrance tile's visible face.
+	_door(img, pivot, footprint, entrance)
+	if roof_kind == "hip_both":
+		var grown := PackedVector2Array()
+		var center := -Vector2(footprint) * 0.5
+		var overhang := 0.25 / maxf(footprint.x, footprint.y) if eaves > 0 else 0.0
+		for p: Vector2 in base:
+			grown.append(center + (p - center) * (1.0 + overhang))
+		_pyramid(img, pivot, grown, wall_h, roof_h, roof)
+	else:
+		_ridge_roof(img, pivot, footprint, wall_h, roof_h, roof, roof_kind)
+	_extra(img, pivot, footprint, wall_h, roof_h, extra)
+	_write_art(id, name, img, footprint, entrance, pivot)
+
+
+func _footprint_base(footprint: Vector2i) -> PackedVector2Array:
+	var base := PackedVector2Array()
+	for p: Vector2 in [Vector2(0, 0), Vector2(footprint.x, 0), Vector2(footprint), Vector2(0, footprint.y)]:
+		base.append(p - Vector2(footprint))
+	return base
+
+
+func _door(img: Image, pivot: Vector2i, footprint: Vector2i, entrance: Vector2i) -> void:
 	var door_tile := Vector2(entrance) - Vector2(footprint)
 	var on_right_face := entrance.x == footprint.x - 1
 	var door_mid := door_tile + (Vector2(1.0, 0.5) if on_right_face else Vector2(0.5, 1.0))
@@ -270,17 +397,128 @@ func _building(id: String, footprint: Vector2i, entrance: Vector2i, wall_h: floa
 	var d1 := Vector2(pivot) + IsoMath.grid_to_screen(door_mid + door_dir)
 	_fill_polygon(img, PackedVector2Array([d0, d1, d1 - Vector2(0, 20), d0 - Vector2(0, 20)]),
 			Color(0.25, 0.16, 0.1))
-	# Pyramid roof with a little overhang.
-	var grown := PackedVector2Array()
-	var center := -Vector2(footprint) * 0.5
-	for p: Vector2 in base:
-		grown.append(center + (p - center) * (1.0 + 0.25 / maxf(footprint.x, footprint.y)))
-	_pyramid(img, pivot, grown, wall_h, roof_h, roof)
-	_save(img, "buildings/%s/base.png" % id)
-	var meta := {"footprint": [footprint.x, footprint.y], "entrance": [entrance.x, entrance.y],
-			"pivot": [pivot.x, pivot.y]}
-	var file := FileAccess.open(OUT.path_join("buildings/%s/base.json" % id), FileAccess.WRITE)
-	file.store_string(JSON.stringify(meta, "\t"))
+
+
+## Ridge roof along a grid axis: hipped ends where the row ends, open (flush) ends where a
+## neighbour continues the row, so adjacent houses read as one long roof.
+func _ridge_roof(img: Image, pivot: Vector2i, footprint: Vector2i, wall_h: float, roof_h: float,
+		color: Color, kind: String) -> void:
+	var parts := kind.rsplit("_", true, 1)
+	var hips: String = parts[0]
+	var along_x: bool = parts[1] == "x"
+	var f := Vector2(footprint)
+	var o := -f
+	var length := f.x if along_x else f.y
+	var width := f.y if along_x else f.x
+	var start_in := width * 0.5 if hips in ["hip_both", "hip_start"] else 0.0
+	var end_in := width * 0.5 if hips in ["hip_both", "hip_end"] else 0.0
+	# Points in (along, across) space, then mapped to grid.
+	var to_grid := func(a: float, c: float) -> Vector2:
+		return o + (Vector2(a, c) if along_x else Vector2(c, a))
+	var e0: Vector2 = to_grid.call(0.0, 0.0)
+	var e1: Vector2 = to_grid.call(length, 0.0)
+	var e2: Vector2 = to_grid.call(length, width)
+	var e3: Vector2 = to_grid.call(0.0, width)
+	var r0: Vector2 = to_grid.call(start_in, width * 0.5)
+	var r1: Vector2 = to_grid.call(length - end_in, width * 0.5)
+	var faces := [
+		[[e0, wall_h], [e1, wall_h], [r1, wall_h + roof_h], [r0, wall_h + roof_h]],
+		[[e3, wall_h], [e2, wall_h], [r1, wall_h + roof_h], [r0, wall_h + roof_h]],
+		[[e0, wall_h], [e3, wall_h], [r0, wall_h + roof_h]],
+		[[e1, wall_h], [e2, wall_h], [r1, wall_h + roof_h]],
+	]
+	faces.sort_custom(func(a: Array, b: Array) -> bool:
+		return _face_depth(a) < _face_depth(b))
+	for i: int in faces.size():
+		var poly := PackedVector2Array()
+		for corner: Array in faces[i]:
+			poly.append(Vector2(pivot) + IsoMath.grid_to_screen(corner[0]) - Vector2(0, corner[1]))
+		var shade := color.darkened(0.1 * (3 - i)) if i < 3 else color.lightened(0.08)
+		_fill_polygon(img, poly, shade)
+		_outline(img, poly, color.darkened(0.6))
+
+
+func _face_depth(face: Array) -> float:
+	var sum := 0.0
+	for corner: Array in face:
+		var g: Vector2 = corner[0]
+		sum += g.x + g.y
+	return sum / face.size()
+
+
+## One telling detail per building so they are easy to tell apart.
+func _extra(img: Image, pivot: Vector2i, footprint: Vector2i, wall_h: float, roof_h: float, extra: String) -> void:
+	var front := Vector2(pivot)
+	var center := front + IsoMath.grid_to_screen(-Vector2(footprint) * 0.5)
+	match extra:
+		"tower":
+			var t := PackedVector2Array([Vector2(-2.6, -2.6), Vector2(-1.4, -2.6), Vector2(-1.4, -1.4), Vector2(-2.6, -1.4)])
+			_prism(img, pivot, t, wall_h, wall_h + roof_h + 10.0, Color(0.68, 0.66, 0.62))
+			_pyramid(img, pivot, t, wall_h + roof_h + 10.0, 18.0, Color(0.3, 0.36, 0.55))
+		"well":
+			_ellipse(img, center - Vector2(0, wall_h + 2), Vector2(9, 4), Color(0.15, 0.25, 0.45))
+		"logs":
+			var p := front + IsoMath.grid_to_screen(Vector2(-0.4, -1.9))
+			for i: int in 3:
+				_line(img, p + Vector2(-8, -4 - i * 4), p + Vector2(8, -i * 4), Color(0.5, 0.33, 0.18), 4)
+		"sheaf":
+			var q := front + IsoMath.grid_to_screen(Vector2(-1.9, -0.4)) - Vector2(0, 4)
+			for i: int in 5:
+				_line(img, q + Vector2(i * 2 - 4, 0), q + Vector2(i * 3 - 6, -14), Color(0.92, 0.78, 0.32), 2)
+		"sails":
+			var hub := front + IsoMath.grid_to_screen(Vector2(-0.5, -1.0)) - Vector2(0, wall_h * 0.75)
+			for k: int in 4:
+				var a := k * PI / 2.0 + PI / 4.0
+				var tip := hub + Vector2(cos(a), sin(a)) * 26.0
+				_line(img, hub, tip, Color(0.4, 0.28, 0.16), 2)
+				_line(img, tip, tip.lerp(hub, 0.6) + Vector2(cos(a + 0.5), sin(a + 0.5)) * 6.0, Color(0.92, 0.9, 0.84), 4)
+			_ellipse(img, hub, Vector2(3, 3), Color(0.3, 0.2, 0.12))
+		"chimney":
+			var c := PackedVector2Array([Vector2(-1.5, -0.8), Vector2(-1.1, -0.8), Vector2(-1.1, -0.4), Vector2(-1.5, -0.4)])
+			_prism(img, pivot, c, wall_h, wall_h + roof_h + 8.0, Color(0.55, 0.3, 0.25))
+
+
+## Construction site art: phase 1 = foundation with poles, phase 2 = half-built walls with
+## scaffolding planks. Same footprint and pivot rules as the finished building.
+func _site(id: String, footprint: Vector2i, phase: int) -> void:
+	var height := 48.0
+	var canvas := _canvas(footprint, height, 8)
+	var pivot: Vector2i = canvas["pivot"]
+	var img := _blank(canvas["size"])
+	var base := _footprint_base(footprint)
+	_prism(img, pivot, base, 0.0, 4.0, Color(0.6, 0.58, 0.54))
+	if phase == 2:
+		var inner := PackedVector2Array()
+		var center := -Vector2(footprint) * 0.5
+		for p: Vector2 in base:
+			inner.append(center + (p - center) * 0.9)
+		_prism(img, pivot, inner, 4.0, 22.0, Color(0.78, 0.68, 0.5))
+	_scaffold_on(img, pivot, footprint, 30.0 if phase == 1 else 40.0)
+	_write_art(id, "construction_%d" % phase, img, footprint, Vector2i(footprint.x / 2, footprint.y - 1), pivot)
+
+
+## Scaffolding overlay drawn over a house being upgraded.
+func _scaffold(id: String, footprint: Vector2i, height: float) -> void:
+	var canvas := _canvas(footprint, height + 30.0, 8)
+	var pivot: Vector2i = canvas["pivot"]
+	var img := _blank(canvas["size"])
+	_scaffold_on(img, pivot, footprint, height)
+	_write_art(id, "upgrade_scaffold", img, footprint, Vector2i(1, 1), pivot)
+
+
+func _scaffold_on(img: Image, pivot: Vector2i, footprint: Vector2i, height: float) -> void:
+	var wood := Color(0.62, 0.45, 0.25)
+	var corners := [Vector2(0, 0), Vector2(footprint.x, 0), Vector2(footprint), Vector2(0, footprint.y)]
+	var front := []
+	for c: Vector2 in corners:
+		front.append(Vector2(pivot) + IsoMath.grid_to_screen(c - Vector2(footprint)))
+	for p: Vector2 in front:
+		_line(img, p, p - Vector2(0, height), wood, 2)
+	for level: float in [height * 0.45, height * 0.9]:
+		for i: int in 4:
+			var a: Vector2 = front[i]
+			var b: Vector2 = front[(i + 1) % 4]
+			_line(img, a - Vector2(0, level), b - Vector2(0, level), wood.lightened(0.15), 2)
 
 
 # --- Walls -----------------------------------------------------------------------------

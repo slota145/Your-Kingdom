@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="TerrainDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/terrain_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+index = 4
+walkable = true
+move_cost = 2.0
+buildable = false
+map_color = Color(0.470588, 0.658824, 0.815686, 1)
+id = &"ford"

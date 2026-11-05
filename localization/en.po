@@ -13,7 +13,7 @@ msgid "ui.main.title"
 msgstr "Your Kingdom"
 
 msgid "ui.main.subtitle"
-msgstr "Milestone M2: simulation core"
+msgstr "Milestone M3: vertical slice"
 
 msgid "ui.main.toggle_language"
 msgstr "Change language: Polski"
@@ -119,3 +119,412 @@ msgstr "Stockpile"
 
 msgid "ui.stockpile.empty"
 msgstr "Empty"
+
+# --- M3: buildings, terrain, needs, houses ---
+
+msgid "building.town_hall.name"
+msgstr "Town hall"
+
+msgid "building.town_hall.desc"
+msgstr "The heart of the settlement. Porters and the builder work from here, carrying goods and raising buildings."
+
+msgid "building.hut.name"
+msgstr "Hut"
+
+msgid "building.hut.desc"
+msgstr "Home for 4 peasants. Supplied with bread, wood and well water, it grows into a burgher house."
+
+msgid "building.well.name"
+msgstr "Well"
+
+msgid "building.well.desc"
+msgstr "Gives water to houses within reach. Reach is measured along paths, so roads extend it."
+
+msgid "building.farm.name"
+msgstr "Grain farm"
+
+msgid "building.farm.desc"
+msgstr "The farmer ploughs, sows and harvests grain on the fields around the farm. Place up to 16 field tiles separately."
+
+msgid "building.mill.name"
+msgstr "Mill"
+
+msgid "building.mill.desc"
+msgstr "The miller brings grain from the storage, grinds it and carries back a sack of flour."
+
+msgid "recipe.farming.name"
+msgstr "Grain farming"
+
+msgid "recipe.farming.desc"
+msgstr "Ploughing, sowing, three growth stages, reaping with a sickle, binding a sheaf and carrying it to the storage."
+
+msgid "recipe.milling.name"
+msgstr "Milling"
+
+msgid "recipe.milling.desc"
+msgstr "The miller pours grain into the hopper, the sails turn and flour pours from the stones."
+
+msgid "recipe.baking.name"
+msgstr "Baking"
+
+msgid "recipe.baking.desc"
+msgstr "The baker kneads dough at the table, puts it in the oven and takes out a basket of bread."
+
+msgid "terrain.grass.name"
+msgstr "Grass"
+
+msgid "terrain.grass.desc"
+msgstr "Ordinary ground. You can build here."
+
+msgid "terrain.meadow.name"
+msgstr "Meadow"
+
+msgid "terrain.meadow.desc"
+msgstr "A flowering meadow. You can build here."
+
+msgid "terrain.forest.name"
+msgstr "Forest"
+
+msgid "terrain.forest.desc"
+msgstr "Trees for the woodcutter. Walking here is slower."
+
+msgid "terrain.water.name"
+msgstr "River"
+
+msgid "terrain.water.desc"
+msgstr "Water. It cannot be crossed or built on."
+
+msgid "terrain.ford.name"
+msgstr "Ford"
+
+msgid "terrain.ford.desc"
+msgstr "A shallow place in the river. It can be crossed, but slowly."
+
+msgid "need.food.name"
+msgstr "Food"
+
+msgid "need.food.desc"
+msgstr "Residents eat bread from the house pantry."
+
+msgid "need.firewood.name"
+msgstr "Firewood"
+
+msgid "need.firewood.desc"
+msgstr "Wood to burn in the stove."
+
+msgid "need.well_water.name"
+msgstr "Water"
+
+msgid "need.well_water.desc"
+msgstr "The house must be within reach of a well."
+
+msgid "house_level.peasant_house.name"
+msgstr "Hut"
+
+msgid "house_level.peasant_house.desc"
+msgstr "Level 1. Home for 4 peasants."
+
+msgid "house_level.burgher_house.name"
+msgstr "Burgher house"
+
+msgid "house_level.burgher_house.desc"
+msgstr "Level 2. Home for 8 burghers. Houses side by side join into a row."
+
+msgid "map.riverlands.name"
+msgstr "Riverlands"
+
+msgid "map.riverlands.desc"
+msgstr "A land of meadows and forests cut by a river with two fords."
+
+# --- M3: game UI ---
+
+msgid "ui.main.new_game"
+msgstr "New game"
+
+msgid "ui.main.load_game"
+msgstr "Load quick save"
+
+msgid "ui.close"
+msgstr "Close"
+
+msgid "ui.hud.stats"
+msgstr "Residents: %d · Working: %d of %d · Time: %d:%02d"
+
+msgid "ui.hud.speed"
+msgstr "Speed: %d×"
+
+msgid "ui.hud.paused"
+msgstr "Paused"
+
+msgid "ui.hud.pause"
+msgstr "Pause"
+
+msgid "ui.hud.slower"
+msgstr "Slower"
+
+msgid "ui.hud.faster"
+msgstr "Faster"
+
+msgid "ui.hud.save"
+msgstr "Save"
+
+msgid "ui.hud.load"
+msgstr "Load"
+
+msgid "ui.hud.language"
+msgstr "Polski"
+
+msgid "ui.hud.menu"
+msgstr "Menu"
+
+msgid "ui.build.cost"
+msgstr "Cost: %s"
+
+msgid "ui.build.road"
+msgstr "Road"
+
+msgid "ui.build.road_tip"
+msgstr "Dirt road. Drag with the mouse. People walk half again as fast on it."
+
+msgid "ui.build.demolish"
+msgstr "Demolish"
+
+msgid "ui.build.demolish_tip"
+msgstr "Click a building, road or field. Half of the materials come back."
+
+msgid "ui.building.add_fields"
+msgstr "Add fields"
+
+msgid "ui.building.demolish"
+msgstr "Demolish"
+
+msgid "ui.building.no_workers"
+msgstr "Workers missing: %d"
+
+msgid "ui.building.fields"
+msgstr "Fields: %d of %d"
+
+msgid "ui.building.service_range"
+msgstr "The reach is shown on the map."
+
+msgid "ui.building.site_phase"
+msgstr "Construction site: phase %d of %d"
+
+msgid "ui.building.upgrading"
+msgstr "House upgrade, on scaffolding"
+
+msgid "ui.building.materials"
+msgstr "Materials: %s (needed: %s)"
+
+msgid "ui.house.residents"
+msgstr "Residents: %d of %d"
+
+msgid "ui.house.happiness"
+msgstr "Happiness: %d"
+
+msgid "ui.house.declining"
+msgstr "Warning: the house is declining, it lacks basic needs!"
+
+msgid "ui.house.upgrade_in"
+msgstr "Upgrade in %d s if nothing runs out"
+
+msgid "ui.need.ok"
+msgstr "met"
+
+msgid "ui.need.missing"
+msgstr "missing"
+
+msgid "ui.agent.follow"
+msgstr "Follow"
+
+msgid "ui.agent.carrying"
+msgstr "Carrying: %s"
+
+msgid "ui.agent.home"
+msgstr "Home: %s"
+
+msgid "ui.agent.workplace"
+msgstr "Work: %s"
+
+msgid "ui.doing.idle"
+msgstr "resting"
+
+msgid "ui.doing.walk"
+msgstr "walking"
+
+msgid "ui.doing.waiting"
+msgstr "waiting (%s)"
+
+msgid "ui.doing.waiting_for"
+msgstr "waiting for: %s"
+
+msgid "ui.doing.fetch"
+msgstr "going to fetch: %s"
+
+msgid "ui.doing.deliver"
+msgstr "carrying: %s, to: %s"
+
+msgid "ui.doing.site_of"
+msgstr "construction site (%s)"
+
+msgid "ui.doing.ground"
+msgstr "onto the ground"
+
+msgid "ui.doing.go_to"
+msgstr "walking to: %s"
+
+msgid "ui.doing.go_to_work"
+msgstr "going to work"
+
+msgid "ui.doing.go_to_field"
+msgstr "walking to the field"
+
+msgid "ui.doing.go_build"
+msgstr "going to build: %s"
+
+msgid "ui.doing.move_in"
+msgstr "moving into: %s"
+
+msgid "ui.activity.chop"
+msgstr "chopping a tree"
+
+msgid "ui.activity.bind"
+msgstr "binding the load"
+
+msgid "ui.activity.plow"
+msgstr "ploughing"
+
+msgid "ui.activity.sow"
+msgstr "sowing grain"
+
+msgid "ui.activity.harvest"
+msgstr "reaping with a sickle"
+
+msgid "ui.activity.grind"
+msgstr "grinding grain"
+
+msgid "ui.activity.knead"
+msgstr "kneading dough"
+
+msgid "ui.activity.bake"
+msgstr "baking bread"
+
+msgid "ui.activity.build"
+msgstr "building"
+
+msgid "ui.kind.porter"
+msgstr "Porter"
+
+msgid "ui.kind.builder"
+msgstr "Builder"
+
+msgid "ui.kind.woodcutter"
+msgstr "Woodcutter"
+
+msgid "ui.kind.farmer"
+msgstr "Farmer"
+
+msgid "ui.kind.miller"
+msgstr "Miller"
+
+msgid "ui.kind.baker"
+msgstr "Baker"
+
+msgid "ui.kind.householder"
+msgstr "Householder"
+
+msgid "ui.kind.settler"
+msgstr "Newcomer"
+
+msgid "ui.reason.no_source"
+msgstr "no goods"
+
+msgid "ui.reason.no_space"
+msgstr "no room in storage"
+
+msgid "ui.reason.no_path"
+msgstr "no way there"
+
+msgid "ui.reason.no_resource"
+msgstr "no trees in reach"
+
+msgid "ui.reason.source_gone"
+msgstr "the storage is gone"
+
+msgid "ui.reason.target_gone"
+msgstr "the target is gone"
+
+msgid "ui.reason.hands_full"
+msgstr "hands are full"
+
+msgid "ui.reason.field_gone"
+msgstr "the field is gone"
+
+msgid "ui.reason.no_workplace"
+msgstr "no workplace"
+
+msgid "ui.reason.no_house"
+msgstr "no house"
+
+msgid "ui.note.building_completed"
+msgstr "Finished: %s"
+
+msgid "ui.note.house_upgraded"
+msgstr "Upgrade! New: %s"
+
+msgid "ui.note.house_downgraded"
+msgstr "A house declined: %s"
+
+msgid "ui.note.house_warning"
+msgstr "A house lacks basic needs: %s"
+
+msgid "ui.note.resident_left"
+msgstr "A resident left: %s"
+
+msgid "ui.note.saved"
+msgstr "Game saved."
+
+msgid "ui.note.save_failed"
+msgstr "Could not save the game."
+
+msgid "ui.note.loaded"
+msgstr "Game loaded."
+
+msgid "ui.note.load_failed"
+msgstr "No save to load."
+
+msgid "ui.command_error.outside_map"
+msgstr "Outside the map."
+
+msgid "ui.command_error.tile_occupied"
+msgstr "This place is taken."
+
+msgid "ui.command_error.terrain_not_buildable"
+msgstr "You cannot build here."
+
+msgid "ui.command_error.tile_has_people"
+msgstr "Someone is standing here."
+
+msgid "ui.command_error.not_a_farm"
+msgstr "This is not a farm."
+
+msgid "ui.command_error.too_many_fields"
+msgstr "The farm has all its fields."
+
+msgid "ui.command_error.out_of_range"
+msgstr "Too far from the farm."
+
+msgid "ui.command_error.already_road"
+msgstr "There is a road here already."
+
+msgid "ui.command_error.no_road"
+msgstr "There is no road here."
+
+msgid "ui.command_error.no_field"
+msgstr "There is no field here."
+
+msgid "ui.command_error.no_tiles"
+msgstr "Nothing to do."
+
+msgid "ui.command_error.unknown_building"
+msgstr "No such building."

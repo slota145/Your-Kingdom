@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="HouseLevelDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/house_level_def.gd" id="1_s"]
+[ext_resource type="Script" path="res://src/defs/need_def.gd" id="2_need"]
+[ext_resource type="Resource" path="res://data/needs/food.tres" id="3_food"]
+[ext_resource type="Resource" path="res://data/needs/firewood.tres" id="4_fire"]
+[ext_resource type="Resource" path="res://data/needs/well_water.tres" id="5_well"]
+
+[resource]
+script = ExtResource("1_s")
+level = 1
+capacity = 4
+needs = Array[ExtResource("2_need")]([ExtResource("3_food"), ExtResource("4_fire"), ExtResource("5_well")])
+supply_units = 3
+upgrade_cost = Dictionary[StringName, int]({})
+upgrade_time = 0.0
+id = &"peasant_house"

@@ -24,7 +24,7 @@ func before() -> void:
 	mill.id = &"test_mill"
 	mill.footprint = Vector2i(2, 2)
 	mill.entrance = Vector2i(1, 1)
-	mill.workers = 1
+	mill.worker_kinds = [&"miller"]
 	mill.recipe = recipe
 	_registry.register(mill)
 

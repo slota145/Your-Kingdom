@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NeedDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/need_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+kind = "good"
+goods = Array[StringName]([&"bread"])
+per_resident_per_minute = 0.1
+weight = 40
+id = &"food"
