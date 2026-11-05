@@ -122,7 +122,10 @@ static func _pay_taxes(province: ProvinceSim, building: BuildingState) -> void:
 static func _need_met(province: ProvinceSim, building: BuildingState, need: NeedDef) -> bool:
 	var house := building.house
 	if need.is_service():
-		return province.coverage.covers(need.service, building.entrance_tile(), province.grid.size)
+		for door: Vector2i in province.door_tiles(building):
+			if province.coverage.covers(need.service, door, province.grid.size):
+				return true
+		return false
 	var hunger: float = house.hunger.get(need.id, 0.0) + house.residents * need.per_resident_per_minute / 60.0
 	for good: StringName in need.goods:
 		while hunger >= 1.0 and building.supply.remove(good, 1) == 1:

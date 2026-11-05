@@ -22,11 +22,12 @@ func test_rejected_command_emits_event_and_changes_nothing() -> void:
 	assert_str(String(events.back()["type"])).is_equal("command_rejected")
 
 
-func test_placing_building_blocks_tiles_except_entrance() -> void:
+## M4b-1.5: the whole footprint is solid, entrances too; people get in only through a door.
+func test_placing_building_blocks_all_its_tiles() -> void:
 	var sim := SimFixture.make_sim()
 	var stock := SimFixture.place(sim, &"stockpile", Vector2i(2, 2))
 	for tile: Vector2i in stock.tiles():
-		assert_bool(sim.province.nav.is_walkable(tile)).is_equal(tile == stock.entrance_tile())
+		assert_bool(sim.province.nav.is_walkable(tile)).is_false()
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"woodcutter", Vector2i(3, 3))))) \
 			.is_equal("tile_occupied")
 

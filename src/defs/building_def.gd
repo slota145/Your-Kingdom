@@ -44,6 +44,11 @@ extends GameDef
 @export var service_needs_supply: bool = false
 ## Non-empty for houses: level 1, 2... (GDD §3.3).
 @export var house_levels: Array[HouseLevelDef] = []
+## Which sides have doors (M4b-1.5, owner's decision): &"one" (only the door the player
+## turns), &"opposite" (also the side across, so it can face a road on either side),
+## &"all" (every side). Empty = by kind: houses one, storages all, the rest opposite.
+## People need only one door with free ground in front of it.
+@export var door_sides: StringName = &""
 
 
 func get_kind() -> StringName:
@@ -125,6 +130,20 @@ func door_dir(orientation: int) -> Vector2i:
 ## The tile just outside the door: people walk in and out of the building only through it.
 func door_front(origin: Vector2i, orientation: int) -> Vector2i:
 	return origin + entrance_at(orientation) + door_dir(orientation)
+
+
+## The doors of the building turned to [param orientation], each given as the orientation
+## whose main door it is (entrance_at, door_dir, door_front); the main door first.
+func door_orientations(orientation: int) -> Array[int]:
+	var sides := door_sides
+	if sides == &"":
+		sides = &"one" if is_house() else (&"all" if storage_slots > 0 else &"opposite")
+	match sides:
+		&"all":
+			return [orientation, (orientation + 1) % 4, (orientation + 2) % 4, (orientation + 3) % 4]
+		&"opposite":
+			return [orientation, (orientation + 2) % 4]
+	return [orientation]
 
 
 func is_entrance_on_edge() -> bool:

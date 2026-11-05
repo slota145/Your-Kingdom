@@ -226,7 +226,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 
 ### 5.1 Zasady ogólne
 
-- Budynki zajmują prostokątny obszar kafli (footprint). Mają **wejście** na wskazanym kaflu krawędzi, w które postacie wchodzą i z którego wychodzą.
+- Budynki zajmują prostokątny obszar kafli (footprint). Mają **wejście** na wskazanym kaflu krawędzi, w które postacie wchodzą i z którego wychodzą, zawsze przez kafel przed drzwiami. Magazyny mają drzwi z każdej strony, inne budynki oprócz domów także z tyłu; wystarczy jedne drzwi z wolnym przejściem (M4b-1.5). Postawiony budynek można obrócić w jego panelu.
 - Budowa jest fizyczna: plac budowy, dostawa materiałów przez tragarzy, praca budowniczego i fazy budowy.
 - Budynku nie da się postawić tam, gdzie ludzie nie dojdą, ani tak, żeby odciął drogę do wejścia innego budynku, towarów na ziemi albo ludzi (decyzja 2026-11-05: zamurowany plac budowy blokował tragarzy i budowniczych). Budowniczy, który nie może dojść do placu, idzie na następny. Gdy wejście wypadłoby od strony wody (np. chata rybaka obrócona drzwiami do rzeki), gracz dostaje osobny komunikat.
 - **Obracanie (M4b-1.5, decyzja 2026-11-05):** gracz wybiera, z której strony budynek ma wejście. Domy mają 4 strony, pozostałe budynki 2 (wejście zawsze od strony kamery, żeby praca była widoczna). Podgląd sam obraca wejście do przylegającej drogi, a klawisz R zmienia stronę ręcznie.

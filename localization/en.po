@@ -514,6 +514,15 @@ msgstr "The entrance would face the water."
 msgid "ui.command_error.bad_orientation"
 msgstr "This building cannot be turned that way."
 
+msgid "ui.building.turn"
+msgstr "Turn"
+
+msgid "ui.building.turn_hint"
+msgstr "Turns the building so its entrance faces another side."
+
+msgid "ui.command_error.cannot_turn"
+msgstr "This building cannot be turned here."
+
 msgid "ui.building.change_look"
 msgstr "Change look"
 

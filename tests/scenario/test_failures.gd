@@ -117,10 +117,12 @@ func test_no_path_to_stockpile() -> void:
 	var sim := SimFixture.make_sim()
 	var scene := SimFixture.woodcutter_scene(sim)
 	var stock: BuildingState = scene["stock"]
-	# Wall in the stockpile entrance (row below the stockpile).
-	for x: int in range(3, 9):
-		sim.province.grid.set_blocked(Vector2i(x, 8), true)
-		sim.province.refresh_tile(Vector2i(x, 8))
+	# Wall the stockpile in on every side (it has a door on each).
+	for y: int in range(3, 9):
+		for x: int in range(3, 9):
+			if x == 3 or y == 3 or x == 8 or y == 8:
+				sim.province.grid.set_blocked(Vector2i(x, y), true)
+				sim.province.refresh_tile(Vector2i(x, y))
 	_run_checked(sim, SimFixture.ticks(120), &"wood", _wood_cut(sim))
 	assert_int(stock.stock.total(&"wood")).is_equal(0)
 	assert_int(stock.stock.reservation_count()).is_equal(0)
@@ -131,9 +133,12 @@ func test_porter_request_with_unreachable_source_waits_without_holding() -> void
 	var sim := SimFixture.make_sim()
 	var a := SimFixture.place(sim, &"stockpile", Vector2i(2, 2))
 	var b := SimFixture.place(sim, &"stockpile", Vector2i(20, 20))
-	for x: int in range(1, 7):
-		sim.province.grid.set_blocked(Vector2i(x, 6), true)
-		sim.province.refresh_tile(Vector2i(x, 6))
+	# Walled in on every side (a stockpile has a door on each).
+	for y: int in range(1, 7):
+		for x: int in range(1, 7):
+			if x == 1 or y == 1 or x == 6 or y == 6:
+				sim.province.grid.set_blocked(Vector2i(x, y), true)
+				sim.province.refresh_tile(Vector2i(x, y))
 	a.stock.add(&"bread", 5)
 	SimFixture.spawn(sim, &"porter", Vector2i(15, 15))
 	sim.execute(RequestTransportCommand.new(&"bread", 5, a.id, b.id))

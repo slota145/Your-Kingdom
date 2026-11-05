@@ -33,6 +33,10 @@ static func serve_paths(province: ProvinceSim) -> void:
 		if path.is_empty():
 			agent.path_state = Agent.PathState.FAILED
 			continue
+		if path[0] != agent.tile():
+			# Leaving by another door of the same building: inside, nobody sees the step.
+			agent.pos = IsoMath.tile_center(path[0])
+			agent.prev_pos = agent.pos
 		agent.path = path
 		agent.path_index = 0
 		agent.path_version = province.nav.version
@@ -54,7 +58,8 @@ static func move_all(province: ProvinceSim) -> void:
 static func _check_path(province: ProvinceSim, agent: Agent) -> void:
 	agent.path_version = province.nav.version
 	for i: int in range(agent.path_index, agent.path.size()):
-		if not province.nav.is_walkable(agent.path[i]):
+		var t := agent.path[i]
+		if not province.nav.is_walkable(t) and province.building_entered_at(t) == null:
 			var goal := agent.path_goal
 			agent.clear_path()
 			agent.path_goal = goal
@@ -83,6 +88,9 @@ static func _advance(province: ProvinceSim, agent: Agent) -> void:
 			budget -= length * cost
 			agent.path_index += 1
 			if agent.path_index >= agent.path.size():
+				if agent.path[-1] != agent.path_goal and province.building_entered_at(agent.path_goal) != null:
+					# In through another door of the same building: now inside, at the goal.
+					agent.pos = IsoMath.tile_center(agent.path_goal)
 				agent.path_state = Agent.PathState.ARRIVED
 				agent.activity = &"idle"
 				return

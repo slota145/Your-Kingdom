@@ -86,6 +86,18 @@ func door_front_tile() -> Vector2i:
 	return def.door_front(origin, orientation)
 
 
+## Entrance tiles of every door (the main one first).
+func entrance_tiles() -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for o: int in def.door_orientations(orientation):
+		tiles.append(origin + def.entrance_at(o))
+	return tiles
+
+
+func is_entrance(tile: Vector2i) -> bool:
+	return entrance_tiles().has(tile)
+
+
 func tiles() -> Array[Vector2i]:
 	return def.footprint_tiles(origin)
 

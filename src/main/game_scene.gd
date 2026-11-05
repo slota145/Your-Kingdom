@@ -210,8 +210,9 @@ func _update_preview() -> void:
 			var ok := sim.province.placement_error(def, origin, turn) == &""
 			for t: Vector2i in def.footprint_tiles(origin):
 				tiles[t] = "ok" if ok else "bad"
-			# The tile in front of the door: where people will come and go.
-			tiles[def.door_front(origin, turn)] = "range"
+			# The tiles in front of the doors: where people will come and go.
+			for k: int in def.door_orientations(turn):
+				tiles[def.door_front(origin, k)] = "range"
 			ghost = BuildingLayer.base_art(def, origin, turn, _turn.look)
 			ghost_origin = origin
 			ghost_ok = ok

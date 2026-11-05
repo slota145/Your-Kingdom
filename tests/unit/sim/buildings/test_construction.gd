@@ -125,9 +125,9 @@ func test_building_that_walls_off_an_entrance_is_refused() -> void:
 	# A hut in the gate, its door to the garden, would seal the well off.
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"woodcutter", Vector2i(21, 17), false, 1)))) \
 			.is_equal("blocks_access")
-	# Turned with its door to the trees nobody could get in at all.
+	# Turned the other way it seals the well off too (a door on each side, no way through).
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"woodcutter", Vector2i(21, 17))))) \
-			.is_equal("no_access")
+			.is_equal("blocks_access")
 	# Next to the gate it is fine.
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"woodcutter", Vector2i(24, 15))))) \
 			.is_equal("")
@@ -151,9 +151,8 @@ func test_builder_skips_a_site_they_cannot_reach() -> void:
 func test_fishing_hut_with_its_door_to_the_river_gets_a_clear_reason() -> void:
 	var registry := SimFixture.registry()
 	var sim := Simulation.from_map(registry, registry.get_map(&"riverlands"), 1, PackedStringArray())
-	var def := registry.get_building(&"fishing_hut")
-	# On the start map's east bank: the door corner lands on the river side.
-	assert_str(String(sim.province.placement_error(def, Vector2i(64, 14)))) \
-			.is_equal("entrance_faces_water")
+	# A hut (one door) on the start map's east bank, its door to the river.
+	var hut := registry.get_building(&"hut")
+	assert_str(String(sim.province.placement_error(hut, Vector2i(64, 12), 0))).is_equal("entrance_faces_water")
 	# One tile further from the river the door has ground in front of it.
-	assert_str(String(sim.province.placement_error(def, Vector2i(62, 14)))).is_equal("")
+	assert_str(String(sim.province.placement_error(hut, Vector2i(62, 12), 0))).is_equal("")

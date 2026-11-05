@@ -519,6 +519,15 @@ msgstr "Wejście wychodzi na wodę. Przesuń budynek."
 msgid "ui.command_error.bad_orientation"
 msgstr "Tego budynku nie da się tak obrócić."
 
+msgid "ui.building.turn"
+msgstr "Obróć"
+
+msgid "ui.building.turn_hint"
+msgstr "Obraca budynek, żeby wejście było z innej strony."
+
+msgid "ui.command_error.cannot_turn"
+msgstr "Tego budynku nie da się tu obrócić."
+
 msgid "ui.building.change_look"
 msgstr "Zmień wygląd"
 

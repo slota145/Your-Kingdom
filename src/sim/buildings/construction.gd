@@ -76,8 +76,9 @@ static func _close(province: ProvinceSim, site: ConstructionSite, finished: bool
 		return
 	building.site_id = 0
 	var leftovers := site.stock.totals()
+	var door := province.door_tile(building)
 	for good: StringName in leftovers:
-		province.drop_goods(building.entrance_tile(), good, leftovers[good])
+		province.drop_goods(door if door != Agent.NO_TILE else building.entrance_tile(), good, leftovers[good])
 	if not finished:
 		return
 	if site.kind == ConstructionSite.KIND_UPGRADE:

@@ -26,6 +26,7 @@ var _fields_button: Button
 var _priority_row: Container
 var _pause_button: Button
 var _look_button: Button
+var _turn_button: Button
 var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
 var _reserve_label: Label
@@ -67,6 +68,10 @@ func _init() -> void:
 			command_requested.emit(SetLookCommand.new(building_id, b.look % visual.look_count(b.house.level) + 1)))
 	_look_button.tooltip_text = "ui.building.change_look_hint"
 	buttons.add_child(_look_button)
+	_turn_button = UiKit.button("ui.building.turn", func() -> void:
+		command_requested.emit(RotateBuildingCommand.new(building_id)))
+	_turn_button.tooltip_text = "ui.building.turn_hint"
+	buttons.add_child(_turn_button)
 	buttons.add_child(UiKit.button("ui.building.demolish", func() -> void: demolish_requested.emit(building_id)))
 	buttons.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
 
@@ -174,6 +179,7 @@ func _refresh() -> void:
 	_pause_button.visible = b.is_complete() and b.def.recipe != null
 	_pause_button.text = tr("ui.building.resume" if b.paused else "ui.building.pause")
 	var visual := BuildingVisualDef.for_building(b.def.id)
+	_turn_button.visible = b.def.footprint.x == b.def.footprint.y
 	_look_button.visible = b.house != null and visual != null and visual.look_count(b.house.level) > 1
 	_refresh_settings(b)
 
