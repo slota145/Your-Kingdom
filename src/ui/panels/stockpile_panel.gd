@@ -6,7 +6,8 @@ extends PanelContainer
 var stock: Stockpile
 
 var _title: Label
-var _list: VBoxContainer
+## Two columns, so a full stockpile still fits above the build bar.
+var _list: GridContainer
 var _shown: Dictionary[StringName, int] = {}
 var _initialized: bool = false
 
@@ -16,7 +17,8 @@ func _init() -> void:
 	add_child(box)
 	_title = Label.new()
 	box.add_child(_title)
-	_list = VBoxContainer.new()
+	_list = GridContainer.new()
+	_list.columns = 2
 	box.add_child(_list)
 
 

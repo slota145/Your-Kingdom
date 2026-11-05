@@ -18,7 +18,7 @@ M0 Fundament
  └─► M1 Prototyp czytelności + benchmark ──► A1 Pilot PixelLab (równolegle, mały)
       └─► M2 Rdzeń symulacji
            └─► M3 VERTICAL SLICE  ◄── kamień milowy: sprawdzenie głównego założenia gry
-                ├─► M4 Miasto i ekonomia
+                ├─► M4 Miasto i ekonomia (M4a mieszczanie ─► M4b patrycjusze)
                 │    └─► M5 Woda, porty i statki
                 │         └─► M6 Mapa świata i prowincje
                 │              └─► M7 Wojsko, mury i oblężenia
@@ -187,7 +187,7 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 - **Ustalone domyślnie (do zmiany na prośbę):** ubita droga jest darmowa i powstaje od razu. Dom poziomu 2 ma w slice’ie te same potrzeby co chata, tylko więcej mieszkańców i większe zużycie. Awans chaty kosztuje drewno (desek jeszcze nie ma).
 
 **DoD:**
-- [ ] Od startu, bez kodów, da się w ~20–30 minut doprowadzić do co najmniej 6 domów poziomu 2 zaopatrywanych w chleb. Automatyczny gracz (`tests/support/slice_bot.gd`, tylko komendy) osiąga to w **20. minucie** (`tests/scenario/test_slice_dod.gd`). **Czeka na Twoją grę.**
+- [ ] Od startu, bez kodów, da się w ~20–30 minut doprowadzić do co najmniej 6 domów poziomu 2 zaopatrywanych w chleb. Automatyczny gracz (`tests/support/slice_bot.gd`, tylko komendy) osiąga to w **20. minucie** (`tests/scenario/test_slice_dod.gd`). Od M4a mieszczanie potrzebują też ryb i piwa, więc ten sam test sprawdza teraz cel M4a. **Czeka na Twoją grę.**
 - [ ] **Każda jednostka chleba w magazynie jest wyprodukowana przez widoczną sekwencję:** pole → snop → młyn → worek mąki → piekarz → kosz chleba. Test z licznikami zdarzeń przechodzi (`tests/scenario/test_bread_chain.gd`). **Czeka na obserwację w trybie „śledź”.**
 - [ ] Kliknięcie dowolnej postaci pokazuje, co robi, zgodnie z tym, co widać. Zrobione (`AgentDescriber`). **Czeka na Twoją ocenę.**
 - [x] Lista w UI magazynu = stosy na placu, w każdej chwili. Oba czytają te same sloty (`Stockpile.totals`, `StockpileLayout`), test w `test_woodcutter.gd`.
@@ -202,21 +202,64 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 
 ## M4 — Miasto i ekonomia
 
+Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją grą i oceną.
+
+**Decyzje właściciela projektu (2026-11-05):**
+- **Start bez oceny M3:** M4a robimy od razu, choć ocena M3 na laptopie jeszcze czeka. Świadome ryzyko: jeśli w M3 coś nie zagra, część M4a może wymagać poprawek.
+- **Opał przed budową:** zlecenia budowy nie biorą ostatnich 5 sztuk drewna z magazynu (rezerwa dla domów). Gracz zmienia tę rezerwę suwakiem w panelu magazynu.
+- **Tragarze w magazynach:** każdy magazyn ma 2 miejsca pracy dla tragarzy. Ratusz zostaje z 2 tragarzami i 1 budowniczym.
+- **Białko dla mieszczan w M4a: ryby z wędkarzem** przy rzece. Mięso (chlew, rzeźnik) w M4b. Kutry na morzu później (IDEAS).
+- **Opał:** domy dalej palą zwykłym drewnem. Osobnego drewna opałowego nie robimy.
+- **Złoto:** część większych budynków (np. kościół, browar, targowisko) kosztuje też złoto.
+- **Wozy:** w M4b razem z brukiem.
+
+### M4a — Mieszczanie i porządek w logistyce
+
 **Zakres:**
-- 3 klasy mieszkańców i wszystkie potrzeby (GDD §3),
-- łańcuchy żywności, napojów, budulca i tekstyliów (GDD §4.3, bez metalu i wojska),
-- targowisko z zasięgiem, kaplica i kościół,
-- podatki i złoto,
+- klasa mieszczan z pełnymi potrzebami (GDD §3.2): chleb, ryby, piwo, opał; dodatkowo kościół i targowisko,
+- awans chaty do domu mieszczańskiego za deski zamiast drewna,
+- budulec: tartak (deski), kamieniołom (kamień),
+- żywność i napoje: wędkarz (ryby), farma chmielu i browar (piwo),
+- kaplica (dodatkowa potrzeba chłopów), kościół, targowisko z zasięgiem,
+- podatki ze stawką (niska, normalna, wysoka) i złoto jako koszt części budynków,
+- priorytety pracy budynków (wysoki, normalny, niski),
+- rezerwa drewna dla domów (suwak w panelu magazynu),
+- 2 miejsca dla tragarzy w każdym magazynie,
+- zapis: nowy `save_version` z migracją i testem.
+
+**Ustalone przy realizacji (2026-11-05, do zmiany na prośbę):**
+- **Awans czeka na towary nowej klasy:** chata zaczyna awans dopiero wtedy, gdy w magazynach jest po 4 sztuki chleba, ryb i piwa. Bez tego automatyczny gracz pokazał „huśtawkę”: domy awansowały, po 3 minutach bez piwa spadały, a deski przepadały. Potwierdzone przez właściciela projektu.
+- **Balans:** 1 kłoda = 2 deski, 1 zboże + 1 chmiel = 2 beczki piwa, skała daje 8 kamieni, wędkarz łowi 2 ryby na kurs. Podatki 0,25 (chłop) i 0,6 (mieszczanin) złota na minutę. Szczegóły w GDD §3.2, §3.5, §4.3.
+- **Skały** to pojedyncze węzły na mapie (dwie grupy na `riverlands`), bez nowego terenu. Teren skalisty zostaje w M4b.
+- **Chłopi** jedzą chleb albo ryby (GDD §3.2), a kaplica to ich dodatkowa potrzeba.
+- **Targowisko** to na razie usługa z zasięgiem. Straganiarze są w IDEAS.
+
+**DoD:**
+- [x] Automatyczny gracz od startu dochodzi do 6 domów mieszczan ze wszystkimi potrzebami podstawowymi (chleb, ryby, piwo, opał, studnia) w **38. minucie** (`tests/scenario/test_slice_dod.gd`, limit 50 minut).
+- [x] Każdy nowy łańcuch (deski, kamień, ryby, chmiel, piwo) ma test scenariuszowy z licznikami zdarzeń (`tests/scenario/test_m4a_chains.gd`).
+- [x] Przy budowach domy nie tracą opału: budowy zostawiają rezerwę, domownicy ją biorą (`tests/unit/sim/economy/test_logistics.gd`, tam też priorytety, podatki i złoto).
+- [x] Brak zakleszczeń przez 2 godziny przy 4× (`test_slice_dod.gd`). Po 2 godzinach mieszczanie wciąż są zaopatrzeni.
+- [x] Zapis z M3 wczytuje się po migracji (v2 → v3) bez utraty towaru. Nowa fixtura `v3_town.json`.
+- [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń. Klucze sprawdza test, panele sprawdzone na zrzutach w chmurze (PL). **Czeka na laptop.**
+- [ ] **Twoja ocena gry.**
+
+### M4b — Patrycjusze i ruch w mieście
+
+**Zakres:**
+- klasa patrycjuszy (GDD §3.2): ubrania, miód pitny lub wino, łaźnia lub tawerna,
+- tekstylia: owczarnia, tkalnia, krawiec; pasieka i miodosytnia; cegielnia,
+- mięso: chlew i rzeźnik (mięso i skóry),
 - wozy na drogach i bruk,
-- kupiec wędrowny,
-- priorytety pracy,
-- więcej typów terenu (jezioro, skały).
+- kupiec wędrowny (także jako źródło nowych mieszkańców, IDEAS),
+- więcej typów terenu (jezioro, skały),
+- leśniczy sadzący drzewa, wstrzymanie produkcji w panelu budynku, straganiarze na targowisku (wnioski z testów M4a, decyzja 2026-11-05, opis w IDEAS).
 
 **DoD:**
 - [ ] Da się dojść do patrycjuszy.
 - [ ] Każdy łańcuch ma test scenariuszowy.
 - [ ] Brak zakleszczeń przez 2 godziny przy 4× na dużym mieście (400+ postaci).
 - [ ] Wydajność według ARCHITECTURE §9.1.
+- [ ] **Twoja ocena gry.**
 
 ---
 

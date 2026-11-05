@@ -127,8 +127,9 @@ func setup_province(source: ProvinceSim) -> void:
 	province = source
 	_slot_by_index = slot_table(province.terrains)
 	_map_image = build_map_image(province.grid, _slot_by_index)
-	for name: String in ["fallow", "plowed", "sown_1", "sown_2", "sown_3", "ripe"]:
-		_fields[name] = ArtPaths.texture("terrain/field/%s.png" % name)
+	for folder: String in ["field", "field_hops"]:
+		for name: String in ["fallow", "plowed", "sown_1", "sown_2", "sown_3", "ripe"]:
+			_fields["%s/%s" % [folder, name]] = ArtPaths.texture("terrain/%s/%s.png" % [folder, name])
 	_build(province.grid.size)
 
 
@@ -262,6 +263,20 @@ func _field(tile: Vector2i) -> Texture2D:
 	if province == null or not province.fields.has_field(tile):
 		return null
 	var stage := province.fields.stage(tile, province.tick)
+	var folder := _crop_folder(province.fields.farm_of(tile))
 	if stage == FieldStore.Stage.SOWN:
-		return _fields["sown_%d" % province.fields.growth_stage(tile, province.tick)]
-	return _fields[FIELD_ART[stage]]
+		return _fields["%s/sown_%d" % [folder, province.fields.growth_stage(tile, province.tick)]]
+	return _fields["%s/%s" % [folder, FIELD_ART[stage]]]
+
+
+## Art folder of a farm's crop: "field" for grain, "field_<good>" for others (hops).
+func _crop_folder(farm_id: int) -> String:
+	var farm := province.buildings.get_building(farm_id)
+	if farm == null or farm.def.recipe == null:
+		return "field"
+	for step: StepDef in farm.def.recipe.steps:
+		if step is FieldStepDef and (step as FieldStepDef).harvest_good != &"grain":
+			var folder := "field_%s" % (step as FieldStepDef).harvest_good
+			if _fields.has(folder + "/fallow"):
+				return folder
+	return "field"

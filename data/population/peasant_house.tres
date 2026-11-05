@@ -5,13 +5,15 @@
 [ext_resource type="Resource" path="res://data/needs/food.tres" id="3_food"]
 [ext_resource type="Resource" path="res://data/needs/firewood.tres" id="4_fire"]
 [ext_resource type="Resource" path="res://data/needs/well_water.tres" id="5_well"]
+[ext_resource type="Resource" path="res://data/needs/chapel.tres" id="6_chapel"]
 
 [resource]
 script = ExtResource("1_s")
 level = 1
 capacity = 4
-needs = Array[ExtResource("2_need")]([ExtResource("3_food"), ExtResource("4_fire"), ExtResource("5_well")])
+needs = Array[ExtResource("2_need")]([ExtResource("3_food"), ExtResource("4_fire"), ExtResource("5_well"), ExtResource("6_chapel")])
 supply_units = 3
 upgrade_cost = Dictionary[StringName, int]({})
 upgrade_time = 0.0
+tax_per_minute = 0.25
 id = &"peasant_house"

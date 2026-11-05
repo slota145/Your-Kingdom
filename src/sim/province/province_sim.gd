@@ -22,6 +22,8 @@ var sites: Dictionary[int, ConstructionSite] = {}
 var fields: FieldStore = FieldStore.new()
 var jobs: JobBoard = JobBoard.new()
 var paths: PathRequestQueue = PathRequestQueue.new()
+## The kingdom's gold. Owned by the Simulation (it is global), shared here for convenience.
+var treasury: Treasury = Treasury.new()
 ## Derived from buildings and the map; not saved.
 var coverage: ServiceCoverage = ServiceCoverage.new()
 ## Where newcomers enter the province.
@@ -112,7 +114,14 @@ func load_map(map: MapDef) -> PackedStringArray:
 			grid.set_terrain(tile, terrain.index)
 			if terrain.resource_node != &"":
 				resources.place(tile, data.get_resource_node(terrain.resource_node))
+	for tile: Vector2i in map.resource_spots:
+		var node := data.get_resource_node(map.resource_spots[tile])
+		if node == null or not grid.is_inside(tile):
+			problems.append("resource spot %s at %s" % [map.resource_spots[tile], tile])
+			continue
+		resources.place(tile, node)
 	entry_tile = map.entry_tile
+	treasury.gold = map.start_gold
 	rebuild_nav()
 	for start: StartBuildingDef in map.start_buildings:
 		var def := data.get_building(start.building)
@@ -168,6 +177,8 @@ func placement_error(def: BuildingDef, origin: Vector2i) -> StringName:
 			return &"tile_occupied"
 		if _pile_at(tile) != 0 or fields.has_field(tile) or grid.has_road(tile):
 			return &"tile_occupied"
+	if def.needs_terrain_near != &"" and not has_terrain_near(def, origin):
+		return StringName("no_%s_nearby" % def.needs_terrain_near)
 	var entrance := origin + def.entrance
 	for agent: Agent in agents.all():
 		var t := agent.tile()
@@ -177,10 +188,59 @@ func placement_error(def: BuildingDef, origin: Vector2i) -> StringName:
 	return &""
 
 
+## Whether a tile of terrain [member BuildingDef.needs_terrain_near] lies within the work
+## radius of a building of [param def] placed at [param origin].
+func has_terrain_near(def: BuildingDef, origin: Vector2i) -> bool:
+	var area := Rect2i(origin, def.footprint).grow(def.work_radius).intersection(Rect2i(Vector2i.ZERO, grid.size))
+	for y: int in range(area.position.y, area.end.y):
+		for x: int in range(area.position.x, area.end.x):
+			var terrain := terrain_at(Vector2i(x, y))
+			if terrain != null and terrain.id == def.needs_terrain_near:
+				return true
+	return false
+
+
+## The walkable tile within the work radius of [param building], next to its
+## needs_terrain_near terrain, nearest to [param from]; Agent.NO_TILE if none.
+## Tiles where another worker already stands are used only when nothing else is free.
+func find_shore(building: BuildingState, from: Vector2i) -> Vector2i:
+	var taken: Dictionary[Vector2i, bool] = {}
+	for agent: Agent in agents.all():
+		if agent.task != null and agent.task.bb.has("stand") and agent.workplace_id != 0:
+			taken[SimCodec.to_vec2i(agent.task.bb["stand"])] = true
+	var area := Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius) \
+			.intersection(Rect2i(Vector2i.ZERO, grid.size))
+	var best := Agent.NO_TILE
+	var best_d := 1 << 30
+	for y: int in range(area.position.y, area.end.y):
+		for x: int in range(area.position.x, area.end.x):
+			var tile := Vector2i(x, y)
+			if not nav.is_walkable(tile) or grid.occupant(tile) != 0 \
+					or shore_water(tile, building.def.needs_terrain_near) == Agent.NO_TILE:
+				continue
+			var d := (tile - from).length_squared() + (1 << 20 if taken.has(tile) else 0)
+			if d < best_d:
+				best_d = d
+				best = tile
+	return best
+
+
+## An orthogonal neighbour of [param tile] with terrain [param terrain_id]; Agent.NO_TILE if none.
+func shore_water(tile: Vector2i, terrain_id: StringName) -> Vector2i:
+	for step: Vector2i in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]:
+		var terrain := terrain_at(tile + step) if grid.is_inside(tile + step) else null
+		if terrain != null and terrain.id == terrain_id:
+			return tile + step
+	return Agent.NO_TILE
+
+
 ## Places a building. [param instant] finishes it at once (map start, tests); otherwise it
-## becomes a construction site that porters and builders turn into the building.
+## becomes a construction site that porters and builders turn into the building (its gold
+## cost is paid now; the command checked there is enough).
 func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false) -> BuildingState:
 	var building := BuildingState.new(ids.take(), def, origin)
+	if not instant:
+		treasury.pay(def.gold_cost)
 	buildings.add(building)
 	for tile: Vector2i in building.tiles():
 		grid.set_occupant(tile, building.id)
@@ -238,6 +298,7 @@ func remove_building(id: int) -> void:
 		for good: StringName in refund:
 			drop_goods(tiles[i % tiles.size()], good, refund[good])
 			i += 1
+		treasury.add(floori(building.def.gold_cost * Construction.REFUND_SHARE))
 	events.emit(&"building_removed", {"building": id, "def": building.def.id})
 
 
@@ -411,11 +472,14 @@ func access_tile(id: int) -> Vector2i:
 
 
 ## Nearest storage (building or pile) able to give [param amount] of [param good]; 0 if none.
-func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int = 0) -> int:
+## [param keep_reserve] leaves each storage's reserve of the good alone (construction).
+func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int = 0,
+		keep_reserve: bool = false) -> int:
 	var best := 0
 	var best_d := 1 << 30
 	for building: BuildingState in buildings.all():
-		if building.stock != null and building.id != exclude and building.stock.can_supply(good, amount):
+		if building.stock != null and building.id != exclude \
+				and can_give(building.id, good, amount, keep_reserve):
 			var d := (building.entrance_tile() - from).length_squared()
 			if d < best_d:
 				best_d = d
@@ -427,6 +491,30 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 				best_d = d
 				best = pile.id
 	return best
+
+
+## Units of [param good] in storage buildings that can still be taken.
+func stored(good: StringName) -> int:
+	var sum := 0
+	for building: BuildingState in buildings.all():
+		if building.stock != null:
+			sum += building.stock.available(good)
+	return sum
+
+
+## Units of [param good] storage [param id] keeps back from construction (0 for piles).
+func reserve_of(id: int, good: StringName) -> int:
+	var building := buildings.get_building(id)
+	return int(building.reserves.get(good, 0)) if building != null else 0
+
+
+## Whether storage [param id] can hand out [param amount] of [param good] in one load, leaving
+## its reserve in place when [param keep_reserve].
+func can_give(id: int, good: StringName, amount: int, keep_reserve: bool = false) -> bool:
+	var store := storage(id)
+	if store == null or not store.can_supply(good, amount):
+		return false
+	return not keep_reserve or store.available(good) - reserve_of(id, good) >= amount
 
 
 ## Nearest storage building with room for [param amount] of [param good]; 0 if none.

@@ -10,6 +10,8 @@ var clock: SimClock = SimClock.new()
 var rng: SimRng
 var ids: EntityIds = EntityIds.new()
 var events: SimEvents = SimEvents.new()
+## Gold is global (GDD §3.5); the province shares this object.
+var treasury: Treasury = Treasury.new()
 var province: ProvinceSim
 
 var _commands: Array[Command] = []
@@ -19,6 +21,7 @@ func _init(registry: DataRegistry, map_size: Vector2i = Vector2i(64, 64), seed_v
 	data = registry
 	rng = SimRng.new(seed_value)
 	province = ProvinceSim.new(registry, map_size, events, ids)
+	province.treasury = treasury
 
 
 ## A new game on a hand-made map (ROADMAP M3): terrain, trees and the start layout.
@@ -69,6 +72,7 @@ func to_dict() -> Dictionary:
 		"tick": clock.tick,
 		"next_id": ids.next_id,
 		"rng": rng.to_dict(),
+		"treasury": treasury.to_dict(),
 		"province": province.to_dict(),
 	}
 
@@ -79,6 +83,8 @@ static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 	sim.clock.tick = int(d["tick"])
 	sim.ids.next_id = int(d["next_id"])
 	sim.rng = SimRng.from_dict(d["rng"])
+	sim.treasury = Treasury.from_dict(d.get("treasury", {}))
 	sim.province = ProvinceSim.from_dict(d["province"], registry, sim.events, sim.ids)
+	sim.province.treasury = sim.treasury
 	sim.province.tick = sim.clock.tick
 	return sim

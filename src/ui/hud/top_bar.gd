@@ -8,6 +8,7 @@ signal menu_requested
 
 var province: ProvinceSim
 var clock: SimClock
+var treasury: Treasury
 
 var _stats: Label
 var _speed: Label
@@ -47,4 +48,6 @@ func _process(_delta: float) -> void:
 	var seconds := int(clock.seconds())
 	_stats.text = tr("ui.hud.stats") % [residents, employed, Population.workforce(province),
 			seconds / 60, seconds % 60]
+	if treasury != null:
+		_stats.text += "  ·  " + tr("ui.hud.gold") % treasury.gold
 	_speed.text = tr("ui.hud.paused") if Game.paused else tr("ui.hud.speed") % int(Game.get_speed())

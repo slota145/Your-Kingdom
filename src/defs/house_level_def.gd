@@ -11,7 +11,16 @@ extends GameDef
 @export var upgrade_cost: Dictionary[StringName, int] = {}
 ## Builder work, in seconds, to finish the upgrade once the goods are there.
 @export_range(0.0, 600.0) var upgrade_time: float = 0.0
+## Need id -> happiness points on this level, overriding NeedDef.weight (needs are shared
+## between levels, but each level's weights sum to 100).
+@export var need_weights: Dictionary[StringName, int] = {}
+## Gold per resident per minute at full happiness and the normal tax rate (GDD §3.5).
+@export_range(0.0, 100.0) var tax_per_minute: float = 0.0
 
 
 func get_kind() -> StringName:
 	return &"house_level"
+
+
+func weight_of(need: NeedDef) -> int:
+	return need_weights.get(need.id, need.weight)

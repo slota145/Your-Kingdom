@@ -101,7 +101,7 @@ func test_house_levels_are_consistent() -> void:
 			assert_int(level.level).is_equal(i + 1)
 			var weights := 0
 			for need: NeedDef in level.needs:
-				weights += need.weight
+				weights += level.weight_of(need)
 				for good: StringName in need.goods:
 					assert_bool(_registry.has_def(&"good", good)).is_true()
 				if need.is_service():
@@ -114,6 +114,29 @@ func test_house_levels_are_consistent() -> void:
 				assert_bool(_registry.has_def(&"good", good)).is_true()
 			if i > 0:
 				assert_dict(level.upgrade_cost).is_not_empty()
+			for need_id: StringName in level.need_weights:
+				assert_bool(level.needs.any(func(n: NeedDef) -> bool: return n.id == need_id)) \
+						.override_failure_message("%s: weight for unused need %s" % [level.id, need_id]).is_true()
+
+
+func test_workshop_inputs_and_terrain_needs_exist() -> void:
+	for building: BuildingDef in _registry.buildings():
+		for good: StringName in building.input_goods:
+			assert_bool(_registry.has_def(&"good", good)).is_true()
+		for good: StringName in building.default_reserves:
+			assert_bool(_registry.has_def(&"good", good)).is_true()
+			assert_int(building.storage_slots).is_greater(0)
+		if building.needs_terrain_near != &"":
+			assert_bool(_registry.has_def(&"terrain", building.needs_terrain_near)).is_true()
+			assert_int(building.work_radius).is_greater(0)
+		if building.recipe != null:
+			for step: StepDef in building.recipe.steps:
+				if step is ProduceStepDef:
+					for good: StringName in (step as ProduceStepDef).consume:
+						assert_bool(building.input_goods.has(good)).override_failure_message(
+								"%s consumes %s without an input store" % [building.id, good]).is_true()
+				if step is GoToStepDef and (step as GoToStepDef).target == &"shore":
+					assert_str(String(building.needs_terrain_near)).is_not_empty()
 
 
 func test_terrain_indices_are_unique_and_dense() -> void:

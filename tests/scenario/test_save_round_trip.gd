@@ -148,3 +148,39 @@ func test_v2_fixture_loads_and_continues() -> void:
 	assert_int(sim.province.agents.count()).is_greater(0)
 	assert_int(people).is_greater(0)
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## M4a: a v2 town gets the treasury, the stockpile's wood reserve and bigger hut pantries.
+func test_v2_migration_adds_m4a_state() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v2_village.json"))
+	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 2), SimFixture.registry())
+	assert_int(sim.treasury.gold).is_equal(100)
+	for b: BuildingState in sim.province.buildings.all():
+		if b.def.id == &"stockpile":
+			assert_int(int(b.reserves.get(&"wood", 0))).is_equal(5)
+		if b.house != null:
+			assert_int(b.supply.slot_count()).is_equal(b.house_goods().size())
+
+
+## A save written by save_version 3 (M4a: treasury, reserves, priorities, a brewery's input
+## store, an angler) loads unchanged and keeps playing.
+func test_v3_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v3_town.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(3)
+	var state := SaveMigrations.migrate(document["state"], 3)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	assert_int(sim.treasury.tax_rate).is_equal(Treasury.TaxRate.HIGH)
+	var brewery: BuildingState = null
+	for b: BuildingState in sim.province.buildings.all():
+		if b.def.id == &"brewery":
+			brewery = b
+		if b.def.id == &"stockpile":
+			assert_int(int(b.reserves[&"wood"])).is_equal(8)
+	assert_int(brewery.priority).is_equal(BuildingState.Priority.HIGH)
+	assert_int(brewery.supply.total(&"grain")).is_equal(1)
+	sim.run_ticks(SimFixture.ticks(120))
+	assert_int(sim.province.goods_total(&"fish")).is_greater(0)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()

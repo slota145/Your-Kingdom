@@ -77,9 +77,23 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
   - Ocena (Claude): pasuje do klimatu i daje graczowi rytm („przyjechała karawana, przybyło 6 osób”). Przyrost naturalny łatwo policzyć na domach (np. szansa na dziecko zależna od zadowolenia), a dzieci dorastają w siłę roboczą po czasie. Naturalny etap: M4 (kupiec wędrowny) i M6 (ruch między prowincjami).
 
 - [Claude] **Opał przed budową:** automatyczny gracz pokazał, że przy jednym drwalu place budowy wyciągają z magazynu całe drewno, a domy marzną i podupadają. Pomysł: domownicy mają pierwszeństwo przy ostatnich sztukach drewna (np. budowy nie biorą ostatnich 5 kłód), albo gracz ustawia rezerwę w panelu magazynu.
-  - Ocena: koszt mały (próg w wyborze źródła dla zleceń budowy). Uczy gracza, że opał to podstawa. Do decyzji przy priorytetach w M4.
+  - **Przyjęte do M4a (2026-11-05):** rezerwa 5 sztuk drewna i suwak w panelu magazynu (ROADMAP, M4).
 - [Claude] **Tragarze także w magazynach:** dziś tragarze pracują tylko w ratuszu (2 osoby). Przy kilku placach budowy naraz to wąskie gardło. GDD §4.1 mówi o „tragarzach magazynów”, więc każdy magazyn mógłby mieć 1–2 miejsca dla tragarzy.
-  - Ocena: koszt mały (sloty pracy w danych), naturalnie pasuje do wozów w M4.
+  - **Przyjęte do M4a (2026-11-05):** 2 tragarzy na magazyn (ROADMAP, M4).
+- [gracz] **Kutry rybackie na morzu:** w M4a ryby łowi wędkarz przy rzece. Później chcę też kutry na morzu, wydajniejsze od wędkarza (2026-11-05).
+  - Ocena (Claude): dobra ścieżka rozwoju: tani wędkarz na start, droższy kuter z portem i stocznią dla większego miasta. Naturalny etap: M5 (woda, porty i statki). Zmieni GDD §5.4 (dziś jest tam „łódź rybacka” przypisana do rybaka).
+
+- [Claude] **Leśniczy (sadzenie drzew):** automatyczny gracz w M4a pokazał, że lasy przy mieście znikają po ok. 45 minutach, a drwale stoją („brak drzew”). Leśniczy sadzi sadzonki w zasięgu, które po kilku minutach rosną w drzewa.
+  - Ocena: koszt średni (nowy krok „sadź”, wzrost węzła jak pole). Bardzo pasuje do immersji i daje graczowi decyzję o lesie.
+  - **Przyjęte do M4b (2026-11-05).**
+- [Claude] **Wstrzymanie produkcji:** dziś budynek pracuje zawsze. Tartak i kamieniołom zapełniają magazyny deskami i kamieniem, aż zabraknie miejsca na inne towary. Przycisk „wstrzymaj” w panelu budynku (pracownik zostaje, ale nie zaczyna cyklu) albo limit („pracuj, gdy w magazynie mniej niż N”).
+  - Ocena: koszt mały. Ważne przy większym mieście.
+  - **Przyjęte do M4b (2026-11-05).**
+- [Claude] **Straganiarze na targowisku:** w M4a targowisko jest tylko usługą z zasięgiem. Docelowo (GDD §3.2) straganiarze przynoszą towary z magazynu na kramy, a domownicy kupują na targu zamiast chodzić do magazynu.
+  - Ocena: koszt średni. Dużo życia na ulicach.
+  - **Przyjęte do M4b (2026-11-05).**
+- [Claude] **Na co wydawać złoto:** w M4a złota szybko przybywa (po godzinie ok. 1000), a wydaje się je tylko na 4 budynki. Kupiec wędrowny (M4b) i utrzymanie budynków dadzą mu sens.
+  - Ocena: do strojenia razem z kupcem w M4b.
 
 ## Klimat i immersja
 

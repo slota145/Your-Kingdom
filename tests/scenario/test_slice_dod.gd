@@ -1,8 +1,9 @@
 extends GdUnitTestSuite
-## M3 DoD scenarios on the real start map, played by SliceBot (commands only, no cheats):
-## - at least 6 level-2 houses supplied with bread within 30 minutes of game time,
+## DoD scenarios on the real start map, played by SliceBot (commands only, no cheats):
+## - M4a: at least 6 burgher houses with every basic need met (bread, fish, beer, firewood,
+##   well) within 50 minutes of game time,
 ## - 2 hours of play without deadlocks: nothing stays reserved, every task keeps moving,
-##   the bread chain keeps producing.
+##   the chains keep producing.
 
 
 func _new_game() -> Simulation:
@@ -13,26 +14,19 @@ func _new_game() -> Simulation:
 	return sim
 
 
-func _fed_level2_houses(sim: Simulation) -> int:
-	var n := 0
-	for b: BuildingState in sim.province.buildings.all():
-		if b.house != null and b.house.level >= 2 and b.house.satisfied.get(&"food", false):
-			n += 1
-	return n
-
-
-func test_six_burgher_houses_fed_with_bread_within_30_minutes() -> void:
+func test_six_supplied_burgher_houses_within_50_minutes() -> void:
 	var sim := _new_game()
 	var bot := SliceBot.new(sim)
 	# Lambdas capture locals by value: keep results in a shared dictionary.
 	var result := {"minute": -1}
-	bot.run(30 * 60, func(minute: int) -> void:
-		if result["minute"] == -1 and _fed_level2_houses(sim) >= 6:
+	bot.run(50 * 60, func(minute: int) -> void:
+		if result["minute"] == -1 and bot.supplied_houses(2) >= 6:
 			result["minute"] = minute)
-	print("6 burgher houses fed with bread at minute ", result["minute"], "; bot log: ", bot.log)
+	print("6 supplied burgher houses at minute ", result["minute"], "; gold ", sim.treasury.gold,
+			"; bot log: ", bot.log)
 	assert_array(Array(bot.log)).is_empty()
-	assert_int(int(result["minute"])).is_between(1, 30)
-	assert_int(_fed_level2_houses(sim)).is_greater_equal(6)
+	assert_int(int(result["minute"])).is_between(1, 50)
+	assert_int(bot.supplied_houses(2)).is_greater_equal(6)
 
 
 func test_two_hours_without_deadlocks() -> void:
@@ -60,6 +54,6 @@ func test_two_hours_without_deadlocks() -> void:
 		if minute % 20 == 0:
 			produced[minute] = sim.province.goods_total(&"bread"))
 	assert_array(stuck).is_empty()
-	# Bread keeps flowing late in the game: houses are still fed after 2 hours.
+	# Goods keep flowing late in the game: burghers are still supplied after 2 hours.
 	print("bread in the province every 20 minutes: ", produced)
-	assert_int(_fed_level2_houses(sim)).is_greater_equal(6)
+	assert_int(bot.supplied_houses(2)).is_greater_equal(6)

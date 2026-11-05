@@ -53,4 +53,28 @@ script = ExtResource("1_map")
 terrain_image = ExtResource("2_img")
 entry_tile = Vector2i(0, 48)
 start_buildings = Array[ExtResource("3_start")]([SubResource("town_hall"), SubResource("stockpile"), SubResource("hut_a"), SubResource("hut_b"), SubResource("hut_c")])
+start_gold = 100
+resource_spots = Dictionary[Vector2i, StringName]({
+Vector2i(44, 28): &"rock",
+Vector2i(45, 28): &"rock",
+Vector2i(46, 28): &"rock",
+Vector2i(47, 28): &"rock",
+Vector2i(44, 29): &"rock",
+Vector2i(45, 29): &"rock",
+Vector2i(46, 29): &"rock",
+Vector2i(47, 29): &"rock",
+Vector2i(44, 30): &"rock",
+Vector2i(45, 30): &"rock",
+Vector2i(46, 30): &"rock",
+Vector2i(47, 30): &"rock",
+Vector2i(48, 52): &"rock",
+Vector2i(49, 52): &"rock",
+Vector2i(50, 52): &"rock",
+Vector2i(48, 53): &"rock",
+Vector2i(49, 53): &"rock",
+Vector2i(50, 53): &"rock",
+Vector2i(48, 54): &"rock",
+Vector2i(49, 54): &"rock",
+Vector2i(50, 54): &"rock"
+})
 id = &"riverlands"

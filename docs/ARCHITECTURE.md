@@ -240,6 +240,18 @@ Testy jednostkowe obejmują każdy z tych przypadków.
 - **Zasięg usług** (`ServiceCoverage`): Dijkstra z kopcem po kosztach ruchu od wejścia budynku usługowego. Liczony od nowa, gdy zmieni się siatka nawigacji albo zbiór budynków usługowych. Nie jest zapisywany, bo wynika ze stanu.
 - **Drogi:** warstwa w `TileGrid`, koszt 0,67 (+50% szybkości, GDD §5.2). Pole ma koszt 1,2.
 
+**Realizacja (M4a):**
+- **Tragarze magazynów:** magazyn ma 2 miejsca pracy `porter` (`staffing_priority` 6, czyli po produkcji). `JobBoard` nie rozróżnia, skąd jest tragarz: każdy wolny tragarz bierze najbliższe zlecenie.
+- **Rezerwa (opał przed budową):** `BuildingState.reserves` (towar → sztuki), domyślnie z `BuildingDef.default_reserves` (magazyn: 5 drewna). Zlecenie z celem na placu budowy szuka źródła przez `nearest_source(..., keep_reserve = true)` i `can_give`, więc rezerwa zostaje w magazynie. Domownicy i receptury biorą bez ograniczeń. Komenda `SetReserveCommand`.
+- **Priorytet pracy:** `BuildingState.priority` (wysoki, normalny, niski), komenda `SetPriorityCommand`. `Population._balance_workforce` sortuje miejsca pracy po priorytecie gracza, potem po `staffing_priority`, potem po id. Gdy brakuje wolnych ludzi, a budynek wyżej stoi pusty, jeden pracownik najniżej postawionego budynku (najnowszego) wraca do domu (raz na sekundę). W następnej sekundzie dostaje go ważniejszy budynek. Zdarzenie `worker_reassigned`.
+- **Złoto:** `Treasury` (złoto, stawka podatku, ułamek) należy do `Simulation`, bo jest globalne. `ProvinceSim.treasury` wskazuje ten sam obiekt. Podatek co sekundę: mieszkańcy × `HouseLevelDef.tax_per_minute` / 60 × zadowolenie / 100 × mnożnik stawki (0,5 / 1 / 1,5). Stawka dodaje do celu zadowolenia +10 / 0 / −15. `BuildingDef.gold_cost` płacimy przy postawieniu (`PlaceBuildingCommand` sprawdza, czy starczy). Rozbiórka placu przed rozpoczęciem pracy oddaje całość, później i po ukończeniu połowę.
+- **Wagi potrzeb na poziom:** `NeedDef` jest wspólny dla poziomów, a `HouseLevelDef.need_weights` nadpisuje wagę (`weight_of`), żeby suma na każdym poziomie wynosiła 100.
+- **Awans tylko przy zapasie:** dom zaczyna awans dopiero wtedy, gdy w magazynach i spiżarni jest po pełnej spiżarni (`supply_units` następnego poziomu) każdego towaru podstawowego następnej klasy (`Population.next_level_available`). Bez tego automatyczny gracz pokazał „huśtawkę”: dom awansował, po 3 minutach braku piwa spadał i deski szły na marne.
+- **Dwa surowce w recepturze:** warsztat z `BuildingDef.input_goods` ma mały prywatny schowek (`BuildingState.supply`, 2 sztuki na towar). Krok `deposit` odkłada niesiony towar do schowka. `FetchStepDef.skip_if_stocked` pomija kurs, gdy schowek już ma towar (np. po przerwanym cyklu). `ProduceStepDef.consume` zużywa towary ze schowka. Browar: zboże do schowka, chmiel w rękach, warzenie, 2 beczki.
+- **Nad wodą:** `BuildingDef.needs_terrain_near` (wędkarz: woda w `work_radius`) sprawdza `placement_error` (`no_water_nearby`). `GoToStepDef.target = &"shore"` wybiera najbliższy wolny kafel brzegu (`ProvinceSim.find_shore`) i zapisuje w `bb["node"]` kafel wody, żeby wędkarz patrzył na wodę.
+- **Skały:** `MapDef.resource_spots` (kafel → węzeł) kładzie pojedyncze węzły na mapie, np. skały `rock` (8 kamieni). Kamieniarz używa tych samych kroków co drwal.
+- **Uprawy:** chmielnik to farma z `FieldStepDef.harvest_good = hops`. Widok rysuje pola z folderu `terrain/field_<towar>`, jeśli istnieje (chmiel: tyczki), w innym razie `terrain/field`.
+
 ### 5.3 Pathfinding
 
 **Decyzja:** `AStarGrid2D` (implementacja C++ w Godocie) na siatce kafli w **przestrzeni siatki, nie ekranu**, z 8 kierunkami ruchu i `DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES`, co zapobiega przechodzeniu „przez róg” między dwoma ukośnymi kaflami muru.
@@ -407,6 +419,7 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Nie zapisujemy:** węzłów widoku, cache’y, kolejki zdarzeń (widok opróżnia ją co klatkę) ani komend czekających na następny tick. `prev_pos` po wczytaniu równa się `pos`.
 - **Liczby:** JSON zapisujemy z pełną precyzją (`full_precision`), żeby pozycje float wracały bit w bit. Wartości 64-bitowe (stan RNG) zapisujemy jako tekst. Siatki kafli zapisujemy jako base64.
 - **Wersja 2 (M3):** teren i drogi w siatce, place budowy, pola, wejście na mapę, dom postaci, stan domów. Migracja v1 → v2 w `SaveMigrations` (mapa v1 to sama trawa, wszystkie budynki gotowe). Fixtury: `tests/fixtures/saves/v1_woodcutter.json` i `v2_village.json`.
+- **Wersja 3 (M4a):** skarbiec (`treasury`), rezerwy magazynów, priorytety pracy, schowki warsztatów. Migracja v2 → v3 daje miastu z M3 100 złota, magazynom rezerwę 5 drewna, a spiżarniom chat sloty na nowe towary. `BuildingState.from_dict` dodatkowo poszerza spiżarnię, gdy dane dodadzą nowe towary. Fixtura: `tests/fixtures/saves/v3_town.json`.
 - **Mapa** to obrazek PNG importowany jako `Image` (nie tekstura), więc symulacja czyta piksele bez widoku. Kolor piksela = `TerrainDef.map_color`. Zapis gry zawiera już gotowy teren, więc późniejsza zmiana obrazka nie psuje zapisów.
 - **Test round-trip:** stan → zapis → odczyt → zapis daje identyczny słownik. Dodatkowo test, w którym symulacja po wczytaniu idzie dalej deterministycznie tak samo jak bez zapisu.
 

@@ -70,12 +70,16 @@ func test_happiness_follows_satisfied_needs() -> void:
 	var sim := SimFixture.make_sim()
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 4)
 	sim.run_ticks(SimFixture.ticks(60))
-	# Bread and wood but no well: 40 + 30.
-	assert_float(hut.house.happiness).is_equal_approx(70.0, 0.01)
+	# Food and firewood, no well, no chapel: 35 + 25.
+	assert_float(hut.house.happiness).is_equal_approx(60.0, 0.01)
 	SimFixture.place(sim, &"well", Vector2i(16, 12))
 	sim.run_ticks(SimFixture.ticks(30))
-	assert_float(hut.house.happiness).is_equal_approx(100.0, 0.01)
+	assert_float(hut.house.happiness).is_equal_approx(85.0, 0.01)
 	assert_bool(hut.house.satisfied[&"well_water"]).is_true()
+	# The chapel is an extra need: it adds happiness but does not block upgrades.
+	SimFixture.place(sim, &"chapel", Vector2i(12, 16))
+	sim.run_ticks(SimFixture.ticks(30))
+	assert_float(hut.house.happiness).is_equal_approx(100.0, 0.01)
 
 
 func test_newcomers_walk_in_to_free_places() -> void:
@@ -103,17 +107,54 @@ func test_unhappy_house_gets_no_newcomers() -> void:
 	assert_int(hut.house.residents + hut.house.incoming).is_equal(1)
 
 
-func test_hut_upgrades_after_needs_are_met_and_wood_is_delivered() -> void:
+func test_hut_upgrades_after_needs_are_met_and_planks_are_delivered() -> void:
 	var sim := SimFixture.make_sim()
 	var village := SimFixture.village(sim, 40, 40)
 	var houses: Array = village["houses"]
 	var hut: BuildingState = houses[0]
+	var stock: BuildingState = village["stock"]
+	stock.stock.add(&"planks", 8)
+	_stock_burgher_goods(stock)
 	SimFixture.place(sim, &"well", Vector2i(9, 9))
 	var upgraded := SimFixture.run_until(sim, func() -> bool: return hut.house.level == 2, 200)
 	assert_bool(upgraded).is_true()
 	assert_int(hut.capacity()).is_equal(8)
 	assert_int(hut.supply.stack_limit).is_equal(4)
+	assert_int(stock.stock.total(&"planks")).is_less_equal(4)
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+func _stock_burgher_goods(stock: BuildingState) -> void:
+	stock.stock.add(&"fish", 10)
+	stock.stock.add(&"beer", 10)
+
+
+func test_hut_without_planks_does_not_upgrade() -> void:
+	var sim := SimFixture.make_sim()
+	var village := SimFixture.village(sim, 40, 40)
+	var hut: BuildingState = (village["houses"] as Array)[0]
+	_stock_burgher_goods(village["stock"])
+	SimFixture.place(sim, &"well", Vector2i(9, 9))
+	sim.run_ticks(SimFixture.ticks(150))
+	assert_int(hut.site_id).is_not_equal(0)
+	assert_int(hut.house.level).is_equal(1)
+
+
+func test_no_upgrade_while_the_town_lacks_burgher_goods() -> void:
+	var sim := SimFixture.make_sim()
+	var village := SimFixture.village(sim, 40, 40)
+	var stock: BuildingState = village["stock"]
+	stock.stock.add(&"planks", 8)
+	stock.stock.add(&"fish", 10)
+	var hut: BuildingState = (village["houses"] as Array)[0]
+	SimFixture.place(sim, &"well", Vector2i(9, 9))
+	# Peasant needs are met, but there is no beer for burghers: the hut waits.
+	sim.run_ticks(SimFixture.ticks(120))
+	assert_int(hut.site_id).is_equal(0)
+	assert_int(hut.house.met_seconds).is_greater(Population.UPGRADE_AFTER)
+	stock.stock.add(&"beer", 10)
+	var upgraded := SimFixture.run_until(sim, func() -> bool: return hut.house.level == 2, 60)
+	assert_bool(upgraded).is_true()
 
 
 func test_house_declines_after_long_shortage() -> void:

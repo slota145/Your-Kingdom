@@ -10,6 +10,8 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 	var good := StringName(String(bb.get("good", step.good)))
 	var amount := int(bb.get("amount", step.amount))
 	if not bb.has("_src"):
+		if step.skip_if_stocked and _stocked(province, agent, good, amount):
+			return Status.DONE
 		if agent.is_carrying():
 			return failed(agent, &"hands_full")
 		var src := int(bb.get("from", 0))
@@ -36,3 +38,8 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 	province.events.emit(&"good_taken", {"agent": agent.id, "storage": src_id, "good": good,
 			"amount": taken})
 	return Status.DONE
+
+
+static func _stocked(province: ProvinceSim, agent: Agent, good: StringName, amount: int) -> bool:
+	var workplace := province.buildings.get_building(agent.workplace_id)
+	return workplace != null and workplace.supply != null and workplace.supply.total(good) >= amount

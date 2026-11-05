@@ -107,6 +107,11 @@ static func cancel_site(province: ProvinceSim, building: BuildingState) -> void:
 		var amount := floori(int(spent[good]) * REFUND_SHARE)
 		if amount > 0:
 			province.drop_goods(building.entrance_tile(), good, amount)
+	if site.kind == ConstructionSite.KIND_BUILD:
+		# Gold comes back in full until work starts, then like a demolition.
+		var untouched := site.phase == 1 and not site.phase_started
+		province.treasury.add(building.def.gold_cost if untouched \
+				else floori(building.def.gold_cost * REFUND_SHARE))
 
 
 ## Goods returned by demolishing a finished building.

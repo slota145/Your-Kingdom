@@ -13,16 +13,26 @@ extends GameDef
 @export var build_cost: Dictionary[StringName, int] = {}
 ## Builder work in seconds for the whole construction, split evenly between the 2 phases.
 @export_range(0.0, 3600.0) var build_time: float = 20.0
+## Gold paid when the building is placed (GDD §3.5); 0 = free.
+@export_range(0, 9999) var gold_cost: int = 0
 ## One entry per worker slot: the profession of whoever fills it (&"miller", &"porter").
 @export var worker_kinds: Array[StringName] = []
 ## Lower values are staffed first when free residents are handed out (town hall = 0).
 @export_range(0, 9) var staffing_priority: int = 5
 ## Number of stockpile slots; > 0 makes the building a storage (GDD §4.2).
 @export_range(0, 64) var storage_slots: int = 0
+## Storage only: units of a good construction deliveries leave in place (the player can change
+## it per storage). Keeps firewood for houses when sites want wood (ROADMAP M4 decisions).
+@export var default_reserves: Dictionary[StringName, int] = {}
+## Goods a workshop keeps in a small private input store (a recipe with two inputs).
+@export var input_goods: Array[StringName] = []
 ## Work cycle of the workers; null for buildings without production.
 @export var recipe: RecipeDef
 ## How far (tiles, Chebyshev from the footprint) workers look for resource nodes and fields.
 @export_range(0, 64) var work_radius: int = 0
+## Terrain id that must lie within [member work_radius] of the footprint (an angler needs
+## water); empty = anywhere.
+@export var needs_terrain_near: StringName = &""
 ## Field tiles a farm may own (placed separately, 1x1 each).
 @export_range(0, 64) var max_fields: int = 0
 ## Seconds a sown field tile needs to ripen.

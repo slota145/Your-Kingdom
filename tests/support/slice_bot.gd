@@ -1,8 +1,12 @@
 class_name SliceBot
 extends RefCounted
-## A scripted player for the M3 DoD scenario: on the real start map it builds what a sensible
-## player would (well, woodcutter, farm with fields, mill, bakery, more huts) using only
-## commands. Spots are searched near anchor tiles, so small map edits do not break it.
+## A scripted player for the DoD scenarios (M3 bread chain, M4a burghers): on the real start
+## map it builds what a sensible player would, using only commands. Spots are searched near
+## anchor tiles, so small map edits do not break it. A building it cannot afford yet is
+## tried again later (taxes bring gold in).
+
+## Seconds before retrying a building the treasury could not pay for.
+const GOLD_RETRY := 30
 
 var sim: Simulation
 ## Seconds of game time -> actions still to do, in order.
@@ -17,19 +21,41 @@ func _init(simulation: Simulation) -> void:
 		{"at": 0, "build": &"woodcutter", "near": town + Vector2i(-6, -4)},
 		{"at": 0, "build": &"well", "near": town + Vector2i(5, 12)},
 		{"at": 0, "build": &"woodcutter", "near": town + Vector2i(-8, 2)},
+		{"at": 0, "build": &"woodcutter", "near": town + Vector2i(-6, 8)},
 		{"at": 30, "build": &"farm", "near": town + Vector2i(14, 2), "fields": 16},
 		{"at": 60, "build": &"mill", "near": town + Vector2i(10, -4)},
 		{"at": 60, "build": &"bakery", "near": town + Vector2i(13, -4)},
-		{"at": 120, "build": &"hut", "near": town + Vector2i(0, 11)},
-		{"at": 120, "build": &"hut", "near": town + Vector2i(3, 11)},
-		{"at": 120, "build": &"hut", "near": town + Vector2i(6, 11)},
-		{"at": 300, "build": &"farm", "near": town + Vector2i(14, 12), "fields": 16},
-		{"at": 300, "build": &"woodcutter", "near": town + Vector2i(-6, 8)},
-		{"at": 420, "build": &"hut", "near": town + Vector2i(9, 11)},
-		{"at": 420, "build": &"hut", "near": town + Vector2i(12, 11)},
-		{"at": 480, "build": &"mill", "near": town + Vector2i(10, -8)},
-		{"at": 480, "build": &"bakery", "near": town + Vector2i(14, -8)},
+		{"at": 90, "build": &"hut", "near": town + Vector2i(0, 11)},
+		{"at": 90, "build": &"hut", "near": town + Vector2i(3, 11)},
+		{"at": 120, "build": &"woodcutter", "near": town + Vector2i(-12, -2)},
+		{"at": 120, "build": &"sawmill", "near": town + Vector2i(4, -6)},
+		{"at": 150, "build": &"hut", "near": town + Vector2i(6, 11)},
+		{"at": 150, "build": &"chapel", "near": town + Vector2i(-3, 7)},
+		{"at": 180, "build": &"fishing_hut", "near": town + Vector2i(23, 0)},
+		{"at": 210, "build": &"quarry", "near": town + Vector2i(11, -13)},
+		{"at": 240, "build": &"woodcutter", "near": town + Vector2i(-14, -6)},
+		{"at": 240, "build": &"farm", "near": town + Vector2i(14, 12), "fields": 16},
+		{"at": 270, "build": &"hut", "near": town + Vector2i(9, 11)},
+		{"at": 270, "build": &"hut", "near": town + Vector2i(12, 11)},
+		{"at": 200, "build": &"hop_farm", "near": town + Vector2i(16, 21), "fields": 12, "priority": 0},
+		{"at": 300, "build": &"brewery", "near": town + Vector2i(6, -10), "priority": 0},
+		{"at": 360, "build": &"hut", "near": town + Vector2i(-2, 15)},
+		{"at": 360, "build": &"hut", "near": town + Vector2i(1, 15)},
+		{"at": 420, "build": &"hut", "near": town + Vector2i(4, 15)},
+		{"at": 420, "build": &"well", "near": town + Vector2i(14, 16)},
+		{"at": 420, "build": &"bakery", "near": town + Vector2i(14, -8)},
+		{"at": 480, "build": &"woodcutter", "near": town + Vector2i(-18, -12)},
+		{"at": 540, "build": &"mill", "near": town + Vector2i(10, -8)},
+		{"at": 540, "build": &"fishing_hut", "near": town + Vector2i(23, 6)},
+		{"at": 600, "build": &"hop_farm", "near": town + Vector2i(6, 22), "fields": 12},
+		{"at": 600, "build": &"market", "near": town + Vector2i(8, 17)},
+		{"at": 660, "build": &"hut", "near": town + Vector2i(15, 11)},
+		{"at": 660, "build": &"brewery", "near": town + Vector2i(2, -11)},
+		{"at": 690, "build": &"stockpile", "near": town + Vector2i(18, -6)},
+		{"at": 720, "build": &"church", "near": town + Vector2i(-6, 18)},
+		{"at": 1200, "build": &"stockpile", "near": town + Vector2i(-4, -12)},
 	]
+	_plan.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["at"]) < int(b["at"]))
 
 
 ## Runs [param seconds] of game time, carrying out the plan.
@@ -41,6 +67,21 @@ func run(seconds: int, on_minute: Callable = Callable()) -> void:
 		sim.events.drain()
 		if second % 60 == 59 and on_minute.is_valid():
 			on_minute.call(second / 60 + 1)
+
+
+## Houses of [param level] or above whose basic needs are all met right now.
+func supplied_houses(level: int) -> int:
+	var n := 0
+	for b: BuildingState in sim.province.buildings.all():
+		if b.house == null or b.house.level < level or b.house.residents == 0:
+			continue
+		var ok := true
+		for need: NeedDef in b.level_def().needs:
+			if need.is_basic and not b.house.satisfied.get(need.id, false):
+				ok = false
+		if ok:
+			n += 1
+	return n
 
 
 func houses_at_level(level: int) -> int:
@@ -58,10 +99,17 @@ func _do(action: Dictionary) -> void:
 		log.append("no spot for %s near %s" % [def.id, action["near"]])
 		return
 	var error := sim.execute(PlaceBuildingCommand.new(def.id, spot))
+	if error == &"not_enough_gold":
+		action["at"] = int(action["at"]) + GOLD_RETRY
+		_plan.append(action)
+		_plan.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["at"]) < int(b["at"]))
+		return
 	if error != &"":
 		log.append("%s at %s: %s" % [def.id, spot, error])
 		return
 	var building := sim.province.buildings.get_building(sim.province.grid.occupant(spot))
+	if action.has("priority"):
+		sim.execute(SetPriorityCommand.new(building.id, int(action["priority"])))
 	var fields := int(action.get("fields", 0))
 	for r: int in range(1, def.work_radius + 1):
 		for y: int in range(spot.y - r, spot.y + def.footprint.y + r):
