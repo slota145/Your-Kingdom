@@ -1147,3 +1147,21 @@ msgid "good.bricks.count"
 msgid_plural "good.bricks.count_plural"
 msgstr[0] "%s load of bricks"
 msgstr[1] "%s loads of bricks"
+
+msgid "ui.build.tab.housing"
+msgstr "Homes and services"
+
+msgid "ui.build.tab.resources"
+msgstr "Resources"
+
+msgid "ui.build.tab.food"
+msgstr "Food"
+
+msgid "ui.build.tab.drink"
+msgstr "Drinks"
+
+msgid "ui.build.tab.textiles"
+msgstr "Textiles"
+
+msgid "ui.build.tab.storage"
+msgstr "Storage"

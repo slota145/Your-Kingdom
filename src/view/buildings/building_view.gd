@@ -15,6 +15,10 @@ var _pivot: Vector2i
 var _strips: Array[Sprite2D] = []
 var _full_regions: Array[Rect2] = []
 var _lowered: bool = false
+var _texture: Texture2D
+
+## Texture -> its image, for clicks on the drawn pixels (loaded on the first click).
+static var _images: Dictionary[Texture2D, Image] = {}
 
 
 func _init() -> void:
@@ -32,6 +36,7 @@ func setup(art: String, tile: Vector2i) -> void:
 	origin_tile = tile
 	position = IsoMath.grid_to_screen(Vector2(tile + footprint))
 	var tex := ArtPaths.texture(art + ".png")
+	_texture = tex
 	for strip: BuildingSlicer.Strip in BuildingSlicer.slices(footprint, _pivot, Vector2i(tex.get_size())):
 		var sprite := Sprite2D.new()
 		sprite.texture = tex
@@ -47,6 +52,20 @@ func setup(art: String, tile: Vector2i) -> void:
 
 func get_tile_rect() -> Rect2i:
 	return Rect2i(origin_tile, footprint)
+
+
+## Whether the art has a visible pixel at [param world_pos] (clicks select what is drawn,
+## not the tile under the cursor).
+func is_opaque_at(world_pos: Vector2) -> bool:
+	if _texture == null:
+		return false
+	var texel := Vector2i((to_local(world_pos) + Vector2(_pivot)).floor())
+	if texel.x < 0 or texel.y < 0 or texel.x >= _texture.get_width() or texel.y >= _texture.get_height():
+		return false
+	if not _images.has(_texture):
+		_images[_texture] = _texture.get_image()
+	var image := _images[_texture]
+	return image != null and image.get_pixelv(texel).a > 0.2
 
 
 ## Screen-space rectangle covered by the art.

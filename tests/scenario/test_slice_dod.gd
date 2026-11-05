@@ -75,8 +75,15 @@ func test_two_hours_without_deadlocks() -> void:
 				stuck.append("minute %d: %s %d on %s step %d" % [minute, agent.kind, agent.id,
 						agent.task.kind, agent.task.step_index])
 		if minute % 20 == 0:
-			produced[minute] = sim.province.goods_total(&"bread"))
+			var unmet := {}
+			for b: BuildingState in sim.province.buildings.all():
+				if b.house != null and b.house.level >= 2:
+					for need: NeedDef in b.level_def().needs:
+						if need.is_basic and not b.house.satisfied.get(need.id, false):
+							unmet[need.id] = int(unmet.get(need.id, 0)) + 1
+			produced[minute] = "bread %d, wood %d, supplied %d, unmet %s" % [sim.province.goods_total(&"bread"),
+					sim.province.goods_total(&"wood"), bot.supplied_houses(2), unmet])
 	assert_array(stuck).is_empty()
 	# Goods keep flowing late in the game: burghers are still supplied after 2 hours.
-	print("bread in the province every 20 minutes: ", produced)
+	print("every 20 minutes: ", produced)
 	assert_int(bot.supplied_houses(2)).is_greater_equal(6)

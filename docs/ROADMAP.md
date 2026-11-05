@@ -269,7 +269,8 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Podział na trzy części (decyzja właściciela projektu 2026-11-05).** Każda część kończy się Twoją grą i oceną. Powyższe DoD dotyczy całego M4b.
 - **M4b-1: patrycjusze i poprawki** (szczegóły niżej).
-- **M4b-2:** mięso (chlew, rzeźnik, skóry), straganiarze na targowisku, kupiec wędrowny.
+- **M4b-1.5 „Miasto” (decyzja 2026-11-05, po ocenie M4b-1):** obracanie budynków przy stawianiu (wejście z wybranej strony), domy w dwóch rzędach plecami do siebie i przodem do drogi, nowe pierzeje mieszczan (biedniejsze) i patrycjuszy (bogatsze) z elementami narożnymi. Własny styl, inspiracja ilustracjami od właściciela projektu (Anno 1404), bez kopiowania.
+- **M4b-2:** mięso (chlew, rzeźnik, skóry), straganiarze na targowisku, kupiec wędrowny, który skupuje nadwyżki (ujście towarów z pełnych magazynów), okno „Zapasy królestwa” (suma ze wszystkich magazynów) oraz produkcja i zużycie na minutę (decyzja 2026-11-05).
 - **M4b-3:** wozy i bruk, nowe tereny (jezioro, skały), duże miasto 400+ postaci i wydajność.
 
 #### M4b-1 — Patrycjusze i poprawki
@@ -291,14 +292,22 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **DoD:**
 - [x] Automatyczny gracz od startu dochodzi do 4 kamienic patrycjuszy ze wszystkimi potrzebami podstawowymi w **77. minucie** (`test_slice_dod.gd`, limit 90 minut; etap patrycjuszy zaczyna od 45. minuty).
 - [x] Każdy nowy łańcuch (wełna, sukno, ubrania, miód, miód pitny, glina, cegły) ma test scenariuszowy z licznikami zdarzeń (`tests/scenario/test_m4b1_chains.gd`, tam też tawerna).
-- [x] Leśniczy: las przy drwalu nie znika przez 2 godziny gry (378 kłód z 16 drzew). Wstrzymany budynek nie zaczyna cyklu, a po wznowieniu pracuje dalej (`test_m4b1_chains.gd`).
+- [x] Leśniczy: las przy drwalu nie znika przez 2 godziny gry (138 kłód z 16 drzew na starcie). Wstrzymany budynek nie zaczyna cyklu, a po wznowieniu pracuje dalej (`test_m4b1_chains.gd`).
 - [x] Brak zakleszczeń przez 2 godziny przy 4× (`test_slice_dod.gd`, z patrycjuszami).
 - [x] Zapis z M4a wczytuje się po migracji bez utraty towaru (v4 → v5, nowa fixtura `v5_town.json`).
 - [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń (test kluczy; panele obejrzane na zrzutach z laptopa).
-- [ ] **Twoja ocena gry.**
+- [x] **Twoja ocena gry:** 4/5 (2026-11-05). Wygląd kamienic 2/5. Wnioski niżej i w GDD §11.1.
+
+**Wnioski z gry właściciela (2026-11-05):**
+- Patrycjusze osiągalne bez problemu, tawerna prawie zawsze działa, teksty PL/EN bez uwag. Kierunek gry się podoba.
+- **Poprawki w tym samym PR:** sadzonki widać od razu (był błąd odświeżania), drwal zabiera ostatnią kłodę razem z pniakiem, ikonka nad wstrzymanym budynkiem, ogranicznik klatek, puste pola w pełnym magazynie, łatwiejsze klikanie budynków, menu budowy z zakładkami i ikonkami.
+- **Do M4b-1.5 „Miasto”:** łączone kamienice z narożnikami, domy przodem do drogi, obracanie budynków, dwa rzędy domów obok siebie (dziś niemożliwe, bo wejście jest zawsze w tym samym narożniku).
+- **Do M4b-2:** magazyny szybko się zapełniają i blokują gospodarkę; brakuje podglądu zapasów ze wszystkich magazynów i licznika produkcji na minutę.
+- Nowe postacie widać „częściowo”: ich praca mogłaby być czytelniejsza (IDEAS: efekty przy pracy).
 
 **Ustalone przy realizacji (2026-11-05, do zmiany na prośbę):**
-- **Leśniczy** sadzi w promieniu 8 kafli, najpierw na pniakach, nigdy tuż obok budynku (drzewo nie zablokuje wejścia). Sadzonka rośnie 5 minut. Nie rośnie, gdy ktoś na niej stoi.
+- **Leśniczy** sadzi w promieniu 8 kafli, co drugi kafel w obu kierunkach (między drzewami zawsze zostaje przejście), nigdy tuż obok budynku ani drogi. Przestaje sadzić przy 30 drzewach w swoim zasięgu. Sadzonka rośnie 5 minut i nie rośnie, gdy ktoś na niej stoi. Ścięte drzewo znika razem z pniakiem (pniaki ze starych zapisów leśniczy obsadza w pierwszej kolejności).
+- **Magazyn** ma 15 pól zamiast 12: stos stoi na każdym kafelku placu oprócz wejścia. **Gra** rysuje najwyżej 60 klatek na sekundę.
 - **Tawerna:** jedno podanie (1 piwo + 1 miód pitny) co ok. 50 s; po nim tawerna działa w zasięgu 90 s.
 - **Balans:** owczarnia 2 wełny na cykl, 2 wełny = 1 sukno, 1 sukno = 2 ubrania, pasieka 1 miód, 1 miód = 2 miody pitne, glinianka 2 gliny, 1 glina + 1 drewno = 2 cegły. Patrycjusze: 12 osób, podatek 1,2 złota na minutę, ubrania 0,02 i miód pitny 0,03 na osobę na minutę.
 - **Grafika** narysowana kodem (budynki, 9 zawodów, towary, sadzonka, kamienice z kamiennym parterem).

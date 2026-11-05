@@ -10,6 +10,9 @@ extends GameDef
 @export_range(1, 99) var per_gather: int = 1
 ## Whether a non-depleted node blocks movement.
 @export var solid: bool = true
+## The last gathering also takes what is left (the stump of a tree goes with the last log),
+## so the tile becomes free ground (owner decision 2026-11-05).
+@export var remove_when_depleted: bool = false
 ## A young node (a sapling) turns into this node id after [member grow_time]; empty = never.
 @export var grows_into: StringName = &""
 ## Seconds of game time until the node grows into [member grows_into].

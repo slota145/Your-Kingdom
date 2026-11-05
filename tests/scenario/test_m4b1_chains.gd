@@ -215,12 +215,14 @@ func test_forest_with_a_forester_lasts_two_hours() -> void:
 				n += 1
 		return n
 	var felled := 0
+	var planted := 0
 	var lowest := 1 << 30
 	for minute: int in 120:
 		var counts := _run_counting(sim, 60)
 		felled += int(counts.get("good_gathered:wood", 0))
+		planted += int(counts.get("resource_planted", 0))
 		lowest = mini(lowest, woodcutter_trees.call() + sim.province.resources.growing_count())
-	print("2 h with a forester: %d logs felled, at least %d trees or saplings at any time" % [felled, lowest])
+	print("2 h with a forester: %d logs felled, %d saplings planted, at least %d trees or saplings at any time" % [felled, planted, lowest])
 	# 16 trees give 48 logs; the woodcutter got far more and the forest is still there.
 	assert_int(felled).is_greater(100)
 	assert_int(lowest).is_greater(0)

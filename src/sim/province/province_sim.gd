@@ -40,6 +40,9 @@ const ROAD_COST := 0.67
 const FIELD_COST := 1.2
 ## How often young trees are checked for growing up (1 s).
 const GROW_CHECK_TICKS := 10
+## A forester stops planting when this many trees and saplings stand in his work area, so a
+## forest never swallows the town.
+const FORESTER_MAX_TREES := 30
 
 
 func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entity_ids: EntityIds) -> void:
@@ -301,6 +304,14 @@ func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2
 		if agent.task != null and agent.task.bb.has("plant") and agent.task.bb.has("node"):
 			taken[SimCodec.to_vec2i(agent.task.bb["node"])] = true
 	var area := Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius) 			.intersection(Rect2i(Vector2i.ZERO, grid.size))
+	var trees := 0
+	for y: int in range(area.position.y, area.end.y):
+		for x: int in range(area.position.x, area.end.x):
+			var def := resources.def_at(Vector2i(x, y))
+			if def != null and not resources.is_depleted(Vector2i(x, y)) 					and (def.id == node_id or def.grows_into == node_id):
+				trees += 1
+	if trees >= FORESTER_MAX_TREES:
+		return Agent.NO_TILE
 	var best := Agent.NO_TILE
 	var best_d := 1 << 30
 	for y: int in range(area.position.y, area.end.y):
@@ -316,21 +327,23 @@ func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2
 	return best
 
 
-## Whether a sapling may go on [param tile]: a stump of [param node_id], or free buildable
-## ground; never next to a building (a grown tree must not block an entrance).
+## Whether a sapling may go on [param tile]: a stump of [param node_id] (old saves), or free
+## buildable ground on every second tile in both directions, so planted trees always leave
+## walkable lanes; never next to a building or a road (a tree must not block an entrance).
 func can_plant(tile: Vector2i, node_id: StringName = &"tree") -> bool:
 	if not grid.is_inside(tile):
 		return false
 	if resources.def_at(tile) != null:
 		if not resources.is_depleted(tile) or resources.def_at(tile).id != node_id:
 			return false
-	elif _free_ground_error(tile) != &"":
+	elif _free_ground_error(tile) != &"" or tile.x % 2 != 0 or tile.y % 2 != 0:
 		return false
 	if grid.is_blocked(tile) or fields.has_field(tile) or grid.has_road(tile):
 		return false
 	for dy: int in range(-1, 2):
 		for dx: int in range(-1, 2):
-			if grid.is_inside(tile + Vector2i(dx, dy)) and grid.occupant(tile + Vector2i(dx, dy)) != 0:
+			var next := tile + Vector2i(dx, dy)
+			if grid.is_inside(next) and (grid.occupant(next) != 0 or grid.has_road(next)):
 				return false
 	return true
 

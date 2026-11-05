@@ -274,7 +274,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda i budynki blokują pr
 | Budynek | Rozmiar (kafle) | Funkcja |
 |---|---|---|
 | Ratusz | 4×4 | start osady, siedziba tragarzy |
-| Magazyn (plac składowy) | 4×4, 12 slotów | składowanie towarów |
+| Magazyn (plac składowy) | 4×4, 15 slotów (od M4b-1; wcześniej 12) | składowanie towarów |
 | Chata | 2×2 | dom poziomu 1 → 2 |
 | Studnia | 1×1 | usługa w zasięgu |
 | Drwal | 2×2 | drewno (ścina drzewa, wiąże kłody, niesie) |
@@ -414,6 +414,7 @@ Szczegóły i kryteria ukończenia: [ROADMAP.md](ROADMAP.md), etap M3. W skróci
 - **M3: 5/5.** „Super się ogląda”, jak mieszkańcy chodzą i wykonują swoje zadania. Filar „widoczna praca” (§1.1) działa i zostaje głównym źródłem frajdy.
 - W 20–30 minut da się dojść do 6 domów poziomu 2. Łańcuch chleba widać w trybie „śledź” od pola do kosza. Opis postaci zawsze zgadza się z tym, co robi. Teksty w PL i EN bez uwag.
 - **M4a: 4/5.** Mieszczanie, ryby, piwo i logistyka działają. Brakuje „autentyczności”, bo grafiki to wciąż placeholdery. To nie jest problem rozgrywki, tylko grafiki: wzmacnia sens etapu M9 (produkcja grafik, ROADMAP).
+- **M4b-1: 4/5, wygląd kamienic 2/5.** Patrycjusze osiągalne, tawerna działa. Wnioski: miasto ma wyglądać jak zwarte pierzeje z narożnikami, domy przodem do drogi (etap M4b-1.5), a gospodarka potrzebuje ujścia nadwyżek i podglądu zapasów oraz produkcji (M4b-2).
 
 ### 11.2 Odłożone [PÓŹNIEJ]
 

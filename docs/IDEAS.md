@@ -102,6 +102,8 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 
 - [Claude] **Efekty przy pracy:** dym z komina piekarni tylko wtedy, gdy piekarz piecze, śmigło młyna kręci się tylko przy mieleniu, a z pola przy żniwach lecą źdźbła. Widok ma już czynność postaci, więc efekt można włączać po `activity`. Koszt mały, a dużo daje dla „żywego” miasta.
 
+- [Właściciel] **Obracanie kamery** (2026-11-05): żeby zobaczyć, co jest za budynkami. Najpierw wersja bez obróconych grafik, tylko żeby działało. Ocena (Claude): w izometrii 2D każdy budynek i postać potrzebuje wtedy grafik z 4 stron, czyli ok. 4× więcej rysowania. Tańsza alternatywa: przezroczyste budynki przy kursorze albo przycisk „ukryj budynki”. Kiedy: po M4b-1.5, gdy ustalimy nowy wygląd miasta.
+
 - [Claude] **Życie przy bramie:** strażnik obsługuje kołowrót przy podnoszeniu brony, a wozy zatrzymują się czasem do kontroli. Właściciel projektu jest na tak (2026-11-04). Kiedy: razem z wieżą bramną w M7.
 
 ## Animacje i detale

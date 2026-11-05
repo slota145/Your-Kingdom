@@ -1164,3 +1164,21 @@ msgid_plural "good.bricks.count_plural"
 msgstr[0] "%s paleta cegieł"
 msgstr[1] "%s palety cegieł"
 msgstr[2] "%s palet cegieł"
+
+msgid "ui.build.tab.housing"
+msgstr "Mieszkańcy i usługi"
+
+msgid "ui.build.tab.resources"
+msgstr "Surowce"
+
+msgid "ui.build.tab.food"
+msgstr "Żywność"
+
+msgid "ui.build.tab.drink"
+msgstr "Napoje"
+
+msgid "ui.build.tab.textiles"
+msgstr "Tekstylia"
+
+msgid "ui.build.tab.storage"
+msgstr "Magazyny"

@@ -66,7 +66,8 @@ static func migrate_v3_to_v4(state: Dictionary) -> Dictionary:
 	return state
 
 
-## M4b-1: hut pantries get slots for the patricians' goods (clothes, mead). Production is not
+## M4b-1: hut pantries get slots for the patricians' goods (clothes, mead) and stockpiles 15
+## slots instead of 12 (every yard tile but the entrance holds a stack). Production is not
 ## paused, taverns have not served yet and no saplings grow; those defaults are not written.
 static func migrate_v4_to_v5(state: Dictionary) -> Dictionary:
 	var province: Dictionary = state["province"]
@@ -76,4 +77,8 @@ static func migrate_v4_to_v5(state: Dictionary) -> Dictionary:
 			var slots: Array = (b["supply"] as Dictionary)["slots"]
 			while slots.size() < 6:
 				slots.append(["", 0])
+		if b["def"] == "stockpile" and b.has("stock"):
+			var stock_slots: Array = (b["stock"] as Dictionary)["slots"]
+			while stock_slots.size() < 15:
+				stock_slots.append(["", 0])
 	return state

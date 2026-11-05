@@ -1,6 +1,6 @@
 class_name NatureLayer
 extends Node2D
-## Sprites of resource nodes (trees: grown, felled, stump). Child of the y-sorted world;
+## Sprites of resource nodes (trees: grown, felled, stump in old saves; saplings). Child of the y-sorted world;
 ## refreshed from simulation events, not every frame.
 
 var _field: ResourceField
@@ -44,7 +44,7 @@ func refresh(tile: Vector2i) -> void:
 
 func on_sim_event(event: Dictionary) -> void:
 	match event["type"]:
-		&"good_gathered", &"resource_depleted":
+		&"good_gathered", &"resource_depleted", &"resource_planted", &"resource_grown":
 			refresh(event["tile"])
 		&"building_placed":
 			var def := Data.registry.get_building(event["def"])

@@ -219,6 +219,8 @@ func test_v4_migration_adds_patrician_pantry_slots() -> void:
 		assert_int(b.serving_until).is_equal(0)
 		if b.house != null:
 			assert_int(b.supply.slot_count()).is_equal(b.house_goods().size())
+		if b.def.id == &"stockpile":
+			assert_int(b.stock.slot_count()).is_equal(15)
 
 
 ## A save written by save_version 5 (M4b-1: saplings growing, a paused tailor, a tavern that

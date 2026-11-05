@@ -72,6 +72,8 @@ func _init(simulation: Simulation) -> void:
 		{"at": 3180, "build": &"hut", "near": town + Vector2i(1, 19)},
 		{"at": 3240, "build": &"hut", "near": town + Vector2i(4, 19)},
 		{"at": 3240, "build": &"hut", "near": town + Vector2i(7, 19)},
+		{"at": 3300, "build": &"hop_farm", "near": town + Vector2i(-4, 26), "fields": 12},
+		{"at": 3360, "build": &"brewery", "near": town + Vector2i(-2, -14)},
 		{"at": 3600, "build": &"meadery", "near": town + Vector2i(12, -14)},
 		{"at": 3600, "build": &"apiary", "near": town + Vector2i(22, 24)},
 	]
