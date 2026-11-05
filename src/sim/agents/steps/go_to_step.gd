@@ -20,6 +20,15 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 			# Work steps face "node": the angler looks at the water.
 			bb["node"] = SimCodec.vec2i(province.shore_water(shore, workplace.def.needs_terrain_near))
 		return Movement.walk(province, agent, SimCodec.to_vec2i(bb["stand"]))
+	if step.target == &"plant_spot":
+		if not bb.has("stand"):
+			var spot := province.find_plant_spot(workplace, step.resource, agent.tile())
+			if spot == Agent.NO_TILE:
+				return failed(agent, &"no_resource")
+			bb["plant"] = true
+			bb["node"] = SimCodec.vec2i(spot)
+			bb["stand"] = SimCodec.vec2i(province.approach_tile(spot, agent.tile()))
+		return Movement.walk(province, agent, SimCodec.to_vec2i(bb["stand"]))
 	if not bb.has("stand"):
 		var node := agent.claimed_node
 		if node == Agent.NO_TILE or not province.resources.has_node(node, step.resource):

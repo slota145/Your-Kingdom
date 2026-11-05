@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/fetch_step_def.gd" id="2_fetch"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+[ext_resource type="Script" path="res://src/defs/steps/deposit_step_def.gd" id="9_deposit"]
+[ext_resource type="Script" path="res://src/defs/steps/serve_step_def.gd" id="11_serve"]
+
+[sub_resource type="Resource" id="fetch_beer"]
+script = ExtResource("2_fetch")
+good = &"beer"
+amount = 1
+skip_if_stocked = true
+
+[sub_resource type="Resource" id="go_home"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="deposit"]
+script = ExtResource("9_deposit")
+
+[sub_resource type="Resource" id="fetch_mead"]
+script = ExtResource("2_fetch")
+good = &"mead"
+amount = 1
+skip_if_stocked = true
+
+[sub_resource type="Resource" id="serve"]
+script = ExtResource("4_work")
+activity = &"serve"
+duration = 45.0
+spot = &"bar"
+
+[sub_resource type="Resource" id="pour"]
+script = ExtResource("11_serve")
+hold = 90.0
+consume = Dictionary[StringName, int]({
+&"beer": 1,
+&"mead": 1
+})
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("fetch_beer"), SubResource("go_home"), SubResource("deposit"), SubResource("fetch_mead"), SubResource("go_home"), SubResource("deposit"), SubResource("serve"), SubResource("pour")])
+id = &"serving"

@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/fetch_step_def.gd" id="2_fetch"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/produce_step_def.gd" id="5_produce"]
+[ext_resource type="Script" path="res://src/defs/steps/deliver_step_def.gd" id="6_deliver"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+
+[sub_resource type="Resource" id="fetch"]
+script = ExtResource("2_fetch")
+good = &"cloth"
+amount = 1
+
+[sub_resource type="Resource" id="go_home"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="cut"]
+script = ExtResource("4_work")
+activity = &"cut"
+duration = 4.0
+spot = &"table"
+
+[sub_resource type="Resource" id="sew"]
+script = ExtResource("4_work")
+activity = &"sew"
+duration = 8.0
+spot = &"table"
+
+[sub_resource type="Resource" id="produce"]
+script = ExtResource("5_produce")
+output = &"clothes"
+amount = 2
+
+[sub_resource type="Resource" id="deliver"]
+script = ExtResource("6_deliver")
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("fetch"), SubResource("go_home"), SubResource("cut"), SubResource("sew"), SubResource("produce"), SubResource("deliver")])
+id = &"tailoring"

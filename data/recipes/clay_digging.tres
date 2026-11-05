@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/produce_step_def.gd" id="5_produce"]
+[ext_resource type="Script" path="res://src/defs/steps/deliver_step_def.gd" id="6_deliver"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+
+[sub_resource type="Resource" id="goto_shore"]
+script = ExtResource("3_goto")
+target = &"shore"
+
+[sub_resource type="Resource" id="dig"]
+script = ExtResource("4_work")
+activity = &"dig"
+duration = 5.0
+
+[sub_resource type="Resource" id="dig2"]
+script = ExtResource("4_work")
+activity = &"dig"
+duration = 5.0
+
+[sub_resource type="Resource" id="produce"]
+script = ExtResource("5_produce")
+output = &"clay"
+amount = 2
+
+[sub_resource type="Resource" id="deliver"]
+script = ExtResource("6_deliver")
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("goto_shore"), SubResource("dig"), SubResource("dig2"), SubResource("produce"), SubResource("deliver")])
+id = &"clay_digging"

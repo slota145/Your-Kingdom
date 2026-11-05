@@ -267,6 +267,42 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] Wydajność według ARCHITECTURE §9.1.
 - [ ] **Twoja ocena gry.**
 
+**Podział na trzy części (decyzja właściciela projektu 2026-11-05).** Każda część kończy się Twoją grą i oceną. Powyższe DoD dotyczy całego M4b.
+- **M4b-1: patrycjusze i poprawki** (szczegóły niżej).
+- **M4b-2:** mięso (chlew, rzeźnik, skóry), straganiarze na targowisku, kupiec wędrowny.
+- **M4b-3:** wozy i bruk, nowe tereny (jezioro, skały), duże miasto 400+ postaci i wydajność.
+
+#### M4b-1 — Patrycjusze i poprawki
+
+**Decyzje (2026-11-05):**
+- **Tawerna zamiast łaźni.** Karczmarz przynosi z magazynu piwo i miód pitny. Tawerna działa w zasięgu tylko wtedy, gdy niedawno podawała napitki (bez zapasów przestaje działać).
+- **Miód pitny teraz, wino później.** Wino wymaga rzadkiego surowca (winorośl), który dojdzie z mapą świata (M6).
+
+**Zakres:**
+- leśniczy: sadzi sadzonki w zasięgu, najpierw na pniakach; sadzonka po kilku minutach rośnie w drzewo,
+- przycisk „wstrzymaj produkcję” w panelu budynku (pracownik zostaje, ale nie zaczyna nowego cyklu),
+- owczarnia → wełna → tkalnia → sukno → krawiec → ubrania,
+- pasieka → miód → miodosytnia → miód pitny,
+- glinianka nad wodą → glina; glina + drewno → cegielnia → cegły,
+- tawerna (usługa z zasięgiem, zużywa piwo i miód pitny),
+- kamienica patrycjuszy: awans domu mieszczańskiego za cegły i deski (GDD §3.2, §3.3),
+- zapis: nowy `save_version` z migracją i testem.
+
+**DoD:**
+- [x] Automatyczny gracz od startu dochodzi do 4 kamienic patrycjuszy ze wszystkimi potrzebami podstawowymi w **77. minucie** (`test_slice_dod.gd`, limit 90 minut; etap patrycjuszy zaczyna od 45. minuty).
+- [x] Każdy nowy łańcuch (wełna, sukno, ubrania, miód, miód pitny, glina, cegły) ma test scenariuszowy z licznikami zdarzeń (`tests/scenario/test_m4b1_chains.gd`, tam też tawerna).
+- [x] Leśniczy: las przy drwalu nie znika przez 2 godziny gry (378 kłód z 16 drzew). Wstrzymany budynek nie zaczyna cyklu, a po wznowieniu pracuje dalej (`test_m4b1_chains.gd`).
+- [x] Brak zakleszczeń przez 2 godziny przy 4× (`test_slice_dod.gd`, z patrycjuszami).
+- [x] Zapis z M4a wczytuje się po migracji bez utraty towaru (v4 → v5, nowa fixtura `v5_town.json`).
+- [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń (test kluczy; panele obejrzane na zrzutach z laptopa).
+- [ ] **Twoja ocena gry.**
+
+**Ustalone przy realizacji (2026-11-05, do zmiany na prośbę):**
+- **Leśniczy** sadzi w promieniu 8 kafli, najpierw na pniakach, nigdy tuż obok budynku (drzewo nie zablokuje wejścia). Sadzonka rośnie 5 minut. Nie rośnie, gdy ktoś na niej stoi.
+- **Tawerna:** jedno podanie (1 piwo + 1 miód pitny) co ok. 50 s; po nim tawerna działa w zasięgu 90 s.
+- **Balans:** owczarnia 2 wełny na cykl, 2 wełny = 1 sukno, 1 sukno = 2 ubrania, pasieka 1 miód, 1 miód = 2 miody pitne, glinianka 2 gliny, 1 glina + 1 drewno = 2 cegły. Patrycjusze: 12 osób, podatek 1,2 złota na minutę, ubrania 0,02 i miód pitny 0,03 na osobę na minutę.
+- **Grafika** narysowana kodem (budynki, 9 zawodów, towary, sadzonka, kamienice z kamiennym parterem).
+
 ---
 
 ## M5 — Woda, porty i statki

@@ -1,0 +1,813 @@
+{
+	"header": {
+		"save_version": 5
+	},
+	"state": {
+		"tick": 750,
+		"next_id": 26,
+		"rng": {
+			"seed": "5",
+			"streams": {}
+		},
+		"treasury": {
+			"gold": 14,
+			"rate": 1,
+			"fraction": 0.46413333333333173
+		},
+		"province": {
+			"grid": {
+				"size": [
+					32,
+					32
+				],
+				"terrain": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+				"roads": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+				"blocked": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+			},
+			"resources": {
+				"kinds": [
+					"sapling"
+				],
+				"kind": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+				"amount": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+				"claims": [],
+				"growing": [
+					428,
+					3069,
+					663,
+					3521,
+					695,
+					3299,
+					727,
+					3632,
+					756,
+					3743,
+					757,
+					3410
+				]
+			},
+			"buildings": [
+				{
+					"id": 1,
+					"def": "town_hall",
+					"origin": [
+						2,
+						2
+					],
+					"workers": [
+						13,
+						14,
+						15
+					]
+				},
+				{
+					"id": 2,
+					"def": "stockpile",
+					"origin": [
+						8,
+						2
+					],
+					"workers": [
+						19,
+						20
+					],
+					"stock": {
+						"slots": [
+							[
+								"wood",
+								20
+							],
+							[
+								"wood",
+								10
+							],
+							[
+								"bread",
+								20
+							],
+							[
+								"beer",
+								2
+							],
+							[
+								"mead",
+								3
+							],
+							[
+								"cloth",
+								4
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							]
+						],
+						"reservations": [
+							{
+								"id": 4,
+								"owner": 17,
+								"slot": 4,
+								"good": "mead",
+								"amount": 1,
+								"in": false
+							}
+						],
+						"next": 5
+					},
+					"reserves": {
+						"wood": 5
+					}
+				},
+				{
+					"id": 3,
+					"def": "hut",
+					"origin": [
+						2,
+						8
+					],
+					"workers": [],
+					"supply": {
+						"slots": [
+							[
+								"clothes",
+								3
+							],
+							[
+								"fish",
+								3
+							],
+							[
+								"bread",
+								3
+							],
+							[
+								"wood",
+								3
+							],
+							[
+								"mead",
+								3
+							],
+							[
+								"beer",
+								3
+							]
+						],
+						"reservations": [],
+						"next": 1,
+						"limit": 3
+					},
+					"house": {
+						"level": 1,
+						"residents": 4,
+						"incoming": 0,
+						"happiness": 85.0,
+						"hunger": {
+							"food": 0.49999999999999933,
+							"firewood": 0.1500000000000001
+						},
+						"satisfied": {
+							"food": true,
+							"firewood": true,
+							"well_water": true,
+							"chapel": false
+						},
+						"met": 75,
+						"unmet": 0,
+						"errands": {}
+					}
+				},
+				{
+					"id": 4,
+					"def": "hut",
+					"origin": [
+						5,
+						8
+					],
+					"workers": [],
+					"supply": {
+						"slots": [
+							[
+								"clothes",
+								3
+							],
+							[
+								"fish",
+								3
+							],
+							[
+								"bread",
+								3
+							],
+							[
+								"wood",
+								3
+							],
+							[
+								"mead",
+								3
+							],
+							[
+								"beer",
+								3
+							]
+						],
+						"reservations": [],
+						"next": 1,
+						"limit": 3
+					},
+					"house": {
+						"level": 1,
+						"residents": 4,
+						"incoming": 0,
+						"happiness": 85.0,
+						"hunger": {
+							"food": 0.49999999999999933,
+							"firewood": 0.1500000000000001
+						},
+						"satisfied": {
+							"food": true,
+							"firewood": true,
+							"well_water": true,
+							"chapel": false
+						},
+						"met": 75,
+						"unmet": 0,
+						"errands": {}
+					}
+				},
+				{
+					"id": 5,
+					"def": "well",
+					"origin": [
+						9,
+						9
+					],
+					"workers": []
+				},
+				{
+					"id": 6,
+					"def": "hut",
+					"origin": [
+						2,
+						12
+					],
+					"workers": [],
+					"supply": {
+						"slots": [
+							[
+								"clothes",
+								3
+							],
+							[
+								"fish",
+								3
+							],
+							[
+								"bread",
+								3
+							],
+							[
+								"wood",
+								3
+							],
+							[
+								"mead",
+								3
+							],
+							[
+								"beer",
+								3
+							]
+						],
+						"reservations": [],
+						"next": 1,
+						"limit": 3
+					},
+					"house": {
+						"level": 1,
+						"residents": 4,
+						"incoming": 0,
+						"happiness": 85.0,
+						"hunger": {
+							"food": 0.49999999999999933,
+							"firewood": 0.1500000000000001
+						},
+						"satisfied": {
+							"food": true,
+							"firewood": true,
+							"well_water": true,
+							"chapel": false
+						},
+						"met": 75,
+						"unmet": 0,
+						"errands": {}
+					}
+				},
+				{
+					"id": 7,
+					"def": "hut",
+					"origin": [
+						5,
+						12
+					],
+					"workers": [],
+					"supply": {
+						"slots": [
+							[
+								"clothes",
+								3
+							],
+							[
+								"fish",
+								3
+							],
+							[
+								"bread",
+								3
+							],
+							[
+								"wood",
+								3
+							],
+							[
+								"mead",
+								3
+							],
+							[
+								"beer",
+								3
+							]
+						],
+						"reservations": [],
+						"next": 1,
+						"limit": 3
+					},
+					"house": {
+						"level": 1,
+						"residents": 4,
+						"incoming": 0,
+						"happiness": 85.0,
+						"hunger": {
+							"food": 0.49999999999999933,
+							"firewood": 0.1500000000000001
+						},
+						"satisfied": {
+							"food": true,
+							"firewood": true,
+							"well_water": true,
+							"chapel": false
+						},
+						"met": 75,
+						"unmet": 0,
+						"errands": {}
+					}
+				},
+				{
+					"id": 8,
+					"def": "hut",
+					"origin": [
+						8,
+						12
+					],
+					"workers": [],
+					"supply": {
+						"slots": [
+							[
+								"clothes",
+								3
+							],
+							[
+								"fish",
+								3
+							],
+							[
+								"bread",
+								3
+							],
+							[
+								"wood",
+								3
+							],
+							[
+								"mead",
+								3
+							],
+							[
+								"beer",
+								3
+							]
+						],
+						"reservations": [],
+						"next": 1,
+						"limit": 3
+					},
+					"house": {
+						"level": 3,
+						"residents": 12,
+						"incoming": 0,
+						"happiness": 90.0,
+						"hunger": {
+							"bread": 0.6420000000000005,
+							"fish_or_meat": 0.5350000000000001,
+							"beer": 0.4280000000000002,
+							"firewood": 0.32100000000000023,
+							"clothes": 0.2140000000000001,
+							"mead": 0.32100000000000023
+						},
+						"satisfied": {
+							"bread": true,
+							"fish_or_meat": true,
+							"beer": true,
+							"firewood": true,
+							"well_water": true,
+							"clothes": true,
+							"mead": true,
+							"tavern": true,
+							"church": false,
+							"market": false
+						},
+						"met": 75,
+						"unmet": 0,
+						"errands": {}
+					}
+				},
+				{
+					"id": 9,
+					"def": "forester",
+					"origin": [
+						20,
+						20
+					],
+					"workers": [
+						16
+					]
+				},
+				{
+					"id": 10,
+					"def": "tavern",
+					"origin": [
+						14,
+						4
+					],
+					"workers": [
+						17
+					],
+					"supply": {
+						"slots": [
+							[
+								"beer",
+								1
+							],
+							[
+								"",
+								0
+							]
+						],
+						"reservations": [],
+						"next": 1,
+						"limit": 2
+					},
+					"serving_until": 1459
+				},
+				{
+					"id": 11,
+					"def": "tailor",
+					"origin": [
+						20,
+						4
+					],
+					"workers": [
+						18
+					],
+					"paused": true
+				}
+			],
+			"piles": [],
+			"sites": [],
+			"fields": [],
+			"entry": [
+				0,
+				0
+			],
+			"keep_for_building": {},
+			"agents": [
+				{
+					"id": 13,
+					"kind": "builder",
+					"workplace": 1,
+					"home": 3,
+					"pos": [
+						3.5,
+						9.5
+					],
+					"facing": 0,
+					"carry": [
+						"",
+						0
+					],
+					"activity": "idle",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						0,
+						[
+							-1,
+							-1
+						],
+						[],
+						0
+					]
+				},
+				{
+					"id": 14,
+					"kind": "porter",
+					"workplace": 1,
+					"home": 3,
+					"pos": [
+						3.5,
+						9.5
+					],
+					"facing": 0,
+					"carry": [
+						"",
+						0
+					],
+					"activity": "idle",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						0,
+						[
+							-1,
+							-1
+						],
+						[],
+						0
+					]
+				},
+				{
+					"id": 15,
+					"kind": "porter",
+					"workplace": 1,
+					"home": 4,
+					"pos": [
+						6.5,
+						9.5
+					],
+					"facing": 0,
+					"carry": [
+						"",
+						0
+					],
+					"activity": "idle",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						0,
+						[
+							-1,
+							-1
+						],
+						[],
+						0
+					]
+				},
+				{
+					"id": 16,
+					"kind": "forester",
+					"workplace": 9,
+					"home": 8,
+					"pos": [
+						21.5,
+						21.77999496459961
+					],
+					"facing": 3,
+					"carry": [
+						"",
+						0
+					],
+					"activity": "walk",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						2,
+						[
+							21,
+							21
+						],
+						[
+							21,
+							22,
+							21,
+							21
+						],
+						1
+					],
+					"task": {
+						"kind": "recipe",
+						"recipe": "planting",
+						"request": 0,
+						"step": 4,
+						"bb": {
+							"node": [
+								20,
+								23
+							],
+							"stand": [
+								21,
+								22
+							]
+						}
+					}
+				},
+				{
+					"id": 17,
+					"kind": "innkeeper",
+					"workplace": 10,
+					"home": 4,
+					"pos": [
+						10.260005950927734,
+						6.5
+					],
+					"facing": 5,
+					"carry": [
+						"",
+						0
+					],
+					"activity": "walk",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						2,
+						[
+							9,
+							5
+						],
+						[
+							15,
+							5,
+							15,
+							6,
+							14,
+							6,
+							13,
+							6,
+							12,
+							6,
+							11,
+							6,
+							10,
+							6,
+							9,
+							6,
+							9,
+							5
+						],
+						7
+					],
+					"task": {
+						"kind": "recipe",
+						"recipe": "serving",
+						"request": 0,
+						"step": 3,
+						"bb": {
+							"_src": 2,
+							"_res": 4
+						}
+					}
+				},
+				{
+					"id": 18,
+					"kind": "tailor",
+					"workplace": 11,
+					"home": 8,
+					"pos": [
+						9.5,
+						13.5
+					],
+					"facing": 0,
+					"carry": [
+						"",
+						0
+					],
+					"activity": "idle",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						0,
+						[
+							-1,
+							-1
+						],
+						[],
+						0
+					]
+				},
+				{
+					"id": 19,
+					"kind": "porter",
+					"workplace": 2,
+					"home": 8,
+					"pos": [
+						9.5,
+						13.5
+					],
+					"facing": 0,
+					"carry": [
+						"",
+						0
+					],
+					"activity": "idle",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						0,
+						[
+							-1,
+							-1
+						],
+						[],
+						0
+					]
+				},
+				{
+					"id": 20,
+					"kind": "porter",
+					"workplace": 2,
+					"home": 7,
+					"pos": [
+						6.5,
+						13.5
+					],
+					"facing": 0,
+					"carry": [
+						"",
+						0
+					],
+					"activity": "idle",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						0,
+						[
+							-1,
+							-1
+						],
+						[],
+						0
+					]
+				}
+			],
+			"jobs": {
+				"requests": [],
+				"next": 1
+			},
+			"path_queue": []
+		}
+	}
+}

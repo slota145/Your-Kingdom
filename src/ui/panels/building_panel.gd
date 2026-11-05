@@ -24,6 +24,7 @@ var _body: Label
 var _stock: StockpilePanel
 var _fields_button: Button
 var _priority_row: Container
+var _pause_button: Button
 var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
 var _reserve_label: Label
@@ -52,6 +53,12 @@ func _init() -> void:
 	box.add_child(buttons)
 	_fields_button = UiKit.button("ui.building.add_fields", func() -> void: add_fields_requested.emit(building_id))
 	buttons.add_child(_fields_button)
+	_pause_button = UiKit.button("ui.building.pause", func() -> void:
+		var b := province.buildings.get_building(building_id)
+		if b != null:
+			command_requested.emit(SetPausedCommand.new(building_id, not b.paused)))
+	_pause_button.tooltip_text = "ui.building.pause_hint"
+	buttons.add_child(_pause_button)
 	buttons.add_child(UiKit.button("ui.building.demolish", func() -> void: demolish_requested.emit(building_id)))
 	buttons.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
 
@@ -140,8 +147,12 @@ func _refresh() -> void:
 			lines.append(tr("ui.building.no_workers") % missing)
 		if b.def.max_fields > 0:
 			lines.append(tr("ui.building.fields") % [province.fields.tiles_of(b.id).size(), b.def.max_fields])
+		if b.paused:
+			lines.append(tr("ui.building.paused"))
 		if b.def.service_radius > 0:
 			lines.append(tr("ui.building.service_range"))
+			if b.def.service_needs_supply and not b.provides_service(province.tick):
+				lines.append(tr("ui.building.service_needs_supply"))
 		if b.house != null:
 			lines.append_array(_house_lines(b))
 		elif b.supply != null:
@@ -152,6 +163,8 @@ func _refresh() -> void:
 	_stock.visible = b.stock != null
 	_stock.stock = b.stock
 	_fields_button.visible = b.is_complete() and b.def.max_fields > 0
+	_pause_button.visible = b.is_complete() and b.def.recipe != null
+	_pause_button.text = tr("ui.building.resume" if b.paused else "ui.building.pause")
 	_refresh_settings(b)
 
 

@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="HouseLevelDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/house_level_def.gd" id="1_s"]
+[ext_resource type="Script" path="res://src/defs/need_def.gd" id="2_need"]
+[ext_resource type="Resource" path="res://data/needs/bread.tres" id="3_bread"]
+[ext_resource type="Resource" path="res://data/needs/fish_or_meat.tres" id="4_fish"]
+[ext_resource type="Resource" path="res://data/needs/beer.tres" id="5_beer"]
+[ext_resource type="Resource" path="res://data/needs/firewood.tres" id="6_fire"]
+[ext_resource type="Resource" path="res://data/needs/well_water.tres" id="7_well"]
+[ext_resource type="Resource" path="res://data/needs/clothes.tres" id="8_clothes"]
+[ext_resource type="Resource" path="res://data/needs/mead.tres" id="9_mead"]
+[ext_resource type="Resource" path="res://data/needs/tavern.tres" id="10_tavern"]
+[ext_resource type="Resource" path="res://data/needs/church.tres" id="11_church"]
+[ext_resource type="Resource" path="res://data/needs/market.tres" id="12_market"]
+
+[resource]
+script = ExtResource("1_s")
+level = 3
+capacity = 12
+needs = Array[ExtResource("2_need")]([ExtResource("3_bread"), ExtResource("4_fish"), ExtResource("5_beer"), ExtResource("6_fire"), ExtResource("7_well"), ExtResource("8_clothes"), ExtResource("9_mead"), ExtResource("10_tavern"), ExtResource("11_church"), ExtResource("12_market")])
+supply_units = 4
+upgrade_cost = Dictionary[StringName, int]({
+&"bricks": 6,
+&"planks": 4
+})
+upgrade_time = 16.0
+need_weights = Dictionary[StringName, int]({
+&"bread": 15,
+&"fish_or_meat": 10,
+&"beer": 10,
+&"firewood": 10,
+&"well_water": 10,
+&"church": 5,
+&"market": 5
+})
+tax_per_minute = 1.2
+id = &"patrician_house"

@@ -831,3 +831,319 @@ msgstr "%s kept for building: %d (workshops leave it)"
 
 msgid "ui.keep.hint"
 msgstr "One setting for the whole province. Building sites and houses may still take it."
+
+# --- M4b-1: patricians, textiles, mead, bricks, tavern, forester, pause ---
+
+msgid "good.wool.name"
+msgstr "Wool"
+
+msgid "good.wool.desc"
+msgstr "Shorn from sheep at the sheep farm. The weaver spins it and weaves cloth."
+
+msgid "good.cloth.name"
+msgstr "Cloth"
+
+msgid "good.cloth.desc"
+msgstr "Woven from wool at the weaver. The tailor sews clothes from it."
+
+msgid "good.clothes.name"
+msgstr "Clothes"
+
+msgid "good.clothes.desc"
+msgstr "Sewn by the tailor. Patricians will not step outside without them."
+
+msgid "good.honey.name"
+msgstr "Honey"
+
+msgid "good.honey.desc"
+msgstr "Collected from the hives of the apiary. The mead maker turns it into mead."
+
+msgid "good.mead.name"
+msgstr "Mead"
+
+msgid "good.mead.desc"
+msgstr "The drink of patricians. The innkeeper serves it in the tavern too."
+
+msgid "good.clay.name"
+msgstr "Clay"
+
+msgid "good.clay.desc"
+msgstr "Dug by the water at the clay pit. The brickworks fires it into bricks."
+
+msgid "good.bricks.name"
+msgstr "Bricks"
+
+msgid "good.bricks.desc"
+msgstr "Fired from clay at the brickworks. Patrician townhouses are built from them."
+
+msgid "building.forester.name"
+msgstr "Forester"
+
+msgid "building.forester.desc"
+msgstr "The forester plants saplings nearby, stumps first. After a few minutes they grow into trees for the woodcutter."
+
+msgid "building.sheep_farm.name"
+msgstr "Sheep farm"
+
+msgid "building.sheep_farm.desc"
+msgstr "The shepherd tends the sheep in the pen, shears them and carries the wool away."
+
+msgid "building.weaver.name"
+msgstr "Weaver"
+
+msgid "building.weaver.desc"
+msgstr "The weaver brings wool, spins it at the wheel, weaves it on the loom and carries the cloth away."
+
+msgid "building.tailor.name"
+msgstr "Tailor"
+
+msgid "building.tailor.desc"
+msgstr "The tailor brings cloth, cuts it and sews clothes for the patricians."
+
+msgid "building.apiary.name"
+msgstr "Apiary"
+
+msgid "building.apiary.desc"
+msgstr "The beekeeper tends the hives, collects honey and carries it to storage."
+
+msgid "building.meadery.name"
+msgstr "Meadery"
+
+msgid "building.meadery.desc"
+msgstr "The mead maker brings honey, mixes it in the vat, ferments it in casks and carries the mead away."
+
+msgid "building.clay_pit.name"
+msgstr "Clay pit"
+
+msgid "building.clay_pit.desc"
+msgstr "The digger takes clay from the water's edge. Build it close to the river."
+
+msgid "building.brickworks.name"
+msgstr "Brickworks"
+
+msgid "building.brickworks.desc"
+msgstr "The brickmaker brings clay and wood, moulds bricks and fires them in the kiln."
+
+msgid "building.tavern.name"
+msgstr "Tavern"
+
+msgid "building.tavern.desc"
+msgstr "The innkeeper brings beer and mead and serves the guests. The tavern reaches houses only while it has drinks to pour."
+
+msgid "recipe.planting.name"
+msgstr "Planting trees"
+
+msgid "recipe.planting.desc"
+msgstr "The forester digs a hole, plants a sapling and goes back to rest."
+
+msgid "recipe.sheep_farming.name"
+msgstr "Sheep farming"
+
+msgid "recipe.sheep_farming.desc"
+msgstr "The shepherd herds the sheep, shears them and carries the wool away."
+
+msgid "recipe.weaving.name"
+msgstr "Weaving"
+
+msgid "recipe.weaving.desc"
+msgstr "From 2 bundles of wool the weaver makes a bolt of cloth."
+
+msgid "recipe.tailoring.name"
+msgstr "Tailoring"
+
+msgid "recipe.tailoring.desc"
+msgstr "From a bolt of cloth the tailor sews 2 baskets of clothes."
+
+msgid "recipe.beekeeping.name"
+msgstr "Beekeeping"
+
+msgid "recipe.beekeeping.desc"
+msgstr "The beekeeper tends the hives and collects a cask of honey."
+
+msgid "recipe.mead_making.name"
+msgstr "Mead making"
+
+msgid "recipe.mead_making.desc"
+msgstr "From a cask of honey the mead maker makes 2 barrels of mead."
+
+msgid "recipe.clay_digging.name"
+msgstr "Clay digging"
+
+msgid "recipe.clay_digging.desc"
+msgstr "The digger goes to the water and digs 2 sacks of clay."
+
+msgid "recipe.brickmaking.name"
+msgstr "Brickmaking"
+
+msgid "recipe.brickmaking.desc"
+msgstr "From a sack of clay and a log of firewood the brickmaker makes 2 loads of bricks."
+
+msgid "recipe.serving.name"
+msgstr "Serving drinks"
+
+msgid "recipe.serving.desc"
+msgstr "The innkeeper brings beer and mead and serves the guests."
+
+msgid "resource_node.sapling.name"
+msgstr "Sapling"
+
+msgid "resource_node.sapling.desc"
+msgstr "A young tree planted by the forester. It grows into a tree after a few minutes."
+
+msgid "need.clothes.name"
+msgstr "Clothes"
+
+msgid "need.clothes.desc"
+msgstr "Patricians wear clothes from the tailor."
+
+msgid "need.mead.name"
+msgstr "Mead"
+
+msgid "need.mead.desc"
+msgstr "Patricians drink mead."
+
+msgid "need.tavern.name"
+msgstr "Tavern"
+
+msgid "need.tavern.desc"
+msgstr "Patricians like a tavern within reach."
+
+msgid "house_level.patrician_house.name"
+msgstr "Patrician townhouse"
+
+msgid "house_level.patrician_house.desc"
+msgstr "Level 3. Home for 12 patricians. Townhouses side by side join into a row."
+
+msgid "ui.kind.forester"
+msgstr "Forester"
+
+msgid "ui.kind.shepherd"
+msgstr "Shepherd"
+
+msgid "ui.kind.weaver"
+msgstr "Weaver"
+
+msgid "ui.kind.tailor"
+msgstr "Tailor"
+
+msgid "ui.kind.beekeeper"
+msgstr "Beekeeper"
+
+msgid "ui.kind.mead_maker"
+msgstr "Mead maker"
+
+msgid "ui.kind.clay_digger"
+msgstr "Clay digger"
+
+msgid "ui.kind.brickmaker"
+msgstr "Brickmaker"
+
+msgid "ui.kind.innkeeper"
+msgstr "Innkeeper"
+
+msgid "ui.activity.dig"
+msgstr "digging"
+
+msgid "ui.activity.plant"
+msgstr "planting a sapling"
+
+msgid "ui.activity.rest"
+msgstr "resting"
+
+msgid "ui.activity.herd"
+msgstr "herding the sheep"
+
+msgid "ui.activity.shear"
+msgstr "shearing a sheep"
+
+msgid "ui.activity.spin"
+msgstr "spinning wool"
+
+msgid "ui.activity.weave"
+msgstr "weaving at the loom"
+
+msgid "ui.activity.cut"
+msgstr "cutting cloth"
+
+msgid "ui.activity.sew"
+msgstr "sewing"
+
+msgid "ui.activity.tend_hives"
+msgstr "tending the hives"
+
+msgid "ui.activity.collect_honey"
+msgstr "collecting honey"
+
+msgid "ui.activity.mix"
+msgstr "mixing honey in the vat"
+
+msgid "ui.activity.ferment"
+msgstr "fermenting mead in casks"
+
+msgid "ui.activity.mould"
+msgstr "moulding bricks"
+
+msgid "ui.activity.fire"
+msgstr "firing bricks in the kiln"
+
+msgid "ui.activity.serve"
+msgstr "serving the guests"
+
+msgid "ui.doing.go_plant"
+msgstr "going to plant a sapling"
+
+msgid "ui.doing.paused"
+msgstr "waiting, production paused"
+
+msgid "ui.building.pause"
+msgstr "Pause production"
+
+msgid "ui.building.resume"
+msgstr "Resume production"
+
+msgid "ui.building.pause_hint"
+msgstr "The worker stays but starts no new work. Useful when storages are full."
+
+msgid "ui.building.paused"
+msgstr "Production paused."
+
+msgid "ui.building.service_needs_supply"
+msgstr "Not working: no drinks to serve."
+
+msgid "ui.command_error.no_production"
+msgstr "This building does not produce anything."
+
+msgid "good.wool.count"
+msgid_plural "good.wool.count_plural"
+msgstr[0] "%s bundle of wool"
+msgstr[1] "%s bundles of wool"
+
+msgid "good.cloth.count"
+msgid_plural "good.cloth.count_plural"
+msgstr[0] "%s bolt of cloth"
+msgstr[1] "%s bolts of cloth"
+
+msgid "good.clothes.count"
+msgid_plural "good.clothes.count_plural"
+msgstr[0] "%s basket of clothes"
+msgstr[1] "%s baskets of clothes"
+
+msgid "good.honey.count"
+msgid_plural "good.honey.count_plural"
+msgstr[0] "%s cask of honey"
+msgstr[1] "%s casks of honey"
+
+msgid "good.mead.count"
+msgid_plural "good.mead.count_plural"
+msgstr[0] "%s barrel of mead"
+msgstr[1] "%s barrels of mead"
+
+msgid "good.clay.count"
+msgid_plural "good.clay.count_plural"
+msgstr[0] "%s sack of clay"
+msgstr[1] "%s sacks of clay"
+
+msgid "good.bricks.count"
+msgid_plural "good.bricks.count_plural"
+msgstr[0] "%s load of bricks"
+msgstr[1] "%s loads of bricks"

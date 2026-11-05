@@ -49,7 +49,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"go_to": GoToStep.new(), &"work": WorkStep.new(), &"gather": GatherStep.new(),
 			&"fetch": FetchStep.new(), &"produce": ProduceStep.new(), &"deliver": DeliverStep.new(),
 			&"build": BuildStep.new(), &"field": FieldStep.new(), &"move_in": MoveInStep.new(),
-			&"deposit": DepositStep.new(),
+			&"deposit": DepositStep.new(), &"plant": PlantStep.new(), &"serve": ServeStep.new(),
 		}
 	return _executors[kind]
 
@@ -189,6 +189,8 @@ static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 			build.bb = {"site": site}
 			build.steps = build_steps()
 			agent.task = build
+		return
+	if workplace != null and workplace.paused:
 		return
 	if workplace != null and workplace.def.recipe != null and not workplace.def.recipe.steps.is_empty():
 		var task := Task.new()

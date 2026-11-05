@@ -38,6 +38,8 @@ var terrains: Array[TerrainDef] = []
 const ROAD_COST := 0.67
 ## Walking cost on a field tile (ARCHITECTURE §5.3).
 const FIELD_COST := 1.2
+## How often young trees are checked for growing up (1 s).
+const GROW_CHECK_TICKS := 10
 
 
 func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entity_ids: EntityIds) -> void:
@@ -58,6 +60,8 @@ func step() -> void:
 	Movement.serve_paths(self)
 	Movement.move_all(self)
 	_remove_empty_piles()
+	if tick % GROW_CHECK_TICKS == 0:
+		_grow_saplings()
 	Population.update(self)
 
 
@@ -284,6 +288,77 @@ func shore_water(tile: Vector2i, terrain_id: StringName) -> Vector2i:
 		if terrain != null and terrain.id == terrain_id:
 			return tile + step
 	return Agent.NO_TILE
+
+
+# --- Forestry (M4b-1) -----------------------------------------------------------------------
+
+## Where a forester of [param building] plants next: the nearest stump of [param node_id]
+## within the work radius, else the nearest free ground there, nearest to [param from].
+## Spots chosen by other foresters are skipped. Agent.NO_TILE if none.
+func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2i) -> Vector2i:
+	var taken: Dictionary[Vector2i, bool] = {}
+	for agent: Agent in agents.all():
+		if agent.task != null and agent.task.bb.has("plant") and agent.task.bb.has("node"):
+			taken[SimCodec.to_vec2i(agent.task.bb["node"])] = true
+	var area := Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius) 			.intersection(Rect2i(Vector2i.ZERO, grid.size))
+	var best := Agent.NO_TILE
+	var best_d := 1 << 30
+	for y: int in range(area.position.y, area.end.y):
+		for x: int in range(area.position.x, area.end.x):
+			var tile := Vector2i(x, y)
+			if taken.has(tile) or not can_plant(tile, node_id):
+				continue
+			var stump := resources.is_depleted(tile) and resources.def_at(tile).id == node_id
+			var d := (tile - from).length_squared() + (0 if stump else 1 << 20)
+			if d < best_d and approach_tile(tile, from) != Agent.NO_TILE:
+				best_d = d
+				best = tile
+	return best
+
+
+## Whether a sapling may go on [param tile]: a stump of [param node_id], or free buildable
+## ground; never next to a building (a grown tree must not block an entrance).
+func can_plant(tile: Vector2i, node_id: StringName = &"tree") -> bool:
+	if not grid.is_inside(tile):
+		return false
+	if resources.def_at(tile) != null:
+		if not resources.is_depleted(tile) or resources.def_at(tile).id != node_id:
+			return false
+	elif _free_ground_error(tile) != &"":
+		return false
+	if grid.is_blocked(tile) or fields.has_field(tile) or grid.has_road(tile):
+		return false
+	for dy: int in range(-1, 2):
+		for dx: int in range(-1, 2):
+			if grid.is_inside(tile + Vector2i(dx, dy)) and grid.occupant(tile + Vector2i(dx, dy)) != 0:
+				return false
+	return true
+
+
+func plant(tile: Vector2i, sapling: ResourceNodeDef) -> void:
+	resources.plant(tile, sapling, tick + SimClock.seconds_to_ticks(sapling.grow_time))
+	refresh_tile(tile)
+	events.emit(&"resource_planted", {"tile": tile, "node": sapling.id})
+
+
+## Grows due saplings into trees. One waits while somebody stands on its tile (a tree there
+## would trap them).
+func _grow_saplings() -> void:
+	if resources.growing_count() == 0:
+		return
+	var occupied: Dictionary[Vector2i, bool] = {}
+	for tile: Vector2i in resources.due_to_grow(tick):
+		if occupied.is_empty():
+			for agent: Agent in agents.all():
+				occupied[agent.tile()] = true
+		if occupied.has(tile):
+			continue
+		var young := resources.def_at(tile)
+		if young == null or young.grows_into == &"":
+			continue
+		resources.place(tile, data.get_resource_node(young.grows_into))
+		refresh_tile(tile)
+		events.emit(&"resource_grown", {"tile": tile, "node": young.grows_into})
 
 
 ## Places a building. [param instant] finishes it at once (map start, tests); otherwise it

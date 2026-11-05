@@ -48,6 +48,14 @@ const CARRIED_GOODS := {
 	"fish": ["basket", Color(0.55, 0.4, 0.22), Color(0.65, 0.75, 0.82)],
 	"hops": ["bundle", Color(0.45, 0.68, 0.28), Color(0.3, 0.5, 0.2)],
 	"beer": ["barrel", Color(0.5, 0.32, 0.16), Color(0.3, 0.3, 0.32)],
+	# M4b (patricians)
+	"wool": ["bundle", Color(0.95, 0.93, 0.86), Color(0.75, 0.72, 0.65)],
+	"cloth": ["bundle", Color(0.72, 0.28, 0.24), Color(0.92, 0.88, 0.76)],
+	"clothes": ["basket", Color(0.6, 0.46, 0.28), Color(0.3, 0.42, 0.7)],
+	"honey": ["barrel", Color(0.62, 0.4, 0.2), Color(0.95, 0.75, 0.2)],
+	"mead": ["barrel", Color(0.5, 0.32, 0.16), Color(0.85, 0.65, 0.25)],
+	"clay": ["sack", Color(0.68, 0.52, 0.42), Color(0.55, 0.4, 0.32)],
+	"bricks": ["stone", Color(0.72, 0.35, 0.24), Color(0.85, 0.5, 0.38)],
 }
 
 ## Stacks and nature sprites keep the tile diamond in their bottom 32 px (ART_SPEC §2).
@@ -343,6 +351,12 @@ func _nature() -> void:
 	_line(stump, foot, foot - Vector2(0, 5), trunk, 7)
 	_ellipse(stump, foot - Vector2(0, 6), Vector2(4, 2), Color(0.8, 0.66, 0.42))
 	_save(stump, "nature/tree/stump.png")
+	# Sapling planted by the forester: thin stem tied to a stake, a small crown.
+	var sapling := _blank(TREE_FRAME)
+	_line(sapling, foot + Vector2(3, 0), foot + Vector2(3, -22), Color(0.75, 0.6, 0.4), 1)
+	_line(sapling, foot, foot - Vector2(0, 18), trunk, 2)
+	_ellipse(sapling, foot - Vector2(0, 24), Vector2(7, 8), leaves.lightened(0.15))
+	_save(sapling, "nature/sapling/grown.png")
 	# Rock outcrop: whole, half quarried, rubble.
 	var rock := Color(0.58, 0.57, 0.55)
 	for state: String in ["grown", "felled", "stump"]:
@@ -386,6 +400,10 @@ func _buildings() -> void:
 			_building("hut", Vector2i(2, 2), Vector2i(1, 1), 44.0, 24.0, house_wall, house_roof,
 					"level_2_%s_%s" % [variant, axis], roof + "_" + axis, "",
 					0 if variant != "single" else 8)
+			# Level 3 (patrician townhouse): taller, ochre walls, darker red roof.
+			_building("hut", Vector2i(2, 2), Vector2i(1, 1), 62.0, 28.0, Color(0.9, 0.72, 0.45),
+					Color(0.62, 0.2, 0.15), "level_3_%s_%s" % [variant, axis], roof + "_" + axis, "",
+					0 if variant != "single" else 8)
 	_scaffold("hut", Vector2i(2, 2), 54.0)
 
 
@@ -425,6 +443,25 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.82, 0.8, 0.74), "roof_color": Color(0.3, 0.32, 0.42), "extra": "steeple"},
 	"market": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 14.0, "roof": 12.0,
 			"wall": Color(0.7, 0.55, 0.38), "roof_color": Color(0.8, 0.3, 0.25), "extra": "stalls"},
+	# M4b (patricians)
+	"forester": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 22.0,
+			"wall": Color(0.5, 0.36, 0.22), "roof_color": Color(0.3, 0.5, 0.28), "extra": "saplings"},
+	"sheep_farm": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 22.0,
+			"wall": Color(0.62, 0.46, 0.3), "roof_color": Color(0.82, 0.7, 0.35), "extra": "sheep"},
+	"weaver": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
+			"wall": Color(0.86, 0.8, 0.68), "roof_color": Color(0.42, 0.34, 0.28), "extra": "cloth"},
+	"tailor": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
+			"wall": Color(0.88, 0.84, 0.78), "roof_color": Color(0.62, 0.28, 0.22), "extra": "shirt"},
+	"apiary": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 20.0, "roof": 18.0,
+			"wall": Color(0.62, 0.48, 0.3), "roof_color": Color(0.85, 0.72, 0.36), "extra": "skeps"},
+	"meadery": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
+			"wall": Color(0.8, 0.68, 0.48), "roof_color": Color(0.78, 0.62, 0.3), "extra": "barrels"},
+	"clay_pit": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 20.0, "roof": 16.0,
+			"wall": Color(0.6, 0.48, 0.34), "roof_color": Color(0.75, 0.64, 0.36), "extra": "mounds"},
+	"brickworks": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 18.0,
+			"wall": Color(0.62, 0.46, 0.3), "roof_color": Color(0.42, 0.36, 0.3), "extra": "kiln"},
+	"tavern": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 44.0, "roof": 26.0,
+			"wall": Color(0.86, 0.78, 0.62), "roof_color": Color(0.66, 0.28, 0.2), "extra": "sign"},
 }
 
 
@@ -593,6 +630,38 @@ func _extra(img: Image, pivot: Vector2i, footprint: Vector2i, wall_h: float, roo
 			var t := PackedVector2Array([Vector2(-2.8, -2.8), Vector2(-1.8, -2.8), Vector2(-1.8, -1.8), Vector2(-2.8, -1.8)])
 			_prism(img, pivot, t, wall_h, wall_h + roof_h + 16.0, Color(0.8, 0.78, 0.72))
 			_pyramid(img, pivot, t, wall_h + roof_h + 16.0, 26.0, Color(0.3, 0.32, 0.42))
+		"saplings":
+			var q := front + IsoMath.grid_to_screen(Vector2(-0.4, -1.9))
+			for i: int in 3:
+				_line(img, q + Vector2(i * 6 - 6, 0), q + Vector2(i * 6 - 6, -10), Color(0.42, 0.28, 0.16), 1)
+				_ellipse(img, q + Vector2(i * 6 - 6, -12), Vector2(3, 3), Color(0.35, 0.6, 0.28))
+		"sheep":
+			var q := front + IsoMath.grid_to_screen(Vector2(-0.4, -1.8))
+			for i: int in 2:
+				_ellipse(img, q + Vector2(i * 10 - 5, -4 + i * 2), Vector2(5, 3), Color(0.95, 0.93, 0.88))
+				_ellipse(img, q + Vector2(i * 10, -5 + i * 2), Vector2(2, 2), Color(0.2, 0.18, 0.16))
+		"cloth", "shirt":
+			var q := front + IsoMath.grid_to_screen(Vector2(-0.4, -1.9))
+			var col := Color(0.75, 0.25, 0.22) if extra == "cloth" else Color(0.3, 0.42, 0.7)
+			for i: int in 3:
+				_line(img, q + Vector2(-7, -2 - i * 4), q + Vector2(7, -i * 4), col.lightened(0.1 * i), 3)
+		"skeps":
+			var q := front + IsoMath.grid_to_screen(Vector2(-0.4, -1.8))
+			for i: int in 3:
+				_ellipse(img, q + Vector2(i * 7 - 7, -5 + i), Vector2(3, 4), Color(0.88, 0.7, 0.3))
+		"mounds":
+			var q := front + IsoMath.grid_to_screen(Vector2(-0.5, -1.6))
+			_ellipse(img, q, Vector2(10, 5), Color(0.3, 0.42, 0.5))
+			_ellipse(img, q + Vector2(-14, 6), Vector2(5, 3), Color(0.68, 0.52, 0.42))
+		"kiln":
+			var k := PackedVector2Array([Vector2(-0.6, -1.2), Vector2(-0.15, -1.2), Vector2(-0.15, -0.75), Vector2(-0.6, -0.75)])
+			_prism(img, pivot, k, 0.0, 16.0, Color(0.7, 0.35, 0.24))
+			var c := PackedVector2Array([Vector2(-0.45, -1.05), Vector2(-0.3, -1.05), Vector2(-0.3, -0.9), Vector2(-0.45, -0.9)])
+			_prism(img, pivot, c, 16.0, 30.0, Color(0.6, 0.3, 0.22))
+		"sign":
+			var q := front + IsoMath.grid_to_screen(Vector2(-0.4, -1.0))
+			_line(img, q, q - Vector2(0, 30), Color(0.4, 0.28, 0.16), 2)
+			img.fill_rect(Rect2i(Vector2i(q) + Vector2i(1, -28), Vector2i(9, 7)), Color(0.9, 0.75, 0.3))
 		"stalls":
 			for k: int in 3:
 				var s := front + IsoMath.grid_to_screen(Vector2(-0.6 - k * 0.9, -2.4 + k * 0.6)) - Vector2(0, wall_h + roof_h - 4)

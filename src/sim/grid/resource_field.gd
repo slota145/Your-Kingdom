@@ -11,6 +11,8 @@ var _kind: PackedByteArray = PackedByteArray()
 var _amount: PackedByteArray = PackedByteArray()
 ## Agent id holding the claim, 0 = free. Saved.
 var _claim: PackedInt32Array = PackedInt32Array()
+## Growing nodes (saplings): tile index -> tick when they grow into their grown form. Saved.
+var _growing: Dictionary[int, int] = {}
 
 
 func _init(grid_size: Vector2i) -> void:
@@ -31,6 +33,7 @@ func place(tile: Vector2i, def: ResourceNodeDef) -> void:
 	_kind[i] = k + 1
 	_amount[i] = def.amount
 	_claim[i] = 0
+	_growing.erase(i)
 
 
 func clear(tile: Vector2i) -> void:
@@ -39,6 +42,29 @@ func clear(tile: Vector2i) -> void:
 		_kind[i] = 0
 		_amount[i] = 0
 		_claim[i] = 0
+		_growing.erase(i)
+
+
+## Places a young node that grows at [param ready_tick] (see ResourceNodeDef.grows_into).
+func plant(tile: Vector2i, def: ResourceNodeDef, ready_tick: int) -> void:
+	place(tile, def)
+	if _inside(tile) and def.grows_into != &"":
+		_growing[_index(tile)] = ready_tick
+
+
+## Tiles whose young node is due to grow at [param tick], in tile order (deterministic).
+func due_to_grow(tick: int) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	var keys: Array[int] = _growing.keys()
+	keys.sort()
+	for i: int in keys:
+		if _growing[i] <= tick:
+			result.append(Vector2i(i % size.x, i / size.x))
+	return result
+
+
+func growing_count() -> int:
+	return _growing.size()
 
 
 ## Node definition at the tile (also for depleted nodes), or null.
@@ -129,12 +155,21 @@ func to_dict() -> Dictionary:
 		if _claim[i] != 0:
 			claims.append(i)
 			claims.append(_claim[i])
-	return {
+	var growing: Array = []
+	var keys: Array[int] = _growing.keys()
+	keys.sort()
+	for i: int in keys:
+		growing.append(i)
+		growing.append(_growing[i])
+	var d := {
 		"kinds": kinds,
 		"kind": Marshalls.raw_to_base64(_kind),
 		"amount": Marshalls.raw_to_base64(_amount),
 		"claims": claims,
 	}
+	if not growing.is_empty():
+		d["growing"] = growing
+	return d
 
 
 static func from_dict(d: Dictionary, grid_size: Vector2i, data: DataRegistry) -> ResourceField:
@@ -149,6 +184,9 @@ static func from_dict(d: Dictionary, grid_size: Vector2i, data: DataRegistry) ->
 	var claims := SimCodec.int_array(d.get("claims", []))
 	for i: int in range(0, claims.size() - 1, 2):
 		field._claim[claims[i]] = claims[i + 1]
+	var growing := SimCodec.int_array(d.get("growing", []))
+	for i: int in range(0, growing.size() - 1, 2):
+		field._growing[growing[i]] = growing[i + 1]
 	return field
 
 

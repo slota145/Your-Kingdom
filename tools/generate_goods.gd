@@ -31,6 +31,11 @@ const C_BREAD := Color(0.78, 0.52, 0.24)
 const C_FISH := Color(0.7, 0.76, 0.8)
 const C_BARREL := Color(0.56, 0.36, 0.2)
 const C_BASKET := Color(0.7, 0.54, 0.3)
+const C_WOOL := Color(0.95, 0.93, 0.86)
+const C_CLOTH := Color(0.74, 0.27, 0.23)
+const C_HONEY := Color(0.96, 0.72, 0.18)
+const C_CLAY := Color(0.68, 0.5, 0.4)
+const C_BRICK := Color(0.74, 0.36, 0.25)
 
 ## Good -> look of one unit: item kind and carry category.
 const GOODS := {
@@ -43,6 +48,14 @@ const GOODS := {
 	"hops": {"item": "hop_basket", "carry": "bundle"},
 	"beer": {"item": "barrel", "carry": "barrel"},
 	"stone": {"item": "block", "carry": "stone"},
+	# M4b (patricians)
+	"wool": {"item": "wool_bale", "carry": "bundle"},
+	"cloth": {"item": "cloth_bolt", "carry": "bundle"},
+	"clothes": {"item": "clothes_basket", "carry": "basket"},
+	"honey": {"item": "honey_pot", "carry": "barrel"},
+	"mead": {"item": "mead_barrel", "carry": "barrel"},
+	"clay": {"item": "clay_sack", "carry": "sack"},
+	"bricks": {"item": "brick_pile", "carry": "stone"},
 }
 
 ## Item -> positions [grid x, grid y, z] in fill order (a quarter of them per stage).
@@ -174,7 +187,8 @@ func _place(item: String, p: Vector3, index: int) -> void:
 
 func _item_height(item: String) -> float:
 	return {"flour_sack": 7.0, "sheaf": 12.0, "bread_crate": 7.0, "fish_crate": 7.0, "hop_basket": 8.0,
-			"barrel": 11.0, "block": 7.0}.get(item, 7.0)
+			"barrel": 11.0, "block": 7.0, "wool_bale": 8.0, "cloth_bolt": 5.0, "clothes_basket": 8.0,
+			"honey_pot": 9.0, "mead_barrel": 11.0, "clay_sack": 7.0, "brick_pile": 6.0}.get(item, 7.0)
 
 
 func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -> void:
@@ -214,6 +228,48 @@ func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -
 			_ellipse(img, foot - Vector2(0, 11.0) * s, Vector2(4.0, 1.6) * s, C_BARREL.lightened(0.18))
 		"block":
 			_box(img, foot, Vector2(14, 7) * s, 6.0 * s, C_STONE.darkened(v), "stone")
+		"wool_bale":
+			# Fleece: a fluffy white bundle of overlapping puffs tied with twine.
+			for k: int in 5:
+				var o := Vector2(-4 + k * 2, -4 - (k % 2) * 3) * s
+				_ellipse(img, foot + o, Vector2(3.5, 3.0) * s, C_WOOL.darkened(v + 0.05 * float(k % 2)))
+			_ellipse(img, foot - Vector2(0, 8) * s, Vector2(3.0, 2.2) * s, C_WOOL.lightened(0.05))
+			_line(img, foot - Vector2(5, 4) * s, foot - Vector2(-5, 5) * s, Color(0.6, 0.45, 0.25), 1)
+		"cloth_bolt":
+			# A rolled bolt of red cloth lying along the tile, the roll end visible.
+			var col := C_CLOTH.darkened(v)
+			var a := foot + Vector2(-7, -1) * s
+			var b := foot + Vector2(6, -4.5) * s
+			_line(img, a - Vector2(0, 2) * s, b - Vector2(0, 2) * s, col, maxi(1, roundi(4 * s)))
+			_line(img, a - Vector2(0, 4) * s, b - Vector2(0, 4) * s, col.lightened(0.15), 1)
+			_ellipse(img, b - Vector2(-1, 2) * s, Vector2(2.0, 2.5) * s, col.lightened(0.25))
+			_pixel(img, b - Vector2(-1, 2) * s, col.darkened(0.3))
+		"clothes_basket":
+			_box(img, foot, Vector2(14, 7) * s, 5.0 * s, C_BASKET.darkened(v), "wicker")
+			var top := foot - Vector2(0, 5.0 * s + 3.5 * s)
+			_ellipse(img, top + Vector2(-2.5, 0.5) * s, Vector2(3.5, 1.8) * s, Color(0.3, 0.42, 0.7))
+			_ellipse(img, top + Vector2(2.5, -0.3) * s, Vector2(3.5, 1.8) * s, C_CLOTH)
+			_ellipse(img, top + Vector2(0, -1.5) * s, Vector2(3.0, 1.5) * s, Color(0.92, 0.9, 0.82))
+		"honey_pot":
+			# Clay pot sealed with cloth, golden honey dripping down the side.
+			_ellipse(img, foot - Vector2(0, 4.5) * s, Vector2(4.5, 5.0) * s, Color(0.7, 0.42, 0.28).darkened(v))
+			_ellipse(img, foot - Vector2(0, 9.5) * s, Vector2(3.0, 1.4) * s, Color(0.92, 0.88, 0.78))
+			_line(img, foot - Vector2(3, 9) * s, foot - Vector2(3, 5) * s, C_HONEY, 1)
+			_ellipse(img, foot - Vector2(0, 5) * s, Vector2(1.6, 1.4) * s, C_HONEY)
+		"mead_barrel":
+			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(5.0, 6.0) * s, C_BARREL.lightened(0.08).darkened(v))
+			_line(img, foot - Vector2(5, 8) * s, foot - Vector2(-5, 8) * s, C_IRON, 1)
+			_line(img, foot - Vector2(5, 3) * s, foot - Vector2(-5, 3) * s, C_IRON, 1)
+			_ellipse(img, foot - Vector2(0, 11.0) * s, Vector2(4.0, 1.6) * s, C_BARREL.lightened(0.18))
+			# Golden honey mark on the side tells mead from beer.
+			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(1.6, 1.3) * s, C_HONEY)
+		"clay_sack":
+			_ellipse(img, foot - Vector2(0, 4.5) * s, Vector2(6.5, 5.0) * s, C_SACK.darkened(0.15 + v))
+			_ellipse(img, foot - Vector2(0, 8.5) * s, Vector2(4.0, 2.0) * s, C_CLAY)
+			_ellipse(img, foot - Vector2(1, 9.5) * s, Vector2(2.0, 1.2) * s, C_CLAY.lightened(0.12))
+		"brick_pile":
+			for k: int in 2:
+				_box(img, foot - Vector2(0, k * 3.0) * s, Vector2(12, 6) * s, 3.0 * s, C_BRICK.darkened(v + 0.06 * k), "brick")
 
 
 # --- Nature --------------------------------------------------------------------------------
@@ -300,6 +356,21 @@ func _trees() -> void:
 	_line(img, foot + Vector2(4, 1), foot + Vector2(8, 3), trunk, 2)
 	_outline(img)
 	_save(img, "nature/tree/stump.png")
+	# Sapling (planted by the forester, grows into a tree): thin stem tied to a stake, a few
+	# small leaf clusters, a ring of loosened earth.
+	img = _nature_image()
+	_ellipse(img, foot + Vector2(0, 1), Vector2(7, 3), Color(0.42, 0.31, 0.2))
+	_line(img, foot + Vector2(4, 1), foot + Vector2(4, -26), Color(0.72, 0.58, 0.38), 2)
+	_trunk(img, foot, 20.0, 2.0, trunk)
+	_line(img, foot + Vector2(0, -12), foot + Vector2(4, -12), Color(0.85, 0.8, 0.65), 1)
+	_line(img, foot - Vector2(0, 16), foot - Vector2(-4, 21), trunk, 1)
+	_line(img, foot - Vector2(0, 17), foot - Vector2(4, 22), trunk, 1)
+	var small: Array = [[Vector2(0, -26), 6.0], [Vector2(-5, -22), 4.5], [Vector2(5, -21), 4.5], [Vector2(0, -31), 4.0]]
+	for k: int in small.size():
+		var c: Array = small[k]
+		_foliage(img, foot + (c[0] as Vector2), c[1], leaves.lightened(0.1), k + 20)
+	_outline(img)
+	_save(img, "nature/sapling/grown.png")
 
 
 func _foliage(img: Image, centre: Vector2, radius: float, colour: Color, salt: int) -> void:
@@ -432,6 +503,8 @@ func _box(img: Image, foot: Vector2, size: Vector2, height: float, colour: Color
 						col = colour.darkened(0.25) if y % 3 == 0 else colour
 					"wicker":
 						col = colour.darkened(0.22) if (x + y) % 3 == 0 else colour
+					"brick":
+						col = colour.darkened(0.3) if y % 3 == 0 or (x + (y / 3) * 3) % 6 == 0 else colour
 				_pixel(img, Vector2(x, y), Color(minf(col.r * light, 1.0), minf(col.g * light, 1.0), minf(col.b * light, 1.0)))
 
 

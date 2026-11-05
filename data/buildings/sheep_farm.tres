@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/building_def.gd" id="1_bld"]
+[ext_resource type="Resource" path="res://data/recipes/sheep_farming.tres" id="2_recipe"]
+
+[resource]
+script = ExtResource("1_bld")
+category = &"textiles"
+footprint = Vector2i(2, 2)
+entrance = Vector2i(1, 1)
+build_cost = Dictionary[StringName, int]({
+&"wood": 6,
+&"planks": 2
+})
+build_time = 20.0
+worker_kinds = Array[StringName]([&"shepherd"])
+recipe = ExtResource("2_recipe")
+id = &"sheep_farm"

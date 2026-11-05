@@ -6,9 +6,10 @@ extends PanelContainer
 signal tool_selected(tool: Dictionary)
 
 ## Order of the buttons (ids missing from the data are skipped).
-const ORDER: Array[StringName] = [&"hut", &"well", &"chapel", &"church", &"market",
-		&"woodcutter", &"sawmill", &"quarry", &"farm", &"mill", &"bakery", &"fishing_hut",
-		&"hop_farm", &"brewery", &"stockpile", &"town_hall"]
+const ORDER: Array[StringName] = [&"hut", &"well", &"chapel", &"church", &"market", &"tavern",
+		&"woodcutter", &"forester", &"sawmill", &"quarry", &"clay_pit", &"brickworks", &"farm",
+		&"mill", &"bakery", &"fishing_hut", &"hop_farm", &"brewery", &"apiary", &"meadery",
+		&"sheep_farm", &"weaver", &"tailor", &"stockpile", &"town_hall"]
 
 
 func setup(registry: DataRegistry) -> void:
