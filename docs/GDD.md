@@ -166,7 +166,7 @@ drewno ──► tartak ──► deski
 glina + drewno opałowe ──► cegielnia ──► cegły
 kamieniołom ──► kamień
 sad ──► jabłka
-rybak ──► ryby
+wędkarz ──► ryby (później kutry na morzu, IDEAS)
 chlew ──► świnie ──► rzeźnik ──► mięso + skóry
 zboże + chmiel ──► browar ──► piwo
 pasieka ──► miód ──► miodosytnia ──► miód pitny
@@ -187,7 +187,7 @@ drewno ──► smolarnia ──► smoła (stocznia)
 | Farma zbożowa | rolnik orze pole (kafel po kaflu) → sieje → zboże rośnie (zmiana wyglądu kafli w 3 fazach) → żniwa sierpem → wiąże snop → niesie snopy do magazynu |
 | Młyn | młynarz bierze zboże z magazynu i niesie worek → wsypuje do kosza (śmigło się kręci) → napełnia worek mąki → niesie mąkę do magazynu |
 | Piekarnia | piekarz przynosi mąkę → zagniata ciasto przy stole → wsadza je łopatą do pieca (dym z komina) → wyjmuje chleb → niesie kosz chleba do magazynu |
-| Rybak | idzie na pomost lub do łodzi → zarzuca sieć → wyciąga ją → niesie kosz ryb |
+| Wędkarz | idzie na pomost lub brzeg rzeki → zarzuca wędkę → czeka na branie → wyciąga rybę → po kilku rybach niesie kosz do magazynu |
 | Kowal | przynosi żelazo i węgiel → rozgrzewa w palenisku → kuje na kowadle (iskry) → hartuje w wodzie → niesie broń do zbrojowni |
 | Port | portowcy przenoszą skrzynie i beczki z placu portowego na statek po trapie, sztuka po sztuce. Ładunek statku rośnie w interfejsie i jest widoczny na pokładzie. |
 | Budowa | tragarze przynoszą materiały na plac budowy (widoczny stos) → budowniczy pracuje młotkiem → rusztowanie → budynek gotowy |

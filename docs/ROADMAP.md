@@ -18,7 +18,7 @@ M0 Fundament
  └─► M1 Prototyp czytelności + benchmark ──► A1 Pilot PixelLab (równolegle, mały)
       └─► M2 Rdzeń symulacji
            └─► M3 VERTICAL SLICE  ◄── kamień milowy: sprawdzenie głównego założenia gry
-                ├─► M4 Miasto i ekonomia
+                ├─► M4 Miasto i ekonomia (M4a mieszczanie ─► M4b patrycjusze)
                 │    └─► M5 Woda, porty i statki
                 │         └─► M6 Mapa świata i prowincje
                 │              └─► M7 Wojsko, mury i oblężenia
@@ -202,14 +202,48 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 
 ## M4 — Miasto i ekonomia
 
+Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją grą i oceną.
+
+**Decyzje właściciela projektu (2026-11-05):**
+- **Start bez oceny M3:** M4a robimy od razu, choć ocena M3 na laptopie jeszcze czeka. Świadome ryzyko: jeśli w M3 coś nie zagra, część M4a może wymagać poprawek.
+- **Opał przed budową:** zlecenia budowy nie biorą ostatnich 5 sztuk drewna z magazynu (rezerwa dla domów). Gracz zmienia tę rezerwę suwakiem w panelu magazynu.
+- **Tragarze w magazynach:** każdy magazyn ma 2 miejsca pracy dla tragarzy. Ratusz zostaje z 2 tragarzami i 1 budowniczym.
+- **Białko dla mieszczan w M4a: ryby z wędkarzem** przy rzece. Mięso (chlew, rzeźnik) w M4b. Kutry na morzu później (IDEAS).
+- **Opał:** domy dalej palą zwykłym drewnem. Osobnego drewna opałowego nie robimy.
+- **Złoto:** część większych budynków (np. kościół, browar, targowisko) kosztuje też złoto.
+- **Wozy:** w M4b razem z brukiem.
+
+### M4a — Mieszczanie i porządek w logistyce
+
 **Zakres:**
-- 3 klasy mieszkańców i wszystkie potrzeby (GDD §3),
-- łańcuchy żywności, napojów, budulca i tekstyliów (GDD §4.3, bez metalu i wojska),
-- targowisko z zasięgiem, kaplica i kościół,
-- podatki i złoto,
+- klasa mieszczan z pełnymi potrzebami (GDD §3.2): chleb, ryby, piwo, opał; dodatkowo kościół i targowisko,
+- awans chaty do domu mieszczańskiego za deski zamiast drewna,
+- budulec: tartak (deski), kamieniołom (kamień),
+- żywność i napoje: wędkarz (ryby), farma chmielu i browar (piwo),
+- kaplica (dodatkowa potrzeba chłopów), kościół, targowisko z zasięgiem,
+- podatki ze stawką (niska, normalna, wysoka) i złoto jako koszt części budynków,
+- priorytety pracy budynków (wysoki, normalny, niski),
+- rezerwa drewna dla domów (suwak w panelu magazynu),
+- 2 miejsca dla tragarzy w każdym magazynie,
+- zapis: nowy `save_version` z migracją i testem.
+
+**DoD:**
+- [ ] Automatyczny gracz od startu dochodzi do dzielnicy mieszczan ze wszystkimi potrzebami podstawowymi spełnionymi (test scenariuszowy).
+- [ ] Każdy nowy łańcuch (deski, kamień, ryby, piwo) ma test scenariuszowy z licznikami zdarzeń.
+- [ ] Przy kilku budowach naraz domy nie tracą opału przez budowy (test rezerwy).
+- [ ] Brak zakleszczeń przez 2 godziny przy 4×.
+- [ ] Zapis z M3 wczytuje się po migracji bez utraty towaru.
+- [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
+- [ ] **Twoja ocena gry.**
+
+### M4b — Patrycjusze i ruch w mieście
+
+**Zakres:**
+- klasa patrycjuszy (GDD §3.2): ubrania, miód pitny lub wino, łaźnia lub tawerna,
+- tekstylia: owczarnia, tkalnia, krawiec; pasieka i miodosytnia; cegielnia,
+- mięso: chlew i rzeźnik (mięso i skóry),
 - wozy na drogach i bruk,
-- kupiec wędrowny,
-- priorytety pracy,
+- kupiec wędrowny (także jako źródło nowych mieszkańców, IDEAS),
 - więcej typów terenu (jezioro, skały).
 
 **DoD:**
@@ -217,6 +251,7 @@ Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 - [ ] Każdy łańcuch ma test scenariuszowy.
 - [ ] Brak zakleszczeń przez 2 godziny przy 4× na dużym mieście (400+ postaci).
 - [ ] Wydajność według ARCHITECTURE §9.1.
+- [ ] **Twoja ocena gry.**
 
 ---
 
