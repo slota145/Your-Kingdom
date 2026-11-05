@@ -347,20 +347,22 @@ func _merlons(support: Piece) -> Array[Piece]:
 		var inward := dir.orthogonal()
 		if inward.dot(center - (a + b) * 0.5) < 0.0:
 			inward = -inward
-		# At an outer corner the previous rim's parapet owns the corner square: this one
-		# starts after it, so the two neither overlap nor cut into each other.
+		# Outer corners are mitred: both parapets run to the corner and meet on the diagonal,
+		# so their top edges meet at the corner and their inner faces at the inner corner.
 		var owned := support.edges[(i + n - 1) % n] == Edge.EXPOSED
-		var start := a + dir * PARAPET_DEPTH if owned else a
-		# The parapet owning the corner at its end shows its end face there.
-		var owns_end := Edge.EXPOSED if support.edges[(i + 1) % n] == Edge.EXPOSED else Edge.JOINED
-		var parapet := Piece.new(&"parapet", support.tile, PackedVector2Array([start, b,
-				b + inward * PARAPET_DEPTH, start + inward * PARAPET_DEPTH]),
-				PackedByteArray([Edge.EXPOSED, owns_end, Edge.EXPOSED, Edge.JOINED]),
+		var ends_at_corner := support.edges[(i + 1) % n] == Edge.EXPOSED
+		var inner_a := a + inward * PARAPET_DEPTH
+		if owned:
+			inner_a += _inward(support, support.poly[(i + n - 1) % n], a) * PARAPET_DEPTH
+		var inner_b := b + inward * PARAPET_DEPTH
+		if ends_at_corner:
+			inner_b += _inward(support, b, support.poly[(i + 2) % n]) * PARAPET_DEPTH
+		var parapet := Piece.new(&"parapet", support.tile, PackedVector2Array([a, b, inner_b, inner_a]),
+				PackedByteArray([Edge.EXPOSED, Edge.JOINED, Edge.EXPOSED, Edge.JOINED]),
 				support.z1, base)
 		parapet.sort_point.y = maxf(parapet.sort_point.y, support.sort_point.y + CROWN_BIAS)
 		result.append(parapet)
 		var length := a.distance_to(b)
-		var ends_at_corner := support.edges[(i + 1) % n] == Edge.EXPOSED
 		# Outer corners get an L-shaped corner merlon (as on a real wall); ordinary merlons
 		# keep at least a crenel's width away from it.
 		var keep_off := MERLON_WIDTH + CORNER_GAP
@@ -404,11 +406,13 @@ func _corner_merlon(support: Piece, i: int, base: float) -> Array[Piece]:
 	var in_cur := _inward(support, v, next)
 	var w := MERLON_WIDTH
 	var d := MERLON_DEPTH
-	var all_exposed := PackedByteArray([Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED])
-	var arm_a := Piece.new(&"merlon", support.tile, PackedVector2Array([v - dir_prev * w, v,
-			v + in_prev * d, v - dir_prev * w + in_prev * d]), all_exposed, base, base + MERLON_HEIGHT)
-	var arm_b := Piece.new(&"merlon", support.tile, PackedVector2Array([v + dir * d, v + dir * w,
-			v + dir * w + in_cur * d, v + dir * d + in_cur * d]),
+	# Both arms mitred on the corner diagonal, like the parapets below them.
+	var q := v + in_prev * d + in_cur * d
+	var arm_a := Piece.new(&"merlon", support.tile, PackedVector2Array([v - dir_prev * w, v, q,
+			v - dir_prev * w + in_prev * d]),
+			PackedByteArray([Edge.EXPOSED, Edge.JOINED, Edge.EXPOSED, Edge.EXPOSED]), base, base + MERLON_HEIGHT)
+	var arm_b := Piece.new(&"merlon", support.tile, PackedVector2Array([v, v + dir * w,
+			v + dir * w + in_cur * d, q]),
 			PackedByteArray([Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED, Edge.JOINED]), base, base + MERLON_HEIGHT)
 	return [arm_a, arm_b]
 
