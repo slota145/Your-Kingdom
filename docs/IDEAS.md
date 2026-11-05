@@ -95,6 +95,9 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 - [Claude] **Na co wydawać złoto:** w M4a złota szybko przybywa (po godzinie ok. 1000), a wydaje się je tylko na 4 budynki. Kupiec wędrowny (M4b) i utrzymanie budynków dadzą mu sens.
   - Ocena: do strojenia razem z kupcem w M4b.
 
+- [Claude] **Obracanie budynków (np. klawisz R):** gracz sam wybiera, z której strony budynek ma wejście. Pomysł powstał po błędzie z chatą rybaka, która stała drzwiami do rzeki (2026-11-05). Właściciel projektu chce go zapisać.
+  - Ocena (Claude): wygodne, ale kosztowne. Każdy budynek potrzebuje grafik z 2 albo 4 stron, a do tego trzeba obrócić obrys i wejście w danych, w zapisie gry i w cięciu do sortowania (`BuildingSlicer`). Na razie wystarcza komunikat „Wejście wychodzi na wodę” i przesunięcie budynku. Tańszy wariant: tylko 2 orientacje (odbicie lustrzane), bo grafikę da się wtedy odwrócić bez rysowania nowej. Kiedy: najwcześniej przy grafikach docelowych budynków.
+
 ## Klimat i immersja
 
 - [Claude] **Efekty przy pracy:** dym z komina piekarni tylko wtedy, gdy piekarz piecze, śmigło młyna kręci się tylko przy mieleniu, a z pola przy żniwach lecą źdźbła. Widok ma już czynność postaci, więc efekt można włączać po `activity`. Koszt mały, a dużo daje dla „żywego” miasta.
