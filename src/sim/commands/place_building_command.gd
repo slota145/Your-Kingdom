@@ -6,24 +6,27 @@ extends Command
 var def_id: StringName
 var origin: Vector2i
 var instant: bool
+## Which way the building is turned (BuildingDef.entrance_at).
+var orientation: int
 
 
-func _init(building_id: StringName, at: Vector2i, finished: bool = false) -> void:
+func _init(building_id: StringName, at: Vector2i, finished: bool = false, turned: int = 0) -> void:
 	def_id = building_id
 	origin = at
 	instant = finished
+	orientation = turned
 
 
 func validate(sim: Simulation) -> StringName:
 	var def := sim.data.get_building(def_id)
-	var error := sim.province.placement_error(def, origin)
+	var error := sim.province.placement_error(def, origin, orientation)
 	if error == &"" and not instant and not sim.treasury.can_pay(def.gold_cost):
 		return &"not_enough_gold"
 	return error
 
 
 func apply(sim: Simulation) -> void:
-	sim.province.add_building(sim.data.get_building(def_id), origin, instant)
+	sim.province.add_building(sim.data.get_building(def_id), origin, instant, orientation)
 
 
 func get_name() -> StringName:

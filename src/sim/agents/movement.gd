@@ -29,7 +29,7 @@ static func serve_paths(province: ProvinceSim) -> void:
 		var agent := province.agents.get_agent(id)
 		if agent == null or agent.path_state != Agent.PathState.WAITING:
 			continue
-		var path := province.nav.find_path(agent.tile(), agent.path_goal)
+		var path := province.find_path(agent.tile(), agent.path_goal)
 		if path.is_empty():
 			agent.path_state = Agent.PathState.FAILED
 			continue

@@ -152,8 +152,9 @@ func test_tavern_reaches_houses_only_while_it_serves() -> void:
 	stock.stock.add(&"beer", 3)
 	stock.stock.add(&"mead", 3)
 	var mead_before := sim.province.goods_total(&"mead")
-	var counts := _run_counting(sim, 150)
-	print("tavern in 2.5 min: ", counts)
+	# One serving takes ~50 s plus the walk to the stockpile and back through the doors.
+	var counts := _run_counting(sim, 180)
+	print("tavern in 3 min: ", counts)
 	assert_int(int(counts.get("goods_served", 0))).is_greater_equal(2)
 	assert_bool(tavern.provides_service(sim.province.tick)).is_true()
 	assert_bool(sim.province.coverage.covers(&"tavern", tavern.entrance_tile(), size)).is_true()

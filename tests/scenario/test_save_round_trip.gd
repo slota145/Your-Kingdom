@@ -244,3 +244,38 @@ func test_v5_fixture_loads_and_continues() -> void:
 	assert_array(levels).contains([3])
 	sim.run_ticks(SimFixture.ticks(60))
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## v5 -> v6: every building keeps the entrance it had (orientation 0), so no door moves.
+func test_v5_migration_keeps_every_entrance() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v5_town.json"))
+	var old_entrances: Dictionary[int, Vector2i] = {}
+	for b: Variant in document["state"]["province"]["buildings"]:
+		var d := b as Dictionary
+		var def := SimFixture.registry().get_building(StringName(String(d["def"])))
+		old_entrances[int(d["id"])] = SimCodec.to_vec2i(d["origin"]) + def.entrance
+	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 5), SimFixture.registry())
+	assert_int(sim.province.buildings.all().size()).is_equal(old_entrances.size())
+	for b: BuildingState in sim.province.buildings.all():
+		assert_int(b.orientation).is_equal(0)
+		assert_vector(b.entrance_tile()).is_equal(old_entrances[b.id])
+	sim.run_ticks(SimFixture.ticks(60))
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## A save written by save_version 6 (M4b-1.5: houses turned four ways, two rows back to
+## back, a mirrored bakery, a turned construction site) loads unchanged and keeps playing.
+func test_v6_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v6_town.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(6)
+	var state := SaveMigrations.migrate(document["state"], 6)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	var turned: Dictionary[int, bool] = {}
+	for b: BuildingState in sim.province.buildings.all():
+		turned[b.orientation] = true
+	assert_array(turned.keys()).contains_exactly_in_any_order([0, 1, 2, 3])
+	sim.run_ticks(SimFixture.ticks(60))
+	assert_array(Array(sim.province.dangling_holds())).is_empty()

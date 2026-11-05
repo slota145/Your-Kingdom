@@ -4,7 +4,8 @@ extends Node2D
 ##
 ## Mouse: left = select / use the tool (drag for roads and fields), right or Esc = cancel the
 ## tool. Keys: WASD/arrows pan, wheel or 1-4 zoom, Space pause, +/- speed, F grid,
-## F5 quick save, F9 quick load, F11 pseudolocalization (UI text-fit check).
+## R turns the building being placed, F5 quick save, F9 quick load, F11 pseudolocalization
+## (UI text-fit check).
 
 const START_MAP := &"riverlands"
 const QUICK_SLOT := "quick"
@@ -30,6 +31,7 @@ var _dragging: bool = false
 var _follow_id: int = 0
 var _time: float = 0.0
 var _preview_dirty: bool = false
+var _turn: PlacementTurn = PlacementTurn.new()
 
 
 func _ready() -> void:
@@ -179,6 +181,8 @@ func _set_tool(tool: Dictionary) -> void:
 	_tool = tool
 	_drag_tiles.clear()
 	_dragging = false
+	_turn.begin()
+	_build.show_rotate_hint(tool.get("kind", &"") == &"building")
 	if not tool.is_empty():
 		_close_panels()
 	_update_preview()
@@ -189,19 +193,28 @@ func _update_preview() -> void:
 		return
 	var tiles: Dictionary[Vector2i, String] = {}
 	var kind: StringName = _tool.get("kind", &"")
+	var ghost := ""
+	var ghost_origin := Vector2i.ZERO
+	var ghost_ok := false
 	match kind:
 		&"building":
 			var def := sim.data.get_building(_tool["def"])
 			var origin := _building_origin(def)
+			var turn := _turn.update(sim.province, def, origin)
 			if def.service_radius > 0:
 				_add_range(tiles, def.id)
 				var preview := PackedByteArray()
 				preview.resize(sim.province.grid.size.x * sim.province.grid.size.y)
-				ServiceCoverage.flood(sim.province, origin + def.entrance, def.service_radius, preview)
+				ServiceCoverage.flood(sim.province, origin + def.entrance_at(turn), def.service_radius, preview)
 				_add_flags(tiles, preview, "range")
-			var ok := sim.province.placement_error(def, origin) == &""
+			var ok := sim.province.placement_error(def, origin, turn) == &""
 			for t: Vector2i in def.footprint_tiles(origin):
 				tiles[t] = "ok" if ok else "bad"
+			# The tile in front of the door: where people will come and go.
+			tiles[def.door_front(origin, turn)] = "range"
+			ghost = BuildingLayer.base_art(def, origin, turn)
+			ghost_origin = origin
+			ghost_ok = ok
 		&"road":
 			for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
 				tiles[t] = "ok" if sim.province.road_error(t) == &"" else "bad"
@@ -224,6 +237,7 @@ func _update_preview() -> void:
 				if b != null and b.def.service_radius > 0:
 					_add_range(tiles, b.def.id)
 	view.overlay.show_tiles(tiles)
+	view.buildings.show_ghost(ghost, ghost_origin, ghost_ok)
 
 
 func _add_range(tiles: Dictionary[Vector2i, String], service: StringName) -> void:
@@ -291,6 +305,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		Game.set_speed_index(Game.speed_index + 1)
 	elif event.is_action_pressed(&"game_speed_down"):
 		Game.set_speed_index(Game.speed_index - 1)
+	elif event.is_action_pressed(&"rotate_building") and _tool.get("kind", &"") == &"building":
+		_turn.rotate(sim.data.get_building(_tool["def"]))
+		_update_preview()
 	elif event.is_action_pressed(&"toggle_grid"):
 		view.terrain.show_grid = not view.terrain.show_grid
 	elif event is InputEventKey and event.pressed and not event.echo:
@@ -307,7 +324,10 @@ func _on_left_press() -> void:
 			_select_at(get_global_mouse_position())
 		&"building":
 			var def := sim.data.get_building(_tool["def"])
-			_execute(PlaceBuildingCommand.new(def.id, _building_origin(def)))
+			var origin := _building_origin(def)
+			var turn := _turn.update(sim.province, def, origin)
+			if _execute(PlaceBuildingCommand.new(def.id, origin, false, turn)) == &"":
+				_turn.placed()
 			_update_preview()
 		&"demolish":
 			var command := _demolish_target(_hover)

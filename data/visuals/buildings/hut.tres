@@ -8,3 +8,4 @@ art_id = "hut"
 level_art = Array[String](["base", "level_2", "level_3"])
 row_from_level = 2
 base_variants = 3
+row_variants = 3

@@ -122,9 +122,12 @@ func test_building_that_walls_off_an_entrance_is_refused() -> void:
 	var gate: Array[Vector2i] = [Vector2i(21, 18), Vector2i(22, 18)]
 	_tree_ring(sim, Rect2i(18, 18, 7, 7), gate)
 	SimFixture.place(sim, &"well", Vector2i(21, 21))
-	# A hut in the gate would seal the well off (its entrance faces only the garden).
-	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"woodcutter", Vector2i(21, 17))))) \
+	# A hut in the gate, its door to the garden, would seal the well off.
+	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"woodcutter", Vector2i(21, 17), false, 1)))) \
 			.is_equal("blocks_access")
+	# Turned with its door to the trees nobody could get in at all.
+	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"woodcutter", Vector2i(21, 17))))) \
+			.is_equal("no_access")
 	# Next to the gate it is fine.
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"woodcutter", Vector2i(24, 15))))) \
 			.is_equal("")

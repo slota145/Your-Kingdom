@@ -511,6 +511,12 @@ msgstr "This would block the way to other buildings."
 msgid "ui.command_error.entrance_faces_water"
 msgstr "The entrance would face the water."
 
+msgid "ui.command_error.bad_orientation"
+msgstr "This building cannot be turned that way."
+
+msgid "ui.build.rotate_hint"
+msgstr "R: turn the entrance"
+
 msgid "ui.command_error.not_a_farm"
 msgstr "This is not a farm."
 

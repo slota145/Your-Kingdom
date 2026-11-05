@@ -173,10 +173,13 @@ func approach_tile(node: Vector2i, from: Vector2i) -> Vector2i:
 
 # --- Buildings -----------------------------------------------------------------------------
 
-## &"" when the building fits at [param origin], otherwise the reason.
-func placement_error(def: BuildingDef, origin: Vector2i) -> StringName:
+## &"" when the building fits at [param origin] turned to [param orientation], otherwise
+## the reason.
+func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -> StringName:
 	if def == null:
 		return &"unknown_building"
+	if orientation < 0 or orientation >= def.orientation_count():
+		return &"bad_orientation"
 	for tile: Vector2i in def.footprint_tiles(origin):
 		if not grid.is_inside(tile):
 			return &"outside_map"
@@ -189,38 +192,41 @@ func placement_error(def: BuildingDef, origin: Vector2i) -> StringName:
 			return &"tile_occupied"
 	if def.needs_terrain_near != &"" and not has_terrain_near(def, origin):
 		return StringName("no_%s_nearby" % def.needs_terrain_near)
-	var entrance := origin + def.entrance
+	var entrance := origin + def.entrance_at(orientation)
 	for agent: Agent in agents.all():
 		var t := agent.tile()
-		if t != entrance and t.x >= origin.x and t.y >= origin.y \
-				and t.x < origin.x + def.footprint.x and t.y < origin.y + def.footprint.y:
+		if t != entrance and t.x >= origin.x and t.y >= origin.y 				and t.x < origin.x + def.footprint.x and t.y < origin.y + def.footprint.y:
 			return &"tile_has_people"
-	return _access_error(def, origin)
+	return _access_error(def, origin, orientation)
 
 
-## People must be able to walk to the new building, and it must not wall off any entrance,
-## ground pile or person they could reach before (a sealed-off site stalls porters and
-## builders for good).
-func _access_error(def: BuildingDef, origin: Vector2i) -> StringName:
-	var entrance := origin + def.entrance
+## People must be able to walk to the door of the new building, and it must not wall off
+## any door, ground pile or person they could reach before (a sealed-off site stalls porters
+## and builders for good).
+func _access_error(def: BuildingDef, origin: Vector2i, orientation: int) -> StringName:
+	var front := def.door_front(origin, orientation)
+	if not nav.is_walkable(front) or grid.occupant(front) != 0:
+		var terrain := terrain_at(front) if grid.is_inside(front) else null
+		return &"entrance_faces_water" if terrain != null and terrain.id == &"water" else &"no_access"
 	var blocked: Dictionary[Vector2i, bool] = {}
 	for tile: Vector2i in def.footprint_tiles(origin):
-		if tile != entrance:
-			blocked[tile] = true
-	var entrances: Dictionary[Vector2i, bool] = {}
+		blocked[tile] = true
+	var doors: Dictionary[Vector2i, bool] = {}
 	for building: BuildingState in buildings.all():
-		entrances[building.entrance_tile()] = true
-	if entrances.is_empty():
+		var door := door_tile(building)
+		if door != Agent.NO_TILE:
+			doors[door] = true
+	if doors.is_empty():
 		return &""
-	var targets: Dictionary[Vector2i, bool] = entrances.duplicate()
+	var targets: Dictionary[Vector2i, bool] = doors.duplicate()
 	for pile: GroundPile in piles.values():
 		targets[pile.tile] = true
 	for agent: Agent in agents.all():
 		targets[agent.tile()] = true
-	var before := nav.reachable(entrance, targets)
-	var after := nav.reachable(entrance, before, blocked)
-	if not _has_any(after, entrances):
-		return &"entrance_faces_water" if _entrance_faces_water(entrance, blocked) else &"no_access"
+	var before := nav.reachable(front, targets)
+	var after := nav.reachable(front, before, blocked)
+	if not _has_any(after, doors):
+		return &"no_access"
 	return &"" if after.size() == before.size() else &"blocks_access"
 
 
@@ -231,20 +237,75 @@ static func _has_any(tiles: Dictionary[Vector2i, bool], wanted: Dictionary[Vecto
 	return false
 
 
-## The entrance has no free tile to step out to, and water is in the way (a building
-## turned with its door to the river): the player gets a clearer hint than no_access.
-func _entrance_faces_water(entrance: Vector2i, blocked: Dictionary[Vector2i, bool]) -> bool:
-	var water := false
-	for step: Vector2i in [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.DOWN, Vector2i.UP]:
-		var next := entrance + step
-		if blocked.has(next):
+## The tile people step through into [param building]: the one in front of its door, or,
+## when that is blocked (a town from before buildings could be turned), any free side of
+## the entrance. Agent.NO_TILE if none.
+func door_tile(building: BuildingState) -> Vector2i:
+	var front := building.door_front_tile()
+	if nav.is_walkable(front) and grid.occupant(front) == 0:
+		return front
+	var entrance := building.entrance_tile()
+	for step: Vector2i in [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]:
+		var t := entrance + step
+		if nav.is_walkable(t) and grid.occupant(t) != building.id:
+			return t
+	return Agent.NO_TILE
+
+
+## The orientation (M4b-1.5) in which the door of a building of [param def] at
+## [param origin] opens onto a road, for the placement preview. A turn in which the
+## building fits wins, then [param preferred], then the next ones in order. -1 when no
+## door side touches a road.
+func orientation_to_road(def: BuildingDef, origin: Vector2i, preferred: int = 0) -> int:
+	var count := def.orientation_count()
+	var best := -1
+	var best_fits := false
+	for i: int in count:
+		var o := (preferred + i) % count
+		var front := def.door_front(origin, o)
+		if not grid.is_inside(front) or not grid.has_road(front):
 			continue
-		if nav.is_walkable(next):
-			return false
-		var terrain := terrain_at(next)
-		if terrain != null and terrain.id == &"water":
-			water = true
-	return water
+		var fits := placement_error(def, origin, o) == &""
+		if best < 0 or (fits and not best_fits):
+			best = o
+			best_fits = fits
+	return best
+
+
+## The building whose entrance is [param tile], or null.
+func building_entered_at(tile: Vector2i) -> BuildingState:
+	var owner := grid.occupant(tile) if grid.is_inside(tile) else 0
+	if owner == 0:
+		return null
+	var building := buildings.get_building(owner)
+	return building if building != null and building.entrance_tile() == tile else null
+
+
+## Tile path from [param from] to [param to] (both ends included, empty when unreachable).
+## People go into and out of a building only through its door (M4b-1.5): a path ending at
+## an entrance arrives from the tile in front of the door, and one starting there leaves
+## through it.
+func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
+	if from == to:
+		return nav.find_path(from, to)
+	var start := from
+	var goal := to
+	var leaving := building_entered_at(from)
+	if leaving != null:
+		var door := door_tile(leaving)
+		start = door if door != Agent.NO_TILE else from
+	var entering := building_entered_at(to)
+	if entering != null:
+		var door := door_tile(entering)
+		goal = door if door != Agent.NO_TILE else to
+	var path := nav.find_path(start, goal)
+	if path.is_empty():
+		return path
+	if start != from:
+		path.push_front(from)
+	if goal != to:
+		path.append(to)
+	return path
 
 
 ## Whether a tile of terrain [member BuildingDef.needs_terrain_near] lies within the work
@@ -374,11 +435,12 @@ func _grow_saplings() -> void:
 		events.emit(&"resource_grown", {"tile": tile, "node": young.grows_into})
 
 
-## Places a building. [param instant] finishes it at once (map start, tests); otherwise it
+## Places a building turned to [param orientation]. [param instant] finishes it at once (map start, tests); otherwise it
 ## becomes a construction site that porters and builders turn into the building (its gold
 ## cost is paid now; the command checked there is enough).
-func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false) -> BuildingState:
-	var building := BuildingState.new(ids.take(), def, origin)
+func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false,
+		orientation: int = 0) -> BuildingState:
+	var building := BuildingState.new(ids.take(), def, origin, orientation)
 	if not instant:
 		treasury.pay(def.gold_cost)
 	buildings.add(building)
@@ -387,7 +449,7 @@ func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false) -> 
 		resources.clear(tile)
 		refresh_tile(tile)
 	events.emit(&"building_placed", {"building": building.id, "def": def.id, "origin": origin,
-			"instant": instant})
+			"orientation": orientation, "instant": instant})
 	if instant or def.build_cost.is_empty():
 		building.finish(data)
 		events.emit(&"building_completed", {"building": building.id, "def": def.id})

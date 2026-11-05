@@ -16,6 +16,9 @@ extends Resource
 ## Number of looks of the "base" art: "base", "base_2", "base_3"... Each building picks one
 ## by its position, so a village of huts is not a row of copies.
 @export_range(1, 8) var base_variants: int = 1
+## Number of looks of each town-house row piece (gable shapes, M4b-1.5): "<piece>",
+## "<piece>_2"... picked by position along the row, so neighbours differ.
+@export_range(1, 8) var row_variants: int = 1
 ## Work spot name -> pixel offset from the entrance tile centre where the worker is drawn.
 @export var spot_offsets: Dictionary[StringName, Vector2] = {}
 
@@ -25,6 +28,15 @@ func variant_name(name: String, origin: Vector2i) -> String:
 	if name != "base" or base_variants <= 1:
 		return name
 	var pick := absi(origin.x * 73856093 ^ origin.y * 19349663) % base_variants
+	return name if pick == 0 else "%s_%d" % [name, pick + 1]
+
+
+## Art name of the look of row piece [param name] for a house at [param origin].
+func row_variant_name(name: String, origin: Vector2i) -> String:
+	if row_variants <= 1:
+		return name
+	# Houses are 2 tiles wide: consecutive houses along a row get consecutive looks.
+	var pick := posmod((origin.x + origin.y) / 2 + absi(origin.x * 7 - origin.y * 3) / 2, row_variants)
 	return name if pick == 0 else "%s_%d" % [name, pick + 1]
 
 

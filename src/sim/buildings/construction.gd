@@ -137,6 +137,6 @@ static func site_for(province: ProvinceSim, builder: Agent) -> int:
 	candidates.sort_custom(func(a: Array, b: Array) -> bool:
 		return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
 	for candidate: Array in candidates:
-		if not province.nav.find_path(builder.tile(), candidate[2]).is_empty():
+		if not province.find_path(builder.tile(), candidate[2]).is_empty():
 			return candidate[1]
 	return 0

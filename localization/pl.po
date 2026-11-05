@@ -516,6 +516,12 @@ msgstr "To zablokuje drogę do innych budynków."
 msgid "ui.command_error.entrance_faces_water"
 msgstr "Wejście wychodzi na wodę. Przesuń budynek."
 
+msgid "ui.command_error.bad_orientation"
+msgstr "Tego budynku nie da się tak obrócić."
+
+msgid "ui.build.rotate_hint"
+msgstr "R: obróć wejście"
+
 msgid "ui.command_error.not_a_farm"
 msgstr "To nie jest farma."
 

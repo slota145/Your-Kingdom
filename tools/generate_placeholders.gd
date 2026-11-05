@@ -390,20 +390,28 @@ func _buildings() -> void:
 						"base_%d" % v, "hip_both", b.get("extra", ""))
 		_site(id, fp, 1)
 		_site(id, fp, 2)
-	# House level 2 (burgher house) and its row variants (ARCHITECTURE §6.6, ART_SPEC §7).
+	# House level 2 (burgher house) and its row pieces, front and back (ARCHITECTURE §6.6,
+	# ART_SPEC §7). Rows run along grid y; rows along x use the same art mirrored.
 	var house_wall := Color(0.86, 0.8, 0.66)
 	var house_roof := Color(0.55, 0.22, 0.18)
-	for variant: String in ["single", "end_a", "middle", "end_b"]:
-		for axis: String in ["x", "y"]:
-			var roof: String = {"single": "hip_both", "end_a": "hip_start", "middle": "hip_none",
-					"end_b": "hip_end"}[variant]
+	var roofs := {"single": "hip_both", "end_a": "hip_start_y", "middle": "hip_none_y", "end_b": "hip_end_y",
+			"corner_a": "hip_end_y", "corner_b": "hip_start_y"}
+	for piece: String in roofs:
+		for suffix: String in ["", "_back", "_2", "_2_back", "_3", "_3_back"]:
 			_building("hut", Vector2i(2, 2), Vector2i(1, 1), 44.0, 24.0, house_wall, house_roof,
-					"level_2_%s_%s" % [variant, axis], roof + "_" + axis, "",
-					0 if variant != "single" else 8)
+					"level_2_%s%s" % [piece, suffix], roofs[piece], "", 0 if piece != "single" else 8)
 			# Level 3 (patrician townhouse): taller, ochre walls, darker red roof.
 			_building("hut", Vector2i(2, 2), Vector2i(1, 1), 62.0, 28.0, Color(0.9, 0.72, 0.45),
-					Color(0.62, 0.2, 0.15), "level_3_%s_%s" % [variant, axis], roof + "_" + axis, "",
-					0 if variant != "single" else 8)
+					Color(0.62, 0.2, 0.15), "level_3_%s%s" % [piece, suffix], roofs[piece], "",
+					0 if piece != "single" else 8)
+	# Huts turned with the door away from the camera (M4b-1.5): same placeholders.
+	var hut: Dictionary = SLICE_BUILDINGS["hut"]
+	for v: int in range(1, int(hut.get("variants", 1)) + 1):
+		_building("hut", hut["footprint"], hut["entrance"], hut["walls"], hut["roof"], hut["wall"],
+				hut["roof_color"], ("base" if v == 1 else "base_%d" % v) + "_back", "hip_both", hut.get("extra", ""))
+	_site("hut", Vector2i(2, 2), 1, "_back")
+	_site("hut", Vector2i(2, 2), 2, "_back")
+	_scaffold("hut", Vector2i(2, 2), 54.0, "_back")
 	_scaffold("hut", Vector2i(2, 2), 54.0)
 
 
@@ -670,7 +678,7 @@ func _extra(img: Image, pivot: Vector2i, footprint: Vector2i, wall_h: float, roo
 
 ## Construction site art: phase 1 = foundation with poles, phase 2 = half-built walls with
 ## scaffolding planks. Same footprint and pivot rules as the finished building.
-func _site(id: String, footprint: Vector2i, phase: int) -> void:
+func _site(id: String, footprint: Vector2i, phase: int, suffix: String = "") -> void:
 	var height := 48.0
 	var canvas := _canvas(footprint, height, 8)
 	var pivot: Vector2i = canvas["pivot"]
@@ -684,16 +692,16 @@ func _site(id: String, footprint: Vector2i, phase: int) -> void:
 			inner.append(center + (p - center) * 0.9)
 		_prism(img, pivot, inner, 4.0, 22.0, Color(0.78, 0.68, 0.5))
 	_scaffold_on(img, pivot, footprint, 30.0 if phase == 1 else 40.0)
-	_write_art(id, "construction_%d" % phase, img, footprint, Vector2i(footprint.x / 2, footprint.y - 1), pivot)
+	_write_art(id, "construction_%d%s" % [phase, suffix], img, footprint, Vector2i(footprint.x / 2, footprint.y - 1), pivot)
 
 
 ## Scaffolding overlay drawn over a house being upgraded.
-func _scaffold(id: String, footprint: Vector2i, height: float) -> void:
+func _scaffold(id: String, footprint: Vector2i, height: float, suffix: String = "") -> void:
 	var canvas := _canvas(footprint, height + 30.0, 8)
 	var pivot: Vector2i = canvas["pivot"]
 	var img := _blank(canvas["size"])
 	_scaffold_on(img, pivot, footprint, height)
-	_write_art(id, "upgrade_scaffold", img, footprint, Vector2i(1, 1), pivot)
+	_write_art(id, "upgrade_scaffold" + suffix, img, footprint, Vector2i(1, 1), pivot)
 
 
 func _scaffold_on(img: Image, pivot: Vector2i, footprint: Vector2i, height: float) -> void:

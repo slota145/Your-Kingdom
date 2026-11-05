@@ -20,6 +20,7 @@ const ICON_SIZE := Vector2(72, 56)
 
 var _tab_buttons: Array[Button] = []
 var _rows: Array[Control] = []
+var _rotate_hint: Label
 
 
 func setup(registry: DataRegistry) -> void:
@@ -39,6 +40,11 @@ func setup(registry: DataRegistry) -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tabs.add_child(spacer)
+	_rotate_hint = Label.new()
+	_rotate_hint.text = "ui.build.rotate_hint"
+	_rotate_hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE + 2)
+	_rotate_hint.visible = false
+	tabs.add_child(_rotate_hint)
 	var road := UiKit.button("ui.build.road", func() -> void: tool_selected.emit({"kind": &"road"}))
 	road.tooltip_text = "ui.build.road_tip"
 	tabs.add_child(road)
@@ -54,6 +60,11 @@ func setup(registry: DataRegistry) -> void:
 			if def != null:
 				row.add_child(_building_button(def))
 	_show_tab(0)
+
+
+## Shows the hint about turning buildings with R while one is being placed (M4b-1.5).
+func show_rotate_hint(on: bool) -> void:
+	_rotate_hint.visible = on
 
 
 func _show_tab(index: int) -> void:

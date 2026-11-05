@@ -19,6 +19,8 @@ var _texture: Texture2D
 
 ## Texture -> its image, for clicks on the drawn pixels (loaded on the first click).
 static var _images: Dictionary[Texture2D, Image] = {}
+## Art path -> its mirror image (buildings turned to orientations 1 and 3, M4b-1.5).
+static var _mirrored: Dictionary[String, Texture2D] = {}
 
 
 func _init() -> void:
@@ -26,7 +28,9 @@ func _init() -> void:
 
 
 ## [param art]: art path without extension, e.g. "buildings/mill/base" (.png + .json).
-func setup(art: String, tile: Vector2i) -> void:
+## [param mirrored] draws it mirrored left to right (grid x and y swapped): the two walls
+## facing the camera trade places, so a door on one shows on the other (ART_SPEC §3.2).
+func setup(art: String, tile: Vector2i, mirrored: bool = false) -> void:
 	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(
 			ArtPaths.resolve(art + ".json")))
 	var fp: Array = meta["footprint"]
@@ -34,8 +38,12 @@ func setup(art: String, tile: Vector2i) -> void:
 	footprint = Vector2i(int(fp[0]), int(fp[1]))
 	_pivot = Vector2i(int(pv[0]), int(pv[1]))
 	origin_tile = tile
-	position = IsoMath.grid_to_screen(Vector2(tile + footprint))
 	var tex := ArtPaths.texture(art + ".png")
+	if mirrored and tex != null:
+		tex = mirror_texture(art, tex)
+		_pivot.x = tex.get_width() - _pivot.x
+		footprint = Vector2i(footprint.y, footprint.x)
+	position = IsoMath.grid_to_screen(Vector2(tile + footprint))
 	_texture = tex
 	for strip: BuildingSlicer.Strip in BuildingSlicer.slices(footprint, _pivot, Vector2i(tex.get_size())):
 		var sprite := Sprite2D.new()
@@ -48,6 +56,16 @@ func setup(art: String, tile: Vector2i) -> void:
 		add_child(sprite)
 		_strips.append(sprite)
 		_full_regions.append(sprite.region_rect)
+
+
+## The mirror image of [param tex] (cached per art path).
+static func mirror_texture(art: String, tex: Texture2D) -> Texture2D:
+	if not _mirrored.has(art):
+		var image := tex.get_image()
+		image.decompress()
+		image.flip_x()
+		_mirrored[art] = ImageTexture.create_from_image(image)
+	return _mirrored[art]
 
 
 func get_tile_rect() -> Rect2i:
