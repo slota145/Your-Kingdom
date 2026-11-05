@@ -822,3 +822,15 @@ msgstr "The brewer mashes grain in the vat, brews it with hops in the kettle and
 
 msgid "ui.house.upgrade_waits"
 msgstr "The upgrade waits until the stockpiles hold %d of each burgher good (bread, fish, beer)."
+
+msgid "ui.doing.kept_for_building"
+msgstr "waiting: %s is kept for building"
+
+msgid "ui.reason.kept_for_building"
+msgstr "kept for building"
+
+msgid "ui.keep.for_building"
+msgstr "%s kept for building: %d (workshops leave it)"
+
+msgid "ui.keep.hint"
+msgstr "One setting for the whole province. Building sites and houses may still take it."

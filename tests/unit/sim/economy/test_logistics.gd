@@ -160,3 +160,39 @@ func test_treasury_keeps_fractions() -> void:
 	var copy := Treasury.from_dict(t.to_dict())
 	copy.add(0.5)
 	assert_int(copy.gold).is_equal(2)
+
+
+func test_workshops_leave_what_is_kept_for_building() -> void:
+	var sim := SimFixture.make_sim()
+	var village := SimFixture.village(sim, 12, 20)
+	var stock: BuildingState = village["stock"]
+	assert_str(String(sim.execute(SetKeepForBuildingCommand.new(&"wood", 10)))).is_equal("")
+	var sawmill := SimFixture.place(sim, &"sawmill", Vector2i(14, 4))
+	sim.run_ticks(SimFixture.ticks(120))
+	# The sawmill took only the 2 logs above the 10 kept: at most 4 planks.
+	assert_int(sim.province.goods_total(&"planks")).is_between(1, 4)
+	assert_int(stock.stock.total(&"wood")).is_greater_equal(10)
+	var worker := sim.province.agents.get_agent(sawmill.workers[0])
+	assert_str(String(worker.last_fail)).is_equal("kept_for_building")
+	# Building sites still take the kept wood (the houses' reserve is lowered too).
+	sim.execute(SetReserveCommand.new(stock.id, &"wood", 0))
+	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"well", Vector2i(14, 10))))).is_equal("")
+	var well := sim.province.buildings.get_building(sim.province.grid.occupant(Vector2i(14, 10)))
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return well.is_complete(), 120)).is_true()
+	# Nothing kept any more: the sawmill saws the rest.
+	var planks := sim.province.goods_total(&"planks")
+	sim.execute(SetKeepForBuildingCommand.new(&"wood", 0))
+	sim.run_ticks(SimFixture.ticks(120))
+	assert_int(sim.province.goods_total(&"planks")).is_greater(planks)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+func test_keep_for_building_command_is_validated() -> void:
+	var sim := SimFixture.make_sim()
+	assert_str(String(sim.execute(SetKeepForBuildingCommand.new(&"gold_bars", 3)))).is_equal("unknown_good")
+	assert_str(String(sim.execute(SetKeepForBuildingCommand.new(&"wood", -1)))).is_equal("invalid_value")
+	assert_str(String(sim.execute(SetKeepForBuildingCommand.new(&"wood", 61)))).is_equal("invalid_value")
+	assert_str(String(sim.execute(SetKeepForBuildingCommand.new(&"wood", 15)))).is_equal("")
+	assert_int(sim.province.keep_for_building[&"wood"]).is_equal(15)
+	sim.execute(SetKeepForBuildingCommand.new(&"wood", 0))
+	assert_bool(sim.province.keep_for_building.has(&"wood")).is_false()

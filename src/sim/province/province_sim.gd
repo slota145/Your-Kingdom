@@ -28,6 +28,9 @@ var treasury: Treasury = Treasury.new()
 var coverage: ServiceCoverage = ServiceCoverage.new()
 ## Where newcomers enter the province.
 var entry_tile: Vector2i = Vector2i.ZERO
+## Units of a good workshops leave in the province for construction and households
+## (GDD §4.1: the sawmill must not eat all the wood). Set by the player, 0 = none.
+var keep_for_building: Dictionary[StringName, int] = {}
 ## Terrain definitions by TileGrid index.
 var terrains: Array[TerrainDef] = []
 
@@ -551,6 +554,18 @@ func stored(good: StringName) -> int:
 	return sum
 
 
+## Whether a workshop may take [param amount] of [param good] and still leave what the
+## player keeps for building (storages and ground piles of the whole province count).
+func workshop_may_take(good: StringName, amount: int) -> bool:
+	var keep := int(keep_for_building.get(good, 0))
+	if keep <= 0:
+		return true
+	var total := stored(good)
+	for pile: GroundPile in piles.values():
+		total += pile.stock.available(good)
+	return total - amount >= keep
+
+
 ## Units of [param good] storage [param id] keeps back from construction (0 for piles).
 func reserve_of(id: int, good: StringName) -> int:
 	var building := buildings.get_building(id)
@@ -691,10 +706,18 @@ func to_dict() -> Dictionary:
 		"sites": site_list,
 		"fields": fields.to_dict(),
 		"entry": SimCodec.vec2i(entry_tile),
+		"keep_for_building": _keep_to_dict(),
 		"agents": agents.to_dict(),
 		"jobs": jobs.to_dict(),
 		"path_queue": paths.to_dict(),
 	}
+
+
+func _keep_to_dict() -> Dictionary:
+	var result := {}
+	for good: StringName in keep_for_building:
+		result[String(good)] = keep_for_building[good]
+	return result
 
 
 static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEvents,
@@ -715,6 +738,9 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 		province.sites[site.id] = site
 	province.fields = FieldStore.from_dict(d.get("fields", []))
 	province.entry_tile = SimCodec.to_vec2i(d.get("entry", [0, 0]))
+	var keep: Dictionary = d.get("keep_for_building", {})
+	for good: Variant in keep:
+		province.keep_for_building[StringName(String(good))] = int(keep[good])
 	province.agents = AgentStore.from_dict(d["agents"])
 	for agent: Agent in province.agents.all():
 		if agent.task != null and not TaskRunner.restore_steps(province, agent.task):

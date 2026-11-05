@@ -832,3 +832,15 @@ msgstr "Piwowar zaciera zboże w kadzi, warzy z chmielem w kotle i wynosi beczki
 
 msgid "ui.house.upgrade_waits"
 msgstr "Awans czeka, aż w magazynach będzie po %d sztuk każdego towaru mieszczan (chleb, ryby, piwo)."
+
+msgid "ui.doing.kept_for_building"
+msgstr "czeka: %s zostaje na budowy"
+
+msgid "ui.reason.kept_for_building"
+msgstr "zapas na budowy"
+
+msgid "ui.keep.for_building"
+msgstr "%s na budowy: %d (warsztaty tego nie ruszą)"
+
+msgid "ui.keep.hint"
+msgstr "Jedno ustawienie dla całego królestwa. Budowy i domy mogą brać dalej."

@@ -184,3 +184,24 @@ func test_v3_fixture_loads_and_continues() -> void:
 	sim.run_ticks(SimFixture.ticks(120))
 	assert_int(sim.province.goods_total(&"fish")).is_greater(0)
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## v3 -> v4: an older town keeps nothing back for building.
+func test_v3_migration_keeps_nothing_for_building() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v3_town.json"))
+	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 3), SimFixture.registry())
+	assert_bool(sim.province.keep_for_building.is_empty()).is_true()
+
+
+## A save written by save_version 4 (wood kept for building) loads unchanged and keeps playing.
+func test_v4_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v4_town.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(4)
+	var state := SaveMigrations.migrate(document["state"], 4)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	assert_int(sim.province.keep_for_building[&"wood"]).is_equal(10)
+	sim.run_ticks(SimFixture.ticks(60))
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
