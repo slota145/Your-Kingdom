@@ -23,14 +23,20 @@ static func texture(relative: String) -> Texture2D:
 	return load(path) as Texture2D
 
 
-## File names in an art folder, with export-time ".import"/".remap" suffixes removed.
+## File names in an art folder (final art and placeholders together), with export-time
+## ".import"/".remap" suffixes removed.
 static func list_files(relative_dir: String) -> PackedStringArray:
 	var names := PackedStringArray()
-	var dir := DirAccess.open(resolve(relative_dir))
-	if dir == null:
-		return names
-	for file: String in dir.get_files():
-		var name := file.trim_suffix(".import").trim_suffix(".remap")
-		if not names.has(name):
-			names.append(name)
+	var root: String = ProjectSettings.get_setting(SETTING, PLACEHOLDER_ROOT)
+	var roots: Array[String] = [PLACEHOLDER_ROOT]
+	if root != PLACEHOLDER_ROOT:
+		roots.push_front(root)
+	for base: String in roots:
+		var dir := DirAccess.open(base.path_join(relative_dir))
+		if dir == null:
+			continue
+		for file: String in dir.get_files():
+			var name := file.trim_suffix(".import").trim_suffix(".remap")
+			if not names.has(name):
+				names.append(name)
 	return names

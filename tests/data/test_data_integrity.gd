@@ -173,6 +173,8 @@ func test_every_building_has_visuals_and_art() -> void:
 		var names: Array[String] = ["construction_1", "construction_2"]
 		if not visual.yard:
 			names.append("base")
+			for v: int in range(2, visual.base_variants + 1):
+				names.append("base_%d" % v)
 		for i: int in visual.level_art.size():
 			var art := visual.level_art[i]
 			if visual.row_from_level > 0 and i + 1 >= visual.row_from_level:

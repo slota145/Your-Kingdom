@@ -1,0 +1,492 @@
+extends SceneTree
+## Final art of goods and nature drawn in code (owner decision 2026-11-05, without PixelLab):
+## - goods/stacks/<good>.png: 4 fill stages of a stockpile stack, 64x64 each, tile centre at
+##   (32, 48) (ART_SPEC §2, §8),
+## - goods/carried/<category>/<good>.png: the good in hand, 5 rows of 24x24 (ART_SPEC §5),
+## - goods/icons/<good>.png: 32x32 UI icon,
+## - nature/rock and nature/tree: grown, felled, stump; 64x96, tile centre at (32, 80).
+##
+## Run: godot --headless --path . -s res://tools/generate_goods.gd   (then --import)
+##
+## Items (logs, planks, sacks, barrels, crates, sheaves, baskets, blocks) are small 3D shapes
+## placed on the tile in grid units and drawn back to front, so stacks grow like real heaps.
+
+const OUT := "res://assets"
+const STACK_FRAME := Vector2i(64, 64)
+const STACK_CENTRE := Vector2(32, 48)
+const NATURE_FRAME := Vector2i(64, 96)
+const NATURE_CENTRE := Vector2(32, 80)
+
+const C_WOOD := Color(0.55, 0.36, 0.2)
+const C_WOOD_END := Color(0.86, 0.7, 0.46)
+const C_PLANK := Color(0.82, 0.64, 0.4)
+const C_SACK := Color(0.86, 0.8, 0.64)
+const C_FLOUR := Color(0.96, 0.95, 0.9)
+const C_STONE := Color(0.64, 0.63, 0.6)
+const C_IRON := Color(0.3, 0.3, 0.32)
+const C_CRATE := Color(0.6, 0.44, 0.26)
+const C_STRAW := Color(0.9, 0.76, 0.36)
+const C_HOPS := Color(0.55, 0.75, 0.32)
+const C_BREAD := Color(0.78, 0.52, 0.24)
+const C_FISH := Color(0.7, 0.76, 0.8)
+const C_BARREL := Color(0.56, 0.36, 0.2)
+const C_BASKET := Color(0.7, 0.54, 0.3)
+
+## Good -> look of one unit: item kind and carry category.
+const GOODS := {
+	"wood": {"item": "log", "carry": "log"},
+	"planks": {"item": "plank", "carry": "log"},
+	"grain": {"item": "sheaf", "carry": "bundle"},
+	"flour": {"item": "flour_sack", "carry": "sack"},
+	"bread": {"item": "bread_crate", "carry": "basket"},
+	"fish": {"item": "fish_crate", "carry": "basket"},
+	"hops": {"item": "hop_basket", "carry": "bundle"},
+	"beer": {"item": "barrel", "carry": "barrel"},
+	"stone": {"item": "block", "carry": "stone"},
+}
+
+## Item -> positions [grid x, grid y, z] in fill order (a quarter of them per stage).
+var _layouts: Dictionary = {}
+## Items to draw: [depth, callable].
+var _items: Array = []
+
+
+func _init() -> void:
+	_build_layouts()
+	for good: String in GOODS:
+		var spec: Dictionary = GOODS[good]
+		_stack(good, String(spec["item"]))
+		_carried(good, String(spec["item"]), String(spec["carry"]))
+		_icon(good, String(spec["item"]))
+	_rocks()
+	_trees()
+	print("Goods and nature written to ", OUT)
+	quit()
+
+
+# --- Layouts -------------------------------------------------------------------------------
+
+func _build_layouts() -> void:
+	# Logs along grid x, in a pyramid: 4 + 3 + 2 + 1 rows... (two deep).
+	var logs: Array = []
+	for layer: int in 4:
+		for k: int in 4 - layer:
+			for depth: int in 2:
+				logs.append(Vector3(0.0 + depth * 0.02, -0.27 + (k + layer * 0.5) * 0.18, 3.0 + layer * 5.0))
+	_layouts["log"] = logs
+	# Planks: layers crossing each other.
+	var planks: Array = []
+	for layer: int in 6:
+		for k: int in 3:
+			planks.append(Vector3(0, k, layer * 3.0))
+	_layouts["plank"] = planks
+	var grid: Array = []
+	for layer: int in 3:
+		for y: int in 2:
+			for x: int in 2:
+				grid.append(Vector3(-0.18 + x * 0.36, -0.18 + y * 0.36, layer))
+	_layouts["grid"] = grid
+
+
+func _positions(item: String) -> Array:
+	match item:
+		"log":
+			return _layouts["log"]
+		"plank":
+			return _layouts["plank"]
+	return _layouts["grid"]
+
+
+# --- Stacks, carried goods, icons ----------------------------------------------------------
+
+func _stack(good: String, item: String) -> void:
+	var sheet := Image.create_empty(STACK_FRAME.x * 4, STACK_FRAME.y, false, Image.FORMAT_RGBA8)
+	var positions := _positions(item)
+	for stage: int in 4:
+		var img := Image.create_empty(STACK_FRAME.x, STACK_FRAME.y, false, Image.FORMAT_RGBA8)
+		var count := maxi(1, int(ceil(positions.size() * (stage + 1) / 4.0)))
+		_items = []
+		for i: int in count:
+			_place(item, positions[i], i)
+		_draw_items(img)
+		_outline(img)
+		sheet.blit_rect(img, Rect2i(Vector2i.ZERO, STACK_FRAME), Vector2i(stage * STACK_FRAME.x, 0))
+	_save(sheet, "goods/stacks/%s.png" % good)
+
+
+func _carried(good: String, item: String, category: String) -> void:
+	var sheet := Image.create_empty(24, 24 * 5, false, Image.FORMAT_RGBA8)
+	for row: int in 5:
+		var img := Image.create_empty(32, 32, false, Image.FORMAT_RGBA8)
+		_items = []
+		_single(item, Vector2(16, 18), 0.75, row)
+		_draw_items(img)
+		_outline(img)
+		sheet.blit_rect(img, Rect2i(4, 4, 24, 24), Vector2i(0, row * 24))
+	_save(sheet, "goods/carried/%s/%s.png" % [category, good])
+
+
+func _icon(good: String, item: String) -> void:
+	var img := Image.create_empty(32, 32, false, Image.FORMAT_RGBA8)
+	_items = []
+	_single(item, Vector2(16, 21), 1.15, 1)
+	_draw_items(img)
+	_outline(img)
+	_save(img, "goods/icons/%s.png" % good)
+
+
+## One unit of an item at screen point [param at], scaled (carried goods and icons).
+func _single(item: String, at: Vector2, scale: float, row: int) -> void:
+	match item:
+		"log":
+			_queue(0.0, func(img: Image) -> void:
+				var along := Vector2(1, 0.5) if row % 2 == 0 else Vector2(1, -0.5)
+				_log(img, at - along * 8.0 * scale, at + along * 8.0 * scale, 3.5 * scale))
+		"plank":
+			_queue(0.0, func(img: Image) -> void:
+				for k: int in 3:
+					var o := Vector2(0, -k * 2.0 * scale)
+					_beam(img, at + o - Vector2(9, 3) * scale, at + o + Vector2(9, 3) * scale, 2.0 * scale, C_PLANK.darkened(0.05 * k)))
+		_:
+			_queue(0.0, func(img: Image) -> void: _draw_item(img, item, at, scale, 0))
+
+
+# --- Items on a stack ----------------------------------------------------------------------
+
+func _place(item: String, p: Vector3, index: int) -> void:
+	var centre := STACK_CENTRE
+	match item:
+		"log":
+			var a := centre + IsoMath.grid_to_screen(Vector2(-0.34, p.y)) - Vector2(0, p.z)
+			var b := centre + IsoMath.grid_to_screen(Vector2(0.34, p.y)) - Vector2(0, p.z)
+			_queue(p.y + p.z * 0.1, func(img: Image) -> void: _log(img, a, b, 3.0 + 0.3 * _hash(index, 1, 3)))
+		"plank":
+			# Boards along grid x, three side by side per layer, spacer sticks between layers.
+			var off := -0.24 + p.y * 0.2
+			var corner := Vector3(-0.36, off, p.z)
+			var col := C_PLANK.darkened(0.1 * _hash(index, 2, 5))
+			_queue(p.z * 10.0 + off, func(img: Image) -> void: _slab(img, corner, Vector3(0.72, 0.18, 2.4), col))
+		_:
+			var height := _item_height(item)
+			var base := centre + IsoMath.grid_to_screen(Vector2(p.x, p.y)) - Vector2(0, p.z * height)
+			_queue(p.z * 10.0 + p.x + p.y, func(img: Image) -> void: _draw_item(img, item, base, 1.0, index))
+
+
+func _item_height(item: String) -> float:
+	return {"flour_sack": 7.0, "sheaf": 12.0, "bread_crate": 7.0, "fish_crate": 7.0, "hop_basket": 8.0,
+			"barrel": 11.0, "block": 7.0}.get(item, 7.0)
+
+
+func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -> void:
+	var v := 0.1 * _hash(index, 7, 11)
+	match item:
+		"flour_sack":
+			_ellipse(img, foot - Vector2(0, 4.5) * s, Vector2(6.5, 5.0) * s, C_FLOUR.darkened(v))
+			_ellipse(img, foot - Vector2(-1, 9.0) * s, Vector2(2.0, 1.5) * s, C_FLOUR.darkened(0.15))
+			_line(img, foot - Vector2(3, 4) * s, foot - Vector2(-1, 6) * s, Color(0.35, 0.45, 0.7), 1)
+		"sheaf":
+			for i: int in 7:
+				var x := (i - 3) * 1.4 * s
+				_line(img, foot + Vector2(x, 0), foot + Vector2(x * 1.8, -14.0 * s), C_STRAW.darkened(0.12 * float(i % 2) + v), 1)
+			_ellipse(img, foot - Vector2(0, 15.0) * s, Vector2(4.0, 2.0) * s, C_STRAW.lightened(0.1))
+			_line(img, foot - Vector2(3.5, 6.0) * s, foot - Vector2(-3.5, 6.0) * s, Color(0.55, 0.4, 0.2), 1)
+		"bread_crate", "fish_crate", "hop_basket":
+			var basket := item == "hop_basket"
+			var body := C_BASKET if basket else C_CRATE
+			_box(img, foot, Vector2(14, 7) * s, 6.0 * s, body.darkened(v), "wicker" if basket else "planks")
+			var top := foot - Vector2(0, 6.0 * s + 3.5 * s)
+			match item:
+				"bread_crate":
+					_ellipse(img, top + Vector2(-2.5, 0.5) * s, Vector2(3.2, 2.0) * s, C_BREAD)
+					_ellipse(img, top + Vector2(2.5, -0.5) * s, Vector2(3.2, 2.0) * s, C_BREAD.lightened(0.1))
+				"fish_crate":
+					for k: int in 3:
+						var a := top + Vector2(-4 + k * 3.5, -1 + k * 0.6) * s
+						_line(img, a, a + Vector2(3.5, 1.5) * s, C_FISH.darkened(0.1 * float(k % 2)), 2)
+						_pixel(img, a + Vector2(4.5, 2.0) * s, C_FISH.darkened(0.3))
+				"hop_basket":
+					for k: int in 5:
+						_ellipse(img, top + Vector2(-3.5 + k * 1.8, sin(k) * 0.8) * s, Vector2(1.6, 1.6) * s, C_HOPS.darkened(0.12 * float(k % 2)))
+		"barrel":
+			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(5.0, 6.0) * s, C_BARREL.darkened(v))
+			_line(img, foot - Vector2(5, 8) * s, foot - Vector2(-5, 8) * s, C_IRON, 1)
+			_line(img, foot - Vector2(5, 3) * s, foot - Vector2(-5, 3) * s, C_IRON, 1)
+			_ellipse(img, foot - Vector2(0, 11.0) * s, Vector2(4.0, 1.6) * s, C_BARREL.lightened(0.18))
+		"block":
+			_box(img, foot, Vector2(14, 7) * s, 6.0 * s, C_STONE.darkened(v), "stone")
+
+
+# --- Nature --------------------------------------------------------------------------------
+
+func _rocks() -> void:
+	var states := {"grown": [[Vector2(-5, 2), 13.0, 15.0], [Vector2(8, 4), 9.0, 10.0], [Vector2(1, -5), 10.0, 12.0], [Vector2(-10, 6), 6.0, 6.0]],
+			"felled": [[Vector2(-4, 3), 9.0, 9.0], [Vector2(7, 4), 7.0, 6.0]],
+			"stump": [[Vector2(-5, 4), 5.0, 3.0], [Vector2(3, 5), 4.0, 2.5], [Vector2(8, 2), 3.0, 2.0]]}
+	for state: String in states:
+		var img := Image.create_empty(NATURE_FRAME.x, NATURE_FRAME.y, false, Image.FORMAT_RGBA8)
+		var boulders: Array = states[state]
+		boulders.sort_custom(func(a: Array, b: Array) -> bool: return (a[0] as Vector2).y < (b[0] as Vector2).y)
+		for k: int in boulders.size():
+			var b: Array = boulders[k]
+			_boulder(img, NATURE_CENTRE + (b[0] as Vector2), b[1], b[2], k)
+		if state == "stump":
+			for k: int in 6:
+				_pixel(img, NATURE_CENTRE + Vector2(-12 + k * 4, 6 + (k % 2) * 2), C_STONE.darkened(0.2))
+		_outline(img)
+		_save(img, "nature/rock/%s.png" % state)
+
+
+## An irregular boulder: lit top, mid left face, dark right face, cracks and moss.
+func _boulder(img: Image, foot: Vector2, radius: float, height: float, salt: int) -> void:
+	var points := PackedVector2Array()
+	for k: int in 9:
+		var a := PI + k * PI / 8.0
+		var r := radius * (0.8 + 0.25 * _hash(k, salt, 21))
+		points.append(foot + Vector2(cos(a) * r, sin(a) * r * 0.55 - height * (0.6 + 0.4 * sin(k * PI / 8.0))))
+	points.append(foot + Vector2(radius * 0.9, 1))
+	points.append(foot + Vector2(0, radius * 0.4))
+	points.append(foot + Vector2(-radius * 0.9, 1))
+	var bounds := Rect2(points[0], Vector2.ZERO)
+	for p: Vector2 in points:
+		bounds = bounds.expand(p)
+	for y: int in range(int(bounds.position.y), int(bounds.end.y) + 1):
+		for x: int in range(int(bounds.position.x), int(bounds.end.x) + 1):
+			var q := Vector2(x + 0.5, y + 0.5)
+			if not Geometry2D.is_point_in_polygon(q, points):
+				continue
+			var rel := (q - foot) / Vector2(radius, height + radius * 0.5)
+			var col := C_STONE
+			if rel.y < -0.55:
+				col = C_STONE.lightened(0.12)
+			elif rel.x > 0.15:
+				col = C_STONE.darkened(0.22)
+			col = col.darkened(0.08 * _hash(x / 2, y / 2, salt + 31))
+			if absf(rel.x + rel.y * 0.4 - 0.1) < 0.04 and rel.y > -0.6:
+				col = C_STONE.darkened(0.4)
+			if rel.y < -0.7 and _hash(x, y, salt + 41) > 0.7:
+				col = Color(0.42, 0.55, 0.3)
+			img.set_pixel(x, y, col)
+
+
+func _trees() -> void:
+	var trunk := Color(0.42, 0.28, 0.17)
+	var leaves := Color(0.22, 0.44, 0.2)
+	# Grown: trunk and a crown of overlapping leaf clusters.
+	var img := _nature_image()
+	var foot := NATURE_CENTRE
+	_ellipse(img, foot + Vector2(0, 1), Vector2(10, 4), Color(0.2, 0.3, 0.14, 0.0))
+	_trunk(img, foot, 34.0, 6.0, trunk)
+	_line(img, foot - Vector2(0, 26), foot - Vector2(-7, 36), trunk, 2)
+	_line(img, foot - Vector2(0, 28), foot - Vector2(6, 38), trunk, 2)
+	var clusters: Array = [[Vector2(0, -50), 15.0], [Vector2(-11, -42), 11.0], [Vector2(11, -41), 11.0],
+			[Vector2(-6, -60), 10.0], [Vector2(7, -58), 10.0], [Vector2(0, -36), 10.0], [Vector2(-14, -52), 7.0],
+			[Vector2(14, -50), 7.0], [Vector2(0, -66), 7.0]]
+	for k: int in clusters.size():
+		var c: Array = clusters[k]
+		_foliage(img, foot + (c[0] as Vector2), c[1], leaves, k)
+	_outline(img)
+	_save(img, "nature/tree/grown.png")
+	# Felled: the trunk on the ground, a smaller crown at its end, the stump.
+	img = _nature_image()
+	_beam(img, foot + Vector2(-6, 1), foot + Vector2(14, -8), 5.0, trunk)
+	_foliage(img, foot + Vector2(19, -13), 9.0, leaves.darkened(0.05), 3)
+	_foliage(img, foot + Vector2(13, -18), 7.0, leaves, 5)
+	_stump(img, foot - Vector2(4, 0), trunk)
+	_outline(img)
+	_save(img, "nature/tree/felled.png")
+	img = _nature_image()
+	_stump(img, foot, trunk)
+	_line(img, foot + Vector2(-4, 1), foot + Vector2(-9, 4), trunk, 2)
+	_line(img, foot + Vector2(4, 1), foot + Vector2(8, 3), trunk, 2)
+	_outline(img)
+	_save(img, "nature/tree/stump.png")
+
+
+func _foliage(img: Image, centre: Vector2, radius: float, colour: Color, salt: int) -> void:
+	for y: int in range(int(centre.y - radius) - 1, int(centre.y + radius) + 2):
+		for x: int in range(int(centre.x - radius) - 1, int(centre.x + radius) + 2):
+			var d := Vector2(x + 0.5 - centre.x, (y + 0.5 - centre.y) * 1.1) / radius
+			var ragged := 1.0 - 0.18 * _hash(x / 2, y / 2, salt + 51)
+			if d.length() > ragged:
+				continue
+			var light := -d.x * 0.3 - d.y * 0.5
+			var col := colour.lightened(clampf(light * 0.4, 0.0, 0.3)) if light > 0.0 else colour.darkened(clampf(-light * 0.5, 0.0, 0.35))
+			if _hash(x, y, salt + 61) > 0.82:
+				col = col.lightened(0.15)
+			_pixel(img, Vector2(x, y), col)
+
+
+func _stump(img: Image, foot: Vector2, trunk: Color) -> void:
+	_trunk(img, foot, 6.0, 7.0, trunk)
+	_ellipse(img, foot - Vector2(0, 6), Vector2(3.5, 1.8), C_WOOD_END)
+	_pixel(img, foot - Vector2(0, 6), C_WOOD_END.darkened(0.3))
+
+
+func _nature_image() -> Image:
+	return Image.create_empty(NATURE_FRAME.x, NATURE_FRAME.y, false, Image.FORMAT_RGBA8)
+
+
+# --- Primitives ----------------------------------------------------------------------------
+
+func _queue(depth: float, draw: Callable) -> void:
+	_items.append([depth, draw])
+
+
+func _draw_items(img: Image) -> void:
+	_items.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	for item: Array in _items:
+		(item[1] as Callable).call(img)
+	_items = []
+
+
+## A log lying from [param a] to [param b] (screen), cut end visible at [param b].
+func _log(img: Image, a: Vector2, b: Vector2, radius: float) -> void:
+	var steps := maxi(1, int(a.distance_to(b)))
+	for i: int in steps + 1:
+		var p := a.lerp(b, float(i) / steps)
+		for dy: int in range(-int(radius), int(radius) + 1):
+			var shade := float(dy) / radius
+			var col := C_WOOD.lightened(0.15) if shade < -0.4 else (C_WOOD.darkened(0.2) if shade > 0.4 else C_WOOD)
+			if (i + dy * 3) % 7 == 0:
+				col = col.darkened(0.15)
+			_pixel(img, p + Vector2(0, dy), col)
+	_ellipse(img, b, Vector2(radius * 0.8, radius), C_WOOD_END)
+	_ellipse(img, b, Vector2(radius * 0.35, radius * 0.45), C_WOOD_END.darkened(0.2))
+
+
+## A thin box (board) in tile grid units from [param corner] (x, y, z px) with [param size].
+func _slab(img: Image, corner: Vector3, size: Vector3, colour: Color) -> void:
+	var g := func(x: float, y: float, z: float) -> Vector2:
+		return STACK_CENTRE + IsoMath.grid_to_screen(Vector2(x, y)) - Vector2(0, z)
+	var x0 := corner.x
+	var y0 := corner.y
+	var x1 := corner.x + size.x
+	var y1 := corner.y + size.y
+	var z0 := corner.z
+	var z1 := corner.z + size.z
+	var faces := [
+		[[g.call(x0, y1, z0), g.call(x1, y1, z0), g.call(x1, y1, z1), g.call(x0, y1, z1)], 1.0],
+		[[g.call(x1, y0, z0), g.call(x1, y1, z0), g.call(x1, y1, z1), g.call(x1, y0, z1)], 0.85],
+		[[g.call(x0, y0, z1), g.call(x1, y0, z1), g.call(x1, y1, z1), g.call(x0, y1, z1)], 1.12]]
+	for face: Array in faces:
+		var poly := PackedVector2Array(face[0])
+		var light: float = face[1]
+		var bounds := Rect2(poly[0], Vector2.ZERO)
+		for q: Vector2 in poly:
+			bounds = bounds.expand(q)
+		for y: int in range(int(bounds.position.y) - 1, int(bounds.end.y) + 2):
+			for x: int in range(int(bounds.position.x) - 1, int(bounds.end.x) + 2):
+				if Geometry2D.is_point_in_polygon(Vector2(x + 0.5, y + 0.5), poly):
+					var c := colour.darkened(0.06 * float((x / 5) % 2))
+					_pixel(img, Vector2(x, y), Color(minf(c.r * light, 1.0), minf(c.g * light, 1.0), minf(c.b * light, 1.0)))
+		for i: int in poly.size():
+			_line(img, poly[i], poly[(i + 1) % poly.size()], colour.darkened(0.35), 1)
+
+
+## A vertical trunk from [param foot] up [param height] px, [param width] px wide.
+func _trunk(img: Image, foot: Vector2, height: float, width: float, colour: Color) -> void:
+	for y: int in int(height):
+		var w := width * (1.0 - 0.3 * y / height)
+		for x: int in range(int(-w * 0.5), int(ceil(w * 0.5))):
+			var col := colour.lightened(0.1) if x < -w * 0.15 else (colour.darkened(0.2) if x > w * 0.2 else colour)
+			if _hash(x, y / 3, 81) > 0.85:
+				col = col.darkened(0.15)
+			_pixel(img, foot + Vector2(x, -y), col)
+
+
+## A flat board or beam from [param a] to [param b] with a lit top edge.
+func _beam(img: Image, a: Vector2, b: Vector2, thickness: float, colour: Color) -> void:
+	var steps := maxi(1, int(a.distance_to(b)))
+	for i: int in steps + 1:
+		var p := a.lerp(b, float(i) / steps)
+		for dy: int in int(ceil(thickness)) + 1:
+			var col := colour.lightened(0.12) if dy == 0 else colour.darkened(0.12 * dy / maxf(thickness, 1.0))
+			_pixel(img, p + Vector2(0, dy - thickness * 0.5), col)
+
+
+## A small box seen from the front corner at [param foot].
+func _box(img: Image, foot: Vector2, size: Vector2, height: float, colour: Color, material: String) -> void:
+	var w := size.x * 0.5
+	var d := size.y * 0.5
+	var faces := [
+		[PackedVector2Array([foot + Vector2(-w, -d), foot, foot - Vector2(0, height), foot + Vector2(-w, -d - height)]), 1.0],
+		[PackedVector2Array([foot, foot + Vector2(w, -d), foot + Vector2(w, -d - height), foot - Vector2(0, height)]), 0.8],
+		[PackedVector2Array([foot + Vector2(-w, -d - height), foot - Vector2(0, height), foot + Vector2(w, -d - height), foot + Vector2(0, -2 * d - height)]), 1.15]]
+	for face: Array in faces:
+		var poly: PackedVector2Array = face[0]
+		var light: float = face[1]
+		var bounds := Rect2(poly[0], Vector2.ZERO)
+		for p: Vector2 in poly:
+			bounds = bounds.expand(p)
+		for y: int in range(int(bounds.position.y) - 1, int(bounds.end.y) + 2):
+			for x: int in range(int(bounds.position.x) - 1, int(bounds.end.x) + 2):
+				if not Geometry2D.is_point_in_polygon(Vector2(x + 0.5, y + 0.5), poly):
+					continue
+				var col := colour
+				match material:
+					"stone":
+						col = colour.darkened(0.1 * _hash(x / 3, y / 2, 71))
+						if (x + y) % 9 == 0:
+							col = col.darkened(0.15)
+					"planks":
+						col = colour.darkened(0.25) if y % 3 == 0 else colour
+					"wicker":
+						col = colour.darkened(0.22) if (x + y) % 3 == 0 else colour
+				_pixel(img, Vector2(x, y), Color(minf(col.r * light, 1.0), minf(col.g * light, 1.0), minf(col.b * light, 1.0)))
+
+
+func _ellipse(img: Image, centre: Vector2, radius: Vector2, colour: Color) -> void:
+	if colour.a == 0.0:
+		return
+	for y: int in range(int(floor(centre.y - radius.y)) - 1, int(ceil(centre.y + radius.y)) + 1):
+		for x: int in range(int(floor(centre.x - radius.x)) - 1, int(ceil(centre.x + radius.x)) + 1):
+			var d := Vector2((x + 0.5 - centre.x) / maxf(radius.x, 0.5), (y + 0.5 - centre.y) / maxf(radius.y, 0.5))
+			if d.length() <= 1.0:
+				var shade := clampf(d.y * 0.15 + d.x * 0.05, -0.12, 0.18)
+				_pixel(img, Vector2(x, y), colour.darkened(shade) if shade > 0.0 else colour.lightened(-shade))
+
+
+func _line(img: Image, a: Vector2, b: Vector2, colour: Color, width: int) -> void:
+	var steps := maxi(1, int(ceil(a.distance_to(b))))
+	for s: int in steps + 1:
+		var p := a.lerp(b, float(s) / steps)
+		for dx: int in width:
+			for dy: int in width:
+				_pixel(img, p + Vector2(dx - width / 2, dy - width / 2), colour)
+
+
+func _pixel(img: Image, p: Vector2, colour: Color) -> void:
+	var q := Vector2i(p.floor())
+	if Rect2i(Vector2i.ZERO, img.get_size()).has_point(q):
+		img.set_pixelv(q, colour)
+
+
+func _hash(x: int, y: int, salt: int) -> float:
+	var n := (x * 374761393 + y * 668265263 + salt * 1442695041) & 0xffffffff
+	n = ((n ^ (n >> 13)) * 1274126177) & 0xffffffff
+	return float((n ^ (n >> 16)) & 0xffff) / 65535.0
+
+
+## Selective outline (ART_SPEC §1): a dark version of the neighbouring colour around shapes.
+func _outline(img: Image) -> void:
+	var size := img.get_size()
+	var edge: Dictionary = {}
+	for y: int in size.y:
+		for x: int in size.x:
+			var c := img.get_pixel(x, y)
+			if c.a == 0.0:
+				continue
+			for d: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				var q := Vector2i(x, y) + d
+				if Rect2i(Vector2i.ZERO, size).has_point(q) and img.get_pixelv(q).a == 0.0 and not edge.has(q):
+					edge[q] = Color(c.r * 0.32, c.g * 0.27, c.b * 0.24, 1.0)
+	for q: Vector2i in edge:
+		img.set_pixelv(q, edge[q])
+
+
+func _save(img: Image, relative: String) -> void:
+	var path := OUT.path_join(relative)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path.get_base_dir()))
+	var err := img.save_png(path)
+	if err != OK:
+		push_error("Cannot save %s (%s)" % [path, error_string(err)])

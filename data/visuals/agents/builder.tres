@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_vis")
-tint = Color(1, 0.75, 0.55, 1)
+character = &"builder"

@@ -61,7 +61,7 @@ assets/
 | Element | Rozmiar | Uwagi |
 |---|---|---|
 | Kafel terenu | **64×32 px** (romb 2:1) | plik 64×32. Kafle z wysokością, np. skarpy brzegu: 64×48 z romb u dołu |
-| Postać dorosła | **42 px wysokości** (±2) | głowa ok. 9–10 px, szerokość ciała ok. 14–18 px **(M1)** |
+| Postać dorosła | **ok. 34 px wysokości** (było 42 px w M1) | głowa ok. 8 px. Zmiana 2026-11-05: przy 42 px ludzie byli ponad dwa razy wyżsi od drzwi. Drzwi mają ok. 26 px, ściany parterowe ok. 36–42 px |
 | Dziecko | ok. 30 px | [PÓŹNIEJ], przechodnie |
 | Płótno klatki postaci | **64×64 px** | zapas na narzędzia (kosa, łopata do pieca, włócznia) |
 | Punkt stopy (pivot) | **(32, 58)** na płótnie 64×64 | środek między stopami, dotyka ziemi |
@@ -364,3 +364,35 @@ Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
 - **Kafle mają przyciemnione dolne krawędzie** (jakby miały grubość, mimo `tile_depth_ratio=0`). Ułożone obok siebie dają widoczną kratkę. Poprawka: `tools/pixellab_tile_edges.py` wyrównuje jasność pasa przy każdej krawędzi do środka kafla i przycina wynik do rombu 64×32.
 - **Nawet idealne styki nie ukryją siatki,** bo oko łapie powtarzający się co 64 px wzór. Rozwiązanie to teren organiczny (§8.1). Wzory o dużym kontraście (fale na wodzie) trzeba złagodzić (zmieszać ze średnim kolorem) i mieszać dwa warianty.
 - PixelLab nie ma narzędzia, które gwarantuje bezszwowe kafle izometryczne ani organiczne przejścia (potwierdzone w ich pomocy).
+
+### 10.3 Budynki rysowane kodem (2026-11-05)
+
+**Decyzja właściciela projektu:** zanim powstaną grafiki z PixelLab albo ręczne, budynki rysuje kod, starannie, jako grafiki docelowe w `assets/buildings/` (placeholdery zostają bez zmian). Narzędzie: `tools/generate_art.gd`.
+
+- **Bryły zamiast klocków:** budynek składa się z kilku brył: dom z dachem dwuspadowym lub czterospadowym, przybudówka, otwarta wiata (widać pracę w środku: piec, kozioł z kłodą, kocioł, bloki kamienia), okrągła wieża ze stożkowym dachem (wiatrak, suszarnia chmielu), wieża z iglicą (kościół, kaplica, ratusz z zegarem). Bryły rysujemy od tyłu do przodu.
+- **Bryła mniejsza od kratek:** ściany stoją ok. 0,14 kafla od krawędzi footprintu, więc wokół budynku widać ziemię. Wyjątek: domy mieszczańskie w pierzei stykają się wzdłuż rzędu.
+- **Materiały** w układzie każdej ściany i połaci: szachulec, kamień, bale, deski, tynk, strzecha, gont, dachówka, łupek. Okna z okiennicami, drzwi zawsze na kaflu wejścia, kominy na dachu.
+- **Warianty wyglądu:** `BuildingVisualDef.base_variants` (pliki `base`, `base_2`, `base_3`...). Budynek wybiera wariant według położenia na mapie. Chata ma 3: szachulcowa z drewutnią, z bali z przybudówką, tynkowana w kształcie litery L. Placeholdery mają te same nazwy plików.
+- **Place budowy:** faza 1 to kamienny fundament, paliki ze sznurkiem i sterty materiałów, faza 2 to szkielet z belek i krokwi, część deskowania, rusztowanie i drabina.
+- Światło według §1, kontur 1 px w ciemniejszym odcieniu własnego koloru. Rozmiary i pivoty jak w §3.2. Plik `.json` obok każdego `.png`.
+- **Skala (2026-11-05):** ściany parteru 36–42 px, drzwi ok. 26 px, okna ok. 9×12 px, dom mieszczański 58 px (dwa piętra), żeby pasowały do postaci 34 px (§3.1).
+- **Ograniczenie:** rysunek z prostych brył, czytelny, ale nie ręcznie malowany. Każdy plik można później podmienić lepszą grafiką bez zmian w kodzie.
+- **Jeszcze niezrobione:** plac magazynu (rysuje go widok jako brązowy romb).
+
+### 10.4 Postacie rysowane kodem (2026-11-05)
+
+Narzędzie: `tools/generate_characters.gd`, wynik w `assets/characters/<zawód>/`. Każdy zawód ma własną postać (`data/visuals/agents/<zawód>.tres` wskazuje ją bez zabarwienia).
+
+- Ciało z części w przestrzeni postaci (nogi, buty, tułów, ręce, głowa, włosy, broda, kapelusz, fartuch, sukienka, peleryna, narzędzie), obracane do 5 kierunków (S, SE, E, NE, N; reszta to odbicia, §4.2) i rysowane od tyłu do przodu. Rysowane dla 42 px i zmniejszane wokół stóp do ok. 34 px (§3.1), stopa w (32, 58), kontur 1 px.
+- Stroje według §4.4: rolnik i chmielarz w słomkowym kapeluszu, młynarz w białym fartuchu i czapce, piekarz w białym czepku i fartuchu, drwal w czerwonej koszuli z brodą, tragarz z czerwoną chustą, budowniczy w skórzanym fartuchu, wędkarz w kapeluszu z szerokim rondem, domowniczka w sukience z chustką, przybysz w kapturze z kosturem.
+- Animacje: `idle` (4 klatki), `walk` i wszystkie `walk_carry_*` (8 klatek, z mapą zaczepień), `work` (ogólna) i `work_<czynność>` dla czynności zawodu: zamach nad głową (rąbanie, kucie, orka, budowa), praca nisko (żniwa, ociosywanie), pchanie (piła, ciasto, łopata do pieca), mieszanie (żarna, kadź, kocioł), siew, wiązanie, zarzucanie wędki, czekanie na branie, wyciąganie ryby.
+- **Ograniczenie:** postać 42 px rysowana z kształtów. Czytelna przy zoomie 1–2×, ale mimika i drobne ruchy są uproszczone. Warianty kolorów (§4.4) jeszcze nie.
+
+### 10.5 Towary i natura rysowane kodem (2026-11-05)
+
+Narzędzie: `tools/generate_goods.gd`, wynik w `assets/goods/` i `assets/nature/`.
+
+- **Stosy w magazynie** (4 etapy zapełnienia): kłody w piramidzie z widocznymi czołami, deski w równych warstwach, worki mąki, snopy zboża, skrzynie z chlebem i rybami, kosze chmielu, beczki piwa, bloki kamienia. Przedmioty to małe bryły ułożone na kaflu od tyłu do przodu, więc stos rośnie jak prawdziwa sterta.
+- **Towary w rękach** (§5, 5 wierszy po 24×24) i **ikony** 32×32 rysowane tymi samymi kształtami.
+- **Skały:** grupa głazów ze światłem z góry, pęknięciami i mchem; po wydobyciu mniejsze głazy, na końcu gruz. **Drzewo:** pień z gałęziami i korona z kęp liści; ścięte leży obok pnia; zostaje pień z korzeniami.
+

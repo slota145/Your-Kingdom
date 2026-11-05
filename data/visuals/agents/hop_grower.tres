@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_vis")
-tint = Color(0.7, 1, 0.6, 1)
+character = &"hop_grower"
