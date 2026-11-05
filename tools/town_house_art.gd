@@ -349,7 +349,7 @@ func _wall(h: Dictionary, a: Vector2, b: Vector2, n: Vector2, kind: String, top:
 		while z <= zt:
 			var col: Color
 			if z > wall + 0.5:
-				col = _gable_px(h, kind, u, z, length, zt)
+				col = _gable_px(h, kind if seen else "behind", u, z, length, zt)
 			else:
 				col = _wall_px(h, material, kind, u, z, length, holes)
 			if col.a > 0.0:
@@ -449,6 +449,11 @@ func _gable_px(h: Dictionary, kind: String, u: float, v: float, length: float, t
 	var front := kind == "front"
 	var style: int = h["style"] if front else STYLE_PLAIN
 	var tint: Color = h["tint"]
+	if kind == "behind":
+		# The back of a gable seen over its roof: plain wall with a coping, no ornaments.
+		if top - v < 2.0:
+			return C_STONE_TRIM.darkened(0.1)
+		return art._plaster(int(u), int(v), Color(tint.r * 0.85, tint.g * 0.85, tint.b * 0.85))
 	if front:
 		var two := length > 30.0
 		for wu: float in ([mid - 8.0, mid + 2.0] if two else [mid - 3.0]):
@@ -539,10 +544,14 @@ func _draw_corner(o: int, look: int) -> void:
 	# Roofs: main (ridge along t over the row wing), side wing (ridge along s), cross.
 	var main := {Vector2(0, 1): _new_surface(), Vector2(0, -1): _new_surface()}
 	var wing := {Vector2(1, 0): _new_surface(), Vector2(-1, 0): _new_surface()}
+	# A decorative gable rises above the roof behind it: the roof stops flush with its wall
+	# (only a plain gable has the roof overhanging it).
+	var t_end := tf + (OVERHANG if h_main["style"] == STYLE_PLAIN else 0.0)
+	var side_ov := OVERHANG if h_side["style"] == STYLE_PLAIN else 0.0
 	var t := 0.0
-	while t <= tf + OVERHANG:
-		var s := minf(s_joined, s_open) - (OVERHANG if o < 0 else 0.0)
-		var s_end := maxf(s_joined, s_open) + (OVERHANG if o > 0 else 0.0)
+	while t <= t_end:
+		var s := minf(s_joined, s_open) - (side_ov if o < 0 else 0.0)
+		var s_end := maxf(s_joined, s_open) + (side_ov if o > 0 else 0.0)
 		while s <= s_end:
 			if cut.call(t, s):
 				s += STEP
@@ -551,9 +560,6 @@ func _draw_corner(o: int, look: int) -> void:
 			var zw := wall + rh * (1.0 - absf(t - tc) / ht)
 			var in_side_half := (s - sc) * o > 0.0
 			var use_wing := in_side_half and zw > zm
-			if t > tf + 0.001 and not use_wing:
-				s += STEP
-				continue
 			var z := zw if use_wing else zm
 			var d: Vector2
 			if use_wing:
