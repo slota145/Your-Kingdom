@@ -447,17 +447,24 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Poza zakresem:** przewozy między magazynami sterowane przez gracza („trzymaj tu N sztuk”), konie jako towar i stadnina (M7), wozy dla pracowników warsztatów i domowników, klify i poziomy terenu (IDEAS), mosty, szlaki handlowe między prowincjami (M6), pomiar FPS na laptopie (osobna sesja, patrz wyżej).
 
 **DoD:**
-- [ ] Tragarz z wózkiem wiezie 3 sztuki, wóz 6 sztuk tylko po drogach; dyspozytor daje drobne i krótkie zlecenia pieszym, a duże wozom i wózkom; przy celu bez drogi wóz nie dostaje zlecenia (testy jednostkowe logistyki).
-- [ ] Bruk kosztuje 1 kamień na kafel, układa go budowniczy, a pieszy i wóz jadą po nim szybciej niż po drodze ubitej (test jednostkowy i scenariuszowy).
-- [ ] Stajnia z woźnicami działa w grze: wozy wożą na budowy, odnoszą stosy i ładują wóz kupca (test scenariuszowy z licznikami).
+- [x] Tragarz z wózkiem wiezie 3 sztuki, wóz 6 sztuk tylko po drogach; dyspozytor daje drobne i krótkie zlecenia pieszym, a duże wozom i wózkom; przy celu bez drogi wóz nie dostaje zlecenia (`tests/unit/sim/economy/test_handcarts.gd`, `test_wagons.gd`).
+- [x] Bruk kosztuje 1 kamień na kafel, układa go budowniczy, a pieszy i wóz jadą po nim szybciej niż po drodze ubitej (`tests/unit/sim/test_paving.gd`: budowniczy układa kafle z kamieniem z magazynu, bruk 1,2× szybszy od drogi ubitej).
+- [x] Stajnia z woźnicami działa w grze: wozy wożą na budowy, odnoszą stosy i ładują wóz kupca (`tests/scenario/test_m4b3_chains.gd`: 10 sztuk na budowę, 10 drewna ze stosu, 22 z 24 desek na wóz kupca).
 - [ ] Nowa mapa 128×128 z jeziorem i kamienistym gruntem: wędkarz i glinianka działają nad jeziorem, na kamienistym gruncie nie da się postawić pola, kamieniołom pracuje przy skałach (testy). Automatyczny gracz dochodzi na niej do patrycjuszy w limicie.
 - [ ] Duże miasto (400+ postaci, gotowy zapis): brak zakleszczeń przez 2 godziny przy 4×.
 - [ ] Wydajność według ARCHITECTURE §9.1: czas ticku ≤ 4 ms przy 500 postaciach (pomiar w chmurze, wynik w §9.3).
 - [ ] Pomiar FPS na laptopie na dużym mieście (osobna sesja z właścicielem projektu, wynik w §9.3).
 - [ ] Automatyczny gracz na mapie `riverlands` dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`).
-- [ ] Zapis z M4b-2 wczytuje się po migracji (v7 → v8) bez utraty towaru, nowa fixtura `v8_town.json`.
+- [x] Zapis z M4b-2 wczytuje się po migracji (v7 → v8) bez utraty towaru, nowa fixtura `v8_town.json` (`test_save_round_trip.gd`). Jeśli część 2 albo 3 zmieni format, fixturę v8 wygenerujemy od nowa (wersja 8 nie trafiła jeszcze do gry na `main`).
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
 - [ ] **Twoja ocena gry.** Zamyka też całe M4b (DoD M4b wyżej).
+
+**Ustalone przy realizacji części 1 (2026-11-05, do zmiany na prośbę):**
+- **Grafika bruku z PixelLab:** kafel 14 („cobblestone pavement”) z zestawu kafli terenu właściciela (`Flat isometric ground texture tiles…`), z wyrównanymi krawędziami jak reszta terenu; wariant `b` to lustro `a`.
+- **Bruk:** gracz przeciąga narzędzie „Bruk” po drodze albo po wolnym terenie (wolny teren od razu staje się drogą ubitą). Jedno przeciągnięcie to jeden plac brukowania; tragarze kładą kamień przy kaflu, który budowniczy układa jako następny. Budowniczy bierze bruk dopiero wtedy, gdy żadna budowa go nie potrzebuje; po każdym kaflu (3 s) sprawdza, czy nie pojawiła się budowa. Usunięcie drogi z zamówionego kafla zmniejsza zamówienie, a niepotrzebny kamień ląduje na ziemi.
+- **Wózki:** kupione wózki należą do magazynu, każdy tragarz tego magazynu może wziąć jeden. Wózek zostaje przy tragarzu, dopóki ten ma towar (także gdy odkłada go po nieudanym kursie). Tragarze ratusza nie mają wózków.
+- **Wozy:** woźnica wyjeżdża tylko ze stajni (wóz czeka w stajni) albo jedzie dalej z miejsca poprzedniego kursu. Między kursami odstawia wóz pod stajnię i wchodzi do środka; nowy kurs może mu przerwać powrót. Ładuje i rozładowuje na drodze przed tymi drzwiami budynku, przed którymi jest droga. Żywe zwierzęta (świnie) nie jadą wozem. Woźnica idzie przodem i prowadzi konia za uzdę (grafika).
+- **Ładowanie** wózka i wozu ma animację „schyla się i ładuje” (tragarz i woźnica).
 
 ---
 

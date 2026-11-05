@@ -312,3 +312,33 @@ func test_v6_save_gets_meat_slot_and_merchant() -> void:
 	for b: BuildingState in sim.province.buildings.all():
 		if b.house != null:
 			assert_bool(b.supply.slot_count() >= b.house_goods().size()).is_true()
+
+
+## A save written by save_version 8 (M4b-3: paving half laid, a storage with a handcart in
+## use, a carter driving a wagon) loads unchanged and keeps playing.
+func test_v8_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v8_town.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(8)
+	var state := SaveMigrations.migrate(document["state"], 8)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	assert_int(sim.province.grid.paved_count()).is_equal(5)
+	assert_int(sim.province.paving.size()).is_equal(1)
+	var vehicles := {}
+	for agent: Agent in sim.province.agents.all():
+		vehicles[agent.vehicle] = true
+	assert_bool(vehicles.has(Carriers.WAGON)).is_true()
+	var province := sim.province
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return province.grid.paved_count() == 10,
+			180.0)).is_true()
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## M4b-2 town (v7): after the migration there are no paving sites and nothing changes.
+func test_v7_save_gets_empty_paving() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v7_town.json"))
+	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 7), SimFixture.registry())
+	assert_int(sim.province.paving.size()).is_equal(0)
+	assert_int(sim.province.grid.paved_count()).is_equal(0)
