@@ -5,6 +5,8 @@ extends RefCounted
 ## 8-directional movement; diagonal steps are only allowed when both orthogonal neighbours
 ## are free, so nobody slips through the joint of a diagonal wall.
 
+const _STEPS: Array[Vector2i] = [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.DOWN, Vector2i.UP]
+
 ## Bumped on every change, so cached paths can detect they are stale.
 var version: int = 0
 var size: Vector2i
@@ -57,3 +59,36 @@ func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 	if not is_walkable(from) or not is_walkable(to):
 		return []
 	return _astar.get_id_path(from, to)
+
+
+## Which of [param targets] can be walked to from [param start], treating [param blocked]
+## tiles as solid too (placement checks before the building exists). Flood fill with
+## 4 neighbours: diagonal steps need both orthogonal neighbours free, so they never connect
+## areas that 4 neighbours do not. Stops early once every target is found.
+func reachable(start: Vector2i, targets: Dictionary[Vector2i, bool],
+		blocked: Dictionary[Vector2i, bool] = {}) -> Dictionary[Vector2i, bool]:
+	var found: Dictionary[Vector2i, bool] = {}
+	if not is_walkable(start) or blocked.has(start):
+		return found
+	var visited := PackedByteArray()
+	visited.resize(size.x * size.y)
+	visited[start.y * size.x + start.x] = 1
+	var queue: Array[Vector2i] = [start]
+	var head := 0
+	while head < queue.size():
+		var tile := queue[head]
+		head += 1
+		if targets.has(tile):
+			found[tile] = true
+			if found.size() == targets.size():
+				break
+		for step: Vector2i in _STEPS:
+			var next := tile + step
+			if not is_walkable(next) or blocked.has(next):
+				continue
+			var index := next.y * size.x + next.x
+			if visited[index] == 1:
+				continue
+			visited[index] = 1
+			queue.append(next)
+	return found

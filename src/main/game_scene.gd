@@ -102,7 +102,7 @@ func _build_ui() -> void:
 	_top.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	_top.save_requested.connect(_quick_save)
 	_top.load_requested.connect(_quick_load)
-	_top.menu_requested.connect(func() -> void: get_tree().change_scene_to_file("res://src/main/main.tscn"))
+	_top.menu_requested.connect(_back_to_menu)
 	root.add_child(_top)
 	_build = BuildMenu.new()
 	_build.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
@@ -376,6 +376,13 @@ func _select_at(world_pos: Vector2) -> void:
 func _quick_save() -> void:
 	var error := SaveService.save_simulation(SaveService.slot_path(QUICK_SLOT), sim)
 	_notes.push(tr("ui.note.saved") if error == OK else tr("ui.note.save_failed"))
+
+
+## Going back to the menu quick-saves first, so a misclick never loses the game
+## ("Load game" in the menu continues from it).
+func _back_to_menu() -> void:
+	_quick_save()
+	get_tree().change_scene_to_file("res://src/main/main.tscn")
 
 
 func _quick_load() -> void:

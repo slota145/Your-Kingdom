@@ -185,7 +185,38 @@ func placement_error(def: BuildingDef, origin: Vector2i) -> StringName:
 		if t != entrance and t.x >= origin.x and t.y >= origin.y \
 				and t.x < origin.x + def.footprint.x and t.y < origin.y + def.footprint.y:
 			return &"tile_has_people"
-	return &""
+	return _access_error(def, origin)
+
+
+## People must be able to walk to the new building, and it must not wall off any entrance,
+## ground pile or person they could reach before (a sealed-off site stalls porters and
+## builders for good).
+func _access_error(def: BuildingDef, origin: Vector2i) -> StringName:
+	var entrance := origin + def.entrance
+	var blocked: Dictionary[Vector2i, bool] = {}
+	for tile: Vector2i in def.footprint_tiles(origin):
+		if tile != entrance:
+			blocked[tile] = true
+	var entrances: Dictionary[Vector2i, bool] = {}
+	for building: BuildingState in buildings.all():
+		entrances[building.entrance_tile()] = true
+	if entrances.is_empty():
+		return &""
+	var targets: Dictionary[Vector2i, bool] = entrances.duplicate()
+	for pile: GroundPile in piles.values():
+		targets[pile.tile] = true
+	for agent: Agent in agents.all():
+		targets[agent.tile()] = true
+	var before := nav.reachable(entrance, targets)
+	var reaches_town := false
+	for tile: Vector2i in before:
+		if entrances.has(tile):
+			reaches_town = true
+			break
+	if not reaches_town:
+		return &"no_access"
+	var after := nav.reachable(entrance, before, blocked)
+	return &"" if after.size() == before.size() else &"blocks_access"
 
 
 ## Whether a tile of terrain [member BuildingDef.needs_terrain_near] lies within the work

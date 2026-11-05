@@ -505,6 +505,12 @@ msgstr "You cannot build here."
 msgid "ui.command_error.tile_has_people"
 msgstr "Someone is standing here."
 
+msgid "ui.command_error.no_access"
+msgstr "People could not walk here."
+
+msgid "ui.command_error.blocks_access"
+msgstr "This would block the way to other buildings."
+
 msgid "ui.command_error.not_a_farm"
 msgstr "This is not a farm."
 
