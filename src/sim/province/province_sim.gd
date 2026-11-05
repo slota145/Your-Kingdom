@@ -13,6 +13,8 @@ var tick: int = 0
 
 var grid: TileGrid
 var nav: NavGrid
+## Road tiles only, for horse wagons (M4b-3): every other tile is solid.
+var road_nav: NavGrid
 var resources: ResourceField
 var buildings: BuildingStore = BuildingStore.new()
 var agents: AgentStore = AgentStore.new()
@@ -56,6 +58,8 @@ func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entit
 	ids = entity_ids
 	grid = TileGrid.new(size)
 	nav = NavGrid.new(size)
+	road_nav = NavGrid.new(size)
+	road_nav.set_solid_rect(Rect2i(Vector2i.ZERO, size), true)
 	resources = ResourceField.new(size)
 	terrains = registry.terrains_by_index()
 
@@ -96,7 +100,8 @@ func is_tile_solid(tile: Vector2i) -> bool:
 
 
 func refresh_tile(tile: Vector2i) -> void:
-	nav.set_solid(tile, is_tile_solid(tile))
+	var nav_solid := is_tile_solid(tile)
+	nav.set_solid(tile, nav_solid)
 	var cost := 1.0
 	if grid.has_road(tile):
 		cost = PAVED_COST if grid.is_paved(tile) else ROAD_COST
@@ -112,6 +117,10 @@ func refresh_tile(tile: Vector2i) -> void:
 			cost = node.move_cost
 	if not is_equal_approx(nav.get_cost(tile), cost):
 		nav.set_cost(tile, cost)
+	var on_road := grid.has_road(tile) and not nav_solid
+	road_nav.set_solid(tile, not on_road)
+	if on_road and not is_equal_approx(road_nav.get_cost(tile), cost):
+		road_nav.set_cost(tile, cost)
 
 
 ## Terrain from a map image (pixel colour -> TerrainDef.map_color), trees on forest, and the
@@ -353,6 +362,56 @@ func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 	if tail != Agent.NO_TILE:
 		path.append(tail)
 	return path
+
+
+## Road path for a horse wagon (M4b-3) from [param from] to the road tile [param to]. A wagon
+## leaving a building (its carter fetches it from the stable) starts at the door with a road
+## in front nearest to the way. Empty when there is no road all the way.
+func find_road_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
+	if from == to:
+		return [from]
+	var start := from
+	var head := Agent.NO_TILE
+	var leaving := building_entered_at(from)
+	if leaving != null:
+		var best_d := 1 << 30
+		for pair: Array in door_pairs(leaving):
+			var front: Vector2i = pair[1]
+			var d := (front - to).length_squared()
+			if road_nav.is_walkable(front) and d < best_d:
+				best_d = d
+				head = pair[0]
+				start = front
+		if head == Agent.NO_TILE:
+			return []
+	var path := road_nav.find_path(start, to)
+	if path.is_empty():
+		return path
+	if head != Agent.NO_TILE:
+		path.push_front(head)
+	return path
+
+
+## The road tile in front of a door of the place behind storage [param id] where a wagon
+## stops (M4b-3): a building, its yard or its construction site; a paving site's next tile;
+## a ground pile or the merchant's wagon when they stand on a road. Agent.NO_TILE if none.
+func road_stop(id: int, near: Vector2i = Agent.NO_TILE) -> Vector2i:
+	var building := buildings.get_building(absi(id))
+	var site := sites.get(id) as ConstructionSite
+	if site != null:
+		building = buildings.get_building(site.building_id)
+	if building != null:
+		var best := Agent.NO_TILE
+		var best_d := 1 << 30
+		for pair: Array in door_pairs(building):
+			var front: Vector2i = pair[1]
+			var d := (front - near).length_squared() if near != Agent.NO_TILE else 0
+			if road_nav.is_walkable(front) and d < best_d:
+				best_d = d
+				best = front
+		return best
+	var tile := access_tile(id)
+	return tile if tile != Agent.NO_TILE and road_nav.is_walkable(tile) else Agent.NO_TILE
 
 
 func _nearest_door(building: BuildingState, near: Vector2i) -> Array:

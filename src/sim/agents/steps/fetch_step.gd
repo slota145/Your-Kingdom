@@ -31,7 +31,7 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 	var source := province.storage(src_id)
 	if source == null or not source.has_reservation(int(bb["_res"])):
 		return failed(agent, &"source_gone")
-	var status := Movement.walk(province, agent, province.access_tile(src_id))
+	var status := Movement.walk(province, agent, Carriers.stop_for(province, agent, src_id))
 	if status != Status.DONE:
 		return status
 	if Carriers.still_handling(agent, amount):

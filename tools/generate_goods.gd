@@ -85,6 +85,7 @@ func _init() -> void:
 	_trees()
 	_merchant_cart()
 	_handcart()
+	_wagon()
 	print("Goods and nature written to ", OUT)
 	quit()
 
@@ -380,6 +381,13 @@ const CART_CENTRE := Vector2(24, 30)
 ## Forward vector in grid space of rows S, SE, E, NE, N (the view mirrors the other three).
 const ROW_FORWARD: Array[Vector2] = [Vector2(0.7071, 0.7071), Vector2(1, 0), Vector2(0.7071, -0.7071),
 		Vector2(0, -1), Vector2(-0.7071, -0.7071)]
+## Horse wagon frame and ground point under the wagon's local origin (between cart and horse).
+const WAGON_FRAME := Vector2i(112, 80)
+const WAGON_CENTRE := Vector2(56, 52)
+const C_HORSE := Color(0.48, 0.3, 0.18)
+
+## Ground point of the vehicle being drawn (_cart_point).
+var _vehicle_origin: Vector2 = CART_CENTRE
 
 
 ## A two-wheeled handcart pushed by a porter: an open tray on two wheels with handles at the
@@ -413,11 +421,65 @@ func _handcart() -> void:
 		_save(sheet, "vehicles/handcart/%s.png" % state)
 
 
+## A horse wagon led by its carter (M4b-3): a four-wheeled wagon box with shafts and a brown
+## horse in front. vehicles/wagon/{empty,loaded}.png, 5 rows (S, SE, E, NE, N) of 112x80;
+## the local origin (between wagon and horse) on the ground at (56, 52). The carter walks
+## 0.45 tiles in front of it, at the horse's head.
+func _wagon() -> void:
+	_vehicle_origin = WAGON_CENTRE
+	for state: String in ["empty", "loaded"]:
+		var sheet := Image.create_empty(WAGON_FRAME.x, WAGON_FRAME.y * 5, false, Image.FORMAT_RGBA8)
+		for row: int in 5:
+			var img := Image.create_empty(WAGON_FRAME.x, WAGON_FRAME.y, false, Image.FORMAT_RGBA8)
+			var fwd := ROW_FORWARD[row]
+			var parts: Array = []
+			for f: float in [-0.95, -0.4]:
+				for side: float in [-0.25, 0.25]:
+					var hub := Vector3(f, side, 7.0)
+					parts.append([_cart_depth(fwd, hub), _cart_wheel.bind(img, fwd, hub, 7.0)])
+			parts.append([_cart_depth(fwd, Vector3(-0.68, 0, 0)) + 0.001, func() -> void:
+				_cart_box(img, fwd, Vector3(-1.1, -0.21, 9.0), Vector3(-0.25, 0.21, 17.0),
+						C_PLANK.darkened(0.12), C_WOOD.darkened(0.3))
+				if state == "loaded":
+					_cart_box(img, fwd, Vector3(-1.02, -0.16, 17.0), Vector3(-0.72, 0.16, 24.0), C_SACK, C_SACK)
+					_cart_box(img, fwd, Vector3(-0.68, -0.15, 17.0), Vector3(-0.47, 0.13, 23.0), C_CRATE, C_CRATE)
+					_cart_box(img, fwd, Vector3(-0.44, -0.12, 17.0), Vector3(-0.3, 0.12, 21.0), C_BARREL, C_BARREL)
+			])
+			for side: float in [-0.13, 0.13]:
+				parts.append([_cart_depth(fwd, Vector3(-0.05, side, 0)), _shaft.bind(img, fwd, side)])
+			for f: float in [-0.05, 0.3]:
+				for side: float in [-0.05, 0.05]:
+					parts.append([_cart_depth(fwd, Vector3(f, side, 0)), _horse_leg.bind(img, fwd, Vector3(f, side, 0))])
+			parts.append([_cart_depth(fwd, Vector3(0.12, 0, 0)) + 0.002, func() -> void:
+				_cart_box(img, fwd, Vector3(-0.12, -0.08, 12.0), Vector3(0.36, 0.08, 21.0), C_HORSE, C_HORSE)
+				_cart_box(img, fwd, Vector3(0.3, -0.05, 18.0), Vector3(0.42, 0.05, 29.0), C_HORSE, C_HORSE.darkened(0.15))
+				_cart_box(img, fwd, Vector3(0.38, -0.045, 24.0), Vector3(0.56, 0.045, 29.0), C_HORSE.lightened(0.05), C_HORSE)
+				_line(img, _cart_point(fwd, Vector3(-0.12, 0, 20.0)), _cart_point(fwd, Vector3(-0.2, 0, 11.0)),
+						Color(0.2, 0.14, 0.1), 2)
+			])
+			parts.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+			for part: Array in parts:
+				(part[1] as Callable).call()
+			_outline(img)
+			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, WAGON_FRAME), Vector2i(0, row * WAGON_FRAME.y))
+		_save(sheet, "vehicles/wagon/%s.png" % state)
+	_vehicle_origin = CART_CENTRE
+
+
+func _shaft(img: Image, fwd: Vector2, side: float) -> void:
+	_line(img, _cart_point(fwd, Vector3(-0.25, side, 13.0)), _cart_point(fwd, Vector3(0.3, side, 17.0)),
+			C_WOOD.darkened(0.15), 1)
+
+
+func _horse_leg(img: Image, fwd: Vector2, foot: Vector3) -> void:
+	_line(img, _cart_point(fwd, foot + Vector3(0, 0, 13.0)), _cart_point(fwd, foot), C_HORSE.darkened(0.25), 2)
+
+
 ## Screen point of a cart-local point (forward, side in tiles, height in px).
 func _cart_point(fwd: Vector2, p: Vector3) -> Vector2:
 	var side := Vector2(-fwd.y, fwd.x)
 	var g := fwd * p.x + side * p.y
-	return CART_CENTRE + Vector2((g.x - g.y) * 32.0, (g.x + g.y) * 16.0 - p.z)
+	return _vehicle_origin + Vector2((g.x - g.y) * 32.0, (g.x + g.y) * 16.0 - p.z)
 
 
 ## Farther parts first: larger grid x + y is nearer the camera.

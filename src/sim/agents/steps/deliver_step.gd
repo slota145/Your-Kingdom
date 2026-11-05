@@ -24,8 +24,12 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 				return Status.RUNNING
 		var dst := int(bb.get("to", 0))
 		if dst == 0:
-			dst = province.nearest_sink(agent.carry_good, agent.carry_amount, agent.tile(),
-					int(bb.get("from", 0)))
+			if agent.vehicle == Carriers.WAGON:
+				dst = Carriers.road_sink(province, agent.carry_good, agent.carry_amount, agent.tile(),
+						int(bb.get("from", 0)))
+			else:
+				dst = province.nearest_sink(agent.carry_good, agent.carry_amount, agent.tile(),
+						int(bb.get("from", 0)))
 			if dst == 0:
 				dst = _yard_with_room(province, agent)
 		var stock := province.storage(dst) if province.accepts_deliveries(dst) else null
@@ -45,7 +49,7 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 	var target := province.storage(dst_id)
 	if target == null or not target.has_reservation(int(bb["_res"])):
 		return _give_up(province, agent, step, &"target_gone")
-	var status := Movement.walk(province, agent, province.access_tile(dst_id))
+	var status := Movement.walk(province, agent, Carriers.stop_for(province, agent, dst_id))
 	if status == Status.FAILED:
 		target.cancel(int(bb["_res"]))
 		return _give_up(province, agent, step, &"no_path")

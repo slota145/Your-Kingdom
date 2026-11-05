@@ -29,7 +29,8 @@ static func serve_paths(province: ProvinceSim) -> void:
 		var agent := province.agents.get_agent(id)
 		if agent == null or agent.path_state != Agent.PathState.WAITING:
 			continue
-		var path := province.find_path(agent.tile(), agent.path_goal)
+		var path := province.find_road_path(agent.tile(), agent.path_goal) \
+				if agent.vehicle == Carriers.WAGON else province.find_path(agent.tile(), agent.path_goal)
 		if path.is_empty():
 			agent.path_state = Agent.PathState.FAILED
 			continue
@@ -59,7 +60,8 @@ static func _check_path(province: ProvinceSim, agent: Agent) -> void:
 	agent.path_version = province.nav.version
 	for i: int in range(agent.path_index, agent.path.size()):
 		var t := agent.path[i]
-		if not province.nav.is_walkable(t) and province.building_entered_at(t) == null:
+		var nav := province.road_nav if agent.vehicle == Carriers.WAGON else province.nav
+		if not nav.is_walkable(t) and province.building_entered_at(t) == null:
 			var goal := agent.path_goal
 			agent.clear_path()
 			agent.path_goal = goal

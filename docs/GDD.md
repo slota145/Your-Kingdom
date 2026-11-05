@@ -245,7 +245,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 | Korzyść | Wartość wyjściowa (do strojenia) |
 |---|---|
 | Szybszy ruch pieszych | droga ubita +50% (darmowa, od razu), brukowana +80% (M4b-3: 1 kamień na kafel, tragarze przynoszą kamień, budowniczy układa kafel po kaflu; do tego czasu kafel jest drogą ubitą) |
-| **Wozy** (tylko po drogach) | stopnie transportu: tragarz niesie **1** sztukę, mały **wózek ręczny 3**, duży **wóz konny 5–6** (tylko po drogach); przewozy między magazynami, szlaki handlowe. **Wózek (M4b-3):** sprzęt tragarza magazynu, kupowany w panelu magazynu za 3 deski (najwyżej 2 na magazyn); tragarz bierze go do zleceń od 2 sztuk; na drodze jedzie jak pieszy, poza drogą 0,7× szybkości; załadunek i rozładunek trwają 1 s na sztukę |
+| **Wozy** (tylko po drogach) | stopnie transportu: tragarz niesie **1** sztukę, mały **wózek ręczny 3**, duży **wóz konny 5–6** (tylko po drogach); przewozy między magazynami, szlaki handlowe. **Wózek (M4b-3):** sprzęt tragarza magazynu, kupowany w panelu magazynu za 3 deski (najwyżej 2 na magazyn); tragarz bierze go do zleceń od 2 sztuk; na drodze jedzie jak pieszy, poza drogą 0,7× szybkości; załadunek i rozładunek trwają 1 s na sztukę. **Wóz konny (M4b-3):** stajnia (3×3, 12 drewna, 8 desek, 40 złota) ma 2 woźniców, każdy z wozem; wóz wiezie do 6 sztuk tylko po drogach, 1,3× szybciej niż pieszy; bierze zlecenia od 4 sztuk, gdy oba końce mają drogę przed drzwiami, są od siebie o co najmniej 10 kafli i łączy je droga; ładuje na drodze przed drzwiami, a między kursami wraca do stajni |
 | Zasięg usług | liczony długością ścieżki, więc drogi pośrednio poszerzają zasięg studni, targu i kościoła |
 | Dla obu stron | wrogie wojsko i bandyci też szybciej poruszają się po drogach, co jest decyzją taktyczną |
 
@@ -307,6 +307,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Tawerna [M4b-1] | 2×2, 40 złota | usługa w zasięgu (patrycjusze), zużywa piwo i miód pitny |
 | Chlew [M4b-2] | 3×3, stado do 12 świń | świnie (świniarz karmi stado) |
 | Rzeźnia [M4b-2] | 2×2 | mięso i skóry ze świni |
+| Stajnia [M4b-3] | 3×3, 40 złota | 2 wozy konne z woźnicami |
 
 ---
 

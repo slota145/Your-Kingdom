@@ -479,6 +479,8 @@ const SLICE_BUILDINGS := {
 	# M4b-2 (meat)
 	"pigsty": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 20.0, "roof": 18.0,
 			"wall": Color(0.58, 0.44, 0.3), "roof_color": Color(0.8, 0.68, 0.36), "extra": "sheep"},
+	"stable": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 26.0, "roof": 20.0,
+			"wall": Color(0.62, 0.48, 0.32), "roof_color": Color(0.78, 0.66, 0.36), "extra": "barrels"},
 	"slaughterhouse": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
 			"wall": Color(0.75, 0.7, 0.62), "roof_color": Color(0.6, 0.28, 0.2), "extra": "barrels"},
 	"brickworks": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 18.0,
@@ -871,6 +873,16 @@ func _vehicles() -> void:
 			if state == "loaded":
 				_ellipse(sheet, centre + Vector2(0, -14), Vector2(8, 4), Color(0.86, 0.8, 0.64))
 		_save(sheet, "vehicles/handcart/%s.png" % state)
+	# Horse wagon (M4b-3): 5 rows of 112x80, origin on the ground at (56, 52).
+	for state: String in ["empty", "loaded"]:
+		var wagon := _blank(Vector2i(112, 400))
+		for row: int in 5:
+			var centre := Vector2(56, 52 + row * 80)
+			_ellipse(wagon, centre + Vector2(-14, -12), Vector2(18, 8), Color(0.55, 0.4, 0.25))
+			_ellipse(wagon, centre + Vector2(12, -16), Vector2(9, 6), Color(0.48, 0.3, 0.18))
+			if state == "loaded":
+				_ellipse(wagon, centre + Vector2(-14, -20), Vector2(10, 4), Color(0.86, 0.8, 0.64))
+		_save(wagon, "vehicles/wagon/%s.png" % state)
 
 
 func _save(img: Image, relative: String) -> void:

@@ -396,6 +396,9 @@ msgstr "idzie do: %s"
 msgid "ui.doing.go_to_work"
 msgstr "idzie do pracy"
 
+msgid "ui.doing.park"
+msgstr "odstawia wóz do stajni"
+
 msgid "ui.doing.go_to_field"
 msgstr "idzie na pole"
 
@@ -1299,6 +1302,12 @@ msgstr "Chlew"
 msgid "building.pigsty.desc"
 msgstr "Świniarz karmi świnie w zagrodzie. Od 2 świń stado samo się powiększa, tym szybciej, im jest większe. Ostatnie 2 świnie zawsze zostają."
 
+msgid "building.stable.name"
+msgstr "Stajnia"
+
+msgid "building.stable.desc"
+msgstr "Dwa wozy konne z woźnicami. Wóz wiezie 6 sztuk i jeździ tylko po drogach, szybciej niż pieszy. Bierze duże zlecenia na dalsze trasy: dostawy na budowy, stosy spod warsztatów, ładunek dla kupca. Ładuje i rozładowuje na drodze przed drzwiami, więc oba budynki muszą mieć drogę przed wejściem."
+
 msgid "building.slaughterhouse.name"
 msgstr "Rzeźnia"
 
@@ -1319,6 +1328,9 @@ msgstr "Rzeźnik prowadzi świnię, robi z niej mięso i skórę."
 
 msgid "ui.kind.swineherd"
 msgstr "Świniarz"
+
+msgid "ui.kind.carter"
+msgstr "Woźnica"
 
 msgid "ui.kind.butcher"
 msgstr "Rzeźnik"

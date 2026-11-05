@@ -15,7 +15,7 @@ const TABS: Array[Dictionary] = [
 			&"slaughterhouse"]},
 	{"id": &"drink", "buildings": [&"hop_farm", &"brewery", &"apiary", &"meadery"]},
 	{"id": &"textiles", "buildings": [&"sheep_farm", &"weaver", &"tailor"]},
-	{"id": &"storage", "buildings": [&"stockpile", &"town_hall"]},
+	{"id": &"storage", "buildings": [&"stockpile", &"town_hall", &"stable"]},
 ]
 const ICON_SIZE := Vector2(72, 56)
 

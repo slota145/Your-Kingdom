@@ -4,7 +4,8 @@ extends Node
 ##
 ## Run: godot --path . res://src/prototype/terrain/game_shot.tscn -- --shot=<png>
 ##      [--tile=X,Y] [--zoom=N] [--roads [--paved]] [--plain]
-## --carts puts 8 porters with handcarts (half loaded) around the tile, one per direction.
+## --carts puts 4 porters with handcarts and 4 carters with wagons (half loaded) around the
+## tile, 8 directions.
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -80,8 +81,11 @@ func _arrange() -> void:
 		var at := _tile if _tile.x >= 0 else sim.province.grid.size / 2
 		Game.paused = true
 		for dir: int in IsoMath.DIR_COUNT:
-			var porter := sim.province.spawn_agent(&"porter", at + Vector2i(dir % 4 * 2 - 3, dir / 4 * 3 - 1))
+			var porter := sim.province.spawn_agent(&"porter", at + Vector2i(dir % 4 * 3 - 4, dir / 4 * 4 - 2))
 			porter.vehicle = Carriers.HANDCART
+			if dir >= 4:
+				porter.kind = Carriers.CARTER_KIND
+				porter.vehicle = Carriers.WAGON
 			porter.facing = dir
 			porter.activity = &"walk"
 			if dir % 2 == 0:

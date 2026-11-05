@@ -2,7 +2,8 @@ class_name JobBoard
 extends RefCounted
 ## Open transport requests and their greedy matching to idle porters (ARCHITECTURE §5.2):
 ## every MATCH_INTERVAL ticks each request in id order gets the nearest idle porter,
-## at most MAX_ASSIGNMENTS per round.
+## at most MAX_ASSIGNMENTS per round. Big requests over longer distances go to idle carters
+## with horse wagons first (M4b-3, Carriers).
 
 const MATCH_INTERVAL := 5
 const MAX_ASSIGNMENTS := 32
@@ -117,17 +118,25 @@ func update(province: ProvinceSim) -> void:
 	if province.tick % MATCH_INTERVAL != 0 or _requests.is_empty():
 		return
 	var idle: Array[Agent] = []
+	var carters: Array[Agent] = []
 	for agent: Agent in province.agents.all():
 		if agent.kind == PORTER_KIND and agent.is_idle() and not agent.is_carrying():
 			idle.append(agent)
+		elif agent.kind == Carriers.CARTER_KIND and Carriers.carter_ready(province, agent):
+			carters.append(agent)
 	var assigned := 0
 	for request: TransportRequest in all():
+		while not carters.is_empty() and assigned < MAX_ASSIGNMENTS \
+				and request.unassigned() >= Carriers.WAGON_MIN and request.retry_at <= province.tick:
+			if not _assign_wagon(province, request, carters):
+				break
+			assigned += 1
 		while not idle.is_empty() and assigned < MAX_ASSIGNMENTS and request.unassigned() > 0 \
 				and request.retry_at <= province.tick:
 			if not _assign_one(province, request, idle):
 				break
 			assigned += 1
-		if idle.is_empty() or assigned >= MAX_ASSIGNMENTS:
+		if (idle.is_empty() and carters.is_empty()) or assigned >= MAX_ASSIGNMENTS:
 			return
 
 
@@ -170,6 +179,59 @@ func _assign_one(province: ProvinceSim, request: TransportRequest, idle: Array[A
 	porter.task.bb["from"] = src
 	porter.task.bb["_src"] = src
 	porter.task.bb["_res"] = source.reserve_out(request.good, load, porter.id)
+	request.in_flight += load
+	return true
+
+
+## Gives one wagon load of [param request] to the nearest of [param carters] when both ends
+## have a road in front of a door, far enough apart and joined by road (M4b-3).
+func _assign_wagon(province: ProvinceSim, request: TransportRequest, carters: Array[Agent]) -> bool:
+	var good_def := province.data.get_good(request.good)
+	if good_def == null or good_def.is_live():
+		return false
+	if (request.source_id != 0 and province.storage(request.source_id) == null) \
+			or (request.dest_id != 0 and not province.accepts_deliveries(request.dest_id)):
+		return false
+	var keep_reserve := province.sites.has(request.dest_id) or province.paving.has(request.dest_id)
+	var src := request.source_id
+	if src == 0:
+		src = province.nearest_source(request.good, Carriers.WAGON_MIN,
+				province.access_tile(request.dest_id), request.dest_id, keep_reserve)
+	if src == 0 or not province.can_give(src, request.good, Carriers.WAGON_MIN, keep_reserve):
+		return false
+	var src_stop := province.road_stop(src)
+	if src_stop == Agent.NO_TILE:
+		return false
+	var dst := request.dest_id
+	if dst == 0:
+		dst = Carriers.road_sink(province, request.good, Carriers.WAGON_MIN, src_stop, src)
+	var dst_stop := province.road_stop(dst, src_stop) if dst != 0 else Agent.NO_TILE
+	if dst_stop == Agent.NO_TILE or src_stop.distance_to(dst_stop) < Carriers.WAGON_MIN_TILES:
+		return false
+	var load := 0
+	for amount: int in range(mini(Carriers.WAGON_LOAD, request.unassigned()), Carriers.WAGON_MIN - 1, -1):
+		if province.can_give(src, request.good, amount, keep_reserve) \
+				and province.storage(dst).can_accept(request.good, amount):
+			load = amount
+			break
+	if load == 0:
+		return false
+	var best := 0
+	for i: int in range(1, carters.size()):
+		if carters[i].pos.distance_squared_to(Vector2(src_stop)) < carters[best].pos.distance_squared_to(Vector2(src_stop)):
+			best = i
+	var carter := carters[best]
+	if province.road_nav.find_path(src_stop, dst_stop).is_empty() \
+			or province.find_road_path(carter.tile(), src_stop).is_empty():
+		return false
+	carters.remove_at(best)
+	carter.clear_path()
+	TaskRunner.start_transport(carter, request, load)
+	carter.vehicle = Carriers.WAGON
+	carter.task.bb["from"] = src
+	carter.task.bb["to"] = dst
+	carter.task.bb["_src"] = src
+	carter.task.bb["_res"] = province.storage(src).reserve_out(request.good, load, carter.id)
 	request.in_flight += load
 	return true
 

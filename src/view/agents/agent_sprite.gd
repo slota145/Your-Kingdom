@@ -8,11 +8,13 @@ const CARRIED_FRAME := Vector2i(24, 24)
 ## a little behind, relative to the feet (the overlay is centred).
 const LED_OFFSET := Vector2(13.0, -7.0)
 
-## Vehicle sheets (M4b-3): 5 rows (S, SE, E, NE, N) of this size, the vehicle's centre on the
-## ground at VEHICLE_CENTRE; it stands VEHICLE_AHEAD tiles in front of the person's feet.
-const VEHICLE_FRAME := Vector2i(48, 40)
-const VEHICLE_CENTRE := Vector2(24, 30)
-const VEHICLE_AHEAD := 0.4
+## Vehicle sheets (M4b-3, tools/generate_goods.gd): 5 rows (S, SE, E, NE, N) of "frame", the
+## vehicle's origin on the ground at "centre"; it stands "ahead" tiles in front of the
+## person's feet (a handcart is pushed, a wagon follows its carter).
+const VEHICLES: Dictionary[StringName, Dictionary] = {
+	&"handcart": {"frame": Vector2i(48, 40), "centre": Vector2(24, 30), "ahead": 0.4},
+	&"wagon": {"frame": Vector2i(112, 80), "centre": Vector2(56, 52), "ahead": -0.6},
+}
 ## Forward vector in grid space of the vehicle rows (as in tools/generate_goods.gd).
 const ROW_FORWARD: Array[Vector2] = [Vector2(0.7071, 0.7071), Vector2(1, 0), Vector2(0.7071, -0.7071),
 		Vector2(0, -1), Vector2(-0.7071, -0.7071)]
@@ -59,20 +61,24 @@ func _update_vehicle(row_flip: Vector2i, vehicle: StringName, loaded: bool) -> v
 	_vehicle.visible = vehicle != &""
 	if vehicle == &"":
 		return
+	var spec: Dictionary = VEHICLES.get(vehicle, VEHICLES[&"handcart"])
+	var frame_size: Vector2i = spec["frame"]
 	var row := mini(row_flip.x, ROW_FORWARD.size() - 1)
 	_vehicle.texture = _carried_texture_at("vehicles/%s/%s.png" % [vehicle, "loaded" if loaded else "empty"])
-	_vehicle.region_rect = Rect2(0, row * VEHICLE_FRAME.y, VEHICLE_FRAME.x, VEHICLE_FRAME.y)
+	_vehicle.region_rect = Rect2(0, row * frame_size.y, frame_size.x, frame_size.y)
 	_vehicle.flip_h = row_flip.y == 1
-	var g := ROW_FORWARD[row] * VEHICLE_AHEAD
-	var ahead := Vector2((g.x - g.y) * IsoMath.HALF_W, (g.x + g.y) * IsoMath.HALF_W / 2.0)
-	var centre := VEHICLE_CENTRE
+	var ahead_tiles: float = spec["ahead"]
+	var g := ROW_FORWARD[row] * ahead_tiles
+	var ahead := Vector2((g.x - g.y) * IsoMath.HALF_W, (g.x + g.y) * IsoMath.HALF_H)
+	var centre: Vector2 = spec["centre"]
 	if row_flip.y == 1:
 		ahead.x = -ahead.x
-		centre.x = VEHICLE_FRAME.x - centre.x
+		centre.x = frame_size.x - centre.x
 	# Children are placed from the node origin, which is the person's feet.
 	_vehicle.position = ahead - centre
-	# Going away from the camera the cart is behind the person.
-	_vehicle.show_behind_parent = row >= 3
+	# A vehicle farther from the camera than the person is drawn behind him: a pushed cart
+	# when walking away, a following wagon when walking towards the camera or sideways.
+	_vehicle.show_behind_parent = row >= 3 if ahead_tiles > 0.0 else row <= 2
 
 
 func _update_good(sheet: CharacterSheet, row_flip: Vector2i, column: int,

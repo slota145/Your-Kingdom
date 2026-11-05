@@ -33,6 +33,8 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 		return _with_progress(_t("ui.activity.%s" % agent.activity), task, step)
 	if task.kind == Task.KIND_MOVE_IN:
 		return _f("ui.doing.move_in", [_building_name(province, agent.home_id)])
+	if task.kind == Task.KIND_PARK:
+		return _t("ui.doing.park" if agent.vehicle == Carriers.WAGON else "ui.doing.go_to_work")
 	if task.kind == Task.KIND_BUILD and province.paving.has(int(task.bb.get("site", 0))):
 		return _t("ui.doing.go_pave")
 	if task.kind == Task.KIND_BUILD:

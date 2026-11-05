@@ -391,6 +391,9 @@ msgstr "walking to: %s"
 msgid "ui.doing.go_to_work"
 msgstr "going to work"
 
+msgid "ui.doing.park"
+msgstr "taking the wagon back to the stable"
+
 msgid "ui.doing.go_to_field"
 msgstr "walking to the field"
 
@@ -1282,6 +1285,12 @@ msgstr "Pigsty"
 msgid "building.pigsty.desc"
 msgstr "The swineherd feeds the pigs in the pen. From 2 pigs the herd grows by itself, the faster the bigger it is. The last 2 pigs always stay."
 
+msgid "building.stable.name"
+msgstr "Stable"
+
+msgid "building.stable.desc"
+msgstr "Two horse wagons with carters. A wagon carries 6 units and drives on roads only, faster than people on foot. It takes big jobs over longer distances: deliveries to building sites, yards of workshops, loads for the merchant. It loads and unloads on the road in front of a door, so both buildings need a road at their entrance."
+
 msgid "building.slaughterhouse.name"
 msgstr "Slaughterhouse"
 
@@ -1302,6 +1311,9 @@ msgstr "The butcher leads a pig in and makes meat and a hide of it."
 
 msgid "ui.kind.swineherd"
 msgstr "Swineherd"
+
+msgid "ui.kind.carter"
+msgstr "Carter"
 
 msgid "ui.kind.butcher"
 msgstr "Butcher"
