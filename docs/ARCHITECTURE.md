@@ -358,7 +358,7 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - `BuildingLayer` wybiera grafikę ze stanu: plac budowy fazy 1 lub 2 ze stosem materiałów, gotowy budynek, dom na swoim poziomie (wariant pierzei z `HouseRowResolver`), rusztowanie przy awansie, plac magazynu ze stosami. Nad budynkiem bez pracowników jest znak „!”.
 - `data/visuals/buildings/<id>.tres` (`BuildingVisualDef`): folder grafik, grafiki poziomów domu, od którego poziomu domy łączą się w pierzeję, przesunięcia punktów pracy (`spot_offsets`, np. piec i stół w piekarni). `data/visuals/agents/<kind>.tres` (`AgentVisualDef`): postać i kolor zawodu.
 - UI (`src/ui`) opisuje postać przez `AgentDescriber` z tych samych danych, które animuje widok (czynność, bieżący krok, niesiony towar), więc tekst zgadza się z obrazem.
-- Scena gry: `src/main/game_scene.tscn`. Gracz zmienia stan wyłącznie komendami. Szybki zapis to F5 albo przycisk, a odczyt F9, przycisk albo menu główne. Pseudolokalizacja do sprawdzania długości tekstów: F11.
+- Scena gry: `src/main/game_scene.tscn`. Gracz zmienia stan wyłącznie komendami. Szybki zapis to F5, przycisk albo powrót do menu głównego (żeby pomyłkowe kliknięcie nie kasowało gry), a odczyt F9, przycisk albo menu główne. Pseudolokalizacja do sprawdzania długości tekstów: F11.
 
 ### 6.7 Kamera i zoom
 

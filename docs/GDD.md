@@ -220,6 +220,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 
 - Budynki zajmują prostokątny obszar kafli (footprint). Mają **wejście** na wskazanym kaflu krawędzi, w które postacie wchodzą i z którego wychodzą.
 - Budowa jest fizyczna: plac budowy, dostawa materiałów przez tragarzy, praca budowniczego i fazy budowy.
+- Budynku nie da się postawić tam, gdzie ludzie nie dojdą, ani tak, żeby odciął drogę do wejścia innego budynku, towarów na ziemi albo ludzi (decyzja 2026-11-05: zamurowany plac budowy blokował tragarzy i budowniczych). Budowniczy, który nie może dojść do placu, idzie na następny. Gdy wejście wypadłoby od strony wody (np. chata rybaka obrócona drzwiami do rzeki), gracz dostaje osobny komunikat.
 - Rozbiórka zwraca część materiałów, które trafiają na plac budowy i stamtąd są odnoszone do magazynu.
 
 ### 5.2 Drogi

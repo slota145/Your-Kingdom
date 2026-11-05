@@ -185,7 +185,56 @@ func placement_error(def: BuildingDef, origin: Vector2i) -> StringName:
 		if t != entrance and t.x >= origin.x and t.y >= origin.y \
 				and t.x < origin.x + def.footprint.x and t.y < origin.y + def.footprint.y:
 			return &"tile_has_people"
-	return &""
+	return _access_error(def, origin)
+
+
+## People must be able to walk to the new building, and it must not wall off any entrance,
+## ground pile or person they could reach before (a sealed-off site stalls porters and
+## builders for good).
+func _access_error(def: BuildingDef, origin: Vector2i) -> StringName:
+	var entrance := origin + def.entrance
+	var blocked: Dictionary[Vector2i, bool] = {}
+	for tile: Vector2i in def.footprint_tiles(origin):
+		if tile != entrance:
+			blocked[tile] = true
+	var entrances: Dictionary[Vector2i, bool] = {}
+	for building: BuildingState in buildings.all():
+		entrances[building.entrance_tile()] = true
+	if entrances.is_empty():
+		return &""
+	var targets: Dictionary[Vector2i, bool] = entrances.duplicate()
+	for pile: GroundPile in piles.values():
+		targets[pile.tile] = true
+	for agent: Agent in agents.all():
+		targets[agent.tile()] = true
+	var before := nav.reachable(entrance, targets)
+	var after := nav.reachable(entrance, before, blocked)
+	if not _has_any(after, entrances):
+		return &"entrance_faces_water" if _entrance_faces_water(entrance, blocked) else &"no_access"
+	return &"" if after.size() == before.size() else &"blocks_access"
+
+
+static func _has_any(tiles: Dictionary[Vector2i, bool], wanted: Dictionary[Vector2i, bool]) -> bool:
+	for tile: Vector2i in tiles:
+		if wanted.has(tile):
+			return true
+	return false
+
+
+## The entrance has no free tile to step out to, and water is in the way (a building
+## turned with its door to the river): the player gets a clearer hint than no_access.
+func _entrance_faces_water(entrance: Vector2i, blocked: Dictionary[Vector2i, bool]) -> bool:
+	var water := false
+	for step: Vector2i in [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.DOWN, Vector2i.UP]:
+		var next := entrance + step
+		if blocked.has(next):
+			continue
+		if nav.is_walkable(next):
+			return false
+		var terrain := terrain_at(next)
+		if terrain != null and terrain.id == &"water":
+			water = true
+	return water
 
 
 ## Whether a tile of terrain [member BuildingDef.needs_terrain_near] lies within the work

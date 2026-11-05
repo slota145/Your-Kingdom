@@ -124,16 +124,19 @@ static func refund(def: BuildingDef) -> Dictionary[StringName, int]:
 	return result
 
 
-## The nearest site a builder can work on now; 0 if none.
+## The nearest site a builder can work on now and walk to; 0 if none. A site cut off from
+## the builder is skipped, so it never holds up the others.
 static func site_for(province: ProvinceSim, builder: Agent) -> int:
-	var best := 0
-	var best_d := 1 << 30
+	var candidates: Array[Array] = []
 	for site: ConstructionSite in province.sites.values():
 		if not site.is_workable():
 			continue
 		var building := province.buildings.get_building(site.building_id)
-		var d := (building.entrance_tile() - builder.tile()).length_squared()
-		if d < best_d:
-			best_d = d
-			best = site.id
-	return best
+		candidates.append([(building.entrance_tile() - builder.tile()).length_squared(), site.id,
+				building.entrance_tile()])
+	candidates.sort_custom(func(a: Array, b: Array) -> bool:
+		return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
+	for candidate: Array in candidates:
+		if not province.nav.find_path(builder.tile(), candidate[2]).is_empty():
+			return candidate[1]
+	return 0

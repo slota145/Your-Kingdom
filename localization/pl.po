@@ -510,6 +510,15 @@ msgstr "Tu nie da się budować."
 msgid "ui.command_error.tile_has_people"
 msgstr "Ktoś tu stoi."
 
+msgid "ui.command_error.no_access"
+msgstr "Ludzie nie dojdą w to miejsce."
+
+msgid "ui.command_error.blocks_access"
+msgstr "To zablokuje drogę do innych budynków."
+
+msgid "ui.command_error.entrance_faces_water"
+msgstr "Wejście wychodzi na wodę. Przesuń budynek."
+
 msgid "ui.command_error.not_a_farm"
 msgstr "To nie jest farma."
 
