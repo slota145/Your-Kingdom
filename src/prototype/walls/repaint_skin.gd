@@ -12,6 +12,9 @@ const Model := preload("res://src/prototype/walls/block_wall_model.gd")
 const Reference := preload("res://src/prototype/walls/export_reference.gd")
 const PX_PER_TILE := 32.0
 const TOP_TEXELS := 64
+## Extra pixels sampled past the end of a sample and cross-faded into its start, so the
+## texture repeats without a visible seam.
+const BLEND := 8
 
 ## A texture whose u (and v for tops) repeat every [member period] grid units, starting at
 ## grid coordinate [member origin].
@@ -45,9 +48,10 @@ func _cut_walls(img: Image) -> void:
 	var model := Model.new()
 	var focus := Reference.layout(model, "wall", Vector2i.ZERO)
 	# Faces of the reference layout that nothing covers (see Reference.layout):
-	lit = _face(img, focus, Vector2(2, 2), Vector2(4, 2), Model.HEIGHT)     # double wall, front
-	dark = _face(img, focus, Vector2(1, 2), Vector2(1, 3), Model.HEIGHT)    # side wall, right
-	top = _top(img, focus, Vector2(0.7, 0.3), Vector2(2, 1), Model.HEIGHT)  # double wall crown
+	# Kept away from corners, where the reference has outlines and shadows.
+	lit = _face(img, focus, Vector2(1.6, 2), Vector2(3.6, 2), Model.HEIGHT)      # double wall, front
+	dark = _face(img, focus, Vector2(1, 2.1), Vector2(1, 2.85), Model.HEIGHT)    # side wall, right
+	top = _top(img, focus, Vector2(0.7, 0.3), Vector2(2, 0.75), Model.HEIGHT)    # double wall crown
 	merlon_color = _average(top.texture.get_image()).lerp(_average(lit.texture.get_image()), 0.5)
 	outline = _average(dark.texture.get_image()).darkened(0.55)
 
@@ -56,13 +60,14 @@ func _cut_walls(img: Image) -> void:
 ## screen pixel along the face, one row per pixel of height (row 0 = top of the wall).
 func _face(img: Image, focus: Vector2, a: Vector2, b: Vector2, h: float) -> Sample:
 	var width := roundi(a.distance_to(b) * PX_PER_TILE)
-	var out := Image.create_empty(width, int(h), false, Image.FORMAT_RGBA8)
-	for c: int in width:
-		var p := a.lerp(b, (c + 0.5) / width)
+	var dir := (b - a).normalized()
+	var raw := Image.create_empty(width + BLEND, int(h), false, Image.FORMAT_RGBA8)
+	for c: int in width + BLEND:
+		var p := a + dir * (c + 0.5) / PX_PER_TILE
 		for r: int in int(h):
-			out.set_pixel(c, r, _at(img, focus, IsoMath.grid_to_screen(p) - Vector2(0, h - r - 0.5)))
+			raw.set_pixel(c, r, _at(img, focus, IsoMath.grid_to_screen(p) - Vector2(0, h - r - 0.5)))
 	var s := Sample.new()
-	s.texture = ImageTexture.create_from_image(out)
+	s.texture = ImageTexture.create_from_image(_seamless(raw, Vector2i(width, int(h)), Vector2i(BLEND, 0)))
 	s.origin = a
 	s.period = Vector2(a.distance_to(b), 1)
 	s.height = h
@@ -71,13 +76,15 @@ func _face(img: Image, focus: Vector2, a: Vector2, b: Vector2, h: float) -> Samp
 
 ## Crown top resampled into grid space: TOP_TEXELS per tile in both grid axes.
 func _top(img: Image, focus: Vector2, origin: Vector2, size: Vector2, h: float) -> Sample:
-	var out := Image.create_empty(int(size.x * TOP_TEXELS), int(size.y * TOP_TEXELS), false, Image.FORMAT_RGBA8)
-	for i: int in out.get_width():
-		for j: int in out.get_height():
+	var w := int(size.x * TOP_TEXELS)
+	var hh := int(size.y * TOP_TEXELS)
+	var raw := Image.create_empty(w + BLEND, hh + BLEND, false, Image.FORMAT_RGBA8)
+	for i: int in w + BLEND:
+		for j: int in hh + BLEND:
 			var p := origin + Vector2(i + 0.5, j + 0.5) / TOP_TEXELS
-			out.set_pixel(i, j, _at(img, focus, IsoMath.grid_to_screen(p) - Vector2(0, h)))
+			raw.set_pixel(i, j, _at(img, focus, IsoMath.grid_to_screen(p) - Vector2(0, h)))
 	var s := Sample.new()
-	s.texture = ImageTexture.create_from_image(out)
+	s.texture = ImageTexture.create_from_image(_seamless(raw, Vector2i(w, hh), Vector2i(BLEND, BLEND)))
 	s.origin = origin
 	s.period = size
 	return s
@@ -112,6 +119,26 @@ func _cut_gatehouse(img: Image) -> void:
 	flipped.flip_x()
 	gatehouse_flipped = ImageTexture.create_from_image(flipped)
 	gatehouse_pivot = Vector2i(_image_point(focus, IsoMath.grid_to_screen(Vector2(3, 3))).round())
+
+
+## [param size] image from [param raw], whose extra [param blend] columns/rows past the end
+## are cross-faded into the first ones, so the result tiles seamlessly.
+static func _seamless(raw: Image, size: Vector2i, blend: Vector2i) -> Image:
+	var out := Image.create_empty(size.x, size.y + blend.y, false, Image.FORMAT_RGBA8)
+	for y: int in size.y + blend.y:
+		for x: int in size.x:
+			var c := raw.get_pixel(x, y)
+			if x < blend.x:
+				c = raw.get_pixel(x + size.x, y).lerp(c, (x + 0.5) / blend.x)
+			out.set_pixel(x, y, c)
+	var result := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)
+	for y: int in size.y:
+		for x: int in size.x:
+			var c := out.get_pixel(x, y)
+			if y < blend.y:
+				c = out.get_pixel(x, y + size.y).lerp(c, (y + 0.5) / blend.y)
+			result.set_pixel(x, y, c)
+	return result
 
 
 static func _image_point(focus: Vector2, screen: Vector2) -> Vector2:

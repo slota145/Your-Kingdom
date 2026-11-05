@@ -334,6 +334,7 @@ Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
 - **Cięcie przemalowania na kawałki działa** (`src/prototype/walls/repaint_skin.gd`, klawisz K w piaskownicy przełącza mur z PixelLab i mur rysowany kodem):
   - z przemalowanego muru wycinamy 3 próbki i prostujemy je do prostokątów: ścianę jasną (+y, 2 kafle), ścianę ciemną (+x, 1 kafel) i wierzch korony (2×1 kafla); kod rysuje nimi mur w dowolnym kształcie, a blanki dostają średni kolor kamienia,
   - wieżę bramną wycinamy z przemalowania maską z rzutu jej kawałków i używamy jak grafiki budynku (paski z `BuildingSlicer`); druga orientacja to odbicie lustrzane, więc światło jest wtedy odwrócone (przy grafice docelowej: osobne przemalowanie drugiej orientacji),
-  - próbki muszą pochodzić z miejsc niczym nie zasłoniętych i w całości na obrazku, inaczej wychodzą smugi; przy kilku kaflach powtórzenie wzoru jest ledwo widoczne.
+  - próbki muszą pochodzić z miejsc niczym nie zasłoniętych i w całości na obrazku, z dala od narożników (tam wzór ma kontury i cienie), inaczej wychodzą smugi albo pionowe linie co kafel,
+  - próbki są bezszwowe: wycinamy 8 px więcej i płynnie przenikamy nadmiar w początek próbki.
 - **Tilesety właściciela projektu są top-down (kwadratowe Wang, 64×64).** Jednolite kafle (trawa, zaorana ziemia) da się rzutować na romb 64×32 (obrót o 45° i spłaszczenie, próbkowanie najbliższym pikselem). Wychodzi bez szwów, a faktura trawy i bruzd wygląda naturalnie. Kafle przejść (brzegi) po rzutowaniu nie pasują do naszych sąsiedztw, więc przejścia trzeba robić osobno. Trawa jest bardziej nasycona niż paleta z §1.
 - **Sieć:** środowisko w chmurze ma dostęp do `backblaze.pixellab.ai` (Allowed domains), więc pliki pobieramy bezpośrednio.

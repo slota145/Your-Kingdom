@@ -21,11 +21,16 @@ const GATEHOUSE_SIZE := 3
 const GATEHOUSE_EXTRA := 32.0
 const GATEHOUSE_LINTEL := 50.0
 const PILLAR := 0.2
-const MERLON_HEIGHT := 9.0
-const MERLON_WIDTH := 0.14
-const MERLON_DEPTH := 0.12
-const MERLON_PERIOD := 0.25
-## Screen px an object on the crown sorts after the piece it stands on.
+## Battlements: a parapet flush with the outer face, merlons standing on it (about
+## shoulder height of a 42 px person in total), three merlons per tile edge.
+const PARAPET_HEIGHT := 16.0
+const PARAPET_DEPTH := 0.16
+const MERLON_HEIGHT := 14.0
+const MERLON_WIDTH := 0.2
+const MERLON_DEPTH := PARAPET_DEPTH
+const MERLON_PERIOD := 1.0 / 3.0
+## Screen px an object on the crown sorts after the piece it stands on. People use three
+## times this, so they come after the parapet (+1) and merlons (+2) behind them.
 const CROWN_BIAS := 1.0
 
 const ORTHO: Array[Vector2i] = [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
@@ -175,7 +180,7 @@ func crown_sort_key(p: Vector2, radius: float = 0.16) -> float:
 			Vector2(0, radius), Vector2(0, -radius)]:
 		var tile := Vector2i((p + offset).floor())
 		if crown_keys.has(tile):
-			key = maxf(key, crown_keys[tile] + CROWN_BIAS)
+			key = maxf(key, crown_keys[tile] + CROWN_BIAS * 3.0)
 	return key
 
 
@@ -323,10 +328,11 @@ func _box(kind: StringName, tile: Vector2i, along: Vector2i, across: Vector2i,
 	return Piece.new(kind, tile, poly, packed, z0, z1)
 
 
-## Merlons along every exposed rim of a crown piece, sorted after the piece they stand on.
+## Parapet along every exposed rim of a crown piece, merlons on top of it. Each sorts
+## after the piece it stands on.
 func _merlons(support: Piece) -> Array[Piece]:
 	var result: Array[Piece] = []
-	var base := support.z1
+	var base := support.z1 + PARAPET_HEIGHT
 	var center := support.centroid()
 	var n := support.poly.size()
 	for i: int in n:
@@ -338,6 +344,12 @@ func _merlons(support: Piece) -> Array[Piece]:
 		var inward := dir.orthogonal()
 		if inward.dot(center - (a + b) * 0.5) < 0.0:
 			inward = -inward
+		var parapet := Piece.new(&"parapet", support.tile, PackedVector2Array([a, b,
+				b + inward * PARAPET_DEPTH, a + inward * PARAPET_DEPTH]),
+				PackedByteArray([Edge.EXPOSED, Edge.JOINED, Edge.EXPOSED, Edge.JOINED]),
+				support.z1, base)
+		parapet.sort_point.y = maxf(parapet.sort_point.y, support.sort_point.y + CROWN_BIAS)
+		result.append(parapet)
 		for t: float in _merlon_positions(a, b):
 			var m := a.lerp(b, t)
 			var w := dir * MERLON_WIDTH * 0.5
@@ -345,7 +357,7 @@ func _merlons(support: Piece) -> Array[Piece]:
 					m - w + inward * MERLON_DEPTH])
 			var states := PackedByteArray([Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED, Edge.EXPOSED])
 			var merlon := Piece.new(&"merlon", support.tile, poly, states, base, base + MERLON_HEIGHT)
-			merlon.sort_point.y = maxf(merlon.sort_point.y, support.sort_point.y + CROWN_BIAS)
+			merlon.sort_point.y = maxf(merlon.sort_point.y, parapet.sort_point.y + CROWN_BIAS)
 			result.append(merlon)
 	return result
 

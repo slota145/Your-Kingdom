@@ -202,7 +202,7 @@ func rebuild(model: Model) -> void:
 		if skin != null and model.gatehouse_tiles.has(piece.tile):
 			continue
 		var node := PieceNode.new()
-		node.skin = null if piece.kind == &"merlon" else skin
+		node.skin = skin
 		node.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 		node.piece = piece
 		node.color = GATEHOUSE_STONE if String(piece.kind).begins_with("gh_") else STONE
