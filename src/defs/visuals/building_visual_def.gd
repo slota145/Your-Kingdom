@@ -13,8 +13,19 @@ extends Resource
 @export_range(0, 3) var row_from_level: int = 0
 ## Drawn as an open yard with stacks instead of a box (stockpiles).
 @export var yard: bool = false
+## Number of looks of the "base" art: "base", "base_2", "base_3"... Each building picks one
+## by its position, so a village of huts is not a row of copies.
+@export_range(1, 8) var base_variants: int = 1
 ## Work spot name -> pixel offset from the entrance tile centre where the worker is drawn.
 @export var spot_offsets: Dictionary[StringName, Vector2] = {}
+
+
+## Art name of the variant of [param name] for a building at [param origin] ("base" only).
+func variant_name(name: String, origin: Vector2i) -> String:
+	if name != "base" or base_variants <= 1:
+		return name
+	var pick := absi(origin.x * 73856093 ^ origin.y * 19349663) % base_variants
+	return name if pick == 0 else "%s_%d" % [name, pick + 1]
 
 
 static func for_building(id: StringName) -> BuildingVisualDef:

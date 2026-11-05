@@ -26,6 +26,7 @@ GODOT="/c/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"  
 "$GODOT" --headless --path . --import                               # reimport zasobów i cache klas
 tools/run_tests.sh                                                  # wszystkie testy (gdUnit4 v6.2.2), headless
 "$GODOT" --headless --path . -s res://tools/generate_placeholders.gd   # generowanie placeholderów
+"$GODOT" --headless --path . -s res://tools/generate_art.gd            # grafiki budynków rysowane kodem (assets/buildings)
 ```
 
 Raporty testów trafiają do `reports/` (ignorowane przez git). Nowy `class_name` wymaga importu, żeby trafił do cache klas. `run_tests.sh` robi to automatycznie. Przy ręcznym uruchamianiu najpierw zrób import.

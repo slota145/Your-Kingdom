@@ -364,3 +364,16 @@ Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
 - **Kafle mają przyciemnione dolne krawędzie** (jakby miały grubość, mimo `tile_depth_ratio=0`). Ułożone obok siebie dają widoczną kratkę. Poprawka: `tools/pixellab_tile_edges.py` wyrównuje jasność pasa przy każdej krawędzi do środka kafla i przycina wynik do rombu 64×32.
 - **Nawet idealne styki nie ukryją siatki,** bo oko łapie powtarzający się co 64 px wzór. Rozwiązanie to teren organiczny (§8.1). Wzory o dużym kontraście (fale na wodzie) trzeba złagodzić (zmieszać ze średnim kolorem) i mieszać dwa warianty.
 - PixelLab nie ma narzędzia, które gwarantuje bezszwowe kafle izometryczne ani organiczne przejścia (potwierdzone w ich pomocy).
+
+### 10.3 Budynki rysowane kodem (2026-11-05)
+
+**Decyzja właściciela projektu:** zanim powstaną grafiki z PixelLab albo ręczne, budynki rysuje kod, starannie, jako grafiki docelowe w `assets/buildings/` (placeholdery zostają bez zmian). Narzędzie: `tools/generate_art.gd`.
+
+- **Bryły zamiast klocków:** budynek składa się z kilku brył: dom z dachem dwuspadowym lub czterospadowym, przybudówka, otwarta wiata (widać pracę w środku: piec, kozioł z kłodą, kocioł, bloki kamienia), okrągła wieża ze stożkowym dachem (wiatrak, suszarnia chmielu), wieża z iglicą (kościół, kaplica, ratusz z zegarem). Bryły rysujemy od tyłu do przodu.
+- **Bryła mniejsza od kratek:** ściany stoją ok. 0,14 kafla od krawędzi footprintu, więc wokół budynku widać ziemię. Wyjątek: domy mieszczańskie w pierzei stykają się wzdłuż rzędu.
+- **Materiały** w układzie każdej ściany i połaci: szachulec, kamień, bale, deski, tynk, strzecha, gont, dachówka, łupek. Okna z okiennicami, drzwi zawsze na kaflu wejścia, kominy na dachu.
+- **Warianty wyglądu:** `BuildingVisualDef.base_variants` (pliki `base`, `base_2`, `base_3`...). Budynek wybiera wariant według położenia na mapie. Chata ma 3: szachulcowa z drewutnią, z bali z przybudówką, tynkowana w kształcie litery L. Placeholdery mają te same nazwy plików.
+- **Place budowy:** faza 1 to kamienny fundament, paliki ze sznurkiem i sterty materiałów, faza 2 to szkielet z belek i krokwi, część deskowania, rusztowanie i drabina.
+- Światło według §1, kontur 1 px w ciemniejszym odcieniu własnego koloru. Rozmiary i pivoty jak w §3.2. Plik `.json` obok każdego `.png`.
+- **Ograniczenie:** rysunek z prostych brył, czytelny, ale nie ręcznie malowany. Każdy plik można później podmienić lepszą grafiką bez zmian w kodzie.
+- **Jeszcze niezrobione:** postacie (druga partia), stosy towarów w magazynie, skały i drzewa, plac magazynu.

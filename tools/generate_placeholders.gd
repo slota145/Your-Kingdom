@@ -370,6 +370,10 @@ func _buildings() -> void:
 		if b["walls"] > 0.0:
 			_building(id, fp, entrance, b["walls"], b["roof"], b["wall"], b["roof_color"],
 					"base", "hip_both", b.get("extra", ""))
+			# Look variants (data/visuals base_variants) share the placeholder.
+			for v: int in range(2, int(b.get("variants", 1)) + 1):
+				_building(id, fp, entrance, b["walls"], b["roof"], b["wall"], b["roof_color"],
+						"base_%d" % v, "hip_both", b.get("extra", ""))
 		_site(id, fp, 1)
 		_site(id, fp, 2)
 	# House level 2 (burgher house) and its row variants (ARCHITECTURE §6.6, ART_SPEC §7).
@@ -393,7 +397,7 @@ const SLICE_BUILDINGS := {
 	"stockpile": {"footprint": Vector2i(4, 4), "entrance": Vector2i(1, 3), "walls": 0.0, "roof": 0.0,
 			"wall": Color.WHITE, "roof_color": Color.WHITE},
 	"hut": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 26.0,
-			"wall": Color(0.76, 0.66, 0.48), "roof_color": Color(0.78, 0.66, 0.32)},
+			"wall": Color(0.76, 0.66, 0.48), "roof_color": Color(0.78, 0.66, 0.32), "variants": 3},
 	"well": {"footprint": Vector2i(1, 1), "entrance": Vector2i(0, 0), "walls": 10.0, "roof": 20.0,
 			"wall": Color(0.62, 0.62, 0.64), "roof_color": Color(0.5, 0.32, 0.2), "extra": "well"},
 	"woodcutter": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 22.0,

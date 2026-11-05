@@ -78,6 +78,8 @@ func _art_key(building: BuildingState, rows: Dictionary[int, Array]) -> String:
 		if visual.row_from_level > 0 and level >= visual.row_from_level and rows.has(building.id):
 			var row: Array = rows[building.id]
 			name = "%s_%s_%s" % [name, row[0], row[1]]
+	if visual != null:
+		name = visual.variant_name(name, building.origin)
 	var key := "buildings/%s/%s" % [art_id, name]
 	var site := province.sites.get(building.site_id) as ConstructionSite
 	if site != null and site.kind == ConstructionSite.KIND_UPGRADE:
