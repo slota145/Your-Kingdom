@@ -516,6 +516,9 @@ msgstr "Ludzie nie dojdą w to miejsce."
 msgid "ui.command_error.blocks_access"
 msgstr "To zablokuje drogę do innych budynków."
 
+msgid "ui.command_error.entrance_faces_water"
+msgstr "Wejście wychodzi na wodę. Przesuń budynek."
+
 msgid "ui.command_error.not_a_farm"
 msgstr "To nie jest farma."
 

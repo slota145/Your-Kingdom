@@ -208,15 +208,33 @@ func _access_error(def: BuildingDef, origin: Vector2i) -> StringName:
 	for agent: Agent in agents.all():
 		targets[agent.tile()] = true
 	var before := nav.reachable(entrance, targets)
-	var reaches_town := false
-	for tile: Vector2i in before:
-		if entrances.has(tile):
-			reaches_town = true
-			break
-	if not reaches_town:
-		return &"no_access"
 	var after := nav.reachable(entrance, before, blocked)
+	if not _has_any(after, entrances):
+		return &"entrance_faces_water" if _entrance_faces_water(entrance, blocked) else &"no_access"
 	return &"" if after.size() == before.size() else &"blocks_access"
+
+
+static func _has_any(tiles: Dictionary[Vector2i, bool], wanted: Dictionary[Vector2i, bool]) -> bool:
+	for tile: Vector2i in tiles:
+		if wanted.has(tile):
+			return true
+	return false
+
+
+## The entrance has no free tile to step out to, and water is in the way (a building
+## turned with its door to the river): the player gets a clearer hint than no_access.
+func _entrance_faces_water(entrance: Vector2i, blocked: Dictionary[Vector2i, bool]) -> bool:
+	var water := false
+	for step: Vector2i in [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.DOWN, Vector2i.UP]:
+		var next := entrance + step
+		if blocked.has(next):
+			continue
+		if nav.is_walkable(next):
+			return false
+		var terrain := terrain_at(next)
+		if terrain != null and terrain.id == &"water":
+			water = true
+	return water
 
 
 ## Whether a tile of terrain [member BuildingDef.needs_terrain_near] lies within the work

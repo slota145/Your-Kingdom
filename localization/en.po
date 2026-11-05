@@ -511,6 +511,9 @@ msgstr "People could not walk here."
 msgid "ui.command_error.blocks_access"
 msgstr "This would block the way to other buildings."
 
+msgid "ui.command_error.entrance_faces_water"
+msgstr "The entrance would face the water."
+
 msgid "ui.command_error.not_a_farm"
 msgstr "This is not a farm."
 

@@ -143,3 +143,14 @@ func test_builder_skips_a_site_they_cannot_reach() -> void:
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return far.is_complete(), 120)).is_true()
 	assert_bool(near.is_complete()).is_false()
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+func test_fishing_hut_with_its_door_to_the_river_gets_a_clear_reason() -> void:
+	var registry := SimFixture.registry()
+	var sim := Simulation.from_map(registry, registry.get_map(&"riverlands"), 1, PackedStringArray())
+	var def := registry.get_building(&"fishing_hut")
+	# On the start map's east bank: the door corner lands on the river side.
+	assert_str(String(sim.province.placement_error(def, Vector2i(64, 14)))) \
+			.is_equal("entrance_faces_water")
+	# One tile further from the river the door has ground in front of it.
+	assert_str(String(sim.province.placement_error(def, Vector2i(62, 14)))).is_equal("")
