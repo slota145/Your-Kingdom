@@ -266,9 +266,11 @@ Zasada składania kawałków opisana jest w ARCHITECTURE §6.3. Dla każdego typ
 | Teren | trawa (4 warianty), ziemia, piasek nad rzeką, płytka i głęboka woda, brzeg (autotile 47 lub 16 kafli, **(M1)**: decyzja zestawu) | skała, bagno, morze, plaża, zbocza |
 | Drogi | ubita (autotile 16) | bruk |
 | Pola | `wheat_0` (zaorane), `wheat_1` (zasiane), `wheat_2` (rośnie), `wheat_3` (dojrzałe), `wheat_4` (ścierń) | chmiel, winorośl, len |
-| Natura | drzewo liściaste: `growing_1..3`, `grown`, `falling` (anim.), `stump`. Krzaki, kamienie dekoracyjne | iglaste, skały ze złożem |
+| Natura | drzewo liściaste: `growing_1..3`, `grown`, `falling` (anim.), `felled` (ścięte, leży, aż drwal zabierze ostatnią kłodę), `stump`. Krzaki, kamienie dekoracyjne | iglaste, skały ze złożem |
 | Stosy w magazynie | `stacks/<good_id>.png`: arkusz 4 faz (25/50/75/100%), każda faza 64×64 (romb 1 kafla + wysokość) | wszystkie towary |
 | Ikony towarów | 32×32 | wszystkie |
+
+**Punkt zaczepienia stosów i natury (M2):** romb kafla zajmuje **dolne 32 px** obrazka (lub klatki stosu). Środek rombu, czyli punkt `(szerokość/2, wysokość − 16)`, leży na środku kafla. Placeholdery: stos 64×64 na fazę, drzewo 64×96.
 
 ---
 

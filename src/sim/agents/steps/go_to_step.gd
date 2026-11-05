@@ -1,0 +1,27 @@
+class_name GoToStep
+extends TaskStep
+## Walks to the workplace entrance, or claims a resource node and walks next to it.
+
+
+func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
+	var step := def as GoToStepDef
+	var bb := agent.task.bb
+	var workplace := province.buildings.get_building(agent.workplace_id)
+	if workplace == null:
+		return failed(agent, &"no_workplace")
+	if step.target == &"workplace":
+		return Movement.walk(province, agent, workplace.entrance_tile())
+	if not bb.has("stand"):
+		var node := agent.claimed_node
+		if node == Agent.NO_TILE or not province.resources.has_node(node, step.resource):
+			node = province.resources.find_nearest(step.resource, workplace.entrance_tile(),
+					workplace.def.work_radius)
+		if node == Agent.NO_TILE:
+			return failed(agent, &"no_resource")
+		var stand := province.approach_tile(node, agent.tile())
+		if stand == Agent.NO_TILE or not province.resources.claim(node, agent.id):
+			return failed(agent, &"no_resource")
+		agent.claimed_node = node
+		bb["node"] = SimCodec.vec2i(node)
+		bb["stand"] = SimCodec.vec2i(stand)
+	return Movement.walk(province, agent, SimCodec.to_vec2i(bb["stand"]))

@@ -38,6 +38,7 @@ your-kingdom/
 │   └── _placeholder/           # generowane placeholdery w tym samym układzie co finalne grafiki
 ├── data/                       # definicje danych gry (.tres)
 │   ├── goods/ recipes/ buildings/ units/ ships/ needs/ population/
+│   ├── resource_nodes/         # drzewa i inne złoża na kaflach (ResourceNodeDef)
 │   ├── terrain/ provinces/ maps/ scenarios/
 │   └── visuals/                # definicje wizualne (mapowanie id → grafika)
 ├── localization/
@@ -48,13 +49,14 @@ your-kingdom/
 │   ├── core/                   # autoloady i usługi ogólne: Data, Game, EventBus, Locale, SaveService
 │   ├── defs/                   # klasy Resource definicji: GoodDef, BuildingDef, RecipeDef...
 │   ├── sim/                    # SYMULACJA — bez Node, bez widoku
-│   │   ├── core/               # Simulation, SimClock, Rng, Commands, SimEvents, EntityId
-│   │   ├── grid/               # TileGrid, Occupancy, IsoMath (czysta matematyka)
+│   │   ├── core/               # Simulation, SimClock, SimRng, Command, SimEvents, EntityIds, SimCodec
+│   │   ├── commands/           # PlaceBuildingCommand, DemolishCommand, SpawnAgentCommand...
+│   │   ├── grid/               # TileGrid, ResourceField, IsoMath (czysta matematyka)
 │   │   ├── pathing/            # NavGrid (AStarGrid2D), PathRequestQueue
-│   │   ├── economy/            # Inventory, Reservation, Stockpile, StockpileLayout
-│   │   ├── buildings/          # BuildingState, Construction, Production
-│   │   ├── agents/             # Agent, AgentStore, TaskRunner, steps/
-│   │   ├── jobs/               # JobBoard, TransportRequest, assignment
+│   │   ├── economy/            # Stockpile (sloty + rezerwacje), Reservation, StockpileLayout, GroundPile
+│   │   ├── buildings/          # BuildingState, BuildingStore, Construction, Production
+│   │   ├── agents/             # Agent, AgentStore, Task, TaskRunner, Movement, steps/
+│   │   ├── jobs/               # JobBoard, TransportRequest
 │   │   ├── population/         # Household, Needs, Happiness, Workforce
 │   │   ├── walls/              # WallGraph, WallConnectivity
 │   │   ├── province/           # ProvinceSim (szczegółowa), ProvinceAbstract (uproszczona)
@@ -93,9 +95,10 @@ Sceny (`.tscn`) leżą **obok swoich skryptów** w `src/view` i `src/ui`. Nie ma
 | Klasa | Kluczowe pola |
 |---|---|
 | `GoodDef` | `id: StringName`, `category`, `carry_category` (sack/crate/barrel/log/basket/bundle), `stack_size`, `base_price`, `is_rare` |
-| `RecipeDef` | `inputs: Dictionary[StringName,int]`, `outputs`, `steps: Array[StepDef]` |
-| `StepDef` (podklasy) | `GoToStep(target)`, `FetchStep(good, qty)`, `WorkStep(anim, duration, spot)`, `ProduceStep`, `DeliverStep`, `FieldStep(action)`, `GatherStep(resource)`… |
-| `BuildingDef` | `id`, `footprint: Vector2i`, `entrance: Vector2i`, `build_cost`, `build_steps`, `workers`, `recipe`, `service_radius`, `storage_slots`, `category`, `unlock` |
+| `RecipeDef` | `steps: Array[StepDef]` (M2). `inputs`/`outputs` jako podsumowanie dla UI dojdą w M3 |
+| `StepDef` (podklasy, czyste dane) | `GoToStepDef(target, resource)`, `FetchStepDef(good, amount)`, `WorkStepDef(activity, duration, spot)`, `GatherStepDef`, `ProduceStepDef(output, amount)`, `DeliverStepDef(drop_on_fail)`, później `FieldStepDef(action)`… Wykonuje je symulacja (`src/sim/agents/steps/`), definicje nie zawierają logiki |
+| `ResourceNodeDef` | `good`, `amount` (ile razem), `per_gather` (ile na kurs), `solid`. Drzewo: 3 kłody po 1, po ostatniej zostaje pniak (M2: bez odrastania) |
+| `BuildingDef` | `id`, `footprint: Vector2i`, `entrance: Vector2i`, `build_cost`, `build_steps`, `workers`, `recipe`, `work_radius`, `service_radius`, `storage_slots`, `category`, `unlock` |
 | `HouseLevelDef` | `level`, `capacity`, `needs: Array[NeedDef]`, `upgrade_cost`, `tax` |
 | `NeedDef` | `kind` (good/service), `goods: Array` (dowolny z listy), `consumption_rate`, `is_basic` |
 | `UnitDef`, `ShipDef` | statystyki, koszt, wymagane towary, `combat: CombatStatsDef` |
@@ -217,6 +220,15 @@ Są dwa źródła pracy:
 - każdy krok ma warunek niepowodzenia (brak ścieżki, cel zniknął, brak towaru),
 - po niepowodzeniu: zwolnienie rezerwacji, odłożenie niesionego towaru do najbliższego magazynu albo na ziemię jako stos do zebrania, ponowna próba z odczekaniem.
 
+**Realizacja (M2):**
+- Rezerwacje żyją w `Stockpile` (sloty + rezerwacje z właścicielem). Osobnej klasy `Inventory` nie ma. Magazyn to budynek z `Stockpile`, a kupa na ziemi (`GroundPile`) to `Stockpile` z jednym slotem, który tylko oddaje towar.
+- Wykonawcy kroków są bezstanowi. Wszystko, co krok pamięta, jest w tablicy zadania (`Task.bb`), która trafia do zapisu. Klucze z `_` są lokalne dla kroku i znikają po jego zakończeniu.
+- Kiedy postać idzie, krok nie jest wywoływany co tick (oszczędność). Jeśli cel zniknie po drodze, rozbiórka sama przerywa zadania, które go dotyczą.
+- Po niepowodzeniu postać z towarem w rękach dostaje zadanie „odłóż” (`stash`): najbliższy magazyn z miejscem, a gdy go nie ma albo nie ma do niego drogi, kupa na ziemi. Kupa od razu tworzy zlecenie transportowe.
+- Tragarz niesie **1 sztukę** na kurs (`JobBoard.PORTER_LOAD`, potwierdzone przez właściciela projektu; większe ładunki dadzą wózki i wozy, zob. IDEAS). Rezerwacja pobrania powstaje już przy przydziale zlecenia, więc dwóch tragarzy nie dostanie tej samej sztuki.
+- Zlecenie niewykonalne (brak towaru albo miejsca) czeka, a po nieudanym kursie odpoczywa 5 s. Zlecenie z celem, który zniknął, jest anulowane.
+- Pracownicy w M2 pojawiają się przez `SpawnAgentCommand` + `AssignWorkerCommand`. Automatyczny przydział wolnego mieszkańca do nowego budynku przychodzi z populacją w M3.
+
 Testy jednostkowe obejmują każdy z tych przypadków.
 
 ### 5.3 Pathfinding
@@ -228,7 +240,7 @@ Testy jednostkowe obejmują każdy z tych przypadków.
 | Koszty kafli | `weight_scale` z `TerrainDef.move_cost`: droga 0,6; bruk 0,5; trawa 1,0; pole 1,2; las 1,5. Woda i budynki są `solid`, z wyjątkiem kafla wejścia. |
 | Zmiany mapy | Budowa lub rozbiórka aktualizuje komórki (`set_point_solid`, `set_point_weight_scale`). Ścieżki niosą numer wersji siatki. Postać, której następny odcinek stał się nieprzejezdny, liczy ścieżkę od nowa. |
 | Budżet | Kolejka zapytań `PathRequestQueue` ma limit, wyjściowo **32 zapytania na tick**. Postać czeka na ścieżkę w stanie `idle` przez co najwyżej kilka ticków, co jest niewidoczne dla gracza. |
-| Pamięć podręczna | Częste trasy (budynek → najbliższy magazyn) są cache’owane per para (budynek, magazyn) i unieważniane przy zmianie wersji siatki w obszarze trasy. |
+| Pamięć podręczna | Częste trasy (budynek → najbliższy magazyn) są cache’owane per para (budynek, magazyn) i unieważniane przy zmianie wersji siatki w obszarze trasy. **W M2 jeszcze niepotrzebne** (500 tragarzy mieści się w budżecie, §9.3). Wracamy do tego w M4, jeśli pomiar pokaże piki. |
 | Rezerwa | Jeśli pomiary w M1 pokażą problem: pola przepływu (flow fields) do magazynów, hierarchiczny A* albo zapytania na `WorkerThreadPool`. |
 | Kolizje postaci | **Brak kolizji między postaciami.** Kilka osób może stać na jednym kaflu. Widok dodaje małe, stałe przesunięcie wynikające z id postaci, żeby postacie nie nakładały się idealnie. To kluczowa oszczędność wydajności, typowa dla gatunku. |
 | Okręty | Osobny `NavGrid` dla wody o tej samej strukturze, przygotowany pod bitwy morskie [PÓŹNIEJ]. |
@@ -373,8 +385,10 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Format:** JSON skompresowany do `.sav` (`FileAccess.open_compressed`, ZSTD). Wersje deweloperskie dodatkowo zapisują nieskompresowany `.json` do debugowania.
 - **Nagłówek:** `save_version`, wersja gry, data, nazwa prowincji, miniatura [1.0].
 - **Migracje:** łańcuch funkcji `migrate_vN_to_vN+1(dict)` w `SaveMigrations`. Każda zmiana formatu podbija wersję i dodaje migrację oraz test na zapisanym pliku-fixturze.
-- **Zawartość:** id encji (licznik `next_id`), wszystkie rezerwacje, zadania postaci (indeks kroku, cele po id), stan RNG i zegar.
-- **Nie zapisujemy:** ścieżek (są liczone od nowa po wczytaniu), węzłów widoku ani cache’y.
+- **Zawartość:** id encji (licznik `next_id`), wszystkie rezerwacje, zadania postaci (rodzaj, indeks kroku, tablica `bb` z celami po id), **pozostałe punkty ścieżek i kolejka zapytań o ścieżki**, roszczenia do drzew, zlecenia transportowe, stan RNG i zegar.
+- **Ścieżki zapisujemy (decyzja z M2).** Liczenie ich od nowa w połowie drogi może przy remisach kosztów dać inną trasę. Wtedy wczytana gra rozjechałaby się z grą bez zapisu, a DoD wymaga identycznego przebiegu. Koszt: kilkadziesiąt liczb na idącą postać.
+- **Nie zapisujemy:** węzłów widoku, cache’y, kolejki zdarzeń (widok opróżnia ją co klatkę) ani komend czekających na następny tick. `prev_pos` po wczytaniu równa się `pos`.
+- **Liczby:** JSON zapisujemy z pełną precyzją (`full_precision`), żeby pozycje float wracały bit w bit. Wartości 64-bitowe (stan RNG) zapisujemy jako tekst. Siatki kafli zapisujemy jako base64.
 - **Test round-trip:** stan → zapis → odczyt → zapis daje identyczny słownik. Dodatkowo test, w którym symulacja po wczytaniu idzie dalej deterministycznie tak samo jak bez zapisu.
 
 ---
@@ -406,7 +420,7 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 
 ### 9.3 Wyniki M1
 
-Pomiar: `src/prototype/m1/m1_bench.tscn -- --bench`, okno 1600×900, vsync wyłączony, laptop z RTX 5070 Ti oraz zintegrowaną grafiką Intel.
+Pomiar: `src/prototype/m1/m1_bench.tscn -- --bench` (scena usunięta w M2), okno 1600×900, vsync wyłączony, laptop z RTX 5070 Ti oraz zintegrowaną grafiką Intel.
 - Postacie chodzą między losowymi celami w obszarze 48×48 wokół 20 budynków i murów.
 - Pathfinding przez `NavGrid` (AStarGrid2D) z budżetem 32 zapytań na tick.
 - Pula sprite’ów tylko dla widocznych postaci.
@@ -426,6 +440,15 @@ Pomiar: `src/prototype/m1/m1_bench.tscn -- --bench`, okno 1600×900, vsync wył�
 - Wąskim gardłem jest CPU (skrypt widoku), a nie GPU: iGPU = RTX.
 - Rezerwy z §9.2 (flow fields, GDExtension) nie są na razie potrzebne. Ponowny pomiar w M4, z prawdziwymi zadaniami zamiast losowego chodzenia.
 - Zastrzeżenie: CPU laptopa jest szybszy niż „średni PC”. Przy 2× wolniejszym CPU szacujemy ok. 110 FPS przy 500 widocznych postaciach.
+
+**Pomiar M2 (chmura, headless, bez GPU — tylko czas ticku):** `src/prototype/m2/m2_bench.tscn -- --bench`. Tragarze wykonują prawdziwe zlecenia transportowe (`TaskRunner`, `JobBoard`, rezerwacje) między 3 magazynami na mapie 64×64, prędkość 4×.
+
+| Konfiguracja | Tick symulacji (śr.) |
+|---|---|
+| 200 tragarzy + drwal | 1,1 ms |
+| 500 tragarzy + drwal (`--porters=500`) | 2,1 ms |
+
+Cel ≤ 4 ms przy 500 postaciach jest spełniony. Pomiar FPS na laptopie robi właściciel projektu (DoD M2: płynność przy 4× z 200 postaciami).
 
 ---
 

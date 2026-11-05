@@ -7,7 +7,10 @@ extends Node2D
 ## Shift+LMB drag = filled rectangle (thick wall), RMB drag = erase, H = gatehouse (3x3)
 ## centred on the hovered tile (again to remove), G = small tunnel gate on hovered
 ## wall, V = diagonal variant (stairs / chamfer / straight), B = battlements, T = tall
-## walls, F = grid, Space = pause, Esc = back to menu.
+## walls, F = grid, Space = pause, +/- speed, Esc = back to menu.
+##
+## People are the real simulation (M2): porters carry goods between stockpiles on random
+## requests, so they walk through gates and around the walls.
 ##
 ## Screenshots: -- --shot=<png> [--cam=X,Y] [--zoom=N] [--diag=0|1|2] [--plain] [--tall]
 
@@ -25,14 +28,22 @@ const SHOT_FRAMES := 90
 @export var map_size: Vector2i = Vector2i(64, 64)
 @export var agent_count: int = 70
 
+const STOCKPILE_CANDIDATES: Array[Vector2i] = [
+	Vector2i(6, 6), Vector2i(28, 6), Vector2i(6, 50), Vector2i(30, 52), Vector2i(50, 50), Vector2i(26, 26),
+]
+const GOODS: Array[StringName] = [&"bread", &"grain", &"flour", &"wood"]
+
 var model: Model = Model.new()
+var sim: Simulation
 var nav: NavGrid
-var crowd: ProtoCrowd
 var camera: GameCamera
 var terrain: TerrainLayer
 var world: Node2D
 var wall_view: View
-var crowd_view: ProtoCrowdView
+var crowd_view: AgentViewPool
+var _stockpile_ids: Array[int] = []
+var _stockpile_views: Array[StockpileView] = []
+var _request_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 var _overlay: _TileOverlay
 var _hud: Label
@@ -40,9 +51,7 @@ var _guards: Array[_Guard] = []
 var _nav_solid: Dictionary[Vector2i, bool] = {}
 ## Tiles taken by PixelLab props (gatehouse, block walls, trees).
 var _prop_tiles: Dictionary[Vector2i, bool] = {}
-var _accumulator: float = 0.0
 var _time: float = 0.0
-var _paused: bool = false
 var _diag_index: int = 2
 var _drag_start: Vector2i = Vector2i(-1, -1)
 var _drag_erase: bool = false
@@ -111,7 +120,9 @@ class _Guard:
 
 func _ready() -> void:
 	InputSetup.ensure_defaults()
-	nav = NavGrid.new(map_size)
+	sim = Simulation.new(Data.registry, map_size, 1)
+	nav = sim.province.nav
+	_request_rng.seed = 9
 	terrain = TerrainLayer.new()
 	add_child(terrain)
 	terrain.setup(map_size)
@@ -131,13 +142,14 @@ func _ready() -> void:
 		wall_view.skin = _skin
 	_apply_args()
 	_rebuild_walls()
+	_add_stockpiles()
 	_add_pixellab()
+	_add_porters()
 
-	crowd = ProtoCrowd.new(nav, Rect2i(Vector2i(2, 2), map_size - Vector2i(4, 4)))
-	crowd.spawn(agent_count, [&"peasant"])
-	crowd_view = ProtoCrowdView.new()
+	crowd_view = AgentViewPool.new()
 	world.add_child(crowd_view)
 	_add_guards()
+	Game.start(sim)
 
 	camera = GameCamera.new()
 	add_child(camera)
@@ -155,6 +167,10 @@ func _ready() -> void:
 	_hud.add_theme_color_override(&"font_outline_color", Color.BLACK)
 	_hud.add_theme_constant_override(&"outline_size", 4)
 	layer.add_child(_hud)
+
+
+func _exit_tree() -> void:
+	Game.stop()
 
 
 func _apply_args() -> void:
@@ -181,17 +197,13 @@ func _apply_camera_args() -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
-	if not _paused:
-		_accumulator += delta
-		var ticks := 0
-		while _accumulator >= ProtoCrowd.TICK and ticks < 4:
-			crowd.tick()
-			_accumulator -= ProtoCrowd.TICK
-			ticks += 1
+	if not Game.paused:
 		for guard: _Guard in _guards:
 			guard.step(delta, model, _time)
-	var alpha := clampf(_accumulator / ProtoCrowd.TICK, 0.0, 1.0)
-	crowd_view.update_view(crowd, alpha, camera.visible_world_rect(), _time)
+	_issue_random_requests()
+	crowd_view.update_view(sim.province.agents, Game.alpha(), camera.visible_world_rect(), _time)
+	for view: StockpileView in _stockpile_views:
+		view.update_view()
 	_update_hover()
 	_update_hud()
 	if _shot_path != "":
@@ -209,7 +221,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed(&"toggle_grid"):
 		terrain.show_grid = not terrain.show_grid
 	elif event.is_action_pressed(&"toggle_pause"):
-		_paused = not _paused
+		Game.toggle_pause()
+	elif event.is_action_pressed(&"game_speed_up"):
+		Game.set_speed_index(Game.speed_index + 1)
+	elif event.is_action_pressed(&"game_speed_down"):
+		Game.set_speed_index(Game.speed_index - 1)
 	elif event.is_action_pressed(&"toggle_gate"):
 		var tile := _hovered_tile()
 		if model.is_wall(tile):
@@ -270,14 +286,13 @@ func _rebuild_walls() -> void:
 	wall_view.rebuild(model)
 	var blocked := model.blocked_tiles()
 	for tile: Vector2i in _nav_solid:
-		if not blocked.has(tile):
-			nav.set_solid(tile, false)
+		if not blocked.has(tile) and not _prop_tiles.has(tile):
+			_set_blocked(tile, false)
 	for tile: Vector2i in blocked:
 		if nav.is_inside(tile):
-			nav.set_solid(tile, true)
+			_set_blocked(tile, true)
 	_nav_solid = blocked
-	if crowd != null:
-		crowd.on_nav_changed()
+	_free_trapped_people()
 
 
 func _drag_tiles(a: Vector2i, b: Vector2i) -> Array[Vector2i]:
@@ -321,10 +336,13 @@ func _update_hover() -> void:
 func _update_hud() -> void:
 	_hud.text = "FPS %d | zoom %.1fx | tile %s | wall nodes %d | %s\n" % [
 		Engine.get_frames_per_second(), camera.zoom_factor(), _hovered_tile(),
-		wall_view.get_child_count(), "PAUSED" if _paused else ""]
+		wall_view.get_child_count(), "PAUSED" if Game.paused else ""]
+	_hud.text += "people %d | requests %d | speed %.0fx | tick %.3f ms\n" % [
+		sim.province.agents.count(), sim.province.jobs.count(), Game.SPEEDS[Game.speed_index],
+		Game.tick_usec_avg / 1000.0]
 	_hud.text += "diagonals: %s (V) | battlements: %s (B) | height: %d px (T)\n" % [
 		DIAGONAL_NAMES[_diag_index], "on" if model.battlements else "off", int(model.height)]
-	_hud.text += "LMB drag wall | Shift+LMB rectangle | RMB erase | G gate | H gatehouse | K PixelLab/code walls | F grid | Space pause | Esc menu"
+	_hud.text += "LMB drag wall | Shift+LMB rectangle | RMB erase | G gate | H gatehouse | K PixelLab/code walls | F grid | Space pause | +/- speed | Esc menu"
 
 
 # --- Scene content -------------------------------------------------------------------
@@ -459,7 +477,90 @@ func _add_village() -> void:
 
 func _take(tile: Vector2i) -> void:
 	_prop_tiles[tile] = true
-	nav.set_solid(tile, true)
+	_set_blocked(tile, true)
+
+
+## Walls and props are impassable map tiles of the simulation (walls get their own
+## simulation model in M7).
+func _set_blocked(tile: Vector2i, blocked: bool) -> void:
+	sim.province.grid.set_blocked(tile, blocked)
+	sim.province.refresh_tile(tile)
+
+
+## PROTOTYPE ONLY: a wall drawn on top of people would trap them, so they are moved to the
+## nearest free tile. Real wall building (M7) needs a proper rule for this.
+func _free_trapped_people() -> void:
+	if sim == null:
+		return
+	for agent: Agent in sim.province.agents.all():
+		var tile := agent.tile()
+		if nav.is_walkable(tile):
+			continue
+		for radius: int in range(1, 8):
+			var free := _walkable_near(tile, radius)
+			if free != Agent.NO_TILE:
+				agent.pos = IsoMath.tile_center(free)
+				agent.prev_pos = agent.pos
+				if agent.task != null:
+					TaskRunner.fail(sim.province, agent)
+				break
+
+
+func _walkable_near(tile: Vector2i, radius: int) -> Vector2i:
+	for dy: int in range(-radius, radius + 1):
+		for dx: int in range(-radius, radius + 1):
+			var t := tile + Vector2i(dx, dy)
+			if nav.is_walkable(t):
+				return t
+	return Agent.NO_TILE
+
+
+## Stockpiles on free ground; their tiles are kept clear of trees and props.
+func _add_stockpiles() -> void:
+	var def := Data.registry.get_building(&"stockpile")
+	for origin: Vector2i in STOCKPILE_CANDIDATES:
+		var clear := true
+		for t: Vector2i in def.footprint_tiles(origin):
+			if model.is_wall(t) or model.wedge_tiles.has(t) or _prop_tiles.has(t):
+				clear = false
+		if not clear or sim.execute(PlaceBuildingCommand.new(&"stockpile", origin)) != &"":
+			continue
+		var building := sim.province.buildings.get_building(sim.ids.next_id - 1)
+		for good: StringName in GOODS:
+			building.stock.add(good, 40)
+		_stockpile_ids.append(building.id)
+		for t: Vector2i in building.tiles():
+			_prop_tiles[t] = true
+		var view := StockpileView.new()
+		world.add_child(view)
+		view.setup(building)
+		_stockpile_views.append(view)
+
+
+func _add_porters() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4
+	var placed := 0
+	var attempts := 0
+	while placed < agent_count and attempts < 10000:
+		attempts += 1
+		var t := Vector2i(rng.randi_range(2, map_size.x - 3), rng.randi_range(2, map_size.y - 3))
+		if nav.is_walkable(t) and sim.execute(SpawnAgentCommand.new(&"porter", t)) == &"":
+			placed += 1
+	sim.events.drain()
+
+
+## Keeps about one open request per two porters, between random stockpiles.
+func _issue_random_requests() -> void:
+	if _stockpile_ids.size() < 2 or sim.province.jobs.count() * 2 >= agent_count:
+		return
+	var a := _stockpile_ids[_request_rng.randi_range(0, _stockpile_ids.size() - 1)]
+	var b := _stockpile_ids[_request_rng.randi_range(0, _stockpile_ids.size() - 1)]
+	var good := GOODS[_request_rng.randi_range(0, GOODS.size() - 1)]
+	var source := sim.province.storage(a)
+	if a == b or source == null or source.available(good) < 4:
+		return
+	sim.submit(RequestTransportCommand.new(good, _request_rng.randi_range(1, 4), a, b))
 
 
 func _free_around(tile: Vector2i, radius: int) -> bool:

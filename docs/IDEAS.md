@@ -35,6 +35,18 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
     - tylko 2 orientacje, przejście wzdłuż osi siatki, jak w Twierdzy,
     - mury dowolnej grubości dochodzą do boków bez szczelin; sortowanie ze sprawdzeniem automatycznym: 0 błędów, także w przejściu.
 
+- [gracz] **Stopnie transportu:** tragarz niesie 1 sztukę, mały wózek ręczny 3, duży wóz konny 5–6.
+  - **Zatwierdzone 2026-11-05 (ładowności):** zapisane w GDD §5.2. Szybkości, czas załadunku i reguły dyspozytora z oceny poniżej czekają na decyzję (M4).
+  - Ocena (Claude):
+    - Dobre stopniowanie, widać postęp i pasuje do klimatu. Wózek ręczny to fajny etap pośredni, którego w GDD brakuje.
+    - Sama ładowność wozu (6 przy tragarzu 1) to niewielki zysk wobec kosztu (drogi, koń, stajnia). Wóz zarabia na długich trasach, więc warto mu dać szybkość na drodze (np. 1,5× tragarza), a wózkowi ręcznemu odrobinę mniejszą niż pieszemu (np. 0,9×).
+    - Załadunek i rozładunek powinny trwać widocznie (np. 1 s na sztukę), bo to immersja, a przy okazji uczciwy koszt.
+    - Dyspozytor musi wiedzieć, kogo wysłać: wóz do zleceń od ~4 sztuk na dalsze trasy, tragarz do małych i krótkich. Inaczej wozy jeżdżą z jedną kłodą.
+    - Technicznie to niedrogie: `TransportRequest` już dzieli zlecenie na ładunki, więc dochodzi pojemność i prędkość nośnika oraz ograniczenie wozów do dróg. Naturalny etap to M4 (drogi i wozy są tam w zakresie).
+
+- [Claude] **Leśnik i odrastanie lasu:** pniak po czasie zamienia się w sadzonkę, a ta w drzewo (fazy `growing_1..3` z ART_SPEC §8). Leśnik sadzi drzewa w promieniu chaty. W M2 drzewa nie odrastają (3 kłody, potem pniak).
+  - Ocena: koszt mały (`ResourceField` ma już stan węzła, potrzebny jest licznik wzrostu w systemie „czas i wzrost” z §4.2). Bez tego las w długiej grze się kończy, więc warto to mieć najpóźniej w M4.
+
 ## Klimat i immersja
 
 - [Claude] **Życie przy bramie:** strażnik obsługuje kołowrót przy podnoszeniu brony, a wozy zatrzymują się czasem do kontroli. Właściciel projektu jest na tak (2026-11-04). Kiedy: razem z wieżą bramną w M7.

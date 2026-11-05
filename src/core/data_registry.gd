@@ -59,6 +59,19 @@ func get_building(id: StringName) -> BuildingDef:
 	return get_def(&"building", id) as BuildingDef
 
 
+func get_recipe(id: StringName) -> RecipeDef:
+	return get_def(&"recipe", id) as RecipeDef
+
+
+func get_resource_node(id: StringName) -> ResourceNodeDef:
+	return get_def(&"resource_node", id) as ResourceNodeDef
+
+
+## Adds a definition built in code (tests, tools). Problems end up in [member errors].
+func register(def: GameDef) -> void:
+	_register(def, "<code>")
+
+
 func goods() -> Array[GoodDef]:
 	var result: Array[GoodDef] = []
 	result.assign(all_of(&"good"))

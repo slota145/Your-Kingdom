@@ -1,0 +1,75 @@
+class_name AgentViewPool
+extends Node2D
+## Pooled sprites for the people inside the camera rectangle (ARCHITECTURE §6.4). People
+## outside have no node. Child of the y-sorted world. The animation follows only the
+## agent's activity, facing and carried good.
+
+const VIEW_MARGIN := 96.0
+## Used when a profession has no art of its own yet.
+const FALLBACK_CHARACTER := &"peasant"
+
+var visible_count: int = 0
+## Duration of the last update in microseconds.
+var last_update_usec: int = 0
+
+var _pool: Array[AgentSprite] = []
+var _categories: Dictionary[StringName, String] = {}
+var _characters: Dictionary[StringName, StringName] = {}
+
+
+func _init() -> void:
+	y_sort_enabled = true
+
+
+func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: float) -> void:
+	var start := Time.get_ticks_usec()
+	var rect := world_rect.grow(VIEW_MARGIN)
+	var used := 0
+	for agent: Agent in agents.all():
+		var screen := IsoMath.grid_to_screen(agent.prev_pos.lerp(agent.pos, alpha))
+		if not rect.has_point(screen):
+			continue
+		var sprite := _sprite(used)
+		used += 1
+		# Small stable offset so people sharing a tile do not overlap exactly (ARCHITECTURE §5.3).
+		var jitter := Vector2(float((agent.id * 7) % 9) - 4.0, float((agent.id * 5) % 5) - 2.0)
+		sprite.position = screen + jitter
+		var good := agent.carry_good if agent.is_carrying() else &""
+		var category := _category(good)
+		var anim := StringName("work_" + String(agent.activity))
+		if agent.activity == &"walk":
+			anim = StringName("walk_carry_" + category) if good != &"" else &"walk"
+		elif agent.activity == &"idle":
+			anim = &"idle"
+		sprite.show_state(CharacterVisual.get_visual(_character(agent.kind)), anim, agent.facing,
+				time + agent.id * 0.137, category, good if agent.activity == &"walk" else &"")
+	for j: int in range(used, _pool.size()):
+		_pool[j].visible = false
+	visible_count = used
+	last_update_usec = Time.get_ticks_usec() - start
+
+
+func _sprite(index: int) -> AgentSprite:
+	if index >= _pool.size():
+		var sprite := AgentSprite.new()
+		add_child(sprite)
+		_pool.append(sprite)
+	var s := _pool[index]
+	s.visible = true
+	return s
+
+
+func _category(good: StringName) -> String:
+	if good == &"":
+		return ""
+	if not _categories.has(good):
+		var def := Data.registry.get_good(good)
+		_categories[good] = def.carry_category if def != null else "crate"
+	return _categories[good]
+
+
+func _character(kind: StringName) -> StringName:
+	if not _characters.has(kind):
+		var has_art := not ArtPaths.list_files("characters/%s" % kind).is_empty()
+		_characters[kind] = kind if has_art else FALLBACK_CHARACTER
+	return _characters[kind]

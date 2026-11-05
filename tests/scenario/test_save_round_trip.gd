@@ -1,0 +1,87 @@
+extends GdUnitTestSuite
+## M2 DoD: save -> load -> save is identical, and a loaded game continues exactly like the
+## original one would have.
+
+const SaveServiceScript := preload("res://src/core/save_service.gd")
+const TEST_PATH := "user://test_saves/sim_round_trip.sav"
+
+
+func after_test() -> void:
+	DirAccess.remove_absolute(TEST_PATH)
+
+
+## Woodcutter, two stockpiles, porters with transport requests, goods on the ground.
+func _busy_sim(seed_value: int) -> Simulation:
+	var sim := SimFixture.make_sim(Vector2i(40, 40), seed_value)
+	var scene := SimFixture.woodcutter_scene(sim)
+	var a: BuildingState = scene["stock"]
+	var b := SimFixture.place(sim, &"stockpile", Vector2i(24, 24))
+	a.stock.add(&"bread", 40)
+	b.stock.add(&"grain", 15)
+	for i: int in 8:
+		SimFixture.spawn(sim, &"porter", Vector2i(10 + i, 14))
+	sim.execute(RequestTransportCommand.new(&"bread", 25, a.id, b.id))
+	sim.execute(RequestTransportCommand.new(&"grain", 10, b.id, a.id))
+	sim.province.drop_goods(Vector2i(30, 10), &"flour", 4)
+	return sim
+
+
+func _reload(sim: Simulation) -> Simulation:
+	var text := JSON.stringify(sim.to_dict(), "", false, true)
+	return Simulation.from_dict(JSON.parse_string(text), SimFixture.registry())
+
+
+func test_save_load_save_is_identical_mid_work() -> void:
+	var sim := _busy_sim(3)
+	for ticks: int in [1, 37, 400, 1200]:
+		sim.run_ticks(ticks)
+		var first := SimCodec.canonical(sim.to_dict())
+		var second := SimCodec.canonical(_reload(sim).to_dict())
+		assert_str(second).is_equal(first)
+
+
+func test_loaded_game_continues_deterministically() -> void:
+	var original := _busy_sim(11)
+	original.run_ticks(733)
+	var loaded := _reload(original)
+	for chunk: int in 6:
+		original.run_ticks(250)
+		loaded.run_ticks(250)
+		assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(SimCodec.canonical(original.to_dict()))
+	assert_int(original.province.agents.count()).is_equal(9)
+
+
+func test_two_runs_from_same_start_are_identical() -> void:
+	var a := _busy_sim(5)
+	var b := _busy_sim(5)
+	a.run_ticks(1500)
+	b.run_ticks(1500)
+	assert_str(SimCodec.canonical(a.to_dict())).is_equal(SimCodec.canonical(b.to_dict()))
+
+
+func test_save_file_round_trip_through_save_service() -> void:
+	var service: Node = auto_free(SaveServiceScript.new())
+	var sim := _busy_sim(2)
+	sim.run_ticks(500)
+	assert_int(service.save_simulation(TEST_PATH, sim)).is_equal(OK)
+	var loaded: Simulation = service.load_simulation(TEST_PATH, SimFixture.registry())
+	assert_object(loaded).is_not_null()
+	assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(SimCodec.canonical(sim.to_dict()))
+	sim.run_ticks(300)
+	loaded.run_ticks(300)
+	assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(SimCodec.canonical(sim.to_dict()))
+
+
+## A save written by save_version 1 still loads and keeps playing. When the format changes,
+## add a migration so this fixture keeps passing (ARCHITECTURE §8).
+func test_v1_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v1_woodcutter.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(1)
+	var sim := Simulation.from_dict(document["state"], SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(document["state"]))
+	var wood_before := sim.province.goods_total(&"wood")
+	sim.run_ticks(SimFixture.ticks(120))
+	assert_int(sim.province.goods_total(&"wood")).is_greater(wood_before)
+	assert_int(sim.province.goods_total(&"bread")).is_equal(12)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()

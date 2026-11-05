@@ -1,0 +1,363 @@
+{
+	"header": {
+		"save_version": 1
+	},
+	"state": {
+		"tick": 777,
+		"next_id": 6,
+		"rng": {
+			"seed": "1",
+			"streams": {}
+		},
+		"province": {
+			"grid": {
+				"size": [
+					32,
+					32
+				],
+				"blocked": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+			},
+			"resources": {
+				"kinds": [
+					"tree"
+				],
+				"kind": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+				"amount": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAwMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+				"claims": []
+			},
+			"buildings": [
+				{
+					"id": 1,
+					"def": "stockpile",
+					"origin": [
+						4,
+						4
+					],
+					"workers": [],
+					"stock": {
+						"slots": [
+							[
+								"bread",
+								9
+							],
+							[
+								"wood",
+								2
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							]
+						],
+						"reservations": [
+							{
+								"id": 6,
+								"owner": 3,
+								"slot": 1,
+								"good": "wood",
+								"amount": 1,
+								"in": true
+							}
+						],
+						"next": 7
+					}
+				},
+				{
+					"id": 2,
+					"def": "woodcutter",
+					"origin": [
+						12,
+						6
+					],
+					"workers": [
+						3
+					]
+				},
+				{
+					"id": 4,
+					"def": "stockpile",
+					"origin": [
+						4,
+						20
+					],
+					"workers": [],
+					"stock": {
+						"slots": [
+							[
+								"bread",
+								2
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							],
+							[
+								"",
+								0
+							]
+						],
+						"reservations": [
+							{
+								"id": 3,
+								"owner": 5,
+								"slot": 0,
+								"good": "bread",
+								"amount": 1,
+								"in": true
+							}
+						],
+						"next": 4
+					}
+				}
+			],
+			"piles": [],
+			"agents": [
+				{
+					"id": 3,
+					"kind": "woodcutter",
+					"workplace": 2,
+					"pos": [
+						6.488430023193359,
+						8.5
+					],
+					"facing": 5,
+					"carry": [
+						"wood",
+						1
+					],
+					"activity": "walk",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						2,
+						[
+							5,
+							7
+						],
+						[
+							15,
+							6,
+							14,
+							7,
+							13,
+							8,
+							12,
+							8,
+							11,
+							8,
+							10,
+							8,
+							9,
+							8,
+							8,
+							8,
+							7,
+							8,
+							6,
+							8,
+							5,
+							8,
+							5,
+							7
+						],
+						10
+					],
+					"task": {
+						"kind": "recipe",
+						"recipe": "woodcutting",
+						"request": 0,
+						"step": 4,
+						"bb": {
+							"node": [
+								16,
+								5
+							],
+							"stand": [
+								15,
+								6
+							],
+							"_dst": 1,
+							"_res": 6
+						}
+					}
+				},
+				{
+					"id": 5,
+					"kind": "porter",
+					"workplace": 0,
+					"pos": [
+						5.5,
+						8.939998626708984
+					],
+					"facing": 7,
+					"carry": [
+						"bread",
+						1
+					],
+					"activity": "walk",
+					"cooldown": 0,
+					"claim": [
+						-1,
+						-1
+					],
+					"path": [
+						2,
+						[
+							5,
+							23
+						],
+						[
+							5,
+							7,
+							5,
+							8,
+							5,
+							9,
+							5,
+							10,
+							5,
+							11,
+							5,
+							12,
+							5,
+							13,
+							5,
+							14,
+							5,
+							15,
+							5,
+							16,
+							5,
+							17,
+							4,
+							18,
+							3,
+							19,
+							3,
+							20,
+							3,
+							21,
+							3,
+							22,
+							3,
+							23,
+							3,
+							24,
+							4,
+							24,
+							5,
+							24,
+							5,
+							23
+						],
+						2
+					],
+					"task": {
+						"kind": "transport",
+						"recipe": "",
+						"request": 1,
+						"step": 1,
+						"bb": {
+							"good": "bread",
+							"amount": 1,
+							"from": 1,
+							"to": 4,
+							"_dst": 4,
+							"_res": 3
+						}
+					}
+				}
+			],
+			"jobs": {
+				"requests": [
+					{
+						"id": 1,
+						"good": "bread",
+						"amount": 4,
+						"from": 1,
+						"to": 4,
+						"in_flight": 1,
+						"retry_at": 0
+					}
+				],
+				"next": 2
+			},
+			"path_queue": []
+		}
+	}
+}
