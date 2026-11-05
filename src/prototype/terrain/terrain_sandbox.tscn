@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/prototype/terrain/terrain_sandbox.gd" id="1_sandbox"]
+
+[node name="TerrainSandbox" type="Node2D"]
+script = ExtResource("1_sandbox")

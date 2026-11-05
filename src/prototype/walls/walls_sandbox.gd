@@ -385,9 +385,7 @@ func _build_showcase() -> void:
 ## Ground from the owner's top-down PixelLab tileset, projected onto the 2:1 diamond
 ## (pixellab/terrain, see ART_SPEC §10.1), plus a ploughed field next to the village.
 func _use_pixellab_ground() -> void:
-	terrain._variants = [load(Props.DIR + "terrain/grass.png") as Texture2D]
-	for chunk: Node in terrain.get_children():
-		(chunk as Node2D).queue_redraw()
+	terrain.override_texture("grass_tex", load(Props.DIR + "terrain/grass.png") as Texture2D)
 	var field := _Field.new()
 	field.texture = load(Props.DIR + "terrain/soil.png") as Texture2D
 	field.tiles = Rect2i(42, 16, 7, 4)

@@ -268,14 +268,25 @@ Pliki leżą w folderze budynku domu (`buildings/hut/`), a ich nazwy wskazuje `d
 
 | Kategoria | Zawartość [SLICE] | [1.0] |
 |---|---|---|
-| Teren | trawa (4 warianty), ziemia, piasek nad rzeką, płytka i głęboka woda, brzeg (autotile 47 lub 16 kafli, **(M1)**: decyzja zestawu) | skała, bagno, morze, plaża, zbocza |
-| Drogi | ubita (autotile 16) | bruk |
+| Teren | tekstury terenu organicznego (§8.1): `grass/a`, `grass/light`, `grass/dark`, `meadow/a`, `forest/a` (ściółka), `water/a`, `water/b`, `ford/a`, `bank/a` (skarpa brzegu); ozdoby `grass_decor/*` | `sea/a`, `sea/b`, `sea/shallow`, `sand/a` (gotowe w prototypie), skała, bagno, zbocza |
+| Drogi | ubita: `road/a`, `road/b` (tekstury, kształt drogi rysuje shader) | bruk |
 | Pola | `terrain/field/`: `fallow` (ugór, też po żniwach), `plowed` (zaorane), `sown_1..3` (zasiane, rośnie, prawie dojrzałe), `ripe` (dojrzałe) | chmiel, winorośl, len (`terrain/field_<crop>/…`) |
 | Natura | drzewo liściaste: `growing_1..3`, `grown`, `falling` (anim.), `felled` (ścięte, leży, aż drwal zabierze ostatnią kłodę), `stump`. Krzaki, kamienie dekoracyjne | iglaste, skały ze złożem |
 | Stosy w magazynie | `stacks/<good_id>.png`: arkusz 4 faz (25/50/75/100%), każda faza 64×64 (romb 1 kafla + wysokość) | wszystkie towary |
 | Ikony towarów | 32×32 | wszystkie |
 
 **Punkt zaczepienia stosów i natury (M2):** romb kafla zajmuje **dolne 32 px** obrazka (lub klatki stosu). Środek rombu, czyli punkt `(szerokość/2, wysokość − 16)`, leży na środku kafla. Placeholdery: stos 64×64 na fazę, drzewo 64×96.
+
+### 8.1 Teren organiczny (decyzja 2026-11-05)
+
+Teren **nie jest układany z kafli przejść** (autotile). Gracz nie widzi siatki ani rombów, a granice terenów są zaokrąglone i nieregularne.
+- **Tekstura** terenu to romb 64×32 bez obramowania. Shader próbkuje ją okresowo w przestrzeni świata, więc sąsiednie kafle nie mają szwów. Jedna tekstura wystarcza na cały teren danego typu; drugi wariant (`b`) miesza się z pierwszym w miękkich plamach, żeby wzór się nie powtarzał.
+- **Kształt** terenu bierze się z mapy kafli (symulacja widzi całe kafle), ale shader wygładza ją między środkami kafli i przesuwa granice szumem o ok. ⅓ kafla. Skośne „schodki” stają się prostymi liniami, a narożniki są zaokrąglone. Drogi też: plac to po prostu kilka kafli drogi obok siebie.
+- **Pasy przy granicach** rysuje shader: skarpa (`bank/a`) na lądzie przy rzece, ciemna linia cienia na wodzie przy skarpie, płycizna (`sea/shallow`) i piana przy plaży, wytarty, „rozsypany” brzeg drogi.
+- **Trawa** ma dodatkowo jaśniejsze i ciemniejsze plamy (`grass/light`, `grass/dark`), a kwiatki i koniczyna (`grass_decor/*`) leżą w przypadkowych miejscach, nie na środku kafla.
+- Brzegi plam są rozpraszane wzorem pikseli (dithering), a nie przez półprzezroczystość, więc teren zostaje ostrym pixel artem.
+- **Pola** zostają kaflami (to dzieło ludzi, prostokątne z natury).
+- Nowy typ terenu: tekstura w `assets/terrain/<id>/` i miejsce (slot) w shaderze `src/view/terrain/organic_ground.gdshader` oraz w `TerrainLayer.SLOT_BY_TERRAIN`.
 
 ---
 
@@ -318,7 +329,7 @@ ok. 25 typów postaci cywilnych, 6 typów żołnierzy, ok. 40 budynków, 2 typy 
 2. **Konwersja:** `tools/pixellab_to_sheet.gd` (lub skrypt Pythona) składa klatki w arkusz w kolejności kierunków z §4.1. Wykrywa 5 kierunków lub 8 i dopasowuje pivot (wyrównanie stóp po najniższym nieprzezroczystym pikselu).
 3. **Weryfikacja:** scena `tools/art_review.tscn` pokazuje animację we wszystkich kierunkach obok placeholdera, z siatką kafli, przy zoomach 0,5×, 1× i 2×. Pokazuje też nakładkę towaru i jej punkty zaczepienia.
 4. **Budynki:** generowane jako obiekty izometryczne. Ręcznie (lub narzędziem) dopasowujemy romb podstawy do footprintu i ustawiamy pivot. Punkty pracy dopasowujemy przesunięciem w `BuildingVisualDef`.
-5. **Kafle terenu:** generator kafli izometrycznych w docelowym rozmiarze 64×32 i zestawy autotile do brzegów i dróg.
+5. **Teren:** tekstury z `create_tiles_pro` (16 niezależnych rombów 64×32 za 10–15 generacji; wzór stylu: nasza trawa). Przejścia i kształty rysuje shader (§8.1), więc zestawy autotile nie są potrzebne.
 6. **Spójność:** dla każdej serii używamy tych samych opisów stylu, palety i referencji (postać bazowa jako wzór). Wynik sprawdzamy narzędziem redukcji palety do wspólnej palety projektu.
 
 **Kryterium akceptacji grafiki:**
@@ -345,3 +356,10 @@ Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
   - próbki są bezszwowe: wycinamy 8 px więcej i płynnie przenikamy nadmiar w początek próbki.
 - **Tilesety właściciela projektu są top-down (kwadratowe Wang, 64×64).** Jednolite kafle (trawa, zaorana ziemia) da się rzutować na romb 64×32 (obrót o 45° i spłaszczenie, próbkowanie najbliższym pikselem). Wychodzi bez szwów, a faktura trawy i bruzd wygląda naturalnie. Kafle przejść (brzegi) po rzutowaniu nie pasują do naszych sąsiedztw, więc przejścia trzeba robić osobno. Trawa jest bardziej nasycona niż paleta z §1.
 - **Sieć:** środowisko w chmurze ma dostęp do `backblaze.pixellab.ai` (Allowed domains), więc pliki pobieramy bezpośrednio.
+
+### 10.2 Teren (2026-11-05)
+
+- **`create_tiles_pro`, niezależne kafle izometryczne 64 px:** 16 rombów 64×32 na płótnie 64×64 za 10 generacji (ze wzorem stylu z obrazka: 15). Faktura trawy, wody, piasku, drogi i ściółki jest dobra.
+- **Kafle mają przyciemnione dolne krawędzie** (jakby miały grubość, mimo `tile_depth_ratio=0`). Ułożone obok siebie dają widoczną kratkę. Poprawka: `tools/pixellab_tile_edges.py` wyrównuje jasność pasa przy każdej krawędzi do środka kafla i przycina wynik do rombu 64×32.
+- **Nawet idealne styki nie ukryją siatki,** bo oko łapie powtarzający się co 64 px wzór. Rozwiązanie to teren organiczny (§8.1). Wzory o dużym kontraście (fale na wodzie) trzeba złagodzić (zmieszać ze średnim kolorem) i mieszać dwa warianty.
+- PixelLab nie ma narzędzia, które gwarantuje bezszwowe kafle izometryczne ani organiczne przejścia (potwierdzone w ich pomocy).

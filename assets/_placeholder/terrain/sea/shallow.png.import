@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://u1jlcrnjccm"
-path="res://.godot/imported/b.png-19117862247d5bf1b4928f87e0a7eeed.ctex"
+uid="uid://bj1jax244le2w"
+path="res://.godot/imported/shallow.png-61fe49284f2fd2d3e747ed90a5043e95.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/_placeholder/terrain/grass/b.png"
-dest_files=["res://.godot/imported/b.png-19117862247d5bf1b4928f87e0a7eeed.ctex"]
+source_file="res://assets/_placeholder/terrain/sea/shallow.png"
+dest_files=["res://.godot/imported/shallow.png-61fe49284f2fd2d3e747ed90a5043e95.ctex"]
 
 [params]
 

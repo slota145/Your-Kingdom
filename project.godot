@@ -68,4 +68,4 @@ rendering_device/driver.windows="d3d12"
 
 [your_kingdom]
 
-art_root="res://assets/_placeholder"
+art_root="res://assets"

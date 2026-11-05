@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nwxlivchtd6b"
-path="res://.godot/imported/b.png-745fc09abfed3d6e0c423bfb0e0e19e5.ctex"
+uid="uid://bo5502fhxhy52"
+path="res://.godot/imported/a.png-fe2df2e8c4d9d5508cede0003311a074.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/_placeholder/terrain/meadow/b.png"
-dest_files=["res://.godot/imported/b.png-745fc09abfed3d6e0c423bfb0e0e19e5.ctex"]
+source_file="res://assets/_placeholder/terrain/sand/a.png"
+dest_files=["res://.godot/imported/a.png-fe2df2e8c4d9d5508cede0003311a074.ctex"]
 
 [params]
 

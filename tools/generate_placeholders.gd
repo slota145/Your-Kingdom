@@ -63,17 +63,26 @@ func _init() -> void:
 # --- Terrain ---------------------------------------------------------------------------
 
 func _terrain() -> void:
-	_save(_diamond(Color(0.36, 0.55, 0.25), Color(0.32, 0.5, 0.22)), "terrain/grass/a.png")
-	_save(_diamond(Color(0.38, 0.57, 0.26), Color(0.34, 0.52, 0.23)), "terrain/grass/b.png")
+	# Ground textures are sampled seamlessly by the organic ground shader: no border.
+	var ground := {
+		"grass/a": Color(0.36, 0.55, 0.25), "grass/light": Color(0.4, 0.59, 0.28),
+		"grass/dark": Color(0.31, 0.49, 0.22), "meadow/a": Color(0.55, 0.68, 0.32),
+		"forest/a": Color(0.22, 0.38, 0.18), "water/a": Color(0.2, 0.4, 0.66),
+		"ford/a": Color(0.47, 0.64, 0.78), "sea/a": Color(0.12, 0.27, 0.5),
+		"sea/shallow": Color(0.3, 0.55, 0.7), "sand/a": Color(0.86, 0.78, 0.55),
+		"bank/a": Color(0.45, 0.35, 0.22), "road/a": Color(0.6, 0.5, 0.36),
+		"water/b": Color(0.21, 0.42, 0.68), "sea/b": Color(0.13, 0.29, 0.52),
+		"road/b": Color(0.58, 0.48, 0.34),
+	}
+	for name: String in ground:
+		_save(_diamond(ground[name], ground[name]), "terrain/%s.png" % name)
 	_save(_diamond(Color(0, 0, 0, 0), Color(1, 1, 1, 0.3)), "terrain/grid/a.png")
-	_save(_diamond(Color(0.55, 0.68, 0.32), Color(0.5, 0.63, 0.29)), "terrain/meadow/a.png")
-	_save(_diamond(Color(0.57, 0.7, 0.34), Color(0.52, 0.65, 0.3)), "terrain/meadow/b.png")
-	_save(_diamond(Color(0.22, 0.38, 0.18), Color(0.2, 0.34, 0.16)), "terrain/forest/a.png")
-	_save(_diamond(Color(0.24, 0.4, 0.19), Color(0.21, 0.36, 0.17)), "terrain/forest/b.png")
-	_save(_diamond(Color(0.2, 0.4, 0.66), Color(0.18, 0.36, 0.6)), "terrain/water/a.png")
-	_save(_diamond(Color(0.22, 0.43, 0.69), Color(0.19, 0.38, 0.62)), "terrain/water/b.png")
-	_save(_diamond(Color(0.47, 0.64, 0.78), Color(0.42, 0.58, 0.7)), "terrain/ford/a.png")
-	_save(_diamond(Color(0.6, 0.5, 0.36), Color(0.52, 0.43, 0.3)), "terrain/road/a.png")
+	var decor := {
+		"flowers_white": Color(0.95, 0.95, 0.9), "flowers_yellow": Color(0.95, 0.8, 0.3),
+		"flowers_purple": Color(0.7, 0.55, 0.85), "clover": Color(0.6, 0.78, 0.45),
+	}
+	for name: String in decor:
+		_save(_specks(decor[name]), "terrain/grass_decor/%s.png" % name)
 	_save(_diamond(Color(0.5, 0.42, 0.28), Color(0.44, 0.36, 0.24)), "terrain/field/fallow.png")
 	_save(_furrows(Color(0.42, 0.3, 0.18), Color(0.32, 0.22, 0.13), Color(0, 0, 0, 0)), "terrain/field/plowed.png")
 	_save(_furrows(Color(0.42, 0.3, 0.18), Color(0.32, 0.22, 0.13), Color(0.45, 0.62, 0.25)), "terrain/field/sown_1.png")
@@ -99,6 +108,14 @@ func _furrows(soil: Color, furrow: Color, crop: Color) -> Image:
 			for j: int in range(1, 7):
 				var c := IsoMath.grid_to_screen(Vector2(j / 7.0, t)) + Vector2(32, -1)
 				_line(img, c, c - Vector2(0, 2 + (i % 2)), crop, 2)
+	return img
+
+
+## A loose cluster of single-pixel specks (flower decal placeholder).
+func _specks(colour: Color) -> Image:
+	var img := _blank(Vector2i(24, 12))
+	for p: Vector2i in [Vector2i(3, 5), Vector2i(8, 2), Vector2i(11, 7), Vector2i(16, 4), Vector2i(20, 8), Vector2i(13, 10)]:
+		img.set_pixelv(p, colour)
 	return img
 
 

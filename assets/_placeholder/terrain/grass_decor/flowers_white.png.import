@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dmfxkx1l5vtc4"
-path="res://.godot/imported/b.png-2be066ccf4a74cfe42d8bf774b6e7974.ctex"
+uid="uid://b8x4frjo0prb1"
+path="res://.godot/imported/flowers_white.png-b735502129fae6a9d435f2482541cbad.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/_placeholder/terrain/forest/b.png"
-dest_files=["res://.godot/imported/b.png-2be066ccf4a74cfe42d8bf774b6e7974.ctex"]
+source_file="res://assets/_placeholder/terrain/grass_decor/flowers_white.png"
+dest_files=["res://.godot/imported/flowers_white.png-b735502129fae6a9d435f2482541cbad.ctex"]
 
 [params]
 
