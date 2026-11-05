@@ -10,7 +10,6 @@ const MAX_SHOWN := 5
 const MESSAGES: Dictionary[StringName, String] = {
 	&"building_completed": "ui.note.building_completed",
 	&"house_upgraded": "ui.note.house_upgraded",
-	&"house_downgraded": "ui.note.house_downgraded",
 	&"house_warning": "ui.note.house_warning",
 	&"resident_left": "ui.note.resident_left",
 	&"worker_reassigned": "ui.note.worker_reassigned",

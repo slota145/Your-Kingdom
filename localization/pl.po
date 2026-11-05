@@ -328,7 +328,7 @@ msgid "ui.house.happiness"
 msgstr "Zadowolenie: %d"
 
 msgid "ui.house.declining"
-msgstr "Uwaga: dom podupada, brakuje mu podstawowych rzeczy!"
+msgstr "Uwaga: brakuje podstawowych rzeczy! Zadowolenie spada, a gdy spadnie poniżej %d, mieszkańcy zaczną się wyprowadzać."
 
 msgid "ui.house.upgrade_in"
 msgstr "Awans za %d s, jeśli nic nie zabraknie"
@@ -476,9 +476,6 @@ msgstr "Gotowe: %s"
 
 msgid "ui.note.house_upgraded"
 msgstr "Awans! Powstał: %s"
-
-msgid "ui.note.house_downgraded"
-msgstr "Dom podupadł: %s"
 
 msgid "ui.note.house_warning"
 msgstr "Brakuje rzeczy w domu: %s"

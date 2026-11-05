@@ -253,7 +253,7 @@ func _house_lines(b: BuildingState) -> PackedStringArray:
 		var ok: bool = house.satisfied.get(need.id, false)
 		lines.append("%s: %s" % [tr(need.name_key()), tr("ui.need.ok" if ok else "ui.need.missing")])
 	if house.unmet_seconds >= Population.WARN_AFTER:
-		lines.append(tr("ui.house.declining"))
+		lines.append(tr("ui.house.declining") % roundi(Population.LEAVE_BELOW))
 	elif house.level < b.def.house_levels.size() and house.met_seconds > 0 and b.site_id == 0:
 		if house.met_seconds >= Population.UPGRADE_AFTER and not Population.next_level_available(province, b):
 			lines.append(tr("ui.house.upgrade_waits") % b.def.house_levels[house.level].supply_units)

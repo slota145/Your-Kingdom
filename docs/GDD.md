@@ -112,7 +112,10 @@ Zasady:
 
 - Dom **awansuje**, gdy przez określony czas (domyślnie 60 s czasu gry) spełnia **wszystkie potrzeby podstawowe** swojej klasy, a materiały na ulepszenie zostaną **fizycznie dostarczone** (np. deski, cegły). W czasie ulepszenia na domu pojawia się rusztowanie. Chata → dom mieszczański kosztuje 4 deski (M4a).
 - **Awans czeka na towary nowej klasy (M4a, potwierdzone 2026-11-05):** dom zaczyna awans dopiero wtedy, gdy w magazynach jest po pełnej spiżarni każdego towaru podstawowego następnej klasy (np. 4 piwa, 4 ryby, 4 chleby). Panel domu mówi wtedy, na co czeka. Bez tej reguły domy awansowały, po 3 minutach bez piwa spadały i deski przepadały.
-- Dom **cofa się** o poziom, jeśli potrzeby podstawowe nie są spełniane przez dłuższy czas (domyślnie 180 s). Wcześniej gracz dostaje ostrzeżenie.
+- **Dom nigdy nie cofa się o poziom** (decyzja 2026-11-05, wniosek z gry: cofanie było zbyt surowe, a materiały na awans przepadały). Brak potrzeby podstawowej ma inne, łagodne skutki:
+  - zadowolenie spada powoli (1 pkt/s) i najwyżej do 20, więc dom płaci mniej podatku, a poniżej 50 nie przychodzą do niego nowi mieszkańcy,
+  - po 60 s gracz dostaje ostrzeżenie,
+  - po 180 s braku, jeśli zadowolenie jest poniżej 25, co 60 s wyprowadza się jeden mieszkaniec. Dom pustoszeje, ale zostaje na swoim poziomie. Gdy potrzeby wrócą, zadowolenie rośnie i dom się zapełnia.
 - **Łączenie w kamienice** (od poziomu 2): domy tego samego poziomu, ustawione obok siebie w jednej linii wzdłuż osi siatki i równo wyrównane, wizualnie łączą się w pierzeję. Zamiast osobnych budynków widać fragmenty: koniec lewy, środek i koniec prawy. Łączenie jest **wyłącznie wizualne** i nie zmienia symulacji. Rozważymy później premię (np. mniejsze zużycie opału) [PÓŹNIEJ].
 
 ### 3.4 Ludność i praca
