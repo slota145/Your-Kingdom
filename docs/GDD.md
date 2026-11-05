@@ -117,7 +117,7 @@ Zasady:
   - zadowolenie spada powoli (1 pkt/s) i najwyżej do 20, więc dom płaci mniej podatku, a poniżej 50 nie przychodzą do niego nowi mieszkańcy,
   - po 60 s gracz dostaje ostrzeżenie,
   - po 180 s braku, jeśli zadowolenie jest poniżej 25, co 60 s wyprowadza się jeden mieszkaniec. Dom pustoszeje, ale zostaje na swoim poziomie. Gdy potrzeby wrócą, zadowolenie rośnie i dom się zapełnia.
-- **Łączenie w kamienice** (od poziomu 2): domy tego samego poziomu, ustawione obok siebie w jednej linii wzdłuż osi siatki i równo wyrównane, wizualnie łączą się w pierzeję. Zamiast osobnych budynków widać fragmenty: koniec lewy, środek i koniec prawy. Łączenie jest **wyłącznie wizualne** i nie zmienia symulacji. Rozważymy później premię (np. mniejsze zużycie opału) [PÓŹNIEJ].
+- **Łączenie w kamienice** (od poziomu 2): domy tego samego poziomu, ustawione obok siebie w jednej linii wzdłuż osi siatki i równo wyrównane, wizualnie łączą się w pierzeję. Zamiast osobnych budynków widać fragmenty: koniec lewy, środek i koniec prawy. Łączenie jest **wyłącznie wizualne** i nie zmienia symulacji. Rozważymy później premię (np. mniejsze zużycie opału) [PÓŹNIEJ]. Od M4b-1.5 łączą się tylko domy patrzące w tę samą stronę, dom na styku dwóch rzędów pod kątem prostym staje się narożnikiem, a dwa rzędy mogą stać plecami do siebie, każdy przodem do swojej drogi.
 
 ### 3.4 Ludność i praca
 
@@ -229,6 +229,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 - Budynki zajmują prostokątny obszar kafli (footprint). Mają **wejście** na wskazanym kaflu krawędzi, w które postacie wchodzą i z którego wychodzą.
 - Budowa jest fizyczna: plac budowy, dostawa materiałów przez tragarzy, praca budowniczego i fazy budowy.
 - Budynku nie da się postawić tam, gdzie ludzie nie dojdą, ani tak, żeby odciął drogę do wejścia innego budynku, towarów na ziemi albo ludzi (decyzja 2026-11-05: zamurowany plac budowy blokował tragarzy i budowniczych). Budowniczy, który nie może dojść do placu, idzie na następny. Gdy wejście wypadłoby od strony wody (np. chata rybaka obrócona drzwiami do rzeki), gracz dostaje osobny komunikat.
+- **Obracanie (M4b-1.5, decyzja 2026-11-05):** gracz wybiera, z której strony budynek ma wejście. Domy mają 4 strony, pozostałe budynki 2 (wejście zawsze od strony kamery, żeby praca była widoczna). Podgląd sam obraca wejście do przylegającej drogi, a klawisz R zmienia stronę ręcznie.
 - Rozbiórka zwraca część materiałów, które trafiają na plac budowy i stamtąd są odnoszone do magazynu.
 
 ### 5.2 Drogi

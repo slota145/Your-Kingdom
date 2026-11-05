@@ -312,6 +312,38 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Balans:** owczarnia 2 wełny na cykl, 2 wełny = 1 sukno, 1 sukno = 2 ubrania, pasieka 1 miód, 1 miód = 2 miody pitne, glinianka 2 gliny, 1 glina + 1 drewno = 2 cegły. Patrycjusze: 12 osób, podatek 1,2 złota na minutę, ubrania 0,02 i miód pitny 0,03 na osobę na minutę.
 - **Grafika** narysowana kodem (budynki, 9 zawodów, towary, sadzonka, kamienice z kamiennym parterem).
 
+#### M4b-1.5 — Miasto
+
+**Decyzje (2026-11-05, ankieta z właścicielem projektu):**
+- **Kamera widzi tylko dwie przednie ściany budynku.** Lustrzane odbicie zamienia je między sobą, więc drzwi zostają widoczne. Drzwi z tyłu wymagają osobnej grafiki „od tyłu”.
+- **Domy mają 4 orientacje, pozostałe budynki 2 (lustro).** Warsztaty, usługi i magazyny zawsze pokazują pracę kamerze. Domy z drzwiami z tyłu pokazują tylną ścianę (ogródek, tylne drzwi, mniej ozdób).
+- **Obracamy wszystkie budynki** jednym mechanizmem (rozwiązuje też chatę rybaka drzwiami do rzeki).
+- **Kierunek przy stawianiu:** podgląd sam obraca wejście do drogi, która przylega do budynku. Klawisz **R** przełącza stronę ręcznie i ręczny wybór obowiązuje do końca tego stawiania. Bez drogi obok: ostatnio wybrana strona.
+- **Narożniki:** gdy dwa rzędy spotykają się pod kątem prostym, dom na rogu dostaje grafikę narożną (wspólny dach łamany na róg). Końce rzędów mają ozdobny szczyt. Patrycjusze: wykusz lub wieżyczka na rogu.
+- **Obrys domów zostaje 2×2.** Zwartość daje grafika: wyższe dachy, lukarny, brak przerw między domami. Symulacja i balans bez zmian.
+- **Podcienia patrycjuszy są tylko wyglądem** (arkady na parterze od strony drogi). Ludzie chodzą drogą przed nimi.
+- **Zapis:** wersja 6, każdy budynek zapisuje orientację. Migracja v5 → v6 daje dzisiejszą stronę wejścia, więc nic się nie przesuwa.
+
+**Zakres:**
+- orientacja budynku w danych i symulacji: obrócone wejście, sprawdzanie miejsca (dostęp, „wejście na wodę”), komenda stawiania z orientacją,
+- podgląd stawiania: automatyczny wybór strony do drogi i klawisz R, podpowiedź o R w UI (tłumaczenia PL i EN),
+- widok: lustro grafiki, grafiki „od tyłu” dla domów (wszystkie 3 poziomy, plac budowy i rusztowanie), cięcie do sortowania (`BuildingSlicer`) dla każdej orientacji,
+- pierzeje: łączenie w rzędy uwzględnia orientację (łączą się domy tego samego poziomu, patrzące w tę samą stronę), nowe warianty: róg, ozdobny koniec, środek; dwa rzędy plecami do siebie stykają się bez szwów,
+- nowe grafiki rysowane kodem: pierzeje mieszczan (skromne: tynk, szachulec, proste szczyty) i patrycjuszy (bogate: cegła i kamień, wysokie dachy, lukarny, podcienia, wykusze na rogach). Własny styl, bez kopiowania Anno,
+- zapis v6 z migracją, fixturą i testem; aktualizacja ART_SPEC §7 (nazwy plików nowych wariantów) i ARCHITECTURE §6.2, §6.6.
+
+**Poza zakresem:** obracanie kamery i przechodzenie pod podcieniami (IDEAS), węższe domy 1×2, premie za pierzeje.
+
+**DoD:**
+- [ ] Każdy budynek da się postawić w każdej swojej orientacji. Postacie wchodzą do budynku od wybranej strony (testy symulacji dla każdej orientacji).
+- [ ] Dwa rzędy domów plecami do siebie, każdy przodem do swojej drogi, działają w grze: mieszkańcy się wprowadzają i są zaopatrywani (test scenariuszowy).
+- [ ] Podgląd sam obraca dom do przylegającej drogi, a R przełącza stronę (test widoku lub zrzut z prototypu).
+- [ ] Sortowanie bez błędów dla każdej orientacji, także dla rogów i rzędów plecami do siebie (`test_sorting.gd`).
+- [ ] Pierzeje mieszczan i patrycjuszy z rogami i końcami widoczne na zrzucie z chmury (`town_shot.tscn`) w układzie: prosty rząd, róg, dwa rzędy plecami do siebie.
+- [ ] Zapis z M4b-1 wczytuje się po migracji (v5 → v6) bez przesunięcia wejść, nowa fixtura `v6_town.json`.
+- [ ] Wszystkie testy przechodzą, automatyczny gracz dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`).
+- [ ] **Twoja ocena gry** na laptopie, w tym wygląd kamienic (poprzednio 2/5).
+
 ---
 
 ## M5 — Woda, porty i statki
