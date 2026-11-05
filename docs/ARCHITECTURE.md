@@ -225,7 +225,7 @@ Są dwa źródła pracy:
 - Wykonawcy kroków są bezstanowi. Wszystko, co krok pamięta, jest w tablicy zadania (`Task.bb`), która trafia do zapisu. Klucze z `_` są lokalne dla kroku i znikają po jego zakończeniu.
 - Kiedy postać idzie, krok nie jest wywoływany co tick (oszczędność). Jeśli cel zniknie po drodze, rozbiórka sama przerywa zadania, które go dotyczą.
 - Po niepowodzeniu postać z towarem w rękach dostaje zadanie „odłóż” (`stash`): najbliższy magazyn z miejscem, a gdy go nie ma albo nie ma do niego drogi, kupa na ziemi. Kupa od razu tworzy zlecenie transportowe.
-- Tragarz niesie **1 sztukę** na kurs (`JobBoard.PORTER_LOAD`, do balansu). Rezerwacja pobrania powstaje już przy przydziale zlecenia, więc dwóch tragarzy nie dostanie tej samej sztuki.
+- Tragarz niesie **1 sztukę** na kurs (`JobBoard.PORTER_LOAD`, potwierdzone przez właściciela projektu; większe ładunki dadzą wózki i wozy, zob. IDEAS). Rezerwacja pobrania powstaje już przy przydziale zlecenia, więc dwóch tragarzy nie dostanie tej samej sztuki.
 - Zlecenie niewykonalne (brak towaru albo miejsca) czeka, a po nieudanym kursie odpoczywa 5 s. Zlecenie z celem, który zniknął, jest anulowane.
 - Pracownicy w M2 pojawiają się przez `SpawnAgentCommand` + `AssignWorkerCommand`. Automatyczny przydział wolnego mieszkańca do nowego budynku przychodzi z populacją w M3.
 
