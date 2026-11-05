@@ -61,7 +61,7 @@ assets/
 | Element | Rozmiar | Uwagi |
 |---|---|---|
 | Kafel terenu | **64×32 px** (romb 2:1) | plik 64×32. Kafle z wysokością, np. skarpy brzegu: 64×48 z romb u dołu |
-| Postać dorosła | **42 px wysokości** (±2) | głowa ok. 9–10 px, szerokość ciała ok. 14–18 px **(M1)** |
+| Postać dorosła | **ok. 34 px wysokości** (było 42 px w M1) | głowa ok. 8 px. Zmiana 2026-11-05: przy 42 px ludzie byli ponad dwa razy wyżsi od drzwi. Drzwi mają ok. 26 px, ściany parterowe ok. 36–42 px |
 | Dziecko | ok. 30 px | [PÓŹNIEJ], przechodnie |
 | Płótno klatki postaci | **64×64 px** | zapas na narzędzia (kosa, łopata do pieca, włócznia) |
 | Punkt stopy (pivot) | **(32, 58)** na płótnie 64×64 | środek między stopami, dotyka ziemi |
@@ -375,5 +375,16 @@ Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
 - **Warianty wyglądu:** `BuildingVisualDef.base_variants` (pliki `base`, `base_2`, `base_3`...). Budynek wybiera wariant według położenia na mapie. Chata ma 3: szachulcowa z drewutnią, z bali z przybudówką, tynkowana w kształcie litery L. Placeholdery mają te same nazwy plików.
 - **Place budowy:** faza 1 to kamienny fundament, paliki ze sznurkiem i sterty materiałów, faza 2 to szkielet z belek i krokwi, część deskowania, rusztowanie i drabina.
 - Światło według §1, kontur 1 px w ciemniejszym odcieniu własnego koloru. Rozmiary i pivoty jak w §3.2. Plik `.json` obok każdego `.png`.
+- **Skala (2026-11-05):** ściany parteru 36–42 px, drzwi ok. 26 px, okna ok. 9×12 px, dom mieszczański 58 px (dwa piętra), żeby pasowały do postaci 34 px (§3.1).
 - **Ograniczenie:** rysunek z prostych brył, czytelny, ale nie ręcznie malowany. Każdy plik można później podmienić lepszą grafiką bez zmian w kodzie.
-- **Jeszcze niezrobione:** postacie (druga partia), stosy towarów w magazynie, skały i drzewa, plac magazynu.
+- **Jeszcze niezrobione:** stosy towarów w magazynie, skały i drzewa, plac magazynu, niesione towary.
+
+### 10.4 Postacie rysowane kodem (2026-11-05)
+
+Narzędzie: `tools/generate_characters.gd`, wynik w `assets/characters/<zawód>/`. Każdy zawód ma własną postać (`data/visuals/agents/<zawód>.tres` wskazuje ją bez zabarwienia).
+
+- Ciało z części w przestrzeni postaci (nogi, buty, tułów, ręce, głowa, włosy, broda, kapelusz, fartuch, sukienka, peleryna, narzędzie), obracane do 5 kierunków (S, SE, E, NE, N; reszta to odbicia, §4.2) i rysowane od tyłu do przodu. Rysowane dla 42 px i zmniejszane wokół stóp do ok. 34 px (§3.1), stopa w (32, 58), kontur 1 px.
+- Stroje według §4.4: rolnik i chmielarz w słomkowym kapeluszu, młynarz w białym fartuchu i czapce, piekarz w białym czepku i fartuchu, drwal w czerwonej koszuli z brodą, tragarz z czerwoną chustą, budowniczy w skórzanym fartuchu, wędkarz w kapeluszu z szerokim rondem, domowniczka w sukience z chustką, przybysz w kapturze z kosturem.
+- Animacje: `idle` (4 klatki), `walk` i wszystkie `walk_carry_*` (8 klatek, z mapą zaczepień), `work` (ogólna) i `work_<czynność>` dla czynności zawodu: zamach nad głową (rąbanie, kucie, orka, budowa), praca nisko (żniwa, ociosywanie), pchanie (piła, ciasto, łopata do pieca), mieszanie (żarna, kadź, kocioł), siew, wiązanie, zarzucanie wędki, czekanie na branie, wyciąganie ryby.
+- **Ograniczenie:** postać 42 px rysowana z kształtów. Czytelna przy zoomie 1–2×, ale mimika i drobne ruchy są uproszczone. Warianty kolorów (§4.4) jeszcze nie.
+

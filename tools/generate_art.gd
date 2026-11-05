@@ -52,105 +52,105 @@ const C_IRON := Color(0.24, 0.24, 0.26)
 const BUILDINGS := {
 	"hut": [
 		{"volumes": [
-			{"kind": "house", "rect": [0.14, 0.14, 1.42, 1.86], "h": 28.0, "rh": 26.0, "ridge": "y",
+			{"kind": "house", "rect": [0.14, 0.14, 1.42, 1.86], "h": 39.0, "rh": 26.0, "ridge": "y",
 				"ends": ["gable", "gable"], "walls": "timber", "roof": "thatch",
 				"shutters": Color(0.35, 0.45, 0.3), "chimney": [0.7, 0.9]},
-			{"kind": "lean", "rect": [1.42, 0.3, 1.86, 1.08], "low": "x", "h": 18.0, "hh": 26.0,
+			{"kind": "lean", "rect": [1.42, 0.3, 1.86, 1.08], "low": "x", "h": 25.0, "hh": 36.0,
 				"roof": "thatch", "walls": "planks", "open": true, "inside": [["log_stack", 1.62, 0.95]]}],
 		 "props": [["flowers", 0.75, 1.9]]},
 		{"volumes": [
-			{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.42], "h": 26.0, "rh": 24.0, "ridge": "x",
+			{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.42], "h": 36.0, "rh": 24.0, "ridge": "x",
 				"ends": ["gable", "gable"], "walls": "logs", "roof": "shingle",
 				"shutters": Color(0.55, 0.25, 0.2), "chimney": [0.5, 0.6]},
-			{"kind": "lean", "rect": [0.3, 1.42, 1.1, 1.86], "low": "y", "h": 13.0, "hh": 22.0,
+			{"kind": "lean", "rect": [0.3, 1.42, 1.1, 1.86], "low": "y", "h": 24.0, "hh": 32.0,
 				"roof": "shingle", "walls": "planks", "open": false}],
 		 "props": [["bench", 1.55, 1.75], ["barrel", 1.85, 1.6]]},
 		{"volumes": [
-			{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.05], "h": 26.0, "rh": 22.0, "ridge": "x",
+			{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.05], "h": 36.0, "rh": 22.0, "ridge": "x",
 				"ends": ["hip", "gable"], "walls": "plaster", "roof": "thatch",
 				"shutters": Color(0.3, 0.4, 0.6), "chimney": [0.6, 0.55]},
-			{"kind": "house", "rect": [0.95, 1.05, 1.86, 1.86], "h": 26.0, "rh": 20.0, "ridge": "y",
+			{"kind": "house", "rect": [0.95, 1.05, 1.86, 1.86], "h": 36.0, "rh": 20.0, "ridge": "y",
 				"ends": ["open", "gable"], "walls": "plaster", "roof": "thatch",
 				"shutters": Color(0.3, 0.4, 0.6)}],
 		 "props": [["flowers", 0.5, 1.4], ["fence", 0.2, 1.85]]},
 	],
 	"woodcutter": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.86], "h": 26.0, "rh": 22.0, "ridge": "y",
+		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.86], "h": 36.0, "rh": 22.0, "ridge": "y",
 			"ends": ["gable", "gable"], "walls": "logs", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)},
-		{"kind": "lean", "rect": [1.3, 0.2, 1.86, 1.12], "low": "x", "h": 20.0, "hh": 26.0,
+		{"kind": "lean", "rect": [1.3, 0.2, 1.86, 1.12], "low": "x", "h": 28.0, "hh": 36.0,
 			"roof": "shingle", "walls": "logs", "open": true, "inside": [["log_stack", 1.55, 1.0]]}],
 		"props": [["chopping_block", 1.75, 1.65], ["log_pile", 0.55, 2.0]]}],
 	"sawmill": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.0], "h": 26.0, "rh": 20.0, "ridge": "x",
+		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.0], "h": 36.0, "rh": 20.0, "ridge": "x",
 			"ends": ["gable", "gable"], "walls": "planks", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)},
-		{"kind": "lean", "rect": [0.2, 1.0, 1.86, 1.86], "low": "y", "h": 22.0, "hh": 26.0,
+		{"kind": "lean", "rect": [0.2, 1.0, 1.86, 1.86], "low": "y", "h": 31.0, "hh": 36.0,
 			"roof": "shingle", "walls": "planks", "open": true,
 			"inside": [["saw_horse", 1.1, 1.65], ["plank_stack", 0.55, 1.7]]}],
 		"props": [["log_pile", 1.95, 0.6]]}],
 	"quarry": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.15, 1.2], "h": 24.0, "rh": 18.0, "ridge": "y",
+		{"kind": "house", "rect": [0.14, 0.14, 1.15, 1.2], "h": 34.0, "rh": 18.0, "ridge": "y",
 			"ends": ["gable", "gable"], "walls": "stone", "roof": "slate", "shutters": Color(0.4, 0.38, 0.36)},
-		{"kind": "lean", "rect": [1.15, 0.14, 1.86, 1.86], "low": "x", "h": 20.0, "hh": 24.0,
+		{"kind": "lean", "rect": [1.15, 0.14, 1.86, 1.86], "low": "x", "h": 28.0, "hh": 34.0,
 			"roof": "planks_roof", "walls": "planks", "open": true, "inside": [["stone_blocks", 1.6, 1.4]]}],
 		"props": [["stone_blocks", 0.6, 1.75], ["crane", 1.95, 0.5]]}],
 	"farm": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.1], "h": 30.0, "rh": 26.0, "ridge": "x",
+		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.1], "h": 42.0, "rh": 26.0, "ridge": "x",
 			"ends": ["gable", "hip"], "walls": "timber", "roof": "thatch",
 			"shutters": Color(0.6, 0.25, 0.2), "chimney": [0.45, 0.55]},
-		{"kind": "house", "rect": [1.0, 1.1, 1.86, 1.86], "h": 24.0, "rh": 22.0, "ridge": "y",
+		{"kind": "house", "rect": [1.0, 1.1, 1.86, 1.86], "h": 34.0, "rh": 22.0, "ridge": "y",
 			"ends": ["open", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.5, 0.35, 0.2)}],
 		"props": [["sheaves", 0.45, 1.6], ["cart_wheel", 0.9, 1.9]]}],
 	"hop_farm": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.25, 1.86], "h": 28.0, "rh": 24.0, "ridge": "y",
+		{"kind": "house", "rect": [0.14, 0.14, 1.25, 1.86], "h": 39.0, "rh": 24.0, "ridge": "y",
 			"ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.3, 0.5, 0.3)},
-		{"kind": "round", "centre": [1.55, 0.75], "r": 0.3, "h": 26.0, "rh": 26.0, "walls": "stone_plaster",
+		{"kind": "round", "centre": [1.55, 0.75], "r": 0.3, "h": 36.0, "rh": 26.0, "walls": "stone_plaster",
 			"roof": "tile", "sails": false, "cowl": true}],
 		"props": [["hop_poles", 1.8, 1.4], ["baskets", 1.5, 1.85]]}],
 	"mill": [{"volumes": [
-		{"kind": "round", "centre": [1.0, 1.0], "r": 0.66, "h": 66.0, "rh": 30.0, "walls": "stone_plaster",
+		{"kind": "round", "centre": [1.0, 1.0], "r": 0.66, "h": 92.0, "rh": 30.0, "walls": "stone_plaster",
 			"roof": "shingle", "sails": true}],
 		"props": [["sacks", 1.85, 1.15], ["sacks", 0.4, 1.85]]}],
 	"bakery": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.2], "h": 30.0, "rh": 22.0, "ridge": "x",
+		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.2], "h": 42.0, "rh": 22.0, "ridge": "x",
 			"ends": ["gable", "gable"], "walls": "timber", "roof": "tile",
 			"shutters": Color(0.6, 0.25, 0.2), "chimney": [1.3, 0.55]},
-		{"kind": "lean", "rect": [0.3, 1.2, 1.86, 1.86], "low": "y", "h": 22.0, "hh": 28.0,
+		{"kind": "lean", "rect": [0.3, 1.2, 1.86, 1.86], "low": "y", "h": 31.0, "hh": 39.0,
 			"roof": "tile", "walls": "timber", "open": true,
 			"inside": [["oven", 1.45, 1.7], ["table", 0.8, 1.7]]}],
 		"props": [["sacks", 0.2, 1.95]]}],
 	"brewery": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.35, 1.86], "h": 34.0, "rh": 22.0, "ridge": "y",
+		{"kind": "house", "rect": [0.14, 0.14, 1.35, 1.86], "h": 48.0, "rh": 22.0, "ridge": "y",
 			"ends": ["gable", "gable"], "walls": "stone_plaster", "roof": "tile",
 			"shutters": Color(0.3, 0.35, 0.5), "chimney": [0.5, 0.5]},
-		{"kind": "lean", "rect": [1.35, 0.3, 1.86, 1.86], "low": "x", "h": 22.0, "hh": 30.0,
+		{"kind": "lean", "rect": [1.35, 0.3, 1.86, 1.86], "low": "x", "h": 31.0, "hh": 42.0,
 			"roof": "tile", "walls": "stone_plaster", "open": true,
 			"inside": [["kettle", 1.62, 0.9], ["barrels", 1.62, 1.6]]}],
 		"props": [["barrel", 0.5, 2.0]]}],
 	"fishing_hut": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.6], "h": 24.0, "rh": 22.0, "ridge": "y",
+		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.6], "h": 34.0, "rh": 22.0, "ridge": "y",
 			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.3, 0.45, 0.6)}],
 		"props": [["nets", 1.6, 0.6], ["fish_rack", 0.7, 1.95], ["boat", 1.65, 1.6]]}],
 	"chapel": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.4, 1.86, 1.6], "h": 30.0, "rh": 24.0, "ridge": "x",
+		{"kind": "house", "rect": [0.14, 0.4, 1.86, 1.6], "h": 42.0, "rh": 24.0, "ridge": "x",
 			"ends": ["gable", "gable"], "walls": "plaster", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)},
-		{"kind": "tower", "rect": [1.45, 0.75, 1.86, 1.25], "h": 40.0, "spire": 22.0, "walls": "planks",
+		{"kind": "tower", "rect": [1.45, 0.75, 1.86, 1.25], "h": 56.0, "spire": 22.0, "walls": "planks",
 			"roof": "shingle", "cross": true}],
 		"props": [["fence", 0.2, 1.85]]}],
 	"church": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.4, 2.15, 2.5], "h": 40.0, "rh": 34.0, "ridge": "x",
+		{"kind": "house", "rect": [0.14, 0.4, 2.15, 2.5], "h": 56.0, "rh": 34.0, "ridge": "x",
 			"ends": ["hip", "gable"], "walls": "stone", "roof": "slate", "shutters": Color(0.4, 0.3, 0.25),
 			"tall_windows": true},
-		{"kind": "tower", "rect": [2.15, 1.05, 2.86, 1.85], "h": 70.0, "spire": 44.0, "walls": "stone",
+		{"kind": "tower", "rect": [2.15, 1.05, 2.86, 1.85], "h": 98.0, "spire": 44.0, "walls": "stone",
 			"roof": "slate", "cross": true}],
 		"props": [["graves", 0.5, 2.8]]}],
 	"town_hall": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 3.86, 1.9], "h": 44.0, "rh": 34.0, "ridge": "x",
+		{"kind": "house", "rect": [0.14, 0.14, 3.86, 1.9], "h": 62.0, "rh": 34.0, "ridge": "x",
 			"ends": ["hip", "hip"], "walls": "timber_stone", "roof": "tile",
 			"shutters": Color(0.25, 0.35, 0.55), "floors": 2, "chimney": [0.9, 0.7]},
-		{"kind": "house", "rect": [0.14, 1.9, 2.2, 3.86], "h": 44.0, "rh": 30.0, "ridge": "y",
+		{"kind": "house", "rect": [0.14, 1.9, 2.2, 3.86], "h": 62.0, "rh": 30.0, "ridge": "y",
 			"ends": ["open", "gable"], "walls": "timber_stone", "roof": "tile",
 			"shutters": Color(0.25, 0.35, 0.55), "floors": 2},
-		{"kind": "tower", "rect": [2.45, 2.3, 3.35, 3.2], "h": 76.0, "spire": 34.0, "walls": "timber_stone",
+		{"kind": "tower", "rect": [2.45, 2.3, 3.35, 3.2], "h": 106.0, "spire": 34.0, "walls": "timber_stone",
 			"roof": "tile", "cross": false, "clock": true}],
 		"props": [["banner", 0.35, 3.86], ["bench", 3.4, 3.7]]}],
 	"well": [{"special": "well"}],
@@ -294,7 +294,7 @@ func _burgher_rows(id: String) -> void:
 			var a0 := INSET if ends[0] == "gable" else 0.0
 			var a1 := 2.0 - (INSET if ends[1] == "gable" else 0.0)
 			var rect := [a0, INSET, a1, 2.0 - INSET] if along_x else [INSET, a0, 2.0 - INSET, a1]
-			var house := {"kind": "house", "rect": rect, "h": 46.0, "rh": 24.0, "ridge": axis, "ends": ends,
+			var house := {"kind": "house", "rect": rect, "h": 58.0, "rh": 24.0, "ridge": axis, "ends": ends,
 					"walls": "plaster_stone", "roof": "tile", "tint": BURGHER_COLOURS[variant],
 					"shutters": Color(0.3, 0.38, 0.5), "floors": 2}
 			if variant != "middle":
@@ -366,19 +366,19 @@ func _wall_face(img: Image, pivot: Vector2i, a: Vector2, b: Vector2, z0: float, 
 	var holes: Array = []
 	var door_u := door_at * px_per_tile
 	if door_at >= 0.0:
-		holes.append([door_u - 5.0, 3.0, door_u + 5.0, 19.0, "door"])
+		holes.append([door_u - 6.0, 3.0, door_u + 6.0, 28.0, "door"])
 	var count := maxi(1, int(round(tiles / 0.85)))
 	for k: int in count:
 		var mid := (k + 0.5) * length / count
 		for floor_i: int in floors:
-			var v0: float = h * 0.42 if floors == 1 else (h * 0.18 if floor_i == 0 else h * 0.6)
-			var wh := 9.0 if not tall else h * 0.45
+			var v0: float = h * 0.36 if floors == 1 else (h * 0.14 if floor_i == 0 else h * 0.6)
+			var wh := 12.0 if not tall else h * 0.45
 			if tall:
 				v0 = h * 0.3
-			if door_at >= 0.0 and absf(mid - door_u) < 11.0 and v0 < 22.0:
+			if door_at >= 0.0 and absf(mid - door_u) < 14.0 and v0 < 30.0:
 				continue
-			if h >= 20.0 and length >= 14.0:
-				holes.append([mid - 3.5, v0, mid + 3.5, v0 + wh, "arch" if tall else "window"])
+			if h >= 20.0 and length >= 16.0:
+				holes.append([mid - 4.5, v0, mid + 4.5, v0 + wh, "arch" if tall else "window"])
 	var poly := PackedVector2Array([o, o + eu, o + eu - Vector2(0, h), o - Vector2(0, h)])
 	_fill_shader(img, poly, func(x: int, y: int) -> Color:
 		var p := Vector2(x + 0.5, y + 0.5) - o
@@ -533,8 +533,8 @@ func _round(img: Image, pivot: Vector2i, vol: Dictionary) -> void:
 			var v := bottom - y
 			var col := _wall_material(walls, u, v, h, PI * rx, Color.WHITE)
 			# Door at the front, a few small windows up the tower.
-			if absf(sx - 0.15) < 0.12 and v > 2.0 and v < 18.0:
-				col = C_DOOR if absf(sx - 0.15) < 0.09 and v < 17.0 else C_BEAM
+			if absf(sx - 0.15) < 0.14 and v > 2.0 and v < 28.0:
+				col = C_DOOR if absf(sx - 0.15) < 0.11 and v < 27.0 else C_BEAM
 			elif (absf(sx + 0.3) < 0.08 and absf(v - h * 0.55) < 4.0) or (absf(sx - 0.35) < 0.08 and absf(v - h * 0.8) < 4.0):
 				col = C_GLASS if absf(sx) > 0.0 else C_BEAM
 			_px(img, Vector2i(x, y), _lit(col, light))
@@ -672,7 +672,7 @@ func _site_image(phase: int, id: String) -> Dictionary:
 	for e: Array in [[corners[0], corners[1]], [corners[0], corners[3]], [corners[1], corners[2]], [corners[3], corners[2]]]:
 		var light := LIGHT_SE if (e[1] as Vector2).x == r.end.x and (e[0] as Vector2).x == r.end.x else LIGHT_SW
 		_wall_face(img, pivot, e[0], e[1], 0.0, 6.0, "stone", Color.WHITE, light, C_BEAM, 1, -1.0, false)
-	var h := 30.0
+	var h := 40.0
 	if phase == 1:
 		# Stakes and string at the corners, materials waiting.
 		for p: Vector2 in corners:
@@ -1241,8 +1241,8 @@ func _stall(img: Image, pivot: Vector2i, at: Vector2, colours: Array) -> void:
 				Color(0.75, 0.2, 0.15), Color(0.55, 0.7, 0.3), Color(0.9, 0.8, 0.4)][g])
 	# Posts and awning.
 	for side: float in [-13.0, 13.0]:
-		_line(img, s + Vector2(side, -4), s + Vector2(side, -26), C_BEAM, 2)
-	var awning := PackedVector2Array([s + Vector2(-16, -24), s + Vector2(0, -32), s + Vector2(16, -24), s + Vector2(0, -16)])
+		_line(img, s + Vector2(side, -4), s + Vector2(side, -34), C_BEAM, 2)
+	var awning := PackedVector2Array([s + Vector2(-16, -32), s + Vector2(0, -40), s + Vector2(16, -32), s + Vector2(0, -24)])
 	_fill_shader(img, awning, func(x: int, y: int) -> Color:
 		return colours[((x - y * 2) / 4) % 2 if (x - y * 2) >= 0 else 1])
 	_outline(img, awning, Color(colours[0]).darkened(0.5))

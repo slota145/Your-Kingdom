@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_vis")
-tint = Color(1, 1, 1, 1)
+character = &"miller"
