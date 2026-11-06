@@ -7,7 +7,7 @@ var size: Vector2i
 
 ## TerrainDef.index per tile. Part of the map, saved.
 var _terrain: PackedByteArray = PackedByteArray()
-## 1 = dirt road (GDD §5.2). Saved.
+## 0 = none, 1 = dirt road, 2 = paved road (GDD §5.2, M4b-3). Saved.
 var _road: PackedByteArray = PackedByteArray()
 ## 1 = impassable regardless of terrain (walls in prototypes, tests). Saved.
 var _blocked: PackedByteArray = PackedByteArray()
@@ -40,17 +40,37 @@ func set_terrain(tile: Vector2i, terrain_index: int) -> void:
 		_terrain[index(tile)] = terrain_index
 
 
+const DIRT_ROAD := 1
+const PAVED_ROAD := 2
+
+
+## Any road, dirt or paved.
 func has_road(tile: Vector2i) -> bool:
-	return is_inside(tile) and _road[index(tile)] == 1
+	return is_inside(tile) and _road[index(tile)] != 0
 
 
+func is_paved(tile: Vector2i) -> bool:
+	return is_inside(tile) and _road[index(tile)] == PAVED_ROAD
+
+
+## Lays dirt road (or removes any road).
 func set_road(tile: Vector2i, road: bool) -> void:
 	if is_inside(tile):
-		_road[index(tile)] = 1 if road else 0
+		_road[index(tile)] = DIRT_ROAD if road else 0
+
+
+## Paves a road tile, or turns it back into dirt road.
+func set_paved(tile: Vector2i, paved: bool) -> void:
+	if is_inside(tile):
+		_road[index(tile)] = PAVED_ROAD if paved else DIRT_ROAD
 
 
 func road_count() -> int:
-	return _road.count(1)
+	return _road.size() - _road.count(0)
+
+
+func paved_count() -> int:
+	return _road.count(PAVED_ROAD)
 
 
 func is_blocked(tile: Vector2i) -> bool:

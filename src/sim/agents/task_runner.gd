@@ -9,6 +9,11 @@ extends RefCounted
 
 ## Wait after a failure before trying again (3 s).
 const RETRY_TICKS := 30
+## Wait when there is simply nothing to work on (no tree to fell, no rock, no free tile to
+## plant): 10 s. The worker stands idle either way; looking again costs a search of the
+## whole work area (M4b-3).
+const IDLE_RETRY_TICKS := 100
+const NOTHING_TO_DO: Array[StringName] = [&"no_resource", &"no_plant_spot"]
 
 static var _executors: Dictionary[StringName, TaskStep] = {}
 static var _transport_steps: Array[StepDef] = []
@@ -17,6 +22,7 @@ static var _build_steps: Array[StepDef] = []
 static var _errand_steps: Array[StepDef] = []
 static var _move_in_steps: Array[StepDef] = []
 static var _merchant_steps: Array[StepDef] = []
+static var _park_steps: Array[StepDef] = []
 
 const BUILDER_KIND := &"builder"
 
@@ -52,6 +58,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"build": BuildStep.new(), &"field": FieldStep.new(), &"move_in": MoveInStep.new(),
 			&"deposit": DepositStep.new(), &"plant": PlantStep.new(), &"serve": ServeStep.new(),
 			&"choose_stall": ChooseStallStep.new(), &"merchant": MerchantStep.new(),
+			&"park": ParkStep.new(),
 		}
 	return _executors[kind]
 
@@ -106,9 +113,11 @@ static func fail(province: ProvinceSim, agent: Agent) -> void:
 	province.events.emit(&"task_failed", {"agent": agent.id, "task": task.kind,
 			"step": task.step_index, "reason": StringName(String(task.bb.get("fail_reason", "")))})
 	agent.task = null
+	if not agent.is_carrying() and agent.vehicle == Carriers.HANDCART:
+		agent.vehicle = &""
 	agent.clear_path()
 	agent.activity = &"idle"
-	agent.cooldown = RETRY_TICKS
+	agent.cooldown = IDLE_RETRY_TICKS if NOTHING_TO_DO.has(agent.last_fail) else RETRY_TICKS
 
 
 ## Rebuilds the step list of a task loaded from a save. Returns false if it cannot be resumed.
@@ -126,6 +135,8 @@ static func restore_steps(province: ProvinceSim, task: Task) -> bool:
 			task.steps = move_in_steps()
 		Task.KIND_MERCHANT:
 			task.steps = merchant_steps()
+		Task.KIND_PARK:
+			task.steps = park_steps()
 		Task.KIND_RECIPE:
 			var recipe := province.data.get_recipe(task.recipe_id)
 			if recipe == null:
@@ -166,6 +177,12 @@ static func move_in_steps() -> Array[StepDef]:
 	return _move_in_steps
 
 
+static func park_steps() -> Array[StepDef]:
+	if _park_steps.is_empty():
+		_park_steps = [ParkStepDef.new()]
+	return _park_steps
+
+
 static func merchant_steps() -> Array[StepDef]:
 	if _merchant_steps.is_empty():
 		_merchant_steps = [MerchantStepDef.new()]
@@ -173,6 +190,8 @@ static func merchant_steps() -> Array[StepDef]:
 
 
 static func _start_next(province: ProvinceSim, agent: Agent) -> void:
+	if not agent.is_carrying() and agent.vehicle == Carriers.HANDCART:
+		agent.vehicle = &""   # the handcart goes back to the storage's yard
 	if agent.is_carrying():
 		var stash := Task.new()
 		stash.kind = Task.KIND_STASH
@@ -203,6 +222,14 @@ static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 			return
 	var workplace := province.buildings.get_building(agent.workplace_id)
 	if workplace != null and not workplace.is_complete():
+		return
+	if agent.kind == Carriers.CARTER_KIND and workplace != null:
+		# Between jobs the wagon goes back to the stable (M4b-3).
+		if agent.vehicle != &"" or province.building_entered_at(agent.tile()) != workplace:
+			var park := Task.new()
+			park.kind = Task.KIND_PARK
+			park.steps = park_steps()
+			agent.task = park
 		return
 	if agent.kind == BUILDER_KIND and workplace != null:
 		var site := Construction.site_for(province, agent)
@@ -245,6 +272,8 @@ static func _finish(province: ProvinceSim, agent: Agent) -> void:
 	if task.kind == Task.KIND_TRANSPORT:
 		province.jobs.on_completed(task.request_id, int(task.bb.get("amount", 1)))
 	agent.task = null
+	if not agent.is_carrying() and agent.vehicle == Carriers.HANDCART:
+		agent.vehicle = &""
 	if task.kind == Task.KIND_MERCHANT:
 		if province.merchant.agent_id == agent.id:
 			province.merchant.gone()

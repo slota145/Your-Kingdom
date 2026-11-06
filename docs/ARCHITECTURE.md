@@ -226,7 +226,7 @@ Są dwa źródła pracy:
 - Wykonawcy kroków są bezstanowi. Wszystko, co krok pamięta, jest w tablicy zadania (`Task.bb`), która trafia do zapisu. Klucze z `_` są lokalne dla kroku i znikają po jego zakończeniu.
 - Kiedy postać idzie, krok nie jest wywoływany co tick (oszczędność). Jeśli cel zniknie po drodze, rozbiórka sama przerywa zadania, które go dotyczą.
 - Po niepowodzeniu postać z towarem w rękach dostaje zadanie „odłóż” (`stash`): najbliższy magazyn z miejscem, a gdy go nie ma albo nie ma do niego drogi, kupa na ziemi. Kupa od razu tworzy zlecenie transportowe.
-- Tragarz niesie **1 sztukę** na kurs (`JobBoard.PORTER_LOAD`, potwierdzone przez właściciela projektu; większe ładunki dadzą wózki i wozy, zob. IDEAS). Rezerwacja pobrania powstaje już przy przydziale zlecenia, więc dwóch tragarzy nie dostanie tej samej sztuki.
+- Tragarz niesie **1 sztukę** na kurs (`JobBoard.PORTER_LOAD`, potwierdzone przez właściciela projektu; większe ładunki dają wózki i wozy od M4b-3). Rezerwacja pobrania powstaje już przy przydziale zlecenia, więc dwóch tragarzy nie dostanie tej samej sztuki.
 - Zlecenie niewykonalne (brak towaru albo miejsca) czeka, a po nieudanym kursie odpoczywa 5 s. Zlecenie z celem, który zniknął, jest anulowane.
 - Pracownicy w M2 pojawiają się przez `SpawnAgentCommand` + `AssignWorkerCommand`. Automatyczny przydział wolnego mieszkańca do nowego budynku przychodzi z populacją w M3.
 
@@ -237,7 +237,7 @@ Testy jednostkowe obejmują każdy z tych przypadków.
 - **Magazyny publiczne i prywatne:** `nearest_source` i `nearest_sink` widzą tylko magazyny publiczne (`BuildingState.stock`) i kupy. Spiżarnia domu (`supply`) i plac budowy przyjmują dostawy tylko wtedy, gdy ktoś je wprost wskaże.
 - **Pola:** `FieldStore` trzyma kafle pól z farmą, etapem, czasem siewu i dojrzałości oraz roszczeniem rolnika. Wzrost nie wymaga pracy w ticku: kafel jest dojrzały, gdy `tick >= ripe_tick`. Krok `field` wybiera: żniwa > siew > orka, najbliższy kafel. Żniwa kończą się wiązaniem snopa, a następny krok receptury (`deliver`) niesie go do magazynu.
 - **Ludność** (`Population`, raz na sekundę): konsumpcja ułamkowa ze spiżarni, zadowolenie dąży do sumy wag spełnionych potrzeb (2 pkt/s), domownik (`householder`) wychodzi po towar, gdy zapas spada do połowy (niesie do 2 sztuk), awans po 60 s spełnionych potrzeb, ostrzeżenie po 60 s braków, spadek po 180 s. Nowi mieszkańcy (`settler`) przychodzą pieszo z `entry_tile` co 10 s do domu z wolnym miejscem i zadowoleniem ≥ 50. Pracuje połowa mieszkańców. Wolni dostają przydział do budynków z brakami według `staffing_priority` (ratusz 0), z najbliższego domu. Postać pracownika pojawia się w domu i idzie do pracy. Gdy dom traci ludzi, najnowsi pracownicy z niego tracą pracę (postać znika, niesiony towar ląduje na ziemi).
-- **Zasięg usług** (`ServiceCoverage`): Dijkstra z kopcem po kosztach ruchu od wejścia budynku usługowego. Liczony od nowa, gdy zmieni się siatka nawigacji albo zbiór budynków usługowych. Nie jest zapisywany, bo wynika ze stanu.
+- **Zasięg usług** (`ServiceCoverage`): Dijkstra z kopcem po kosztach ruchu od wejścia budynku usługowego. Nie jest zapisywany, bo wynika ze stanu. **Od M4b-3 przyrostowo:** każdy budynek usługowy ma własny wynik (lista kafli), a na kaflu jest licznik źródeł danej usługi. Źródło liczy zasięg od nowa tylko wtedy, gdy zmieniony kafel leży w jego zasięgu albo tuż obok (Dijkstra czyta tylko te kafle), więc wynik jest taki sam jak przy liczeniu wszystkiego od zera, także po wczytaniu gry. Tawerna bez napitków wyłącza i włącza swój wynik bez liczenia. Koszt zasięgu to droga, bruk, pole i teren, **bez drzew** (ścinanie i sadzenie przy mieście nie zmienia zasięgów). Dijkstra czyta płaskie tablice (`NavGrid.solid_map`, `ServiceCoverage.cost_map`).
 - **Drogi:** warstwa w `TileGrid`, koszt 0,67 (+50% szybkości, GDD §5.2). Pole ma koszt 1,2.
 
 **Realizacja (M4a):**
@@ -260,16 +260,23 @@ Testy jednostkowe obejmują każdy z tych przypadków.
 - **Kupiec (`Merchant`, `ProvinceSim.merchant`):** stany `AWAY → COMING → TRADING → LEAVING`. Postać `merchant` z zadaniem `KIND_MERCHANT` (`MerchantStep`). Przy targowisku otwiera wóz: `Stockpile` z własnym id encji (`wagon_id`), adresowany jak magazyn (`storage`, `access_tile` = miejsce wozu). Co 1 s płaci za towar dowieziony na wóz (cena bazowa) i ustawia zlecenia „z dowolnego magazynu na wóz” na nadwyżkę ponad próg gracza (`JobBoard.set_amount`). `BuyPigCommand` płaci i dodaje świnię na wóz ze zleceniem do chlewu; nieodebrane świnie są zwracane w złocie, gdy kupiec odjeżdża. Progi: `SetSellAboveCommand` (`Merchant.sell_above`).
 - **Liczniki:** `GoodsLedger` (`ProvinceSim.ledger`) liczy towary wytworzone (zbiór, żniwa, produkcja, narodziny, kupno) i zużyte (jedzenie, przetwarzanie, budowy, tawerna, sprzedaż) w 5 minutowych kubełkach. Tylko statystyka dla okna „Zapasy królestwa”, nie trafia do zapisu.
 
+**Realizacja (M4b-3):**
+- **Bruk:** `TileGrid` trzyma w warstwie dróg 0 (brak), 1 (ubita) albo 2 (bruk), więc format siatki się nie zmienia. `BuildPavingCommand` zamienia wolny teren w drogę ubitą i zakłada `PavingSite` (własne id, `Stockpile` na kamień, kolejka kafli), który zamawia 1 kamień na kafel przez `JobBoard` (z rezerwą magazynu jak budowa). `access_tile` placu to następny kafel do ułożenia, więc tragarze kładą kamień tam, gdzie pracuje budowniczy. `Construction.site_for` daje budowniczemu najpierw budowy, potem bruk; `BuildStep` idzie na kafel, pracuje 3 s i woła `ProvinceSim.pave_next`. Usunięcie drogi z zamówionego kafla zmniejsza zamówienie (`_withdraw_paving`); kamień, który został, ląduje na ziemi. Widok: niebieski kanał mapy terenu oznacza bruk, a shader rysuje go teksturą `terrain/paving`. Zapis v8 (`paving`).
+- **Wózki:** `BuildingDef.max_carts` (magazyn: 2), `BuildingState.carts` (kupione, `BuyCartCommand` zdejmuje 3 deski z najbliższych magazynów przez `take_from_storages`). `JobBoard._assign_one`: gdy zlecenie potrzebuje jeszcze ≥ 2 sztuk, a magazyn wybranego tragarza ma wolny wózek (`Carriers.has_free_handcart`: kupione minus używane przez jego tragarzy), ładunek rośnie do 3 (`_largest_load` sprawdza źródło i cel), a tragarz dostaje `Agent.vehicle = handcart`. Wózek zostaje przy tragarzu, dopóki ten ma towar w rękach (także przy odkładaniu po niepowodzeniu). `Movement` mnoży koszt kafla poza drogą przez 1/0,7. `Carriers.still_handling` dodaje w `FetchStep` i `DeliverStep` 1 s na sztukę (czynność `load`). Widok rysuje wózek przed postacią (`AgentSprite._update_vehicle`, arkusz 5 kierunków `vehicles/handcart/{empty,loaded}`).
+- **Wozy konne:** `ProvinceSim.road_nav` to druga `NavGrid`, w której przejezdne są tylko kafle dróg (aktualizowana w `refresh_tile`). Woźnica (`carter`, pracownik `stable`) ma `vehicle = wagon`; `Movement` liczy mu ścieżkę przez `find_road_path` (wyjście z budynku drzwiami z drogą przed nimi), a kafle poza drogą sprawdza w `road_nav`. Przystanek wozu to `road_stop(id)`: kafel z drogą przed drzwiami budynku (także stosu i placu budowy), następny kafel bruku albo kupa lub wóz kupca stojące na drodze; `Carriers.stop_for` podaje go `FetchStep` i `DeliverStep`. `JobBoard.update` najpierw daje wozom zlecenia z ≥ 4 sztukami (`_assign_wagon`: oba przystanki istnieją, są ≥ 10 kafli od siebie i łączy je droga, źródło i cel mieszczą 4–6 sztuk; cel „dowolny magazyn” wybiera `Carriers.road_sink` z góry), potem tragarzom. Żywy towar nie jedzie wozem. Woźnica jest gotowy (`Carriers.carter_ready`), gdy ma już wóz albo stoi w stajni; między kursami zadanie `park` (`ParkStep`) odprowadza wóz drogą pod stajnię, zdejmuje go i wchodzi do środka (można je przerwać nowym kursem). Widok: wóz jedzie 0,6 kafla za woźnicą, który prowadzi konia (`vehicles/wagon/{empty,loaded}`, 112×80).
+
+- **Tereny (część 2):** `TerrainDef.farmable` (kamienisty grunt: nie, `field_error` → `terrain_not_farmable`), `counts_as` (jezioro liczy się jako `water` dla `needs_terrain_near`, `find_shore` i komunikatu o wejściu na wodę; `is_kind`), `extra_map_color` + `extra_node` (drugi kolor na mapie: kamienisty grunt ze skałą). `ResourceNodeDef.leaves_terrain`: wydobyta skała zamienia kafel w kamienisty grunt (`ProvinceSim.leave_terrain`, zdarzenie `terrain_changed`). Mapa `lakeland` (128×128) jest rysowana skryptem `tools/generate_lakeland_map.py`; menu ma przycisk „Nowa gra” dla każdej mapy (`Game.start_request["map"]`).
+
 ### 5.3 Pathfinding
 
 **Decyzja:** `AStarGrid2D` (implementacja C++ w Godocie) na siatce kafli w **przestrzeni siatki, nie ekranu**, z 8 kierunkami ruchu i `DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES`, co zapobiega przechodzeniu „przez róg” między dwoma ukośnymi kaflami muru.
 
 | Element | Ustalenie |
 |---|---|
-| Koszty kafli | `weight_scale` z `TerrainDef.move_cost`: droga ubita 0,67 (M3, zgodnie z GDD +50%); bruk 0,5; trawa i łąka 1,0; pole 1,2; las 1,5 (także drzewo na trawie, M4b-2); bród 2,0. Woda, skały i budynki są `solid`; drzewa nie (M4b-2). |
-| Zmiany mapy | Budowa lub rozbiórka aktualizuje komórki (`set_point_solid`, `set_point_weight_scale`). Ścieżki niosą numer wersji siatki. Postać, której następny odcinek stał się nieprzejezdny, liczy ścieżkę od nowa. |
+| Koszty kafli | `weight_scale` z `TerrainDef.move_cost`: droga ubita 0,67 (M3, zgodnie z GDD +50%); bruk 0,55 (M4b-3, +80%); trawa i łąka 1,0; pole 1,2; las 1,5 (także drzewo na trawie, M4b-2); bród 2,0. Woda, skały i budynki są `solid`; drzewa nie (M4b-2). |
+| Zmiany mapy | Budowa lub rozbiórka aktualizuje komórki (`set_point_solid`, `set_point_weight_scale`). Ścieżki niosą numer wersji przejezdności (`ProvinceSim.blocking_version`: zmienia się tylko, gdy kafel staje się przejezdny albo nie, dla pieszych lub wozów; zmiana samego kosztu, np. ścięte drzewo, nie każe sprawdzać tras, M4b-3). Postać, której dalsza trasa stała się nieprzejezdna, liczy ścieżkę od nowa. |
 | Budżet | Kolejka zapytań `PathRequestQueue` ma limit, wyjściowo **32 zapytania na tick**. Postać czeka na ścieżkę w stanie `idle` przez co najwyżej kilka ticków, co jest niewidoczne dla gracza. |
-| Pamięć podręczna | Częste trasy (budynek → najbliższy magazyn) są cache’owane per para (budynek, magazyn) i unieważniane przy zmianie wersji siatki w obszarze trasy. **W M2 jeszcze niepotrzebne** (500 tragarzy mieści się w budżecie, §9.3). Wracamy do tego w M4, jeśli pomiar pokaże piki. |
+| Pamięć podręczna | Częste trasy (budynek → najbliższy magazyn) są cache’owane per para (budynek, magazyn) i unieważniane przy zmianie wersji siatki w obszarze trasy. **W M2 jeszcze niepotrzebne** (500 tragarzy mieści się w budżecie, §9.3). **W M4b-3 też niepotrzebne:** na dużym mieście wyszukiwanie tras to ok. 0,15 ms na tick (§9.3). |
 | Rezerwa | Jeśli pomiary w M1 pokażą problem: pola przepływu (flow fields) do magazynów, hierarchiczny A* albo zapytania na `WorkerThreadPool`. |
 | Kolizje postaci | **Brak kolizji między postaciami.** Kilka osób może stać na jednym kaflu. Widok dodaje małe, stałe przesunięcie wynikające z id postaci, żeby postacie nie nakładały się idealnie. To kluczowa oszczędność wydajności, typowa dla gatunku. |
 | Okręty | Osobny `NavGrid` dla wody o tej samej strukturze, przygotowany pod bitwy morskie [PÓŹNIEJ]. |
@@ -464,7 +471,7 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 
 **Test wydajności (M1):** scena benchmarkowa z 500 postaciami chodzącymi losowo między 20 budynkami na mapie 192×192. Logujemy czasy ticku i FPS przy każdym poziomie zoomu.
 
-### 9.3 Wyniki M1
+### 9.3 Wyniki pomiarów (M1, M2, M4b-3)
 
 Pomiar: `src/prototype/m1/m1_bench.tscn -- --bench` (scena usunięta w M2), okno 1600×900, vsync wyłączony, laptop z RTX 5070 Ti oraz zintegrowaną grafiką Intel.
 - Postacie chodzą między losowymi celami w obszarze 48×48 wokół 20 budynków i murów.
@@ -503,6 +510,28 @@ Cel ≤ 4 ms przy 500 postaciach jest spełniony.
 | 713 | 3,2 ms | 0,54 ms |
 
 DoD M2 (płynność przy 4× z 200 postaciami) jest spełniony z dużym zapasem. Najgorsza klatka mieści się ok. 5× w budżecie 60 FPS.
+
+**Pomiar M4b-3 (chmura, headless, bez GPU, 2026-11-06 — tylko czas ticku):** `src/prototype/m4b3/tick_bench.gd -- --minutes=120` na dużym mieście z fixtury `tests/fixtures/saves/big_city.json` (mapa „Pojezierze”, budowane skryptem `tools/build_big_city.gd`). Miasto: 412 budynków, 109 domów (727 mieszkańców na starcie, ok. 1150 po godzinie), 23 magazyny z wózkami, 3 stajnie z wozami, 150 kafli bruku, wszystkie łańcuchy. Postacie to pracownicy, tragarze, woźnice i domownicy w drodze po zapasy, więc ich liczba faluje (324–580). Pomiar w oknach 10-minutowych; 4 rdzenie, CPU chmury (wolniejszy od laptopa, por. pomiar M2: 2,1 ms w chmurze przy 500 tragarzach).
+
+| Okno gry | Postacie (śr.) | Tick (śr.) | 99. percentyl |
+|---|---|---|---|
+| 0–10 min | 358 | 3,2 ms | 9,0 ms |
+| 30–40 min | 414 | 3,6 ms | 10,4 ms |
+| 60–70 min | 459 | 3,6 ms | 8,4 ms |
+| 70–80 min | 480 | 3,8 ms | 10,3 ms |
+| 100–120 min | 465–471 | 3,5 ms | 7,8–8,2 ms |
+| **całe 2 h** | **436** | **3,6 ms** | **9,4 ms** |
+
+Pierwszy tick po wczytaniu trwa ok. 0,25 s: wtedy wszystkie budynki usługowe liczą zasięg od zera (koszt jednorazowy, przy wczytywaniu gry). Potem najdłuższy tick to ok. 30 ms (rzadko).
+
+**Przed poprawkami** to samo miasto miało tick średnio **50 ms** i piki do **0,9 s** (raz na sekundę). Wprowadzone środki, od najtańszych (każdy daje ten sam wynik gry, poza trzema drobnymi zmianami zasad opisanymi niżej):
+1. **Zasięg usług przyrostowo** (§5.2): zamiast liczyć wszystkie studnie, kościoły, targi i tawerny od nowa przy każdej zmianie mapy, liczy się tylko źródło, w którego zasięgu coś się zmieniło. Dijkstra czyta płaskie tablice (3,4× szybciej). **Zmiana zasady:** drzewa nie skracają zasięgu usług (inaczej każda ścinka przy mieście przeliczała kilka zasięgów).
+2. **Indeks magazynów:** wyszukiwanie najbliższego źródła i miejsca dla towaru przegląda tylko magazyny, targi i podwórza budynków, które ten towar mogą mieć (`ProvinceSim.storage_buildings`, `yard_buildings`, `market_buildings`), zamiast wszystkich 400 budynków. Listy `buildings.all()` i `agents.all()` są pamiętane do najbliższej zmiany.
+3. **Ludność:** zapasy miasta liczone raz na tick, a nie dla każdego domu i towaru; tani test „czy w ogóle jest skąd wziąć”, zanim domownik zacznie szukać; pracownicy domów zebrani w jednym przejściu. **Domy rozłożone na 10 ticków sekundy** (każdy dom dalej raz na sekundę, ale w ticku swojego id), co usunęło piki co sekundę.
+4. **Trasy:** postać sprawdza resztę trasy tylko wtedy, gdy jakiś kafel stał się nieprzejezdny (`blocking_version`), a nie przy każdej zmianie kosztu ruchu; postacie w drodze pomijają logikę zadania bez wywołania.
+5. **Puste szukanie:** zlecenie, którego nikt nie może wykonać (brak towaru albo miejsca), wraca do dopasowania po 2 s, a nie co 0,5 s. **Zmiana zasady:** pracownik, który nie ma nad czym pracować (brak drzewa, skały, wolnego miejsca do sadzenia), czeka 10 s zamiast 3 s przed kolejnym szukaniem (leśniczy przy pełnym lesie szukał co 3 s po 324 kaflach). Szukanie drzew i skał czyta płaskie tablice; kupy na ziemi mają indeks kafli.
+
+**Wniosek:** cel z §9.1 (≤ 4 ms przy 500 postaciach) jest spełniony w chmurze z małym zapasem: 3,5–3,8 ms przy 460–480 postaciach, szacunek dla 500 ok. 3,9 ms. Laptop jest szybszy niż chmura. Rezerwy z §9.2 (pamięć tras, pola przepływu, GDExtension) nie są potrzebne. Największe pozostałe koszty: ludność ok. 1 ms na tick (domy), ruch ok. 0,8 ms, kroki zadań. Pomiar FPS na laptopie (scena 60 s przy 4×, trzy zbliżenia) w osobnej sesji z właścicielem projektu.
 
 ---
 

@@ -200,6 +200,18 @@ msgstr "Ford"
 msgid "terrain.ford.desc"
 msgstr "A shallow place in the river. It can be crossed, but slowly."
 
+msgid "terrain.stony.name"
+msgstr "Stony ground"
+
+msgid "terrain.stony.desc"
+msgstr "Earth full of stones. You can build and lay roads here, but fields will not grow. Walking is a little slower."
+
+msgid "terrain.lake.name"
+msgstr "Lake"
+
+msgid "terrain.lake.desc"
+msgstr "Calm water. Anglers fish here and clay pits dig clay on the shore."
+
 msgid "need.food.name"
 msgstr "Food"
 
@@ -236,10 +248,19 @@ msgstr "Riverlands"
 msgid "map.riverlands.desc"
 msgstr "A land of meadows and forests cut by a river with two fords."
 
+msgid "map.lakeland.name"
+msgstr "Lakeland"
+
+msgid "map.lakeland.desc"
+msgstr "A large land by a lake: a river flows into the lake, a stony hill with rocks, forests and meadows around. Room for a great town."
+
 # --- M3: game UI ---
 
 msgid "ui.main.new_game"
 msgstr "New game"
+
+msgid "ui.main.new_game_on"
+msgstr "New game: %s"
 
 msgid "ui.main.load_game"
 msgstr "Load quick save"
@@ -285,6 +306,12 @@ msgstr "Road"
 
 msgid "ui.build.road_tip"
 msgstr "Dirt road. Drag with the mouse. People walk half again as fast on it."
+
+msgid "ui.build.paving"
+msgstr "Paving"
+
+msgid "ui.build.paving_tip"
+msgstr "Cobbled road: 1 stone per tile. Drag with the mouse over a road or free ground. Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles."
 
 msgid "ui.build.demolish"
 msgstr "Demolish"
@@ -370,6 +397,9 @@ msgstr "construction site (%s)"
 msgid "ui.doing.ground"
 msgstr "onto the ground"
 
+msgid "ui.doing.paving"
+msgstr "to the paving"
+
 msgid "ui.doing.yard"
 msgstr "the stack by the building"
 
@@ -382,17 +412,26 @@ msgstr "walking to: %s"
 msgid "ui.doing.go_to_work"
 msgstr "going to work"
 
+msgid "ui.doing.park"
+msgstr "taking the wagon back to the stable"
+
 msgid "ui.doing.go_to_field"
 msgstr "walking to the field"
 
 msgid "ui.doing.go_build"
 msgstr "going to build: %s"
 
+msgid "ui.doing.go_pave"
+msgstr "going to lay cobbles"
+
 msgid "ui.doing.move_in"
 msgstr "moving into: %s"
 
 msgid "ui.activity.chop"
 msgstr "chopping a tree"
+
+msgid "ui.activity.load"
+msgstr "loading the cart"
 
 msgid "ui.activity.bind"
 msgstr "binding the load"
@@ -505,6 +544,9 @@ msgstr "This place is taken."
 msgid "ui.command_error.terrain_not_buildable"
 msgstr "You cannot build here."
 
+msgid "ui.command_error.terrain_not_farmable"
+msgstr "Nothing grows on stony ground."
+
 msgid "ui.command_error.tile_has_people"
 msgstr "Someone is standing here."
 
@@ -573,6 +615,21 @@ msgstr "Too far from the farm."
 
 msgid "ui.command_error.already_road"
 msgstr "There is a road here already."
+
+msgid "ui.command_error.carts_full"
+msgstr "This storage has all its handcarts already."
+
+msgid "ui.command_error.not_enough_goods"
+msgstr "Not enough goods in the storages."
+
+msgid "ui.command_error.no_carts_here"
+msgstr "No handcarts can be bought here."
+
+msgid "ui.command_error.already_paved"
+msgstr "This road is paved already."
+
+msgid "ui.command_error.already_ordered"
+msgstr "This tile is already waiting for cobbles."
 
 msgid "ui.command_error.no_road"
 msgstr "There is no road here."
@@ -773,6 +830,15 @@ msgstr "Buildings with a higher priority get workers first, if needed even from 
 
 msgid "ui.reserve.wood"
 msgstr "Wood kept for houses: %d (building sites leave it)"
+
+msgid "ui.carts.count"
+msgstr "Handcarts: %d of %d"
+
+msgid "ui.carts.buy"
+msgstr "Buy a handcart (3 planks)"
+
+msgid "ui.carts.hint"
+msgstr "A porter with a handcart carries 3 units instead of 1 when a job needs at least 2. On roads it keeps up with people on foot, off the road it is slower. Each porter of this storage can take one handcart."
 
 msgid "ui.tax.title"
 msgstr "Taxes: %s"
@@ -1243,6 +1309,12 @@ msgstr "Pigsty"
 msgid "building.pigsty.desc"
 msgstr "The swineherd feeds the pigs in the pen. From 2 pigs the herd grows by itself, the faster the bigger it is. The last 2 pigs always stay."
 
+msgid "building.stable.name"
+msgstr "Stable"
+
+msgid "building.stable.desc"
+msgstr "Two horse wagons with carters. A wagon carries 6 units and drives on roads only, faster than people on foot. It takes big jobs over longer distances: deliveries to building sites, yards of workshops, loads for the merchant. It loads and unloads on the road in front of a door, so both buildings need a road at their entrance."
+
 msgid "building.slaughterhouse.name"
 msgstr "Slaughterhouse"
 
@@ -1263,6 +1335,9 @@ msgstr "The butcher leads a pig in and makes meat and a hide of it."
 
 msgid "ui.kind.swineherd"
 msgstr "Swineherd"
+
+msgid "ui.kind.carter"
+msgstr "Carter"
 
 msgid "ui.kind.butcher"
 msgstr "Butcher"

@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 7
+const CURRENT_VERSION := 8
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -28,6 +28,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 7:
 		result = migrate_v6_to_v7(result)
 		version = 7
+	if version < 8:
+		result = migrate_v7_to_v8(result)
+		version = 8
 	return result
 
 
@@ -112,4 +115,11 @@ static func migrate_v6_to_v7(state: Dictionary) -> Dictionary:
 			var slots: Array = (b["supply"] as Dictionary)["slots"]
 			while slots.size() < 7:
 				slots.append(["", 0])
+	return state
+
+
+## M4b-3: paving sites (none in an older town). Roads keep their value 1 (dirt road).
+static func migrate_v7_to_v8(state: Dictionary) -> Dictionary:
+	var province: Dictionary = state["province"]
+	province["paving"] = []
 	return state

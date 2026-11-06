@@ -2,7 +2,9 @@ class_name SliceBot
 extends RefCounted
 ## A scripted player for the DoD scenarios (M3 bread chain, M4a burghers, M4b-1 patricians): on the real start
 ## map it builds what a sensible player would, using only commands. Spots are searched near
-## anchor tiles, so small map edits do not break it. A building it cannot afford yet is
+## anchor tiles, so small map edits do not break it. Anchors are relative to the town hall and
+## made for Riverlands; on another map (M4b-3: Lakeland) a building whose work needs rocks,
+## trees or water nearby moves its anchor to the nearest of them when it has none in reach. A building it cannot afford yet is
 ## tried again later (taxes bring gold in).
 
 ## Seconds before retrying a building the treasury could not pay for.
@@ -149,7 +151,7 @@ func _do(action: Dictionary) -> void:
 			_retry(action)
 		return
 	var def := sim.data.get_building(action["build"])
-	var spot := find_spot(def, action["near"])
+	var spot := find_spot(def, _near_its_work(def, action["near"]))
 	if spot == Agent.NO_TILE:
 		log.append("no spot for %s near %s" % [def.id, action["near"]])
 		return
@@ -169,6 +171,40 @@ func _do(action: Dictionary) -> void:
 			for x: int in range(spot.x - r, spot.x + def.footprint.x + r):
 				if fields > 0 and sim.execute(PlaceFieldCommand.new(building.id, Vector2i(x, y))) == &"":
 					fields -= 1
+
+
+## [param near], or the nearest tile with what [param def] works on (rocks, trees, water) when
+## there is none within its reach of [param near].
+func _near_its_work(def: BuildingDef, near: Vector2i) -> Vector2i:
+	var node := &""
+	if def.recipe != null:
+		for step: StepDef in def.recipe.steps:
+			if step is GoToStepDef and (step as GoToStepDef).target == &"resource":
+				node = (step as GoToStepDef).resource
+	var reach := def.work_radius
+	if node == &"" and def.needs_terrain_near == &"":
+		return near
+	var best := near
+	var best_d := 1 << 30
+	var size := sim.province.grid.size
+	for y: int in size.y:
+		for x: int in size.x:
+			var t := Vector2i(x, y)
+			var hit := false
+			if node != &"":
+				hit = sim.province.resources.has_node(t, node) and not sim.province.resources.is_depleted(t)
+			else:
+				var terrain := sim.province.terrain_at(t)
+				hit = terrain != null and terrain.is_kind(def.needs_terrain_near)
+			if not hit:
+				continue
+			var d := (t - near).length_squared()
+			if d <= reach * reach:
+				return near
+			if d < best_d:
+				best_d = d
+				best = t
+	return best
 
 
 ## The free spot nearest to [param near] that keeps one free tile around the building.

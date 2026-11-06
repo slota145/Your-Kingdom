@@ -3,14 +3,20 @@ extends RefCounted
 ## All agents of a province by entity id, iterated in id order (spawn order).
 
 var _by_id: Dictionary[int, Agent] = {}
+## all() cached until the next add or remove (callers must not change it; a removal during a
+## loop over it is safe: the old list stays as it was).
+var _list: Array[Agent] = []
+var _list_valid: bool = false
 
 
 func add(agent: Agent) -> void:
 	_by_id[agent.id] = agent
+	_list_valid = false
 
 
 func remove(id: int) -> void:
-	_by_id.erase(id)
+	if _by_id.erase(id):
+		_list_valid = false
 
 
 func get_agent(id: int) -> Agent:
@@ -21,10 +27,13 @@ func has_agent(id: int) -> bool:
 	return _by_id.has(id)
 
 
+## Every entry in id order. Read only: the same list is returned until something changes.
 func all() -> Array[Agent]:
-	var result: Array[Agent] = []
-	result.assign(_by_id.values())
-	return result
+	if not _list_valid:
+		_list = []
+		_list.assign(_by_id.values())
+		_list_valid = true
+	return _list
 
 
 func count() -> int:

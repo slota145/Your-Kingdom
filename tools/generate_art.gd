@@ -174,6 +174,14 @@ const BUILDINGS := {
 			"roof": "thatch", "walls": "planks", "open": true, "inside": [["hay", 1.75, 0.75]]}],
 		"pens": [[1.25, 1.1, 2.9, 2.9, "pigs"], [0.12, 1.6, 1.15, 2.9, "pigs"]],
 		"props": [["trough", 2.2, 1.35], ["bucket", 1.05, 2.98]]}],
+	# M4b-3: a stable with a hay loft, an open wagon shed and a paddock.
+	"stable": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.75, 1.6], "h": 40.0, "rh": 26.0, "ridge": "x",
+			"ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.45, 0.3, 0.2)},
+		{"kind": "lean", "rect": [1.75, 0.2, 2.86, 1.6], "low": "x", "h": 26.0, "hh": 36.0,
+			"roof": "shingle", "walls": "planks", "open": true, "inside": [["wagon", 2.35, 1.15]]}],
+		"pens": [[1.7, 1.7, 2.9, 2.9, "horses"]],
+		"props": [["hay", 0.55, 2.35], ["trough", 1.3, 2.75], ["wagon", 0.75, 1.95]]}],
 	"slaughterhouse": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.15], "h": 40.0, "rh": 22.0, "ridge": "x",
 			"ends": ["gable", "hip"], "walls": "timber_stone", "roof": "tile",
@@ -376,6 +384,8 @@ func _pen(img: Image, pivot: Vector2i, r: Rect2, contents: String) -> void:
 			for k: int in 2:
 				var g: Vector2 = r.position + r.size * Vector2(0.3 + 0.4 * k, 0.35 + 0.3 * k)
 				_ellipse(img, s.call(g) + Vector2(3, -1), Vector2(6, 2.5), Color(0.33, 0.26, 0.2))
+		"horses":
+			_horse(img, s.call(r.position + r.size * Vector2(0.45, 0.5)))
 		"saplings":
 			var rows := maxi(1, int(r.size.y / 0.3))
 			var cols := maxi(1, int(r.size.x / 0.3))
@@ -1121,6 +1131,16 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 					p + Vector2(0, -3), p + Vector2(-5, -5)])
 			_fill(img, hide, Color(0.55, 0.38, 0.24))
 			_outline(img, hide, Color(0.35, 0.24, 0.15))
+		"wagon":
+			# A four-wheeled wagon box with its shafts down, wheels on the near side.
+			_box(img, p - Vector2(0, 5), Vector2(22, 12), 7.0, C_PLANK, "planks")
+			_line(img, p + Vector2(-11, -7), p + Vector2(-22, -1), C_BEAM, 1)
+			_line(img, p + Vector2(-8, -5), p + Vector2(-19, 1), C_BEAM, 1)
+			for k: int in 2:
+				var c := p + Vector2(-5 + k * 11, -2 - k * 5)
+				_ring(img, c, 4.0, C_BEAM.darkened(0.2))
+				_line(img, c - Vector2(3, 0), c + Vector2(3, 0), C_BEAM, 1)
+				_line(img, c - Vector2(0, 3), c + Vector2(0, 3), C_BEAM, 1)
 		"hay":
 			_ellipse(img, p - Vector2(0, 6), Vector2(9, 6), Color(0.86, 0.74, 0.38))
 			_ellipse(img, p - Vector2(2, 10), Vector2(5, 3), Color(0.93, 0.82, 0.45))
@@ -1511,6 +1531,18 @@ func _barrel(img: Image, foot: Vector2) -> void:
 
 func _crate(img: Image, foot: Vector2, colour: Color) -> void:
 	_box(img, foot, Vector2(10, 5), 7.0, colour, "planks")
+
+
+## A brown horse standing sideways (stable paddock, M4b-3).
+func _horse(img: Image, p: Vector2) -> void:
+	var coat := Color(0.48, 0.3, 0.18)
+	for x: float in [-6.0, -3.0, 4.0, 7.0]:
+		_line(img, p + Vector2(x, -7), p + Vector2(x, 0), coat.darkened(0.25), 2)
+	_ellipse(img, p + Vector2(0, -11), Vector2(10, 5), coat)
+	_line(img, p + Vector2(8, -13), p + Vector2(12, -20), coat, 3)
+	_ellipse(img, p + Vector2(13, -20), Vector2(3.5, 2.5), coat.lightened(0.05))
+	_line(img, p + Vector2(7, -15), p + Vector2(10, -21), Color(0.2, 0.14, 0.1), 1)
+	_line(img, p + Vector2(-10, -12), p + Vector2(-13, -5), Color(0.2, 0.14, 0.1), 2)
 
 
 func _ring(img: Image, centre: Vector2, radius: float, colour: Color) -> void:

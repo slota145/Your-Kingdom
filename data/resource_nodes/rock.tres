@@ -8,4 +8,5 @@ good = &"stone"
 amount = 8
 per_gather = 1
 solid = true
+leaves_terrain = &"stony"
 id = &"rock"

@@ -93,6 +93,9 @@ func _terrain() -> void:
 		"bank/a": Color(0.45, 0.35, 0.22), "road/a": Color(0.6, 0.5, 0.36),
 		"water/b": Color(0.21, 0.42, 0.68), "sea/b": Color(0.13, 0.29, 0.52),
 		"road/b": Color(0.58, 0.48, 0.34),
+		"paving/a": Color(0.6, 0.58, 0.54), "paving/b": Color(0.56, 0.54, 0.5),
+		"stony/a": Color(0.6, 0.55, 0.47), "stony/b": Color(0.57, 0.52, 0.45),
+		"lake/a": Color(0.12, 0.32, 0.4), "lake/b": Color(0.13, 0.34, 0.42),
 	}
 	for name: String in ground:
 		_save(_diamond(ground[name], ground[name]), "terrain/%s.png" % name)
@@ -103,6 +106,13 @@ func _terrain() -> void:
 	}
 	for name: String in decor:
 		_save(_specks(decor[name]), "terrain/grass_decor/%s.png" % name)
+	# Reed tufts (M4b-3): 24x32, a green fan of lines from the foot at (12, 29).
+	for name: String in ["a", "b", "c"]:
+		var reed := _blank(Vector2i(24, 32))
+		for k: int in 5:
+			var foot := Vector2(12, 29)
+			_line(reed, foot, foot + Vector2(-8 + k * 4, -20), Color(0.4, 0.55, 0.25), 1)
+		_save(reed, "terrain/reeds/%s.png" % name)
 	_save(_diamond(Color(0.5, 0.42, 0.28), Color(0.44, 0.36, 0.24)), "terrain/field/fallow.png")
 	_save(_furrows(Color(0.42, 0.3, 0.18), Color(0.32, 0.22, 0.13), Color(0, 0, 0, 0)), "terrain/field/plowed.png")
 	_save(_furrows(Color(0.42, 0.3, 0.18), Color(0.32, 0.22, 0.13), Color(0.45, 0.62, 0.25)), "terrain/field/sown_1.png")
@@ -478,6 +488,8 @@ const SLICE_BUILDINGS := {
 	# M4b-2 (meat)
 	"pigsty": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 20.0, "roof": 18.0,
 			"wall": Color(0.58, 0.44, 0.3), "roof_color": Color(0.8, 0.68, 0.36), "extra": "sheep"},
+	"stable": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 26.0, "roof": 20.0,
+			"wall": Color(0.62, 0.48, 0.32), "roof_color": Color(0.78, 0.66, 0.36), "extra": "barrels"},
 	"slaughterhouse": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
 			"wall": Color(0.75, 0.7, 0.62), "roof_color": Color(0.6, 0.28, 0.2), "extra": "barrels"},
 	"brickworks": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 18.0,
@@ -861,6 +873,25 @@ func _vehicles() -> void:
 	_ellipse(img, foot + Vector2(-8, -4), Vector2(5, 8), Color(0.35, 0.24, 0.14))
 	_ellipse(img, foot + Vector2(0, -26), Vector2(14, 9), Color(0.8, 0.28, 0.22))
 	_save(img, "vehicles/merchant_cart.png")
+	# Handcart (M4b-3): 5 rows (S, SE, E, NE, N) of 48x40, centre on the ground at (24, 30).
+	for state: String in ["empty", "loaded"]:
+		var sheet := _blank(Vector2i(48, 200))
+		for row: int in 5:
+			var centre := Vector2(24, 30 + row * 40)
+			_ellipse(sheet, centre + Vector2(0, -9), Vector2(13, 6), Color(0.55, 0.4, 0.25))
+			if state == "loaded":
+				_ellipse(sheet, centre + Vector2(0, -14), Vector2(8, 4), Color(0.86, 0.8, 0.64))
+		_save(sheet, "vehicles/handcart/%s.png" % state)
+	# Horse wagon (M4b-3): 5 rows of 112x80, origin on the ground at (56, 52).
+	for state: String in ["empty", "loaded"]:
+		var wagon := _blank(Vector2i(112, 400))
+		for row: int in 5:
+			var centre := Vector2(56, 52 + row * 80)
+			_ellipse(wagon, centre + Vector2(-14, -12), Vector2(18, 8), Color(0.55, 0.4, 0.25))
+			_ellipse(wagon, centre + Vector2(12, -16), Vector2(9, 6), Color(0.48, 0.3, 0.18))
+			if state == "loaded":
+				_ellipse(wagon, centre + Vector2(-14, -20), Vector2(10, 4), Color(0.86, 0.8, 0.64))
+		_save(wagon, "vehicles/wagon/%s.png" % state)
 
 
 func _save(img: Image, relative: String) -> void:

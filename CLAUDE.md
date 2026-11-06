@@ -12,7 +12,7 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
-**Bieżący etap:** M4b-2 (stos przy budynku, gęsty las, mięso, straganiarze, kupiec wędrowny, „Zapasy królestwa”): kod gotowy, DoD odhaczone poza oceną gry; czeka na ocenę właściciela na laptopie. Zrzut z oknem zapasów: `town_shot.tscn -- --minutes=62 --stocks`. M4b-1.5 „Miasto” zamknięty 2026-11-05 (kamienice 5/5). Zrzut kwartału kamienic: `town_shot.tscn -- --minutes=85 --layout --focus=<all|row|corner|back|patrician_back|burgher_corner> [--zoom=2]`. Do zrzutów: `src/prototype/m4a/town_shot.tscn -- --minutes=85 --select=<id>` (w chmurze przez `xvfb-run -a "$GODOT" --path . --rendering-driver opengl3 …`). Mury i wieża bramna są w prototypie (`src/prototype/walls/`). A1 częściowo: brakuje postaci (ROADMAP, A1).
+**Bieżący etap:** M4b-3 (wozy i bruk, nowa mapa 128×128 z jeziorem i kamienistym gruntem, duże miasto 400+ postaci, wydajność): plan zaakceptowany 2026-11-05. Części 1 (bruk, wózki, stajnia i wozy), 2 (mapa „Pojezierze” 128×128) i 3 (duże miasto: fixtura `big_city.json` ze skryptu `tools/build_big_city.gd`, 412 budynków, średnio 436 postaci; 2 h bez zakleszczeń; tick 3,6 ms średnio, 3,5–3,8 ms przy 460–480 postaciach, przed poprawkami 50 ms, ARCHITECTURE §9.3) gotowe i przetestowane. Scalone do `main` 2026-11-06 przed oceną (decyzja właściciela): ocena gry M4b-3 i M4b-2 oraz pomiar FPS na laptopie odłożone na później, oba etapy formalnie otwarte do tej oceny. Pomiar ticku: `"$GODOT" --headless --path . -s res://src/prototype/m4b3/tick_bench.gd -- --minutes=120`. Zrzut nowej mapy: `game_shot.tscn -- --map=lakeland --tile=78,48 --zoom=3`. Zrzut wózków i wozów: `src/prototype/terrain/game_shot.tscn -- --tile=56,50 --zoom=3 --roads --paved --carts`. **M4b-3 startuje przed oceną M4b-2** (decyzja 2026-11-05, świadome ryzyko poprawek; poprawki z oceny M4b-2 mają pierwszeństwo). Pomiar FPS na laptopie: osobna sesja z właścicielem. M4b-2 (stos przy budynku, gęsty las, mięso, straganiarze, kupiec wędrowny, „Zapasy królestwa”): kod gotowy, DoD odhaczone poza oceną gry; czeka na ocenę właściciela na laptopie. Zrzut z oknem zapasów: `town_shot.tscn -- --minutes=62 --stocks`. M4b-1.5 „Miasto” zamknięty 2026-11-05 (kamienice 5/5). Zrzut kwartału kamienic: `town_shot.tscn -- --minutes=85 --layout --focus=<all|row|corner|back|patrician_back|burgher_corner> [--zoom=2]`. Do zrzutów: `src/prototype/m4a/town_shot.tscn -- --minutes=85 --select=<id>` (w chmurze przez `xvfb-run -a "$GODOT" --path . --rendering-driver opengl3 …`). Mury i wieża bramna są w prototypie (`src/prototype/walls/`). A1 częściowo: brakuje postaci (ROADMAP, A1).
 
 ## Polecenia
 
@@ -29,6 +29,7 @@ tools/run_tests.sh                                                  # wszystkie 
 "$GODOT" --headless --path . -s res://tools/generate_art.gd            # grafiki budynków rysowane kodem (assets/buildings)
 "$GODOT" --headless --path . -s res://tools/generate_characters.gd     # postacie rysowane kodem (assets/characters)
 "$GODOT" --headless --path . -s res://tools/generate_goods.gd          # towary, skały i drzewa rysowane kodem (assets/goods, assets/nature)
+"$GODOT" --headless --path . -s res://tools/build_big_city.gd         # duże miasto M4b-3 → tests/fixtures/saves/big_city.json
 ```
 
 Raporty testów trafiają do `reports/` (ignorowane przez git). Nowy `class_name` wymaga importu, żeby trafił do cache klas. `run_tests.sh` robi to automatycznie. Przy ręcznym uruchamianiu najpierw zrób import.
@@ -42,7 +43,7 @@ Repozytorium zdalne: `origin` = https://github.com/slota145/Your-Kingdom.git, ga
 - Nie piszemy kodu wykraczającego poza bieżący etap.
 - Zmiana decyzji z dokumentów oznacza aktualizację odpowiedniego dokumentu w tym samym commicie.
 - Każda zmiana w `src/sim` ma testy. Testy muszą przechodzić przed commitem.
-- Commity tylko na prośbę użytkownika albo na końcu zatwierdzonego etapu. Bez wysyłania na zdalne repozytorium, dopóki użytkownik o to nie poprosi.
+- **Commity bez pytania (decyzja właściciela 2026-11-05):** commituj gotowe, przetestowane kawałki pracy i wysyłaj je na bieżącą gałąź roboczą bez pytania (w chmurze kontener znika, więc nic nie może czekać tylko lokalnie). Scalanie do `main` (PR) dalej tylko na prośbę właściciela.
 - **Po każdym scaleniu PR do `main`** podaj komendę do aktualizacji gry na laptopie (w folderze gry): `powershell -ExecutionPolicy Bypass -File aktualizuj.ps1`. Skrypt sprawdza lokalne zmiany, pobiera `main` i wczytuje grafiki do Godota.
 - **Po dużym zadaniu albo etapie** (jeśli jest następny krok) przygotuj gotowy prompt do wklejenia w nowej sesji, żeby oszczędzać tokeny. Ma być krótki i samodzielny: cel i zakres z ROADMAP, dokumenty do przeczytania, stan po poprzedniej sesji, otwarte decyzje i to, gdzie się zatrzymać. Nie przepisuj dokumentów, tylko na nie wskaż.
 

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TerrainDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/terrain_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+index = 6
+walkable = false
+move_cost = 1.0
+buildable = false
+map_color = Color(0.101961, 0.301961, 0.419608, 1)
+counts_as = &"water"
+id = &"lake"

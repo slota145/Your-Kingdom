@@ -14,6 +14,7 @@ build_time = 20.0
 storage_slots = 15
 worker_kinds = Array[StringName]([&"porter", &"porter"])
 staffing_priority = 6
+max_carts = 2
 default_reserves = Dictionary[StringName, int]({
 &"wood": 5
 })

@@ -69,3 +69,21 @@ func test_matching_only_every_interval() -> void:
 		assert_object(porter.task).is_null()
 	sim.step()
 	assert_object(porter.task).is_not_null()
+
+
+## M4b-3: a request nobody can serve (nothing to take) is offered again after
+## NO_MATCH_RETRY_TICKS, not every round, and is served once the goods are there.
+func test_request_without_goods_waits_before_the_next_try() -> void:
+	var s := _two_stockpiles()
+	var sim: Simulation = s["sim"]
+	var a: BuildingState = s["a"]
+	var porter := SimFixture.spawn(sim, &"porter", Vector2i(10, 10))
+	sim.execute(RequestTransportCommand.new(&"wood", 2, a.id, (s["b"] as BuildingState).id))
+	sim.step()
+	var request := sim.province.jobs.all()[0]
+	assert_int(request.retry_at).is_equal(JobBoard.NO_MATCH_RETRY_TICKS)
+	a.stock.add(&"wood", 2)
+	sim.run_ticks(JobBoard.NO_MATCH_RETRY_TICKS - 1)
+	assert_object(porter.task).is_null()
+	sim.run_ticks(JobBoard.MATCH_INTERVAL + 1)
+	assert_object(porter.task).is_not_null()

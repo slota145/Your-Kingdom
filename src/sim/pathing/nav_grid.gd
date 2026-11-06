@@ -9,7 +9,14 @@ const _STEPS: Array[Vector2i] = [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.DOWN, V
 
 ## Bumped on every change, so cached paths can detect they are stale.
 var version: int = 0
+## Bumped only when a tile turns solid or free (M4b-3): a planned path can only become
+## impossible then, not when walking costs change.
+var solid_version: int = 0
 var size: Vector2i
+
+## Solid tiles as a flat array (index y * size.x + x, 1 = solid) for fast floods in GDScript
+## (ServiceCoverage, M4b-3).
+var solid_map: PackedByteArray = PackedByteArray()
 
 var _astar: AStarGrid2D = AStarGrid2D.new()
 
@@ -22,6 +29,7 @@ func _init(grid_size: Vector2i) -> void:
 	_astar.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 	_astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 	_astar.update()
+	solid_map.resize(size.x * size.y)
 
 
 func is_inside(tile: Vector2i) -> bool:
@@ -35,12 +43,19 @@ func is_walkable(tile: Vector2i) -> bool:
 func set_solid(tile: Vector2i, solid: bool) -> void:
 	if is_inside(tile) and _astar.is_point_solid(tile) != solid:
 		_astar.set_point_solid(tile, solid)
+		solid_map[tile.y * size.x + tile.x] = 1 if solid else 0
 		version += 1
+		solid_version += 1
 
 
 func set_solid_rect(rect: Rect2i, solid: bool) -> void:
-	_astar.fill_solid_region(rect.intersection(_astar.region), solid)
+	var region := rect.intersection(_astar.region)
+	_astar.fill_solid_region(region, solid)
+	for y: int in range(region.position.y, region.end.y):
+		for x: int in range(region.position.x, region.end.x):
+			solid_map[y * size.x + x] = 1 if solid else 0
 	version += 1
+	solid_version += 1
 
 
 ## Movement cost multiplier of a tile (road < 1, forest > 1).

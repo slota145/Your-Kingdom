@@ -33,6 +33,10 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 		return _with_progress(_t("ui.activity.%s" % agent.activity), task, step)
 	if task.kind == Task.KIND_MOVE_IN:
 		return _f("ui.doing.move_in", [_building_name(province, agent.home_id)])
+	if task.kind == Task.KIND_PARK:
+		return _t("ui.doing.park" if agent.vehicle == Carriers.WAGON else "ui.doing.go_to_work")
+	if task.kind == Task.KIND_BUILD and province.paving.has(int(task.bb.get("site", 0))):
+		return _t("ui.doing.go_pave")
 	if task.kind == Task.KIND_BUILD:
 		var site := province.sites.get(int(task.bb.get("site", 0))) as ConstructionSite
 		return _f("ui.doing.go_build", [_building_name(province, site.building_id if site != null else 0)])
@@ -79,6 +83,8 @@ static func _with_progress(text: String, task: Task, step: StepDef) -> String:
 static func _storage_name(province: ProvinceSim, id: int) -> String:
 	if province.sites.has(id):
 		return _f("ui.doing.site_of", [_building_name(province, province.sites[id].building_id)])
+	if province.paving.has(id):
+		return _t("ui.doing.paving")
 	if province.piles.has(id):
 		return _t("ui.doing.ground")
 	if id < 0:

@@ -205,6 +205,18 @@ msgstr "Bród"
 msgid "terrain.ford.desc"
 msgstr "Płytkie miejsce na rzece. Można je przejść, ale powoli."
 
+msgid "terrain.stony.name"
+msgstr "Kamienisty grunt"
+
+msgid "terrain.stony.desc"
+msgstr "Ziemia pełna kamieni. Można tu budować i kłaść drogi, ale pola tu nie urosną. Chodzi się trochę wolniej."
+
+msgid "terrain.lake.name"
+msgstr "Jezioro"
+
+msgid "terrain.lake.desc"
+msgstr "Spokojna woda. Wędkarz łowi tu ryby, a glinianka kopie glinę na brzegu."
+
 msgid "need.food.name"
 msgstr "Żywność"
 
@@ -241,10 +253,19 @@ msgstr "Nadrzecze"
 msgid "map.riverlands.desc"
 msgstr "Kraina łąk i lasów przecięta rzeką z dwoma brodami."
 
+msgid "map.lakeland.name"
+msgstr "Pojezierze"
+
+msgid "map.lakeland.desc"
+msgstr "Duża kraina nad jeziorem: rzeka wpada do jeziora, na wzgórzu kamienisty grunt ze skałami, wokół lasy i łąki. Miejsce na wielkie miasto."
+
 # --- M3: game UI ---
 
 msgid "ui.main.new_game"
 msgstr "Nowa gra"
+
+msgid "ui.main.new_game_on"
+msgstr "Nowa gra: %s"
 
 msgid "ui.main.load_game"
 msgstr "Wczytaj szybki zapis"
@@ -290,6 +311,12 @@ msgstr "Droga"
 
 msgid "ui.build.road_tip"
 msgstr "Ubita droga. Przeciągnij myszą. Ludzie chodzą po niej o połowę szybciej."
+
+msgid "ui.build.paving"
+msgstr "Bruk"
+
+msgid "ui.build.paving_tip"
+msgstr "Bruk z kamienia: 1 kamień na kafel. Przeciągnij myszą po drodze albo po wolnym terenie. Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej."
 
 msgid "ui.build.demolish"
 msgstr "Rozbiórka"
@@ -375,6 +402,9 @@ msgstr "plac budowy (%s)"
 msgid "ui.doing.ground"
 msgstr "na ziemię"
 
+msgid "ui.doing.paving"
+msgstr "na bruk"
+
 msgid "ui.doing.yard"
 msgstr "stos przy budynku"
 
@@ -387,17 +417,26 @@ msgstr "idzie do: %s"
 msgid "ui.doing.go_to_work"
 msgstr "idzie do pracy"
 
+msgid "ui.doing.park"
+msgstr "odstawia wóz do stajni"
+
 msgid "ui.doing.go_to_field"
 msgstr "idzie na pole"
 
 msgid "ui.doing.go_build"
 msgstr "idzie budować: %s"
 
+msgid "ui.doing.go_pave"
+msgstr "idzie układać bruk"
+
 msgid "ui.doing.move_in"
 msgstr "wprowadza się do: %s"
 
 msgid "ui.activity.chop"
 msgstr "rąbie drzewo"
+
+msgid "ui.activity.load"
+msgstr "ładuje wózek"
 
 msgid "ui.activity.bind"
 msgstr "wiąże ładunek"
@@ -510,6 +549,9 @@ msgstr "To miejsce jest zajęte."
 msgid "ui.command_error.terrain_not_buildable"
 msgstr "Tu nie da się budować."
 
+msgid "ui.command_error.terrain_not_farmable"
+msgstr "Na kamienistym gruncie nic nie urośnie."
+
 msgid "ui.command_error.tile_has_people"
 msgstr "Ktoś tu stoi."
 
@@ -578,6 +620,21 @@ msgstr "Za daleko od farmy."
 
 msgid "ui.command_error.already_road"
 msgstr "Tu już jest droga."
+
+msgid "ui.command_error.carts_full"
+msgstr "Ten magazyn ma już wszystkie wózki."
+
+msgid "ui.command_error.not_enough_goods"
+msgstr "Za mało towaru w magazynach."
+
+msgid "ui.command_error.no_carts_here"
+msgstr "Tu nie kupisz wózka."
+
+msgid "ui.command_error.already_paved"
+msgstr "Tu już jest bruk."
+
+msgid "ui.command_error.already_ordered"
+msgstr "Ten kafel czeka już na bruk."
 
 msgid "ui.command_error.no_road"
 msgstr "Tu nie ma drogi."
@@ -778,6 +835,15 @@ msgstr "Budynki z wyższym priorytetem dostają pracowników pierwsze, w razie b
 
 msgid "ui.reserve.wood"
 msgstr "Drewno dla domów: %d (budowy go nie wezmą)"
+
+msgid "ui.carts.count"
+msgstr "Wózki: %d z %d"
+
+msgid "ui.carts.buy"
+msgstr "Kup wózek (3 deski)"
+
+msgid "ui.carts.hint"
+msgstr "Tragarz z wózkiem wiezie 3 sztuki zamiast 1, gdy zlecenie ma co najmniej 2. Na drodze jedzie jak pieszy, poza drogą wolniej. Każdy tragarz tego magazynu może wziąć jeden wózek."
 
 msgid "ui.tax.title"
 msgstr "Podatki: %s"
@@ -1260,6 +1326,12 @@ msgstr "Chlew"
 msgid "building.pigsty.desc"
 msgstr "Świniarz karmi świnie w zagrodzie. Od 2 świń stado samo się powiększa, tym szybciej, im jest większe. Ostatnie 2 świnie zawsze zostają."
 
+msgid "building.stable.name"
+msgstr "Stajnia"
+
+msgid "building.stable.desc"
+msgstr "Dwa wozy konne z woźnicami. Wóz wiezie 6 sztuk i jeździ tylko po drogach, szybciej niż pieszy. Bierze duże zlecenia na dalsze trasy: dostawy na budowy, stosy spod warsztatów, ładunek dla kupca. Ładuje i rozładowuje na drodze przed drzwiami, więc oba budynki muszą mieć drogę przed wejściem."
+
 msgid "building.slaughterhouse.name"
 msgstr "Rzeźnia"
 
@@ -1280,6 +1352,9 @@ msgstr "Rzeźnik prowadzi świnię, robi z niej mięso i skórę."
 
 msgid "ui.kind.swineherd"
 msgstr "Świniarz"
+
+msgid "ui.kind.carter"
+msgstr "Woźnica"
 
 msgid "ui.kind.butcher"
 msgstr "Rzeźnik"

@@ -12,6 +12,19 @@ extends GameDef
 @export var map_color: Color = Color.BLACK
 ## Resource node placed on every tile of this terrain when a map is loaded (forest -> tree).
 @export var resource_node: StringName = &""
+## Whether farms may lay fields here (stony ground: no, M4b-3).
+@export var farmable: bool = true
+## Another terrain this one counts as for buildings that need it nearby (a lake is water for
+## anglers and clay pits, M4b-3); empty = none.
+@export var counts_as: StringName = &""
+## A second map colour: this terrain with [member extra_node] on it (stony ground with a rock).
+@export var extra_map_color: Color = Color(0, 0, 0, 0)
+@export var extra_node: StringName = &""
+
+
+## Whether this terrain is [param terrain_id] or counts as it.
+func is_kind(terrain_id: StringName) -> bool:
+	return id == terrain_id or (counts_as != &"" and counts_as == terrain_id)
 
 
 func get_kind() -> StringName:

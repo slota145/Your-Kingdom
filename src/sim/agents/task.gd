@@ -15,6 +15,8 @@ const KIND_ERRAND := &"errand"
 const KIND_MOVE_IN := &"move_in"
 ## The travelling merchant's visit (M4b-2, ProvinceSim.merchant).
 const KIND_MERCHANT := &"merchant"
+## A carter taking his wagon back to the stable, or walking to it (M4b-3).
+const KIND_PARK := &"park"
 
 var kind: StringName
 ## Recipe id for KIND_RECIPE.

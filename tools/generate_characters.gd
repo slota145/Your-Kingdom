@@ -83,6 +83,9 @@ const PEOPLE := {
 	"stallholder": {"shirt": Color(0.75, 0.45, 0.25), "legs": Color(0.42, 0.3, 0.36), "hair": Color(0.5, 0.3, 0.15),
 			"hat": "kerchief", "hat_colour": Color(0.3, 0.45, 0.65), "dress": true,
 			"apron": Color(0.92, 0.88, 0.78), "tool": ""},
+	# M4b-3 (wagons)
+	"carter": {"shirt": Color(0.42, 0.5, 0.36), "legs": Color(0.34, 0.28, 0.22), "hair": Color(0.35, 0.24, 0.14),
+			"hat": "wide", "hat_colour": Color(0.4, 0.3, 0.2), "beard": true, "tool": ""},
 	"merchant": {"shirt": Color(0.35, 0.22, 0.45), "legs": Color(0.28, 0.24, 0.22), "hair": Color(0.3, 0.2, 0.12),
 			"hat": "wide", "hat_colour": Color(0.4, 0.15, 0.15), "beard": true,
 			"cloak": Color(0.55, 0.18, 0.16), "tool": "staff"},
@@ -100,6 +103,7 @@ const WORK := {
 	"sew": ["stir", ""], "tend_hives": ["low", "smoker"], "collect_honey": ["bend", ""],
 	"mix": ["stir", "paddle"], "ferment": ["push", ""], "mould": ["push", ""], "fire": ["push", "spade"],
 	"serve": ["push", "mug"],
+	"load": ["bend", ""],
 	"sell": ["throw", ""], "feed": ["throw", ""], "muck": ["low", "spade"], "slaughter": ["overhead", "axe"], "skin": ["push", ""],
 }
 
@@ -113,7 +117,7 @@ const ACTIVITIES := {
 	"tailor": ["cut", "sew"], "beekeeper": ["tend_hives", "collect_honey"], "mead_maker": ["mix", "ferment"],
 	"clay_digger": ["dig"], "brickmaker": ["mould", "fire"], "innkeeper": ["serve"],
 	"swineherd": ["feed", "muck"], "butcher": ["slaughter", "skin"], "stallholder": ["sell"],
-	"merchant": [],
+	"merchant": [], "porter": ["load"], "carter": ["load"],
 }
 
 ## Carry category -> hands (side, front, height) for both hands, the good's anchor and

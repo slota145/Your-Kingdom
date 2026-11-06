@@ -12,7 +12,7 @@ const BENCHMARK_SCENE := "res://src/prototype/m2/m2_bench.tscn"
 
 func _ready() -> void:
 	_toggle_button.pressed.connect(Loc.cycle_locale)
-	(%NewGameButton as Button).pressed.connect(_start_game.bind(""))
+	_add_map_buttons()
 	var quick := SaveService.slot_path("quick")
 	(%LoadGameButton as Button).pressed.connect(_start_game.bind(quick))
 	(%LoadGameButton as Button).disabled = not FileAccess.file_exists(quick)
@@ -20,6 +20,33 @@ func _ready() -> void:
 	(%BenchmarkButton as Button).pressed.connect(_open.bind(BENCHMARK_SCENE))
 	EventBus.language_changed.connect(_on_language_changed)
 	_refresh()
+
+
+## One "New game" button per map (M4b-3: the map is chosen when the game starts). The scene's
+## button becomes the first map's; the others are copies right after it.
+func _add_map_buttons() -> void:
+	var first := %NewGameButton as Button
+	var maps := Data.registry.all_of(&"map")
+	var at := first.get_index()
+	for i: int in maps.size():
+		var map := maps[i] as MapDef
+		var button := first if i == 0 else first.duplicate() as Button
+		if i > 0:
+			first.get_parent().add_child(button)
+			first.get_parent().move_child(button, at + i)
+		button.set_meta(&"map", map.id)
+		button.pressed.connect(func() -> void:
+			Game.start_request = {"map": map.id}
+			_open(GAME_SCENE))
+	_refresh_map_buttons()
+
+
+func _refresh_map_buttons() -> void:
+	for child: Node in (%NewGameButton as Button).get_parent().get_children():
+		if child is Button and child.has_meta(&"map"):
+			var id: StringName = child.get_meta(&"map")
+			(child as Button).text = tr("ui.main.new_game_on") % tr("map.%s.name" % id)
+			(child as Button).tooltip_text = tr("map.%s.desc" % id)
 
 
 func _open(scene: String) -> void:
@@ -33,6 +60,7 @@ func _start_game(load_path: String) -> void:
 
 func _on_language_changed(_locale: String) -> void:
 	_refresh()
+	_refresh_map_buttons()
 
 
 func _refresh() -> void:

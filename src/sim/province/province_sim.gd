@@ -13,12 +13,16 @@ var tick: int = 0
 
 var grid: TileGrid
 var nav: NavGrid
+## Road tiles only, for horse wagons (M4b-3): every other tile is solid.
+var road_nav: NavGrid
 var resources: ResourceField
 var buildings: BuildingStore = BuildingStore.new()
 var agents: AgentStore = AgentStore.new()
 var piles: Dictionary[int, GroundPile] = {}
 ## Construction and upgrade sites by entity id.
 var sites: Dictionary[int, ConstructionSite] = {}
+## Road tiles waiting for cobbles, by entity id (M4b-3).
+var paving: Dictionary[int, PavingSite] = {}
 var fields: FieldStore = FieldStore.new()
 var jobs: JobBoard = JobBoard.new()
 var paths: PathRequestQueue = PathRequestQueue.new()
@@ -26,6 +30,18 @@ var paths: PathRequestQueue = PathRequestQueue.new()
 var treasury: Treasury = Treasury.new()
 ## Derived from buildings and the map; not saved.
 var coverage: ServiceCoverage = ServiceCoverage.new()
+
+const _NO_BUILDINGS: Array[BuildingState] = []
+var _goods_index_version: int = -1
+var _storage_buildings: Array[BuildingState] = []
+var _market_buildings: Array[BuildingState] = []
+var _yard_buildings: Dictionary[StringName, Array] = {}
+## Building def id -> goods its yard (or herd) can hold.
+var _yard_goods_of: Dictionary[StringName, Array] = {}
+## Bumped whenever a ground pile is added or removed (index for _pile_at).
+var _piles_version: int = 0
+var _pile_index_version: int = -1
+var _pile_index: Dictionary[Vector2i, int] = {}
 ## The travelling merchant (M4b-2).
 var merchant: Merchant = Merchant.new()
 ## Goods made and used per minute (statistics for the player, M4b-2); not saved.
@@ -40,6 +56,8 @@ var terrains: Array[TerrainDef] = []
 
 ## Walking cost on a dirt road: +50% speed (GDD §5.2).
 const ROAD_COST := 0.67
+## Walking cost on a paved road: +80% speed (GDD §5.2, M4b-3).
+const PAVED_COST := 0.55
 ## Walking cost on a field tile (ARCHITECTURE §5.3).
 const FIELD_COST := 1.2
 ## How often young trees are checked for growing up (1 s).
@@ -52,13 +70,21 @@ func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entit
 	ids = entity_ids
 	grid = TileGrid.new(size)
 	nav = NavGrid.new(size)
+	road_nav = NavGrid.new(size)
+	road_nav.set_solid_rect(Rect2i(Vector2i.ZERO, size), true)
 	resources = ResourceField.new(size)
 	terrains = registry.terrains_by_index()
+	coverage.setup(size)
 
 
 func step() -> void:
 	jobs.update(self)
 	for agent: Agent in agents.all():
+		# Someone walking to the next step has nothing to decide (TaskRunner.tick_agent would
+		# return at once): skipped here without the call (M4b-3).
+		if agent.task != null and (agent.path_state == Agent.PathState.MOVING \
+				or agent.path_state == Agent.PathState.WAITING):
+			continue
 		if agents.has_agent(agent.id):
 			TaskRunner.tick_agent(self, agent)
 	Movement.serve_paths(self)
@@ -91,23 +117,39 @@ func is_tile_solid(tile: Vector2i) -> bool:
 	return grid.occupant(tile) != 0
 
 
+## Changes whenever a planned path may have become impossible: a tile turned solid or free
+## for people or for wagons (Movement checks the rest of its path then).
+func blocking_version() -> int:
+	return nav.solid_version + road_nav.solid_version
+
+
 func refresh_tile(tile: Vector2i) -> void:
-	nav.set_solid(tile, is_tile_solid(tile))
+	var nav_solid := is_tile_solid(tile)
+	var version := nav.version
+	nav.set_solid(tile, nav_solid)
 	var cost := 1.0
 	if grid.has_road(tile):
-		cost = ROAD_COST
+		cost = PAVED_COST if grid.is_paved(tile) else ROAD_COST
 	elif fields.has_field(tile):
 		cost = FIELD_COST
 	else:
 		var terrain := terrain_at(tile)
 		if terrain != null:
 			cost = terrain.move_cost
+	# Service reach counts roads, fields and terrain but not trees (M4b-3): cutting and
+	# planting near the town does not make every service measure its reach again.
+	coverage.set_tile(tile, cost, nav.version != version)
+	if not grid.has_road(tile) and not fields.has_field(tile):
 		# Trees are walkable but slow people down like the forest floor (M4b-2).
 		var node := resources.def_at(tile)
 		if node != null and node.move_cost > cost and not resources.is_depleted(tile):
 			cost = node.move_cost
 	if not is_equal_approx(nav.get_cost(tile), cost):
 		nav.set_cost(tile, cost)
+	var on_road := grid.has_road(tile) and not nav_solid
+	road_nav.set_solid(tile, not on_road)
+	if on_road and not is_equal_approx(road_nav.get_cost(tile), cost):
+		road_nav.set_cost(tile, cost)
 
 
 ## Terrain from a map image (pixel colour -> TerrainDef.map_color), trees on forest, and the
@@ -117,9 +159,13 @@ func load_map(map: MapDef) -> PackedStringArray:
 	var problems := PackedStringArray()
 	var image := map.terrain_image
 	var by_color: Dictionary[int, TerrainDef] = {}
+	var with_node: Dictionary[int, TerrainDef] = {}
 	for terrain: TerrainDef in terrains:
 		if terrain != null:
 			by_color[terrain.map_color.to_rgba32() | 0xff] = terrain
+			if terrain.extra_node != &"":
+				by_color[terrain.extra_map_color.to_rgba32() | 0xff] = terrain
+				with_node[terrain.extra_map_color.to_rgba32() | 0xff] = terrain
 	for y: int in mini(grid.size.y, image.get_height()):
 		for x: int in mini(grid.size.x, image.get_width()):
 			var tile := Vector2i(x, y)
@@ -129,7 +175,9 @@ func load_map(map: MapDef) -> PackedStringArray:
 				problems.append("unknown colour %08x at %s" % [color, tile])
 				continue
 			grid.set_terrain(tile, terrain.index)
-			if terrain.resource_node != &"":
+			if with_node.has(color):
+				resources.place(tile, data.get_resource_node(terrain.extra_node))
+			elif terrain.resource_node != &"":
 				resources.place(tile, data.get_resource_node(terrain.resource_node))
 	for tile: Vector2i in map.resource_spots:
 		var node := data.get_resource_node(map.resource_spots[tile])
@@ -221,7 +269,7 @@ func _access_error(def: BuildingDef, origin: Vector2i, orientation: int) -> Stri
 			fronts.append(front)
 		else:
 			var terrain := terrain_at(front) if grid.is_inside(front) else null
-			water = water or (terrain != null and terrain.id == &"water")
+			water = water or (terrain != null and terrain.is_kind(&"water"))
 	if fronts.is_empty():
 		return &"entrance_faces_water" if water else &"no_access"
 	var blocked: Dictionary[Vector2i, bool] = {}
@@ -351,6 +399,56 @@ func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 	return path
 
 
+## Road path for a horse wagon (M4b-3) from [param from] to the road tile [param to]. A wagon
+## leaving a building (its carter fetches it from the stable) starts at the door with a road
+## in front nearest to the way. Empty when there is no road all the way.
+func find_road_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
+	if from == to:
+		return [from]
+	var start := from
+	var head := Agent.NO_TILE
+	var leaving := building_entered_at(from)
+	if leaving != null:
+		var best_d := 1 << 30
+		for pair: Array in door_pairs(leaving):
+			var front: Vector2i = pair[1]
+			var d := (front - to).length_squared()
+			if road_nav.is_walkable(front) and d < best_d:
+				best_d = d
+				head = pair[0]
+				start = front
+		if head == Agent.NO_TILE:
+			return []
+	var path := road_nav.find_path(start, to)
+	if path.is_empty():
+		return path
+	if head != Agent.NO_TILE:
+		path.push_front(head)
+	return path
+
+
+## The road tile in front of a door of the place behind storage [param id] where a wagon
+## stops (M4b-3): a building, its yard or its construction site; a paving site's next tile;
+## a ground pile or the merchant's wagon when they stand on a road. Agent.NO_TILE if none.
+func road_stop(id: int, near: Vector2i = Agent.NO_TILE) -> Vector2i:
+	var building := buildings.get_building(absi(id))
+	var site := sites.get(id) as ConstructionSite
+	if site != null:
+		building = buildings.get_building(site.building_id)
+	if building != null:
+		var best := Agent.NO_TILE
+		var best_d := 1 << 30
+		for pair: Array in door_pairs(building):
+			var front: Vector2i = pair[1]
+			var d := (front - near).length_squared() if near != Agent.NO_TILE else 0
+			if road_nav.is_walkable(front) and d < best_d:
+				best_d = d
+				best = front
+		return best
+	var tile := access_tile(id)
+	return tile if tile != Agent.NO_TILE and road_nav.is_walkable(tile) else Agent.NO_TILE
+
+
 func _nearest_door(building: BuildingState, near: Vector2i) -> Array:
 	var best: Array = []
 	var best_d := 1 << 30
@@ -461,6 +559,7 @@ func turn_building(building: BuildingState, orientation: int) -> void:
 				agent.path_state = Agent.PathState.WAITING
 				paths.push(agent.id)
 	nav.version += 1   # paths through the old doors are planned again
+	nav.solid_version += 1
 	events.emit(&"building_turned", {"building": building.id, "orientation": orientation})
 
 
@@ -472,7 +571,7 @@ func has_terrain_near(def: BuildingDef, origin: Vector2i) -> bool:
 	for y: int in range(area.position.y, area.end.y):
 		for x: int in range(area.position.x, area.end.x):
 			var terrain := terrain_at(Vector2i(x, y))
-			if terrain != null and terrain.id == def.needs_terrain_near:
+			if terrain != null and terrain.is_kind(def.needs_terrain_near):
 				return true
 	return false
 
@@ -506,7 +605,7 @@ func find_shore(building: BuildingState, from: Vector2i) -> Vector2i:
 func shore_water(tile: Vector2i, terrain_id: StringName) -> Vector2i:
 	for step: Vector2i in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]:
 		var terrain := terrain_at(tile + step) if grid.is_inside(tile + step) else null
-		if terrain != null and terrain.id == terrain_id:
+		if terrain != null and terrain.is_kind(terrain_id):
 			return tile + step
 	return Agent.NO_TILE
 
@@ -532,11 +631,12 @@ func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2
 	var best := Agent.NO_TILE
 	var best_d := 1 << 30
 	for tile: Vector2i in candidates:
-		if taken.has(tile) or not area.has_point(tile) or not can_plant(tile, node_id):
-			continue
+		# Distance first: the other checks cost more and only a nearer tile can win (M4b-3).
 		var stump := resources.is_depleted(tile) and resources.def_at(tile).id == node_id
 		var d := (tile - from).length_squared() + (0 if stump else 1 << 20)
-		if d < best_d and approach_tile(tile, from) != Agent.NO_TILE:
+		if d >= best_d or taken.has(tile) or not area.has_point(tile) or not can_plant(tile, node_id):
+			continue
+		if approach_tile(tile, from) != Agent.NO_TILE:
 			best_d = d
 			best = tile
 	return best
@@ -572,6 +672,14 @@ func can_plant(tile: Vector2i, node_id: StringName = &"tree") -> bool:
 
 ## A felled tree taken with its stump leaves grass where the forest floor was (owner's
 ## decision 2026-11-05): cleared land turns green.
+## Turns the ground under a used-up node into its ResourceNodeDef.leaves_terrain (M4b-3).
+func leave_terrain(tile: Vector2i, node_def: ResourceNodeDef) -> void:
+	var terrain := data.get_terrain(node_def.leaves_terrain) if node_def.leaves_terrain != &"" else null
+	if terrain != null and grid.terrain(tile) != terrain.index:
+		grid.set_terrain(tile, terrain.index)
+		events.emit(&"terrain_changed", {"tile": tile, "terrain": terrain.id})
+
+
 func clear_forest_floor(tile: Vector2i) -> void:
 	var terrain := terrain_at(tile)
 	if terrain == null or terrain.id != &"forest":
@@ -600,11 +708,14 @@ func _update_markets() -> void:
 func market_source(good: StringName, amount: int, house: BuildingState) -> int:
 	var best := 0
 	var best_d := 1 << 30
-	for market: BuildingState in buildings.all():
+	var doors: Array[Vector2i] = []
+	for market: BuildingState in market_buildings():
 		if market.def.stall_goods.is_empty() or market.supply == null 				or not market.supply.can_supply(good, amount):
 			continue
 		var reached := false
-		for door: Vector2i in door_tiles(house):
+		if doors.is_empty():
+			doors = door_tiles(house)
+		for door: Vector2i in doors:
 			if coverage.covers(market.def.id, door, grid.size):
 				reached = true
 				break
@@ -744,6 +855,9 @@ func field_error(farm_id: int, tile: Vector2i) -> StringName:
 	var rect := Rect2i(farm.origin, farm.def.footprint).grow(farm.def.work_radius)
 	if not rect.has_point(tile):
 		return &"out_of_range"
+	var terrain := terrain_at(tile)
+	if terrain != null and not terrain.farmable:
+		return &"terrain_not_farmable"
 	return _free_ground_error(tile)
 
 
@@ -775,8 +889,95 @@ func road_error(tile: Vector2i) -> StringName:
 
 func set_road(tile: Vector2i, road: bool) -> void:
 	grid.set_road(tile, road)
+	if not road:
+		_withdraw_paving(tile)
 	refresh_tile(tile)
-	events.emit(&"road_changed", {"tile": tile, "road": road})
+	events.emit(&"road_changed", {"tile": tile, "road": road, "paved": false})
+
+
+## &"" when [param tile] can be ordered paved: a dirt road not ordered yet, or free ground
+## (it becomes dirt road at once).
+func paving_error(tile: Vector2i) -> StringName:
+	if not grid.is_inside(tile):
+		return &"outside_map"
+	if grid.is_paved(tile):
+		return &"already_paved"
+	if paving_site_at(tile) != 0:
+		return &"already_ordered"
+	if grid.has_road(tile):
+		return &""
+	return _free_ground_error(tile)
+
+
+## The paving site that still has [param tile] to pave, 0 if none.
+func paving_site_at(tile: Vector2i) -> int:
+	for paving_site: PavingSite in paving.values():
+		if paving_site.tiles.has(tile):
+			return paving_site.id
+	return 0
+
+
+## Orders [param tiles] paved (checked with paving_error): free ground becomes dirt road now,
+## porters bring the stone and a builder lays the cobbles. Returns the site id.
+func order_paving(tiles: Array[Vector2i]) -> int:
+	if tiles.is_empty():
+		return 0
+	for tile: Vector2i in tiles:
+		if not grid.has_road(tile):
+			set_road(tile, true)
+	var paving_site := PavingSite.new(ids.take(), tiles.duplicate(), data)
+	paving[paving_site.id] = paving_site
+	jobs.add(PavingSite.GOOD, tiles.size() * PavingSite.STONE_PER_TILE, 0, paving_site.id)
+	events.emit(&"paving_ordered", {"site": paving_site.id, "tiles": tiles.size()})
+	return paving_site.id
+
+
+## Lays the cobbles of the next tile of [param paving_site] with its stone.
+func pave_next(paving_site: PavingSite) -> void:
+	var tile := paving_site.tiles.pop_front() as Vector2i
+	paving_site.stock.remove(PavingSite.GOOD, PavingSite.STONE_PER_TILE)
+	ledger.used(PavingSite.GOOD, PavingSite.STONE_PER_TILE, tick)
+	paving_site.work_left = PavingSite.tile_ticks()
+	grid.set_paved(tile, true)
+	refresh_tile(tile)
+	events.emit(&"road_changed", {"tile": tile, "road": true, "paved": true})
+	if paving_site.tiles.is_empty():
+		_close_paving(paving_site, tile)
+
+
+## A road tile removed before it was paved leaves its site (stone not needed any more is
+## not asked for; stone already there goes on the ground when the site closes).
+func _withdraw_paving(tile: Vector2i) -> void:
+	var id := paving_site_at(tile)
+	if id == 0:
+		return
+	var paving_site := paving[id]
+	var first := paving_site.next_tile() == tile
+	paving_site.tiles.erase(tile)
+	if paving_site.tiles.is_empty():
+		_close_paving(paving_site, tile)
+		return
+	if first:
+		paving_site.work_left = PavingSite.tile_ticks()
+		# Porters on the way head for the new next tile on arrival (access_tile).
+	for request: TransportRequest in jobs.all():
+		if request.dest_id == id:
+			jobs.set_amount(PavingSite.GOOD, request.source_id, id,
+					paving_site.stone_missing() - request.in_flight)
+
+
+## Removes a paving site; stone left over goes on the ground at [param at] (its last tile).
+func _close_paving(paving_site: PavingSite, at: Vector2i = Agent.NO_TILE) -> void:
+	paving.erase(paving_site.id)
+	jobs.cancel_for_entity(paving_site.id)
+	for agent: Agent in agents.all():
+		# Builders finish on their own when they find the site gone.
+		if agent.task != null and int(agent.task.bb.get("_dst", 0)) == paving_site.id:
+			TaskRunner.fail(self, agent)
+	var leftovers := paving_site.stock.totals()
+	for good: StringName in leftovers:
+		drop_goods(at if at != Agent.NO_TILE else entry_tile, good, leftovers[good])
+	events.emit(&"paving_closed", {"site": paving_site.id})
 
 
 func _free_ground_error(tile: Vector2i) -> StringName:
@@ -822,8 +1023,20 @@ func remove_agent(agent: Agent) -> void:
 
 ## Releases every reservation and claim the agent holds.
 func release_agent(agent: Agent) -> void:
-	for store: Stockpile in all_storages().values():
-		store.release_owner(agent.id)
+	# The same stores as all_storages(), without building the dictionary (M4b-3: this runs
+	# whenever a task ends early or someone leaves).
+	for building: BuildingState in buildings.all():
+		for store: Stockpile in [building.stock, building.supply, building.yard]:
+			if store != null and store.reservation_count() > 0:
+				store.release_owner(agent.id)
+	for site: ConstructionSite in sites.values():
+		site.stock.release_owner(agent.id)
+	for paving_site: PavingSite in paving.values():
+		paving_site.stock.release_owner(agent.id)
+	for pile: GroundPile in piles.values():
+		pile.stock.release_owner(agent.id)
+	if merchant.wagon != null:
+		merchant.wagon.release_owner(agent.id)
 	fields.release_owner(agent.id)
 	if agent.claimed_node != Agent.NO_TILE:
 		resources.release(agent.claimed_node, agent.id)
@@ -860,6 +1073,9 @@ func storage(id: int) -> Stockpile:
 	var site := sites.get(id) as ConstructionSite
 	if site != null:
 		return site.stock
+	var paving_site := paving.get(id) as PavingSite
+	if paving_site != null:
+		return paving_site.stock
 	var pile := piles.get(id) as GroundPile
 	if pile != null:
 		return pile.stock
@@ -877,6 +1093,8 @@ func all_storages() -> Dictionary[int, Stockpile]:
 			result[yard_id(building.id)] = building.yard
 	for site: ConstructionSite in sites.values():
 		result[site.id] = site.stock
+	for paving_site: PavingSite in paving.values():
+		result[paving_site.id] = paving_site.stock
 	for pile: GroundPile in piles.values():
 		result[pile.id] = pile.stock
 	if merchant.wagon != null:
@@ -890,7 +1108,7 @@ func accepts_deliveries(id: int) -> bool:
 	var building := buildings.get_building(id)
 	if building != null:
 		return building.stock != null or building.supply != null
-	return sites.has(id)
+	return sites.has(id) or paving.has(id)
 
 
 func access_tile(id: int) -> Vector2i:
@@ -901,6 +1119,9 @@ func access_tile(id: int) -> Vector2i:
 	if site != null:
 		var target := buildings.get_building(site.building_id)
 		return target.entrance_tile() if target != null else Agent.NO_TILE
+	var paving_site := paving.get(id) as PavingSite
+	if paving_site != null:
+		return paving_site.next_tile()
 	var pile := piles.get(id) as GroundPile
 	if pile != null:
 		return pile.tile
@@ -913,7 +1134,7 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 		keep_reserve: bool = false) -> int:
 	var best := 0
 	var best_d := 1 << 30
-	for building: BuildingState in buildings.all():
+	for building: BuildingState in storage_buildings():
 		if building.stock != null and building.id != exclude \
 				and can_give(building.id, good, amount, keep_reserve):
 			var d := (building.entrance_tile() - from).length_squared()
@@ -926,7 +1147,7 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 			if d < best_d:
 				best_d = d
 				best = pile.id
-	for building: BuildingState in buildings.all():
+	for building: BuildingState in yard_buildings(good):
 		var yard := yard_id(building.id)
 		# A herd always keeps its last animals for breeding (M4b-2).
 		var keep := building.def.herd_keep if building.def.herd_good == good else 0
@@ -938,17 +1159,80 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 	return best
 
 
+## Takes [param amount] of [param good] straight out of the storages and yards nearest to
+## [param near] (a purchase paid in goods, e.g. a handcart). Returns what was taken.
+func take_from_storages(good: StringName, amount: int, near: Vector2i) -> int:
+	var taken := 0
+	while taken < amount:
+		var src := nearest_source(good, 1, near)
+		var store := storage(src)
+		if store == null or src == 0:
+			break
+		var got := store.remove(good, mini(amount - taken, store.available(good)))
+		if got <= 0:
+			break
+		taken += got
+	ledger.used(good, taken, tick)
+	return taken
+
+
 ## Units of [param good] in storage buildings and production yards that can still be taken.
 func stored(good: StringName) -> int:
 	var sum := 0
-	for building: BuildingState in buildings.all():
+	for building: BuildingState in storage_buildings():
 		if building.stock != null:
 			sum += building.stock.available(good)
+	for building: BuildingState in yard_buildings(good):
 		if building.yard != null:
 			sum += building.yard.available(good)
-		if not building.def.stall_goods.is_empty() and building.supply != null:
+	for building: BuildingState in market_buildings():
+		if building.supply != null:
 			sum += building.supply.available(good)
 	return sum
+
+
+## Buildings that can hold goods for others, by kind, in id order (M4b-3: searches for a
+## source or a sink look only at these instead of every building). Rebuilt when buildings
+## are added or removed; whether the store exists yet (a finished building) is checked by
+## the caller.
+func storage_buildings() -> Array[BuildingState]:
+	_refresh_goods_index()
+	return _storage_buildings
+
+
+## Buildings whose production yard or herd can hold [param good].
+func yard_buildings(good: StringName) -> Array[BuildingState]:
+	_refresh_goods_index()
+	return _yard_buildings.get(good, _NO_BUILDINGS)
+
+
+func market_buildings() -> Array[BuildingState]:
+	_refresh_goods_index()
+	return _market_buildings
+
+
+func _refresh_goods_index() -> void:
+	if _goods_index_version == buildings.version:
+		return
+	_goods_index_version = buildings.version
+	_storage_buildings = []
+	_market_buildings = []
+	_yard_buildings = {}
+	for building: BuildingState in buildings.all():
+		var def := building.def
+		if def.storage_slots > 0:
+			_storage_buildings.append(building)
+		if not def.stall_goods.is_empty():
+			_market_buildings.append(building)
+		if not _yard_goods_of.has(def.id):
+			var goods := BuildingState.yard_goods(def, data)
+			if def.herd_good != &"":
+				goods = [def.herd_good]
+			_yard_goods_of[def.id] = goods
+		for good: StringName in _yard_goods_of[def.id]:
+			if not _yard_buildings.has(good):
+				_yard_buildings[good] = [] as Array[BuildingState]
+			_yard_buildings[good].append(building)
 
 
 ## Units of [param good] the kingdom holds (the "Kingdom stocks" window, M4b-2): storages,
@@ -1002,7 +1286,7 @@ func nearest_sink(good: StringName, amount: int, from: Vector2i, exclude: int = 
 	var best_d := 1 << 30
 	var good_def := data.get_good(good)
 	if good_def != null and good_def.is_live():
-		for building: BuildingState in buildings.all():
+		for building: BuildingState in yard_buildings(good):
 			var herd := yard_id(building.id)
 			if building.def.herd_good == good and building.yard != null and herd != exclude 					and building.yard.can_accept(good, amount):
 				var d := (building.entrance_tile() - from).length_squared()
@@ -1010,7 +1294,7 @@ func nearest_sink(good: StringName, amount: int, from: Vector2i, exclude: int = 
 					best_d = d
 					best = herd
 		return best
-	for building: BuildingState in buildings.all():
+	for building: BuildingState in storage_buildings():
 		if building.stock != null and building.id != exclude and building.stock.can_accept(good, amount):
 			var d := (building.entrance_tile() - from).length_squared()
 			if d < best_d:
@@ -1036,6 +1320,7 @@ func drop_goods(tile: Vector2i, good: StringName, amount: int) -> int:
 		var before := left
 		left = pile.stock.add(good, left)
 		piles[pile.id] = pile
+		_piles_version += 1
 		jobs.add(good, before - left, pile.id, 0)
 		events.emit(&"pile_created", {"pile": pile.id, "tile": tile, "good": good})
 		last = pile.id
@@ -1043,16 +1328,21 @@ func drop_goods(tile: Vector2i, good: StringName, amount: int) -> int:
 
 
 func _pile_at(tile: Vector2i) -> int:
-	for pile: GroundPile in piles.values():
-		if pile.tile == tile:
-			return pile.id
-	return 0
+	if _pile_index_version != _piles_version:
+		# Tile -> first pile on it, rebuilt when piles come or go (M4b-3).
+		_pile_index_version = _piles_version
+		_pile_index.clear()
+		for pile: GroundPile in piles.values():
+			if not _pile_index.has(pile.tile):
+				_pile_index[pile.tile] = pile.id
+	return _pile_index.get(tile, 0)
 
 
 func _remove_empty_piles() -> void:
 	for pile: GroundPile in piles.values():
 		if pile.stock.is_empty():
 			piles.erase(pile.id)
+			_piles_version += 1
 			jobs.cancel_for_entity(pile.id)
 			events.emit(&"pile_removed", {"pile": pile.id, "tile": pile.tile})
 
@@ -1136,12 +1426,16 @@ func to_dict() -> Dictionary:
 	var site_list: Array = []
 	for site: ConstructionSite in sites.values():
 		site_list.append(site.to_dict())
+	var paving_list: Array = []
+	for paving_site: PavingSite in paving.values():
+		paving_list.append(paving_site.to_dict())
 	return {
 		"grid": grid.to_dict(),
 		"resources": resources.to_dict(),
 		"buildings": buildings.to_dict(),
 		"piles": pile_list,
 		"sites": site_list,
+		"paving": paving_list,
 		"fields": fields.to_dict(),
 		"entry": SimCodec.vec2i(entry_tile),
 		"keep_for_building": _keep_to_dict(),
@@ -1172,9 +1466,13 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 	for pd: Variant in d.get("piles", []):
 		var pile := GroundPile.from_dict(pd, registry)
 		province.piles[pile.id] = pile
+		province._piles_version += 1
 	for sd: Variant in d.get("sites", []):
 		var site := ConstructionSite.from_dict(sd, registry)
 		province.sites[site.id] = site
+	for pd: Variant in d.get("paving", []):
+		var paving_site := PavingSite.from_dict(pd, registry)
+		province.paving[paving_site.id] = paving_site
 	province.fields = FieldStore.from_dict(d.get("fields", []))
 	province.entry_tile = SimCodec.to_vec2i(d.get("entry", [0, 0]))
 	var keep: Dictionary = d.get("keep_for_building", {})

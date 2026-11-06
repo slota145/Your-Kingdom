@@ -6,7 +6,8 @@ shader_type canvas_item;
 // space, so neighbouring tiles never show a seam. Rendering only: the simulation still sees
 // whole tiles.
 
-// map_tex: one texel per tile. R = art slot (TerrainLayer.Slot) / 255, G = road (1.0).
+// map_tex: one texel per tile. R = art slot (TerrainLayer.Slot) / 255, G = road (1.0),
+// B = paved road (1.0, M4b-3).
 uniform sampler2D map_tex : filter_nearest, repeat_disable;
 uniform vec2 map_size = vec2(64.0, 64.0);
 
@@ -25,6 +26,12 @@ uniform sampler2D sand_tex : filter_nearest;
 uniform sampler2D bank_tex : filter_nearest;
 uniform sampler2D road_tex : filter_nearest;
 uniform sampler2D road_alt_tex : filter_nearest;
+uniform sampler2D stony_tex : filter_nearest;
+uniform sampler2D stony_alt_tex : filter_nearest;
+uniform sampler2D lake_tex : filter_nearest;
+uniform sampler2D lake_alt_tex : filter_nearest;
+uniform sampler2D paving_tex : filter_nearest;
+uniform sampler2D paving_alt_tex : filter_nearest;
 
 // How far (in tiles) borders wander from the tile edges.
 uniform float border_warp = 0.32;
@@ -34,6 +41,7 @@ uniform bool organic = true;
 uniform bool animated = true;
 uniform vec2 river_flow = vec2(7.0, 3.5);  // px per second
 uniform vec2 sea_drift = vec2(-4.0, 2.0);
+uniform vec2 lake_drift = vec2(-1.5, 0.75);
 
 const int GRASS = 0;
 const int MEADOW = 1;
@@ -42,6 +50,8 @@ const int WATER = 3;
 const int FORD = 4;
 const int SEA = 5;
 const int SAND = 6;
+const int STONY = 7;
+const int LAKE = 8;
 
 varying vec2 world_pos;
 
@@ -90,27 +100,29 @@ vec2 grid_to_screen(vec2 g) {
 	return vec2((g.x - g.y) * 32.0, (g.x + g.y) * 16.0);
 }
 
-vec2 texel(vec2 tile) {
+vec3 texel(vec2 tile) {
 	tile = clamp(tile, vec2(0.0), map_size - 1.0);
-	return texture(map_tex, (tile + 0.5) / map_size).rg;
+	return texture(map_tex, (tile + 0.5) / map_size).rgb;
 }
 
 // Terrain at a grid point, smoothed between the 4 nearest tile centres: each slot gets the
 // bilinear weight of the centres holding it and the heaviest wins. A diagonal staircase of
-// tiles becomes a straight edge and square corners become round. .x = slot, .y = road (0/1).
-vec2 smooth_sample(vec2 grid) {
+// tiles becomes a straight edge and square corners become round. .x = slot, .y = road (0/1),
+// .z = paved (0/1).
+vec3 smooth_sample(vec2 grid) {
 	vec2 p = grid - 0.5;
 	vec2 base = floor(p);
 	vec2 f = fract(p);
-	vec2 t00 = texel(base);
-	vec2 t10 = texel(base + vec2(1.0, 0.0));
-	vec2 t01 = texel(base + vec2(0.0, 1.0));
-	vec2 t11 = texel(base + vec2(1.0, 1.0));
+	vec3 t00 = texel(base);
+	vec3 t10 = texel(base + vec2(1.0, 0.0));
+	vec3 t01 = texel(base + vec2(0.0, 1.0));
+	vec3 t11 = texel(base + vec2(1.0, 1.0));
 	float w00 = (1.0 - f.x) * (1.0 - f.y);
 	float w10 = f.x * (1.0 - f.y);
 	float w01 = (1.0 - f.x) * f.y;
 	float w11 = f.x * f.y;
 	float road = t00.g * w00 + t10.g * w10 + t01.g * w01 + t11.g * w11;
+	float paved = t00.b * w00 + t10.b * w10 + t01.b * w01 + t11.b * w11;
 	float slots[4] = float[](t00.r, t10.r, t01.r, t11.r);
 	float weights[4] = float[](w00, w10, w01, w11);
 	float best_slot = t00.r;
@@ -125,7 +137,8 @@ vec2 smooth_sample(vec2 grid) {
 			best_slot = slots[i];
 		}
 	}
-	return vec2(round(best_slot * 255.0), road > 0.5 ? 1.0 : 0.0);
+	// A paved tile among dirt ones: cobbles where paving outweighs dirt within the road.
+	return vec3(round(best_slot * 255.0), road > 0.5 ? 1.0 : 0.0, paved > 0.5 * road ? 1.0 : 0.0);
 }
 
 int slot_at(vec2 grid) {
@@ -133,7 +146,7 @@ int slot_at(vec2 grid) {
 }
 
 bool is_water(int slot) {
-	return slot == WATER || slot == FORD || slot == SEA;
+	return slot == WATER || slot == FORD || slot == SEA || slot == LAKE;
 }
 
 const vec2 RING[4] = vec2[](vec2(0.707, 0.707), vec2(-0.707, 0.707), vec2(0.707, -0.707), vec2(-0.707, -0.707));
@@ -181,6 +194,8 @@ vec3 ground_colour(int slot, vec2 grid, vec2 pixel) {
 	if (slot == FORD) return sample_diamond(ford_tex, grid).rgb;
 	if (slot == SEA) return mixed(sea_tex, sea_alt_tex, grid, pixel, 9.1);
 	if (slot == SAND) return sample_diamond(sand_tex, grid).rgb;
+	if (slot == STONY) return mixed(stony_tex, stony_alt_tex, grid, pixel, 31.7);
+	if (slot == LAKE) return mixed(lake_tex, lake_alt_tex, grid, pixel, 17.3);
 	// Grass: lighter and darker patches with dithered edges.
 	vec3 colour = sample_diamond(grass_tex, grid).rgb;
 	float threshold = bayer4(pixel);
@@ -206,7 +221,7 @@ void fragment() {
 		warped = grid + warp * 2.0 * border_warp;
 		road_grid = grid + warp * 2.0 * road_warp;
 	}
-	vec2 here = organic ? smooth_sample(warped) : texel(floor(grid)) * vec2(255.0, 1.0);
+	vec3 here = organic ? smooth_sample(warped) : texel(floor(grid)) * vec3(255.0, 1.0, 1.0);
 	int slot = int(round(here.x));
 	float t = animated ? TIME : 0.0;
 	// Water textures slide under a fixed shoreline.
@@ -214,6 +229,7 @@ void fragment() {
 	if (slot == WATER) flow = floor(river_flow * t);
 	else if (slot == FORD) flow = floor(river_flow * 0.5 * t);
 	else if (slot == SEA) flow = floor(sea_drift * t);
+	else if (slot == LAKE) flow = floor(lake_drift * t);
 	vec2 moved_pixel = pixel - flow;
 	vec2 moved_grid = screen_to_grid(moved_pixel);
 	vec3 colour = ground_colour(slot, moved_grid, moved_pixel);
@@ -243,9 +259,11 @@ void fragment() {
 			colour = sample_diamond(bank_tex, grid).rgb;
 		}
 	}
-	float road_here = organic ? smooth_sample(road_grid).y : here.y;
+	vec3 road_sample = organic ? smooth_sample(road_grid) : here;
+	float road_here = road_sample.y;
 	if (!is_water(slot) && road_here > 0.5) {
-		vec3 road = mixed(road_tex, road_alt_tex, grid, pixel, 13.7);
+		vec3 road = road_sample.z > 0.5 ? mixed(paving_tex, paving_alt_tex, grid, pixel, 21.1)
+				: mixed(road_tex, road_alt_tex, grid, pixel, 13.7);
 		// Worn edge: road and ground mix in a dithered band.
 		bool edge = organic && off_road_near(road_grid, 0.12);
 		if (!edge || bayer4(pixel) < 0.5) colour = road;

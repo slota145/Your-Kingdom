@@ -8,6 +8,9 @@ extends Node2D
 ## (UI text-fit check).
 
 const START_MAP := &"riverlands"
+
+## Map of a new game (main menu, M4b-3).
+var _map_id: StringName = START_MAP
 const QUICK_SLOT := "quick"
 ## Screen pixels around a person's feet that count as clicking them.
 ## A person is picked only when clicked close to the body, so clicks near people still
@@ -38,6 +41,7 @@ var _turn: PlacementTurn = PlacementTurn.new()
 func _ready() -> void:
 	InputSetup.ensure_defaults()
 	var load_path := String(Game.start_request.get("load", ""))
+	_map_id = StringName(String(Game.start_request.get("map", START_MAP)))
 	Game.start_request = {}
 	var loaded: Simulation = null
 	if load_path != "":
@@ -53,7 +57,10 @@ func _exit_tree() -> void:
 
 func _new_game() -> Simulation:
 	var problems := PackedStringArray()
-	var game := Simulation.from_map(Data.registry, Data.registry.get_map(START_MAP), 1, problems)
+	var map := Data.registry.get_map(_map_id)
+	if map == null:
+		map = Data.registry.get_map(START_MAP)
+	var game := Simulation.from_map(Data.registry, map, 1, problems)
 	for problem: String in problems:
 		push_warning("Map: " + problem)
 	return game
@@ -240,6 +247,9 @@ func _update_preview() -> void:
 		&"road":
 			for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
 				tiles[t] = "ok" if sim.province.road_error(t) == &"" else "bad"
+		&"paving":
+			for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
+				tiles[t] = "ok" if sim.province.paving_error(t) == &"" else "bad"
 		&"field":
 			var farm := sim.province.buildings.get_building(int(_tool["farm"]))
 			if farm != null:
@@ -374,7 +384,7 @@ func _on_left_press() -> void:
 			var command := _demolish_target(_hover)
 			if command != null:
 				_execute(command)
-		&"road", &"field", &"plant":
+		&"road", &"paving", &"field", &"plant":
 			_dragging = true
 			_drag_tiles = [_hover]
 			_update_preview()
@@ -392,6 +402,13 @@ func _on_left_release() -> void:
 				tiles.append(t)
 		if not tiles.is_empty():
 			_execute(BuildRoadCommand.new(tiles))
+	elif kind == &"paving":
+		var to_pave: Array[Vector2i] = []
+		for t: Vector2i in _drag_tiles:
+			if sim.province.paving_error(t) == &"":
+				to_pave.append(t)
+		if not to_pave.is_empty():
+			_execute(BuildPavingCommand.new(to_pave))
 	elif kind == &"plant":
 		var marked: Array[Vector2i] = _drag_tiles.duplicate()
 		_execute(SetPlantAreaCommand.new(int(_tool["building"]), marked))
