@@ -10,6 +10,8 @@ signal add_fields_requested(farm_id: int)
 signal plant_area_requested(building_id: int)
 ## The market's "Kingdom stocks and trade" button.
 signal stocks_requested
+## The town hall's "Expedition of settlers" (M6 part 2).
+signal expedition_requested
 ## A setting changed by the player; the game scene executes the command.
 signal command_requested(command: Command)
 signal closed
@@ -34,6 +36,7 @@ var _plant_button: Button
 var _plant_clear_button: Button
 var _pig_button: Button
 var _trade_button: Button
+var _expedition_button: Button
 var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
 var _reserve_label: Label
@@ -98,6 +101,8 @@ func _init() -> void:
 	buttons.add_child(_pig_button)
 	_trade_button = UiKit.button("ui.market.trade", func() -> void: stocks_requested.emit())
 	buttons.add_child(_trade_button)
+	_expedition_button = UiKit.button("ui.expedition.open", func() -> void: expedition_requested.emit())
+	buttons.add_child(_expedition_button)
 	_pause_button = UiKit.button("ui.building.pause", func() -> void:
 		var b := province.buildings.get_building(building_id)
 		if b != null:
@@ -290,6 +295,7 @@ func _refresh_settings(b: BuildingState) -> void:
 				or province.stored(&"planks") < int(Carriers.HANDCART_COST[&"planks"])
 	_refresh_keep(b)
 	_refresh_ships(b)
+	_expedition_button.visible = b.def.id == TOWN_HALL and b.is_complete()
 	_voyage.visible = b.def.is_port() and b.is_complete()
 	if _voyage.visible:
 		_voyage.refresh(province, b)
@@ -396,9 +402,11 @@ func _house_lines(b: BuildingState) -> PackedStringArray:
 	lines.append(tr("ui.house.residents") % [house.residents, b.capacity()])
 	lines.append(tr("ui.house.happiness") % roundi(house.happiness))
 	if treasury != null:
-		var per_minute := house.residents * b.level_def().tax_per_minute * house.happiness / 100.0 \
+		var per_minute := house.residents * Population.tax_per_minute(province, b) * house.happiness / 100.0 \
 				* treasury.rate_factor()
 		lines.append(tr("ui.house.tax") % per_minute)
+		if house.level > 1 and not province.has_seat():
+			lines.append(tr("ui.house.no_seat"))
 	for need: NeedDef in b.level_def().needs:
 		var ok: bool = house.satisfied.get(need.id, false)
 		lines.append("%s: %s" % [tr(need.name_key()), tr("ui.need.ok" if ok else "ui.need.missing")])

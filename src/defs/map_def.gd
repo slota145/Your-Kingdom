@@ -29,6 +29,12 @@ func get_kind() -> StringName:
 	return &"map"
 
 
+## The size of the map, mirrored (x and y swapped) or not (M6 part 2: template variants).
+func size_for(mirrored: bool) -> Vector2i:
+	var s := size()
+	return Vector2i(s.y, s.x) if mirrored else s
+
+
 func size() -> Vector2i:
 	return Vector2i(terrain_image.get_width(), terrain_image.get_height()) \
 			if terrain_image != null else Vector2i.ZERO

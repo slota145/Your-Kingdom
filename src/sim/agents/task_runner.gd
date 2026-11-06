@@ -25,6 +25,7 @@ static var _merchant_steps: Array[StepDef] = []
 static var _park_steps: Array[StepDef] = []
 static var _sail_home_steps: Array[StepDef] = []
 static var _land_steps: Array[StepDef] = []
+static var _travel_steps: Array[StepDef] = []
 
 const BUILDER_KIND := &"builder"
 
@@ -61,7 +62,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"deposit": DepositStep.new(), &"plant": PlantStep.new(), &"serve": ServeStep.new(),
 			&"choose_stall": ChooseStallStep.new(), &"merchant": MerchantStep.new(),
 			&"park": ParkStep.new(), &"sail": SailStep.new(), &"ship_build": ShipBuildStep.new(),
-			&"land": LandStep.new(),
+			&"land": LandStep.new(), &"travel": TravelStep.new(),
 		}
 	return _executors[kind]
 
@@ -147,6 +148,8 @@ static func restore_steps(province: ProvinceSim, task: Task) -> bool:
 			task.steps = sail_home_steps()
 		Task.KIND_LAND:
 			task.steps = land_steps()
+		Task.KIND_TRAVEL:
+			task.steps = travel_steps()
 		Task.KIND_RECIPE:
 			var recipe := province.data.get_recipe(task.recipe_id)
 			if recipe == null:
@@ -213,6 +216,26 @@ static func start_landing(agent: Agent, from: Vector2i, to: Vector2i) -> void:
 	task.kind = Task.KIND_LAND
 	task.bb = {"from": SimCodec.vec2i(from), "to": SimCodec.vec2i(to), "t": 0}
 	task.steps = land_steps()
+	agent.task = task
+
+
+static func travel_steps() -> Array[StepDef]:
+	if _travel_steps.is_empty():
+		_travel_steps = [TravelStepDef.new()]
+	return _travel_steps
+
+
+## [param agent] walks to [param to] for an expedition (M6 part 2): [param wait] stands still
+## first while the expedition is still gathering, [param leave] goes with it on arrival.
+static func start_travel(agent: Agent, to: Vector2i, wait: bool = false, leave: bool = false) -> void:
+	var task := Task.new()
+	task.kind = Task.KIND_TRAVEL
+	task.bb = {"to": SimCodec.vec2i(to)}
+	if wait:
+		task.bb["wait"] = 1
+	if leave:
+		task.bb["leave"] = 1
+	task.steps = travel_steps()
 	agent.task = task
 
 
@@ -321,4 +344,8 @@ static func _finish(province: ProvinceSim, agent: Agent) -> void:
 			province.merchant.gone()
 		province.remove_agent(agent)
 	if task.kind == Task.KIND_ERRAND or task.kind == Task.KIND_MOVE_IN:
+		province.remove_agent(agent)
+	if task.kind == Task.KIND_TRAVEL and task.bb.has("leave"):
+		if province.departure != null:
+			province.departure.on_left(province, agent)
 		province.remove_agent(agent)

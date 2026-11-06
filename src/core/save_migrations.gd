@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 12
+const CURRENT_VERSION := 13
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -43,6 +43,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 12:
 		result = migrate_v11_to_v12(result)
 		version = 12
+	if version < 13:
+		result = migrate_v12_to_v13(result)
+		version = 13
 	return result
 
 
@@ -170,4 +173,12 @@ static func migrate_v11_to_v12(state: Dictionary) -> Dictionary:
 	state["viewed"] = first
 	state["provinces"] = [{"id": first, "mode": "detail", "state": state["province"]}]
 	state.erase("province")
+	return state
+
+
+## v13 (M6 part 2): expeditions of settlers. The world keeps those on their way under
+## "expeditions", a province one getting ready under "departure", a landing whether it came by
+## land ("by_land", the wagon) and from which expedition, the player's cog the expedition it
+## carries. A v12 game has none of them: nothing to add.
+static func migrate_v12_to_v13(state: Dictionary) -> Dictionary:
 	return state

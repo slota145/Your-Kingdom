@@ -370,6 +370,8 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Straganiarze:** noszą z magazynu na kramy wszystko, czego potrzebują domy: chleb, ryby, mięso, piwo, miód pitny, ubrania i drewno opałowe. Domownicy w zasięgu targowiska kupują na kramach zamiast iść do magazynu. Targowisko działa w zasięgu tylko wtedy, gdy kramy mają towar (jak tawerna).
 - **Okno „Zapasy królestwa”:** przycisk na górnym pasku. Dla każdego towaru: ile jest we wszystkich magazynach i na stosach, ile powstaje i ile się zużywa na minutę (**średnia z ostatnich 5 minut** gry), a różnica na zielono lub czerwono.
 
+**Część 2, stan (2026-11-06):** decyzje z ankiety: zbiórka wyprawy widoczna (osadnicy idą z domów, tragarze i portowcy ładują), wyprawa czeka przy granicy na wejście gracza, koga po wysadzeniu osadników wraca do portu. Zrobione: ratusz jako siedziba (jeden na prowincję, podatek mieszczan i patrycjuszy tylko przy ratuszu, wyprawy tylko z prowincji z ratuszem), warianty szablonów (odbicie, bogactwo złóż), mapa „Wyspy” (`tools/generate_island_map.py`), wyprawa osadników morzem i lądem (`Departure`, `Expedition`, `SendExpeditionCommand`, lądowanie od strony lądu z wozem osadników), okno wyprawy w ratuszu, kogi i wozy na mapie świata, zapis v13. Uproszczenia: wóz osadników jeździ też poza drogami i nie potrzebuje stajni; „żyzne pola” z bogactwa czekają (gra nie ma jeszcze żyzności gleby); w małym miasteczku zbiórka trwa kilka minut, bo osadnicy wychodzą z domów, a z nimi ubywa tragarzy (zestaw nosi się sztuka po sztuce, jak przy załadunku kogi). Zrzut mapy świata z wyprawami: `world_shot.tscn -- --out=<plik.png> --expeditions [--select=amber_coast]`.
+
 **Kolejność prac:** najpierw stos przy budynku i gęsty las (część 1, sprawdzona testami przed resztą), potem mięso (część 2), na końcu targ, kupiec i okno zapasów (część 3). Jedna ocena gry na końcu etapu.
 
 **Zakres:**
@@ -591,7 +593,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## M6 — Mapa świata i prowincje
 
-**Status: plan zaakceptowany 2026-11-06 (ankieta z właścicielem projektu). Część 1 (świat i tryb uproszczony) gotowa 2026-11-06 i czeka na ocenę właściciela; następny krok: część 2 (zasiedlanie). Start przed oceną gry M4b-2, M4b-3 i M5 (decyzja właściciela); oceny zrobimy razem, a poprawki z nich mają pierwszeństwo przed dalszą pracą nad M6.**
+**Status: plan zaakceptowany 2026-11-06 (ankieta z właścicielem projektu). Część 1 (świat i tryb uproszczony) gotowa i scalona do `main` 2026-11-06 (PR #23), czeka na ocenę właściciela. Część 2 (zasiedlanie) gotowa 2026-11-06 i czeka na ocenę; następny krok: część 3 (szlaki, wykup osad, wino). Start przed oceną gry M4b-2, M4b-3 i M5 (decyzja właściciela); oceny zrobimy razem, a poprawki z nich mają pierwszeństwo przed dalszą pracą nad M6.**
 
 **Część 1, stan (2026-11-06):** świat „Królestwo” z 9 prowincjami (`data/provinces/`, `data/worlds/kingdom.tres`, skrypt `tools/generate_world_data.py`); `WorldSim` i wiele prowincji w `Simulation` (ARCHITECTURE §4.1); `ProvinceAbstract`, `WorkCycle`, `ProductionLog` (ARCHITECTURE §7); `EnterProvinceCommand`; ekran mapy świata (klawisz M, przycisk „Mapa”; zrzut: `xvfb-run -a "$GODOT" --path . --rendering-driver opengl3 res://src/prototype/m6/world_shot.tscn -- --out=<plik.png> [--select=<id prowincji>] [--settle]`); menu „Nowa gra” (świat) i „Pojedyncza prowincja: …”; zapis v12 z migracją i fixturą. Testy: wyjście i wejście bez zgubionych towarów na fixturach v1–v12 i na dużym mieście, spójność trybów (chleb −11%, deski +2%, piwo −8%). Koszt trybu uproszczonego: zwykła prowincja ok. 0,02 ms na tick, duże miasto 0,64 ms (cel 0,2 ms, do ponownego pomiaru w części 3). Decyzje z ankiety 2026-11-06: mapa świata nie przełącza trybu (ostatnio oglądana prowincja żyje dalej), a przy wyjściu z prowincji to, co trwa, kończy się od razu. Uproszczenia: po powrocie pracownik zaczyna cykl od początku; place brukowania w trybie uproszczonym czekają; do pustej prowincji nie da się jeszcze wejść (zasiedlanie w części 2); statków i wozów na mapie świata jeszcze nie ma (część 2).
 
@@ -654,8 +656,8 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] Ekran mapy świata: widać prowincje, właścicieli, rzadkie surowce, statki i wozy w drodze; z panelu prowincji można do niej wejść i wrócić na mapę.
 - [x] Test spójności trybów (±15%) przechodzi (chleb; dodatkowo deski i piwo).
 - [x] Wejście i wyjście z prowincji nie gubi towarów (także towarów w rękach, na placach budowy, w ładowniach i na placu portowym).
-- [ ] Zasiedlanie morzem i lądem: wyprawa z prowincji z ratuszem dociera, ląduje i zakłada obóz pionierów; wyspę da się zasiedlić tylko statkiem.
-- [ ] Ratusz jako siedziba: mieszczanie i patrycjusze płacą pełny podatek tylko przy ratuszu; bez ratusza nie da się wysłać wyprawy.
+- [x] Zasiedlanie morzem i lądem: wyprawa z prowincji z ratuszem dociera, ląduje i zakłada obóz pionierów; wyspę da się zasiedlić tylko statkiem.
+- [x] Ratusz jako siedziba: mieszczanie i patrycjusze płacą pełny podatek tylko przy ratuszu; bez ratusza nie da się wysłać wyprawy.
 - [ ] Szlak handlowy statkiem i wozem przewozi towar według progu, z widocznym załadunkiem w oglądanej prowincji.
 - [ ] Wykup osady neutralnej: dostarczenie żądań w czasie przekazuje osadę graczowi z mieszkańcami i budynkami.
 - [ ] Wino: winnica i tłocznia działają tylko w prowincji z winoroślą, patrycjusze z winem mają wyższe zadowolenie i podatek.

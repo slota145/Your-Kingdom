@@ -26,6 +26,9 @@ const WAGON_MIN := 4
 const WAGON_MIN_TILES := 10
 ## A wagon is faster than people on foot on the same road.
 const WAGON_SPEED := 1.3
+## The settlers' wagon of an expedition (M6 part 2): loaded with the start kit, it drives
+## off-road like a person (no stable, no carter's job), drawn as a loaded wagon.
+const SETTLER_WAGON := &"settler_wagon"
 
 
 ## Whether [param porter]'s storage has a handcart nobody is using.
@@ -45,7 +48,7 @@ static func has_free_handcart(province: ProvinceSim, porter: Agent) -> bool:
 static func speed_penalty(province: ProvinceSim, agent: Agent, tile: Vector2i) -> float:
 	if agent.vehicle == HANDCART and not province.grid.has_road(tile):
 		return 1.0 / HANDCART_OFFROAD_SPEED
-	if agent.vehicle == WAGON:
+	if agent.vehicle == WAGON or agent.vehicle == SETTLER_WAGON:
 		return 1.0 / WAGON_SPEED
 	return 1.0
 

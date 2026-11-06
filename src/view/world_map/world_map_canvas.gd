@@ -93,6 +93,8 @@ func _draw() -> void:
 		_draw_province(id)
 	for id: int in sim.world.ids():
 		_draw_town(id)
+	for expedition: Expedition in sim.world.expeditions.values():
+		_draw_expedition(expedition)
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 	for id: int in sim.world.ids():
 		_draw_label(id, fit)
@@ -226,6 +228,64 @@ func _draw_label(id: int, fit: Transform2D) -> void:
 		_draw_arms(at + Vector2(-width / 2.0 - 16.0, 4.0), OWNER_ARMS[owner])
 	if def.rare_resource != &"":
 		_draw_rare(at + Vector2(width / 2.0 + 16.0, 6.0), def.rare_resource)
+
+
+## Where an expedition is on its way (parchment pixels): straight to a land neighbour, by
+## ship in a curve out to sea (west of the coast, where the sea is on this map).
+func route_point(e: Expedition, t: float) -> Vector2:
+	var a := sim.world.def_of(e.from, sim.data).world_pos
+	var b := sim.world.def_of(e.to, sim.data).world_pos
+	if e.state == Expedition.State.RETURNING:
+		var swap := a
+		a = b
+		b = swap
+	if not e.by_sea:
+		return a.lerp(b, t)
+	var from_id := e.to if e.state == Expedition.State.RETURNING else e.from
+	var to_id := e.from if e.state == Expedition.State.RETURNING else e.to
+	a = _offshore(from_id)
+	b = _offshore(to_id)
+	var control := Vector2(minf(a.x, b.x) - 120.0, (a.y + b.y) / 2.0)
+	return a.lerp(control, t).lerp(control.lerp(b, t), t)
+
+
+## Water off the west coast of province [param id] (the sea lies west on this map), level
+## with its town: where ships come and go.
+func _offshore(id: int) -> Vector2:
+	var def := sim.world.def_of(id, sim.data)
+	var west := def.world_pos.x
+	for point: Vector2 in def.outline:
+		west = minf(west, point.x)
+	return Vector2(west - 26.0, def.world_pos.y)
+
+
+## A ship or a wagon on its way; one waiting at the border of the new province glows.
+func _draw_expedition(e: Expedition) -> void:
+	if e.state == Expedition.State.LANDED:
+		return
+	var t := e.progress(sim.clock.tick)
+	if e.state == Expedition.State.WAITING:
+		t = 1.0 if e.by_sea else 0.85
+	var at := route_point(e, t)
+	var ahead := route_point(e, minf(t + 0.02, 1.0)) - at
+	var flip := -1.0 if ahead.x < 0.0 else 1.0
+	if e.state == Expedition.State.WAITING:
+		var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 250.0)
+		draw_circle(at, 18.0 + pulse * 4.0, Color(SELECTED, 0.25 + 0.25 * pulse))
+	if e.by_sea:
+		var hull := PackedVector2Array([at + Vector2(-12 * flip, -2), at + Vector2(12 * flip, -2),
+				at + Vector2(8 * flip, 5), at + Vector2(-9 * flip, 5)])
+		draw_colored_polygon(hull, Color(0.45, 0.28, 0.14))
+		draw_line(at + Vector2(0, -2), at + Vector2(0, -20), INK, 1.5)
+		draw_colored_polygon(PackedVector2Array([at + Vector2(1 * flip, -19), at + Vector2(1 * flip, -5),
+				at + Vector2(11 * flip, -6)]), Color(0.95, 0.92, 0.85))
+		draw_rect(Rect2(at + Vector2(-1, -22), Vector2(2, 3)), OWNER_ARMS[ProvinceDef.OWNER_PLAYER])
+	else:
+		draw_rect(Rect2(at + Vector2(-10, -10), Vector2(20, 9)), Color(0.55, 0.38, 0.20))
+		draw_arc(at + Vector2(0, -10), 9.0, PI, TAU, 10, Color(0.92, 0.88, 0.78), 3.0)
+		for x: float in [-6.0, 6.0]:
+			draw_circle(at + Vector2(x, 1), 3.5, INK)
+		draw_line(at + Vector2(10 * flip, -4), at + Vector2(17 * flip, -4), INK, 1.5)
 
 
 ## A small shield in the owner's colour.

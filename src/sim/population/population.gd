@@ -158,11 +158,20 @@ static func _next_level_ready(province: ProvinceSim, building: BuildingState,
 	return true
 
 
+## Gold a resident of [param building] pays per minute at full happiness and the normal rate:
+## burghers and patricians pay their class's tax only in a province with a town hall (its
+## seat, M6 part 2), elsewhere what peasants pay.
+static func tax_per_minute(province: ProvinceSim, building: BuildingState) -> float:
+	if building.house.level > 1 and not province.has_seat():
+		return building.def.house_levels[0].tax_per_minute
+	return building.level_def().tax_per_minute
+
+
 ## Taxes for one second: gold per resident per minute of the class, scaled by happiness
 ## and the tax rate.
 static func _pay_taxes(province: ProvinceSim, building: BuildingState) -> void:
 	var house := building.house
-	var per_second := house.residents * building.level_def().tax_per_minute / 60.0
+	var per_second := house.residents * tax_per_minute(province, building) / 60.0
 	province.treasury.add(per_second * house.happiness / 100.0 * province.treasury.rate_factor())
 
 

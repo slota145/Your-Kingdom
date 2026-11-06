@@ -16,6 +16,8 @@ enum State { COMING, UNLOADING, LEAVING, DONE }
 
 ## The ship that brings the settlers (player's colours, sails away after the landing).
 const SHIP := &"settler_cog"
+## How far in from the map edge a land expedition makes camp (tiles along the way).
+const CAMP_INLAND := 12
 ## Seconds between two settlers stepping off the ship.
 const LAND_EVERY := 2.0
 
@@ -34,18 +36,33 @@ var kit: Dictionary[StringName, int] = {}
 var next_at: int = 0
 ## Settlers ashore without a workplace or a house yet (agent ids).
 var settlers: Array[int] = []
+## The expedition that brought them (M6 part 2); 0 = the start of a game.
+var expedition: int = 0
+## By land (M6 part 2): the settlers and their wagon come in over the map edge
+## ([member edge] is then the land entry) and walk to [member beach], the camp site.
+var by_land: bool = false
+## By land: the agent driving the settlers' wagon (0 once it has gone).
+var wagon_agent: int = 0
 
 
 ## Starts the landing of [param map] in [param province]: the ship at the sea edge nearest to
 ## the anchorage, sailing in. Null when the map does not start by ship or no way leads in.
-static func begin(province: ProvinceSim, map: MapDef) -> Landing:
+static func begin(province: ProvinceSim, map: MapDef, mirrored: bool = false) -> Landing:
 	if not map.start_by_ship:
 		return null
+	return arrive_by_sea(province, map, mirrored, map.start_settlers, map.start_pile, 0)
+
+
+## An expedition of settlers comes by sea (M6 part 2), like the start of a game: the ship
+## anchors at the map's landing tile and the settlers wade to its beach.
+static func arrive_by_sea(province: ProvinceSim, map: MapDef, mirrored: bool,
+		people: Array[StringName], goods: Dictionary[StringName, int], expedition_id: int) -> Landing:
 	var landing := Landing.new()
-	landing.anchor = map.landing_tile
-	landing.beach = map.beach_tile
-	landing.aboard = map.start_settlers.duplicate()
-	landing.kit = map.start_pile.duplicate()
+	landing.expedition = expedition_id
+	landing.anchor = ProvinceSim._variant_tile(map.landing_tile, mirrored)
+	landing.beach = ProvinceSim._variant_tile(map.beach_tile, mirrored)
+	landing.aboard = people.duplicate()
+	landing.kit = goods.duplicate()
 	var def := province.data.get_ship(SHIP)
 	var nav := Ships.nav_for(province, def)
 	landing.edge = SeaMerchant._edge_for(province, nav, landing.anchor)
@@ -61,12 +78,58 @@ static func begin(province: ProvinceSim, map: MapDef) -> Landing:
 	return landing
 
 
+## An expedition of settlers comes by land (M6 part 2): the settlers' wagon and the settlers
+## walking beside it come in at the map's entry and go to a camp site a little way in; there
+## the kit is unloaded and the wagon is left behind (it goes back over the edge empty).
+static func arrive_by_land(province: ProvinceSim, people: Array[StringName],
+		goods: Dictionary[StringName, int], expedition_id: int) -> Landing:
+	var landing := Landing.new()
+	landing.expedition = expedition_id
+	landing.by_land = true
+	landing.edge = province.entry_tile
+	landing.beach = camp_site(province, province.entry_tile)
+	landing.kit = goods.duplicate()
+	var wagon := province.spawn_agent(Carriers.CARTER_KIND, landing.edge)
+	wagon.vehicle = Carriers.SETTLER_WAGON
+	TaskRunner.start_travel(wagon, landing.beach)
+	landing.wagon_agent = wagon.id
+	for kind: StringName in people:
+		var agent := province.spawn_agent(kind, landing.edge)
+		TaskRunner.start_travel(agent, landing.beach)
+		landing.settlers.append(agent.id)
+	province.events.emit(&"landing_coming", {"ship": 0, "by_land": true})
+	return landing
+
+
+## A camp site [constant CAMP_INLAND] tiles in from [param entry] on the way to the middle of
+## the map (or as far as the way goes).
+static func camp_site(province: ProvinceSim, entry: Vector2i) -> Vector2i:
+	var centre := province.grid.size / 2
+	var goal := Agent.NO_TILE
+	for r: int in range(0, maxi(province.grid.size.x, province.grid.size.y) / 2):
+		for dx: int in range(-r, r + 1):
+			for dy: int in [-r, r]:
+				var t := centre + Vector2i(dx, dy)
+				if goal == Agent.NO_TILE and province.grid.is_inside(t) and province.nav.is_walkable(t):
+					goal = t
+		if goal != Agent.NO_TILE:
+			break
+	var path := province.find_path(entry, goal) if goal != Agent.NO_TILE else ([] as Array[Vector2i])
+	if path.is_empty():
+		return entry
+	return path[mini(CAMP_INLAND, path.size() - 1)]
+
+
 func is_landing_ship(ship: ShipUnit) -> bool:
 	return ship.id == ship_id
 
 
 ## Once a second (ProvinceSim.step, before the workforce is balanced).
 func update(province: ProvinceSim) -> void:
+	if by_land:
+		_update_by_land(province)
+		_settle(province)
+		return
 	var ship := province.ships.get(ship_id) as ShipUnit
 	match state:
 		State.COMING:
@@ -94,6 +157,23 @@ func update(province: ProvinceSim) -> void:
 	_settle(province)
 
 
+## By land: the wagon reaches the camp site and is unloaded, then goes back over the edge.
+func _update_by_land(province: ProvinceSim) -> void:
+	var wagon := province.agents.get_agent(wagon_agent)
+	match state:
+		State.COMING:
+			if wagon == null or wagon.task == null:
+				_unload_kit(province)
+				state = State.LEAVING
+				province.events.emit(&"landing_anchored", {"ship": 0, "by_land": true})
+				if wagon != null:
+					TaskRunner.start_travel(wagon, edge, false, true)
+		State.LEAVING, State.UNLOADING:
+			if wagon == null:
+				wagon_agent = 0
+				state = State.DONE
+
+
 ## The landing is over: the ship is gone and every settler has a workplace or a house.
 func is_over() -> bool:
 	return state == State.DONE and settlers.is_empty()
@@ -103,12 +183,16 @@ func is_over() -> bool:
 ## lies on the beach, every settler still aboard stands on it, the ship is gone. The settlers
 ## keep waiting for the camp and for houses (ProvinceAbstract.wanderers).
 func finish_at_once(province: ProvinceSim) -> void:
-	if state == State.COMING:
+	if not kit.is_empty():
 		_unload_kit(province)
 	while not aboard.is_empty():
 		var kind: StringName = aboard.pop_front()
 		settlers.append(province.spawn_agent(kind, beach).id)
 	province.ships.erase(ship_id)
+	var wagon := province.agents.get_agent(wagon_agent)
+	if wagon != null:
+		province.remove_agent(wagon)
+	wagon_agent = 0
 	state = State.DONE
 
 
@@ -188,7 +272,8 @@ func _settle(province: ProvinceSim) -> void:
 			for id: int in settlers:
 				var agent := province.agents.get_agent(id)
 				if agent.kind == kind and agent.workplace_id == 0 \
-						and (agent.task == null or agent.task.kind != Task.KIND_LAND):
+						and (agent.task == null or (agent.task.kind != Task.KIND_LAND \
+						and agent.task.kind != Task.KIND_TRAVEL)):
 					province.assign_worker(agent, building)
 					settlers.erase(id)
 					province.events.emit(&"worker_hired", {"agent": id, "building": building.id,
@@ -234,9 +319,15 @@ func to_dict() -> Dictionary:
 	var kit_dict := {}
 	for good: StringName in kit:
 		kit_dict[String(good)] = kit[good]
-	return {"state": state, "ship": ship_id, "anchor": SimCodec.vec2i(anchor),
+	var d := {"state": state, "ship": ship_id, "anchor": SimCodec.vec2i(anchor),
 			"beach": SimCodec.vec2i(beach), "edge": SimCodec.vec2i(edge), "aboard": aboard_list,
 			"kit": kit_dict, "next_at": next_at, "settlers": settlers.duplicate()}
+	if expedition != 0:
+		d["expedition"] = expedition
+	if by_land:
+		d["by_land"] = true
+		d["wagon"] = wagon_agent
+	return d
 
 
 static func from_dict(d: Dictionary) -> Landing:
@@ -254,4 +345,7 @@ static func from_dict(d: Dictionary) -> Landing:
 	landing.next_at = int(d.get("next_at", 0))
 	for id: Variant in d.get("settlers", []):
 		landing.settlers.append(int(id))
+	landing.expedition = int(d.get("expedition", 0))
+	landing.by_land = bool(d.get("by_land", false))
+	landing.wagon_agent = int(d.get("wagon", 0))
 	return landing

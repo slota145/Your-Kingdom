@@ -33,10 +33,6 @@ func test_world_round_trips() -> void:
 	assert_str(String(copy.owner_of(2))).is_equal("neutral")
 
 
-## Templates still to come (ROADMAP M6 part 2: the "Islands" map).
-const PENDING_TEMPLATES: Array[StringName] = [&"islands"]
-
-
 func test_kingdom_world_has_nine_consistent_provinces() -> void:
 	var registry := SimFixture.registry()
 	var world := registry.get_world(&"kingdom")
@@ -47,7 +43,7 @@ func test_kingdom_world_has_nine_consistent_provinces() -> void:
 	for id: StringName in world.provinces:
 		var def := registry.get_province(id)
 		assert_object(def).override_failure_message(String(id)).is_not_null()
-		assert_bool(registry.get_map(def.template) != null or PENDING_TEMPLATES.has(def.template)) \
+		assert_bool(registry.get_map(def.template) != null) \
 				.override_failure_message("template of %s" % id).is_true()
 		assert_int(def.outline.size()).is_greater_equal(3)
 		assert_bool(Geometry2D.is_point_in_polygon(def.world_pos, def.outline)) \
@@ -117,3 +113,29 @@ func test_v12_fixture_loads_and_continues() -> void:
 	sim.run_ticks(SimFixture.ticks(120))
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
 	assert_int(sim.province_state(vale).agents.count()).is_equal(0)
+
+
+## M6 part 2 (v13): one expedition on its way to Willow Vale, a second one gathering for
+## Amber Coast; loads unchanged, both go on.
+func test_v13_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v13_expedition.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(13)
+	var state := SaveMigrations.migrate(document["state"], 13)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	assert_int(sim.world.expeditions.size()).is_equal(1)
+	assert_object(sim.province.departure).is_not_null()
+	var coast := sim.world.id_of(&"amber_coast")
+	assert_bool(SimFixture.run_until(sim, func() -> bool:
+		return sim.world.expedition_to(coast) != null, 600)).is_true()
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+func test_v12_save_migrates_to_v13() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v12_world.json"))
+	var state := SaveMigrations.migrate(document["state"], 12)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_bool(sim.world.expeditions.is_empty()).is_true()
+	assert_object(sim.province.departure).is_null()

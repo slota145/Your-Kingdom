@@ -57,6 +57,8 @@ var merchant: Merchant = Merchant.new()
 var sea_merchant: SeaMerchant = SeaMerchant.new()
 ## The start from a ship while it lasts (M5 part 3); null otherwise.
 var landing: Landing = null
+## An expedition of settlers getting ready to set out from here (M6 part 2); null otherwise.
+var departure: Departure = null
 ## Until a building of this id is placed, nothing else may be (the pioneer camp on a map that
 ## starts by ship, M5 part 3); empty = anything.
 var first_building: StringName = &""
@@ -74,6 +76,11 @@ var entry_tile: Vector2i = Vector2i.ZERO
 var keep_for_building: Dictionary[StringName, int] = {}
 ## Terrain definitions by TileGrid index.
 var terrains: Array[TerrainDef] = []
+
+## The building that makes a province the seat of a town (M6 part 2).
+const SEAT := &"town_hall"
+var _seat_version: int = -1
+var _seat: int = 0
 
 ## Walking cost on a dirt road: +50% speed (GDD §5.2).
 const ROAD_COST := 0.67
@@ -123,6 +130,8 @@ func step() -> void:
 			landing.update(self)
 			if landing.is_over():
 				landing = null
+		if departure != null:
+			departure.update(self)
 		Ships.update(self)
 		_breed_herds()
 		_update_markets()
@@ -216,7 +225,60 @@ func refresh_fairways() -> void:
 ## Terrain from a map image (pixel colour -> TerrainDef.map_color), trees on forest, and the
 ## start layout: finished buildings, residents and goods. Returns colours not matching any
 ## terrain (they become the default terrain).
-func load_map(map: MapDef) -> PackedStringArray:
+##
+## A province of the world (M6 part 2) plays a variant of the map: [param mirrored] swaps x
+## and y (on screen: left and right), [param richness] (1-3, GDD §2.1) thins out (1) or
+## enriches (3) its forests, rocks and shoals, and [param settled] leaves the start layout
+## out (settlers bring their own, Expedition).
+func load_map(map: MapDef, mirrored: bool = false, richness: int = 2, settled: bool = false) -> PackedStringArray:
+	var problems := _load_terrain(map, mirrored)
+	_apply_richness(richness)
+	entry_tile = _variant_tile(map.entry_tile, mirrored)
+	rebuild_nav()
+	if settled:
+		first_building = map.first_building if map.first_building != &"" else &"pioneer_camp"
+		return problems
+	treasury.gold = map.start_gold
+	if map.start_by_ship:
+		first_building = map.first_building
+		landing = Landing.begin(self, map, mirrored)
+		return problems
+	for start: StartBuildingDef in map.start_buildings:
+		var def := data.get_building(start.building)
+		var origin := _variant_tile(start.origin, mirrored)
+		var orientation := 1 if mirrored else 0
+		var error := placement_error(def, origin, orientation)
+		if error != &"":
+			problems.append("start %s at %s: %s" % [start.building, origin, error])
+			continue
+		var building := add_building(def, origin, true, orientation)
+		if building.house != null:
+			building.house.residents = mini(start.residents, building.capacity())
+		var store := building.stock if building.stock != null else building.supply
+		if store != null:
+			for good: StringName in start.goods:
+				store.add(good, start.goods[good])
+	return problems
+
+
+## [param tile] of the map in its variant (mirrored: x and y swapped).
+static func _variant_tile(tile: Vector2i, mirrored: bool) -> Vector2i:
+	return Vector2i(tile.y, tile.x) if mirrored and tile != Agent.NO_TILE else tile
+
+
+## Poor land (richness 1) loses every third node, rich land (3) has half as much again in each
+## (decided by the tile, so a variant always looks the same).
+func _apply_richness(richness: int) -> void:
+	if richness == 2:
+		return
+	for tile: Vector2i in resources.tiles_with_nodes():
+		if richness <= 1 and (tile.x * 7 + tile.y * 13) % 3 == 0:
+			resources.clear(tile)
+		elif richness >= 3:
+			resources.set_amount(tile, ceili(resources.amount(tile) * 1.5))
+
+
+func _load_terrain(map: MapDef, mirrored: bool) -> PackedStringArray:
 	var problems := PackedStringArray()
 	var image := map.terrain_image
 	var by_color: Dictionary[int, TerrainDef] = {}
@@ -227,9 +289,11 @@ func load_map(map: MapDef) -> PackedStringArray:
 			if terrain.extra_node != &"":
 				by_color[terrain.extra_map_color.to_rgba32() | 0xff] = terrain
 				with_node[terrain.extra_map_color.to_rgba32() | 0xff] = terrain
-	for y: int in mini(grid.size.y, image.get_height()):
-		for x: int in mini(grid.size.x, image.get_width()):
-			var tile := Vector2i(x, y)
+	for y: int in image.get_height():
+		for x: int in image.get_width():
+			var tile := _variant_tile(Vector2i(x, y), mirrored)
+			if not grid.is_inside(tile):
+				continue
 			var color := image.get_pixel(x, y).to_rgba32() | 0xff
 			var terrain: TerrainDef = by_color.get(color)
 			if terrain == null:
@@ -240,32 +304,13 @@ func load_map(map: MapDef) -> PackedStringArray:
 				resources.place(tile, data.get_resource_node(terrain.extra_node))
 			elif terrain.resource_node != &"":
 				resources.place(tile, data.get_resource_node(terrain.resource_node))
-	for tile: Vector2i in map.resource_spots:
-		var node := data.get_resource_node(map.resource_spots[tile])
+	for spot: Vector2i in map.resource_spots:
+		var node := data.get_resource_node(map.resource_spots[spot])
+		var tile := _variant_tile(spot, mirrored)
 		if node == null or not grid.is_inside(tile):
-			problems.append("resource spot %s at %s" % [map.resource_spots[tile], tile])
+			problems.append("resource spot %s at %s" % [map.resource_spots[spot], tile])
 			continue
 		resources.place(tile, node)
-	entry_tile = map.entry_tile
-	treasury.gold = map.start_gold
-	rebuild_nav()
-	if map.start_by_ship:
-		first_building = map.first_building
-		landing = Landing.begin(self, map)
-		return problems
-	for start: StartBuildingDef in map.start_buildings:
-		var def := data.get_building(start.building)
-		var error := placement_error(def, start.origin)
-		if error != &"":
-			problems.append("start %s at %s: %s" % [start.building, start.origin, error])
-			continue
-		var building := add_building(def, start.origin, true)
-		if building.house != null:
-			building.house.residents = mini(start.residents, building.capacity())
-		var store := building.stock if building.stock != null else building.supply
-		if store != null:
-			for good: StringName in start.goods:
-				store.add(good, start.goods[good])
 	return problems
 
 func rebuild_nav() -> void:
@@ -1157,6 +1202,8 @@ func release_agent(agent: Agent) -> void:
 		pile.stock.release_owner(agent.id)
 	if merchant.wagon != null:
 		merchant.wagon.release_owner(agent.id)
+	if departure != null and departure.wagon != null:
+		departure.wagon.release_owner(agent.id)
 	fields.release_owner(agent.id)
 	if agent.claimed_node != Agent.NO_TILE:
 		resources.release(agent.claimed_node, agent.id)
@@ -1213,6 +1260,8 @@ func storage(id: int) -> Stockpile:
 	var ship := ships.get(id) as ShipUnit
 	if ship != null:
 		return ship.hold
+	if departure != null and departure.wagon != null and id == departure.id:
+		return departure.wagon
 	return merchant.wagon if id == merchant.wagon_id and merchant.wagon != null else null
 
 
@@ -1237,12 +1286,16 @@ func all_storages() -> Dictionary[int, Stockpile]:
 		result[build.id] = build.stock
 	for ship: ShipUnit in ships.values():
 		result[ship.id] = ship.hold
+	if departure != null and departure.wagon != null:
+		result[departure.id] = departure.wagon
 	return result
 
 
 func accepts_deliveries(id: int) -> bool:
 	if id < 0 or (id == merchant.wagon_id and merchant.wagon != null):
 		return storage(id) != null
+	if departure != null and departure.wagon != null and id == departure.id:
+		return true
 	var building := buildings.get_building(id)
 	if building != null:
 		return building.stock != null or building.supply != null
@@ -1272,6 +1325,8 @@ func access_tile(id: int) -> Vector2i:
 		# step's own (Harbour.walk_out).
 		var port := Harbour.port_of(self, id)
 		return port.entrance_tile() if port != null else Agent.NO_TILE
+	if departure != null and departure.wagon != null and id == departure.id:
+		return departure.stand
 	return merchant.stand if id == merchant.wagon_id and merchant.wagon != null else Agent.NO_TILE
 
 
@@ -1363,6 +1418,26 @@ func yard_buildings(good: StringName) -> Array[BuildingState]:
 func market_buildings() -> Array[BuildingState]:
 	_refresh_goods_index()
 	return _market_buildings
+
+
+## The province has a finished town hall: its seat (M6 part 2). Burghers and patricians pay
+## their full tax only here, and only from here settlers set out.
+func has_seat() -> bool:
+	if _seat_version != buildings.version:
+		_seat_version = buildings.version
+		_seat = 0
+		for building: BuildingState in buildings.all():
+			if building.def.id == SEAT:
+				_seat = building.id
+				break
+	var hall := buildings.get_building(_seat)
+	return hall != null and hall.is_complete()
+
+
+## The town hall (finished or not), or null.
+func seat() -> BuildingState:
+	has_seat()
+	return buildings.get_building(_seat)
 
 
 func _refresh_goods_index() -> void:
@@ -1605,6 +1680,8 @@ func to_dict() -> Dictionary:
 		d["production"] = production.to_dict()
 	if landing != null:
 		d["landing"] = landing.to_dict()
+	if departure != null:
+		d["departure"] = departure.to_dict()
 	if first_building != &"":
 		d["first_building"] = String(first_building)
 	return d
@@ -1660,6 +1737,8 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 	province.sea_merchant = SeaMerchant.from_dict(d.get("sea_merchant", {}))
 	if d.has("landing"):
 		province.landing = Landing.from_dict(d["landing"])
+	if d.has("departure"):
+		province.departure = Departure.from_dict(d["departure"], registry)
 	province.first_building = StringName(String(d.get("first_building", "")))
 	province.agents = AgentStore.from_dict(d["agents"])
 	for agent: Agent in province.agents.all():

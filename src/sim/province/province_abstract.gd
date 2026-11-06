@@ -164,6 +164,8 @@ func _take_off(agent: Agent, settler: bool) -> void:
 			home.house.residents = mini(home.house.residents + 1, home.capacity())
 		elif home != null and home.supply != null and amount > 0:
 			amount = home.supply.add(good, amount)   # a householder brings his errand home
+	elif task != null and task.kind == Task.KIND_TRAVEL and bb.has("leave") and p.departure != null:
+		p.departure.on_left(p, agent)   # a settler of the expedition: as good as there
 	elif agent.workplace_id != 0 and agent.home_id == 0:
 		var kinds: Array = homeless.get(agent.workplace_id, [])
 		kinds.append(String(agent.kind))
@@ -632,6 +634,8 @@ func _port_busy(port: BuildingState) -> bool:
 
 func _trade() -> void:
 	var p := detail
+	if p.departure != null:
+		p.departure.gather_at_once(p)
 	if p.tick % (STEP_TICKS * 10) == 0:
 		p.merchant.trade_at_once(p)
 		p.sea_merchant.trade_at_once(p)

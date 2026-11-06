@@ -12,6 +12,8 @@ const FIRST_ID := 1
 ## WorldDef id; empty in a single-province game.
 var world_id: StringName = &""
 var provinces: Dictionary[int, WorldProvince] = {}
+## Expeditions of settlers on the world map by id (M6 part 2).
+var expeditions: Dictionary[int, Expedition] = {}
 
 
 ## A single-province game on [param map_id], owned by the player.
@@ -102,7 +104,16 @@ func to_dict() -> Dictionary:
 	var list: Array = []
 	for id: int in ids():
 		list.append(provinces[id].to_dict())
-	return {"world": String(world_id), "provinces": list}
+	var d := {"world": String(world_id), "provinces": list}
+	if not expeditions.is_empty():
+		var e: Array = []
+		var keys: Array[int] = []
+		keys.assign(expeditions.keys())
+		keys.sort()
+		for id: int in keys:
+			e.append(expeditions[id].to_dict())
+		d["expeditions"] = e
+	return d
 
 
 static func from_dict(d: Dictionary) -> WorldSim:
@@ -111,4 +122,15 @@ static func from_dict(d: Dictionary) -> WorldSim:
 	for pd: Variant in d.get("provinces", []):
 		var province := WorldProvince.from_dict(pd)
 		world.provinces[province.id] = province
+	for ed: Variant in d.get("expeditions", []):
+		var expedition := Expedition.from_dict(ed)
+		world.expeditions[expedition.id] = expedition
 	return world
+
+
+## The expedition headed for province [param id] (on its way, waiting or landing), or null.
+func expedition_to(id: int) -> Expedition:
+	for expedition: Expedition in expeditions.values():
+		if expedition.to == id and expedition.state != Expedition.State.RETURNING:
+			return expedition
+	return null

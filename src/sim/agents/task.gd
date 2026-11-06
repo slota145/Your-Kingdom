@@ -21,6 +21,10 @@ const KIND_PARK := &"park"
 const KIND_SAIL_HOME := &"sail_home"
 ## A settler wading ashore from the ship that brought him (M5 part 3, bb "from", "to", "t").
 const KIND_LAND := &"land"
+## Walking (or driving the settlers' wagon) to a tile for an expedition of settlers (M6 part 2,
+## bb "to"; "wait": stand until the expedition sets off; "leave": vanish on arrival, gone with
+## the expedition).
+const KIND_TRAVEL := &"travel"
 
 var kind: StringName
 ## Recipe id for KIND_RECIPE.
