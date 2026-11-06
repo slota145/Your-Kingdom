@@ -591,23 +591,76 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## M6 — Mapa świata i prowincje
 
-**Status: start 2026-11-06 (decyzja właściciela) przed oceną gry M4b-2, M4b-3 i M5; oceny zrobimy razem, a poprawki z nich mają pierwszeństwo. Pierwszy krok: plan etapu z ankietą.**
+**Status: plan zaakceptowany 2026-11-06 (ankieta z właścicielem projektu). Następny krok: część 1 (świat i tryb uproszczony). Start przed oceną gry M4b-2, M4b-3 i M5 (decyzja właściciela); oceny zrobimy razem, a poprawki z nich mają pierwszeństwo przed dalszą pracą nad M6.**
+
+**Decyzje (2026-11-06, ankieta z właścicielem projektu):**
+- **Mały świat ręcznie ułożony: 9 prowincji.** Pełny świat sandbox (20–40 prowincji) i generator świata zostają w M8.
+- **Mapy prowincji z szablonów z wariantami.** Każda prowincja korzysta z jednego szablonu („Nadrzecze”, „Pojezierze”, „Wybrzeże”, nowa „Wyspy”), z odbiciem lustrzanym i rozłożeniem złóż (las, skały, ławice, żyzne pola) zależnym od bogactwa surowców 1–3 (GDD §2.1).
+- **Ilustrowana mapa świata.** Osobny ekran: mapa jak na pergaminie, rysowana kodem (ląd, morze, granice prowincji, ikony miast, kolor właściciela). Statki i wozy przesuwają się po szlakach. Kliknięcie prowincji otwiera panel (właściciel, ludność, zapasy, rzadki surowiec, „Wejdź”).
+- **Tryb uproszczony jak w ARCHITECTURE §7.** Nieoglądana prowincja nie ma postaci, tylko liczby: budynki produkują w tempie z czasu pracy i dróg (kalibrowanym tym, co było widać), domy jedzą, awansują i podupadają, budowy idą dalej. Test spójności chleba ±15%.
+- **Zasiedlanie statkiem i wozem, z lądowaniem.** Wyprawę osadników wysyła się z prowincji, która ma ratusz. Morzem: koga z portu zabiera osadników (ubywa ich w prowincji macierzystej) i zestaw startowy z magazynów; w nowej prowincji jest lądowanie jak dziś na „Wybrzeżu” i obóz pionierów. Lądem, do sąsiada: wóz osadników wjeżdża z krawędzi mapy, osadnicy idą obok.
+- **Wykup osady neutralnej za złoto i dostawy w czasie.** Osada neutralna to gotowe małe miasteczko z żądaniami (złoto i towary w limicie czasu). Towary dowozi się szlakiem albo jednorazowym kursem. Po spełnieniu żądań osada przechodzi do gracza z mieszkańcami i budynkami.
+- **Szlaki handlowe statkami i wozami, z regułą progu** (GDD §4.5): szlak A→B, towar, ilość i próg („wożę chleb, gdy w B jest mniej niż 20”). Koga albo wóz kursuje w kółko. W oglądanej prowincji widać załadunek i rozładunek, w nieoglądanej liczy się sam czas. „Rejsy w kółko” z IDEAS wchodzą w to same: rejs za horyzont z M5 dostaje drugi cel, „do mojej prowincji”.
+- **Rzadkie surowce: złoża i jeden łańcuch, wino.** Prowincje mają rzadki surowiec (ruda żelaza, sól, winorośl, pastwiska koni) widoczny na mapie świata. W M6 działa tylko winorośl: winnica na kaflach winnych → tłocznia → wino jako dodatkowa potrzeba patrycjuszy (powód do szlaków). Żelazo i konie w M7, sól z solonymi rybami po 1.0.
+- **Jeden szablon „Wyspy”**: mapa 128×128, jedna duża wyspa i 1–2 małe, plaże i zatoka na port. Do wyspy dociera się tylko statkiem.
+- **Nowa gra zaczyna się w świecie, stare mapy zostają osobno.** „Nowa gra” startuje lądowaniem kogi w prowincji przybrzeżnej; reszta świata jest pusta albo neutralna. W menu zostaje „Pojedyncza prowincja” ze starymi mapami (do testów i do zaległych ocen M4b–M5). Stare zapisy wczytują się jako świat z jedną prowincją.
+- **Ratusz staje się siedzibą prowincji** (IDEAS, wariant „ratusz = podatki + siedziba”): mieszczanie i patrycjusze płacą podatek tylko w prowincji z ratuszem (bez ratusza płacą jak chłopi), a wyprawę osadników wysyła się tylko z prowincji z ratuszem. Najwyżej jeden ratusz na prowincję. Obóz pionierów zostaje pierwszym budynkiem nowej osady.
+- **Bez innych pomysłów z IDEAS:** dom budowniczych i nabrzeża w głąb morza czekają (nabrzeża to osobny etap, najlepiej przed M7).
+- **Złoto wspólne, towary i ludzie osobno** (GDD §3.5): skarbiec jest jeden dla królestwa, a każda prowincja ma własne magazyny, mieszkańców i podatki.
+
+**Wartości wyjściowe (do strojenia przy realizacji):**
+- świat (9 prowincji, dane w `data/provinces/`):
+  1. „Zatoka Lądowania”: przybrzeżna (szablon „Wybrzeże”), start gracza ze statku,
+  2. przybrzeżna (lustrzane „Wybrzeże”), pusta, sąsiad lądowy startu,
+  3. kontynentalna z rzeką („Nadrzecze”), pusta, sąsiad lądowy startu,
+  4. kontynentalna z jeziorem („Pojezierze”), pusta,
+  5. kontynentalna z rzeką (lustrzane „Nadrzecze”), pusta, **winorośl**,
+  6. wyspa („Wyspy”), pusta, **winorośl**,
+  7. wyspa (lustrzane „Wyspy”), pusta, sól (tylko oznaczenie),
+  8. osada neutralna, kontynentalna („Pojezierze”), ruda żelaza (tylko oznaczenie),
+  9. osada neutralna, przybrzeżna (lustrzane „Wybrzeże”), pastwiska koni (tylko oznaczenie);
+  do 5 prowincji gracza można dojść zasiedlaniem samych pustych prowincji (7 pustych),
+- czas podróży na mapie świata: wóz do sąsiada ok. 3 minuty gry, koga między portami 3–6 minut zależnie od odległości (prędkość jak przy rejsie za horyzont),
+- tryb uproszczony: tick co 1 s gry; czas dojścia do magazynu kalibrowany średnią z ostatnich 10 zmierzonych kursów na budynek, bez pomiarów: długość ścieżki do najbliższego magazynu × 2 / prędkość; koszt ≤ 0,2 ms na prowincję na tick,
+- wyprawa osadników: 6 osadników (w tym budowniczy i 2 tragarzy), zestaw jak start ze statku (90 drewna, 20 chleba), pobrany z magazynów prowincji macierzystej; morzem koga wiezie osadników i zestaw (na czas wyprawy ładownia kogi mieści cały zestaw), lądem wóz osadników (nowa jednostka, ładunek jak zestaw) i osadnicy pieszo; koszt wyprawy 100 złota,
+- osada neutralna: ok. 30–40 budynków, 60–80 mieszkańców (fixtura ze skryptu, jak duże miasto z M4b-3); żądanie np. 300 złota i 40 chleba w 20 minut gry; niespełnione w czasie przepada, a nowe żądanie przychodzi po 10 minutach i jest o 25% droższe,
+- szlak: jeden statek albo wóz na szlak, kurs startuje, gdy w B jest mniej niż próg, a w A jest towar; ładunek do pełnej ładowni (koga 40, wóz konny 6), przy czym wóz szlaku jeździ tylko do sąsiada lądowego,
+- ratusz: podatek mieszczan i patrycjuszy liczony tylko przy ratuszu w prowincji, bez niego jak od chłopa; ratusz dalej daje budowniczego i 2 tragarzy,
+- wino: winnica 3×3 przy kaflach winnych (jak farma, pola 1×1 z krzewami, zbiór winogron), tłocznia 2×2 (3 kosze winogron → 1 beczka wina w ok. 40 s); wino to dodatkowa potrzeba patrycjuszy: podnosi zadowolenie i podatek, ale nie jest wymagane do utrzymania poziomu domu (stare mapy bez winorośli działają jak dotąd),
+- wejście do prowincji i wyjście z niej: przełączenie trwa najwyżej 2 s na laptopie (pomiar właściciela).
+
+**Kolejność prac:** część 1 (świat i tryb uproszczony: wiele prowincji w symulacji, przełączanie trybów bez gubienia towarów, test spójności, pierwsza wersja ekranu mapy świata z wejściem do prowincji; sprawdzone testami przed resztą), część 2 (zasiedlanie: wyprawa osadników morzem i lądem, szablon „Wyspy” i warianty szablonów, ratusz jako siedziba, ruch statków i wozów na mapie świata), część 3 (szlaki i wykup: szlaki handlowe, rejs do własnej prowincji, osady neutralne i wykup, winorośl i wino, pomiar 5 prowincji gracza, automatyczny gracz w świecie). Ocena gry jak w M5: część po części, jeśli właściciel zechce, albo jedna na końcu.
 
 **Zakres:**
-- graf prowincji, ekran mapy świata,
-- przełączanie prowincji,
-- mapy wyspowe (przeniesione z M5, decyzja 2026-11-06),
-- **tryb uproszczony** z kalibracją i przełączaniem trybów (ARCHITECTURE §7),
-- zasiedlanie przez osadników,
-- wykup osad neutralnych,
-- szlaki handlowe (wozy i statki),
-- rzadkie surowce.
+- część 1: `WorldSim` (graf prowincji z granicami lądowymi i strefami morskimi, właściciele, czas podróży), dane prowincji (`ProvinceDef`: nazwa, szablon, wariant, bogactwo surowców, rzadki surowiec, właściciel, sąsiedzi, położenie na mapie świata) i świata (`data/worlds/`); `Simulation` z wieloma prowincjami (ARCHITECTURE §4.1), jedna oglądana w trybie szczegółowym; `ProvinceAbstract` (budynki, magazyny, domy, siła robocza, budowy, pola, stada, statki w stoczni, kupcy liczeni po czasie); przełączanie trybów według ARCHITECTURE §7.2 dla wszystkich dzisiejszych systemów (postacie z towarem, place budowy, wozy, statki, rejs za horyzont, kupcy, lądowanie); kalibracja czasu transportu; ekran mapy świata w pierwszej wersji (pergamin, prowincje, właściciele, panel, „Wejdź”, powrót klawiszem M); menu „Nowa gra” (świat) i „Pojedyncza prowincja” (stare mapy); zapis v12 ze światem,
+- część 2: wyprawa osadników (okno wyprawy w ratuszu: cel na mapie świata, skład, koszt), koga z osadnikami odpływa za krawędź mapy, płynie po mapie świata i ląduje w nowej prowincji (gotowe lądowanie z M5), wóz osadników wyjeżdża przez krawędź i wjeżdża do sąsiada; nowa prowincja zaczyna od obozu pionierów; szablon „Wyspy” (`tools/generate_island_map.py`); warianty szablonów (odbicie i złoża według bogactwa); ratusz jako siedziba (podatki, wymóg wyprawy, jeden na prowincję); statki i wozy na mapie świata; zapis v13,
+- część 3: szlaki handlowe (okno szlaków: A→B, towar, ilość, próg, przypisany statek albo wóz; załadunek przez portowców i tragarzy, w nieoglądanej prowincji liczony czasem; widok na mapie świata); plan rejsu w porcie z celem „do mojej prowincji”; osady neutralne (fixtury miasteczek, panel żądań, licznik czasu, przejęcie); kafle winne, winnica, tłocznia, wino i potrzeba patrycjuszy; oznaczenia rzadkich surowców na mapie świata; automatyczny gracz w świecie (zasiedla kolejne prowincje i stawia szlak); pomiar 5 prowincji gracza; zapis v14,
+- grafika rysowana kodem: mapa świata (pergamin, ląd, morze, granice, ikony miast, herby w kolorach właścicieli, małe statki i wozy na szlakach, ikony rzadkich surowców), wóz osadników, kafle wyspy (z istniejących kafli plaży i morza), kafle winne i krzewy winorośli, winnica, tłocznia, beczka wina i kosz winogron, winiarz,
+- zapis: wersje 12–14 z migracjami, fixturami i testami (stary zapis wczytuje się jako świat z jedną prowincją); teksty PL i EN; aktualizacja GDD §2.1, §2.2, §3.2, §3.5, §4.5, §4.6, §10, ARCHITECTURE §4.1, §7, §8 i ART_SPEC.
+
+**Poza zakresem:** władcy AI, bandyci, armie i floty wojenne na mapie świata (M7–M8), oblężenia i bitwy (M7), generator świata i większe światy (M8), łańcuchy żelaza, soli i koni, dyplomacja, wahania cen i handel z obcymi portami o zmiennych cenach (1.0), archipelag wielu wysp w jednej prowincji i statki między dwoma portami jednej mapy, nabrzeża w głąb morza i dom budowniczych (IDEAS), przemieszczanie mieszkańców między prowincjami poza wyprawami osadników, pomiar FPS na laptopie (osobna sesja z właścicielem).
+
+**Ryzyka etapu:**
+- **przełączanie trybów** musi znać każdy dzisiejszy system (postacie z towarem, place budowy, statki, rejsy, kupcy, lądowanie, wozy, stada): łatwo o zgubiony towar albo zawieszone zlecenie. Ochrona: test „wejście i wyjście nie gubi towarów” uruchamiany na wszystkich fixturach zapisu i na dużym mieście,
+- **rozjazd trybów** (R8): prowincja nieoglądana produkuje inaczej niż oglądana. Ochrona: test spójności ±15% dla chleba, a dodatkowo dla desek i piwa,
+- **wydajność i pamięć:** dziś symulacja zakłada jedną prowincję (ok. 1650 linii w `ProvinceSim`). Rozdzielenie na świat i prowincje dotyka wielu miejsc. Ochrona: najpierw świat z jedną prowincją bez zmian w rozgrywce (wszystkie testy zielone), dopiero potem kolejne prowincje,
+- **ratusz jako siedziba zmienia balans** sprawdzonych map: na „Nadrzeczu” i „Pojezierzu” ratusz stoi od startu, ale na „Wybrzeżu” automatyczny gracz musi go dobudować, zanim mieszczanie zaczną płacić; wynik bota w limicie 90 minut trzeba sprawdzić na nowo,
+- **rozrost zakresu** (R9): to największy etap do tej pory. Ochrona: sztywny podział na 3 części, wszystko spoza listy do IDEAS.
 
 **DoD:**
-- [ ] Test spójności trybów (±15%) przechodzi.
-- [ ] Wejście i wyjście z prowincji nie gubi towarów.
-- [ ] Gra z 5 prowincjami gracza działa płynnie.
-- [ ] Zapis obejmuje cały świat.
+- [ ] Świat z 9 prowincjami jest w menu jako „Nowa gra”; „Pojedyncza prowincja” ze starymi mapami działa bez zmian (dotychczasowe testy przechodzą).
+- [ ] Ekran mapy świata: widać prowincje, właścicieli, rzadkie surowce, statki i wozy w drodze; z panelu prowincji można do niej wejść i wrócić na mapę.
+- [ ] Test spójności trybów (±15%) przechodzi (chleb; dodatkowo deski i piwo).
+- [ ] Wejście i wyjście z prowincji nie gubi towarów (także towarów w rękach, na placach budowy, w ładowniach i na placu portowym).
+- [ ] Zasiedlanie morzem i lądem: wyprawa z prowincji z ratuszem dociera, ląduje i zakłada obóz pionierów; wyspę da się zasiedlić tylko statkiem.
+- [ ] Ratusz jako siedziba: mieszczanie i patrycjusze płacą pełny podatek tylko przy ratuszu; bez ratusza nie da się wysłać wyprawy.
+- [ ] Szlak handlowy statkiem i wozem przewozi towar według progu, z widocznym załadunkiem w oglądanej prowincji.
+- [ ] Wykup osady neutralnej: dostarczenie żądań w czasie przekazuje osadę graczowi z mieszkańcami i budynkami.
+- [ ] Wino: winnica i tłocznia działają tylko w prowincji z winoroślą, patrycjusze z winem mają wyższe zadowolenie i podatek.
+- [ ] Gra z 5 prowincjami gracza działa płynnie: tick ≤ 4 ms przy dużym mieście oglądanym i 4 prowincjach w trybie uproszczonym; automatyczny gracz zasiedla kolejne prowincje i prowadzi szlak.
+- [ ] Zapis obejmuje cały świat: prowincje w obu trybach, wyprawy, szlaki, osady neutralne; stare zapisy wczytują się po migracji jako świat z jedną prowincją.
+- [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
+- [ ] **Twoja ocena gry.**
 
 ---
 
