@@ -53,6 +53,8 @@ var plant_area: Array[Vector2i] = []
 var breed_ticks: int = 0
 ## Storage: handcarts bought for its porters (M4b-3, at most def.max_carts).
 var carts: int = 0
+## Stable: wagons lent to trade routes (M6 part 3); their carters stay at the stable.
+var lent: int = 0
 ## Shipyard: ship kinds ordered by the player, the first one on the slipway (M5).
 var ship_orders: Array[StringName] = []
 ## Present on finished houses.
@@ -250,6 +252,8 @@ func to_dict() -> Dictionary:
 		d["breed"] = breed_ticks
 	if carts != 0:
 		d["carts"] = carts
+	if lent != 0:
+		d["lent"] = lent
 	if not ship_orders.is_empty():
 		var orders := []
 		for ship: StringName in ship_orders:
@@ -287,6 +291,7 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	b.serving_until = int(d.get("serving_until", 0))
 	b.breed_ticks = int(d.get("breed", 0))
 	b.carts = int(d.get("carts", 0))
+	b.lent = int(d.get("lent", 0))
 	for ship: Variant in d.get("ship_orders", []):
 		b.ship_orders.append(StringName(String(ship)))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority

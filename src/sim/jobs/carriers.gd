@@ -29,6 +29,8 @@ const WAGON_SPEED := 1.3
 ## The settlers' wagon of an expedition (M6 part 2): loaded with the start kit, it drives
 ## off-road like a person (no stable, no carter's job), drawn as a loaded wagon.
 const SETTLER_WAGON := &"settler_wagon"
+## The wagon of a trade route (M6 part 3): drawn as a loaded horse wagon, drives off roads too.
+const TRADE_WAGON := &"trade_wagon"
 
 
 ## Whether [param porter]'s storage has a handcart nobody is using.
@@ -48,7 +50,7 @@ static func has_free_handcart(province: ProvinceSim, porter: Agent) -> bool:
 static func speed_penalty(province: ProvinceSim, agent: Agent, tile: Vector2i) -> float:
 	if agent.vehicle == HANDCART and not province.grid.has_road(tile):
 		return 1.0 / HANDCART_OFFROAD_SPEED
-	if agent.vehicle == WAGON or agent.vehicle == SETTLER_WAGON:
+	if agent.vehicle == WAGON or agent.vehicle == SETTLER_WAGON or agent.vehicle == TRADE_WAGON:
 		return 1.0 / WAGON_SPEED
 	return 1.0
 
@@ -106,5 +108,8 @@ static func carter_ready(province: ProvinceSim, agent: Agent) -> bool:
 		return false
 	var stable := province.buildings.get_building(agent.workplace_id)
 	if stable == null or not stable.is_complete() or stable.paused:
+		return false
+	# Wagons lent to trade routes (M6 part 3): their carters stay at the stable.
+	if stable.lent > 0 and stable.workers.find(agent.id) >= stable.def.worker_count() - stable.lent:
 		return false
 	return agent.vehicle == WAGON or province.building_entered_at(agent.tile()) == stable

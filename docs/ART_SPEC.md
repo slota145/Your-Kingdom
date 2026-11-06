@@ -425,3 +425,11 @@ Narzędzie: `tools/generate_goods.gd`, wynik w `assets/goods/` i `assets/nature/
 - **Etapy budowy na pochylni:** `python3 tools/render_cog.py cog 46,84,168 --stages` (ok. 10 min) rysuje `build_0.png` (stępka, dziobnica, rufa i wręgi), `build_1.png` (poszyty i osmołowany kadłub z kasztelami) i `build_2.png` (maszt z żaglem, liny, flaga, tarcze). Kadłub stoi na czterech klocach, cały nad wodą; czwarty etap, wodowanie, to w widoku zjazd kadłuba `build_2` z pochylni na wodę. Format jak arkusz pływającej kogi: 220×220, 8 wierszy kierunków, po jednej klatce.
 - **Obóz pionierów** (`tools/generate_art.gd`): chata z bali kryta strzechą, dwa płócienne namioty, ognisko z kociołkiem na trójnogu, sągi drewna, beczka, łopata i chorągiew.
 
+
+### 10.9 Wino i szlaki rysowane kodem (M6, część 3, 2026-11-06)
+
+- **Winnica i tłocznia** (`tools/generate_art.gd`): winnica 3×3 to kamienny dom winogrodnika z dachówką i szopą, przed nim tyczki z krzewami, kosze i beczka; tłocznia 2×2 to kamienny dom z otwartą przybudówką, w której stoi kadź i stojak na beczki. Na razie złożone z istniejących elementów (dachy, kadzie, beczki); prawdziwa prasa ślimakowa może przyjść z PixelLab.
+- **Towary** (`tools/generate_goods.gd`): kosz winogron (wiklinowy kosz z fioletowymi kiśćmi i liściem winorośli, niesiony jak kosz) i beczka wina (beczka z czerwonym wiekiem i fioletowym znakiem, niesiona jak beczka).
+- **Postacie** (`tools/generate_characters.gd`): winogrodnik (fioletowa koszula, słomkowy kapelusz, nożyk do cięcia), winiarz (jasna koszula, bordowy fartuch i czapka). Czynność „press” (tłoczenie) to ruch „push”.
+- **Ziemia winna i krzewy** (`tools/generate_placeholders.gd`, placeholdery): ciepła, czerwonobrązowa ziemia z grudkami i kępkami trawy (`terrain/vine_soil/a.png`, nowe miejsce `VINE` w shaderze terenu) i pola winnicy `terrain/field_grapes/` (rzędy tyczek; krzewy gęstnieją z każdym etapem, dojrzałe mają fioletowe grona).
+- **Uwaga:** `tools/generate_art.gd` przy okazji rysuje od nowa kamienice patrycjuszy (`assets/buildings/hut/level_3_*`), a te w repozytorium są dopracowane ręcznie. Po uruchomieniu przywróć je: `git checkout assets/buildings/hut/`.

@@ -40,6 +40,8 @@ const C_MEAT := Color(0.72, 0.3, 0.26)
 const C_FAT := Color(0.95, 0.86, 0.78)
 const C_HIDE := Color(0.55, 0.38, 0.24)
 const C_PIG := Color(0.93, 0.68, 0.64)
+const C_GRAPES := Color(0.42, 0.18, 0.45)
+const C_WINE := Color(0.5, 0.1, 0.16)
 
 ## Good -> look of one unit: item kind and carry category.
 const GOODS := {
@@ -68,6 +70,9 @@ const GOODS := {
 	"pig": {"item": "pig", "carry": "animal"},
 	# M5 (the sea)
 	"tar": {"item": "tar_barrel", "carry": "barrel"},
+	# M6 part 3 (wine)
+	"grapes": {"item": "grape_basket", "carry": "basket"},
+	"wine": {"item": "wine_barrel", "carry": "barrel"},
 }
 
 ## Item -> positions [grid x, grid y, z] in fill order (a quarter of them per stage).
@@ -246,7 +251,7 @@ func _item_height(item: String) -> float:
 	return {"flour_sack": 7.0, "sheaf": 12.0, "bread_crate": 7.0, "fish_crate": 7.0, "hop_basket": 8.0,
 			"barrel": 11.0, "block": 7.0, "wool_bale": 8.0, "cloth_bolt": 5.0, "clothes_basket": 8.0,
 			"honey_pot": 9.0, "mead_barrel": 11.0, "tar_barrel": 11.0, "clay_sack": 7.0, "brick_pile": 6.0,
-			"meat_crate": 7.0, "hide_bundle": 4.0}.get(item, 7.0)
+			"meat_crate": 7.0, "hide_bundle": 4.0, "grape_basket": 8.0, "wine_barrel": 11.0}.get(item, 7.0)
 
 
 func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -> void:
@@ -262,8 +267,8 @@ func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -
 				_line(img, foot + Vector2(x, 0), foot + Vector2(x * 1.8, -14.0 * s), C_STRAW.darkened(0.12 * float(i % 2) + v), 1)
 			_ellipse(img, foot - Vector2(0, 15.0) * s, Vector2(4.0, 2.0) * s, C_STRAW.lightened(0.1))
 			_line(img, foot - Vector2(3.5, 6.0) * s, foot - Vector2(-3.5, 6.0) * s, Color(0.55, 0.4, 0.2), 1)
-		"bread_crate", "fish_crate", "hop_basket":
-			var basket := item == "hop_basket"
+		"bread_crate", "fish_crate", "hop_basket", "grape_basket":
+			var basket := item == "hop_basket" or item == "grape_basket"
 			var body := C_BASKET if basket else C_CRATE
 			_box(img, foot, Vector2(14, 7) * s, 6.0 * s, body.darkened(v), "wicker" if basket else "planks")
 			var top := foot - Vector2(0, 6.0 * s + 3.5 * s)
@@ -276,6 +281,12 @@ func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -
 						var a := top + Vector2(-4 + k * 3.5, -1 + k * 0.6) * s
 						_line(img, a, a + Vector2(3.5, 1.5) * s, C_FISH.darkened(0.1 * float(k % 2)), 2)
 						_pixel(img, a + Vector2(4.5, 2.0) * s, C_FISH.darkened(0.3))
+				"grape_basket":
+					# Dark purple bunches heaped in the basket, a vine leaf on top.
+					for k: int in 6:
+						_ellipse(img, top + Vector2(-4.0 + k * 1.6, -0.5 + (k % 2) * 1.0) * s, Vector2(1.5, 1.5) * s,
+								C_GRAPES.darkened(0.15 * float(k % 2)))
+					_ellipse(img, top + Vector2(2.5, -1.8) * s, Vector2(2.0, 1.2) * s, Color(0.35, 0.55, 0.22))
 				"hop_basket":
 					for k: int in 5:
 						_ellipse(img, top + Vector2(-3.5 + k * 1.8, sin(k) * 0.8) * s, Vector2(1.6, 1.6) * s, C_HOPS.darkened(0.12 * float(k % 2)))
@@ -321,6 +332,13 @@ func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -
 			_ellipse(img, foot - Vector2(0, 11.0) * s, Vector2(4.0, 1.6) * s, C_BARREL.lightened(0.18))
 			# Golden honey mark on the side tells mead from beer.
 			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(1.6, 1.3) * s, C_HONEY)
+		"wine_barrel":
+			# A barrel with red hoops of wine-stain and a purple mark: wine, not beer.
+			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(5.0, 6.0) * s, C_BARREL.darkened(0.05 + v))
+			_line(img, foot - Vector2(5, 8) * s, foot - Vector2(-5, 8) * s, C_IRON, 1)
+			_line(img, foot - Vector2(5, 3) * s, foot - Vector2(-5, 3) * s, C_IRON, 1)
+			_ellipse(img, foot - Vector2(0, 11.0) * s, Vector2(4.0, 1.6) * s, C_WINE)
+			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(1.6, 1.3) * s, C_GRAPES)
 		"tar_barrel":
 			# A dark barrel with tar run down from the bung.
 			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(5.0, 6.0) * s, Color(0.26, 0.19, 0.14).darkened(v))

@@ -89,6 +89,8 @@ static func freeze(province: ProvinceSim, tick: int) -> ProvinceAbstract:
 		abstract._take_off(agent, settlers.has(agent.id))
 	if province.landing != null:
 		province.landing.settlers.clear()
+	for wagon: RouteWagon in province.route_wagons.values():
+		wagon.finish_at_once(province)
 	province.paths = PathRequestQueue.new()
 	for ship: ShipUnit in province.ships.values():
 		abstract._berth_boat(ship)
@@ -164,6 +166,8 @@ func _take_off(agent: Agent, settler: bool) -> void:
 			home.house.residents = mini(home.house.residents + 1, home.capacity())
 		elif home != null and home.supply != null and amount > 0:
 			amount = home.supply.add(good, amount)   # a householder brings his errand home
+	elif task != null and task.kind == Task.KIND_TRAVEL and bb.has("route"):
+		pass   # a trade route's carter: his wagon finishes at once (RouteWagon.finish_at_once)
 	elif task != null and task.kind == Task.KIND_TRAVEL and bb.has("leave") and p.departure != null:
 		p.departure.on_left(p, agent)   # a settler of the expedition: as good as there
 	elif agent.workplace_id != 0 and agent.home_id == 0:

@@ -37,6 +37,7 @@ var _building_panel: BuildingPanel
 var _agent_panel: AgentPanel
 var _ship_panel: ShipPanel
 var _stocks: KingdomStockWindow
+var _routes: RoutesWindow
 var _world_map: WorldMapScreen
 var _notes: Notifications
 var _tool: Dictionary = {}
@@ -120,6 +121,7 @@ func _show_province() -> void:
 	_top.province = sim.province
 	_notes.province = sim.province
 	_stocks.visible = false
+	_routes.visible = false
 	_close_panels()
 	_set_tool({})
 
@@ -150,6 +152,7 @@ func _build_ui() -> void:
 	_top.menu_requested.connect(_back_to_menu)
 	_top.stocks_requested.connect(_toggle_stocks)
 	_top.world_requested.connect(_toggle_world_map)
+	_top.routes_requested.connect(_toggle_routes)
 	root.add_child(_top)
 	_build = BuildMenu.new()
 	_build.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
@@ -180,6 +183,13 @@ func _build_ui() -> void:
 	_stocks.closed.connect(func() -> void: _stocks.visible = false)
 	_stocks.command_requested.connect(func(command: Command) -> void: _execute(command))
 	root.add_child(_stocks)
+	_routes = RoutesWindow.new()
+	_routes.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_routes.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_routes.position.y = 64
+	_routes.visible = false
+	_routes.closed.connect(func() -> void: _routes.visible = false)
+	_routes.command_requested.connect(func(command: Command) -> void: _execute(command))
 	_agent_panel = AgentPanel.new()
 	_agent_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_agent_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
@@ -200,20 +210,27 @@ func _build_ui() -> void:
 	_world_map.closed.connect(_toggle_world_map)
 	_world_map.enter_requested.connect(_enter_province)
 	_world_map.command_requested.connect(func(command: Command) -> void: _execute(command))
+	_world_map.routes_requested.connect(func(from: int) -> void:
+		_routes.open(sim, from)
+		_routes.move_to_front())
 	root.add_child(_world_map)
+	# Over the world map too (opened from its panel).
+	root.add_child(_routes)
 	_notes = Notifications.new()
 	_notes.position = Vector2(12, 64)
 	_notes.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_notes)
 
 
-## Notes about expeditions on the world map (M6 part 2).
+## Notes about expeditions and neutral settlements on the world map (M6 parts 2 and 3).
 func _note_world_event(event: Dictionary) -> void:
 	var type: StringName = event["type"]
 	if type == &"expedition_ready":
 		_notes.push(tr("ui.note.expedition_ready"))
 		return
-	if type != &"expedition_departed" and type != &"expedition_arrived":
+	if type != &"expedition_departed" and type != &"expedition_arrived" \
+			and type != &"settlement_joined" and type != &"settlement_refused" \
+			and type != &"settlement_asks":
 		return
 	var def := sim.world.def_of(int(event["province"]), sim.data)
 	var name := tr(def.name_key()) if def != null else ""
@@ -244,6 +261,16 @@ func _enter_province(id: int) -> void:
 	_show_province()
 	var def := sim.world.def_of(id, sim.data)
 	_notes.push(tr("ui.note.entered") % (tr(def.name_key()) if def != null else ""))
+
+
+## Opens or closes the trade routes window (M6 part 3). A single-province game has none.
+func _toggle_routes() -> void:
+	if _routes.visible:
+		_routes.visible = false
+	elif sim.world.is_single():
+		_notes.push(tr("ui.note.single_province"))
+	else:
+		_routes.open(sim)
 
 
 func _toggle_stocks() -> void:

@@ -7,11 +7,16 @@ extends Control
 ## Expeditions of settlers (M6 part 2, owner's decision 2026-11-06): the panel of the player's
 ## province prepares one (by land or by sea); a ready one stands by its town on the map, a
 ## click selects it and a right click on a province sends it there.
+## Neutral settlements (M6 part 3, owner's decision 2026-11-06): their panel lists the demand
+## (gold and goods with what was given, and the time left); gold is paid here, goods come by a
+## trade route or a voyage "to my province".
 
 signal enter_requested(id: int)
 ## Prepare, send or disband an expedition; the game scene executes it.
 signal command_requested(command: Command)
 signal closed
+## Open the trade routes window with routes from province [param from].
+signal routes_requested(from: int)
 
 const STOCK_LINES := 6
 
@@ -24,6 +29,10 @@ var _lines: Label
 var _hint: Label
 var _enter: Button
 var _expedition: ExpeditionBox
+var _routes: Button
+var _demand: Label
+var _pay: Button
+var _send_goods: Button
 ## The answer to the last right click (why it cannot go there), shown until another click.
 var _send_note: String = ""
 var _selected: int = 0
@@ -77,12 +86,22 @@ func _init() -> void:
 	box.add_child(_hint)
 	_enter = UiKit.button("ui.world.enter", func() -> void: enter_requested.emit(_selected))
 	box.add_child(_enter)
+	_demand = UiKit.label()
+	box.add_child(_demand)
+	_pay = UiKit.button("ui.world.pay", func() -> void:
+		command_requested.emit(PaySettlementCommand.new(_selected))
+		_refresh())
+	box.add_child(_pay)
+	_send_goods = UiKit.button("ui.world.send_goods", func() -> void: routes_requested.emit(sim.viewed_id))
+	box.add_child(_send_goods)
 	box.add_child(HSeparator.new())
 	_expedition = ExpeditionBox.new()
 	_expedition.command_requested.connect(func(command: Command) -> void:
 		command_requested.emit(command)
 		_refresh())
 	box.add_child(_expedition)
+	_routes = UiKit.button("ui.world.routes", func() -> void: routes_requested.emit(_selected))
+	box.add_child(_routes)
 	box.add_child(UiKit.button("ui.world.back", func() -> void: closed.emit()))
 
 
@@ -132,6 +151,8 @@ func _refresh() -> void:
 	_title.text = tr(world_def.name_key()) if world_def != null else ""
 	var def := sim.world.def_of(_selected, sim.data)
 	_expedition.show_for(sim, _selected)
+	_routes.visible = sim.world.owner_of(_selected) == ProvinceDef.OWNER_PLAYER and sim.runtimes.has(_selected)
+	_refresh_demand()
 	if def == null:
 		_name.text = ""
 		_lines.text = ""
@@ -152,6 +173,9 @@ func _refresh() -> void:
 			if def.rare_resource != &"" else tr("ui.world.rare_none")))
 	if def.island:
 		lines.append(tr("ui.world.island"))
+	var routes := sim.world.routes_of(_selected).size()
+	if routes > 0:
+		lines.append(tr("ui.world.routes_count") % routes)
 	lines.append(tr(def.desc_key()))
 	_lines.text = "\n".join(lines)
 	var expedition := sim.world.expedition_to(_selected)
@@ -173,6 +197,34 @@ func _refresh() -> void:
 		_hint.text = tr("ui.world.empty_hint")
 	if not _send_note.is_empty():
 		_hint.text = _send_note if _hint.text.is_empty() else _send_note + "\n" + _hint.text
+
+
+## The demand of the selected neutral settlement.
+func _refresh_demand() -> void:
+	var s := sim.world.settlements.get(_selected) as NeutralSettlement \
+			if sim.world.owner_of(_selected) == ProvinceDef.OWNER_NEUTRAL else null
+	_demand.visible = s != null
+	_pay.visible = s != null and s.state == NeutralSettlement.State.ASKING and s.gold_missing() > 0
+	_send_goods.visible = s != null and s.state == NeutralSettlement.State.ASKING and not s.goods.is_empty()
+	if s == null:
+		return
+	var minutes := maxi(ceili((s.until - sim.clock.tick) / float(SimClock.TICKS_PER_SECOND) / 60.0), 1)
+	var lines := PackedStringArray()
+	if s.state == NeutralSettlement.State.RESTING:
+		lines.append(tr("ui.world.demand_resting") % minutes)
+	else:
+		lines.append(tr("ui.world.demand_title") % minutes)
+		lines.append(tr("ui.world.demand_gold") % [s.gold_paid, s.gold])
+		var goods: Array[StringName] = []
+		goods.assign(s.goods.keys())
+		goods.sort()
+		for good: StringName in goods:
+			lines.append(tr("ui.world.demand_good") % [tr(sim.data.get_good(good).name_key()),
+					int(s.delivered.get(good, 0)), s.goods[good]])
+		lines.append(tr("ui.world.demand_hint"))
+	_demand.text = "\n".join(lines)
+	_pay.text = tr("ui.world.pay") % mini(s.gold_missing(), sim.treasury.gold)
+	_pay.disabled = sim.treasury.gold <= 0
 
 
 static func _residents(province: ProvinceSim) -> int:

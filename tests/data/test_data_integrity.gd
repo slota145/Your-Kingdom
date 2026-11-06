@@ -112,7 +112,8 @@ func test_house_levels_are_consistent() -> void:
 			assert_int(level.level).is_equal(i + 1)
 			var weights := 0
 			for need: NeedDef in level.needs:
-				weights += level.weight_of(need)
+				if not need.extra:
+					weights += level.weight_of(need)
 				for good: StringName in need.goods:
 					assert_bool(_registry.has_def(&"good", good)).is_true()
 				if need.is_service():

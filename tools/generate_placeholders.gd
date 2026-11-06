@@ -128,6 +128,14 @@ func _terrain() -> void:
 	for stage: int in 4:
 		var name := "ripe" if stage == 3 else "sown_%d" % (stage + 1)
 		_save(_hop_poles(soil, furrow, stage), "terrain/field_hops/%s.png" % name)
+	# Vineyard (M6 part 3): vine rows on stakes, leafing out, purple grapes when ripe.
+	_save(_diamond(Color(0.5, 0.38, 0.28), Color(0.44, 0.32, 0.24)), "terrain/field_grapes/fallow.png")
+	_save(_furrows(Color(0.46, 0.32, 0.24), Color(0.36, 0.24, 0.18), Color(0, 0, 0, 0)), "terrain/field_grapes/plowed.png")
+	for stage: int in 4:
+		var name := "ripe" if stage == 3 else "sown_%d" % (stage + 1)
+		_save(_vine_rows(stage), "terrain/field_grapes/%s.png" % name)
+	# Vine soil (M6 part 3): warm reddish earth with tufts of grass, seamless (no border).
+	_save(_vine_soil(), "terrain/vine_soil/a.png")
 	# Coverage overlay of a service (well): a soft tinted diamond.
 	_save(_diamond(Color(0.35, 0.6, 1.0, 0.28), Color(0.35, 0.6, 1.0, 0.45)), "terrain/range/a.png")
 	_save(_diamond(Color(0.3, 1.0, 0.3, 0.35), Color(0.3, 1.0, 0.3, 0.9)), "terrain/cursor/ok.png")
@@ -161,6 +169,46 @@ func _hop_poles(soil: Color, furrow: Color, stage: int) -> Image:
 		_line(img, foot, top, green, 2)
 		if stage == 3:
 			_ellipse(img, top, Vector2(2, 2), Color(0.75, 0.85, 0.4))
+	return img
+
+
+## A vineyard tile: two rows of stakes along grid y with vines growing up and along them.
+func _vine_rows(stage: int) -> Image:
+	var img := _furrows(Color(0.46, 0.32, 0.24), Color(0.36, 0.24, 0.18), Color(0, 0, 0, 0))
+	var leaf := Color(0.28, 0.5, 0.2).lightened(stage * 0.06)
+	for row: float in [0.3, 0.7]:
+		var a := IsoMath.grid_to_screen(Vector2(row, 0.15)) + Vector2(32, 0)
+		var b := IsoMath.grid_to_screen(Vector2(row, 0.85)) + Vector2(32, 0)
+		var lift := Vector2(0, -6)
+		_line(img, a, a + Vector2(0, -8), Color(0.42, 0.3, 0.18), 1)
+		_line(img, b, b + Vector2(0, -8), Color(0.42, 0.3, 0.18), 1)
+		if stage >= 1:
+			_line(img, a + lift, b + lift, Color(0.5, 0.42, 0.3), 1)
+		for k: int in 2 + stage:
+			var t := (k + 0.5) / float(2 + stage)
+			var at := a.lerp(b, t) + lift
+			_ellipse(img, at, Vector2(1 + stage * 0.5, 1 + stage * 0.4), leaf)
+			if stage == 3 and k % 2 == 0:
+				_ellipse(img, at + Vector2(0, 3), Vector2(1, 2), Color(0.42, 0.16, 0.42))
+	return img
+
+
+## Vine soil: a reddish-brown ground with darker clods and a few green tufts, no border.
+func _vine_soil() -> Image:
+	var base := Color(0.54, 0.4, 0.3)
+	var img := _diamond(base, base)
+	for y: int in TILE.y:
+		for x: int in TILE.x:
+			if img.get_pixel(x, y).a == 0.0:
+				continue
+			var h := (x * 73856093) ^ (y * 19349663)
+			h = absi((h ^ (h >> 13)) * 1274126177) % 100
+			if h < 9:
+				img.set_pixel(x, y, base.darkened(0.18))
+			elif h < 13:
+				img.set_pixel(x, y, base.lightened(0.1))
+			elif h < 16:
+				img.set_pixel(x, y, Color(0.4, 0.55, 0.26))
 	return img
 
 

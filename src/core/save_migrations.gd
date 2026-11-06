@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 13
+const CURRENT_VERSION := 14
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -46,6 +46,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 13:
 		result = migrate_v12_to_v13(result)
 		version = 13
+	if version < 14:
+		result = migrate_v13_to_v14(result)
+		version = 14
 	return result
 
 
@@ -181,4 +184,24 @@ static func migrate_v11_to_v12(state: Dictionary) -> Dictionary:
 ## land ("by_land", the wagon) and from which expedition, the player's cog the expedition it
 ## carries. A v12 game has none of them: nothing to add.
 static func migrate_v12_to_v13(state: Dictionary) -> Dictionary:
+	return state
+
+
+## v14 (M6 part 3): trade routes, neutral settlements and wine. The world keeps routes under
+## "routes" and the demands of neutral settlements under "settlements", a province the wagons
+## of routes being loaded or unloaded there ("route_wagons"), a stable the wagons it lent
+## ("lent"), the player's cog the route it runs ("route", "route_run", "shipped"). A v13 game
+## has none of them (its neutral provinces get their towns on the first seconds). Wine is a
+## new good of patrician houses: every hut's pantry gets a slot more for it (8).
+static func migrate_v13_to_v14(state: Dictionary) -> Dictionary:
+	for entry: Variant in state.get("provinces", []):
+		var province: Dictionary = (entry as Dictionary)["state"]
+		if province.has("province"):
+			province = province["province"]   # the simplified mode keeps its detail inside
+		for building: Variant in province.get("buildings", []):
+			var b := building as Dictionary
+			if b["def"] == "hut" and b.has("supply"):
+				var slots: Array = (b["supply"] as Dictionary)["slots"]
+				while slots.size() < 8:
+					slots.append(["", 0])
 	return state

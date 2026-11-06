@@ -5,7 +5,9 @@ extends Node
 ##   res://src/prototype/m6/world_shot.tscn -- --out=/tmp/world.png [--select=<province id>] [--settle]
 ##   [--expeditions] (a cog on its way to Gull Isle, a wagon to Willow Vale, one waiting at
 ##   Amber Coast, all made up for the picture) [--ready] (a ready land expedition by the start
-##   town, selected, the mouse over Willow Vale)
+##   town, selected, the mouse over Willow Vale) [--routes] (Willow Vale and Amber Coast settled,
+##   a wagon route and a cog route on their way, made up for the picture; with --window the
+##   routes window is open over the map)
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
 const SETTLE_FRAMES := 10
@@ -18,6 +20,8 @@ var _select: StringName = &""
 var _settle: bool = false
 var _expeditions: bool = false
 var _ready_one: bool = false
+var _routes: bool = false
+var _window: bool = false
 
 
 func _ready() -> void:
@@ -32,6 +36,10 @@ func _ready() -> void:
 			_expeditions = true
 		elif arg == "--ready":
 			_ready_one = true
+		elif arg == "--routes":
+			_routes = true
+		elif arg == "--window":
+			_window = true
 	Game.start_request = {"world": "kingdom"}
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D
 	add_child(_game)
@@ -63,7 +71,11 @@ func _process(_delta: float) -> void:
 			departure.state = Departure.State.READY
 			departure.stand = sim.province.entry_tile
 			sim.province.departure = departure
+		if _routes:
+			_make_routes(sim)
 		_game.call("_toggle_world_map")
+		if _window:
+			(_game.get("_world_map") as WorldMapScreen).routes_requested.emit(sim.viewed_id)
 		if _ready_one:
 			var screen := _game.get("_world_map") as WorldMapScreen
 			screen._canvas.expedition_from = sim.viewed_id
@@ -74,3 +86,28 @@ func _process(_delta: float) -> void:
 	elif _frames == SHOT_FRAMES and not _out.is_empty():
 		get_viewport().get_texture().get_image().save_png(_out)
 		get_tree().quit()
+
+
+func _make_routes(sim: Simulation) -> void:
+	var vale := sim.world.id_of(&"willow_vale")
+	var coast := sim.world.id_of(&"amber_coast")
+	sim.open_province(vale, sim.data.get_map(&"riverlands"))
+	sim.open_province(coast, sim.data.get_map(&"coast"))
+	var plan := [[vale, false, TradeRoute.State.TRAVELLING, 0.45, &"bread"],
+			[coast, true, TradeRoute.State.RETURNING, 0.3, &"planks"]]
+	for i: int in plan.size():
+		var r := TradeRoute.new()
+		r.id = 950 + i
+		r.from = sim.viewed_id
+		r.to = plan[i][0]
+		r.by_sea = plan[i][1]
+		r.state = plan[i][2]
+		r.lines.append(TradeRoute.line(plan[i][4], 6 if not r.by_sea else 20, 30))
+		r.lines.append(TradeRoute.line(&"wood", 6 if not r.by_sea else 10, 40))
+		if r.state == TradeRoute.State.TRAVELLING:
+			r.cargo = {plan[i][4]: 6}
+		r.depart_at = sim.clock.tick - roundi(1000 * plan[i][3])
+		r.arrive_at = r.depart_at + 1000
+		r.runs = 3
+		r.delivered = 18
+		sim.world.routes[r.id] = r

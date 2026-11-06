@@ -64,6 +64,7 @@ static func from_world(registry: DataRegistry, def: WorldDef, seed_value: int = 
 	sim.viewed_id = start
 	sim.world.get_province(start).owner = ProvinceDef.OWNER_PLAYER
 	problems.append_array(sim.province.load_map(map, pdef.mirrored, pdef.richness))
+	problems.append_array(sim._open_neutral_towns())
 	sim.events.drain()
 	return sim
 
@@ -100,7 +101,8 @@ func step() -> void:
 	for id: int in runtimes:
 		if id % ProvinceAbstract.STEP_TICKS == slot:
 			var abstract := runtimes[id] as ProvinceAbstract
-			if abstract != null:
+			# A neutral town waits as it is until it joins the kingdom (M6 part 3).
+			if abstract != null and world.owner_of(id) == ProvinceDef.OWNER_PLAYER:
 				abstract.step(clock.tick - slot)
 	if slot == 0:
 		_update_world()
@@ -144,7 +146,8 @@ func open_province(id: int, map: MapDef, owner: StringName = ProvinceDef.OWNER_P
 	var opened := ProvinceSim.new(data, map.size_for(mirrored), SimEvents.new(), ids)
 	opened.treasury = Treasury.new()
 	opened.tick = clock.tick
-	var problems := opened.load_map(map, mirrored, pdef.richness if pdef != null else 2)
+	var problems := opened.load_map(map, mirrored, pdef.richness if pdef != null else 2, false,
+			pdef.rare_resource if pdef != null else &"")
 	opened.treasury = treasury
 	runtimes[id] = ProvinceAbstract.freeze(opened, clock.tick)
 	if world.get_province(id) == null:
@@ -153,7 +156,8 @@ func open_province(id: int, map: MapDef, owner: StringName = ProvinceDef.OWNER_P
 	return problems
 
 
-## Once a second: expeditions set out, arrive, land and their cogs come home (M6 part 2).
+## Once a second: expeditions set out, arrive, land and their cogs come home (M6 part 2);
+## trade routes run (M6 part 3).
 func _update_world() -> void:
 	for id: int in runtime_ids():
 		var p := province_state(id)
@@ -177,6 +181,53 @@ func _update_world() -> void:
 			Expedition.State.RETURNING:
 				if clock.tick >= e.arrive_at:
 					world.expeditions.erase(id)
+	TradeRoutes.update(self)
+	_update_settlements()
+
+
+## Every neutral province without a town gets one, and its first demand (a new game; a save
+## from before M6 part 3 on its first second). Returns problems with the maps.
+func _open_neutral_towns() -> PackedStringArray:
+	var problems := PackedStringArray()
+	for id: int in world.ids():
+		if world.owner_of(id) != ProvinceDef.OWNER_NEUTRAL or runtimes.has(id):
+			continue
+		var def := world.def_of(id, data)
+		if def == null or def.town_buildings.is_empty():
+			continue
+		problems.append_array(NeutralTown.build(self, id))
+		world.settlements[id] = NeutralSettlement.first(id, def, clock.tick)
+	return problems
+
+
+## Once a second: a neutral settlement whose demand is met joins the kingdom; one whose time
+## ran out rests and asks again, dearer (M6 part 3).
+func _update_settlements() -> void:
+	if clock.tick % (ProvinceAbstract.STEP_TICKS * 10) == 0:
+		_open_neutral_towns()
+	var ids_now: Array[int] = []
+	ids_now.assign(world.settlements.keys())
+	ids_now.sort()
+	for id: int in ids_now:
+		var s := world.settlements[id]
+		if world.owner_of(id) != ProvinceDef.OWNER_NEUTRAL:
+			world.settlements.erase(id)
+			continue
+		match s.state:
+			NeutralSettlement.State.ASKING:
+				if s.is_met():
+					world.settlements.erase(id)
+					world.get_province(id).owner = ProvinceDef.OWNER_PLAYER
+					events.emit(&"settlement_joined", {"province": id})
+				elif clock.tick >= s.until:
+					s.state = NeutralSettlement.State.RESTING
+					s.round += 1
+					s.until = clock.tick + SimClock.seconds_to_ticks(NeutralSettlement.REST_MINUTES * 60.0)
+					events.emit(&"settlement_refused", {"province": id})
+			NeutralSettlement.State.RESTING:
+				if clock.tick >= s.until:
+					s.ask(world.def_of(id, data), clock.tick)
+					events.emit(&"settlement_asks", {"province": id})
 
 
 ## The expedition of province [param id] has left its map: it is on the world map now.
@@ -221,7 +272,8 @@ func _settle(e: Expedition) -> ProvinceSim:
 	var settled := ProvinceSim.new(data, map.size_for(mirrored), events, ids)
 	settled.treasury = treasury
 	settled.tick = clock.tick
-	settled.load_map(map, mirrored, def.richness if def != null else 2, true)
+	settled.load_map(map, mirrored, def.richness if def != null else 2, true,
+			def.rare_resource if def != null else &"")
 	if e.by_sea and map.landing_tile != Agent.NO_TILE:
 		settled.landing = Landing.arrive_by_sea(settled, map, mirrored, e.settlers, e.kit, e.id)
 	else:

@@ -183,6 +183,10 @@ static func tax_per_minute(province: ProvinceSim, building: BuildingState) -> fl
 static func _pay_taxes(province: ProvinceSim, building: BuildingState) -> void:
 	var house := building.house
 	var per_second := house.residents * tax_per_minute(province, building) / 60.0
+	# Extra needs met (wine, M6 part 3) add their bonus.
+	for need: NeedDef in building.level_def().needs:
+		if need.extra and house.satisfied.get(need.id, false):
+			per_second *= 1.0 + need.tax_bonus
 	province.treasury.add(per_second * house.happiness / 100.0 * province.treasury.rate_factor())
 
 

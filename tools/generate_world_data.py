@@ -45,6 +45,24 @@ PROVINCES = [
 ]
 
 
+# Neutral settlements (M6 part 3): the town (building -> count, burgher houses) and the first
+# demand (gold, goods, minutes).
+TOWNS = {
+    "iron_wold": ({"stockpile": 2, "well": 3, "chapel": 1, "market": 1, "hut": 12, "woodcutter": 2,
+                   "forester": 1, "farm": 2, "mill": 1, "bakery": 1, "fishing_hut": 2, "brewery": 1,
+                   "hop_farm": 1, "quarry": 1, "sawmill": 1}, 6,
+                  300, {"bread": 40}, 20),
+    "horse_haven": ({"stockpile": 2, "well": 3, "chapel": 1, "market": 1, "hut": 12, "woodcutter": 2,
+                     "forester": 1, "farm": 2, "mill": 1, "bakery": 1, "fishing_wharf": 2, "brewery": 1,
+                     "hop_farm": 1, "sawmill": 1, "pigsty": 1}, 6,
+                    300, {"bread": 30, "planks": 20}, 20),
+}
+
+
+def sname_dict(d):
+    return "Dictionary[StringName, int]({%s})" % ", ".join('&"%s": %d' % (k, d[k]) for k in sorted(d))
+
+
 def sname_array(items):
     return "Array[StringName]([%s])" % ", ".join('&"%s"' % i for i in items)
 
@@ -74,6 +92,13 @@ def main():
                 f.write("island = true\n")
             f.write("world_pos = Vector2(%d, %d)\n" % pos)
             f.write("outline = PackedVector2Array(%s)\n" % flat)
+            if pid in TOWNS:
+                build, burghers, gold, goods, minutes = TOWNS[pid]
+                f.write("town_buildings = %s\n" % sname_dict(build))
+                f.write("town_burghers = %d\n" % burghers)
+                f.write("demand_gold = %d\n" % gold)
+                f.write("demand_goods = %s\n" % sname_dict(goods))
+                f.write("demand_minutes = %.1f\n" % minutes)
             f.write('id = &"%s"\n' % pid)
     with open("data/worlds/kingdom.tres", "w") as f:
         f.write('[gd_resource type="Resource" script_class="WorldDef" format=3]\n\n')

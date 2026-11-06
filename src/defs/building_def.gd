@@ -38,6 +38,8 @@ extends GameDef
 @export var needs_terrain_near: StringName = &""
 ## Field tiles a farm may own (placed separately, 1x1 each).
 @export_range(0, 64) var max_fields: int = 0
+## Fields only on this terrain (a vineyard on vine soil, M6 part 3); empty = any farmable.
+@export var field_terrain: StringName = &""
 ## Seconds a sown field tile needs to ripen.
 @export_range(0.0, 3600.0) var field_grow_time: float = 0.0
 ## Path length (cost units) a service reaches from the entrance; 0 = no service.

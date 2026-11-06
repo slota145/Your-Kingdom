@@ -14,6 +14,10 @@ extends GameDef
 @export_range(0, 100) var weight: int = 0
 ## Basic needs block upgrades and make the house decline when unmet.
 @export var is_basic: bool = true
+## An extra need (wine, M6 part 3): not counted in the level's 100 points; while met it adds
+## its weight to happiness (still at most 100) and [member tax_bonus] to the tax.
+@export var extra: bool = false
+@export_range(0.0, 2.0) var tax_bonus: float = 0.0
 
 
 func get_kind() -> StringName:
