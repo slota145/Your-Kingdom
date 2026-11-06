@@ -10,7 +10,13 @@ const BOAT_PIVOT := Vector2(40, 46)
 const FRAMES := {&"idle": 1, &"row": 4, &"cast_net": 4, &"wait_net": 4, &"haul_net": 4}
 ## Ships with bigger frames (M5 part 2): frame size and the centre at the waterline. Their
 ## sheets have 8 rows (directions) and as many frames per row as fit (tools/render_cog.py).
-const BIG_FRAMES := {&"foreign_cog": [Vector2i(220, 220), Vector2(110, 168)]}
+const BIG_FRAMES := {&"foreign_cog": [Vector2i(220, 220), Vector2(110, 168)],
+		&"cog": [Vector2i(220, 220), Vector2(110, 168)]}
+## A big ship on the slipway (M5 part 3): build_<n>.png of the same frame size, one frame per
+## direction; the hull stands on keel blocks, this far (px) above the slipway centre.
+const SLIP_LIFT := 6.0
+## How far (tiles) a cog on the slipway lies past the slipway centre, towards the water.
+const COG_ON_SLIP := 0.9
 ## Gangway plank between a port's quay and a moored ship (M5 part 2).
 const PLANK := Color(0.55, 0.4, 0.25)
 const PLANK_EDGE := Color(0.3, 0.21, 0.13)
@@ -56,7 +62,9 @@ func _update_ships(alpha: float, time: float) -> void:
 		if sprite == null:
 			sprite = _sprite()
 			_ships[ship.id] = sprite
-		if BIG_FRAMES.has(ship.def.id):
+		# Over the horizon on a trade voyage (M5 part 3): not on the map.
+		sprite.visible = not ship.is_away()
+		if BIG_FRAMES.has(ship.def.art_id()):
 			_show_big(sprite, ship, alpha, time)
 			continue
 		var anim := _anim(ship)
@@ -74,9 +82,9 @@ func _update_ships(alpha: float, time: float) -> void:
 
 ## A cog: one sheet (ships/<id>/idle.png) whose frames rock it gently on the waves.
 func _show_big(sprite: Sprite2D, ship: ShipUnit, alpha: float, time: float) -> void:
-	var size: Vector2i = BIG_FRAMES[ship.def.id][0]
-	var pivot: Vector2 = BIG_FRAMES[ship.def.id][1]
-	var texture := _texture("ships/%s/idle.png" % ship.def.id)
+	var size: Vector2i = BIG_FRAMES[ship.def.art_id()][0]
+	var pivot: Vector2 = BIG_FRAMES[ship.def.art_id()][1]
+	var texture := _texture("ships/%s/idle.png" % ship.def.art_id())
 	sprite.texture = texture
 	var frames := maxi(texture.get_width() / size.x, 1) if texture != null else 1
 	sprite.hframes = frames
@@ -146,22 +154,46 @@ func _update_builds() -> void:
 			sprite = _sprite()
 			_builds[build.id] = sprite
 		sprite.visible = true
-		# Frame and keel while the first stage is worked on, the planked hull after it.
-		var shown := clampi(build.stage if not build.stage_started else build.stage, 0, 1)
+		# The stage being worked on: frame and keel, the planked hull, the mast with the sail
+		# (a boat has 2 stages, a cog 4; the cog's last one, the launch, slides it down).
+		var big := BIG_FRAMES.has(build.ship)
+		var shown := clampi(build.stage, 0, 2 if big else 1)
 		sprite.texture = _texture("ships/%s/build_%d.png" % [build.ship, shown])
 		sprite.hframes = 1
 		sprite.vframes = IsoMath.DIR_COUNT
 		# The slipway runs towards the berth: along +y as drawn, along +x mirrored.
 		var towards := shipyard.def.turned(Vector2i(0, 1), shipyard.orientation) - shipyard.def.turned(Vector2i.ZERO, shipyard.orientation)
 		var dir := IsoMath.screen_dir(Vector2(towards))
-		sprite.frame = maxi(dir, 0)
 		var slip := shipyard.def.water_tiles_at(shipyard.origin, shipyard.orientation)
 		var centre := Vector2.ZERO
 		for tile: Vector2i in slip:
 			centre += IsoMath.tile_center(tile)
 		centre /= maxf(slip.size(), 1.0)
-		sprite.position = IsoMath.grid_to_screen(centre) + Vector2(0, SLIP_SORT_OFFSET)
-		sprite.offset = -BOAT_PIVOT - Vector2(0, SLIP_SORT_OFFSET + 4.0)
+		if not big:
+			sprite.frame = maxi(dir, 0)
+			sprite.position = IsoMath.grid_to_screen(centre) + Vector2(0, SLIP_SORT_OFFSET)
+			sprite.offset = -BOAT_PIVOT - Vector2(0, SLIP_SORT_OFFSET + 4.0)
+			continue
+		# A cog lies along the slipway, bow to the water, sliding down at the launch.
+		sprite.frame = maxi(dir, 0)
+		var slide := 0.0
+		if build.stage >= 3 and build.stage_started:
+			slide = 1.0 - float(build.work_left) / maxf(build.stage_ticks, 1.0)
+		var berth := IsoMath.tile_center(shipyard.berth_tile())
+		# A cog is longer than the slipway: it lies with its stern at the shore end of the
+		# slipway and its bow over the water, so the workshop never covers the stern.
+		var start := centre + Vector2(towards) * COG_ON_SLIP
+		var at := start.lerp(berth, slide * slide)
+		var pivot: Vector2 = BIG_FRAMES[build.ship][1]
+		var lift := SLIP_LIFT * (1.0 - slide)
+		# Sorted just in front of the whole shipyard (its front corner, where the building
+		# sorts): the tall hull on its blocks is drawn over the slipway, the low jetty beside it
+		# and the workshop behind it.
+		var front := IsoMath.grid_to_screen(Vector2(shipyard.origin + shipyard.def.footprint)).y
+		var sort_y := maxf(front, IsoMath.grid_to_screen(at).y) + 1.0
+		var screen := IsoMath.grid_to_screen(at)
+		sprite.position = Vector2(screen.x, sort_y)
+		sprite.offset = -pivot - Vector2(0, sort_y - screen.y + lift)
 
 
 func _sprite() -> Sprite2D:

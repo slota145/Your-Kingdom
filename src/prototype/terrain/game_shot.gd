@@ -13,6 +13,11 @@ extends Node
 ## at the quay, goods on the quay yard and in the hold, dockers on the quay and the gangway,
 ## and foreign cogs sailing in 8 directions; --select=ship opens the cog's panel.
 ## --select=<building id> opens the panel of that building.
+## --advance=<seconds> runs the simulation that long first (M5 part 3: the landing on Coast).
+## --cog_stage=<0..3> (M5 part 3, map coast) puts a shipyard with the player's cog on its
+## slipway in that stage (3 = halfway down the slipway at the launch) and the player's cog
+## at anchor by a port with a voyage plan; --select=port shows the plan (--scroll=<px> scrolls
+## the panel down to it).
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -32,6 +37,10 @@ var _harbour: bool = false
 var _port: bool = false
 ## Building id whose panel is opened (--select=<id>).
 var _select: StringName = &""
+var _advance: int = 0
+## Scrolls the building panel down this far (px) before the shot (--scroll=N).
+var _scroll: int = 0
+var _cog_stage: int = -1
 
 
 func _ready() -> void:
@@ -55,6 +64,12 @@ func _ready() -> void:
 			_harbour = true
 		elif arg == "--port":
 			_port = true
+		elif arg.begins_with("--scroll="):
+			_scroll = int(arg.trim_prefix("--scroll="))
+		elif arg.begins_with("--advance="):
+			_advance = int(arg.trim_prefix("--advance="))
+		elif arg.begins_with("--cog_stage="):
+			_cog_stage = int(arg.trim_prefix("--cog_stage="))
 		elif arg.begins_with("--select="):
 			_select = StringName(arg.trim_prefix("--select="))
 	for arg: String in OS.get_cmdline_user_args():
@@ -68,6 +83,9 @@ func _process(_delta: float) -> void:
 	_frames += 1
 	if _frames == SETTLE_FRAMES:
 		_arrange()
+	elif _frames == SHOT_FRAMES - 5 and _scroll > 0:
+		var panel := _game.get("_building_panel") as BuildingPanel
+		(panel.get("_scroll") as ScrollContainer).scroll_vertical = _scroll
 	elif _frames == SHOT_FRAMES and not _shot_path.is_empty():
 		get_viewport().get_texture().get_image().save_png(_shot_path)
 		get_tree().quit()
@@ -78,6 +96,11 @@ func _arrange() -> void:
 	var camera: GameCamera = _game.get("camera")
 	var view: ProvinceView = _game.get("view")
 	view.terrain.organic = not _plain
+	if _advance > 0:
+		sim.run_ticks(SimClock.seconds_to_ticks(_advance))
+		sim.events.drain()
+	if _harbour or _port or _cog_stage >= 0:
+		sim.province.first_building = &""   # M5 part 3: no start from the ship in these shots
 	if _tile.x >= 0:
 		camera.position = IsoMath.tile_center_screen(_tile)
 	camera.set_zoom_index(_zoom)
@@ -116,6 +139,8 @@ func _arrange() -> void:
 		_place_harbour(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _port:
 		_place_port(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _cog_stage >= 0:
+		_place_cogs(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == _select:
 			(_game.get("_building_panel") as BuildingPanel).show_building(sim.province, b.id)
@@ -242,3 +267,36 @@ func _place_port(sim: Simulation, at: Vector2i) -> void:
 			placed += 1
 	if _select == &"ship":
 		(_game.get("_ship_panel") as ShipPanel).show_ship(province, cog.id)
+
+
+## The player's cog on a shipyard's slipway in stage _cog_stage and another one at anchor by
+## a port, with a voyage plan (M5 part 3).
+func _place_cogs(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	var shipyard := _place_near(sim, &"shipyard", at)
+	var port := _place_near(sim, &"port", at + Vector2i(-6, 4))
+	print("shipyard ", shipyard.origin if shipyard else null, " port ", port.origin if port else null)
+	if shipyard != null:
+		sim.execute(OrderShipCommand.new(shipyard.id, &"cog"))
+		var build := Ships.open_build(province, shipyard)
+		build.stage = _cog_stage
+		build.stage_started = true
+		build.work_left = build.stage_ticks / 2 if _cog_stage == 3 else build.stage_ticks
+		var wright := province.spawn_agent(&"shipwright", shipyard.entrance_tile())
+		wright.activity = &"hammer"
+		wright.facing = IsoMath.Dir.SW
+	if port != null:
+		var cog := Ships.launch(province, sim.data.get_ship(&"cog"), port)
+		cog.home_id = port.id
+		cog.dock_id = 0
+		cog.voyage.anchor = Voyage.anchorage(province, cog, port.berth_tile())
+		cog.pos = IsoMath.tile_center(cog.voyage.anchor)
+		cog.prev_pos = cog.pos
+		cog.facing = IsoMath.Dir.SW
+		cog.voyage.sell = {&"wood": 20, &"fish": 10}
+		cog.voyage.order = {&"cloth": 5}
+		cog.voyage.last_sold = 30
+		cog.voyage.last_earned = 105
+		cog.voyage.last_bought = 10
+		cog.voyage.last_spent = 90

@@ -19,6 +19,8 @@ const KIND_MERCHANT := &"merchant"
 const KIND_PARK := &"park"
 ## A worker aboard a ship whose trip ended at sea sailing it home (M5).
 const KIND_SAIL_HOME := &"sail_home"
+## A settler wading ashore from the ship that brought him (M5 part 3, bb "from", "to", "t").
+const KIND_LAND := &"land"
 
 var kind: StringName
 ## Recipe id for KIND_RECIPE.

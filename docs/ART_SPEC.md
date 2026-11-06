@@ -418,3 +418,10 @@ Narzędzie: `tools/generate_goods.gd`, wynik w `assets/goods/` i `assets/nature/
 - **Port** (`tools/generate_art.gd`): nabrzeże na palach na dwóch rzędach wody, żuraw portowy ze skrzynią na linie, beczki, pachołki cumownicze, latarnia i słupki bramy przy wejściu. **Kafle lądowe portu są w grafice przezroczyste:** plac portowy (deski) i stosy towarów rysuje widok (`QuayYard`), żeby budynek nigdy nie zasłaniał towaru czekającego na załadunek.
 - **Kupiec morski:** obca koga z prototypu w 8 kierunkach z delikatnym kołysaniem (`tools/render_cog.py <id> <kolor frakcji>`, ok. 3 min, Python z Pillow i numpy).
 - **Postać:** portowiec (chusta na głowie, fartuch, czynność `hand_over`: podaje towar na trapie).
+
+### 10.8 Koga gracza i obóz pionierów rysowane kodem (M5, część 3, 2026-11-06)
+
+- **Koga gracza:** ta sama koga co u kupca, w kolorze gracza (granat `46,84,168` na żaglu, tarczach i fladze): `python3 tools/render_cog.py cog 46,84,168`. Koga z osadnikami na starcie „Wybrzeża” używa tej samej grafiki (`ShipDef.art`).
+- **Etapy budowy na pochylni:** `python3 tools/render_cog.py cog 46,84,168 --stages` (ok. 10 min) rysuje `build_0.png` (stępka, dziobnica, rufa i wręgi), `build_1.png` (poszyty i osmołowany kadłub z kasztelami) i `build_2.png` (maszt z żaglem, liny, flaga, tarcze). Kadłub stoi na czterech klocach, cały nad wodą; czwarty etap, wodowanie, to w widoku zjazd kadłuba `build_2` z pochylni na wodę. Format jak arkusz pływającej kogi: 220×220, 8 wierszy kierunków, po jednej klatce.
+- **Obóz pionierów** (`tools/generate_art.gd`): chata z bali kryta strzechą, dwa płócienne namioty, ognisko z kociołkiem na trójnogu, sągi drewna, beczka, łopata i chorągiew.
+

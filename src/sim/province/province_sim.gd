@@ -55,6 +55,11 @@ var _pile_index: Dictionary[Vector2i, int] = {}
 var merchant: Merchant = Merchant.new()
 ## The sea merchant with his foreign cog (M5 part 2).
 var sea_merchant: SeaMerchant = SeaMerchant.new()
+## The start from a ship while it lasts (M5 part 3); null otherwise.
+var landing: Landing = null
+## Until a building of this id is placed, nothing else may be (the pioneer camp on a map that
+## starts by ship, M5 part 3); empty = anything.
+var first_building: StringName = &""
 ## Goods made and used per minute (statistics for the player, M4b-2); not saved.
 var ledger: GoodsLedger = GoodsLedger.new()
 ## Where newcomers enter the province.
@@ -109,11 +114,16 @@ func step() -> void:
 	if tick % GROW_CHECK_TICKS == 0:
 		_grow_saplings()
 		_regrow_nodes()
+		if landing != null:
+			landing.update(self)
+			if landing.is_over():
+				landing = null
 		Ships.update(self)
 		_breed_herds()
 		_update_markets()
 		merchant.update(self)
 		sea_merchant.update(self)
+		Voyage.update_all(self)
 		Harbour.update(self)
 		jobs.trim_yard_requests(self)
 	Population.update(self)
@@ -234,6 +244,10 @@ func load_map(map: MapDef) -> PackedStringArray:
 	entry_tile = map.entry_tile
 	treasury.gold = map.start_gold
 	rebuild_nav()
+	if map.start_by_ship:
+		first_building = map.first_building
+		landing = Landing.begin(self, map)
+		return problems
 	for start: StartBuildingDef in map.start_buildings:
 		var def := data.get_building(start.building)
 		var error := placement_error(def, start.origin)
@@ -281,6 +295,12 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 		return &"unknown_building"
 	if orientation < 0 or orientation >= def.orientation_count():
 		return &"bad_orientation"
+	if first_building != &"" and def.id != first_building:
+		return &"build_camp_first"
+	if def.unique:
+		for other: BuildingState in buildings.all():
+			if other.def == def:
+				return &"only_one"
 	var on_water := def.water_tiles_at(origin, orientation)
 	for tile: Vector2i in def.footprint_tiles(origin):
 		if not grid.is_inside(tile):
@@ -839,6 +859,8 @@ func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false,
 		orientation: int = 0, look: int = 0) -> BuildingState:
 	var building := BuildingState.new(ids.take(), def, origin, orientation)
 	building.look = look
+	if def.id == first_building:
+		first_building = &""
 	if not instant:
 		treasury.pay(def.gold_cost)
 	buildings.add(building)
@@ -1540,7 +1562,7 @@ func to_dict() -> Dictionary:
 	var paving_list: Array = []
 	for paving_site: PavingSite in paving.values():
 		paving_list.append(paving_site.to_dict())
-	return {
+	var d := {
 		"grid": grid.to_dict(),
 		"resources": resources.to_dict(),
 		"buildings": buildings.to_dict(),
@@ -1558,6 +1580,11 @@ func to_dict() -> Dictionary:
 		"jobs": jobs.to_dict(),
 		"path_queue": paths.to_dict(),
 	}
+	if landing != null:
+		d["landing"] = landing.to_dict()
+	if first_building != &"":
+		d["first_building"] = String(first_building)
+	return d
 
 
 func _ships_to_list() -> Array:
@@ -1608,6 +1635,9 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 		province.keep_for_building[StringName(String(good))] = int(keep[good])
 	province.merchant = Merchant.from_dict(d.get("merchant", {}), registry)
 	province.sea_merchant = SeaMerchant.from_dict(d.get("sea_merchant", {}))
+	if d.has("landing"):
+		province.landing = Landing.from_dict(d["landing"])
+	province.first_building = StringName(String(d.get("first_building", "")))
 	province.agents = AgentStore.from_dict(d["agents"])
 	for agent: Agent in province.agents.all():
 		if agent.task != null and not TaskRunner.restore_steps(province, agent.task):

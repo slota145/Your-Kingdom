@@ -261,6 +261,13 @@ const BUILDINGS := {
 		{"kind": "deck", "rect": [0.05, 1.9, 3.95, 3.95], "h": 6.0}],
 		"props": [["gate_posts", 3.55, 1.0], ["port_crane", 0.75, 2.55], ["barrels", 1.4, 2.35],
 			["bollard", 0.5, 3.75], ["bollard", 1.7, 3.75], ["bollard", 3.55, 3.75], ["lantern", 3.7, 2.2]]}],
+	# M5 part 3: the pioneer camp, the first building after a start from a ship: a log hut,
+	# canvas tents, a camp fire and the settlers' tools.
+	"pioneer_camp": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.55, 1.25], "h": 28.0, "rh": 18.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "logs", "roof": "thatch", "shutters": Color(0.35, 0.3, 0.25)}],
+		"props": [["tent", 2.35, 0.75], ["tent", 2.45, 2.0], ["log_stack", 0.55, 2.35], ["campfire", 1.35, 1.75],
+			["barrel", 0.35, 1.55], ["spade", 1.9, 0.4], ["banner", 0.2, 2.86]]}],
 	"well": [{"special": "well"}],
 	"market": [{"special": "market"}],
 	"stockpile": [{"special": "yard"}],
@@ -1063,6 +1070,35 @@ func _scaffold_image(back: bool = false) -> Dictionary:
 
 func _prop(img: Image, p: Vector2, prop: String) -> void:
 	match prop:
+		"tent":
+			# A ridge tent of canvas: the lit front triangle with a dark door flap and the
+			# side slope in shade (M5 part 3, pioneer camp).
+			var canvas := Color(0.86, 0.8, 0.64)
+			var apex := p + Vector2(-3, -24)
+			var back := p + Vector2(13, -31)
+			var side := PackedVector2Array([p + Vector2(7, 6), p + Vector2(23, -2), back, apex])
+			_fill(img, side, _lit(canvas, LIGHT_SE))
+			_outline(img, side, canvas.darkened(0.55))
+			var front := PackedVector2Array([p + Vector2(-13, 0), p + Vector2(7, 6), apex])
+			_fill(img, front, _lit(canvas, LIGHT_SW))
+			_outline(img, front, canvas.darkened(0.55))
+			_fill(img, PackedVector2Array([p + Vector2(-5, 3), p + Vector2(1, 5), apex + Vector2(0, 7)]),
+					canvas.darkened(0.45))
+			_line(img, apex, apex + Vector2(0, -4), C_BEAM, 1)
+			_line(img, p + Vector2(23, -2), p + Vector2(28, 1), C_BEAM.lightened(0.3), 1)
+		"campfire":
+			for i: int in 8:
+				var a := TAU * i / 8.0
+				_ellipse(img, p + Vector2(cos(a) * 7, sin(a) * 3.5), Vector2(2, 1.5), Color(0.5, 0.48, 0.45))
+			_line(img, p + Vector2(-5, -1), p + Vector2(5, 1), C_LOG, 2)
+			_line(img, p + Vector2(-4, 2), p + Vector2(4, -2), C_LOG.darkened(0.2), 2)
+			_ellipse(img, p + Vector2(0, -3), Vector2(3, 4), Color(0.95, 0.45, 0.12))
+			_ellipse(img, p + Vector2(0, -4), Vector2(1.5, 2.5), Color(1.0, 0.85, 0.35))
+			# A kettle on a tripod over the fire.
+			_line(img, p + Vector2(-7, 1), p + Vector2(0, -16), C_BEAM, 1)
+			_line(img, p + Vector2(7, 1), p + Vector2(0, -16), C_BEAM, 1)
+			_line(img, p + Vector2(0, -16), p + Vector2(0, -10), C_IRON, 1)
+			_ellipse(img, p + Vector2(0, -8), Vector2(3, 2.5), C_IRON.lightened(0.15))
 		"log_stack":
 			for row: int in 3:
 				for k: int in 4 - row:

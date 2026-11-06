@@ -431,3 +431,48 @@ func test_v9_save_gets_sea_merchant() -> void:
 	# No port: he does not come.
 	sim.run_ticks(SimFixture.ticks(5))
 	assert_int(trader.state).is_equal(SeaMerchant.State.AWAY)
+
+
+## A save written by save_version 11 (M5 part 3: the player's cog away over the horizon with
+## a sale of wood and an order of planks, a second cog on the slipway in its planking stage)
+## loads unchanged; the cog comes back with the planks and the gold, the second cog is
+## launched, and no goods are lost.
+func test_v11_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v11_voyage.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(11)
+	var state := SaveMigrations.migrate(document["state"], 11)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	var province := sim.province
+	var cog: ShipUnit = null
+	for ship: ShipUnit in province.ships.values():
+		if ship.voyage != null:
+			cog = ship
+	assert_object(cog).is_not_null()
+	assert_bool(cog.is_away()).is_true()
+	assert_int(province.ship_builds.size()).is_equal(1)
+	var planks := province.goods_total(&"planks") + cog.hold.total(&"planks")
+	var gold := sim.treasury.gold
+	var earned := cog.voyage.earned
+	assert_bool(SimFixture.run_until(sim, func() -> bool:
+		return cog.voyage.state == Voyage.State.IDLE and province.ship_builds.is_empty(),
+		Voyage.AWAY_TIME + 600.0)).is_true()
+	assert_int(cog.voyage.last_bought).is_equal(5)
+	assert_int(sim.treasury.gold).is_greater_equal(gold + earned - 60)
+	# The planks came home; the slipway used some for the second cog.
+	assert_int(province.goods_total(&"planks")).is_greater_equal(planks - 20)
+	assert_int(province.ships.size()).is_equal(2)
+	assert_array(Array(province.dangling_holds())).is_empty()
+
+
+## M5 part 2 port (v10): after the migration (nothing to add) the save plays on unchanged.
+func test_v10_save_migrates_to_v11() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v10_port.json"))
+	var state := SaveMigrations.migrate(document["state"], 10)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_object(sim.province.landing).is_null()
+	assert_str(String(sim.province.first_building)).is_empty()
+	for ship: ShipUnit in sim.province.ships.values():
+		assert_object(ship.voyage).is_null()

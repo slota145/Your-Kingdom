@@ -32,6 +32,16 @@ func on_sim_event(event: Dictionary) -> void:
 	if type == &"sea_merchant_left" and int(event.get("earned", 0)) + int(event.get("spent", 0)) > 0:
 		push(tr("ui.note.sea_merchant_left") % [int(event["earned"]), int(event["spent"])])
 		return
+	# M5 part 3: the start from a ship and the cog's voyages.
+	if type == &"landing_anchored":
+		push(tr("ui.note.landing"))
+		return
+	if type == &"voyage_departed":
+		push(tr("ui.note.voyage_departed"))
+		return
+	if type == &"voyage_returned":
+		push(tr("ui.note.voyage_returned") % int(event.get("gold", 0)))
+		return
 	if type == &"merchant_left" and int(event.get("earned", 0)) > 0:
 		push(tr("ui.note.merchant_left") % int(event["earned"]))
 		return

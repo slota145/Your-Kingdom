@@ -54,7 +54,8 @@ func test_shipyard_builds_a_boat_with_materials_from_porters() -> void:
 	var stock: BuildingState = scene["stock"]
 	var shipyard := SimFixture.place(sim, &"shipyard", Vector2i(20, 28))
 	_worker(sim, shipyard, &"shipwright")
-	assert_str(String(sim.execute(OrderShipCommand.new(shipyard.id, &"cog")))).is_equal("ship_not_built_here")
+	# M5 part 3: cogs too; a fishing wharf's boat is not built at a port.
+	assert_str(String(sim.execute(OrderShipCommand.new(shipyard.id, &"foreign_cog")))).is_equal("ship_not_built_here")
 	assert_str(String(sim.execute(OrderShipCommand.new(shipyard.id, &"fishing_boat")))).is_empty()
 	var province := sim.province
 	var stages := {}

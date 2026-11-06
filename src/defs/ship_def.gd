@@ -16,6 +16,22 @@ extends GameDef
 @export_range(1.0, 3600.0) var build_time: float = 60.0
 ## Visible building stages on the slipway (frame, planking, mast with sail...).
 @export_range(1, 8) var stages: int = 2
+## Goods of each stage when they are not split evenly (the cog, M5 part 3: the frame takes
+## planks, the planking planks and tar, the mast cloth for the sail, the launch tar); one
+## dictionary per stage, summing to [member build_cost]. Empty = split evenly.
+@export var stage_goods: Array[Dictionary] = []
+## A trading ship of the player (the cog, M5 part 3): it has a home port, waits at anchor
+## and sails on trade voyages over the horizon (Voyage).
+@export var trades: bool = false
+
+
+## Art folder in assets/ships when it differs from the id (the settlers' ship looks like the
+## player's cog).
+@export var art: StringName = &""
+
+
+func art_id() -> StringName:
+	return art if art != &"" else id
 
 
 func get_kind() -> StringName:
@@ -26,6 +42,10 @@ func get_kind() -> StringName:
 ## stages taking the remainder.
 func stage_cost(stage: int) -> Dictionary[StringName, int]:
 	var result: Dictionary[StringName, int] = {}
+	if stage < stage_goods.size():
+		for good: Variant in stage_goods[stage]:
+			result[StringName(String(good))] = int(stage_goods[stage][good])
+		return result
 	for good: StringName in build_cost:
 		var total := build_cost[good]
 		var amount := total / stages + (1 if stage < total % stages else 0)

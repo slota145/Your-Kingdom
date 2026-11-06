@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 10
+const CURRENT_VERSION := 11
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -37,6 +37,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 10:
 		result = migrate_v9_to_v10(result)
 		version = 10
+	if version < 11:
+		result = migrate_v10_to_v11(result)
+		version = 11
 	return result
 
 
@@ -146,4 +149,11 @@ static func migrate_v8_to_v9(state: Dictionary) -> Dictionary:
 static func migrate_v9_to_v10(state: Dictionary) -> Dictionary:
 	var province: Dictionary = state["province"]
 	province["sea_merchant"] = {"state": 0, "next": 0}
+	return state
+
+
+## v11 (M5 part 3): the player's cog keeps its voyage (plan, anchorage, state) under
+## "voyage", a start from a ship its landing under "landing" and the building to place first
+## under "first_building". Older saves have no player's cog and no landing: nothing to add.
+static func migrate_v10_to_v11(state: Dictionary) -> Dictionary:
 	return state

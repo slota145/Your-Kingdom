@@ -24,6 +24,8 @@ var crew: int = 0
 ## What it is doing, for the view: &"idle", &"sail", or the crew's work (&"cast_net"...).
 var activity: StringName = &"idle"
 var hold: Stockpile
+## Voyages of a trading ship (the player's cog, M5 part 3); null for other ships.
+var voyage: Voyage = null
 
 var path_state: PathState = PathState.NONE
 var path_goal: Vector2i = Agent.NO_TILE
@@ -38,10 +40,17 @@ func _init(entity_id: int, ship_def: ShipDef, at: Vector2, data: DataRegistry) -
 	prev_pos = at
 	hold = Stockpile.new(ship_def.hold_slots, data)
 	hold.stack_limit = ship_def.hold_stack
+	if ship_def.trades:
+		voyage = Voyage.new()
 
 
 func tile() -> Vector2i:
 	return Vector2i(floori(pos.x), floori(pos.y))
+
+
+## Over the horizon on a trade voyage: not on the map (M5 part 3).
+func is_away() -> bool:
+	return voyage != null and voyage.is_away()
 
 
 func is_moored() -> bool:
@@ -65,6 +74,8 @@ func to_dict() -> Dictionary:
 		d["berth"] = berth_id
 	if not hold.is_empty() or hold.reservation_count() > 0:
 		d["hold"] = hold.to_dict()
+	if voyage != null:
+		d["voyage"] = voyage.to_dict()
 	return d
 
 
@@ -85,4 +96,6 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> ShipUnit:
 	if d.has("hold"):
 		ship.hold = Stockpile.from_dict(d["hold"], data)
 		ship.hold.stack_limit = ship.def.hold_stack
+	if ship.def.trades:
+		ship.voyage = Voyage.from_dict(d.get("voyage", {}))
 	return ship

@@ -15,7 +15,7 @@ const TABS: Array[Dictionary] = [
 			&"slaughterhouse"]},
 	{"id": &"drink", "buildings": [&"hop_farm", &"brewery", &"apiary", &"meadery"]},
 	{"id": &"textiles", "buildings": [&"sheep_farm", &"weaver", &"tailor"]},
-	{"id": &"storage", "buildings": [&"stockpile", &"town_hall", &"stable"]},
+	{"id": &"storage", "buildings": [&"pioneer_camp", &"stockpile", &"town_hall", &"stable"]},
 	{"id": &"harbour", "buildings": [&"tar_kiln", &"shipyard", &"fishing_wharf", &"port"]},
 ]
 const ICON_SIZE := Vector2(72, 56)
@@ -23,6 +23,10 @@ const ICON_SIZE := Vector2(72, 56)
 var _tab_buttons: Array[Button] = []
 var _rows: Array[Control] = []
 var _rotate_hint: Label
+## Building buttons by building id.
+var _buttons: Dictionary[StringName, Button] = {}
+## The only building allowed now (a start from a ship: the pioneer camp first, M5 part 3).
+var _locked_to: StringName = &""
 
 
 func setup(registry: DataRegistry) -> void:
@@ -63,8 +67,25 @@ func setup(registry: DataRegistry) -> void:
 		for id: StringName in tab["buildings"]:
 			var def := registry.get_building(id)
 			if def != null:
-				row.add_child(_building_button(def))
+				var button := _building_button(def)
+				_buttons[id] = button
+				row.add_child(button)
 	_show_tab(0)
+
+
+## Until [param only] is placed, the menu offers nothing else (M5 part 3: on a map that
+## starts from a ship, the pioneer camp first); empty = everything. Cheap when unchanged.
+func lock_to(only: StringName) -> void:
+	if only == _locked_to:
+		return
+	_locked_to = only
+	for id: StringName in _buttons:
+		_buttons[id].visible = only == &"" or id == only
+	for i: int in TABS.size():
+		var has := only == &"" or (TABS[i]["buildings"] as Array).has(only)
+		_tab_buttons[i].visible = has
+		if only != &"" and has:
+			_show_tab(i)
 
 
 ## Shows the hint about turning buildings with R while one is being placed (M4b-1.5).

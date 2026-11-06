@@ -12,6 +12,17 @@ extends GameDef
 @export_range(0, 99999) var start_gold: int = 0
 ## Single resource nodes placed on top of the terrain (rock outcrops): tile -> node id.
 @export var resource_spots: Dictionary[Vector2i, StringName] = {}
+## Start from a ship (M5 part 3): no buildings stand; a cog anchors at [member landing_tile]
+## (deep water), the settlers wade to [member beach_tile] and the start kit lies there.
+@export var start_by_ship: bool = false
+@export var landing_tile: Vector2i = Vector2i(-1, -1)
+@export var beach_tile: Vector2i = Vector2i(-1, -1)
+## Kinds of the settlers aboard, in the order they come ashore.
+@export var start_settlers: Array[StringName] = []
+## The start kit on the beach: good -> units.
+@export var start_pile: Dictionary[StringName, int] = {}
+## The only building the player may place until it stands (the pioneer camp); empty = any.
+@export var first_building: StringName = &""
 
 
 func get_kind() -> StringName:

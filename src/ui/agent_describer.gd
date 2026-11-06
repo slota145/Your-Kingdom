@@ -31,6 +31,8 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 	var walking := agent.path_state == Agent.PathState.MOVING or agent.path_state == Agent.PathState.WAITING
 	if not walking and agent.activity != &"idle" and agent.activity != &"walk":
 		return _with_progress(_t("ui.activity.%s" % agent.activity), task, step)
+	if task.kind == Task.KIND_LAND:
+		return _t("ui.doing.wade_ashore")
 	if task.kind == Task.KIND_MOVE_IN:
 		return _f("ui.doing.move_in", [_building_name(province, agent.home_id)])
 	if task.kind == Task.KIND_PARK:

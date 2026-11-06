@@ -53,13 +53,28 @@ var _ship_orders: HFlowContainer
 var _ship_queue: VBoxContainer
 var _ship_queue_shown: Array[StringName] = []
 var _ship_shown_for: int = 0
+## Port (M5 part 3): the voyage plan of its cog.
+var _voyage: VoyagePanel
 var _timer: float = 0.0
+
+
+## Room kept below the panel (build bar) when it is taller than the screen.
+const BOTTOM_MARGIN := 150.0
+
+## Scrolls the panel when it does not fit on the screen (a port with its voyage plan, M5 part 3).
+var _scroll: ScrollContainer
+var _box: VBoxContainer
 
 
 func _init() -> void:
 	custom_minimum_size.x = UiKit.PANEL_WIDTH
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	add_child(_scroll)
 	var box := VBoxContainer.new()
-	add_child(box)
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_box = box
+	_scroll.add_child(box)
 	_title = UiKit.title()
 	box.add_child(_title)
 	_body = UiKit.label()
@@ -162,6 +177,9 @@ func _build_settings(box: VBoxContainer) -> void:
 	_ship_box.add_child(_ship_orders)
 	_ship_queue = VBoxContainer.new()
 	_ship_box.add_child(_ship_queue)
+	_voyage = VoyagePanel.new()
+	_voyage.command_requested.connect(func(command: Command) -> void: command_requested.emit(command))
+	box.add_child(_voyage)
 
 
 func show_building(source: ProvinceSim, id: int) -> void:
@@ -178,6 +196,8 @@ func _process(delta: float) -> void:
 	_timer += delta
 	if _timer >= REFRESH:
 		_refresh()
+	var room := maxf(get_viewport_rect().size.y - position.y - BOTTOM_MARGIN, 120.0)
+	_scroll.custom_minimum_size = Vector2(UiKit.PANEL_WIDTH, minf(_box.get_combined_minimum_size().y, room))
 
 
 func _refresh() -> void:
@@ -270,7 +290,11 @@ func _refresh_settings(b: BuildingState) -> void:
 				or province.stored(&"planks") < int(Carriers.HANDCART_COST[&"planks"])
 	_refresh_keep(b)
 	_refresh_ships(b)
-	_tax_box.visible = b.def.id == TOWN_HALL and b.is_complete() and treasury != null
+	_voyage.visible = b.def.is_port() and b.is_complete()
+	if _voyage.visible:
+		_voyage.refresh(province, b)
+	# The pioneer camp has the town hall's tax rate until a town hall stands (M5 part 3).
+	_tax_box.visible = (b.def.id == TOWN_HALL or b.def.id == &"pioneer_camp") and b.is_complete() and treasury != null
 	if _tax_box.visible:
 		_tax_label.text = tr("ui.tax.title") % tr("ui.tax.%s" % ["low", "normal", "high"][treasury.tax_rate])
 

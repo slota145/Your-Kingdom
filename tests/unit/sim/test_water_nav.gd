@@ -106,20 +106,20 @@ func test_coast_map_loads_with_sea_beach_bay_and_shoals() -> void:
 	assert_int(int(counts.get(&"sand", 0))).is_greater(300)
 	assert_int(int(counts.get(&"water", 0))).is_greater(100)   # the river
 	assert_int(shoals).is_greater_equal(10)
-	var hall: BuildingState = null
-	for b: BuildingState in province.buildings.all():
-		if b.def.id == &"town_hall":
-			hall = b
-	assert_object(hall).is_not_null()
-	assert_array(province.find_path(province.entry_tile, hall.door_front_tile())).is_not_empty()
-	# A shipyard and a fishing wharf fit on the bay shore not far from the town, and a cog
+	# M5 part 3: the game starts from a ship; the beach is reachable from the way in.
+	assert_int(province.buildings.count()).is_equal(0)
+	assert_object(province.landing).is_not_null()
+	var beach := province.landing.beach
+	assert_array(province.find_path(province.entry_tile, beach)).is_not_empty()
+	# A shipyard and a fishing wharf fit on the bay shore not far from the beach, and a cog
 	# can sail from the shipyard out to the open sea.
+	province.first_building = &""
 	for id: StringName in [&"shipyard", &"fishing_wharf"]:
 		var def := registry.get_def(&"building", id) as BuildingDef
 		var spot := Agent.NO_TILE
 		for y: int in range(48, 90):
 			for x: int in range(60, 100):
-				if spot == Agent.NO_TILE and (Vector2i(x, y) - hall.origin).length() < 30 \
+				if spot == Agent.NO_TILE and (Vector2i(x, y) - beach).length() < 30 \
 						and province.placement_error(def, Vector2i(x, y)) == &"":
 					spot = Vector2i(x, y)
 		assert_vector(spot).override_failure_message("no place for %s" % id).is_not_equal(Agent.NO_TILE)

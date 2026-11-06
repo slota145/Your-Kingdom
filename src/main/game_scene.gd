@@ -99,6 +99,8 @@ func _start(simulation: Simulation) -> void:
 
 
 func _start_tile() -> Vector2i:
+	if sim.province.landing != null:
+		return sim.province.landing.beach   # a start from a ship (M5 part 3)
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == &"town_hall":
 			return b.origin + b.def.footprint
@@ -194,6 +196,7 @@ func _process(delta: float) -> void:
 	if sim == null:
 		return
 	_time += delta
+	_build.lock_to(sim.province.first_building)
 	view.update_view(Game.alpha(), camera.visible_world_rect(), _time, delta)
 	if _follow_id != 0:
 		var agent := sim.province.agents.get_agent(_follow_id)
@@ -478,6 +481,8 @@ func _ship_at(world_pos: Vector2) -> int:
 	var best := 0
 	var best_d := SHIP_PICK_RADIUS
 	for ship: ShipUnit in sim.province.ships.values():
+		if ship.is_away():
+			continue
 		var at := IsoMath.grid_to_screen(ship.prev_pos.lerp(ship.pos, Game.alpha()))
 		# The hull and the sail above it.
 		var body := Vector2(at.x, clampf(world_pos.y, at.y - SHIP_PICK_HEIGHT, at.y))
