@@ -591,7 +591,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## M6 — Mapa świata i prowincje
 
-**Status: plan gotowy 2026-11-06 (ankieta z właścicielem projektu), czeka na akceptację. Start przed oceną gry M4b-2, M4b-3 i M5 (decyzja właściciela); oceny zrobimy razem, a poprawki z nich mają pierwszeństwo przed dalszą pracą nad M6.**
+**Status: plan zaakceptowany 2026-11-06 (ankieta z właścicielem projektu). Następny krok: część 1 (świat i tryb uproszczony). Start przed oceną gry M4b-2, M4b-3 i M5 (decyzja właściciela); oceny zrobimy razem, a poprawki z nich mają pierwszeństwo przed dalszą pracą nad M6.**
 
 **Decyzje (2026-11-06, ankieta z właścicielem projektu):**
 - **Mały świat ręcznie ułożony: 9 prowincji.** Pełny świat sandbox (20–40 prowincji) i generator świata zostają w M8.
