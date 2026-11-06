@@ -591,6 +591,8 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## M6 — Mapa świata i prowincje
 
+**Status: start 2026-11-06 (decyzja właściciela) przed oceną gry M4b-2, M4b-3 i M5; oceny zrobimy razem, a poprawki z nich mają pierwszeństwo. Pierwszy krok: plan etapu z ankietą.**
+
 **Zakres:**
 - graf prowincji, ekran mapy świata,
 - przełączanie prowincji,
