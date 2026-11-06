@@ -51,6 +51,7 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
     - Do przemyślenia: czy kontynent jest zupełnie pusty, czy są na nim osady neutralne i władcy AI, którzy przybyli wcześniej.
     - Koszt: mały do średniego (zależy od tego, kiedy). Ryzyko: małe.
   - Decyzja właściciela projektu (2026-11-05): na razie tylko pomysł, bez zmian w planie.
+  - **Przyjęte częściowo do M5 (ankieta 2026-11-06):** prosty start ze statku na mapie „Wybrzeże” (koga wyładowuje osadników i zestaw, gracz stawia ratusz). Kolonizacja kolejnych prowincji w M6.
 
 - [gracz] **Fikcyjne okręty w stylu Anno i drzewko rozwoju okrętów:** zamiast samej kogi mamy okręty fikcyjne, inspirowane prawdziwymi okresami: od kogi przez karawelę i karakę aż po duży okręt podobny do galeonu. Zamiast armat ma balisty i skorpiony. Na koniec drzewka mógłby się pojawić galeon z armatami (2026-11-05). Bez decyzji.
   - Ocena (Claude):
@@ -59,6 +60,7 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
     - **Uwaga na armaty:** jeśli są na okręcie, gracz zapyta, czemu nie ma ich w zamku. Proch zmienia też sens murów i oblężeń, czyli serca gry. Bezpieczniej zakończyć drzewko wielkim okrętem z ciężkimi balistami, a armaty potraktować jako osobną, późną decyzję dla całej gry (ląd i morze razem).
     - Koszt: średni (każdy okręt to grafika z animacją kołysania, budowa w stoczni etapami i dane jednostki). Kiedy: M5.
     - Zmieni GDD §5.4 (rodzaje statków), gdy właściciel projektu zdecyduje.
+  - **M5 (ankieta 2026-11-06):** tylko łódź rybacka i koga. Karawela, karaka i wielki okręt czekają na decyzję o kolejnym etapie.
   - Prototyp (2026-11-05, `src/prototype/ships/`): koga narysowana kodem w 8 kierunkach (bryły 3D „fotografowane” w rzucie izometrycznym), z kasztelem z blankami, tarczami i pasiastym żaglem w kolorze frakcji (magenta). Wszystkie kierunki są spójne, a kolejne okręty drzewka da się zrobić, zmieniając wymiary i części w skrypcie.
 
 - [gracz] **Stopnie transportu:** tragarz niesie 1 sztukę, mały wózek ręczny 3, duży wóz konny 5–6.
@@ -83,6 +85,7 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
   - **Przyjęte do M4a (2026-11-05):** 2 tragarzy na magazyn (ROADMAP, M4).
 - [gracz] **Kutry rybackie na morzu:** w M4a ryby łowi wędkarz przy rzece. Później chcę też kutry na morzu, wydajniejsze od wędkarza (2026-11-05).
   - Ocena (Claude): dobra ścieżka rozwoju: tani wędkarz na start, droższy kuter z portem i stocznią dla większego miasta. Naturalny etap: M5 (woda, porty i statki). Zmieni GDD §5.4 (dziś jest tam „łódź rybacka” przypisana do rybaka).
+  - **Przyjęte do M5 (ankieta 2026-11-06):** przystań rybacka nad morzem z łodzią ze stoczni; wędkarz zostaje.
 
 - [Claude] **Leśniczy (sadzenie drzew):** automatyczny gracz w M4a pokazał, że lasy przy mieście znikają po ok. 45 minutach, a drwale stoją („brak drzew”). Leśniczy sadzi sadzonki w zasięgu, które po kilku minutach rosną w drzewa.
   - Ocena: koszt średni (nowy krok „sadź”, wzrost węzła jak pole). Bardzo pasuje do immersji i daje graczowi decyzję o lesie.

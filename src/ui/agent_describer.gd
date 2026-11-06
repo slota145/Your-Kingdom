@@ -62,6 +62,12 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 		return _t("ui.doing.go_to_work")
 	if step is FieldStepDef:
 		return _t("ui.doing.go_to_field")
+	if step is SailStepDef:
+		if agent.vehicle != Ships.ABOARD:
+			return _t("ui.doing.go_to_boat")
+		return _t("ui.doing.sail_home" if (step as SailStepDef).target == &"home" else "ui.doing.sail_out")
+	if step is ShipBuildStepDef:
+		return _t("ui.doing.go_to_work")
 	return _t("ui.doing.walk")
 
 
@@ -87,6 +93,8 @@ static func _storage_name(province: ProvinceSim, id: int) -> String:
 		return _t("ui.doing.paving")
 	if province.piles.has(id):
 		return _t("ui.doing.ground")
+	if province.ship_builds.has(id):
+		return _f("ui.doing.slipway_of", [_building_name(province, province.ship_builds[id].shipyard_id)])
 	if id < 0:
 		return _t("ui.doing.yard")
 	return _building_name(province, id)

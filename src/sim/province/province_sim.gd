@@ -15,6 +15,15 @@ var grid: TileGrid
 var nav: NavGrid
 ## Road tiles only, for horse wagons (M4b-3): every other tile is solid.
 var road_nav: NavGrid
+## Water for ships (M5): boats sail on shallow and deep sea, cogs on deep sea and fairways.
+var boat_nav: NavGrid
+var cog_nav: NavGrid
+## Shallow tiles dredged from a berth to deep water (Ships.fairway_tiles); derived, not saved.
+var fairway: Dictionary[Vector2i, bool] = {}
+## Ships on the water by entity id (M5).
+var ships: Dictionary[int, ShipUnit] = {}
+## Ships on shipyard slipways by entity id (M5).
+var ship_builds: Dictionary[int, ShipBuild] = {}
 var resources: ResourceField
 var buildings: BuildingStore = BuildingStore.new()
 var agents: AgentStore = AgentStore.new()
@@ -72,6 +81,10 @@ func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entit
 	nav = NavGrid.new(size)
 	road_nav = NavGrid.new(size)
 	road_nav.set_solid_rect(Rect2i(Vector2i.ZERO, size), true)
+	boat_nav = NavGrid.new(size)
+	boat_nav.set_solid_rect(Rect2i(Vector2i.ZERO, size), true)
+	cog_nav = NavGrid.new(size)
+	cog_nav.set_solid_rect(Rect2i(Vector2i.ZERO, size), true)
 	resources = ResourceField.new(size)
 	terrains = registry.terrains_by_index()
 	coverage.setup(size)
@@ -89,9 +102,12 @@ func step() -> void:
 			TaskRunner.tick_agent(self, agent)
 	Movement.serve_paths(self)
 	Movement.move_all(self)
+	Ships.move_all(self)
 	_remove_empty_piles()
 	if tick % GROW_CHECK_TICKS == 0:
 		_grow_saplings()
+		_regrow_nodes()
+		Ships.update(self)
 		_breed_herds()
 		_update_markets()
 		merchant.update(self)
@@ -150,6 +166,32 @@ func refresh_tile(tile: Vector2i) -> void:
 	road_nav.set_solid(tile, not on_road)
 	if on_road and not is_equal_approx(road_nav.get_cost(tile), cost):
 		road_nav.set_cost(tile, cost)
+	var depth := sail_depth(tile)
+	var open_water := depth > 0 and grid.occupant(tile) == 0 and not grid.is_blocked(tile)
+	boat_nav.set_solid(tile, not open_water)
+	cog_nav.set_solid(tile, not (open_water and (depth >= 2 or fairway.has(tile))))
+
+
+## Which ships sail on [param tile] (TerrainDef.sail_depth): 0 none, 1 boats, 2 boats and cogs.
+func sail_depth(tile: Vector2i) -> int:
+	var terrain := terrain_at(tile)
+	return terrain.sail_depth if terrain != null else 0
+
+
+## Recomputes the fairways after a building with a berth came or went; tiles that changed
+## update the cog NavGrid.
+func refresh_fairways() -> void:
+	var fresh := Ships.fairway_tiles(self)
+	var changed: Array[Vector2i] = []
+	for tile: Vector2i in fresh:
+		if not fairway.has(tile):
+			changed.append(tile)
+	for tile: Vector2i in fairway:
+		if not fresh.has(tile):
+			changed.append(tile)
+	fairway = fresh
+	for tile: Vector2i in changed:
+		refresh_tile(tile)
 
 
 ## Terrain from a map image (pixel colour -> TerrainDef.map_color), trees on forest, and the
@@ -235,11 +277,15 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 		return &"unknown_building"
 	if orientation < 0 or orientation >= def.orientation_count():
 		return &"bad_orientation"
+	var on_water := def.water_tiles_at(origin, orientation)
 	for tile: Vector2i in def.footprint_tiles(origin):
 		if not grid.is_inside(tile):
 			return &"outside_map"
 		var terrain := terrain_at(tile)
-		if terrain != null and not terrain.buildable:
+		if on_water.has(tile):
+			if sail_depth(tile) == 0:
+				return &"needs_sea"
+		elif terrain != null and not terrain.buildable:
 			return &"terrain_not_buildable"
 		if grid.is_blocked(tile) or grid.occupant(tile) != 0 or resources.has_node(tile):
 			return &"tile_occupied"
@@ -247,6 +293,16 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 			return &"tile_occupied"
 	if def.needs_terrain_near != &"" and not has_terrain_near(def, origin):
 		return StringName("no_%s_nearby" % def.needs_terrain_near)
+	if def.has_berth():
+		var berth := def.berth_at(origin, orientation)
+		if not grid.is_inside(berth) or sail_depth(berth) == 0 or grid.occupant(berth) != 0:
+			return &"no_berth"
+		if def.berth_fairway and Ships.fairway_from(self, berth).is_empty() and sail_depth(berth) < 2:
+			return &"no_deep_water"
+	var area := Rect2i(origin, def.footprint)
+	for ship: ShipUnit in ships.values():
+		if area.has_point(ship.tile()):
+			return &"tile_has_ship"
 	var entrances: Array[Vector2i] = []
 	for o: int in def.door_orientations(orientation):
 		entrances.append(origin + def.entrance_at(o))
@@ -435,6 +491,9 @@ func road_stop(id: int, near: Vector2i = Agent.NO_TILE) -> Vector2i:
 	var site := sites.get(id) as ConstructionSite
 	if site != null:
 		building = buildings.get_building(site.building_id)
+	var build := ship_builds.get(id) as ShipBuild
+	if build != null:
+		building = buildings.get_building(build.shipyard_id)
 	if building != null:
 		var best := Agent.NO_TILE
 		var best_d := 1 << 30
@@ -746,6 +805,16 @@ func _breed_herds() -> void:
 			events.emit(&"animal_born", {"building": building.id, "good": good, "herd": herd + 1})
 
 
+## Nodes that grow back (fish shoals, M5) gain a unit on the ticks their regrow time divides.
+func _regrow_nodes() -> void:
+	for def: ResourceNodeDef in resources.regrowing_kinds():
+		var every := maxi(SimClock.seconds_to_ticks(def.regrow_time), 1)
+		if tick % every != 0:
+			continue
+		for tile: Vector2i in resources.regrow(def):
+			events.emit(&"resource_regrown", {"tile": tile, "node": def.id})
+
+
 ## Grows due saplings into trees (walkable, so people standing there are not trapped).
 func _grow_saplings() -> void:
 	if resources.growing_count() == 0:
@@ -781,6 +850,8 @@ func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false,
 	else:
 		building.under_construction = true
 		Construction.open_build_site(self, building)
+	if def.berth_fairway:
+		refresh_fairways()
 	return building
 
 
@@ -808,10 +879,21 @@ func remove_building(id: int) -> void:
 		if agent.task != null and (absi(int(agent.task.bb.get("_src", 0))) == id \
 				or absi(int(agent.task.bb.get("_dst", 0))) == id):
 			TaskRunner.fail(self, agent)
+	Ships.on_building_removed(self, id)
 	var tiles := building.tiles()
 	for tile: Vector2i in tiles:
 		grid.set_occupant(tile, 0)
 		refresh_tile(tile)
+	if building.def.berth_fairway:
+		refresh_fairways()
+	# Goods of a building on the water go on its land tiles.
+	var on_water := building.def.water_tiles_at(building.origin, building.orientation)
+	var land: Array[Vector2i] = []
+	for tile: Vector2i in tiles:
+		if not on_water.has(tile):
+			land.append(tile)
+	if not land.is_empty():
+		tiles = land
 	var i := 0
 	for store: Stockpile in [building.stock, building.supply, building.yard]:
 		if store == null:
@@ -1008,6 +1090,8 @@ func remove_agent(agent: Agent) -> void:
 	if agent.task != null:
 		TaskRunner.fail(self, agent)
 	release_agent(agent)
+	if agent.vehicle == Ships.ABOARD:
+		Ships.leave_ship(self, agent)
 	drop_carried(agent)
 	var workplace := buildings.get_building(agent.workplace_id)
 	if workplace != null:
@@ -1033,6 +1117,10 @@ func release_agent(agent: Agent) -> void:
 		site.stock.release_owner(agent.id)
 	for paving_site: PavingSite in paving.values():
 		paving_site.stock.release_owner(agent.id)
+	for build: ShipBuild in ship_builds.values():
+		build.stock.release_owner(agent.id)
+	for ship: ShipUnit in ships.values():
+		ship.hold.release_owner(agent.id)
 	for pile: GroundPile in piles.values():
 		pile.stock.release_owner(agent.id)
 	if merchant.wagon != null:
@@ -1079,6 +1167,12 @@ func storage(id: int) -> Stockpile:
 	var pile := piles.get(id) as GroundPile
 	if pile != null:
 		return pile.stock
+	var build := ship_builds.get(id) as ShipBuild
+	if build != null:
+		return build.stock
+	var ship := ships.get(id) as ShipUnit
+	if ship != null:
+		return ship.hold
 	return merchant.wagon if id == merchant.wagon_id and merchant.wagon != null else null
 
 
@@ -1099,6 +1193,10 @@ func all_storages() -> Dictionary[int, Stockpile]:
 		result[pile.id] = pile.stock
 	if merchant.wagon != null:
 		result[merchant.wagon_id] = merchant.wagon
+	for build: ShipBuild in ship_builds.values():
+		result[build.id] = build.stock
+	for ship: ShipUnit in ships.values():
+		result[ship.id] = ship.hold
 	return result
 
 
@@ -1108,7 +1206,7 @@ func accepts_deliveries(id: int) -> bool:
 	var building := buildings.get_building(id)
 	if building != null:
 		return building.stock != null or building.supply != null
-	return sites.has(id) or paving.has(id)
+	return sites.has(id) or paving.has(id) or ship_builds.has(id)
 
 
 func access_tile(id: int) -> Vector2i:
@@ -1125,6 +1223,10 @@ func access_tile(id: int) -> Vector2i:
 	var pile := piles.get(id) as GroundPile
 	if pile != null:
 		return pile.tile
+	var build := ship_builds.get(id) as ShipBuild
+	if build != null:
+		var shipyard := buildings.get_building(build.shipyard_id)
+		return shipyard.entrance_tile() if shipyard != null else Agent.NO_TILE
 	return merchant.stand if id == merchant.wagon_id and merchant.wagon != null else Agent.NO_TILE
 
 
@@ -1436,6 +1538,8 @@ func to_dict() -> Dictionary:
 		"piles": pile_list,
 		"sites": site_list,
 		"paving": paving_list,
+		"ships": _ships_to_list(),
+		"ship_builds": _ship_builds_to_list(),
 		"fields": fields.to_dict(),
 		"entry": SimCodec.vec2i(entry_tile),
 		"keep_for_building": _keep_to_dict(),
@@ -1444,6 +1548,20 @@ func to_dict() -> Dictionary:
 		"jobs": jobs.to_dict(),
 		"path_queue": paths.to_dict(),
 	}
+
+
+func _ships_to_list() -> Array:
+	var list: Array = []
+	for ship: ShipUnit in ships.values():
+		list.append(ship.to_dict())
+	return list
+
+
+func _ship_builds_to_list() -> Array:
+	var list: Array = []
+	for build: ShipBuild in ship_builds.values():
+		list.append(build.to_dict())
+	return list
 
 
 func _keep_to_dict() -> Dictionary:
@@ -1485,5 +1603,12 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 			agent.task = null
 	province.jobs = JobBoard.from_dict(d["jobs"])
 	province.paths = PathRequestQueue.from_dict(d.get("path_queue", []))
+	for sd: Variant in d.get("ships", []):
+		var ship := ShipUnit.from_dict(sd, registry)
+		province.ships[ship.id] = ship
+	for bd: Variant in d.get("ship_builds", []):
+		var build := ShipBuild.from_dict(bd, registry)
+		province.ship_builds[build.id] = build
+	province.fairway = Ships.fairway_tiles(province)
 	province.rebuild_nav()
 	return province

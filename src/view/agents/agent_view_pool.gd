@@ -34,6 +34,8 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 	var rect := world_rect.grow(VIEW_MARGIN)
 	var used := 0
 	for agent: Agent in agents.all():
+		if agent.vehicle == Ships.ABOARD:
+			continue   # drawn in his boat by the ShipLayer (M5)
 		var at := agent.prev_pos.lerp(agent.pos, alpha)
 		var screen := IsoMath.grid_to_screen(at)
 		if not rect.has_point(screen):

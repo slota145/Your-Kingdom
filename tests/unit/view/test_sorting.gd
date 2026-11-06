@@ -8,7 +8,8 @@ const D := WallConnectivity.GridDir
 # --- Buildings -----------------------------------------------------------------------
 
 func test_building_strips_sort_correctly() -> void:
-	for footprint: Vector2i in [Vector2i(1, 1), Vector2i(2, 2), Vector2i(3, 2), Vector2i(2, 4), Vector2i(4, 4)]:
+	# 3x3: fishing wharf, 4x4: shipyard (M5), both partly on the water.
+	for footprint: Vector2i in [Vector2i(1, 1), Vector2i(2, 2), Vector2i(3, 2), Vector2i(2, 4), Vector2i(3, 3), Vector2i(4, 4)]:
 		var failures := _check_building(Vector2i(10, 10), footprint)
 		assert_array(Array(failures)).override_failure_message(
 				"footprint %s:\n%s" % [footprint, "\n".join(failures.slice(0, 10))]).is_empty()

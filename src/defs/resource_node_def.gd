@@ -27,3 +27,6 @@ func get_kind() -> StringName:
 ## Terrain the tile turns into when the node is used up (a quarried rock leaves stony ground,
 ## M4b-3); empty = unchanged.
 @export var leaves_terrain: StringName = &""
+## Seconds to grow back one unit while below [member amount] (a fish shoal, M5); 0 = never.
+## Every node of the kind regrows on the same ticks, so no timer is saved.
+@export_range(0.0, 3600.0) var regrow_time: float = 0.0

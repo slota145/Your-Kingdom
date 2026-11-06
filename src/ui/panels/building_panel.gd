@@ -47,6 +47,12 @@ var _keep_goods: Array[StringName] = []
 var _keep_sliders: Dictionary[StringName, HSlider] = {}
 var _tax_box: Container
 var _tax_label: Label
+## Shipyard (M5): order buttons and the queue with a cancel button per order.
+var _ship_box: VBoxContainer
+var _ship_orders: HFlowContainer
+var _ship_queue: VBoxContainer
+var _ship_queue_shown: Array[StringName] = []
+var _ship_shown_for: int = 0
 var _timer: float = 0.0
 
 
@@ -150,6 +156,12 @@ func _build_settings(box: VBoxContainer) -> void:
 		b.tooltip_text = "ui.tax.hint"
 		rates.add_child(b)
 	_tax_box.add_child(UiKit.label("ui.tax.hint"))
+	_ship_box = VBoxContainer.new()
+	box.add_child(_ship_box)
+	_ship_orders = HFlowContainer.new()
+	_ship_box.add_child(_ship_orders)
+	_ship_queue = VBoxContainer.new()
+	_ship_box.add_child(_ship_queue)
 
 
 func show_building(source: ProvinceSim, id: int) -> void:
@@ -213,6 +225,10 @@ func _refresh() -> void:
 			var piled := b.yard.totals()
 			lines.append(tr("ui.building.yard") % (UiKit.goods_list(piled) if not piled.is_empty() \
 					else tr("ui.stockpile.empty")))
+		if not b.def.ship_kinds.is_empty():
+			lines.append_array(_shipyard_lines(b))
+		if b.def.uses_ship != &"":
+			lines.append(_boat_line(b))
 	_body.text = "\n".join(lines)
 	_stock.visible = b.stock != null
 	_stock.stock = b.stock
@@ -230,7 +246,7 @@ func _refresh() -> void:
 	_pause_button.visible = b.is_complete() and b.def.recipe != null
 	_pause_button.text = tr("ui.building.resume" if b.paused else "ui.building.pause")
 	var visual := BuildingVisualDef.for_building(b.def.id)
-	_turn_button.visible = b.def.footprint.x == b.def.footprint.y
+	_turn_button.visible = b.def.footprint.x == b.def.footprint.y and not b.def.is_on_water()
 	_look_button.visible = b.house != null and visual != null and visual.look_count(b.house.level) > 1
 	_refresh_settings(b)
 
@@ -251,6 +267,7 @@ func _refresh_settings(b: BuildingState) -> void:
 		_cart_button.disabled = b.carts >= b.def.max_carts \
 				or province.stored(&"planks") < int(Carriers.HANDCART_COST[&"planks"])
 	_refresh_keep(b)
+	_refresh_ships(b)
 	_tax_box.visible = b.def.id == TOWN_HALL and b.is_complete() and treasury != null
 	if _tax_box.visible:
 		_tax_label.text = tr("ui.tax.title") % tr("ui.tax.%s" % ["low", "normal", "high"][treasury.tax_rate])
@@ -367,3 +384,78 @@ func _house_lines(b: BuildingState) -> PackedStringArray:
 		else:
 			lines.append(tr("ui.house.upgrade_in") % maxi(Population.UPGRADE_AFTER - house.met_seconds, 0))
 	return lines
+
+
+## Shipyard (M5): the ship on the slipway, its stage and materials.
+func _shipyard_lines(b: BuildingState) -> PackedStringArray:
+	var lines := PackedStringArray()
+	var build := Ships.build_at(province, b)
+	if build == null:
+		lines.append(tr("ui.shipyard.idle"))
+		return lines
+	var ship_name := tr("ship.%s.name" % build.ship)
+	var head := tr("ui.shipyard.building") % [ship_name, build.stage + 1, build.stage_count(),
+			tr("ui.shipyard.stage.%d" % mini(build.stage, 3))]
+	if build.stage_started:
+		lines.append("%s (%d%%)" % [head, roundi(build.progress() * 100.0)])
+	else:
+		var have := {}
+		var need := build.current_cost()
+		for good: StringName in need:
+			have[good] = mini(build.stock.total(good), int(need[good]))
+		lines.append(head)
+		lines.append(tr("ui.building.materials") % [UiKit.goods_list(have), UiKit.goods_list(need)])
+	return lines
+
+
+## Fishing wharf (M5): where its boat is.
+func _boat_line(b: BuildingState) -> String:
+	var ship := Ships.ship_of(province, b)
+	if ship == null:
+		return tr("ui.wharf.no_boat")
+	if ship.crew != 0:
+		return tr("ui.wharf.boat_out")
+	if ship.dock_id == b.id:
+		return tr("ui.wharf.boat_home")
+	if ship.dock_id != 0:
+		return tr("ui.wharf.boat_at_shipyard")
+	return tr("ui.wharf.boat_coming")
+
+
+func _refresh_ships(b: BuildingState) -> void:
+	_ship_box.visible = b.is_complete() and not b.def.ship_kinds.is_empty()
+	if not _ship_box.visible:
+		return
+	if _ship_shown_for != b.id or _ship_queue_shown != b.ship_orders:
+		_build_ship_rows(b)
+	for child: Node in _ship_orders.get_children():
+		if child is Button:
+			(child as Button).disabled = b.ship_orders.size() >= Ships.MAX_ORDERS
+
+
+func _build_ship_rows(b: BuildingState) -> void:
+	_ship_shown_for = b.id
+	_ship_queue_shown = b.ship_orders.duplicate()
+	for box: Container in [_ship_orders, _ship_queue]:
+		for child: Node in box.get_children():
+			box.remove_child(child)
+			child.queue_free()
+	_ship_orders.add_child(UiKit.label("ui.shipyard.order", false))
+	for kind: StringName in b.def.ship_kinds:
+		var def := province.data.get_ship(kind)
+		var button := UiKit.button(def.name_key(), func() -> void:
+			command_requested.emit(OrderShipCommand.new(building_id, kind)))
+		button.tooltip_text = "\n".join([tr(def.desc_key()), tr("ui.build.cost") % UiKit.goods_list(def.build_cost)])
+		_ship_orders.add_child(button)
+	if b.ship_orders.is_empty():
+		_ship_queue.add_child(UiKit.label("ui.shipyard.queue_empty"))
+		return
+	_ship_queue.add_child(UiKit.label("ui.shipyard.queue"))
+	for i: int in b.ship_orders.size():
+		var row := HBoxContainer.new()
+		_ship_queue.add_child(row)
+		var label := UiKit.label()
+		label.text = tr("ui.shipyard.queue_item") % [i + 1, tr("ship.%s.name" % b.ship_orders[i])]
+		row.add_child(label)
+		row.add_child(UiKit.button("ui.shipyard.cancel", func() -> void:
+			command_requested.emit(CancelShipOrderCommand.new(building_id, i))))

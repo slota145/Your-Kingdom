@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://nmsdllf5tmen"
+path="res://.godot/imported/coast.png-705d667b03e29aca53abee06cf334cc5.image"
+
+[deps]
+
+source_file="res://data/maps/coast.png"
+dest_files=["res://.godot/imported/coast.png-705d667b03e29aca53abee06cf334cc5.image"]
+
+[params]
+

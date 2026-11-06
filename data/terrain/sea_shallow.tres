@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TerrainDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/terrain_def.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+index = 8
+walkable = false
+move_cost = 1.0
+buildable = false
+map_color = Color(0.27451, 0.54902, 0.745098, 1)
+counts_as = &"water"
+extra_map_color = Color(0.313726, 0.588235, 0.784314, 1)
+extra_node = &"fish_shoal"
+sail_depth = 1
+id = &"sea_shallow"

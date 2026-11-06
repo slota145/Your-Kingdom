@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 8
+const CURRENT_VERSION := 9
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -31,6 +31,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 8:
 		result = migrate_v7_to_v8(result)
 		version = 8
+	if version < 9:
+		result = migrate_v8_to_v9(result)
+		version = 9
 	return result
 
 
@@ -122,4 +125,13 @@ static func migrate_v6_to_v7(state: Dictionary) -> Dictionary:
 static func migrate_v7_to_v8(state: Dictionary) -> Dictionary:
 	var province: Dictionary = state["province"]
 	province["paving"] = []
+	return state
+
+
+## M5: ships and ship builds (none in an older town; shipyard queues start empty). The map
+## and every other part stay as they were.
+static func migrate_v8_to_v9(state: Dictionary) -> Dictionary:
+	var province: Dictionary = state["province"]
+	province["ships"] = []
+	province["ship_builds"] = []
 	return state

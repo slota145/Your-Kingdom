@@ -1507,3 +1507,225 @@ msgstr "%+.1f"
 
 msgid "ui.building.stalls_empty"
 msgstr "Nie działa: kramy są puste. Straganiarze przyniosą towar z magazynów."
+
+
+# --- M5 part 1: sea, ships and fish ---
+
+msgid "terrain.sand.name"
+msgstr "Piasek"
+
+msgid "terrain.sand.desc"
+msgstr "Plaża nad morzem. Można tu budować i kłaść drogi, ale pola tu nie urosną."
+
+msgid "terrain.sea_shallow.name"
+msgstr "Płytkie morze"
+
+msgid "terrain.sea_shallow.desc"
+msgstr "Woda przy brzegu. Pływają tu łodzie rybackie, ale koga utknęłaby na mieliźnie."
+
+msgid "terrain.sea_deep.name"
+msgstr "Głębokie morze"
+
+msgid "terrain.sea_deep.desc"
+msgstr "Otwarte morze. Pływają tu łodzie i kogi."
+
+msgid "resource_node.fish_shoal.name"
+msgstr "Ławica ryb"
+
+msgid "resource_node.fish_shoal.desc"
+msgstr "Ryby pod powierzchnią morza. Rybak z łodzi łowi tu siecią. Złowione ryby powoli wracają."
+
+msgid "map.coast.name"
+msgstr "Wybrzeże"
+
+msgid "map.coast.desc"
+msgstr "Kraina nad morzem: plaża, płytka woda przy brzegu, zatoka, do której wpada rzeka, lasy i kamieniste wzgórze. Na morzu są ławice ryb."
+
+msgid "good.tar.name"
+msgstr "Smoła"
+
+msgid "good.tar.desc"
+msgstr "Gęsta, czarna smoła w beczce. Uszczelnia kadłuby statków."
+
+msgid "building.tar_kiln.name"
+msgstr "Smolarnia"
+
+msgid "building.tar_kiln.desc"
+msgstr "Smolarz układa drewno w dole smolnym, pali je powoli pod ziemią i spuszcza smołę do beczki."
+
+msgid "building.shipyard.name"
+msgstr "Stocznia"
+
+msgid "building.shipyard.desc"
+msgstr "Cieśla okrętowy buduje na pochylni statki zamówione przez ciebie. Tragarze przynoszą deski i smołę. Stawiaj na brzegu morza, pochylnią do wody."
+
+msgid "building.fishing_wharf.name"
+msgstr "Przystań rybacka"
+
+msgid "building.fishing_wharf.desc"
+msgstr "Rybak wypływa łodzią na ławicę, łowi siecią i wraca z dużym połowem. Łódź buduje stocznia. Stawiaj na brzegu morza, pomostem do wody."
+
+msgid "recipe.tar_making.name"
+msgstr "Palenie smoły"
+
+msgid "recipe.tar_making.desc"
+msgstr "2 drewna dają beczkę smoły."
+
+msgid "recipe.shipbuilding.name"
+msgstr "Budowa statków"
+
+msgid "recipe.shipbuilding.desc"
+msgstr "Statek powstaje na pochylni etapami, z desek i smoły."
+
+msgid "recipe.net_fishing.name"
+msgstr "Połów siecią"
+
+msgid "recipe.net_fishing.desc"
+msgstr "Rybak łowi z łodzi 6 ryb na jeden rejs."
+
+msgid "ship.fishing_boat.name"
+msgstr "Łódź rybacka"
+
+msgid "ship.fishing_boat.desc"
+msgstr "Mała łódź przystani rybackiej. Pływa po płytkiej i głębokiej wodzie. Koszt: 6 desek, 2 beczki smoły."
+
+msgid "ship.cog.name"
+msgstr "Koga"
+
+msgid "ship.cog.desc"
+msgstr "Duży statek handlowy. Pływa tylko po głębokiej wodzie."
+
+msgid "ui.build.tab.harbour"
+msgstr "Morze i statki"
+
+msgid "ui.kind.shipwright"
+msgstr "Cieśla okrętowy"
+
+msgid "ui.kind.tar_burner"
+msgstr "Smolarz"
+
+msgid "ui.kind.fisher"
+msgstr "Rybak"
+
+msgid "ui.activity.stack"
+msgstr "układa drewno w dole"
+
+msgid "ui.activity.tend_fire"
+msgstr "pilnuje ognia w dole smolnym"
+
+msgid "ui.activity.tap"
+msgstr "spuszcza smołę do beczki"
+
+msgid "ui.activity.hammer"
+msgstr "buduje statek na pochylni"
+
+msgid "ui.activity.cast_net"
+msgstr "zarzuca sieć"
+
+msgid "ui.activity.wait_net"
+msgstr "czeka, aż ryby wpłyną w sieć"
+
+msgid "ui.activity.haul_net"
+msgstr "wyciąga sieć z rybami"
+
+msgid "ui.doing.go_to_boat"
+msgstr "idzie do łodzi"
+
+msgid "ui.doing.sail_out"
+msgstr "płynie łodzią na łowisko"
+
+msgid "ui.doing.sail_home"
+msgstr "wraca łodzią do przystani"
+
+msgid "ui.doing.slipway_of"
+msgstr "pochylnia (%s)"
+
+msgid "ui.reason.no_boat"
+msgstr "przystań nie ma łodzi (zamów ją w stoczni)"
+
+msgid "ui.reason.boat_away"
+msgstr "łódź jest w drodze"
+
+msgid "ui.reason.no_order"
+msgstr "nikt nie zamówił statku"
+
+msgid "ui.reason.no_material"
+msgstr "czeka na materiały"
+
+msgid "ui.command_error.needs_sea"
+msgstr "Pomost albo pochylnia muszą stać na morzu."
+
+msgid "ui.command_error.no_berth"
+msgstr "Przed pomostem musi być wolna woda dla statku."
+
+msgid "ui.command_error.no_deep_water"
+msgstr "Za daleko do głębokiej wody."
+
+msgid "ui.command_error.tile_has_ship"
+msgstr "Tu stoi statek."
+
+msgid "ui.command_error.ship_not_built_here"
+msgstr "Tego statku nie da się tu zbudować."
+
+msgid "ui.command_error.orders_full"
+msgstr "Kolejka stoczni jest pełna."
+
+msgid "ui.command_error.no_such_order"
+msgstr "Nie ma takiego zamówienia."
+
+msgid "ui.shipyard.idle"
+msgstr "Pochylnia jest pusta. Zamów statek."
+
+msgid "ui.shipyard.building"
+msgstr "Na pochylni: %s, etap %d z %d (%s)"
+
+msgid "ui.shipyard.stage.0"
+msgstr "szkielet"
+
+msgid "ui.shipyard.stage.1"
+msgstr "poszycie"
+
+msgid "ui.shipyard.stage.2"
+msgstr "maszt i żagiel"
+
+msgid "ui.shipyard.stage.3"
+msgstr "wodowanie"
+
+msgid "ui.shipyard.order"
+msgstr "Zamów:"
+
+msgid "ui.shipyard.queue"
+msgstr "Kolejka zamówień:"
+
+msgid "ui.shipyard.queue_empty"
+msgstr "Brak zamówień."
+
+msgid "ui.shipyard.cancel"
+msgstr "Anuluj"
+
+msgid "ui.wharf.no_boat"
+msgstr "Brak łodzi. Zamów łódź rybacką w stoczni."
+
+msgid "ui.wharf.boat_out"
+msgstr "Łódź jest na morzu."
+
+msgid "ui.wharf.boat_home"
+msgstr "Łódź stoi przy pomoście."
+
+msgid "ui.wharf.boat_at_shipyard"
+msgstr "Nowa łódź czeka w stoczni. Rybak po nią pójdzie."
+
+msgid "ui.wharf.boat_coming"
+msgstr "Łódź płynie do przystani."
+
+msgid "good.tar.count"
+msgid_plural "good.tar.count_plural"
+msgstr[0] "%s beczka smoły"
+msgstr[1] "%s beczki smoły"
+msgstr[2] "%s beczek smoły"
+
+msgid "ui.shipyard.queue_item"
+msgstr "%d. %s"
+
+msgid "ui.command_error.cannot_turn_on_water"
+msgstr "Budynku na wodzie nie da się obrócić."

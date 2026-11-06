@@ -90,3 +90,15 @@ static func run_until(sim: Simulation, condition: Callable, seconds: float) -> b
 		if condition.call():
 			return true
 	return false
+
+
+## Sea along the bottom of the map (M5): shallow water from row [param shallow_y], deep
+## water from row [param deep_y], so buildings on the shore face the water at +y.
+static func coast(sim: Simulation, shallow_y: int, deep_y: int) -> void:
+	var shallow := registry().get_terrain(&"sea_shallow")
+	var deep := registry().get_terrain(&"sea_deep")
+	var size := sim.province.grid.size
+	for y: int in range(shallow_y, size.y):
+		for x: int in size.x:
+			sim.province.grid.set_terrain(Vector2i(x, y), deep.index if y >= deep_y else shallow.index)
+	sim.province.rebuild_nav()

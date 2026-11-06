@@ -487,19 +487,73 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## M5 — Woda, porty i statki
 
+**Status: plan zaakceptowany 2026-11-06. Część 1 (morze i ryby) gotowa i zaakceptowana przez właściciela 2026-11-06, scalona do `main`. Następny krok: część 2 (port i kupiec morski).** Poprawki z odłożonej oceny M4b-2 i M4b-3 (oraz pomiar FPS na laptopie) mają pierwszeństwo przed dalszą pracą nad M5.
+
+**Decyzje (2026-11-06, ankieta z właścicielem projektu):**
+- **Nowa mapa „Wybrzeże” 128×128 obok dzisiejszych.** Morze z jednej strony mapy, plaża, osłonięta zatoka na port, rzeka wpadająca do morza, lasy i skały. „Nadrzecze” i „Pojezierze”, stare zapisy, testy i duże miasto z M4b-3 zostają bez zmian. Wyspy czekają na M6.
+- **Statki w M5: łódź rybacka i koga.** Reszta drzewka okrętów (karawela, karaka, wielki okręt z balistami; IDEAS) później. Kogę budujemy na bazie prototypu z `src/prototype/ships/`.
+- **Przystań rybacka obok wędkarza.** Wędkarz zostaje bez zmian (tani, na start; łowi też z brzegu morza). Nowy budynek „przystań rybacka” stoi na brzegu morza i ma rybaka z łodzią: łódź wypływa na ławicę ryb, łowi siecią i wraca z większym połowem. Łódź buduje stocznia. Przystań tylko nad morzem (nie nad jeziorem ani rzeką).
+- **Kupiec morski.** Obca koga co jakiś czas przypływa zza krawędzi morza do portu. Portowcy noszą na nią nadwyżki i zdejmują towary, które gracz kupuje. Działa jak kupiec z wozem (M4b-2), tylko przez port. Kupiec z wozem przyjeżdża dalej.
+- **Własna koga: rejsy handlowe za horyzont.** Gracz w panelu portu wybiera towary i ilości, portowcy ładują kogę, a ta odpływa za krawędź mapy i po kilku minutach wraca ze złotem i z towarami zamówionymi z oferty kupca morskiego. W M6 ten sam rejs popłynie do innej prowincji.
+- **Prosty start ze statku na „Wybrzeżu”** (scenariusz kolonizacji, IDEAS). Gra na tej mapie zaczyna się od kogi, która przypływa do plaży i wyładowuje osadników z zestawem startowym. Gracz sam stawia ratusz. Kolonizacja kolejnych prowincji przychodzi w M6.
+- **Statki z desek, smoły i sukna** (GDD §5.4). Nowa smolarnia: drewno → smoła. Sukno na żagle już mamy (M4b-1).
+
+**Wartości wyjściowe (do strojenia przy realizacji):**
+- mapa: morze zajmuje ok. ¼ mapy, przy brzegu pas płytkiej wody 2–3 kafle, potem woda głęboka; plaża z piasku; morze liczy się jako woda dla wędkarza i glinianki (jak jezioro),
+- smolarnia 2×2: smolarz bierze 2 drewna, pali w dole smolnym (dym), po ok. 40 s odnosi 1 beczkę smoły,
+- stocznia: 4×3 na brzegu z pochylnią wchodzącą do wody, 1 cieśla okrętowy, koszt np. 20 drewna, 10 desek, 30 złota; gracz zamawia statek w panelu stoczni (kolejka),
+- łódź rybacka: 6 desek, 2 smoły; ok. 1 min pracy; pływa po wodzie płytkiej i głębokiej, 1,5 kafla/s,
+- koga: 20 desek, 6 smoły, 4 sukna; ok. 4 min pracy w 4 etapach (szkielet, poszycie, maszt z żaglem, wodowanie); tylko woda głęboka (płytką przy porcie i pochylni traktujemy jak tor wodny), 1,2 kafla/s; ładownia 40 sztuk,
+- przystań rybacka 2×2 z pomostem, 1 rybak, 1 łódź; połów 4 ryby na kurs (wędkarz: 1), ok. 20 s łowienia; ławica ma 12 ryb i odnawia 1 rybę na 30 s; ławice widać na wodzie (pluski, mewy),
+- port: 4×3, z czego nabrzeże na wodzie; plac portowy na 6 pól (jak mały magazyn), 2 portowców, 1 miejsce cumowania; załadunek po trapie, ok. 1 s na sztukę,
+- kupiec morski: co ok. 12 min gry, stoi do 4 min; kupuje do 40 sztuk nadwyżek po cenie bazowej (progi z okna „Zapasy królestwa”, jak kupiec z wozem); sprzedaje kilka towarów (np. smoła, sukno, deski) w ograniczonej ilości, gdy zapas spadnie poniżej progu „kupuj do N” ustawionego przez gracza w tym samym oknie,
+- rejs własnej kogi: ok. 6 min gry tam i z powrotem, sprzedaż po cenie bazowej +25%, zamówione towary po cenie kupca morskiego,
+- start ze statku: 6 osadników (w tym budowniczy i 2 tragarzy), zestaw startowy na plaży jako wspólny stos (materiały na ratusz, magazyn i 3 chaty plus zapas żywności); do postawienia ratusza menu budowy ma tylko ratusz.
+
+**Kolejność prac:** część 1 (morze i ryby: mapa „Wybrzeże”, wodna siatka ruchu, smolarnia, stocznia budująca łódź, przystań rybacka z ławicami, sprawdzone testami przed resztą), część 2 (port i kupiec morski: port z portowcami, cumowanie, załadunek sztuka po sztuce, obca koga), część 3 (koga gracza i start: budowa kogi w etapach do wodowania, rejsy za horyzont, start ze statku, zapis). Jedna ocena gry na końcu etapu.
+
 **Zakres:**
-- mapy przybrzeżne i wyspowe,
-- rybak (rzeka, jezioro, morze),
-- port z portowcami ładującymi skrzynie i beczki,
-- stocznia z budową statku w etapach,
-- łódź rybacka i koga,
-- `NavGrid` wodny.
+- część 1: mapa „Wybrzeże” 128×128 (morze płytkie i głębokie, plaża, zatoka, rzeka do morza, lasy, skały, wybór w menu); nowe tereny `sea_shallow`, `sea_deep`, `sand`; wodna siatka ruchu (`NavGrid` dla wody, ARCHITECTURE §5.3) z osobnymi zasadami dla łodzi i kogi; statek jako jednostka symulacji z ładownią (`ShipUnit`, ARCHITECTURE §10, na razie bez walki); budynki częściowo na wodzie (nowa reguła stawiania: część kafli musi być wodą, wejście od lądu); towar smoła i smolarnia; stocznia z kolejką zamówień, dostawami materiałów przez tragarzy i budową łodzi; przystań rybacka, ławice ryb jako złoża na wodzie,
+- część 2: port z placem portowym i portowcami; cumowanie (rezerwacja miejsca przy nabrzeżu); zlecenia „załaduj statek” i „rozładuj statek” na `JobBoard`, sztuka po sztuce po trapie; panel statku z ładownią czytaną ze stanu symulacji; kupiec morski (przypływa zza krawędzi, cumuje, kupuje i sprzedaje, odpływa); próg „kupuj do N” w oknie „Zapasy królestwa” dla towarów z oferty kupca morskiego,
+- część 3: budowa kogi w 4 widocznych etapach i wodowanie; panel portu z planem rejsu (towary, ilości, zamówienie); rejs za horyzont (koga znika za krawędzią, wraca po czasie); start ze statku na „Wybrzeżu” (koga przy plaży, osadnicy schodzą z zestawem, gracz stawia ratusz); automatyczny gracz na „Wybrzeżu” zaczyna od statku,
+- grafika rysowana kodem: koga i łódź rybacka w 8 kierunkach (z kołysaniem), koga w etapach budowy na pochylni, port z nabrzeżem i trapem, stocznia, przystań z pomostem, smolarnia z dołem smolnym, beczka smoły, ławica ryb, portowiec, cieśla okrętowy, smolarz, rybak w łodzi z siecią; kafle morza i plaży (gotowe w prototypie terenu, ART_SPEC §3),
+- zapis: wersja 9 z migracją, fixturą i testem (statki z ładunkiem i trasą, budowy statków, ławice, cumowania, rejsy, kupiec morski); teksty PL i EN; aktualizacja GDD §2.2, §4.2, §4.3, §4.6, §5.4, §5.5, ARCHITECTURE §5.3, §8, §10 i ART_SPEC.
+
+**Poza zakresem:** wyspy i mapy wyspowe (M6), karawela, karaka i okręt wojenny (drzewko okrętów, później), walka okrętów (M7 automatycznie, P1 interaktywnie), szlaki handlowe i rejsy do innych prowincji (M6), kolonizacja kolejnych prowincji (M6), przewozy między dwoma portami na jednej mapie, statki na jeziorze i rzece, mosty, sól i solone ryby, wahania cen w handlu morskim (1.0), pomiar FPS na laptopie (osobna sesja z M4b-3).
+
+**Ryzyka etapu:**
+- duża koga (kilka kafli długości) przy nabrzeżu i pochylni może źle się sortować z budynkami i postaciami na trapie (R1): przypadki dopisujemy do `test_sorting.gd`,
+- budynki częściowo na wodzie to nowa reguła stawiania i nowy przypadek dla `BuildingSlicer`,
+- start bez gotowego ratusza zmienia początek gry: automatyczny gracz i zasiedlanie muszą działać bez ratusza i magazynu, dopóki stoją tylko stos i osadnicy.
 
 **DoD:**
-- [ ] Widoczny załadunek i rozładunek sztuka po sztuce.
-- [ ] Ładunek statku zgodny z UI.
-- [ ] Statek budowany etapami do wodowania.
-- [ ] Zapis i odczyt w trakcie załadunku.
+- [x] Mapa „Wybrzeże” 128×128 z morzem, plażą i zatoką jest w menu; „Nadrzecze” i „Pojezierze” działają bez zmian (dotychczasowe testy przechodzą; `tests/unit/sim/test_water_nav.gd`).
+- [x] Statki pływają tylko po wodzie: łódź po płytkiej i głębokiej, koga tylko po głębokiej i torze wodnym; wodna siatka ruchu ma testy (`test_water_nav.gd`).
+- [x] Smolarnia robi smołę z drewna; stocznia buduje łódź z desek i smoły dostarczonych przez tragarzy (`tests/scenario/test_m5_chains.gd`).
+- [x] Przystań rybacka: łódź płynie na ławicę, łowi, wraca, a rybak niesie ryby do magazynu; połów wyraźnie większy niż u wędkarza; ławice się odnawiają (`test_m5_chains.gd`: w 10 minut przystań 36 ryb, wędkarz 16).
+- [ ] Widoczny załadunek i rozładunek sztuka po sztuce: portowcy noszą towar po trapie między placem portowym a statkiem.
+- [ ] Ładunek statku zgodny z UI: panel statku pokazuje stan ładowni z symulacji po każdej sztuce (test).
+- [ ] Kupiec morski przypływa tylko do portu, kupuje nadwyżki ponad progi i sprzedaje towary poniżej progu „kupuj do N”.
+- [ ] Statek budowany etapami do wodowania: koga przechodzi szkielet, poszycie, maszt z żaglem i wodowanie, każdy etap widać na pochylni.
+- [ ] Rejs za horyzont: koga gracza odpływa z ładunkiem i wraca ze złotem i zamówionymi towarami.
+- [ ] Start ze statku na „Wybrzeżu”: koga wyładowuje osadników i zestaw startowy, gracz stawia ratusz; automatyczny gracz dochodzi z tego startu do 4 kamienic patrycjuszy w limicie 90 minut (do strojenia przy realizacji).
+- [ ] Zapis i odczyt w trakcie załadunku, w trakcie budowy statku i w czasie rejsu nie gubią towarów; zapis z M4b-3 wczytuje się po migracji (v8 → v9), nowa fixtura v9.
+- [ ] Bez spadku wydajności: duże miasto z M4b-3 nadal ≤ 4 ms na tick, automatyczny gracz na „Nadrzeczu” i „Pojezierzu” w limicie.
+- [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
+- [ ] **Twoja ocena gry.**
+
+**Ustalone przy realizacji części 1 (2026-11-06, do zmiany na prośbę):**
+- **Brzeg biegnie wzdłuż osi siatki.** Na ekranie brzeg „Wybrzeża” jest ukośny (morze wzdłuż dolnych krawędzi mapy), a w siatce prosty, z uskokami co 5–9 kafli. Powód: przystań i stocznia mają prostokątny pomost albo pochylnię, które na ukośnym w siatce brzegu (schodki) nigdzie się nie mieszczą. Zatoka jest prostokątna (13 kafli szerokości, głęboka woda w środku), rzeka wpada do jej końca. Tereny: `sand` (piasek, budować wolno, pól nie), `sea_shallow`, `sea_deep` (oba liczą się jako woda dla wędkarza i glinianki). Ławice to pojedyncze kafle morza w nieco jaśniejszym kolorze na obrazku mapy (13 sztuk, 2 w zatoce). Mapa: `tools/generate_coast_map.py`.
+- **Budynki na wodzie stoją wodą do kamery.** Kafle pomostu i pochylni (`BuildingDef.water_tiles`) muszą być morzem, reszta lądem; przed pomostem musi być wolna woda (`berth`, miejsce cumowania). Budynek można obrócić tylko na dwa sposoby (jak inne warsztaty), więc woda jest zawsze z przodu (od strony kamery, ART_SPEC §3.2), a wejście z boku, od lądu. Brzegi zwrócone wodą „od kamery” (po drugiej stronie zatoki) zostają bez przystani.
+- **Rozmiary:** przystań 3×3 (chata na 2 rzędach, pomost na trzecim), stocznia 4×4 (warsztat i szopa na 2 rzędach, pochylnia na 2 rzędach wody). Kwadratowe, bo obrót budynku zakłada kwadrat (ARCHITECTURE §5.2). Smolarnia 2×2.
+- **Tor wodny** wyznacza się sam: od miejsca cumowania stoczni najkrótszą drogą po płytkiej wodzie do głębokiej (najwyżej 12 kafli; dalej stoczni postawić nie można: „Za daleko do głębokiej wody”). Po torze pływają kogi, nie jest zapisywany (wynika z budynków).
+- **Połów:** wędkarz łowi 2 ryby na cykl (tak było od M4a), więc rybak z łodzi łowi **6 ryb** na rejs (ławica: 18 ryb, odnawia 1 rybę co 20 s). Pomiar: w 10 minut przystań 36 ryb, wędkarz 16. Ławica szukana w promieniu 24 kafli od pomostu.
+- **Nowa łódź** czeka przy pochylni stoczni; dostaje ją najbliższa przystań bez łodzi, a rybak idzie do stoczni, wsiada i przypływa nią do domu. Łódź bez załogi na morzu (np. rybak stracił pracę) sama wraca do swojej przystani. Rozbiórka przystani: łódź czeka na nową przystań, ryby z rąk rybaka zostają w ładowni.
+- **Stocznia** zamawia od razu wszystkie materiały statku (jak plac budowy) i co sekundę uzupełnia zamówienie, gdyby tragarz z towarem zniknął po drodze. Łódź: 2 etapy (szkielet, poszycie) po 30 s pracy cieśli, potem wodowanie. Kolejka do 5 zamówień; anulowanie statku na pochylni zostawia niezużyte materiały na ziemi.
+- **Rybak w łodzi** to część grafiki łodzi (wiosłuje, zarzuca sieć, czeka przy pływakach, wyciąga sieć z rybami); postać rybaka jest wtedy ukryta.
+- **Budynku na wodzie nie da się obrócić** po postawieniu (pomost wylądowałby na brzegu); obraca się go tylko przy stawianiu (R).
+- **Pomiary po części 1:** duże miasto z M4b-3 średnio 2,7 ms na tick (20 minut, cel ≤ 4 ms); automatyczny gracz: „Nadrzecze” 4 kamienice patrycjuszy w 70. minucie, „Pojezierze” w 79. (limit 90). Wynik bota zmienia się nieco po każdej zmianie danych.
+- **Zakładka „Morze i statki”** w menu budowy: smolarnia, stocznia, przystań rybacka. Koga ma już dane (`data/ships/cog.tres`), ale zamówić ją będzie można w części 3.
 
 ---
 
@@ -508,6 +562,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Zakres:**
 - graf prowincji, ekran mapy świata,
 - przełączanie prowincji,
+- mapy wyspowe (przeniesione z M5, decyzja 2026-11-06),
 - **tryb uproszczony** z kalibracją i przełączaniem trybów (ARCHITECTURE §7),
 - zasiedlanie przez osadników,
 - wykup osad neutralnych,

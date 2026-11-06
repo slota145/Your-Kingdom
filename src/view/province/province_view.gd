@@ -19,6 +19,9 @@ var nature: NatureLayer
 var buildings: BuildingLayer
 var piles: PileLayer
 var agents: AgentViewPool
+## Ships and ships on slipways (M5), fish shoals on the water.
+var ships: ShipLayer
+var shoals: ShoalLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 
@@ -36,6 +39,10 @@ func setup(source: ProvinceSim) -> void:
 	overlay = TileOverlay.new()
 	overlay.z_index = -2
 	add_child(overlay)
+	shoals = ShoalLayer.new()
+	shoals.z_index = -1
+	add_child(shoals)
+	shoals.setup(province)
 	world = Node2D.new()
 	world.y_sort_enabled = true
 	add_child(world)
@@ -50,6 +57,9 @@ func setup(source: ProvinceSim) -> void:
 	agents = AgentViewPool.new()
 	agents.province = province
 	world.add_child(agents)
+	ships = ShipLayer.new()
+	world.add_child(ships)
+	ships.setup(province)
 	cart = Sprite2D.new()
 	cart.centered = false
 	cart.offset = -CART_FOOT
@@ -63,6 +73,8 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 		_buildings_dirty = false
 		buildings.refresh_all()
 	agents.update_view(province.agents, alpha, visible_rect, time)
+	ships.update_view(alpha, time)
+	shoals.update_view(time)
 	piles.update_view(province.piles)
 	piles.update_yards(province.buildings)
 	buildings.update_view()
@@ -81,7 +93,7 @@ func on_sim_event(event: Dictionary) -> void:
 	match event["type"]:
 		&"building_placed", &"building_removed", &"building_completed", &"site_opened", \
 				&"site_phase_started", &"site_phase_finished", &"house_upgraded", &"building_turned", \
-				&"look_changed":
+				&"look_changed", &"ship_build_closed":
 			_buildings_dirty = true
 		&"road_changed":
 			terrain.refresh_tile(event["tile"])

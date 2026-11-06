@@ -71,6 +71,10 @@ func get_terrain(id: StringName) -> TerrainDef:
 	return get_def(&"terrain", id) as TerrainDef
 
 
+func get_ship(id: StringName) -> ShipDef:
+	return get_def(&"ship", id) as ShipDef
+
+
 func get_map(id: StringName) -> MapDef:
 	return get_def(&"map", id) as MapDef
 

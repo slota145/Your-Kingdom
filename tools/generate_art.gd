@@ -233,6 +233,28 @@ const BUILDINGS := {
 			"shutters": Color(0.25, 0.45, 0.3), "floors": 2, "chimney": [0.55, 0.5]}],
 		"props": [["bar_counter", 1.72, 0.55], ["tavern_table", 1.75, 1.62], ["tavern_table", 0.75, 2.02],
 			["sign_mug", 1.55, 1.0]]}],
+	# M5: the sea. Decks (piers, slipways) are drawn first, low over the water rows.
+	"tar_kiln": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.1, 1.3], "h": 30.0, "rh": 18.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "logs", "roof": "planks_roof", "shutters": Color(0.3, 0.25, 0.2)}],
+		"props": [["tar_pit", 1.5, 1.0], ["log_pile", 0.5, 1.9], ["tar_barrels", 1.75, 1.85]]}],
+	"shipyard": [{"volumes": [
+		{"kind": "deck", "rect": [0.7, 1.55, 2.3, 4.0], "h": 7.0, "h_end": -3.0, "slip": true},
+		{"kind": "deck", "rect": [2.45, 1.85, 3.05, 3.8], "h": 5.0},
+		{"kind": "house", "rect": [0.14, 0.14, 2.0, 1.4], "h": 38.0, "rh": 22.0, "ridge": "x",
+			"ends": ["gable", "gable"], "walls": "planks", "roof": "shingle", "shutters": Color(0.35, 0.3, 0.25),
+			"chimney": [0.6, 0.5]},
+		{"kind": "lean", "rect": [2.1, 0.14, 3.86, 1.45], "low": "x", "h": 28.0, "hh": 36.0,
+			"roof": "shingle", "walls": "planks", "open": true,
+			"inside": [["plank_stack", 2.9, 1.2], ["saw_horse", 3.4, 0.8]]}],
+		"props": [["crane", 2.6, 1.9], ["tar_barrels", 0.4, 1.85], ["log_pile", 3.55, 1.9],
+			["bollard", 2.95, 3.6]]}],
+	"fishing_wharf": [{"volumes": [
+		{"kind": "deck", "rect": [0.15, 1.85, 2.85, 2.95], "h": 4.0},
+		{"kind": "house", "rect": [0.75, 0.14, 2.86, 1.55], "h": 34.0, "rh": 22.0, "ridge": "x",
+			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.3, 0.45, 0.6)}],
+		"props": [["nets", 0.2, 1.0], ["fish_rack", 0.45, 1.75], ["bollard", 0.5, 2.8], ["bollard", 2.5, 2.8],
+			["barrel", 2.2, 2.3]]}],
 	"well": [{"special": "well"}],
 	"market": [{"special": "market"}],
 	"stockpile": [{"special": "yard"}],
@@ -331,7 +353,10 @@ func _compose(look: Dictionary) -> Dictionary:
 	var c := _canvas(top + 4.0, 12)
 	var img: Image = c["img"]
 	var pivot: Vector2i = c["pivot"]
-	var ordered := _back_to_front(volumes)
+	for vol: Dictionary in volumes:
+		if vol["kind"] == "deck":
+			_deck(img, pivot, vol)
+	var ordered := _back_to_front(volumes.filter(func(v: Dictionary) -> bool: return v["kind"] != "deck"))
 	var door_done := false
 	for vol: Dictionary in ordered:
 		match String(vol["kind"]):
@@ -350,6 +375,52 @@ func _compose(look: Dictionary) -> Dictionary:
 		_prop(img, Vector2(pivot) + IsoMath.grid_to_screen(Vector2(prop[1], prop[2]) - Vector2(_footprint)), String(prop[0]))
 	_finish(img)
 	return {"img": img, "pivot": pivot}
+
+
+## A timber deck over the water (M5): a pier on posts, or a slipway (slip = true) sloping from
+## height h at its back edge down to h_end at its front edge, with two rails and keel blocks.
+func _deck(img: Image, pivot: Vector2i, vol: Dictionary) -> void:
+	var r := _rect(vol)
+	var z0: float = vol.get("h", 4.0)
+	var z1: float = vol.get("h_end", z0)
+	var slip: bool = vol.get("slip", false)
+	var z := func(y: float) -> float: return lerpf(z0, z1, (y - r.position.y) / maxf(r.size.y, 0.01))
+	# Posts along the front edges, standing in the water.
+	var posts: Array[Vector2] = []
+	var steps := maxi(ceili(r.size.x / 0.5), 1)
+	for i: int in steps + 1:
+		posts.append(Vector2(r.position.x + r.size.x * i / steps, r.end.y))
+	steps = maxi(ceili(r.size.y / 0.5), 1)
+	for i: int in steps:
+		posts.append(Vector2(r.end.x, r.position.y + r.size.y * i / steps))
+	for post: Vector2 in posts:
+		var top: float = z.call(post.y)
+		if top > -1.0:
+			_line(img, _scr(pivot, Vector3(post.x, post.y, top)), _scr(pivot, Vector3(post.x, post.y, -5.0)),
+					C_BEAM.darkened(0.2), 2)
+	var wood := Color(0.5, 0.36, 0.22) if slip else C_PLANK
+	var surface := PackedVector2Array([
+		_scr(pivot, Vector3(r.position.x, r.position.y, z0)), _scr(pivot, Vector3(r.end.x, r.position.y, z0)),
+		_scr(pivot, Vector3(r.end.x, r.end.y, z1)), _scr(pivot, Vector3(r.position.x, r.end.y, z1))])
+	_fill_shader(img, surface, func(x: int, y: int) -> Color:
+		# Planks across the deck (lines along the grid x axis: screen x - 2y constant).
+		var stripe := posmod(x + 2 * y, 6) == 0 if slip else posmod(x - 2 * y, 5) == 0
+		return _lit(wood.darkened(0.28) if stripe else wood.darkened(0.06 * _hash(x / 3, y, 17)), 1.05))
+	for edge: Array in [[Vector2(r.position.x, r.end.y), r.end, LIGHT_SW], [Vector2(r.end.x, r.position.y), r.end, LIGHT_SE]]:
+		var a: Vector2 = edge[0]
+		var b: Vector2 = edge[1]
+		var face := PackedVector2Array([_scr(pivot, Vector3(a.x, a.y, z.call(a.y))), _scr(pivot, Vector3(b.x, b.y, z.call(b.y))),
+				_scr(pivot, Vector3(b.x, b.y, z.call(b.y) - 3.0)), _scr(pivot, Vector3(a.x, a.y, z.call(a.y) - 3.0))])
+		_fill(img, face, _lit(wood.darkened(0.3), edge[2]))
+	_outline(img, surface, wood.darkened(0.55))
+	if slip:
+		for rail: float in [0.3, 0.7]:
+			var x := r.position.x + r.size.x * rail
+			_line(img, _scr(pivot, Vector3(x, r.position.y, z0 + 1.0)), _scr(pivot, Vector3(x, r.end.y, z1 + 1.0)),
+					C_BEAM.darkened(0.15), 2)
+		for k: int in 4:
+			var y := r.position.y + r.size.y * (0.15 + k * 0.2)
+			_box(img, _scr(pivot, Vector3(r.get_center().x, y, z.call(y))), Vector2(8, 4), 3.0, C_LOG)
 
 
 ## A fenced enclosure on the ground (grid rect): back fences, the contents (sheep grazing on
@@ -1060,6 +1131,32 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 				_line(img, p - Vector2(0, 20 - i * 3), p + Vector2(14, -13 + i * 3), Color(0.75, 0.72, 0.6), 1)
 			for i: int in 4:
 				_line(img, p + Vector2(i * 4 + 1, -20 + i * 2), p + Vector2(i * 4 + 1, -2 + i * 2), Color(0.75, 0.72, 0.6), 1)
+		"tar_pit":
+			# An earthen mound over the slow fire, smoke seeping out at the top, the tap at its foot.
+			var mound := PackedVector2Array()
+			for k: int in 20:
+				var a := PI + k * PI / 19.0
+				mound.append(p + Vector2(cos(a) * 20.0, sin(a) * 13.0 - 2.0))
+			mound.append(p + Vector2(20, 2))
+			mound.append(p + Vector2(-20, 2))
+			_fill_shader(img, mound, func(x: int, y: int) -> Color:
+				var c := Color(0.38, 0.3, 0.22).darkened(0.12 * _hash(x / 2, y / 2, 23))
+				return _lit(c, LIGHT_SW if x < p.x else LIGHT_SE))
+			_outline(img, mound, Color(0.2, 0.15, 0.1))
+			for k: int in 5:
+				_px(img, Vector2i(p + Vector2(-2 + k, -16 - k * 2)), Color(0.75, 0.75, 0.72, 0.8))
+				_px(img, Vector2i(p + Vector2(-1 + k, -17 - k * 2)), Color(0.6, 0.6, 0.6, 0.7))
+			_line(img, p + Vector2(8, -1), p + Vector2(14, 3), C_BEAM, 2)
+			_ellipse(img, p + Vector2(16, 3), Vector2(3, 2), Color(0.08, 0.06, 0.05))
+		"tar_barrels":
+			for k: int in 2:
+				var q := p + Vector2(k * 9 - 4, k * 2)
+				_ellipse(img, q - Vector2(0, 5), Vector2(4, 5), Color(0.24, 0.17, 0.12))
+				_line(img, q - Vector2(4, 7), q - Vector2(-4, 7), C_IRON, 1)
+				_ellipse(img, q - Vector2(0, 9), Vector2(3, 1.5), Color(0.08, 0.06, 0.05))
+		"bollard":
+			_box(img, p, Vector2(4, 2), 7.0, C_BEAM)
+			_line(img, p + Vector2(-3, -5), p + Vector2(3, -5), Color(0.75, 0.68, 0.5), 1)
 		"fish_rack":
 			_line(img, p + Vector2(-8, 0), p + Vector2(-8, -12), C_BEAM, 1)
 			_line(img, p + Vector2(8, 4), p + Vector2(8, -8), C_BEAM, 1)

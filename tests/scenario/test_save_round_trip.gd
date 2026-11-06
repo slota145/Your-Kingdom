@@ -342,3 +342,35 @@ func test_v7_save_gets_empty_paving() -> void:
 	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 7), SimFixture.registry())
 	assert_int(sim.province.paving.size()).is_equal(0)
 	assert_int(sim.province.grid.paved_count()).is_equal(0)
+
+
+## A save written by save_version 9 (M5 part 1: a fisherman out at sea in his boat, the
+## second boat on the slipway with its first stage under way) loads unchanged, keeps playing
+## and launches the boat.
+func test_v9_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v9_harbour.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(9)
+	var state := SaveMigrations.migrate(document["state"], 9)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	var province := sim.province
+	assert_int(province.ships.size()).is_equal(1)
+	assert_int(province.ship_builds.size()).is_equal(1)
+	var aboard := 0
+	for agent: Agent in province.agents.all():
+		if agent.vehicle == Ships.ABOARD:
+			aboard += 1
+	assert_int(aboard).is_equal(1)
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return province.ships.size() == 2, 300.0)).is_true()
+	assert_array(Array(province.dangling_holds())).is_empty()
+
+
+## M4b-3 town (v8): after the migration there are no ships and no ship builds.
+func test_v8_save_gets_no_ships() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v8_town.json"))
+	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 8), SimFixture.registry())
+	assert_int(sim.province.ships.size()).is_equal(0)
+	assert_int(sim.province.ship_builds.size()).is_equal(0)
+	assert_int(sim.province.fairway.size()).is_equal(0)

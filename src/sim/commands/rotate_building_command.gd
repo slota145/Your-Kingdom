@@ -14,6 +14,8 @@ func validate(sim: Simulation) -> StringName:
 	var building := sim.province.buildings.get_building(building_id)
 	if building == null:
 		return &"unknown_building"
+	if building.def.is_on_water():
+		return &"cannot_turn_on_water"   # its pier or slipway would land on the shore (M5)
 	return &"" if next_orientation(sim.province, building) >= 0 else &"cannot_turn"
 
 

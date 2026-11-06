@@ -65,6 +65,18 @@ extends GameDef
 ## &"all" (every side). Empty = by kind: houses one, storages all, the rest opposite.
 ## People need only one door with free ground in front of it.
 @export var door_sides: StringName = &""
+## Footprint tiles (as drawn) that stand on the sea (M5): a pier, a slipway. They must be
+## sea water, the others land. Empty = a building on land.
+@export var water_tiles: Array[Vector2i] = []
+## Water tile (as drawn, relative to the origin, outside the footprint) where this building's
+## ships moor or are launched; (-1, -1) = none.
+@export var berth: Vector2i = Vector2i(-1, -1)
+## The berth needs a fairway to deep water (cogs, M5): shipyards and ports.
+@export var berth_fairway: bool = false
+## Ship kinds the player can order here (a shipyard, M5).
+@export var ship_kinds: Array[StringName] = []
+## Kind of ship this building's workers use (a fishing wharf's boat, M5); empty = none.
+@export var uses_ship: StringName = &""
 
 
 func get_kind() -> StringName:
@@ -170,6 +182,40 @@ func door_orientations(orientation: int) -> Array[int]:
 		&"opposite":
 			return [orientation, (orientation + 2) % 4]
 	return [orientation]
+
+
+## A tile given relative to the origin as drawn, for the building turned to
+## [param orientation] (like entrance_at; also for tiles outside the footprint).
+func turned(tile: Vector2i, orientation: int) -> Vector2i:
+	var n := footprint.x - 1
+	match orientation:
+		1:
+			return Vector2i(tile.y, tile.x)
+		2:
+			return Vector2i(n - tile.x, n - tile.y)
+		3:
+			return Vector2i(n - tile.y, n - tile.x)
+	return tile
+
+
+func is_on_water() -> bool:
+	return not water_tiles.is_empty()
+
+
+func has_berth() -> bool:
+	return berth != Vector2i(-1, -1)
+
+
+## Footprint tiles on the sea for a building at [param origin] turned to [param orientation].
+func water_tiles_at(origin: Vector2i, orientation: int) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for tile: Vector2i in water_tiles:
+		tiles.append(origin + turned(tile, orientation))
+	return tiles
+
+
+func berth_at(origin: Vector2i, orientation: int) -> Vector2i:
+	return origin + turned(berth, orientation)
 
 
 func is_entrance_on_edge() -> bool:

@@ -72,7 +72,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
 | Typ | Cechy | Zakres |
 |---|---|---|
 | Kontynentalna | Bez morza. Opcjonalnie z rzeką (rybołówstwo, młyn wodny, przeprawa) lub jeziorem. Nie ma portu morskiego. | [SLICE] tylko wariant z rzeką · M4b-3: „Pojezierze” 128×128 (jezioro z trzcinami, rzeka z brodami, kamieniste wzgórze ze skałami); mapę wybiera się w menu przy nowej grze · [1.0] wszystkie |
-| Przybrzeżna | Ląd z linią brzegową: port, stocznia, rybołówstwo morskie. | [1.0] |
+| Przybrzeżna | Ląd z linią brzegową: port, stocznia, rybołówstwo morskie. | M5 (plan 2026-11-06): „Wybrzeże” 128×128 (morze płytkie i głębokie, plaża, zatoka, rzeka do morza, ławice ryb; część 1 gotowa), start ze statku (część 3) · [1.0] wszystkie |
 | Wyspowa | Jedna lub kilka wysp. Do wyspy można dotrzeć wyłącznie statkiem. | [1.0] |
 
 ---
@@ -197,7 +197,14 @@ kopalnia★ ──► ruda żelaza + węgiel ──► huta ──► żelazo �
 drewno ──► łuczarz ──► łuki
 skóry ──► garbarz-płatnerz ──► zbroje skórzane · żelazo ──► płatnerz ──► kolczugi
 stadnina★ ──► konie
-drewno ──► smolarnia ──► smoła (stocznia)
+drewno ──► smolarnia ──► smoła (stocznia)   ← od M5
+```
+
+[M5, część 1]
+```
+drewno (2) ──► smolarnia ──► smoła (1 beczka)
+deski + smoła ──► stocznia ──► łódź rybacka (6 desek, 2 smoły)
+ławica ryb na morzu ──► przystań rybacka (łódź) ──► ryby (6 na rejs)
 ```
 
 ### 4.4 Widoczna praca: przykłady etapów
@@ -276,6 +283,8 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Koga | transport i handel |
 | Okręt wojenny | transport wojsk i walka |
 
+**Plan M5 (decyzje 2026-11-06, szczegóły w ROADMAP):** w M5 tylko łódź rybacka i koga. Łódź pracuje dla nowej **przystani rybackiej** nad morzem (połów z ławic, więcej niż wędkarz, który zostaje). Statki powstają z desek, smoły (nowa **smolarnia**: drewno → smoła) i sukna. **Kupiec morski** przypływa obcą kogą do portu. Własna koga gracza odbywa **rejsy handlowe za horyzont** (wraca ze złotem i zamówionymi towarami). Na „Wybrzeżu” gra zaczyna się od kogi, która wyładowuje osadników na plaży. Reszta drzewka okrętów (IDEAS) później.
+
 ### 5.5 Lista budynków [SLICE]
 
 | Budynek | Rozmiar (kafle) | Funkcja |
@@ -308,6 +317,9 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Chlew [M4b-2] | 3×3, stado do 12 świń | świnie (świniarz karmi stado) |
 | Rzeźnia [M4b-2] | 2×2 | mięso i skóry ze świni |
 | Stajnia [M4b-3] | 3×3, 40 złota | 2 wozy konne z woźnicami |
+| Smolarnia [M5] | 2×2 | smoła z drewna |
+| Stocznia [M5] | 4×4 (pochylnia na 2 rzędach wody), 30 złota | statki na zamówienie (w części 1 łódź rybacka) |
+| Przystań rybacka [M5] | 3×3 (pomost na wodzie) | ryby z ławic, łódź ze stoczni |
 
 ---
 

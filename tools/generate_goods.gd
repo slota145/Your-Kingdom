@@ -66,6 +66,8 @@ const GOODS := {
 	# A live pig: led beside the butcher (carried/animal: rows S, SE, E, NE, N), and a herd
 	# grazing on its tile instead of a heap (1 to 4 pigs).
 	"pig": {"item": "pig", "carry": "animal"},
+	# M5 (the sea)
+	"tar": {"item": "tar_barrel", "carry": "barrel"},
 }
 
 ## Item -> positions [grid x, grid y, z] in fill order (a quarter of them per stage).
@@ -243,7 +245,7 @@ func _place(item: String, p: Vector3, index: int) -> void:
 func _item_height(item: String) -> float:
 	return {"flour_sack": 7.0, "sheaf": 12.0, "bread_crate": 7.0, "fish_crate": 7.0, "hop_basket": 8.0,
 			"barrel": 11.0, "block": 7.0, "wool_bale": 8.0, "cloth_bolt": 5.0, "clothes_basket": 8.0,
-			"honey_pot": 9.0, "mead_barrel": 11.0, "clay_sack": 7.0, "brick_pile": 6.0,
+			"honey_pot": 9.0, "mead_barrel": 11.0, "tar_barrel": 11.0, "clay_sack": 7.0, "brick_pile": 6.0,
 			"meat_crate": 7.0, "hide_bundle": 4.0}.get(item, 7.0)
 
 
@@ -319,6 +321,13 @@ func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -
 			_ellipse(img, foot - Vector2(0, 11.0) * s, Vector2(4.0, 1.6) * s, C_BARREL.lightened(0.18))
 			# Golden honey mark on the side tells mead from beer.
 			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(1.6, 1.3) * s, C_HONEY)
+		"tar_barrel":
+			# A dark barrel with tar run down from the bung.
+			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(5.0, 6.0) * s, Color(0.26, 0.19, 0.14).darkened(v))
+			_line(img, foot - Vector2(5, 8) * s, foot - Vector2(-5, 8) * s, C_IRON, 1)
+			_line(img, foot - Vector2(5, 3) * s, foot - Vector2(-5, 3) * s, C_IRON, 1)
+			_ellipse(img, foot - Vector2(0, 11.0) * s, Vector2(4.0, 1.6) * s, Color(0.1, 0.08, 0.07))
+			_line(img, foot - Vector2(1, 11) * s, foot - Vector2(1, 6) * s, Color(0.06, 0.05, 0.05), 1)
 		"clay_sack":
 			_ellipse(img, foot - Vector2(0, 4.5) * s, Vector2(6.5, 5.0) * s, C_SACK.darkened(0.15 + v))
 			_ellipse(img, foot - Vector2(0, 8.5) * s, Vector2(4.0, 2.0) * s, C_CLAY)

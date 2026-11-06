@@ -267,6 +267,14 @@ Testy jednostkowe obejmują każdy z tych przypadków.
 
 - **Tereny (część 2):** `TerrainDef.farmable` (kamienisty grunt: nie, `field_error` → `terrain_not_farmable`), `counts_as` (jezioro liczy się jako `water` dla `needs_terrain_near`, `find_shore` i komunikatu o wejściu na wodę; `is_kind`), `extra_map_color` + `extra_node` (drugi kolor na mapie: kamienisty grunt ze skałą). `ResourceNodeDef.leaves_terrain`: wydobyta skała zamienia kafel w kamienisty grunt (`ProvinceSim.leave_terrain`, zdarzenie `terrain_changed`). Mapa `lakeland` (128×128) jest rysowana skryptem `tools/generate_lakeland_map.py`; menu ma przycisk „Nowa gra” dla każdej mapy (`Game.start_request["map"]`).
 
+**Realizacja (M5, część 1):**
+- **Statek** (`ShipUnit`, `ProvinceSim.ships`): id, definicja (`ShipDef`, `data/ships/`), pozycja i kierunek, ścieżka, dom (`home_id`: przystań), przystań lub stocznia, przy której cumuje (`dock_id`), załoga (`crew`: id postaci) i ładownia (`Stockpile`, adresowana id statku jak magazyn; na razie trafiają tam tylko ryby rybaka, który zniknął na morzu). `Ships.move_all` przesuwa statki co tick i niesie załogę (postać ma wtedy `vehicle = boat` i nie chodzi sama).
+- **Budynki na wodzie:** `BuildingDef.water_tiles` (kafle, które muszą być morzem), `berth` (miejsce cumowania przed pomostem), `berth_fairway` (stocznia: potrzebny tor do głębokiej wody). `BuildingDef.turned` obraca kafle względne jak wejście. `placement_error`: `needs_sea`, `no_berth`, `no_deep_water`, `tile_has_ship`.
+- **Stocznia:** `BuildingState.ship_orders` (kolejka, komendy `OrderShipCommand`, `CancelShipOrderCommand`). `Ships.update` (co 1 s) otwiera `ShipBuild` dla pierwszego zamówienia: własne id i `Stockpile` jak plac budowy, zlecenia `JobBoard` na wszystkie materiały (z rezerwą magazynów), uzupełniane co sekundę (`ShipBuild.still_needed`). Krok `ship_build` (`ShipBuildStep`): etap startuje, gdy jego materiały leżą na pochylni, cieśla odrabia `build_time / stages`; po ostatnim etapie `Ships.launch` stawia statek na `berth`.
+- **Przystań rybacka:** receptura `net_fishing`: idź do pracy → `SailStep(shoal)` (wsiada do łodzi przy pomoście albo przy stoczni, zajmuje najbliższą ławicę w promieniu 24 kafli i płynie na nią) → praca `cast_net`, `wait_net`, `haul_net` → `GatherStep` (6 ryb) → `SailStep(home)` → `DeliverStep`. Zadanie przerwane na morzu kończy się zadaniem `sail_home`. `Ships.update` daje nowym łodziom najbliższą przystań bez łodzi i odsyła do domu łodzie bez załogi.
+- **Ławice:** węzeł `fish_shoal` (`solid = false`) z `ResourceNodeDef.regrow_time`: co 20 s każda ławica poniżej pełnej odzyskuje rybę (w tickach podzielnych przez czas odnowy, więc bez zapisywanego licznika; `ProvinceSim._regrow_nodes`). Ławice na mapie to drugi kolor terenu morza (`extra_map_color`).
+- **Widok:** `ShipLayer` (statki i statek na pochylni, w świecie sortowanym), `ShoalLayer` (ławice, pod światem); `AgentViewPool` nie rysuje postaci na łodzi. Shader terenu ma slot `SHALLOW`.
+
 ### 5.3 Pathfinding
 
 **Decyzja:** `AStarGrid2D` (implementacja C++ w Godocie) na siatce kafli w **przestrzeni siatki, nie ekranu**, z 8 kierunkami ruchu i `DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES`, co zapobiega przechodzeniu „przez róg” między dwoma ukośnymi kaflami muru.
@@ -279,7 +287,7 @@ Testy jednostkowe obejmują każdy z tych przypadków.
 | Pamięć podręczna | Częste trasy (budynek → najbliższy magazyn) są cache’owane per para (budynek, magazyn) i unieważniane przy zmianie wersji siatki w obszarze trasy. **W M2 jeszcze niepotrzebne** (500 tragarzy mieści się w budżecie, §9.3). **W M4b-3 też niepotrzebne:** na dużym mieście wyszukiwanie tras to ok. 0,15 ms na tick (§9.3). |
 | Rezerwa | Jeśli pomiary w M1 pokażą problem: pola przepływu (flow fields) do magazynów, hierarchiczny A* albo zapytania na `WorkerThreadPool`. |
 | Kolizje postaci | **Brak kolizji między postaciami.** Kilka osób może stać na jednym kaflu. Widok dodaje małe, stałe przesunięcie wynikające z id postaci, żeby postacie nie nakładały się idealnie. To kluczowa oszczędność wydajności, typowa dla gatunku. |
-| Okręty | Osobny `NavGrid` dla wody o tej samej strukturze, przygotowany pod bitwy morskie [PÓŹNIEJ]. |
+| Okręty | **M5:** dwie wodne `NavGrid` w `ProvinceSim`: `boat_nav` (płytkie i głębokie morze, `TerrainDef.sail_depth` ≥ 1) i `cog_nav` (głębokie morze i tor wodny). Kafle budynków są zamknięte dla statków. Tor wodny (`ProvinceSim.fairway`, wyliczany, niezapisywany) to najkrótsza droga po płytkiej wodzie od miejsca cumowania stoczni do głębokiej (`Ships.fairway_from`, BFS po 4 sąsiadach). Statki nie zderzają się ze sobą. Ta sama struktura posłuży bitwom morskim [PÓŹNIEJ]. |
 
 ### 5.4 Ruch
 
@@ -441,6 +449,7 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Wersja 4 (M4a, wnioski z testów):** zapas na budowy w prowincji (`keep_for_building`, towar → liczba sztuk). Migracja v3 → v4 daje pusty zapas, więc stara gra działa jak wcześniej. Fixtura: `tests/fixtures/saves/v4_town.json`.
 - **Wersja 7 (M4b-2):** kupiec (`merchant`: stan, następna wizyta, progi sprzedaży `sell_above`, a w czasie wizyty wóz z własnym id), niepuste stosy przy budynkach i stada (`yard`), czas rozmnażania (`breed`), kramy targowiska (`supply` z `single`). Migracja v6 → v7 daje spiżarniom chat slot na mięso i kupca w drodze (pierwsza wizyta od razu). Fixtura: `tests/fixtures/saves/v7_town.json`.
 - **Wersja 6 (M4b-1.5):** każdy budynek zapisuje orientację (`orient`), dom wybrany wygląd (`look`, gdy różny od 0), a leśniczówka zaznaczone miejsce sadzenia (`plant_area`, gdy niepuste). Migracja v5 → v6 daje 0, czyli dotychczasowe wejście. Fixtura: `tests/fixtures/saves/v6_town.json`.
+- **Wersja 9 (M5, część 1):** statki (`ships`: pozycja, ścieżka, dom, cumowanie, załoga, ładownia) i statki na pochylniach (`ship_builds`), kolejki stoczni (`ship_orders` przy budynku). Tor wodny nie jest zapisywany. Migracja v8 → v9 daje puste listy. Fixtura: `tests/fixtures/saves/v9_harbour.json` (rybak na morzu, druga łódź na pochylni).
 - **Mapa** to obrazek PNG importowany jako `Image` (nie tekstura), więc symulacja czyta piksele bez widoku. Kolor piksela = `TerrainDef.map_color`. Zapis gry zawiera już gotowy teren, więc późniejsza zmiana obrazka nie psuje zapisów.
 - **Test round-trip:** stan → zapis → odczyt → zapis daje identyczny słownik. Dodatkowo test, w którym symulacja po wczytaniu idzie dalej deterministycznie tak samo jak bez zapisu.
 
@@ -538,7 +547,7 @@ Pierwszy tick po wczytaniu trwa ok. 0,25 s: wtedy wszystkie budynki usługowe li
 ## 10. Walka i jednostki (przygotowanie)
 
 - Żołnierz to `Agent` z `CombatState` (HP, cel, cooldown ataku). Te same systemy ruchu, sortowania i animacji co cywile.
-- Okręt to `ShipUnit` z `CombatState` i ładownią (`Inventory`), poruszający się po `NavGrid` wodnym. Na mapie świata to część floty. **Struktura od razu pozwala na interaktywne bitwy morskie [PÓŹNIEJ]** bez przebudowy: brakuje wtedy tylko AI walki okrętów, animacji i UI.
+- Okręt to `ShipUnit` z `CombatState` i ładownią (`Inventory`), poruszający się po `NavGrid` wodnym. **M5 część 1:** `ShipUnit` istnieje bez `CombatState` (ładownia to `Stockpile`, ruch po `boat_nav` albo `cog_nav`, §5.2). Na mapie świata to część floty. **Struktura od razu pozwala na interaktywne bitwy morskie [PÓŹNIEJ]** bez przebudowy: brakuje wtedy tylko AI walki okrętów, animacji i UI.
 - Automatyczne rozstrzyganie (`BattleResolver`) to czysta funkcja `(armia A, armia B, teren, fortyfikacje, rng) → wynik`, pokryta testami.
 
 ---

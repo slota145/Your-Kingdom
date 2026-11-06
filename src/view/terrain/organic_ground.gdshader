@@ -52,6 +52,8 @@ const int SEA = 5;
 const int SAND = 6;
 const int STONY = 7;
 const int LAKE = 8;
+// Shallow sea (M5): boats sail here, cogs do not. Deep sea is SEA.
+const int SHALLOW = 9;
 
 varying vec2 world_pos;
 
@@ -146,7 +148,7 @@ int slot_at(vec2 grid) {
 }
 
 bool is_water(int slot) {
-	return slot == WATER || slot == FORD || slot == SEA || slot == LAKE;
+	return slot == WATER || slot == FORD || slot == SEA || slot == LAKE || slot == SHALLOW;
 }
 
 const vec2 RING[4] = vec2[](vec2(0.707, 0.707), vec2(-0.707, 0.707), vec2(0.707, -0.707), vec2(-0.707, -0.707));
@@ -162,6 +164,13 @@ bool water_near(vec2 grid, float r) {
 bool land_near(vec2 grid, float r) {
 	for (int i = 0; i < 4; i++) {
 		if (!is_water(slot_at(grid + RING[i] * r))) return true;
+	}
+	return false;
+}
+
+bool shallow_near(vec2 grid, float r) {
+	for (int i = 0; i < 4; i++) {
+		if (slot_at(grid + RING[i] * r) == SHALLOW) return true;
 	}
 	return false;
 }
@@ -194,6 +203,7 @@ vec3 ground_colour(int slot, vec2 grid, vec2 pixel) {
 	if (slot == FORD) return sample_diamond(ford_tex, grid).rgb;
 	if (slot == SEA) return mixed(sea_tex, sea_alt_tex, grid, pixel, 9.1);
 	if (slot == SAND) return sample_diamond(sand_tex, grid).rgb;
+	if (slot == SHALLOW) return mixed(shallow_tex, sea_tex, grid, pixel, 4.7) * 0.15 + sample_diamond(shallow_tex, grid).rgb * 0.85;
 	if (slot == STONY) return mixed(stony_tex, stony_alt_tex, grid, pixel, 31.7);
 	if (slot == LAKE) return mixed(lake_tex, lake_alt_tex, grid, pixel, 17.3);
 	// Grass: lighter and darker patches with dithered edges.
@@ -228,18 +238,20 @@ void fragment() {
 	vec2 flow = vec2(0.0);
 	if (slot == WATER) flow = floor(river_flow * t);
 	else if (slot == FORD) flow = floor(river_flow * 0.5 * t);
-	else if (slot == SEA) flow = floor(sea_drift * t);
+	else if (slot == SEA || slot == SHALLOW) flow = floor(sea_drift * t);
 	else if (slot == LAKE) flow = floor(lake_drift * t);
 	vec2 moved_pixel = pixel - flow;
 	vec2 moved_grid = screen_to_grid(moved_pixel);
 	vec3 colour = ground_colour(slot, moved_grid, moved_pixel);
 	if (organic) {
 		if (is_water(slot)) {
-			if (slot == SEA) {
+			if (slot == SEA || slot == SHALLOW) {
 				// Shallows along the shore, a dithered step towards deep water, surf on the sand.
-				if (land_near(warped, 0.9)) {
+				// Shallow sea tiles (M5) are shallow water whatever is near; deep sea next to
+				// them steps down in a dithered band.
+				if (slot == SHALLOW || land_near(warped, 0.9)) {
 					colour = sample_diamond(shallow_tex, moved_grid).rgb;
-				} else if (land_near(warped, 1.5) && bayer4(pixel) < 0.5) {
+				} else if ((land_near(warped, 1.5) || shallow_near(warped, 0.6)) && bayer4(pixel) < 0.5) {
 					colour = sample_diamond(shallow_tex, moved_grid).rgb;
 				}
 				// Surf: the foam line runs up the sand and back, out of step along the coast.

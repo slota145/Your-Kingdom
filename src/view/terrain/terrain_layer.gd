@@ -14,10 +14,11 @@ const FIELD_ART: Dictionary[int, String] = {
 	FieldStore.Stage.FALLOW: "fallow", FieldStore.Stage.PLOWED: "plowed", FieldStore.Stage.RIPE: "ripe",
 }
 ## Art slots known to the shader (order matches its constants).
-enum Slot { GRASS, MEADOW, FOREST, WATER, FORD, SEA, SAND, STONY, LAKE }
+enum Slot { GRASS, MEADOW, FOREST, WATER, FORD, SEA, SAND, STONY, LAKE, SHALLOW }
 const SLOT_BY_TERRAIN: Dictionary[StringName, Slot] = {
 	&"grass": Slot.GRASS, &"meadow": Slot.MEADOW, &"forest": Slot.FOREST, &"water": Slot.WATER,
 	&"ford": Slot.FORD, &"sea": Slot.SEA, &"sand": Slot.SAND, &"stony": Slot.STONY, &"lake": Slot.LAKE,
+	&"sea_deep": Slot.SEA, &"sea_shallow": Slot.SHALLOW,
 }
 ## Shader texture uniform -> art file.
 const TEXTURES: Dictionary[String, String] = {
@@ -275,7 +276,7 @@ func _reed_shore(tile: Vector2i) -> Vector2:
 		if not area.has_point(t):
 			continue
 		var slot := roundi(_map_image.get_pixelv(t).r * 255.0)
-		if slot != Slot.LAKE and slot != Slot.WATER and slot != Slot.FORD and slot != Slot.SEA:
+		if slot != Slot.LAKE and slot != Slot.WATER and slot != Slot.FORD and slot != Slot.SEA and slot != Slot.SHALLOW:
 			towards += Vector2(step)
 	return towards.normalized() if towards != Vector2.ZERO else Vector2.ZERO
 

@@ -1487,3 +1487,224 @@ msgstr "%+.1f"
 
 msgid "ui.building.stalls_empty"
 msgstr "Not working: the stalls are empty. The stallholders bring goods from storages."
+
+
+# --- M5 part 1: sea, ships and fish ---
+
+msgid "terrain.sand.name"
+msgstr "Sand"
+
+msgid "terrain.sand.desc"
+msgstr "A beach by the sea. You can build and lay roads here, but fields will not grow."
+
+msgid "terrain.sea_shallow.name"
+msgstr "Shallow sea"
+
+msgid "terrain.sea_shallow.desc"
+msgstr "Water near the shore. Fishing boats sail here, but a cog would run aground."
+
+msgid "terrain.sea_deep.name"
+msgstr "Deep sea"
+
+msgid "terrain.sea_deep.desc"
+msgstr "The open sea. Boats and cogs sail here."
+
+msgid "resource_node.fish_shoal.name"
+msgstr "Fish shoal"
+
+msgid "resource_node.fish_shoal.desc"
+msgstr "Fish under the sea. A fisherman casts his net here from his boat. The fish slowly come back."
+
+msgid "map.coast.name"
+msgstr "Coast"
+
+msgid "map.coast.desc"
+msgstr "A land by the sea: a beach, shallow water by the shore, a bay with a river flowing into it, forests and a stony hill. Fish shoals out at sea."
+
+msgid "good.tar.name"
+msgstr "Tar"
+
+msgid "good.tar.desc"
+msgstr "Thick black tar in a barrel. It seals the hulls of ships."
+
+msgid "building.tar_kiln.name"
+msgstr "Tar kiln"
+
+msgid "building.tar_kiln.desc"
+msgstr "The tar burner stacks wood in a tar pit, burns it slowly under the earth and drains the tar into a barrel."
+
+msgid "building.shipyard.name"
+msgstr "Shipyard"
+
+msgid "building.shipyard.desc"
+msgstr "The shipwright builds the ships you order on the slipway. Porters bring planks and tar. Build it on the sea shore, slipway towards the water."
+
+msgid "building.fishing_wharf.name"
+msgstr "Fishing wharf"
+
+msgid "building.fishing_wharf.desc"
+msgstr "The fisherman rows out to a shoal, fishes with a net and comes back with a big catch. The boat comes from a shipyard. Build it on the sea shore, pier towards the water."
+
+msgid "recipe.tar_making.name"
+msgstr "Tar burning"
+
+msgid "recipe.tar_making.desc"
+msgstr "2 wood make a barrel of tar."
+
+msgid "recipe.shipbuilding.name"
+msgstr "Shipbuilding"
+
+msgid "recipe.shipbuilding.desc"
+msgstr "A ship grows on the slipway stage by stage, from planks and tar."
+
+msgid "recipe.net_fishing.name"
+msgstr "Net fishing"
+
+msgid "recipe.net_fishing.desc"
+msgstr "The fisherman catches 6 fish per trip in his boat."
+
+msgid "ship.fishing_boat.name"
+msgstr "Fishing boat"
+
+msgid "ship.fishing_boat.desc"
+msgstr "A small boat of a fishing wharf. Sails on shallow and deep water. Cost: 6 planks, 2 barrels of tar."
+
+msgid "ship.cog.name"
+msgstr "Cog"
+
+msgid "ship.cog.desc"
+msgstr "A big trading ship. Sails on deep water only."
+
+msgid "ui.build.tab.harbour"
+msgstr "Sea and ships"
+
+msgid "ui.kind.shipwright"
+msgstr "Shipwright"
+
+msgid "ui.kind.tar_burner"
+msgstr "Tar burner"
+
+msgid "ui.kind.fisher"
+msgstr "Fisherman"
+
+msgid "ui.activity.stack"
+msgstr "stacks wood in the pit"
+
+msgid "ui.activity.tend_fire"
+msgstr "tends the fire in the tar pit"
+
+msgid "ui.activity.tap"
+msgstr "drains tar into a barrel"
+
+msgid "ui.activity.hammer"
+msgstr "builds a ship on the slipway"
+
+msgid "ui.activity.cast_net"
+msgstr "casts the net"
+
+msgid "ui.activity.wait_net"
+msgstr "waits for fish to swim into the net"
+
+msgid "ui.activity.haul_net"
+msgstr "hauls in the net"
+
+msgid "ui.doing.go_to_boat"
+msgstr "going to the boat"
+
+msgid "ui.doing.sail_out"
+msgstr "rowing out to the fishing ground"
+
+msgid "ui.doing.sail_home"
+msgstr "rowing back to the wharf"
+
+msgid "ui.doing.slipway_of"
+msgstr "slipway (%s)"
+
+msgid "ui.reason.no_boat"
+msgstr "the wharf has no boat (order one at a shipyard)"
+
+msgid "ui.reason.boat_away"
+msgstr "the boat is on its way"
+
+msgid "ui.reason.no_order"
+msgstr "no ship ordered"
+
+msgid "ui.reason.no_material"
+msgstr "waiting for materials"
+
+msgid "ui.command_error.needs_sea"
+msgstr "The pier or slipway must stand in the sea."
+
+msgid "ui.command_error.no_berth"
+msgstr "There must be open water in front of the pier for a ship."
+
+msgid "ui.command_error.no_deep_water"
+msgstr "Too far from deep water."
+
+msgid "ui.command_error.tile_has_ship"
+msgstr "A ship is in the way."
+
+msgid "ui.command_error.ship_not_built_here"
+msgstr "This ship cannot be built here."
+
+msgid "ui.command_error.orders_full"
+msgstr "The shipyard queue is full."
+
+msgid "ui.command_error.no_such_order"
+msgstr "No such order."
+
+msgid "ui.shipyard.idle"
+msgstr "The slipway is empty. Order a ship."
+
+msgid "ui.shipyard.building"
+msgstr "On the slipway: %s, stage %d of %d (%s)"
+
+msgid "ui.shipyard.stage.0"
+msgstr "frame"
+
+msgid "ui.shipyard.stage.1"
+msgstr "planking"
+
+msgid "ui.shipyard.stage.2"
+msgstr "mast and sail"
+
+msgid "ui.shipyard.stage.3"
+msgstr "launch"
+
+msgid "ui.shipyard.order"
+msgstr "Order:"
+
+msgid "ui.shipyard.queue"
+msgstr "Orders:"
+
+msgid "ui.shipyard.queue_empty"
+msgstr "No orders."
+
+msgid "ui.shipyard.cancel"
+msgstr "Cancel"
+
+msgid "ui.wharf.no_boat"
+msgstr "No boat. Order a fishing boat at a shipyard."
+
+msgid "ui.wharf.boat_out"
+msgstr "The boat is out at sea."
+
+msgid "ui.wharf.boat_home"
+msgstr "The boat is moored at the pier."
+
+msgid "ui.wharf.boat_at_shipyard"
+msgstr "A new boat waits at the shipyard. The fisherman will fetch it."
+
+msgid "ui.wharf.boat_coming"
+msgstr "The boat is sailing to the wharf."
+
+msgid "good.tar.count"
+msgid_plural "good.tar.count_plural"
+msgstr[0] "%s barrel of tar"
+msgstr[1] "%s barrels of tar"
+
+msgid "ui.shipyard.queue_item"
+msgstr "%d. %s"
+
+msgid "ui.command_error.cannot_turn_on_water"
+msgstr "A building on the water cannot be turned."
