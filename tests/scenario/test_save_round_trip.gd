@@ -407,7 +407,7 @@ func test_v10_fixture_loads_and_continues() -> void:
 ## Wood already in the cog's hold in [param state] (it sails away with him).
 func _wood_aboard(state: Dictionary) -> int:
 	var sum := 0
-	for ship: Variant in state["province"]["ships"]:
+	for ship: Variant in state["provinces"][0]["state"]["ships"]:
 		var hold: Dictionary = (ship as Dictionary).get("hold", {})
 		if hold.is_empty():
 			continue

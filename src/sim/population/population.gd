@@ -32,6 +32,8 @@ const IMMIGRATION_EVERY := 10
 const IMMIGRATION_MIN_HAPPINESS := 50.0
 ## Units a householder carries at most.
 const ERRAND_LOAD := 2
+## Seconds between two top-ups of a pantry in the simplified mode (M6).
+const REFILL_EVERY := 5
 
 const HOUSEHOLDER_KIND := &"householder"
 const SETTLER_KIND := &"settler"
@@ -55,10 +57,30 @@ static func update(province: ProvinceSim) -> void:
 		_balance_workforce(province)
 
 
+## One second of the houses of a province in the simplified mode (ARCHITECTURE §7.1): the
+## same rules on numbers. Pantries are topped up straight from the storages (no
+## householders), newcomers move in at once and nobody is hired (ProvinceAbstract staffs the
+## workplaces by number).
+static func update_abstract(province: ProvinceSim, doors: Dictionary[int, Array] = {}) -> void:
+	province.coverage.update(province)
+	var stored: Dictionary[StringName, int] = {}
+	for building: BuildingState in province.buildings.all():
+		if building.house != null:
+			_update_house(province, building, stored, true, doors)
+	if province.tick % (IMMIGRATION_EVERY * UPDATE_TICKS) < UPDATE_TICKS:
+		for building: BuildingState in province.buildings.all():
+			var house := building.house
+			if house != null and house.free_places(building.capacity()) > 0 \
+					and house.happiness >= IMMIGRATION_MIN_HAPPINESS:
+				house.residents += 1
+				break
+
+
 # --- Households ----------------------------------------------------------------------------
 
 static func _update_house(province: ProvinceSim, building: BuildingState,
-		stored: Dictionary[StringName, int]) -> void:
+		stored: Dictionary[StringName, int], abstract: bool = false,
+		door_cache: Dictionary[int, Array] = {}) -> void:
 	var house := building.house
 	var level := building.level_def()
 	var target := 0.0
@@ -66,7 +88,12 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 	var doors: Array[Vector2i] = []
 	for need: NeedDef in level.needs:
 		if need.is_service() and doors.is_empty():
-			doors = province.door_tiles(building)
+			if abstract and door_cache.has(building.id):
+				doors.assign(door_cache[building.id])
+			else:
+				doors = province.door_tiles(building)
+				if abstract:
+					door_cache[building.id] = doors
 		var ok := _need_met(province, building, need, doors)
 		house.satisfied[need.id] = ok
 		if ok:
@@ -79,7 +106,12 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 		target = minf(target, SHORTAGE_HAPPINESS)
 		speed = SHORTAGE_SPEED
 	house.happiness = move_toward(house.happiness, target, speed)
-	_request_supplies(province, building, stored)
+	if abstract:
+		# Every few seconds is enough: a pantry holds several units (and saves the searches).
+		if (province.tick / UPDATE_TICKS + building.id) % REFILL_EVERY == 0:
+			_refill_pantry(province, building)
+	else:
+		_request_supplies(province, building, stored)
 	_pay_taxes(province, building)
 	if house.residents == 0:
 		house.met_seconds = 0
@@ -212,6 +244,29 @@ static func _request_supplies(province: ProvinceSim, building: BuildingState,
 			house.errands[good] = agent.id
 
 
+## The simplified mode's householders: a good in the pantry down to half is topped up at
+## once from the storages (ARCHITECTURE §7.1).
+static func _refill_pantry(province: ProvinceSim, building: BuildingState) -> void:
+	var house := building.house
+	house.errands.clear()
+	if house.residents == 0:
+		return
+	var limit := building.level_def().supply_units
+	for need: NeedDef in building.level_def().needs:
+		for good: StringName in need.goods:
+			var have := building.supply.total(good)
+			if have * 2 > limit:
+				continue
+			var room := limit - have
+			while room > 0 and not building.supply.can_accept(good, room):
+				room -= 1
+			if room <= 0:
+				continue
+			var taken := province.take_from_storages(good, room, building.entrance_tile(), false)
+			if taken > 0:
+				building.supply.add(good, taken)
+
+
 # --- Newcomers -----------------------------------------------------------------------------
 
 static func _immigrate(province: ProvinceSim) -> void:
@@ -230,6 +285,35 @@ static func _immigrate(province: ProvinceSim) -> void:
 
 
 # --- Workforce -----------------------------------------------------------------------------
+
+## Hires workers for every workplace short of them, the new ones standing at their
+## workplaces (a province coming back from the simplified mode, ARCHITECTURE §7.2).
+static func staff_at_workplaces(province: ProvinceSim) -> void:
+	_balance_workforce(province, true)
+
+
+## Workers each workplace would have by the rules of [method _balance_workforce] (player's
+## priority, staffing priority, age), counted without people: building id -> workers. Workers
+## without a house (the pioneer camp's settlers) come in [param homeless].
+static func staffing(province: ProvinceSim, homeless: Dictionary[int, int]) -> Dictionary[int, int]:
+	var free := 0
+	for building: BuildingState in province.buildings.all():
+		if building.house != null:
+			free += building.house.workforce()
+	var workplaces: Array[BuildingState] = []
+	for building: BuildingState in province.buildings.all():
+		if building.is_complete() and building.def.worker_count() > 0:
+			workplaces.append(building)
+	workplaces.sort_custom(_staffed_before)
+	var result: Dictionary[int, int] = {}
+	for workplace: BuildingState in workplaces:
+		var have: int = mini(homeless.get(workplace.id, 0), workplace.def.worker_count())
+		var hired := mini(workplace.def.worker_count() - have, free)
+		free -= hired
+		if have + hired > 0:
+			result[workplace.id] = have + hired
+	return result
+
 
 static func workforce(province: ProvinceSim) -> int:
 	var sum := 0
@@ -252,7 +336,7 @@ static func employed_from(province: ProvinceSim, house_id: int) -> Array[Agent]:
 ## oldest building; nearest house first). When nobody is free and a building stays short,
 ## one worker of the lowest-priority building below it goes home, to be hired again next
 ## second by the more important one.
-static func _balance_workforce(province: ProvinceSim) -> void:
+static func _balance_workforce(province: ProvinceSim, at_workplace: bool = false) -> void:
 	var free: Dictionary[int, int] = {}
 	var houses: Array[BuildingState] = []
 	var employed_by_house: Dictionary[int, Array] = {}
@@ -283,7 +367,10 @@ static func _balance_workforce(province: ProvinceSim) -> void:
 				_free_worker_for(province, workplace)
 				return
 			free[home.id] -= 1
-			var agent := province.spawn_agent(kind, home.entrance_tile())
+			var at := home.entrance_tile()
+			if at_workplace:
+				at = workplace.entrance_tile()
+			var agent := province.spawn_agent(kind, at)
 			agent.home_id = home.id
 			province.assign_worker(agent, workplace)
 			province.events.emit(&"worker_hired", {"agent": agent.id, "building": workplace.id,

@@ -24,7 +24,13 @@ func _init() -> void:
 		_used.append({})
 
 
+## Units made of each good since the province was created or loaded (tests compare the two
+## simulation modes with it, M6).
+var made_total: Dictionary[StringName, int] = {}
+
+
 func made(good: StringName, amount: int, tick: int) -> void:
+	made_total[good] = made_total.get(good, 0) + amount
 	_add(_made, good, amount, tick)
 
 

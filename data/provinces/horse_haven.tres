@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ProvinceDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/province_def.gd" id="1_province"]
+
+[resource]
+script = ExtResource("1_province")
+template = &"coast"
+mirrored = true
+richness = 2
+rare_resource = &"horses"
+owner = &"neutral"
+neighbours = Array[StringName]([&"landing_bay", &"vine_hills"])
+coastal = true
+world_pos = Vector2(540, 645)
+outline = PackedVector2Array(452, 520, 622, 540, 652, 652, 640, 760, 446, 760, 418, 640)
+id = &"horse_haven"

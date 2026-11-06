@@ -6,6 +6,7 @@ signal save_requested
 signal load_requested
 signal menu_requested
 signal stocks_requested
+signal world_requested
 
 var province: ProvinceSim
 var clock: SimClock
@@ -26,6 +27,7 @@ func _init() -> void:
 	row.add_child(spacer)
 	_speed = UiKit.label("", false)
 	row.add_child(_speed)
+	row.add_child(UiKit.button("ui.hud.world", func() -> void: world_requested.emit()))
 	row.add_child(UiKit.button("ui.hud.stocks", func() -> void: stocks_requested.emit()))
 	row.add_child(UiKit.button("ui.hud.pause", Game.toggle_pause))
 	row.add_child(UiKit.button("ui.hud.slower", func() -> void: Game.set_speed_index(Game.speed_index - 1)))

@@ -51,6 +51,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
   - **właściciela**: gracz, władca AI, osada neutralna albo prowincja pusta.
 - Na mapie świata poruszają się **armie** (lądem), **floty** (strefami morskimi) i **konwoje handlowe** (wozy lub statki).
 - Ruch odbywa się w czasie rzeczywistym, po krawędziach grafu, a czas przejścia zależy od dystansu i rodzaju jednostki.
+- **M6, część 1 (2026-11-06):** pierwszy świat „Królestwo” ma 9 ręcznie ułożonych prowincji (dane w `data/provinces/` i `data/worlds/`): Zatoka Lądowania (start), Bursztynowe Wybrzeże, Wierzbowa Dolina, Lustrzane Jeziora, Winne Wzgórza (winorośl), Mewia Wyspa (winorośl), Solna Wyspa (sól), oraz osady neutralne Żelazny Gród (ruda żelaza) i Końska Przystań (pastwiska koni). Wóz jedzie do sąsiada ok. 2–3 minuty gry, koga między portami 3–6 minut. Mapa świata to osobny ekran (klawisz M albo przycisk „Mapa”): pergamin rysowany kodem, granice, kolor i herb właściciela, miasta, rzadkie surowce; kliknięta prowincja pokazuje panel z właścicielem, mieszkańcami, zapasami i przyciskiem „Wejdź”. W menu „Nowa gra” startuje w świecie, a „Pojedyncza prowincja: …” na starych mapach.
 
 #### Zdobywanie prowincji
 
@@ -65,7 +66,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
 
 - Mapa kafelkowa o rozmiarze 96–192 kafli na bok, zależnie od typu mapy.
 - Tu budujemy, produkujemy, rekrutujemy, budujemy okręty i bronimy się.
-- **Szczegółowo** (z postaciami) symulowana jest tylko prowincja oglądana. Pozostałe działają w trybie uproszczonym; ich wyniki są spójne z trybem szczegółowym (zob. ARCHITECTURE §7).
+- **Szczegółowo** (z postaciami) symulowana jest tylko prowincja oglądana. Pozostałe działają w trybie uproszczonym; ich wyniki są spójne z trybem szczegółowym (zob. ARCHITECTURE §7). Otwarcie mapy świata nie przełącza trybu: ostatnio oglądana prowincja dalej żyje z postaciami, dopóki gracz nie wejdzie do innej (decyzja 2026-11-06). Przy wyjściu z prowincji to, co trwa, kończy się od razu: lądowanie (osadnicy stoją na plaży), statki w drodze stają u celu, łodzie rybaków wracają do przystani (decyzja 2026-11-06).
 
 #### Typy map prowincji
 

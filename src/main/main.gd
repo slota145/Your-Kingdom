@@ -1,5 +1,5 @@
 extends Control
-## Start screen: proves localization, plural forms, the font and the data registry.
+## Start screen: new game in the world, single-province games on the old maps, the quick save.
 
 const PLURAL_SAMPLES: PackedInt32Array = [1, 2, 5, 12, 22, 1250]
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -22,22 +22,30 @@ func _ready() -> void:
 	_refresh()
 
 
-## One "New game" button per map (M4b-3: the map is chosen when the game starts). The scene's
-## button becomes the first map's; the others are copies right after it.
+## "New game" starts in the world (M6); below it one "Single province" button per map (the
+## old maps, M4b-3). The scene's button becomes the world's; the others are copies after it.
 func _add_map_buttons() -> void:
 	var first := %NewGameButton as Button
-	var maps := Data.registry.all_of(&"map")
+	var worlds := Data.registry.all_of(&"world")
 	var at := first.get_index()
+	var maps := Data.registry.all_of(&"map")
 	for i: int in maps.size():
 		var map := maps[i] as MapDef
-		var button := first if i == 0 else first.duplicate() as Button
-		if i > 0:
-			first.get_parent().add_child(button)
-			first.get_parent().move_child(button, at + i)
+		var button := first.duplicate() as Button
+		first.get_parent().add_child(button)
+		first.get_parent().move_child(button, at + 1 + i)
 		button.set_meta(&"map", map.id)
+		button.add_theme_font_size_override(&"font_size", 26)
 		button.pressed.connect(func() -> void:
 			Game.start_request = {"map": map.id}
 			_open(GAME_SCENE))
+	# Connected after the copies were made (duplicate() copies connections too).
+	if not worlds.is_empty():
+		var world_id := worlds[0].id
+		first.pressed.connect(func() -> void:
+			Game.start_request = {"world": world_id}
+			_open(GAME_SCENE))
+	first.disabled = worlds.is_empty()
 	_refresh_map_buttons()
 
 
@@ -45,7 +53,7 @@ func _refresh_map_buttons() -> void:
 	for child: Node in (%NewGameButton as Button).get_parent().get_children():
 		if child is Button and child.has_meta(&"map"):
 			var id: StringName = child.get_meta(&"map")
-			(child as Button).text = tr("ui.main.new_game_on") % tr("map.%s.name" % id)
+			(child as Button).text = tr("ui.main.single_on") % tr("map.%s.name" % id)
 			(child as Button).tooltip_text = tr("map.%s.desc" % id)
 
 

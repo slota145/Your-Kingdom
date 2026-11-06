@@ -134,11 +134,16 @@ Test `tests/data/test_data_integrity.gd` sprawdza:
 Simulation (RefCounted)
 ├── clock: SimClock
 ├── rng: SimRng (ziarno + podstrumienie dla systemów)
-├── world: WorldSim            # graf prowincji, armie, floty, szlaki, złoto
-├── provinces: Dictionary[int, ProvinceRuntime]
-│     ProvinceRuntime = ProvinceSim (szczegółowa) LUB ProvinceAbstract (uproszczona)
+├── treasury: Treasury         # złoto, wspólne dla całego królestwa (GDD §3.5)
+├── world: WorldSim            # prowincje świata: definicja, mapa, właściciel; czasy podróży
+│                              # (M7+: armie, floty; M6 cz. 3: szlaki)
+├── runtimes: Dictionary[int, RefCounted]   # tylko zasiedlone prowincje
+│     ProvinceSim (oglądana, szczegółowa) LUB ProvinceAbstract (uproszczona)
+├── viewed_id: int, province: ProvinceSim   # prowincja oglądana = runtimes[viewed_id]
 ├── command_queue: Array[Command]
 └── event_queue: Array[SimEvent]
+
+**M6, część 1:** `Simulation.province` zostało jako skrót do oglądanej prowincji, więc kod widoku, komend i testów działa bez zmian. Gra na jednej mapie to świat z jedną prowincją (`WorldSim.single`, `world_id` pusty). Prowincja pusta nie ma `runtime`, dopóki ktoś jej nie zasiedli (`Simulation.open_province`). Do oglądanej prowincji przełącza `EnterProvinceCommand` (tylko prowincje gracza). Encje wszystkich prowincji biorą id z jednego licznika `EntityIds`, a każda prowincja w trybie uproszczonym ma własną, nieczytaną kolejkę zdarzeń.
 
 ProvinceSim
 ├── grid: TileGrid             # teren, zajętość, drogi, mury
@@ -170,7 +175,7 @@ ProvinceSim
 6. ruch,
 7. ekonomia (konsumpcja, rezerwacje),
 8. populacja (potrzeby, zadowolenie, awans domów),
-9. świat (armie, floty, szlaki, prowincje uproszczone),
+9. świat (armie, floty, szlaki, prowincje uproszczone: każda raz na sekundę, w ticku `id % 10` w obrębie sekundy, żeby nie liczyły się wszystkie naraz),
 10. emisja zdarzeń.
 
 ### 4.3 Komendy i zdarzenia
@@ -435,6 +440,17 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
   - jeśli takich pomiarów nie ma: estymata z długości ścieżki do najbliższego magazynu × 2 / prędkość.
 - Potrzeby, zadowolenie i awans domów działają według tych samych reguł, tylko na zagregowanych liczbach.
 
+**Jak to zrobiliśmy (M6, część 1):**
+- `ProvinceAbstract` **nie kopiuje stanu**: trzyma tę samą `ProvinceSim` bez postaci („zamrożoną”) i liczy na jej budynkach, magazynach, polach i statkach. Dzięki temu wejście i wyjście nie przepisuje towarów, a widok po powrocie od razu ma te same stosy.
+- **Cykl pracy** (`WorkCycle`) czyta przepis budynku: wejścia (kroki pobrania), wyjścia (wytworzenie, zbiór z pola, złoże, ławica), czas pracy, liczbę kursów, sadzenie, obsługę (karczma). Cykl się odbywa, gdy są wejścia, złoże w zasięgu i miejsce w magazynach; inaczej budynek czeka 5 s i próbuje znowu.
+- **Kalibracja** (`ProductionLog` przy `ProvinceSim`, zapisywana): przy oglądanej prowincji każdy budynek notuje odstępy między kolejnymi wytworzeniami głównego towaru (ostatnie 10). Odstęp, w którym pracownik porzucił zadanie (brak wejścia, drzewa, miejsca), nie jest liczony, bo tryb uproszczony sam liczy braki. Pomiar obejmuje więc chodzenie, pracę i czekanie na zboże, czyli pełny czas cyklu. Bez pomiarów: praca + kursy × 2 × ścieżka do najbliższego magazynu / prędkość chodu (+ droga do drzewa, rejs łodzi, a farma: czas wzrostu pola / liczba pól).
+- **Obsada** liczona jest co 10 s tymi samymi regułami co zatrudnianie (`Population.staffing`: priorytet gracza, priorytet obsady, wiek budynku). Robotnicy bez domu (obóz pionierów) i osadnicy z lądowania bez domu są pamiętani z rodzaju.
+- **Domy**: te same reguły (`Population.update_abstract`), tylko spiżarnie są uzupełniane od razu z magazynów co 5 s (zamiast domowników), a przybysz od razu zamieszkuje.
+- **Budowy i stocznie**: co 5 s tragarze (0,1 sztuki na tragarza na sekundę) donoszą materiały na place i pochylnie, a budowniczowie i szkutnicy odrabiają etapy. Zlecenia transportu są przy tym zmniejszane, żeby po powrocie nic nie przyszło dwa razy.
+- **Towary na ziemi, na nabrzeżu i przy warsztatach** trafiają co 5 s do magazynów. Drzewa rosną, ławice odrastają, stada się rozmnażają (stado wymaga obsady).
+- **Kupcy i rejsy po czasie**: kupiec wędrowny i morski handlują od razu, gdy przypada wizyta (te same progi), a koga gracza ładuje plan z magazynów, „płynie” według zegara (wyjazd i powrót + 90 s) i rozładowuje się do magazynów.
+- **Koszt** (pomiar w chmurze, `src/prototype/m6/abstract_bench.gd`): duże miasto z M4b-3 (412 budynków) 0,64 ms na tick (z postaciami 3,6 ms), miasteczka z fixtur ok. 0,02 ms. Cel ≤ 0,2 ms na prowincję spełniają zwykłe prowincje; wielkie miasto w trybie uproszczonym jest ponad celem (do sprawdzenia przy pomiarze 5 prowincji w części 3).
+
 ### 7.2 Przełączanie trybów
 
 | Przejście | Co się dzieje |
@@ -442,7 +458,12 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 | Szczegółowy → uproszczony (gracz opuszcza prowincję) | Towary niesione wracają do magazynu, z którego je pobrano (albo trafiają do celu, jeśli postać była bliżej celu). Rezerwacje zostają wyczyszczone. Postęp cyklu pracy zapisujemy jako procent. Postacie przestają istnieć, a zostają liczby. |
 | Uproszczony → szczegółowy (gracz wchodzi) | Pracownicy pojawiają się na swoich stanowiskach w kroku wynikającym z zapisanego procentu cyklu. Tragarze pojawiają się przy swoim magazynie lub ratuszu. Zawartość magazynów to te same liczby, więc gracz natychmiast widzi stosy. |
 
-**Test spójności** (`tests/scenario/`): ta sama prowincja przez 30 minut gry w trybie szczegółowym i uproszczonym ma dać produkcję chleba różną najwyżej o ±15%. Tolerancję będziemy zawężać w miarę strojenia.
+**Jak to zrobiliśmy (M6, część 1):**
+- Wyjście (`ProvinceAbstract.freeze`): najpierw kończy się to, co trwa (decyzja właściciela 2026-11-06): lądowanie od razu (zestaw na plaży, osadnicy na brzegu, koga znika), statki w ruchu stają u celu, łodzie bez załogi wracają do przystani i oddają połów do magazynu. Potem każda postać schodzi z mapy: niesione towary trafiają do celu zadania (nigdy na statek), a gdy się nie da, do najbliższego magazynu albo na ziemię; domownik zanosi zakupy do domu, przybysz w drodze od razu zamieszkuje, tragarz pracujący przy statku oddaje towar do magazynu. Rezerwacje i roszczenia znikają razem z zadaniami.
+- Wejście (`thaw`): robotnicy bez domu stają przy swoim obozie, osadnicy z lądowania na plaży (dalej czekają na obóz i domy), a reszta jest zatrudniana z domów i od razu stoi przy swoich stanowiskach (`Population.staff_at_workplaces`). **Uproszczenie:** pracownik zaczyna cykl od początku; postęp niedokończonego cyklu z trybu uproszczonego (mniej niż jeden cykl na budynek) przepada.
+- Otwarcie mapy świata nie przełącza trybu (decyzja 2026-11-06): przełączenie następuje dopiero przy wejściu do innej prowincji.
+
+**Test spójności** (`tests/scenario/`): ta sama prowincja przez 30 minut gry w trybie szczegółowym i uproszczonym ma dać produkcję chleba różną najwyżej o ±15%. Tolerancję będziemy zawężać w miarę strojenia. **M6, część 1** (`test_m6_coherence.gd`): duże miasto po 10 minutach oglądania (kalibracja), potem 30 minut w obu trybach: chleb −11%, deski +2%, piwo −8%. Drugi test (`test_m6_modes.gd`): wyjście i wejście na wszystkich fixturach zapisu (v1–v12) i na dużym mieście nie zmienia towarów królestwa (magazyny, ziemia, place, ładownie, ręce; bez tego, co należy do kupców), nie zostawia rezerwacji, a gra toczy się dalej.
 
 **Alternatywa:** pełna symulacja szczegółowa wszystkich prowincji. Odrzucona z powodu kosztu CPU i braku korzyści, bo gracz i tak nie widzi tych postaci.
 
@@ -466,6 +487,7 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Wersja 9 (M5, część 1):** statki (`ships`: pozycja, ścieżka, dom, cumowanie, załoga, ładownia) i statki na pochylniach (`ship_builds`), kolejki stoczni (`ship_orders` przy budynku). Tor wodny nie jest zapisywany. Migracja v8 → v9 daje puste listy. Fixtura: `tests/fixtures/saves/v9_harbour.json` (rybak na morzu, druga łódź na pochylni).
 - **Wersja 10 (M5, część 2):** kupiec morski (`sea_merchant`: stan, następna wizyta, progi „kupuj do N”, a w czasie wizyty statek, port, krawędź, rozliczenie ładowni i towary trzymane na placu) i rezerwacja miejsca przy nabrzeżu (`berth` przy statku). Portowiec na trapie ma postęp i drogę w `bb` zadania. Migracja v9 → v10 daje kupca w drodze (przypłynie, gdy powstanie port). Fixtura: `tests/fixtures/saves/v10_port.json` (koga kupca przy nabrzeżu, portowiec na trapie z drewnem).
 - **Wersja 11 (M5, część 3):** koga gracza zapisuje rejs (`voyage`: stan, plan, kotwicowisko, krawędź, powrót, sakiewka, zarobek, wynik ostatniego rejsu, towary trzymane na placu), a gra ze startem ze statku lądowanie (`landing`: stan, statek, kotwica, plaża, osadnicy na pokładzie i na lądzie, zestaw startowy, następny osadnik) i budynek, który trzeba postawić najpierw (`first_building`). Osadnik brodzący do brzegu ma postęp w `bb` zadania. Migracja v10 → v11 nic nie dodaje (wcześniej nie było kogi gracza ani startu ze statku). Fixtura: `tests/fixtures/saves/v11_voyage.json` (koga za horyzontem, druga koga na pochylni w etapie poszycia).
+- **Wersja 12 (M6, część 1):** świat. Zamiast `province` zapis ma `world` (id świata i prowincje: definicja, mapa, właściciel), `viewed` (oglądana prowincja) i listę `provinces` z trybem (`detail` albo `abstract`) i stanem. Prowincja szczegółowa zapisuje też kalibrację (`production`: ostatnie odstępy wytworzeń na budynek, gdy niepuste), a uproszczona dodatkowo robotników bez domu (`homeless`), osadników bez domu (`wanderers`), postęp cykli (`progress`) i zapas donoszenia (`carry`). Migracja v11 → v12 robi ze starego zapisu świat z jedną prowincją (id 1, gracza, oglądaną; mapa nieznana). Fixtura: `tests/fixtures/saves/v12_world.json` (nowa gra w świecie w trakcie lądowania i Wierzbowa Dolina w trybie uproszczonym; skrypt `tools/build_world_fixture.gd`).
 - **Mapa** to obrazek PNG importowany jako `Image` (nie tekstura), więc symulacja czyta piksele bez widoku. Kolor piksela = `TerrainDef.map_color`. Zapis gry zawiera już gotowy teren, więc późniejsza zmiana obrazka nie psuje zapisów.
 - **Test round-trip:** stan → zapis → odczyt → zapis daje identyczny słownik. Dodatkowo test, w którym symulacja po wczytaniu idzie dalej deterministycznie tak samo jak bez zapisu.
 

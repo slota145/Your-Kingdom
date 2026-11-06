@@ -26,6 +26,8 @@ enum State { IDLE, TO_BERTH, LOADING, OUTBOUND, AWAY, INBOUND, UNLOADING }
 const AWAY_TIME := 270.0
 ## The cargo sells for the base price times this, rounded up per unit.
 const SALE_MARKUP := 1.25
+## Sailing out to the sea edge and back in, counted by the clock while nobody looks (s).
+const SAIL_BY_CLOCK := 90.0
 ## Longest wait after loading stops for dockers still on the gangway.
 const FINISH_WAIT := 30.0
 ## Units per step of the plan in the port panel.
@@ -140,6 +142,74 @@ func update(province: ProvinceSim, ship: ShipUnit) -> void:
 				_come_back(province, ship)
 		State.UNLOADING:
 			_unload(province, ship, port)
+
+
+## The voyage while nobody looks at the province (M6, ARCHITECTURE §7.1): the plan is loaded
+## from the storages and unloaded into them at once, the sailing goes by the clock (out and
+## back as long as on the map). The cog waits at its anchorage.
+func sail_by_the_clock(province: ProvinceSim, ship: ShipUnit) -> void:
+	var port := province.buildings.get_building(ship.home_id)
+	if port != null and (not port.def.is_port() or not port.is_complete()):
+		port = null
+	match state:
+		State.IDLE:
+			if port != null and not ship.hold.is_empty():
+				state = State.INBOUND
+			else:
+				_anchor_now(province, ship, port)
+		State.TO_BERTH, State.LOADING:
+			if port == null:
+				return
+			province.jobs.cancel_for_entity(ship.id)
+			_loading_goods = {}
+			for good: StringName in _sorted(sell):
+				var units := sell[good] - ship.hold.total(good)
+				if units <= 0:
+					continue
+				var taken := province.take_from_storages(good, units, port.entrance_tile(), false)
+				var left := ship.hold.add(good, taken)
+				if left > 0:
+					province.drop_goods(province.door_tile(port), good, left)
+			_cast_off(province, ship)
+			_go_over_horizon(province, ship)
+			back_at += SimClock.seconds_to_ticks(SAIL_BY_CLOCK)
+		State.OUTBOUND:
+			_go_over_horizon(province, ship)
+		State.AWAY:
+			if province.tick >= back_at:
+				_come_back(province, ship)
+		State.INBOUND, State.UNLOADING:
+			if port == null:
+				return
+			_pay_out(province, ship)
+			province.jobs.cancel_for_entity(ship.id)
+			var goods := ship.hold.totals()
+			for good: StringName in _sorted(goods):
+				var left := goods[good]
+				while left > 0:
+					var sink := province.nearest_sink(good, 1, port.entrance_tile())
+					if sink == 0:
+						break
+					var before := left
+					left = province.storage(sink).add(good, left)
+					if left == before:
+						break
+				ship.hold.remove(good, goods[good] - left)
+			if ship.hold.is_empty():
+				state = State.IDLE
+				_anchor_now(province, ship, port)
+
+
+## The cog lies at its anchorage at once (no sailing).
+func _anchor_now(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> void:
+	if anchor == Agent.NO_TILE and port != null:
+		anchor = anchorage(province, ship, port.berth_tile())
+	ship.dock_id = 0
+	ship.berth_id = 0
+	ship.clear_path()
+	if anchor != Agent.NO_TILE:
+		ship.pos = IsoMath.tile_center(anchor)
+		ship.prev_pos = ship.pos
 
 
 ## The nearest finished port without a trading ship that the ship can reach; null if none.

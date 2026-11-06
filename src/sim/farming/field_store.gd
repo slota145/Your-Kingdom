@@ -28,6 +28,15 @@ func farm_of(tile: Vector2i) -> int:
 	return int(_tiles[tile][0]) if _tiles.has(tile) else 0
 
 
+## Fields per farm id (one pass over all fields).
+func counts() -> Dictionary[int, int]:
+	var result: Dictionary[int, int] = {}
+	for tile: Vector2i in _tiles:
+		var farm: int = _tiles[tile][0]
+		result[farm] = result.get(farm, 0) + 1
+	return result
+
+
 func tiles_of(farm_id: int) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for tile: Vector2i in _tiles:
