@@ -110,10 +110,18 @@ func _refresh() -> void:
 		lines.append(tr("ui.world.island"))
 	lines.append(tr(def.desc_key()))
 	_lines.text = "\n".join(lines)
-	var can_enter := province != null and owner == ProvinceDef.OWNER_PLAYER
+	var expedition := sim.world.expedition_to(_selected)
+	var waiting := expedition != null and expedition.state == Expedition.State.WAITING
+	var can_enter := (province != null and owner == ProvinceDef.OWNER_PLAYER) or waiting
 	_enter.visible = can_enter
-	_enter.text = tr("ui.world.return") if _selected == sim.viewed_id else tr("ui.world.enter")
-	if can_enter:
+	_enter.text = tr("ui.world.return") if _selected == sim.viewed_id \
+			else tr("ui.world.land") if waiting else tr("ui.world.enter")
+	if waiting:
+		_hint.text = tr("ui.world.expedition_waiting")
+	elif expedition != null and expedition.state == Expedition.State.TRAVELLING:
+		var minutes := ceili((expedition.arrive_at - sim.clock.tick) / float(SimClock.TICKS_PER_SECOND) / 60.0)
+		_hint.text = tr("ui.world.expedition_coming") % maxi(minutes, 1)
+	elif can_enter:
 		_hint.text = ""
 	elif owner == ProvinceDef.OWNER_NEUTRAL:
 		_hint.text = tr("ui.world.neutral_hint")

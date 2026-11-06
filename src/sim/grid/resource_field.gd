@@ -83,6 +83,13 @@ func amount(tile: Vector2i) -> int:
 	return _amount[_index(tile)] if _inside(tile) else 0
 
 
+## Sets the units left in the node on [param tile] (a province rich or poor in raw
+## materials, M6 part 2).
+func set_amount(tile: Vector2i, value: int) -> void:
+	if has_node(tile):
+		_amount[_index(tile)] = clampi(value, 1, 255)
+
+
 func has_node(tile: Vector2i, id: StringName = &"") -> bool:
 	var def := def_at(tile)
 	return def != null and amount(tile) > 0 and (id == &"" or def.id == id)

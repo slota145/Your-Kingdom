@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MapDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/map_def.gd" id="1_map"]
+[ext_resource type="Image" path="res://data/maps/islands.png" id="2_img"]
+
+[resource]
+script = ExtResource("1_map")
+terrain_image = ExtResource("2_img")
+entry_tile = Vector2i(46, 94)
+start_gold = 100
+start_by_ship = true
+landing_tile = Vector2i(46, 99)
+beach_tile = Vector2i(46, 94)
+start_settlers = Array[StringName]([&"builder", &"porter", &"porter", &"porter", &"porter", &"porter"])
+start_pile = Dictionary[StringName, int]({
+&"bread": 20,
+&"wood": 90
+})
+first_building = &"pioneer_camp"
+id = &"islands"

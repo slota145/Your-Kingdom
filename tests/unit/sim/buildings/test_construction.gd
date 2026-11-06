@@ -74,7 +74,7 @@ func test_demolishing_a_site_returns_delivered_materials() -> void:
 	var sim := SimFixture.make_sim()
 	SimFixture.village(sim, 40)
 	var before := sim.province.goods_total(&"wood")
-	sim.execute(PlaceBuildingCommand.new(&"town_hall", Vector2i(16, 10)))
+	sim.execute(PlaceBuildingCommand.new(&"stockpile", Vector2i(16, 10)))
 	var site: ConstructionSite = sim.province.sites.values()[0]
 	SimFixture.run_until(sim, func() -> bool: return site.stock.total(&"wood") >= 3, 120)
 	assert_bool(site.phase_started).is_false()

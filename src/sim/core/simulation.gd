@@ -56,13 +56,14 @@ static func from_world(registry: DataRegistry, def: WorldDef, seed_value: int = 
 	if map == null:
 		problems.append("world %s: no start province map" % def.id)
 		return null
-	var sim := Simulation.new(registry, map.size(), seed_value)
+	var pdef := world.def_of(start, registry)
+	var sim := Simulation.new(registry, map.size_for(pdef.mirrored), seed_value)
 	sim.world = world
 	sim.runtimes.clear()
 	sim.runtimes[start] = sim.province
 	sim.viewed_id = start
 	sim.world.get_province(start).owner = ProvinceDef.OWNER_PLAYER
-	problems.append_array(sim.province.load_map(map))
+	problems.append_array(sim.province.load_map(map, pdef.mirrored, pdef.richness))
 	sim.events.drain()
 	return sim
 
@@ -101,6 +102,8 @@ func step() -> void:
 			var abstract := runtimes[id] as ProvinceAbstract
 			if abstract != null:
 				abstract.step(clock.tick - slot)
+	if slot == 0:
+		_update_world()
 	clock.tick += 1
 
 
@@ -136,10 +139,12 @@ func is_detailed(id: int) -> bool:
 ## mode (nobody looks at it yet). Gold stays the kingdom's (the map's start gold is not
 ## added). Returns problems with the map.
 func open_province(id: int, map: MapDef, owner: StringName = ProvinceDef.OWNER_PLAYER) -> PackedStringArray:
-	var opened := ProvinceSim.new(data, map.size(), SimEvents.new(), ids)
+	var pdef := world.def_of(id, data)
+	var mirrored := pdef.mirrored if pdef != null else false
+	var opened := ProvinceSim.new(data, map.size_for(mirrored), SimEvents.new(), ids)
 	opened.treasury = Treasury.new()
 	opened.tick = clock.tick
-	var problems := opened.load_map(map)
+	var problems := opened.load_map(map, mirrored, pdef.richness if pdef != null else 2)
 	opened.treasury = treasury
 	runtimes[id] = ProvinceAbstract.freeze(opened, clock.tick)
 	if world.get_province(id) == null:
@@ -148,14 +153,98 @@ func open_province(id: int, map: MapDef, owner: StringName = ProvinceDef.OWNER_P
 	return problems
 
 
+## Once a second: expeditions set out, arrive, land and their cogs come home (M6 part 2).
+func _update_world() -> void:
+	for id: int in runtime_ids():
+		var p := province_state(id)
+		if p.departure != null and p.departure.is_gone():
+			_set_out(id, p)
+	var ids_now: Array[int] = []
+	ids_now.assign(world.expeditions.keys())
+	ids_now.sort()
+	for id: int in ids_now:
+		var e := world.expeditions[id]
+		match e.state:
+			Expedition.State.TRAVELLING:
+				if clock.tick >= e.arrive_at:
+					e.state = Expedition.State.WAITING
+					events.emit(&"expedition_arrived", {"expedition": e.id, "province": e.to})
+			Expedition.State.LANDED:
+				var there := province_state(e.to)
+				if there == null or there.landing == null or there.landing.expedition != e.id \
+						or there.landing.state == Landing.State.DONE:
+					_landed(e)
+			Expedition.State.RETURNING:
+				if clock.tick >= e.arrive_at:
+					world.expeditions.erase(id)
+
+
+## The expedition of province [param id] has left its map: it is on the world map now.
+func _set_out(id: int, p: ProvinceSim) -> void:
+	var d := p.departure
+	var e := Expedition.new()
+	e.id = d.id
+	e.from = id
+	e.to = d.target
+	e.by_sea = d.by_sea
+	e.ship_id = d.ship_id
+	e.settlers = Departure.SETTLERS.duplicate()
+	e.kit = d.kit.duplicate()
+	e.depart_at = clock.tick
+	e.arrive_at = clock.tick + SimClock.seconds_to_ticks(maxf(world.travel_seconds(id, e.to, e.by_sea, data), 0.0))
+	world.expeditions[e.id] = e
+	p.departure = null
+	events.emit(&"expedition_departed", {"expedition": e.id, "province": e.to})
+
+
+## The settlers are ashore: a cog sails home (as long as it took to come), a wagon stays.
+func _landed(e: Expedition) -> void:
+	if not e.by_sea:
+		world.expeditions.erase(e.id)
+		return
+	e.state = Expedition.State.RETURNING
+	e.depart_at = clock.tick
+	e.arrive_at = clock.tick + SimClock.seconds_to_ticks(maxf(world.travel_seconds(e.from, e.to, true, data), 0.0))
+	var home := province_state(e.from)
+	var cog := home.ships.get(e.ship_id) as ShipUnit if home != null else null
+	if cog != null and cog.voyage != null and cog.voyage.expedition == e.id:
+		cog.voyage.back_at = e.arrive_at
+
+
+## The province an expedition waits at becomes the player's: its map (the template's variant)
+## without the start layout, and the landing of the expedition (ROADMAP M6 part 2).
+func _settle(e: Expedition) -> ProvinceSim:
+	var place := world.get_province(e.to)
+	var def := world.def_of(e.to, data)
+	var map := data.get_map(place.map_id)
+	var mirrored := def.mirrored if def != null else false
+	var settled := ProvinceSim.new(data, map.size_for(mirrored), events, ids)
+	settled.treasury = treasury
+	settled.tick = clock.tick
+	settled.load_map(map, mirrored, def.richness if def != null else 2, true)
+	if e.by_sea and map.landing_tile != Agent.NO_TILE:
+		settled.landing = Landing.arrive_by_sea(settled, map, mirrored, e.settlers, e.kit, e.id)
+	else:
+		settled.landing = Landing.arrive_by_land(settled, e.settlers, e.kit, e.id)
+	place.owner = ProvinceDef.OWNER_PLAYER
+	e.state = Expedition.State.LANDED
+	events.emit(&"province_settled", {"province": e.to, "expedition": e.id})
+	return settled
+
+
 ## Makes [param id] the viewed province (EnterProvinceCommand): the province viewed so far
 ## goes to the simplified mode, [param id] comes back in detail (ARCHITECTURE §7.2).
 func view_province(id: int) -> void:
-	if id == viewed_id or not runtimes.has(id):
+	if id == viewed_id:
+		return
+	var waiting := world.expedition_to(id)
+	if not runtimes.has(id) and (waiting == null or waiting.state != Expedition.State.WAITING):
 		return
 	runtimes[viewed_id] = ProvinceAbstract.freeze(province, clock.tick)
-	var abstract := runtimes[id] as ProvinceAbstract
-	province = abstract.thaw(clock.tick, events)
+	if runtimes.has(id):
+		province = (runtimes[id] as ProvinceAbstract).thaw(clock.tick, events)
+	else:
+		province = _settle(waiting)
 	runtimes[id] = province
 	viewed_id = id
 	events.emit(&"province_entered", {"province": id})

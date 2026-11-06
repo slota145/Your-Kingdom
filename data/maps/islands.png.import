@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://br3y7ctox71yj"
+path="res://.godot/imported/islands.png-1e68ad5b4153e47f80f3bba7c0e1e9c1.image"
+
+[deps]
+
+source_file="res://data/maps/islands.png"
+dest_files=["res://.godot/imported/islands.png-1e68ad5b4153e47f80f3bba7c0e1e9c1.image"]
+
+[params]
+

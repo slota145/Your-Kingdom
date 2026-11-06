@@ -2051,3 +2051,83 @@ msgstr "iron ore"
 
 msgid "rare.horses.name"
 msgstr "horse pastures"
+
+# --- M6 part 2: seat and expeditions ---
+
+msgid "ui.house.no_seat"
+msgstr "Without a town hall burghers and patricians pay the tax of peasants."
+
+msgid "map.islands.name"
+msgstr "Islands"
+
+msgid "map.islands.desc"
+msgstr "A large island with a bay for a port and two islets. You get here only by ship: settlers land on the beach."
+
+msgid "ui.command_error.province_taken"
+msgstr "This province already has an owner, or an expedition is on its way there."
+
+msgid "ui.command_error.province_not_ready"
+msgstr "This province cannot be settled yet."
+
+msgid "ui.command_error.no_sea_route"
+msgstr "You cannot sail there: both provinces need a coast."
+
+msgid "ui.command_error.not_a_neighbour"
+msgstr "By land you only reach a neighbouring province."
+
+msgid "ui.command_error.no_town_hall"
+msgstr "Expeditions set out only from a province with a town hall."
+
+msgid "ui.command_error.expedition_gathering"
+msgstr "An expedition is already setting out from this province."
+
+msgid "ui.command_error.no_cog"
+msgstr "You need your cog with a port, waiting at anchor with an empty hold."
+
+msgid "ui.command_error.not_enough_settlers"
+msgstr "Not enough residents: an expedition takes 6 settlers."
+
+msgid "ui.command_error.not_enough_goods"
+msgstr "Not enough stocks for the expedition's kit (90 wood and 20 bread)."
+
+msgid "ui.expedition.open"
+msgstr "Expedition of settlers"
+
+msgid "ui.expedition.title"
+msgstr "Expedition of settlers"
+
+msgid "ui.expedition.cost"
+msgstr "Cost: %d gold. %d settlers leave your houses with a kit of %s from the storages."
+
+msgid "ui.expedition.gathering"
+msgstr "The expedition to %s is gathering. Settlers ready: %d of %d. Loaded: %d of %d."
+
+msgid "ui.expedition.leaving"
+msgstr "The expedition to %s is setting out."
+
+msgid "ui.expedition.by_sea"
+msgstr "By sea (about %d min)"
+
+msgid "ui.expedition.by_land"
+msgstr "By land (about %d min)"
+
+msgid "ui.expedition.unreachable"
+msgstr "You cannot get there from here."
+
+msgid "ui.expedition.none_left"
+msgstr "There are no empty provinces left."
+
+msgid "ui.world.land"
+msgstr "Enter and land"
+
+msgid "ui.world.expedition_waiting"
+msgstr "Your expedition waits at the border. Enter to see the landing."
+
+msgid "ui.world.expedition_coming"
+msgstr "Your expedition is on its way. It arrives in about %d min."
+
+msgid "ui.note.expedition_departed"
+msgstr "An expedition of settlers set out for %s."
+
+msgid "ui.note.expedition_arrived"
+msgstr "The expedition reached %s. Enter it from the world map (M) to see the landing."

@@ -13,4 +13,5 @@ build_cost = Dictionary[StringName, int]({
 build_time = 60.0
 worker_kinds = Array[StringName]([&"builder", &"porter", &"porter"])
 staffing_priority = 0
+unique = true
 id = &"town_hall"

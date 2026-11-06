@@ -26,6 +26,8 @@ enum State { IDLE, TO_BERTH, LOADING, OUTBOUND, AWAY, INBOUND, UNLOADING }
 const AWAY_TIME := 270.0
 ## The cargo sells for the base price times this, rounded up per unit.
 const SALE_MARKUP := 1.25
+## back_at of a cog away with an expedition until the Simulation knows when it is back.
+const AWAY_WITH_EXPEDITION := 1 << 50
 ## Sailing out to the sea edge and back in, counted by the clock while nobody looks (s).
 const SAIL_BY_CLOCK := 90.0
 ## Longest wait after loading stops for dockers still on the gangway.
@@ -40,6 +42,10 @@ const ANCHOR_SEARCH := 600
 var state: State = State.IDLE
 ## The plan: goods to sell (good -> units) and to order (offer good -> units).
 var sell: Dictionary[StringName, int] = {}
+## An expedition of settlers this cog takes (M6 part 2, Departure): it loads the start kit
+## instead of the plan, buys nothing and waits for the settlers; over the horizon it is on
+## the world map until the expedition has landed and it is back (Simulation). 0 = none.
+var expedition: int = 0
 var order: Dictionary[StringName, int] = {}
 ## Deep water where it waits; Agent.NO_TILE = not chosen yet.
 var anchor: Vector2i = Agent.NO_TILE
@@ -162,8 +168,11 @@ func sail_by_the_clock(province: ProvinceSim, ship: ShipUnit) -> void:
 				return
 			province.jobs.cancel_for_entity(ship.id)
 			_loading_goods = {}
-			for good: StringName in _sorted(sell):
-				var units := sell[good] - ship.hold.total(good)
+			if expedition != 0 and province.departure != null:
+				province.departure.gather_at_once(province)
+			var plan := cargo()
+			for good: StringName in _sorted(plan):
+				var units := plan[good] - ship.hold.total(good)
 				if units <= 0:
 					continue
 				var taken := province.take_from_storages(good, units, port.entrance_tile(), false)
@@ -172,7 +181,8 @@ func sail_by_the_clock(province: ProvinceSim, ship: ShipUnit) -> void:
 					province.drop_goods(province.door_tile(port), good, left)
 			_cast_off(province, ship)
 			_go_over_horizon(province, ship)
-			back_at += SimClock.seconds_to_ticks(SAIL_BY_CLOCK)
+			if expedition == 0:
+				back_at += SimClock.seconds_to_ticks(SAIL_BY_CLOCK)
 		State.OUTBOUND:
 			_go_over_horizon(province, ship)
 		State.AWAY:
@@ -341,6 +351,8 @@ func _load(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> void:
 			_refresh_loading(province, ship, port)
 			return
 	var waited := province.tick >= stopped_at + SimClock.seconds_to_ticks(FINISH_WAIT)
+	if expedition != 0 and province.departure != null and not province.departure.all_aboard():
+		return   # the settlers are not all aboard yet
 	if not _dockers_busy(province, ship) or waited:
 		_cast_off(province, ship)
 
@@ -355,15 +367,16 @@ func _sorted(plan: Dictionary[StringName, int]) -> Array[StringName]:
 ## Units of [param good] still to come aboard: the plan minus what is aboard, on the quay,
 ## or on its way there or aboard.
 func _missing(province: ProvinceSim, ship: ShipUnit, port: BuildingState, good: StringName) -> int:
-	return int(sell.get(good, 0)) - ship.hold.total(good) - port.stock.total(good) \
+	return int(cargo().get(good, 0)) - ship.hold.total(good) - port.stock.total(good) \
 			- province.jobs.in_flight(good, 0, port.id) - province.jobs.in_flight(good, port.id, ship.id)
 
 
 ## Whether all of the plan is aboard, or nothing more can come (storages are out of it and
 ## nothing is on the way).
 func _loaded(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> bool:
-	for good: StringName in _sorted(sell):
-		if ship.hold.total(good) >= sell[good]:
+	var plan := cargo()
+	for good: StringName in _sorted(plan):
+		if ship.hold.total(good) >= plan[good]:
 			continue
 		if port.stock.total(good) > 0 or province.jobs.in_flight(good, 0, port.id) > 0 \
 				or province.jobs.in_flight(good, port.id, ship.id) > 0:
@@ -375,7 +388,7 @@ func _loaded(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> bool
 
 func _refresh_loading(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> void:
 	_loading_goods = {}
-	for good: StringName in _sorted(sell):
+	for good: StringName in _sorted(cargo()):
 		_loading_goods[good] = true
 		var more := mini(maxi(_missing(province, ship, port, good), 0), province.stored(good))
 		province.jobs.set_amount(good, 0, port.id, more)
@@ -412,7 +425,7 @@ func _cast_off(province: ProvinceSim, ship: ShipUnit) -> void:
 	province.jobs.cancel_for_entity(ship.id)
 	purse = 0
 	buying = {}
-	for good: StringName in _sorted(order):
+	for good: StringName in (_sorted(order) if expedition == 0 else ([] as Array[StringName])):
 		var price := maxi(SeaMerchant.sell_price(province, good), 1)
 		# The cargo is sold before the order is loaded, so the whole hold is free for it.
 		var units := mini(order[good], (province.treasury.gold - purse) / price)
@@ -439,9 +452,20 @@ func _cast_off(province: ProvinceSim, ship: ShipUnit) -> void:
 		ship.clear_path()   # no way out to sea: it sets off from where it is
 
 
-## At the sea edge: over the horizon it sells the cargo and buys the order.
+## At the sea edge: over the horizon it sells the cargo and buys the order. With an
+## expedition aboard it is on the world map instead, until the Simulation calls it home.
 func _go_over_horizon(province: ProvinceSim, ship: ShipUnit) -> void:
 	ship.clear_path()
+	if expedition != 0:
+		var kit := ship.hold.totals()
+		for good: StringName in kit:
+			ship.hold.remove(good, kit[good])
+		if province.departure != null and province.departure.id == expedition:
+			province.departure.sailed(kit)
+		back_at = AWAY_WITH_EXPEDITION
+		state = State.AWAY
+		province.events.emit(&"expedition_sailed", {"ship": ship.id, "expedition": expedition})
+		return
 	earned = 0
 	var sold := 0
 	var cargo := ship.hold.totals()
@@ -465,6 +489,11 @@ func _go_over_horizon(province: ProvinceSim, ship: ShipUnit) -> void:
 
 func _come_back(province: ProvinceSim, ship: ShipUnit) -> void:
 	state = State.INBOUND
+	if expedition != 0 and ship.hold.is_empty():
+		# Back from an expedition: the usual hold again (Departure.begin).
+		ship.hold = Stockpile.new(ship.def.hold_slots, province.data)
+		ship.hold.stack_limit = ship.def.hold_stack
+	expedition = 0
 	var goods := ship.hold.totals()
 	for good: StringName in _sorted(goods):
 		province.ledger.made(good, goods[good], province.tick)
@@ -507,6 +536,11 @@ func start() -> void:
 		depart_now = false
 
 
+## What it loads: the start kit of its expedition, or the player's plan.
+func cargo() -> Dictionary[StringName, int]:
+	return Departure.KIT if expedition != 0 else sell
+
+
 ## The ship (or its home port) is gone: drop its requests.
 static func on_ship_removed(province: ProvinceSim, ship: ShipUnit) -> void:
 	province.jobs.cancel_for_entity(ship.id)
@@ -516,6 +550,8 @@ func to_dict() -> Dictionary:
 	var d := {"state": state, "anchor": SimCodec.vec2i(anchor)}
 	if not sell.is_empty():
 		d["sell"] = _plan_to_dict(sell)
+	if expedition != 0:
+		d["expedition"] = expedition
 	if not order.is_empty():
 		d["order"] = _plan_to_dict(order)
 	if state != State.IDLE:
@@ -557,6 +593,7 @@ static func from_dict(d: Dictionary) -> Voyage:
 	v.state = clampi(int(d.get("state", 0)), State.IDLE, State.UNLOADING) as State
 	v.anchor = SimCodec.to_vec2i(d.get("anchor", [-1, -1]))
 	v.sell = _plan_from(d.get("sell", {}))
+	v.expedition = int(d.get("expedition", 0))
 	v.order = _plan_from(d.get("order", {}))
 	v.edge = SimCodec.to_vec2i(d.get("edge", [-1, -1]))
 	v.back_at = int(d.get("back_at", 0))

@@ -2072,3 +2072,83 @@ msgstr "ruda żelaza"
 
 msgid "rare.horses.name"
 msgstr "pastwiska koni"
+
+# --- M6 part 2: seat and expeditions ---
+
+msgid "ui.house.no_seat"
+msgstr "Bez ratusza mieszczanie i patrycjusze płacą podatek jak chłopi."
+
+msgid "map.islands.name"
+msgstr "Wyspy"
+
+msgid "map.islands.desc"
+msgstr "Duża wyspa z zatoką na port i dwie małe wysepki. Dopłyniesz tu tylko statkiem: osadnicy lądują na plaży."
+
+msgid "ui.command_error.province_taken"
+msgstr "Ta prowincja ma już właściciela albo płynie do niej wyprawa."
+
+msgid "ui.command_error.province_not_ready"
+msgstr "Tej prowincji nie da się jeszcze zasiedlić."
+
+msgid "ui.command_error.no_sea_route"
+msgstr "Tam nie dopłyniesz: obie prowincje muszą mieć wybrzeże."
+
+msgid "ui.command_error.not_a_neighbour"
+msgstr "Lądem dojedziesz tylko do sąsiedniej prowincji."
+
+msgid "ui.command_error.no_town_hall"
+msgstr "Wyprawę wysyła się tylko z prowincji z ratuszem."
+
+msgid "ui.command_error.expedition_gathering"
+msgstr "Z tej prowincji wyrusza już wyprawa."
+
+msgid "ui.command_error.no_cog"
+msgstr "Potrzebna jest twoja koga z portem, czekająca na kotwicy z pustą ładownią."
+
+msgid "ui.command_error.not_enough_settlers"
+msgstr "Za mało mieszkańców: wyprawa zabiera 6 osadników."
+
+msgid "ui.command_error.not_enough_goods"
+msgstr "Za mało zapasów na zestaw wyprawy (90 drewna i 20 chleba)."
+
+msgid "ui.expedition.open"
+msgstr "Wyprawa osadników"
+
+msgid "ui.expedition.title"
+msgstr "Wyprawa osadników"
+
+msgid "ui.expedition.cost"
+msgstr "Koszt: %d zł. Wyrusza %d osadników z twoich domów z zestawem: %s z magazynów."
+
+msgid "ui.expedition.gathering"
+msgstr "Wyprawa do: %s zbiera się. Osadnicy na miejscu: %d z %d. Załadowano: %d z %d."
+
+msgid "ui.expedition.leaving"
+msgstr "Wyprawa do: %s wyrusza."
+
+msgid "ui.expedition.by_sea"
+msgstr "Morzem (ok. %d min)"
+
+msgid "ui.expedition.by_land"
+msgstr "Lądem (ok. %d min)"
+
+msgid "ui.expedition.unreachable"
+msgstr "Stąd nie da się tam dotrzeć."
+
+msgid "ui.expedition.none_left"
+msgstr "Nie ma już pustych prowincji."
+
+msgid "ui.world.land"
+msgstr "Wejdź i wyląduj"
+
+msgid "ui.world.expedition_waiting"
+msgstr "Twoja wyprawa czeka przy granicy. Wejdź, żeby zobaczyć lądowanie."
+
+msgid "ui.world.expedition_coming"
+msgstr "Twoja wyprawa jest w drodze. Dotrze za ok. %d min."
+
+msgid "ui.note.expedition_departed"
+msgstr "Wyprawa osadników wyruszyła do: %s."
+
+msgid "ui.note.expedition_arrived"
+msgstr "Wyprawa dotarła do: %s. Wejdź tam z mapy świata (M), żeby zobaczyć lądowanie."
