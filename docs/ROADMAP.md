@@ -474,6 +474,8 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Menu:** zamiast jednego przycisku „Nowa gra” jest „Nowa gra: Nadrzecze” i „Nowa gra: Pojezierze”.
 - **Automatyczny gracz** przesuwa budynek do najbliższych skał, drzew albo wody, gdy w zasięgu miejsca z planu ich nie ma (na „Nadrzeczu” nic się nie zmienia).
 
+**Scalenie przed oceną (decyzja właściciela projektu 2026-11-06):** M4b-3 (części 1–3) trafia do `main` przed oceną gry. Ocena M4b-3 i M4b-2 oraz pomiar FPS na laptopie są odłożone na później; do tego czasu oba etapy zostają otwarte, a poprawki z oceny mają pierwszeństwo.
+
 **Ustalone przy realizacji części 3 (2026-11-06, do zmiany na prośbę):**
 - **Duże miasto** buduje skrypt (`tools/build_big_city.gd`, układ w `tests/support/big_city.gd`): siatka ulic z brukowanymi głównymi ulicami, gotowe budynki w dzielnicach, domy od razu zamieszkane (54 chaty, 31 domów mieszczan, 24 kamienice), zapasy w magazynach, wózki w magazynach, 6 świń w każdym chlewie, kupiec skupuje nadwyżki. Potem 5 minut gry (ludzie idą do pracy) i zapis. Młyny, piekarnie i browary stoją przy magazynach obok pól, bo warsztaty same chodzą po surowce: przy dalekim magazynie pracowały 2–3× wolniej. Miasto rośnie samo: po godzinie ma ok. 1150 mieszkańców.
 - **Postacie** to pracownicy, tragarze, woźnice i domownicy w drodze (GDD §3.4), więc ich liczba faluje: średnio 436 w ciągu 2 godzin, od 324 do 580. Test sprawdza średnią ≥ 400 i minimum ≥ 300.
