@@ -114,6 +114,7 @@ func step() -> void:
 		_update_markets()
 		merchant.update(self)
 		sea_merchant.update(self)
+		Voyage.update_all(self)
 		Harbour.update(self)
 		jobs.trim_yard_requests(self)
 	Population.update(self)

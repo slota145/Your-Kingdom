@@ -15,4 +15,16 @@ build_cost = Dictionary[StringName, int]({
 })
 build_time = 240.0
 stages = 4
+stage_goods = Array[Dictionary]([{
+&"planks": 8
+}, {
+&"planks": 10,
+&"tar": 4
+}, {
+&"cloth": 4,
+&"planks": 2
+}, {
+&"tar": 2
+}])
+trades = true
 id = &"cog"

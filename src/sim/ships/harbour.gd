@@ -213,6 +213,9 @@ static func _kept_on_quay(province: ProvinceSim) -> Dictionary[int, Dictionary]:
 	var trader := province.sea_merchant
 	if trader.is_trading():
 		kept[trader.port_id] = trader.loading_goods()
+	for ship: ShipUnit in province.ships.values():
+		if ship.voyage != null and not ship.voyage.loading_goods().is_empty():
+			kept[ship.dock_id] = ship.voyage.loading_goods()
 	return kept
 
 

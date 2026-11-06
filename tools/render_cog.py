@@ -1,12 +1,19 @@
 """Procedural pixel-art cog in 8 isometric directions (ART_SPEC §9, M5). Moved here from the
 ship prototype (src/prototype/ships/cog_render.py) to draw the game's cogs.
 
-Run: python3 tools/render_cog.py <ship id> <faction colour as r,g,b>   (Pillow + numpy, ~3 min)
+Run: python3 tools/render_cog.py <ship id> <faction colour as r,g,b> [--stages]
+     (Pillow + numpy, ~3 min per sheet)
      e.g. python3 tools/render_cog.py foreign_cog 40,118,72
+          python3 tools/render_cog.py cog 46,84,168            (the player's cog, M5 part 3)
+          python3 tools/render_cog.py cog 46,84,168 --stages   (build_0..2 on the slipway)
 Output: assets/ships/<ship id>/idle.png: 8 rows (directions in ART_SPEC order S, SE, E, NE, N,
 NW, W, SW) of BOB_FRAMES frames of 220x220 in which the ship rocks gently on the waves; the
 ship centre at the waterline is at (110, 168) in every frame (ShipLayer.BIG_FRAMES). The
 faction parts (sail stripes, shields, flag) are drawn magenta and painted in the colour given.
+With --stages: assets/ships/<ship id>/build_<n>.png, one frame per direction (8 rows), the
+ship standing on keel blocks on the slipway, its hull out of the water: 0 = keel, stem and
+ribs, 1 = planked hull with the castles, 2 = mast with the sail (the whole ship; the fourth
+stage, the launch, slides this one down into the water in the view).
 
 The ship is a set of implicit solids (negative = inside). Every sprite pixel shoots an
 orthographic ray from a 2:1 camera (30 deg elevation); the first solid hit gives material and
@@ -20,6 +27,11 @@ from PIL import Image
 
 SHIP_ID = sys.argv[1] if len(sys.argv) > 1 else "foreign_cog"
 FACTION = tuple(int(v) for v in (sys.argv[2] if len(sys.argv) > 2 else "40,118,72").split(","))
+STAGES = "--stages" in sys.argv
+# Height of the water (idle) or of the slipway floor (stages) where rays stop.
+WATER = 0.0
+# Hull cut at the waterline (False on the slipway: the whole hull shows).
+CLIP_WATERLINE = True
 # Vertical offsets (px) of the rocking frames.
 BOB = [0, -1, -1, 0]
 SIZE = 220          # frame canvas (px)
@@ -40,7 +52,7 @@ SAIL_W, SAIL_H, BELLY = 33.0, 58.0, 8.0
 MAT = {  # base colours
     "hull": (122, 82, 50), "tar": (60, 42, 30), "deck": (168, 124, 76), "castle": (110, 74, 46),
     "rail": (150, 108, 66), "mast": (92, 61, 34), "sail": (232, 220, 192), "faction": (255, 0, 255),
-    "rope": (64, 45, 30), "foam": (226, 236, 236), "boss": (190, 190, 180), "rim": (70, 60, 52),
+    "rope": (64, 45, 30), "foam": (226, 236, 236), "rib": (176, 132, 86), "boss": (190, 190, 180), "rim": (70, 60, 52),
 }
 NAMES = list(MAT)
 BANDS = np.array([0.58, 0.74, 0.88, 1.02])
@@ -63,7 +75,29 @@ def f_hull(p):
     below = g_xy + ((dz - z) / D) ** 2 * (z < dz)
     outer = np.maximum(below - 1.0, z - dz)
     inner_cut = np.maximum(hull_outline(x, y, L - 3.0, W - 2.5) - 1.0, (dz - 3.0) - z)
-    return np.maximum(np.maximum(outer, -inner_cut), -z - 0.01)
+    shell = np.maximum(outer, -inner_cut)
+    return np.maximum(shell, -z - 0.01) if CLIP_WATERLINE else shell
+
+
+def f_frame(p):
+    """Keel, stem and stern posts and ribs: the first stage on the slipway."""
+    x, y, z = p
+    ribs = np.abs(((x + L) % 9.0) - 4.5) - 0.9
+    shell = np.maximum(f_hull(p), ribs)
+    keel = box(p, (-L + 2, -1.6, -D - 1), (L - 2, 1.6, -D + 3))
+    keel = np.maximum(keel, hull_outline(x, y, L + 2, W) - 1.0)
+    posts = np.minimum(box(p, (L - 6, -1.4, -D + 2), (L - 1, 1.4, ZD + SHEER)),
+                       box(p, (-L + 1, -1.4, -D + 2), (-L + 6, 1.4, ZD + SHEER)))
+    posts = np.maximum(posts, hull_outline(x, y, L + 1.5, W) - 1.0)
+    return np.minimum.reduce([shell, keel, posts])
+
+
+def f_cradle(p):
+    """Keel blocks the ship stands on while it is built."""
+    out = np.full(p[0].shape, 99.0)
+    for xc in (-36.0, -12.0, 12.0, 36.0):
+        out = np.minimum(out, box(p, (xc - 3, -7, -D - 7), (xc + 3, 7, -D + 1)))
+    return out
 
 
 def box(p, lo, hi):
@@ -182,9 +216,28 @@ def fields(p):
     return np.stack([f(p) for _, f in PARTS])
 
 
+def use_stage(stage):
+    """Sets PARTS (and the water) for a building stage on the slipway."""
+    global PARTS, WATER, CLIP_WATERLINE
+    WATER = -D - 7.0
+    CLIP_WATERLINE = False
+    hull = ("frame", f_frame) if stage == 0 else ("hull", f_hull)
+    parts = [hull, ("cradle", f_cradle)]
+    if stage >= 1:
+        parts += [("castle", f_castle), ("forecastle", f_forecastle), ("crenels", f_crenels)]
+    if stage >= 2:
+        parts += [("mast", f_mast), ("sail", f_sail), ("flag", f_flag), ("rope", f_rope),
+                  ("shields", f_shields)]
+    PARTS = parts
+
+
 def material(part, p, n):
     x, y, z = p
     name = PARTS[part][0]
+    if name == "frame":
+        return "rib"
+    if name == "cradle":
+        return "castle"
     if name == "hull":
         if n[2] > 0.75:
             return "deck"
@@ -243,9 +296,11 @@ def render(heading):
         hit_t[got] = t
         alive[got] = False
         # Ray went below the water: foam if the hull is close at the waterline, else empty.
-        under = (~inside) & (q[2] < 0)
+        under = (~inside) & (q[2] < WATER)
         ui = idx[under]
-        if ui.size:
+        if ui.size and WATER < 0:
+            alive[ui] = False
+        elif ui.size:
             pu = p[:, under]
             pu[2] = 0.3
             foam[ui] = f_hull(pu) < 0.12 + 0.06 * np.sin(pu[0] * 0.7)
@@ -272,7 +327,8 @@ def render(heading):
         nw = np.stack([c * nrm[0] + s * nrm[1], -s * nrm[0] + c * nrm[1], nrm[2]])
         # thin parts (sail, flag, rope) are lit from both sides
         lam = nw.T @ LIGHT
-        two_sided = np.isin(hit[hi], [4, 5, 6])
+        thin = [i for i, (name, _) in enumerate(PARTS) if name in ("sail", "flag", "rope")]
+        two_sided = np.isin(hit[hi], thin)
         lam = np.where(two_sided, np.abs(lam), lam)
         band = np.clip(((lam + 0.15) / 1.15 * 4).astype(int), 0, 3)
         for k, i in enumerate(hi):
@@ -337,6 +393,16 @@ def bob(frame, dy):
 
 def main():
     import os
+    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "ships", SHIP_ID)
+    os.makedirs(out, exist_ok=True)
+    if STAGES:
+        headings = [-90, -45, 0, 45, 90, 135, 180, -135]
+        for stage in range(3):
+            use_stage(stage)
+            rows = [paint_faction(render(math.radians(h))) for h in headings]
+            Image.fromarray(np.concatenate(rows, axis=0), "RGBA").save(os.path.join(out, "build_%d.png" % stage))
+            print("stage", stage, "done", flush=True)
+        return
     # ART_SPEC order S, SE, E, NE, N, NW, W, SW; on the ground S = towards the camera.
     headings = [-90, -45, 0, 45, 90, 135, 180, -135]
     rows = []
