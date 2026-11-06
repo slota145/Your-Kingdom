@@ -120,10 +120,12 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 
 - [gracz] **Ratusz jako budynek na później, obóz pionierów na start (2026-11-06):** ratusz przesuwa się na późniejszą część gry i dostaje nowe funkcje, a jego dzisiejsze zadanie (budowniczy i tragarze) przejmuje obóz pionierów albo dom pionierów.
   - **Przyjęte częściowo do M5, część 3 (ankieta 2026-11-06):** obóz pionierów (budowniczy + 2 tragarzy, 10 drewna, najwyżej jeden na prowincję, w menu na każdej mapie) jest pierwszym budynkiem po starcie ze statku na „Wybrzeżu”. Ratusz na razie działa jak dawniej; jego przesunięcie i nowe funkcje czekają na wspólne ustalenie.
+  - **Przyjęte do M6 (ankieta 2026-11-06):** ratusz = siedziba prowincji (podatki mieszczan i patrycjuszy tylko przy ratuszu, wymóg wysłania wyprawy osadników, jeden na prowincję). Szczegóły w ROADMAP (M6).
   - Propozycje funkcji ratusza (Claude, do wyboru): podatki tylko z ratuszem (obóz daje niższą stawkę albo tylko ryczałt), awans domów do patrycjuszy wymaga ratusza w zasięgu, ratusz odblokowuje okno „Zapasy królestwa” i progi kupców, a później (M6) jest siedzibą zarządcy prowincji i wymogiem do kolonizacji następnej. Ocena: najprostsza i czytelna dla gracza jest para „ratusz = podatki od mieszczan i patrycjuszy + siedziba prowincji w M6”.
 - [gracz] **Dom budowniczych (2026-11-06):** budynek, który zwiększa liczbę budowniczych (np. +2), żeby duże miasto nie czekało na jednego budowniczego z obozu.
   - Ocena (Claude): mały koszt (nowy budynek z pracownikami `builder`, cała logika budowy już działa dla wielu budowniczych). Pasuje razem z przesunięciem ratusza. Warto rozważyć limit (np. jeden na 20 domów), żeby nie zastępował planowania.
 - [Claude] **Rejsy w kółko (M5, część 3):** przełącznik „powtarzaj rejs” w panelu portu: koga po rozładunku od razu ładuje ten sam plan i znów wypływa. Ocena: koszt mały, wygoda duża, gdy gracz ma stałą nadwyżkę (np. desek do sprzedania). Do decyzji po ocenie części 3.
+  - **Przyjęte do M6 (ankieta 2026-11-06) jako część szlaków handlowych:** szlak to rejs (albo kurs wozu) powtarzany w kółko według progu.
 
 ## Klimat i immersja
 

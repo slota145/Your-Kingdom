@@ -56,7 +56,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
 
 | Sposób | Opis | Zakres |
 |---|---|---|
-| Zasiedlenie | Do pustej prowincji wysyłamy **osadników**: jednostkę z prowincji macierzystej, która zabiera ze sobą ludzi i zestaw startowy (drewno, żywność, narzędzia). Po dotarciu powstaje osada z ratuszem i magazynem. | [1.0] |
+| Zasiedlenie | Do pustej prowincji wysyłamy **osadników**: jednostkę z prowincji macierzystej, która zabiera ze sobą ludzi i zestaw startowy (drewno, żywność, narzędzia). Po dotarciu powstaje osada z ratuszem i magazynem. **Plan M6 (2026-11-06):** wyprawę wysyła się z prowincji z ratuszem, morzem kogą (lądowanie jak na „Wybrzeżu”) albo lądem wozem osadników do sąsiada; nowa osada zaczyna od obozu pionierów. | [1.0] |
 | Wykup osady neutralnej | Osada neutralna przyłącza się za złoto i dostawy towarów (np. przez określony czas). | [1.0] |
 | Oblężenie | Armia dochodzi do prowincji przeciwnika i rozpoczyna oblężenie. W widoku prowincji walka toczy się w czasie rzeczywistym (§8). Gdy prowincja nie jest oglądana, wynik oblężenia jest rozstrzygany automatycznie. | [1.0] |
 | Dyplomacja (sojusze, wasalizacja) | — | [PÓŹNIEJ] |
@@ -134,6 +134,7 @@ Zasady:
 - **Stan w M4a:** podatek liczony co sekundę: chłop 0,25, mieszczanin 0,6 złota na minutę przy pełnym zadowoleniu. Stawka mnoży to przez 0,5 / 1 / 1,5 i zmienia zadowolenie o +10 / 0 / −15. Stawkę ustawia się w panelu ratusza. Na start 100 złota. Złotem płaci się za kaplicę (10), browar (30), targowisko (40) i kościół (60).
 - Złoto wydajemy na budowę części budynków, rekrutację, handel, wykup osad i utrzymanie wojska.
 - Złoto jest pulą globalną królestwa. To jedyny zasób globalny.
+- **Plan M6 (2026-11-06):** ratusz jest siedzibą prowincji. Mieszczanie i patrycjusze płacą pełny podatek tylko w prowincji z ratuszem (bez niego płacą jak chłopi), a wyprawę osadników wysyła się tylko z prowincji z ratuszem. Najwyżej jeden ratusz na prowincję.
 
 ---
 
