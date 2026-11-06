@@ -130,13 +130,35 @@ func update(province: ProvinceSim) -> void:
 		return
 	var idle: Array[Agent] = []
 	var carters: Array[Agent] = []
+	## Port id -> its idle dockers (M5 part 2): they carry only between its quay and a ship.
+	var dockers: Dictionary[int, Array] = {}
+	var docker_count := 0
 	for agent: Agent in province.agents.all():
 		if agent.kind == PORTER_KIND and agent.is_idle() and not agent.is_carrying():
 			idle.append(agent)
 		elif agent.kind == Carriers.CARTER_KIND and Carriers.carter_ready(province, agent):
 			carters.append(agent)
+		elif agent.kind == Harbour.DOCKER_KIND and agent.is_idle() and not agent.is_carrying():
+			if not dockers.has(agent.workplace_id):
+				dockers[agent.workplace_id] = [] as Array[Agent]
+			dockers[agent.workplace_id].append(agent)
+			docker_count += 1
 	var assigned := 0
 	for request: TransportRequest in all():
+		var port := Harbour.request_port(province, request) if not province.ships.is_empty() else 0
+		if port != 0:
+			# Cargo of a ship: only the dockers of the port where it is moored.
+			var crew: Array[Agent] = dockers.get(port, [] as Array[Agent])
+			while not crew.is_empty() and assigned < MAX_ASSIGNMENTS and request.unassigned() > 0 \
+					and request.retry_at <= province.tick:
+				docker_count -= 1
+				if not _assign_one(province, request, crew):
+					docker_count += 1
+					if request.in_flight == 0:
+						request.retry_at = province.tick + NO_MATCH_RETRY_TICKS
+					break
+				assigned += 1
+			continue
 		var porter_failed := false
 		while not carters.is_empty() and assigned < MAX_ASSIGNMENTS \
 				and request.unassigned() >= Carriers.WAGON_MIN and request.retry_at <= province.tick:
@@ -153,7 +175,7 @@ func update(province: ProvinceSim) -> void:
 			# Nothing to take or no room for it now: ask again a little later, not every
 			# round (M4b-3: each try searches the storages).
 			request.retry_at = province.tick + NO_MATCH_RETRY_TICKS
-		if (idle.is_empty() and carters.is_empty()) or assigned >= MAX_ASSIGNMENTS:
+		if (idle.is_empty() and carters.is_empty() and docker_count <= 0) or assigned >= MAX_ASSIGNMENTS:
 			return
 
 

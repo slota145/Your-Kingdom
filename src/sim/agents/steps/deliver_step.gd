@@ -15,6 +15,8 @@ const WAIT_CHECK_TICKS := 10
 func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 	var step := def as DeliverStepDef
 	var bb := agent.task.bb
+	if Harbour.is_walking_back(agent):
+		return Harbour.walk_back(agent)
 	if not agent.is_carrying():
 		return Status.DONE
 	if not bb.has("_dst"):
@@ -55,7 +57,12 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 		return _give_up(province, agent, step, &"no_path")
 	if status != Status.DONE:
 		return status
-	if Carriers.still_handling(agent, agent.carry_amount):
+	# A ship moored at a port: over the quay and up the gangway first (M5 part 2).
+	var port := Harbour.port_of(province, dst_id)
+	if port != null:
+		if Harbour.walk_out(agent, port):
+			return Status.RUNNING
+	elif Carriers.still_handling(agent, agent.carry_amount):
 		return Status.RUNNING
 	var good := agent.carry_good
 	var stored := target.commit(int(bb["_res"]))
@@ -63,6 +70,9 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 			"good": good, "amount": stored})
 	agent.carry_good = &""
 	agent.carry_amount = 0
+	if port != null:
+		Harbour.turn_back(agent, port)
+		return Status.RUNNING
 	if dst_id < 0:
 		# Porters take it to a storage as soon as one has room.
 		province.jobs.add_or_merge(good, stored, dst_id, 0)

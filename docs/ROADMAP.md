@@ -487,7 +487,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## M5 — Woda, porty i statki
 
-**Status: plan zaakceptowany 2026-11-06. Część 1 (morze i ryby) gotowa i zaakceptowana przez właściciela 2026-11-06, scalona do `main`. Następny krok: część 2 (port i kupiec morski).** Poprawki z odłożonej oceny M4b-2 i M4b-3 (oraz pomiar FPS na laptopie) mają pierwszeństwo przed dalszą pracą nad M5.
+**Status: plan zaakceptowany 2026-11-06. Część 1 (morze i ryby) gotowa i zaakceptowana przez właściciela 2026-11-06, scalona do `main`. Część 2 (port i kupiec morski) gotowa 2026-11-06, czeka na akceptację właściciela. Potem część 3 (koga gracza i start ze statku).** Poprawki z odłożonej oceny M4b-2 i M4b-3 (oraz pomiar FPS na laptopie) mają pierwszeństwo przed dalszą pracą nad M5.
 
 **Decyzje (2026-11-06, ankieta z właścicielem projektu):**
 - **Nowa mapa „Wybrzeże” 128×128 obok dzisiejszych.** Morze z jednej strony mapy, plaża, osłonięta zatoka na port, rzeka wpadająca do morza, lasy i skały. „Nadrzecze” i „Pojezierze”, stare zapisy, testy i duże miasto z M4b-3 zostają bez zmian. Wyspy czekają na M6.
@@ -531,13 +531,13 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Statki pływają tylko po wodzie: łódź po płytkiej i głębokiej, koga tylko po głębokiej i torze wodnym; wodna siatka ruchu ma testy (`test_water_nav.gd`).
 - [x] Smolarnia robi smołę z drewna; stocznia buduje łódź z desek i smoły dostarczonych przez tragarzy (`tests/scenario/test_m5_chains.gd`).
 - [x] Przystań rybacka: łódź płynie na ławicę, łowi, wraca, a rybak niesie ryby do magazynu; połów wyraźnie większy niż u wędkarza; ławice się odnawiają (`test_m5_chains.gd`: w 10 minut przystań 36 ryb, wędkarz 16).
-- [ ] Widoczny załadunek i rozładunek sztuka po sztuce: portowcy noszą towar po trapie między placem portowym a statkiem.
-- [ ] Ładunek statku zgodny z UI: panel statku pokazuje stan ładowni z symulacji po każdej sztuce (test).
-- [ ] Kupiec morski przypływa tylko do portu, kupuje nadwyżki ponad progi i sprzedaje towary poniżej progu „kupuj do N”.
+- [x] Widoczny załadunek i rozładunek sztuka po sztuce: portowcy noszą towar po trapie między placem portowym a statkiem (`tests/scenario/test_m5_port.gd`; zrzut `game_shot.tscn -- --map=coast --tile=74,70 --zoom=2 --port --select=ship`).
+- [x] Ładunek statku zgodny z UI: panel statku pokazuje stan ładowni z symulacji po każdej sztuce (test: `test_m5_port.gd`, panel sprawdzany po każdej sztuce wniesionej i zniesionej).
+- [x] Kupiec morski przypływa tylko do portu, kupuje nadwyżki ponad progi i sprzedaje towary poniżej progu „kupuj do N” (`test_m5_port.gd`: kupił 40 sztuk drewna ponad próg 30, sprzedał 6 smoły do progu 8).
 - [ ] Statek budowany etapami do wodowania: koga przechodzi szkielet, poszycie, maszt z żaglem i wodowanie, każdy etap widać na pochylni.
 - [ ] Rejs za horyzont: koga gracza odpływa z ładunkiem i wraca ze złotem i zamówionymi towarami.
 - [ ] Start ze statku na „Wybrzeżu”: koga wyładowuje osadników i zestaw startowy, gracz stawia ratusz; automatyczny gracz dochodzi z tego startu do 4 kamienic patrycjuszy w limicie 90 minut (do strojenia przy realizacji).
-- [ ] Zapis i odczyt w trakcie załadunku, w trakcie budowy statku i w czasie rejsu nie gubią towarów; zapis z M4b-3 wczytuje się po migracji (v8 → v9), nowa fixtura v9.
+- [ ] Zapis i odczyt w trakcie załadunku, w trakcie budowy statku i w czasie rejsu nie gubią towarów; zapis z M4b-3 wczytuje się po migracji (v8 → v9), nowa fixtura v9. (Część 2: zapis w trakcie załadunku gra dalej identycznie, migracja v9 → v10 i fixtura `v10_port.json`; budowa kogi i rejs w części 3.)
 - [ ] Bez spadku wydajności: duże miasto z M4b-3 nadal ≤ 4 ms na tick, automatyczny gracz na „Nadrzeczu” i „Pojezierzu” w limicie.
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
 - [ ] **Twoja ocena gry.**
@@ -554,6 +554,17 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Budynku na wodzie nie da się obrócić** po postawieniu (pomost wylądowałby na brzegu); obraca się go tylko przy stawianiu (R).
 - **Pomiary po części 1:** duże miasto z M4b-3 średnio 2,7 ms na tick (20 minut, cel ≤ 4 ms); automatyczny gracz: „Nadrzecze” 4 kamienice patrycjuszy w 70. minucie, „Pojezierze” w 79. (limit 90). Wynik bota zmienia się nieco po każdej zmianie danych.
 - **Zakładka „Morze i statki”** w menu budowy: smolarnia, stocznia, przystań rybacka. Koga ma już dane (`data/ships/cog.tres`), ale zamówić ją będzie można w części 3.
+
+**Ustalone przy realizacji części 2 (2026-11-06, do zmiany na prośbę):**
+- **Port 4×4, nie 4×3** (jak stocznia: obrót budynku zakłada kwadrat). Dwa rzędy lądu to plac portowy (6 stosów), dwa rzędy wody to nabrzeże na palach z żurawiem; miejsce cumowania przed nabrzeżem, z torem wodnym do głębokiej wody jak przy stoczni. Koszt: 16 drewna, 12 desek, 6 kamienia, 40 złota; 2 portowców. Zakładka „Morze i statki”.
+- **Plac portowy jest prywatny** (jak plac budowy): tragarze nie odkładają na nim towarów sami z siebie i niczego z niego nie biorą. Towar trafia tam tylko na załadunek, a wszystko, na co nie czeka statek przy nabrzeżu (np. towar kupiony od kupca), tragarze odnoszą do magazynów. Zapas na placu liczy się do „Zapasów królestwa”.
+- **Portowcy noszą tylko między placem a statkiem.** Z magazynów na plac i z placu do magazynów noszą zwykli tragarze. Portowiec idzie od wejścia portu przez nabrzeże do stopy trapu, wchodzi na statek, podaje towar (1 s) i wraca; na jeden kurs ok. 7–8 s. Dwóch portowców wnosi 40 sztuk w ok. 3 minuty.
+- **Kupiec morski** przypływa co 12 minut gry i handluje 4 minuty (pierwsza wizyta po 12 minutach, a gdy wtedy nie ma portu, sprawdza znowu co minutę). Wpływa i wypływa przez najbliższy portowi kafel głębokiej wody na krawędzi mapy. Kupuje nadwyżki według progów „sprzedaj ponad N” kupca wędrownego (jedno ustawienie dla obu kupców), do 40 sztuk na wizytę, po cenie bazowej; **nie kupuje desek, smoły i sukna**, bo sam je sprzedaje. Przywozi 20 desek, 10 smoły, 10 sukna i sprzedaje je po **cenie bazowej +50%** (deska 6 zł, smoła 9 zł, sukno 11 zł). Płacimy sztuka po sztuce, gdy portowiec zdejmie towar ze statku; kupiec nie sprzeda więcej, niż starczy złota.
+- **„Kupuj do N”** to nowa kolumna „Kupno z morza” w oknie „Zapasy królestwa”, tylko przy deskach, smole i suknie: kupiec sprzedaje, dopóki królestwo (z placem portowym i towarem w rękach) ma mniej niż N.
+- **Obca koga** to osobny rodzaj statku (`foreign_cog`: ładownia 8 slotów po 10 sztuk, żeby zmieściła ofertę i 40 sztuk kupionych towarów), z grafiką kogi z prototypu w zielonych barwach kupca. Koga gracza (część 3) dostanie te same arkusze w kolorze gracza.
+- **Portowiec na statku jest rysowany na wierzchu kogi** (prośba właściciela 2026-11-06): kto wszedł po trapie, stoi na pokładzie przed żaglem i kadłubem.
+- **Pomiar po części 2:** duże miasto z M4b-3 średnio 2,3 ms na tick (20 minut, cel ≤ 4 ms).
+- **Panel statku:** kliknięcie statku pokazuje, czyj jest, czy stoi przy nabrzeżu, ile ma w ładowni (lista towarów z symulacji), a u kupca: ile zostało czasu i ile złota przeszło z rąk do rąk. Panel portu pokazuje, kto stoi przy nabrzeżu, i za ile minut przypłynie kupiec.
 
 ---
 

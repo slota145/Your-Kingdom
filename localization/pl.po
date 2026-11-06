@@ -1407,7 +1407,7 @@ msgid "ui.stocks.title"
 msgstr "Zapasy królestwa"
 
 msgid "ui.stocks.hint"
-msgstr "Zapasy to suma z magazynów, stosów przy budynkach, chlewów, kramów i ziemi. Produkcja i zużycie na minutę to średnia z ostatnich 5 minut. Zaznacz towar, a kupiec wędrowny kupi wszystko, co jest ponad wpisaną liczbę."
+msgstr "Zapasy to suma z magazynów, stosów przy budynkach, chlewów, kramów i ziemi. Produkcja i zużycie na minutę to średnia z ostatnich 5 minut. Zaznacz towar, a kupiec wędrowny i kupiec morski kupią wszystko, co jest ponad wpisaną liczbę. W ostatniej kolumnie ustawiasz, ile desek, smoły i sukna kupić od kupca morskiego."
 
 msgid "ui.stocks.good"
 msgstr "Towar"
@@ -1729,3 +1729,90 @@ msgstr "%d. %s"
 
 msgid "ui.command_error.cannot_turn_on_water"
 msgstr "Budynku na wodzie nie da się obrócić."
+
+msgid "building.port.name"
+msgstr "Port"
+
+msgid "building.port.desc"
+msgstr "Nabrzeże z placem portowym. Dwóch portowców nosi towar po trapie między placem a statkiem przy nabrzeżu. Tu cumuje kupiec morski. Stawiaj na brzegu morza, nabrzeżem do wody, z dojściem do głębokiej wody."
+
+msgid "ship.foreign_cog.name"
+msgstr "Obca koga"
+
+msgid "ship.foreign_cog.desc"
+msgstr "Koga kupca morskiego. Przypływa zza horyzontu do portu, kupuje nadwyżki i sprzedaje deski, smołę i sukno."
+
+msgid "ui.kind.docker"
+msgstr "Portowiec"
+
+msgid "ui.activity.hand_over"
+msgstr "podaje towar na trapie"
+
+msgid "ui.ship.moored"
+msgstr "Stoi przy nabrzeżu: %s"
+
+msgid "ui.ship.coming"
+msgstr "Płynie do portu"
+
+msgid "ui.ship.leaving"
+msgstr "Odpływa za horyzont"
+
+msgid "ui.ship.sailing"
+msgstr "Na morzu"
+
+msgid "ui.ship.capacity"
+msgstr "Ładownia: %d z %d sztuk"
+
+msgid "ui.ship.sea_merchant"
+msgstr "Kupiec morski"
+
+msgid "ui.ship.trading_left"
+msgstr "Handluje jeszcze %d:%02d"
+
+msgid "ui.ship.trade"
+msgstr "Kupił od ciebie %d szt. za %d zł, sprzedał ci towary za %d zł"
+
+msgid "ui.ship.hold"
+msgstr "Ładownia"
+
+msgid "ui.port.berth_free"
+msgstr "Nabrzeże wolne"
+
+msgid "ui.port.berth_moored"
+msgstr "Przy nabrzeżu: %s"
+
+msgid "ui.port.berth_coming"
+msgstr "Do portu płynie: %s"
+
+msgid "ui.port.quay"
+msgstr "Plac portowy"
+
+msgid "ui.port.no_dockers"
+msgstr "Bez portowców nikt nie załaduje ani nie rozładuje statku."
+
+msgid "ui.port.next_merchant"
+msgstr "Kupiec morski przypłynie za ok. %d min."
+
+msgid "ui.doing.ship"
+msgstr "statek (%s)"
+
+msgid "ui.note.sea_merchant_arrived"
+msgstr "Kupiec morski przybił do portu."
+
+msgid "ui.note.sea_merchant_left"
+msgstr "Kupiec morski odpłynął. Zapłacił ci %d zł, ty jemu %d zł."
+
+msgid "ui.stocks.buy"
+msgstr "Kupno z morza"
+
+msgid "ui.stocks.buy_hint"
+msgstr "Kupiec morski sprzeda ten towar, gdy masz go mniej niż ta liczba sztuk. Odznacz, żeby nic nie kupować."
+
+msgid "ui.stocks.buy_price"
+msgstr "po %d zł"
+
+msgid "ui.command_error.not_offered"
+msgstr "Kupiec morski nie sprzedaje tego towaru."
+
+msgid "ui.command_error.not_a_port"
+msgstr "To nie jest port."

@@ -229,6 +229,8 @@ func _refresh() -> void:
 			lines.append_array(_shipyard_lines(b))
 		if b.def.uses_ship != &"":
 			lines.append(_boat_line(b))
+		if b.def.is_port() and b.is_complete():
+			lines.append_array(_port_lines(b))
 	_body.text = "\n".join(lines)
 	_stock.visible = b.stock != null
 	_stock.stock = b.stock
@@ -255,8 +257,8 @@ func _refresh_settings(b: BuildingState) -> void:
 	_priority_row.visible = b.is_complete() and b.def.worker_count() > 0
 	for p: int in _priority_buttons.size():
 		_priority_buttons[p].set_pressed_no_signal(p == b.priority)
-	_reserve_box.visible = b.stock != null
-	if b.stock != null:
+	_reserve_box.visible = b.stock != null and b.def.storage_slots > 0
+	if _reserve_box.visible:
 		var reserve := int(b.reserves.get(&"wood", 0))
 		if not _reserve_slider.has_focus():
 			_reserve_slider.set_value_no_signal(reserve)
@@ -405,6 +407,25 @@ func _shipyard_lines(b: BuildingState) -> PackedStringArray:
 			have[good] = mini(build.stock.total(good), int(need[good]))
 		lines.append(head)
 		lines.append(tr("ui.building.materials") % [UiKit.goods_list(have), UiKit.goods_list(need)])
+	return lines
+
+
+## Port (M5 part 2): who is at the berth, the dockers, when the sea merchant comes.
+func _port_lines(b: BuildingState) -> PackedStringArray:
+	var lines := PackedStringArray()
+	var ship := Harbour.berth_holder(province, b)
+	if ship == null:
+		lines.append(tr("ui.port.berth_free"))
+	elif ship.is_moored() and ship.dock_id == b.id:
+		lines.append(tr("ui.port.berth_moored") % tr(ship.def.name_key()))
+	else:
+		lines.append(tr("ui.port.berth_coming") % tr(ship.def.name_key()))
+	if b.workers.is_empty():
+		lines.append(tr("ui.port.no_dockers"))
+	var trader := province.sea_merchant
+	if trader.state == SeaMerchant.State.AWAY:
+		var minutes := ceili(maxi(trader.next_visit - province.tick, 0) / float(SimClock.TICKS_PER_SECOND) / 60.0)
+		lines.append(tr("ui.port.next_merchant") % maxi(minutes, 1))
 	return lines
 
 

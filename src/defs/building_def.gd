@@ -77,6 +77,12 @@ extends GameDef
 @export var ship_kinds: Array[StringName] = []
 ## Kind of ship this building's workers use (a fishing wharf's boat, M5); empty = none.
 @export var uses_ship: StringName = &""
+## Port (M5 part 2): slots of the quay yard where goods wait to be loaded onto a ship or to
+## go to a storage. A private store: only requests that name the port bring or take goods.
+@export_range(0, 16) var quay_slots: int = 0
+## Port: the quay tile (as drawn) at the foot of the gangway to a ship moored at the berth;
+## dockers walk from the entrance over the quay to it, then up the gangway. (-1, -1) = none.
+@export var gangway: Vector2i = Vector2i(-1, -1)
 
 
 func get_kind() -> StringName:
@@ -216,6 +222,15 @@ func water_tiles_at(origin: Vector2i, orientation: int) -> Array[Vector2i]:
 
 func berth_at(origin: Vector2i, orientation: int) -> Vector2i:
 	return origin + turned(berth, orientation)
+
+
+## Whether ships moored here are loaded and unloaded over a gangway (a port, M5 part 2).
+func is_port() -> bool:
+	return gangway != Vector2i(-1, -1) and has_berth()
+
+
+func gangway_at(origin: Vector2i, orientation: int) -> Vector2i:
+	return origin + turned(gangway, orientation)
 
 
 func is_entrance_on_edge() -> bool:

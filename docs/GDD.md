@@ -231,6 +231,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 
 - **Kupcy wędrowni** odwiedzają targowisko lub port co pewien czas, z ograniczoną ofertą kupna i sprzedaży.
 - **Stan w M4b-2 (decyzje 2026-11-05):** kupiec przyjeżdża z krawędzi mapy co ok. 10 minut gry i stoi 3 minuty przy targowisku (bez targowiska nie przyjeżdża). Kupuje po stałych cenach (cena bazowa towaru) wszystko, co magazyny mają ponad próg ustawiony przez gracza przy towarze w oknie „Zapasy królestwa”; domyślnie nic. Tragarze noszą towar do jego wozu. Sprzedaje tylko świnie (4 na wizytę, 30 złota), które tragarz prowadzi do chlewu.
+- **Stan w M5, część 2 (2026-11-06):** kupiec morski przypływa obcą kogą zza krawędzi morza co ok. 12 minut gry do portu z wolnym nabrzeżem (bez portu nie przypływa) i stoi 4 minuty. Kupuje do 40 sztuk nadwyżek po cenie bazowej według tych samych progów „sprzedaj ponad N” co kupiec wędrowny, ale nie kupuje towarów, które sam sprzedaje. Przywozi 20 desek, 10 smoły i 10 sukna i sprzedaje je po cenie bazowej +50%, dopóki królestwo ma mniej, niż gracz ustawił w oknie „Zapasy królestwa” w kolumnie „Kupno z morza” (próg „kupuj do N”), i dopóki starcza złota. Każdą sztukę portowcy niosą po trapie, a złoto przechodzi z rąk do rąk przy każdej sztuce.
 - W prowincjach z portem dostępny jest handel z obcymi portami: stałe ceny z wahaniami.
 
 ---
@@ -283,6 +284,8 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Koga | transport i handel |
 | Okręt wojenny | transport wojsk i walka |
 
+**Port (M5, część 2):** 4×4, dwa rzędy lądu (plac portowy na 6 stosów) i dwa rzędy nabrzeża na palach nad wodą; jedno miejsce cumowania przed nabrzeżem, z torem wodnym do głębokiej wody. Statek płynący do portu rezerwuje miejsce przy nabrzeżu. Dwóch portowców nosi towar sztuka po sztuce: od wejścia przez nabrzeże i po trapie na statek albo ze statku na plac. Plac portowy jest prywatny: tragarze przynoszą na niego towar tylko na załadunek, a to, co czeka bez statku (np. kupione od kupca), odnoszą do magazynów.
+
 **Plan M5 (decyzje 2026-11-06, szczegóły w ROADMAP):** w M5 tylko łódź rybacka i koga. Łódź pracuje dla nowej **przystani rybackiej** nad morzem (połów z ławic, więcej niż wędkarz, który zostaje). Statki powstają z desek, smoły (nowa **smolarnia**: drewno → smoła) i sukna. **Kupiec morski** przypływa obcą kogą do portu. Własna koga gracza odbywa **rejsy handlowe za horyzont** (wraca ze złotem i zamówionymi towarami). Na „Wybrzeżu” gra zaczyna się od kogi, która wyładowuje osadników na plaży. Reszta drzewka okrętów (IDEAS) później.
 
 ### 5.5 Lista budynków [SLICE]
@@ -320,6 +323,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Smolarnia [M5] | 2×2 | smoła z drewna |
 | Stocznia [M5] | 4×4 (pochylnia na 2 rzędach wody), 30 złota | statki na zamówienie (w części 1 łódź rybacka) |
 | Przystań rybacka [M5] | 3×3 (pomost na wodzie) | ryby z ławic, łódź ze stoczni |
+| Port [M5] | 4×4 (nabrzeże na 2 rzędach wody), 40 złota | plac portowy, 2 portowców, 1 miejsce cumowania; tu cumuje kupiec morski |
 
 ---
 

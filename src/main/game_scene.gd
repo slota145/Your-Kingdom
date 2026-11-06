@@ -16,6 +16,9 @@ const QUICK_SLOT := "quick"
 ## A person is picked only when clicked close to the body, so clicks near people still
 ## reach the building behind them (owner feedback 2026-11-05).
 const PICK_RADIUS := 9.0
+## How far (world px) from a ship's hull a click still picks it, and how high its sail reaches.
+const SHIP_PICK_RADIUS := 40.0
+const SHIP_PICK_HEIGHT := 90.0
 
 var sim: Simulation
 var view: ProvinceView
@@ -26,6 +29,7 @@ var _top: TopBar
 var _build: BuildMenu
 var _building_panel: BuildingPanel
 var _agent_panel: AgentPanel
+var _ship_panel: ShipPanel
 var _stocks: KingdomStockWindow
 var _notes: Notifications
 var _tool: Dictionary = {}
@@ -155,6 +159,13 @@ func _build_ui() -> void:
 	_agent_panel.follow_toggled.connect(func(on: bool) -> void:
 		_follow_id = _agent_panel.agent_id if on else 0)
 	root.add_child(_agent_panel)
+	_ship_panel = ShipPanel.new()
+	_ship_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_ship_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_ship_panel.position.y = 64
+	_ship_panel.visible = false
+	_ship_panel.closed.connect(_close_panels)
+	root.add_child(_ship_panel)
 	_notes = Notifications.new()
 	_notes.position = Vector2(12, 64)
 	_notes.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -171,6 +182,7 @@ func _toggle_stocks() -> void:
 func _close_panels() -> void:
 	_building_panel.visible = false
 	_agent_panel.visible = false
+	_ship_panel.visible = false
 	_agent_panel.set_following(false)
 	_follow_id = 0
 	_preview_dirty = true
@@ -448,6 +460,10 @@ func _select_at(world_pos: Vector2) -> void:
 	if best != null:
 		_agent_panel.show_agent(sim.province, best.id)
 		return
+	var ship := _ship_at(world_pos)
+	if ship != 0:
+		_ship_panel.show_ship(sim.province, ship)
+		return
 	# The building drawn under the cursor wins; the tile under it is only the fallback.
 	var owner := view.buildings.building_at(world_pos)
 	if owner == 0:
@@ -455,6 +471,21 @@ func _select_at(world_pos: Vector2) -> void:
 	if owner != 0:
 		_building_panel.show_building(sim.province, owner)
 	_update_preview()
+
+
+## The ship whose hull is under [param world_pos] (M5 part 2), 0 if none.
+func _ship_at(world_pos: Vector2) -> int:
+	var best := 0
+	var best_d := SHIP_PICK_RADIUS
+	for ship: ShipUnit in sim.province.ships.values():
+		var at := IsoMath.grid_to_screen(ship.prev_pos.lerp(ship.pos, Game.alpha()))
+		# The hull and the sail above it.
+		var body := Vector2(at.x, clampf(world_pos.y, at.y - SHIP_PICK_HEIGHT, at.y))
+		var d := body.distance_to(world_pos)
+		if d < best_d:
+			best_d = d
+			best = ship.id
+	return best
 
 
 # --- Save, load, checks --------------------------------------------------------------------

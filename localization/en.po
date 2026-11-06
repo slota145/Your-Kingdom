@@ -1387,7 +1387,7 @@ msgid "ui.stocks.title"
 msgstr "Kingdom stocks"
 
 msgid "ui.stocks.hint"
-msgstr "Stocks add up storages, stacks by buildings, pigsties, stalls and the ground. Made and used per minute are averages of the last 5 minutes. Tick a good and the travelling merchant buys everything above the number."
+msgstr "Stocks add up storages, stacks by buildings, pigsties, stalls and the ground. Made and used per minute are averages of the last 5 minutes. Tick a good and the travelling merchant and the sea merchant buy everything above the number. In the last column you set how many planks, how much tar and cloth to buy from the sea merchant."
 
 msgid "ui.stocks.good"
 msgstr "Good"
@@ -1708,3 +1708,90 @@ msgstr "%d. %s"
 
 msgid "ui.command_error.cannot_turn_on_water"
 msgstr "A building on the water cannot be turned."
+
+msgid "building.port.name"
+msgstr "Port"
+
+msgid "building.port.desc"
+msgstr "A quay with a quay yard. Two dockers carry goods over the gangway between the yard and the ship at the quay. The sea merchant moors here. Build it on the sea shore, quay towards the water, with a way to deep water."
+
+msgid "ship.foreign_cog.name"
+msgstr "Foreign cog"
+
+msgid "ship.foreign_cog.desc"
+msgstr "The sea merchant's cog. It sails in from beyond the horizon to your port, buys your surplus and sells planks, tar and cloth."
+
+msgid "ui.kind.docker"
+msgstr "Docker"
+
+msgid "ui.activity.hand_over"
+msgstr "hands goods over the gangway"
+
+msgid "ui.ship.moored"
+msgstr "Moored at: %s"
+
+msgid "ui.ship.coming"
+msgstr "Sailing to the port"
+
+msgid "ui.ship.leaving"
+msgstr "Sailing off beyond the horizon"
+
+msgid "ui.ship.sailing"
+msgstr "At sea"
+
+msgid "ui.ship.capacity"
+msgstr "Hold: %d of %d units"
+
+msgid "ui.ship.sea_merchant"
+msgstr "Sea merchant"
+
+msgid "ui.ship.trading_left"
+msgstr "Trading for another %d:%02d"
+
+msgid "ui.ship.trade"
+msgstr "Bought %d units from you for %d gold, sold you goods for %d gold"
+
+msgid "ui.ship.hold"
+msgstr "Hold"
+
+msgid "ui.port.berth_free"
+msgstr "The berth is free"
+
+msgid "ui.port.berth_moored"
+msgstr "At the quay: %s"
+
+msgid "ui.port.berth_coming"
+msgstr "Sailing in: %s"
+
+msgid "ui.port.quay"
+msgstr "Quay yard"
+
+msgid "ui.port.no_dockers"
+msgstr "Without dockers nobody loads or unloads a ship."
+
+msgid "ui.port.next_merchant"
+msgstr "The sea merchant comes in about %d min."
+
+msgid "ui.doing.ship"
+msgstr "the ship (%s)"
+
+msgid "ui.note.sea_merchant_arrived"
+msgstr "The sea merchant has moored at the port."
+
+msgid "ui.note.sea_merchant_left"
+msgstr "The sea merchant has sailed away. He paid you %d gold, you paid him %d gold."
+
+msgid "ui.stocks.buy"
+msgstr "Buy by sea"
+
+msgid "ui.stocks.buy_hint"
+msgstr "The sea merchant sells this good while you have less than this many units. Untick to buy nothing."
+
+msgid "ui.stocks.buy_price"
+msgstr "at %d gold"
+
+msgid "ui.command_error.not_offered"
+msgstr "The sea merchant does not sell this good."
+
+msgid "ui.command_error.not_a_port"
+msgstr "This is not a port."

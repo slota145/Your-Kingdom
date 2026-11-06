@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 9
+const CURRENT_VERSION := 10
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -34,6 +34,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 9:
 		result = migrate_v8_to_v9(result)
 		version = 9
+	if version < 10:
+		result = migrate_v9_to_v10(result)
+		version = 10
 	return result
 
 
@@ -134,4 +137,13 @@ static func migrate_v8_to_v9(state: Dictionary) -> Dictionary:
 	var province: Dictionary = state["province"]
 	province["ships"] = []
 	province["ship_builds"] = []
+	return state
+
+
+## M5 part 2: ports and the sea merchant. A v9 game has no port, so no ship reserved a berth;
+## the sea merchant is away and comes as soon as there is a port (like the travelling
+## merchant after v7).
+static func migrate_v9_to_v10(state: Dictionary) -> Dictionary:
+	var province: Dictionary = state["province"]
+	province["sea_merchant"] = {"state": 0, "next": 0}
 	return state

@@ -99,6 +99,7 @@ static func fail(province: ProvinceSim, agent: Agent) -> void:
 	var task := agent.task
 	if task == null:
 		return
+	Harbour.step_ashore(agent)
 	province.release_agent(agent)
 	if task.kind == Task.KIND_TRANSPORT:
 		# Goods already picked up leave the request: the stash task takes care of them.

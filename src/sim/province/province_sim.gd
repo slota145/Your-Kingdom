@@ -53,6 +53,8 @@ var _pile_index_version: int = -1
 var _pile_index: Dictionary[Vector2i, int] = {}
 ## The travelling merchant (M4b-2).
 var merchant: Merchant = Merchant.new()
+## The sea merchant with his foreign cog (M5 part 2).
+var sea_merchant: SeaMerchant = SeaMerchant.new()
 ## Goods made and used per minute (statistics for the player, M4b-2); not saved.
 var ledger: GoodsLedger = GoodsLedger.new()
 ## Where newcomers enter the province.
@@ -111,6 +113,8 @@ func step() -> void:
 		_breed_herds()
 		_update_markets()
 		merchant.update(self)
+		sea_merchant.update(self)
+		Harbour.update(self)
 		jobs.trim_yard_requests(self)
 	Population.update(self)
 
@@ -1206,7 +1210,7 @@ func accepts_deliveries(id: int) -> bool:
 	var building := buildings.get_building(id)
 	if building != null:
 		return building.stock != null or building.supply != null
-	return sites.has(id) or paving.has(id) or ship_builds.has(id)
+	return sites.has(id) or paving.has(id) or ship_builds.has(id) or Harbour.port_of(self, id) != null
 
 
 func access_tile(id: int) -> Vector2i:
@@ -1227,6 +1231,11 @@ func access_tile(id: int) -> Vector2i:
 	if build != null:
 		var shipyard := buildings.get_building(build.shipyard_id)
 		return shipyard.entrance_tile() if shipyard != null else Agent.NO_TILE
+	if ships.has(id):
+		# Dockers go to the port entrance; the walk over the quay and the gangway is the
+		# step's own (Harbour.walk_out).
+		var port := Harbour.port_of(self, id)
+		return port.entrance_tile() if port != null else Agent.NO_TILE
 	return merchant.stand if id == merchant.wagon_id and merchant.wagon != null else Agent.NO_TILE
 
 
@@ -1544,6 +1553,7 @@ func to_dict() -> Dictionary:
 		"entry": SimCodec.vec2i(entry_tile),
 		"keep_for_building": _keep_to_dict(),
 		"merchant": merchant.to_dict(),
+		"sea_merchant": sea_merchant.to_dict(),
 		"agents": agents.to_dict(),
 		"jobs": jobs.to_dict(),
 		"path_queue": paths.to_dict(),
@@ -1597,6 +1607,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 	for good: Variant in keep:
 		province.keep_for_building[StringName(String(good))] = int(keep[good])
 	province.merchant = Merchant.from_dict(d.get("merchant", {}), registry)
+	province.sea_merchant = SeaMerchant.from_dict(d.get("sea_merchant", {}))
 	province.agents = AgentStore.from_dict(d["agents"])
 	for agent: Agent in province.agents.all():
 		if agent.task != null and not TaskRunner.restore_steps(province, agent.task):

@@ -374,3 +374,60 @@ func test_v8_save_gets_no_ships() -> void:
 	assert_int(sim.province.ships.size()).is_equal(0)
 	assert_int(sim.province.ship_builds.size()).is_equal(0)
 	assert_int(sim.province.fairway.size()).is_equal(0)
+
+
+## A save written by save_version 10 (M5 part 2: the sea merchant's cog moored at a port,
+## a docker on the gangway with a unit of wood, settings to sell wood and buy tar) loads
+## unchanged, keeps playing and the merchant finishes his visit without losing goods.
+func test_v10_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v10_port.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(10)
+	var state := SaveMigrations.migrate(document["state"], 10)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	var province := sim.province
+	var trader := province.sea_merchant
+	assert_bool(trader.is_trading()).is_true()
+	assert_dict(trader.buy_up_to).is_equal({&"tar": 8})
+	var on_gangway := 0
+	for agent: Agent in province.agents.all():
+		if agent.task != null and agent.task.bb.has("_gw"):
+			on_gangway += 1
+	assert_int(on_gangway).is_greater_equal(1)
+	var wood := province.goods_total(&"wood")
+	var bought := trader.bought
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return trader.state == SeaMerchant.State.AWAY,
+			SeaMerchant.STAY + 300.0)).is_true()
+	assert_int(province.goods_total(&"wood")).is_equal(wood - (trader.bought - bought) - _wood_aboard(state))
+	assert_int(province.goods_total(&"tar")).is_equal(8)
+	assert_array(Array(province.dangling_holds())).is_empty()
+
+
+## Wood already in the cog's hold in [param state] (it sails away with him).
+func _wood_aboard(state: Dictionary) -> int:
+	var sum := 0
+	for ship: Variant in state["province"]["ships"]:
+		var hold: Dictionary = (ship as Dictionary).get("hold", {})
+		if hold.is_empty():
+			continue
+		var stock := Stockpile.from_dict(hold, SimFixture.registry())
+		sum += stock.total(&"wood")
+	return sum
+
+
+## M5 part 1 harbour (v9): after the migration the sea merchant is away, due as soon as there
+## is a port, with no settings; ships hold no berth.
+func test_v9_save_gets_sea_merchant() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v9_harbour.json"))
+	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 9), SimFixture.registry())
+	var trader := sim.province.sea_merchant
+	assert_int(trader.state).is_equal(SeaMerchant.State.AWAY)
+	assert_int(trader.next_visit).is_equal(0)
+	assert_dict(trader.buy_up_to).is_empty()
+	for ship: ShipUnit in sim.province.ships.values():
+		assert_int(ship.berth_id).is_equal(0)
+	# No port: he does not come.
+	sim.run_ticks(SimFixture.ticks(5))
+	assert_int(trader.state).is_equal(SeaMerchant.State.AWAY)

@@ -51,6 +51,9 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		# Small stable offset so people sharing a tile do not overlap exactly (ARCHITECTURE §5.3).
 		var jitter := Vector2(float((agent.id * 7) % 9) - 4.0, float((agent.id * 5) % 5) - 2.0)
 		sprite.position = screen + jitter + spot
+		# A docker who went up the gangway onto a moored ship stands on its deck: drawn over
+		# the hull and the sail (M5 part 2, owner's wish 2026-11-06).
+		sprite.z_index = 1 if _on_ship(agent) else 0
 		sprite.self_modulate = _tint(agent.kind)
 		sprite.modulate.a = fade
 		var good := agent.carry_good if agent.is_carrying() else &""
@@ -72,14 +75,22 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 	last_update_usec = Time.get_ticks_usec() - start
 
 
+## Whether [param agent] is out over the water on the gangway or on a ship's deck.
+func _on_ship(agent: Agent) -> bool:
+	if province == null or agent.task == null or not agent.task.bb.has("_gw"):
+		return false
+	var tile := agent.tile()
+	return province.grid.is_inside(tile) and province.grid.occupant(tile) == 0
+
+
 ## 1 outside buildings, falling to 0 within [constant DOORWAY_FADE] tiles inside a footprint.
 func _doorway_fade(at: Vector2) -> float:
 	var tile := Vector2i(floori(at.x), floori(at.y))
 	if province == null or not province.grid.is_inside(tile):
 		return 1.0
 	var building := province.buildings.get_building(province.grid.occupant(tile))
-	if building == null:
-		return 1.0
+	if building == null or building.def.is_port():
+		return 1.0   # a port is open ground: dockers are seen on the quay yard and the quay
 	var rect := Rect2(Vector2(building.origin), Vector2(building.def.footprint))
 	var depth := minf(minf(at.x - rect.position.x, rect.end.x - at.x), minf(at.y - rect.position.y, rect.end.y - at.y))
 	return clampf(1.0 - depth / DOORWAY_FADE, 0.0, 1.0)

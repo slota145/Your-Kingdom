@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ShipDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/ship_def.gd" id="1_ship"]
+
+[resource]
+script = ExtResource("1_ship")
+deep_only = true
+speed = 1.2
+hold_slots = 8
+hold_stack = 10
+build_time = 240.0
+stages = 4
+id = &"foreign_cog"

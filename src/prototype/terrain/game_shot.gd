@@ -9,6 +9,9 @@ extends Node
 ## --map=<id> starts a new game on that map (default riverlands).
 ## --harbour (M5, map coast) puts a shipyard with a boat on its slipway, a fishing wharf, a tar
 ## kiln and boats in 8 directions (rowing, casting, waiting, hauling the net) near the tile.
+## --port (M5 part 2, map coast) puts a port near the tile with the sea merchant's cog moored
+## at the quay, goods on the quay yard and in the hold, dockers on the quay and the gangway,
+## and foreign cogs sailing in 8 directions; --select=ship opens the cog's panel.
 ## --select=<building id> opens the panel of that building.
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
@@ -26,6 +29,7 @@ var _plain: bool = false
 var _paved: bool = false
 var _carts: bool = false
 var _harbour: bool = false
+var _port: bool = false
 ## Building id whose panel is opened (--select=<id>).
 var _select: StringName = &""
 
@@ -49,6 +53,8 @@ func _ready() -> void:
 			_carts = true
 		elif arg == "--harbour":
 			_harbour = true
+		elif arg == "--port":
+			_port = true
 		elif arg.begins_with("--select="):
 			_select = StringName(arg.trim_prefix("--select="))
 	for arg: String in OS.get_cmdline_user_args():
@@ -108,6 +114,8 @@ func _arrange() -> void:
 
 	if _harbour:
 		_place_harbour(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _port:
+		_place_port(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == _select:
 			(_game.get("_building_panel") as BuildingPanel).show_building(sim.province, b.id)
@@ -122,6 +130,8 @@ func _place_near(sim: Simulation, id: StringName, near: Vector2i) -> BuildingSta
 				if maxi(absi(x - near.x), absi(y - near.y)) != r:
 					continue
 				for o: int in 2:
+					if sim.province.placement_error(def, Vector2i(x, y), o) != &"":
+						continue
 					if sim.execute(PlaceBuildingCommand.new(id, Vector2i(x, y), true, o)) == &"":
 						return sim.province.buildings.get_building(sim.ids.next_id - 1)
 	return null
@@ -166,3 +176,69 @@ func _place_harbour(sim: Simulation, at: Vector2i) -> void:
 			if activity == &"sail":
 				boat.path_state = ShipUnit.PathState.MOVING
 			placed += 1
+
+
+func _place_port(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	var port := _place_near(sim, &"port", at)
+	print("port ", port.origin if port else null)
+	if port == null:
+		return
+	var def := sim.data.get_ship(SeaMerchant.SHIP)
+	var cog := ShipUnit.new(province.ids.take(), def, IsoMath.tile_center(port.berth_tile()), sim.data)
+	province.ships[cog.id] = cog
+	cog.hold.add(&"planks", 14)
+	cog.hold.add(&"tar", 6)
+	cog.hold.add(&"cloth", 10)
+	cog.hold.add(&"wood", 7)
+	Harbour.moor(cog, port)
+	var trader := province.sea_merchant
+	trader.state = SeaMerchant.State.TRADING
+	trader.ship_id = cog.id
+	trader.port_id = port.id
+	trader.leave_at = province.tick + SimClock.seconds_to_ticks(150)
+	trader.paid = cog.hold.totals()
+	trader.bought = 7
+	trader.earned = 14
+	trader.spent = 36
+	port.stock.add(&"wood", 9)
+	port.stock.add(&"fish", 6)
+	port.stock.add(&"planks", 6)
+	port.stock.add(&"tar", 3)
+	# Dockers: one walking over the quay with wood, one handing tar over at the ship.
+	var points := Harbour.gangway_points(port)
+	for k: int in 2:
+		var docker := province.spawn_agent(Harbour.DOCKER_KIND, port.entrance_tile())
+		province.assign_worker(docker, port)
+		docker.pos = points[0].lerp(points[1], 0.55) if k == 0 else points[2]
+		docker.prev_pos = docker.pos
+		docker.carry_good = &"wood" if k == 0 else &"tar"
+		docker.carry_amount = 1
+		docker.activity = &"walk" if k == 0 else Harbour.HAND_OVER
+		docker.facing = IsoMath.Dir.SW if k == 0 else IsoMath.Dir.NE
+		if k == 1:
+			# On the ship's deck, as in the game (the view draws him over the ship).
+			var task := Task.new()
+			task.kind = Task.KIND_TRANSPORT
+			task.bb = {"_gw": 1}
+			docker.task = task
+	var porter := province.spawn_agent(&"porter", port.door_front_tile())
+	porter.carry_good = &"fish"
+	porter.carry_amount = 1
+	porter.activity = &"walk"
+	porter.facing = IsoMath.Dir.NW
+	# Foreign cogs in 8 directions out at sea.
+	var placed := 0
+	for y: int in range(at.y + 4, at.y + 40, 3):
+		for x: int in range(at.x - 20, at.x + 30, 7):
+			var tile := Vector2i(x, y)
+			if placed >= IsoMath.DIR_COUNT or not province.grid.is_inside(tile) \
+					or not province.cog_nav.is_walkable(tile) or tile.distance_to(port.berth_tile()) < 6:
+				continue
+			var sailing := ShipUnit.new(province.ids.take(), def, IsoMath.tile_center(tile), sim.data)
+			sailing.facing = placed
+			province.ships[sailing.id] = sailing
+			placed += 1
+	if _select == &"ship":
+		(_game.get("_ship_panel") as ShipPanel).show_ship(province, cog.id)
