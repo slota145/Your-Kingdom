@@ -47,6 +47,18 @@ static func int_array(a: Variant) -> Array[int]:
 	return result
 
 
+## Step of [method savable]: a power of two with few decimal digits.
+const SAVABLE_STEP := 1.0 / 16384.0
+
+
+## [param x] rounded to a grid a save writes in few decimal digits and reads back exactly
+## (JSON parsing of long fractions is not exact, so a loaded game would drift by a hair).
+## For running totals of small amounts (hunger, gold fractions); the rounding is under
+## 0.00004 per step.
+static func savable(x: float) -> float:
+	return snappedf(x, SAVABLE_STEP)
+
+
 ## Canonical JSON text of a state dictionary; equal states give equal text.
 static func canonical(d: Dictionary) -> String:
 	return JSON.stringify(JSON.parse_string(JSON.stringify(d, "", true, true)), "", true, true)

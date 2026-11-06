@@ -29,7 +29,8 @@ func pay(amount: int) -> bool:
 
 ## Adds gold, keeping fractions for later (taxes per second are small).
 func add(amount: float) -> void:
-	_fraction += amount
+	# On a grid a save reads back exactly, so a loaded game goes on alike.
+	_fraction = SimCodec.savable(_fraction + amount)
 	var whole := floori(_fraction)
 	gold += whole
 	_fraction -= whole

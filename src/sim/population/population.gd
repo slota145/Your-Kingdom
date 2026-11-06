@@ -3,11 +3,14 @@ extends RefCounted
 ## Houses, needs, happiness and the workforce (GDD §3, ROADMAP M3 decisions). Each house
 ## updates once per second of game time, in the tick of its id (step 8 of ARCHITECTURE §4.2):
 ## - households eat from their pantry; a householder fetches more when it runs low,
-## - happiness moves towards the sum of satisfied need weights,
+## - happiness moves towards the sum of satisfied need weights, less the weights of unmet
+##   basic needs (the more is missing, the lower),
 ## - all basic needs met long enough -> upgrade site; a house never goes back a level: unmet
-##   basic needs pull happiness down, then a warning, and an unhappy house loses residents
-##   one by one (it fills up again once the needs are met; decision 2026-11-05),
-## - newcomers walk in from the map edge to free places of happy houses,
+##   basic needs pull happiness down (less tax, slower work), then a warning, and a very
+##   unhappy house slowly loses residents, but never below half of its places (decision
+##   2026-11-06: a short supply must not empty the town and lock the player),
+## - newcomers walk in from the map edge to free places of happy houses; a house with a
+##   shortage still fills up to half,
 ## - houses pay taxes by class, happiness and the tax rate (GDD §3.5),
 ## - about half of the residents work: free ones are handed to buildings missing workers,
 ##   higher work priority first; a high-priority building may take a worker from a lower one.
@@ -19,17 +22,23 @@ const HAPPINESS_SPEED := 2.0
 const UPGRADE_AFTER := 60
 ## Seconds with unmet basic needs before a warning (GDD §3.3).
 const WARN_AFTER := 60
-## While a basic need is unmet, happiness sinks towards this cap, at this (gentler) speed.
-const SHORTAGE_HAPPINESS := 20.0
+## While a basic need is unmet, happiness sinks at this (gentler) speed.
 const SHORTAGE_SPEED := 1.0
 ## Below this happiness, with a basic need unmet for LEAVE_AFTER s or more, one resident
-## moves out every LEAVE_EVERY s.
-const LEAVE_BELOW := 25.0
-const LEAVE_AFTER := 180
-const LEAVE_EVERY := 60
-## Newcomers: at most one every IMMIGRATION_EVERY seconds, only to houses this happy.
+## moves out every LEAVE_EVERY s, while the house holds more than half of its places
+## (the core stays; decision 2026-11-06).
+const LEAVE_BELOW := 40.0
+const LEAVE_AFTER := 300
+const LEAVE_EVERY := 180
+## Newcomers: at most one every IMMIGRATION_EVERY seconds, to houses this happy, or up to half
+## of the places to houses at least IMMIGRATION_HALF_HAPPINESS happy.
 const IMMIGRATION_EVERY := 10
 const IMMIGRATION_MIN_HAPPINESS := 50.0
+const IMMIGRATION_HALF_HAPPINESS := 30.0
+## Work speed of a worker whose home has no happiness; it rises in a line to full speed at
+## FULL_SPEED_HAPPINESS (GDD §3.2: unhappy people work slower).
+const MIN_WORK_SPEED := 0.8
+const FULL_SPEED_HAPPINESS := 50.0
 ## Units a householder carries at most.
 const ERRAND_LOAD := 2
 ## Seconds between two top-ups of a pantry in the simplified mode (M6).
@@ -70,8 +79,7 @@ static func update_abstract(province: ProvinceSim, doors: Dictionary[int, Array]
 	if province.tick % (IMMIGRATION_EVERY * UPDATE_TICKS) < UPDATE_TICKS:
 		for building: BuildingState in province.buildings.all():
 			var house := building.house
-			if house != null and house.free_places(building.capacity()) > 0 \
-					and house.happiness >= IMMIGRATION_MIN_HAPPINESS:
+			if house != null and accepts_newcomer(building):
 				house.residents += 1
 				break
 
@@ -100,10 +108,12 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 			target += level.weight_of(need)
 		elif need.is_basic:
 			basic_met = false
+			# A missing basic need counts against the house: the more is short, the lower.
+			if house.residents > 0:
+				target -= level.weight_of(need)
 	target = clampf(target + province.treasury.rate_happiness(), 0.0, 100.0)
 	var speed := HAPPINESS_SPEED
 	if not basic_met and house.residents > 0:
-		target = minf(target, SHORTAGE_HAPPINESS)
 		speed = SHORTAGE_SPEED
 	house.happiness = move_toward(house.happiness, target, speed)
 	if abstract:
@@ -130,7 +140,8 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 		if house.unmet_seconds == WARN_AFTER:
 			province.events.emit(&"house_warning", {"building": building.id})
 		if house.happiness < LEAVE_BELOW and house.unmet_seconds >= LEAVE_AFTER \
-				and (house.unmet_seconds - LEAVE_AFTER) % LEAVE_EVERY == 0:
+				and (house.unmet_seconds - LEAVE_AFTER) % LEAVE_EVERY == 0 \
+				and house.residents > core_residents(building):
 			house.residents -= 1
 			province.events.emit(&"resident_left", {"building": building.id})
 
@@ -185,6 +196,8 @@ static func _need_met(province: ProvinceSim, building: BuildingState, need: Need
 				return true
 		return false
 	var hunger: float = house.hunger.get(need.id, 0.0) + house.residents * need.per_resident_per_minute / 60.0
+	# On a grid a save reads back exactly, so a loaded game goes on alike.
+	hunger = SimCodec.savable(hunger)
 	for good: StringName in need.goods:
 		while hunger >= 1.0 and building.supply.remove(good, 1) == 1:
 			hunger -= 1.0
@@ -278,13 +291,59 @@ static func _refill_pantry(province: ProvinceSim, building: BuildingState) -> vo
 
 # --- Newcomers -----------------------------------------------------------------------------
 
+## Residents an unhappy house keeps whatever happens: half of its places.
+static func core_residents(building: BuildingState) -> int:
+	return building.capacity() / 2
+
+
+## Whether a newcomer may move into [param building] now: any free place of a happy house,
+## up to half of the places of a less happy one (so a town with a shortage still grows its
+## core and can fix the shortage; decision 2026-11-06).
+static func accepts_newcomer(building: BuildingState) -> bool:
+	var house := building.house
+	var capacity := building.capacity()
+	if house.free_places(capacity) <= 0:
+		return false
+	if house.happiness >= IMMIGRATION_MIN_HAPPINESS:
+		return true
+	return house.happiness >= IMMIGRATION_HALF_HAPPINESS \
+			and house.residents + house.incoming < core_residents(building)
+
+
+## Work speed (1 = normal) of a worker living in [param home]: slower when the home is
+## unhappy, down to MIN_WORK_SPEED (GDD §3.2). A worker without a home works normally.
+static func work_speed_of(home: BuildingState) -> float:
+	if home == null or home.house == null:
+		return 1.0
+	var t := clampf(home.house.happiness / FULL_SPEED_HAPPINESS, 0.0, 1.0)
+	return lerpf(MIN_WORK_SPEED, 1.0, t)
+
+
+## Work speed of the province as a whole, for the simplified mode where workers have no
+## homes: [method work_speed_of] averaged over the residents.
+static func average_work_speed(province: ProvinceSim) -> float:
+	var residents := 0
+	var sum := 0.0
+	for building: BuildingState in province.buildings.all():
+		if building.house != null and building.house.residents > 0:
+			residents += building.house.residents
+			sum += work_speed_of(building) * building.house.residents
+	return sum / residents if residents > 0 else 1.0
+
+
+## [method work_speed_of] for [param agent].
+static func work_speed(province: ProvinceSim, agent: Agent) -> float:
+	if agent.home_id == 0:
+		return 1.0
+	return work_speed_of(province.buildings.get_building(agent.home_id))
+
+
 static func _immigrate(province: ProvinceSim) -> void:
 	if not province.nav.is_walkable(province.entry_tile):
 		return
 	for building: BuildingState in province.buildings.all():
 		var house := building.house
-		if house == null or house.free_places(building.capacity()) <= 0 \
-				or house.happiness < IMMIGRATION_MIN_HAPPINESS:
+		if house == null or not accepts_newcomer(building):
 			continue
 		var agent := province.spawn_agent(SETTLER_KIND, province.entry_tile)
 		agent.home_id = building.id
