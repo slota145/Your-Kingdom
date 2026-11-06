@@ -15,6 +15,8 @@ const BIG_FRAMES := {&"foreign_cog": [Vector2i(220, 220), Vector2(110, 168)],
 ## A big ship on the slipway (M5 part 3): build_<n>.png of the same frame size, one frame per
 ## direction; the hull stands on keel blocks, this far (px) above the slipway centre.
 const SLIP_LIFT := 6.0
+## How far (tiles) a cog on the slipway lies past the slipway centre, towards the water.
+const COG_ON_SLIP := 0.9
 ## Gangway plank between a port's quay and a moored ship (M5 part 2).
 const PLANK := Color(0.55, 0.4, 0.25)
 const PLANK_EDGE := Color(0.3, 0.21, 0.13)
@@ -178,11 +180,20 @@ func _update_builds() -> void:
 		if build.stage >= 3 and build.stage_started:
 			slide = 1.0 - float(build.work_left) / maxf(build.stage_ticks, 1.0)
 		var berth := IsoMath.tile_center(shipyard.berth_tile())
-		var at := centre.lerp(berth, slide * slide)
+		# A cog is longer than the slipway: it lies with its stern at the shore end of the
+		# slipway and its bow over the water, so the workshop never covers the stern.
+		var start := centre + Vector2(towards) * COG_ON_SLIP
+		var at := start.lerp(berth, slide * slide)
 		var pivot: Vector2 = BIG_FRAMES[build.ship][1]
 		var lift := SLIP_LIFT * (1.0 - slide)
-		sprite.position = IsoMath.grid_to_screen(at) + Vector2(0, SLIP_SORT_OFFSET)
-		sprite.offset = -pivot - Vector2(0, SLIP_SORT_OFFSET + lift)
+		# Sorted just in front of the whole shipyard (its front corner, where the building
+		# sorts): the tall hull on its blocks is drawn over the slipway, the low jetty beside it
+		# and the workshop behind it.
+		var front := IsoMath.grid_to_screen(Vector2(shipyard.origin + shipyard.def.footprint)).y
+		var sort_y := maxf(front, IsoMath.grid_to_screen(at).y) + 1.0
+		var screen := IsoMath.grid_to_screen(at)
+		sprite.position = Vector2(screen.x, sort_y)
+		sprite.offset = -pivot - Vector2(0, sort_y - screen.y + lift)
 
 
 func _sprite() -> Sprite2D:
