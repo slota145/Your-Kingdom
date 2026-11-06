@@ -38,7 +38,6 @@ var _agent_panel: AgentPanel
 var _ship_panel: ShipPanel
 var _stocks: KingdomStockWindow
 var _world_map: WorldMapScreen
-var _expedition: ExpeditionWindow
 var _notes: Notifications
 var _tool: Dictionary = {}
 var _hover: Vector2i = Vector2i(-999, -999)
@@ -96,6 +95,7 @@ func _start(simulation: Simulation) -> void:
 	_top.clock = sim.clock
 	_top.treasury = sim.treasury
 	_building_panel.treasury = sim.treasury
+	_building_panel.sim = sim
 	Game.start(sim)
 
 
@@ -120,7 +120,6 @@ func _show_province() -> void:
 	_top.province = sim.province
 	_notes.province = sim.province
 	_stocks.visible = false
-	_expedition.visible = false
 	_close_panels()
 	_set_tool({})
 
@@ -172,7 +171,6 @@ func _build_ui() -> void:
 	_building_panel.plant_area_requested.connect(func(id: int) -> void:
 		_set_tool({"kind": &"plant", "building": id}))
 	_building_panel.stocks_requested.connect(_toggle_stocks)
-	_building_panel.expedition_requested.connect(_open_expedition)
 	root.add_child(_building_panel)
 	_stocks = KingdomStockWindow.new()
 	_stocks.set_anchors_preset(Control.PRESET_CENTER_TOP)
@@ -197,18 +195,11 @@ func _build_ui() -> void:
 	_ship_panel.visible = false
 	_ship_panel.closed.connect(_close_panels)
 	root.add_child(_ship_panel)
-	_expedition = ExpeditionWindow.new()
-	_expedition.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_expedition.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_expedition.position.y = 64
-	_expedition.visible = false
-	_expedition.closed.connect(func() -> void: _expedition.visible = false)
-	_expedition.command_requested.connect(func(command: Command) -> void: _execute(command))
-	root.add_child(_expedition)
 	_world_map = WorldMapScreen.new()
 	_world_map.visible = false
 	_world_map.closed.connect(_toggle_world_map)
 	_world_map.enter_requested.connect(_enter_province)
+	_world_map.command_requested.connect(func(command: Command) -> void: _execute(command))
 	root.add_child(_world_map)
 	_notes = Notifications.new()
 	_notes.position = Vector2(12, 64)
@@ -219,20 +210,14 @@ func _build_ui() -> void:
 ## Notes about expeditions on the world map (M6 part 2).
 func _note_world_event(event: Dictionary) -> void:
 	var type: StringName = event["type"]
+	if type == &"expedition_ready":
+		_notes.push(tr("ui.note.expedition_ready"))
+		return
 	if type != &"expedition_departed" and type != &"expedition_arrived":
 		return
 	var def := sim.world.def_of(int(event["province"]), sim.data)
 	var name := tr(def.name_key()) if def != null else ""
 	_notes.push(tr("ui.note.%s" % type) % name)
-
-
-## The town hall's expedition window (M6 part 2). A single-province game has no world.
-func _open_expedition() -> void:
-	if sim.world.is_single():
-		_notes.push(tr("ui.note.single_province"))
-		return
-	_stocks.visible = false
-	_expedition.open(sim)
 
 
 ## Opens or closes the world map (M6). A single-province game has none.

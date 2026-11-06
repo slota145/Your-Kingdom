@@ -4,16 +4,24 @@ extends RefCounted
 ## owner's decision 2026-11-06: visibly). Lives in ProvinceSim.departure until it is gone; the
 ## journey itself is the world's (Expedition).
 ##
+## The player prepares it with only its kind, by land or by sea (owner's decision 2026-11-06,
+## PrepareExpeditionCommand); the province it goes to is chosen on the world map once it is
+## ready (SendExpeditionCommand), and the gold is paid then.
+##
 ## GATHERING: one by one, settlers leave their houses (a resident less each) and walk to the
 ## meeting point: by sea the port, where they go aboard the player's cog; by land the settlers'
 ## wagon waiting in front of the town hall. Porters bring the start kit: by sea to the quay,
 ## dockers carry it aboard (the cog's voyage loads the kit instead of its plan, Voyage); by land
 ## to the wagon.
-## LEAVING: everybody is there and the kit is loaded. By sea the cog casts off for the sea edge
-## (Voyage); by land the wagon and the settlers walking beside it head for the map edge.
+## READY: everybody is there and the kit is loaded; it waits in town (the wagon in front of the
+## town hall, the cog moored at the quay) until it is sent somewhere, or disbanded (settlers
+## go home, the kit back to the storages: disband).
+## LEAVING: it was sent. By sea the cog casts off for the sea edge (Voyage); by land the wagon
+## and the settlers walking beside it head for the map edge.
 ## GONE: the last of them has left the map; the Simulation turns it into an Expedition.
 
-enum State { GATHERING, LEAVING, GONE }
+# READY is last: saves keep the numbers of the older states.
+enum State { GATHERING, LEAVING, GONE, READY }
 
 ## Who sets out: a builder and porters (the pioneer camp takes a builder and two porters, the
 ## others carry until there are huts, like the start from a ship).
@@ -31,7 +39,7 @@ const WAGON_SLOTS := 8
 const SETTLER_KIND := &"settler"
 
 var state: State = State.GATHERING
-## Expedition id (an entity id), the province it goes to and how.
+## Expedition id (an entity id), the province it goes to (0 = not sent yet) and how.
 var id: int = 0
 var target: int = 0
 var by_sea: bool = false
@@ -54,20 +62,35 @@ var kit: Dictionary[StringName, int] = {}
 var next_call: int = 0
 
 
+## Sent and on its way out of the map (or gone).
 func is_leaving() -> bool:
-	return state != State.GATHERING
+	return state == State.LEAVING or state == State.GONE
+
+
+## Everybody is there and the kit is loaded; it waits to be sent.
+func is_ready() -> bool:
+	return state == State.READY
+
+
+## Whether the player chose where it goes.
+func is_sent() -> bool:
+	return target != 0
+
+
+## Whether it can still be disbanded (not sent yet).
+func can_disband() -> bool:
+	return target == 0 and (state == State.GATHERING or state == State.READY)
 
 
 func is_gone() -> bool:
 	return state == State.GONE
 
 
-## The expedition sets out from [param province] (SendExpeditionCommand has checked it): by
-## sea on cog [param ship], by land with a wagon in front of the town hall.
-static func begin(province: ProvinceSim, expedition_id: int, to: int, sea: bool, ship: int) -> Departure:
+## The expedition gets ready in [param province] (PrepareExpeditionCommand has checked it):
+## by sea on cog [param ship], by land with a wagon in front of the town hall.
+static func begin(province: ProvinceSim, expedition_id: int, sea: bool, ship: int) -> Departure:
 	var departure := Departure.new()
 	departure.id = expedition_id
-	departure.target = to
 	departure.by_sea = sea
 	departure.next_call = province.tick
 	if sea:
@@ -97,6 +120,11 @@ func update(province: ProvinceSim) -> void:
 				_ensure_wagon(province)
 				_request_kit(province)
 				if boarded == SETTLERS.size() and _kit_missing().is_empty():
+					mark_ready(province)
+		State.READY:
+			if not by_sea:
+				_ensure_wagon(province)
+				if is_sent():
 					_set_off(province)
 		State.LEAVING:
 			if not by_sea and left_map >= SETTLERS.size() + 1:
@@ -106,6 +134,15 @@ func update(province: ProvinceSim) -> void:
 ## The settlers have to be all aboard before the cog casts off (Voyage asks).
 func all_aboard() -> bool:
 	return boarded >= SETTLERS.size()
+
+
+## Everybody is there and the kit is loaded (by sea the cog's voyage says so): it waits to
+## be sent from the world map.
+func mark_ready(province: ProvinceSim) -> void:
+	if state != State.GATHERING:
+		return
+	state = State.READY
+	province.events.emit(&"expedition_ready", {"expedition": id, "by_sea": by_sea})
 
 
 ## The cog went over the horizon with [param cargo]: the expedition is on its way.
@@ -214,12 +251,94 @@ func gather_at_once(province: ProvinceSim) -> void:
 				var taken := province.take_from_storages(good, _kit_missing()[good], stand, false)
 				wagon.add(good, taken)
 			if all_aboard() and _kit_missing().is_empty():
-				province.jobs.cancel_for_entity(id)
-				kit = wagon.totals()
-				wagon = null
-				state = State.GONE
+				mark_ready(province)
+	if state == State.READY and not by_sea and is_sent():
+		province.jobs.cancel_for_entity(id)
+		kit = wagon.totals()
+		wagon = null
+		state = State.GONE
 	elif state == State.LEAVING and not by_sea:
 		state = State.GONE
+
+
+## The player changed his mind before sending it (DisbandExpeditionCommand): the settlers go
+## back to their houses, the kit goes back to the storages and the cog back to anchor. In a
+## province nobody looks at ([param at_once]) the goods go into storages at once; in the
+## viewed one they are put down where they are and porters take them back.
+func disband(province: ProvinceSim, at_once: bool) -> void:
+	province.jobs.cancel_for_entity(id)
+	var people := boarded
+	var walking: Array[Agent] = []
+	for agent: Agent in province.agents.all():
+		if agent.task == null or agent.id == wagon_agent:
+			continue
+		if agent.task.kind == Task.KIND_TRAVEL and agent.task.bb.has("leave"):
+			walking.append(agent)
+		elif int(agent.task.bb.get("_dst", 0)) == id:
+			TaskRunner.fail(province, agent)   # a porter on his way to the wagon keeps his load
+	for agent: Agent in walking:
+		province.remove_agent(agent)
+		people += 1
+	var wagon_man := province.agents.get_agent(wagon_agent)
+	if wagon_man != null:
+		province.remove_agent(wagon_man)
+	wagon_agent = 0
+	_return_home(province, people)
+	if wagon != null:
+		var goods := wagon.totals()
+		for good: StringName in _sorted(goods):
+			wagon.remove(good, goods[good])
+			give_back(province, good, goods[good], stand, at_once)
+		wagon = null
+	if by_sea:
+		var cog := province.ships.get(ship_id) as ShipUnit
+		if cog != null and cog.voyage != null and cog.voyage.expedition == id:
+			cog.voyage.abandon_expedition(province, cog)
+	boarded = 0
+	to_call = 0
+	province.events.emit(&"expedition_disbanded", {"expedition": id, "settlers": people})
+
+
+## [param people] settlers move back in: into houses with room, the emptiest first.
+static func _return_home(province: ProvinceSim, people: int) -> void:
+	var left := people
+	while left > 0:
+		var best: BuildingState = null
+		var best_room := 0
+		for building: BuildingState in province.buildings.all():
+			if building.house == null or not building.is_complete():
+				continue
+			var room := building.capacity() - building.house.residents - building.house.incoming
+			if room > best_room:
+				best = building
+				best_room = room
+		if best == null:
+			return
+		best.house.residents += 1
+		left -= 1
+
+
+## [param amount] of [param good] goes back to the storages: at once, or put down at
+## [param tile] for porters (what does not fit in the storages is put down too).
+static func give_back(province: ProvinceSim, good: StringName, amount: int, tile: Vector2i, at_once: bool) -> void:
+	var left := amount
+	while at_once and left > 0:
+		var sink := province.nearest_sink(good, 1, tile)
+		if sink == 0:
+			break
+		var before := left
+		left = province.storage(sink).add(good, left)
+		if left == before:
+			break
+	if left > 0:
+		province.drop_goods(tile, good, left)
+
+
+static func _sorted(goods: Dictionary[StringName, int]) -> Array[StringName]:
+	var keys: Array[StringName] = []
+	keys.assign(goods.keys())
+	keys.sort()
+	return keys
 
 
 func to_dict() -> Dictionary:

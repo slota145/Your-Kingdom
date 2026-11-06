@@ -1,29 +1,33 @@
 class_name SendExpeditionCommand
 extends Command
-## Sends an expedition of settlers from the viewed province to an empty one (ROADMAP M6
-## part 2): from a province with a town hall, by sea on the player's idle cog to a coast or an
-## island, or by land to a neighbour. Costs Departure.COST gold; the settlers and the start
-## kit come from this province (Departure).
+## Sends the ready expedition of settlers of province [member from_id] to an empty province
+## (ROADMAP M6 part 2; on the world map: the expedition clicked, then the province right-
+## clicked). By sea to a coast or an island, by land only to a neighbour. Costs Departure.COST
+## gold, paid now (owner's decision 2026-11-06: a disbanded expedition costs nothing).
 
+var from_id: int
 var target: int
-var by_sea: bool
 
 
-func _init(to: int, sea: bool) -> void:
+func _init(from: int, to: int) -> void:
+	from_id = from
 	target = to
-	by_sea = sea
 
 
 func validate(sim: Simulation) -> StringName:
-	return error_for(sim, target, by_sea)
+	return error_for(sim, from_id, target)
 
 
-## Why an expedition from the viewed province to [param to] cannot be sent now, or &"" (the
-## expedition window shows the reason).
-static func error_for(sim: Simulation, to: int, sea: bool) -> StringName:
-	var province := sim.province
+## Why the expedition of [param from] cannot go to [param to] now, or &"" (the world map shows
+## the reason).
+static func error_for(sim: Simulation, from: int, to: int) -> StringName:
 	var world := sim.world
-	if world.is_single() or world.get_province(to) == null or to == sim.viewed_id:
+	var province := sim.province_state(from)
+	if province == null or province.departure == null or province.departure.is_sent():
+		return &"no_expedition"
+	if not province.departure.is_ready():
+		return &"expedition_not_ready"
+	if world.is_single() or world.get_province(to) == null or to == from:
 		return &"unknown_province"
 	if world.owner_of(to) != ProvinceDef.OWNER_NONE or sim.runtimes.has(to) or world.expedition_to(to) != null:
 		return &"province_taken"
@@ -33,49 +37,22 @@ static func error_for(sim: Simulation, to: int, sea: bool) -> StringName:
 			return &"province_taken"
 	if sim.data.get_map(world.get_province(to).map_id) == null:
 		return &"province_not_ready"
-	if sea and not world.sea_route(sim.viewed_id, to, sim.data):
+	var sea := province.departure.by_sea
+	if sea and not world.sea_route(from, to, sim.data):
 		return &"no_sea_route"
-	if not sea and not world.are_neighbours(sim.viewed_id, to, sim.data):
+	if not sea and not world.are_neighbours(from, to, sim.data):
 		return &"not_a_neighbour"
-	if not province.has_seat():
-		return &"no_town_hall"
-	if province.departure != null:
-		return &"expedition_gathering"
-	if sea and idle_cog(province) == null:
-		return &"no_cog"
 	if not sim.treasury.can_pay(Departure.COST):
 		return &"not_enough_gold"
-	var residents := 0
-	for building: BuildingState in province.buildings.all():
-		if building.house != null:
-			residents += building.house.residents
-	if residents < Departure.SETTLERS.size():
-		return &"not_enough_settlers"
-	for good: StringName in Departure.KIT:
-		if province.kingdom_stock(good) < Departure.KIT[good]:
-			return &"not_enough_goods"
 	return &""
-
-
-## The player's cog waiting at anchor with a home port, or null.
-static func idle_cog(province: ProvinceSim) -> ShipUnit:
-	var ids: Array[int] = []
-	ids.assign(province.ships.keys())
-	ids.sort()
-	for id: int in ids:
-		var ship := province.ships[id] as ShipUnit
-		if ship.voyage != null and ship.voyage.state == Voyage.State.IDLE and ship.home_id != 0 \
-				and ship.hold.is_empty():
-			return ship
-	return null
 
 
 func apply(sim: Simulation) -> void:
 	sim.treasury.pay(Departure.COST)
-	var cog := idle_cog(sim.province) if by_sea else null
-	sim.province.departure = Departure.begin(sim.province, sim.ids.take(), target, by_sea,
-			cog.id if cog != null else 0)
-	sim.events.emit(&"expedition_sent", {"province": target, "by_sea": by_sea})
+	var departure := sim.province_state(from_id).departure
+	departure.target = target
+	sim.events.emit(&"expedition_sent", {"province": target, "from": from_id,
+			"by_sea": departure.by_sea})
 
 
 func get_name() -> StringName:
