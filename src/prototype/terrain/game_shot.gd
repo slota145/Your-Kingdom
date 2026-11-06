@@ -16,7 +16,8 @@ extends Node
 ## --advance=<seconds> runs the simulation that long first (M5 part 3: the landing on Coast).
 ## --cog_stage=<0..3> (M5 part 3, map coast) puts a shipyard with the player's cog on its
 ## slipway in that stage (3 = halfway down the slipway at the launch) and the player's cog
-## at anchor by a port with a voyage plan; --select=port shows the plan.
+## at anchor by a port with a voyage plan; --select=port shows the plan (--scroll=<px> scrolls
+## the panel down to it).
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -37,6 +38,8 @@ var _port: bool = false
 ## Building id whose panel is opened (--select=<id>).
 var _select: StringName = &""
 var _advance: int = 0
+## Scrolls the building panel down this far (px) before the shot (--scroll=N).
+var _scroll: int = 0
 var _cog_stage: int = -1
 
 
@@ -61,6 +64,8 @@ func _ready() -> void:
 			_harbour = true
 		elif arg == "--port":
 			_port = true
+		elif arg.begins_with("--scroll="):
+			_scroll = int(arg.trim_prefix("--scroll="))
 		elif arg.begins_with("--advance="):
 			_advance = int(arg.trim_prefix("--advance="))
 		elif arg.begins_with("--cog_stage="):
@@ -78,6 +83,9 @@ func _process(_delta: float) -> void:
 	_frames += 1
 	if _frames == SETTLE_FRAMES:
 		_arrange()
+	elif _frames == SHOT_FRAMES - 5 and _scroll > 0:
+		var panel := _game.get("_building_panel") as BuildingPanel
+		(panel.get("_scroll") as ScrollContainer).scroll_vertical = _scroll
 	elif _frames == SHOT_FRAMES and not _shot_path.is_empty():
 		get_viewport().get_texture().get_image().save_png(_shot_path)
 		get_tree().quit()
