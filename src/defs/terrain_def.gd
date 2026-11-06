@@ -20,6 +20,9 @@ extends GameDef
 ## A second map colour: this terrain with [member extra_node] on it (stony ground with a rock).
 @export var extra_map_color: Color = Color(0, 0, 0, 0)
 @export var extra_node: StringName = &""
+## Which ships sail here (M5): 0 = none, 1 = shallow water (boats only), 2 = deep water
+## (boats and cogs).
+@export_range(0, 2) var sail_depth: int = 0
 
 
 ## Whether this terrain is [param terrain_id] or counts as it.

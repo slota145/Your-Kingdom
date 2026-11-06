@@ -52,6 +52,15 @@ func set_amount(good: StringName, source_id: int, dest_id: int, wanted: int) -> 
 		add(good, wanted, source_id, dest_id)
 
 
+## Units of the request for [param good] from [param source_id] to [param dest_id] being
+## carried right now (0 when there is no such request).
+func in_flight(good: StringName, source_id: int, dest_id: int) -> int:
+	for request: TransportRequest in _requests.values():
+		if request.good == good and request.source_id == source_id and request.dest_id == dest_id:
+			return request.in_flight
+	return 0
+
+
 ## Shrinks requests out of a production yard (negative source id) to what the yard still
 ## holds: others may take from a yard directly (M4b-2). Empty ones are dropped.
 func trim_yard_requests(province: ProvinceSim) -> void:
@@ -155,7 +164,8 @@ func _assign_one(province: ProvinceSim, request: TransportRequest, idle: Array[A
 		_requests.erase(request.id)
 		return false
 	# Construction leaves each storage's reserve alone (firewood for houses, ROADMAP M4).
-	var keep_reserve := province.sites.has(request.dest_id) or province.paving.has(request.dest_id)
+	var keep_reserve := province.sites.has(request.dest_id) or province.paving.has(request.dest_id) \
+			or province.ship_builds.has(request.dest_id)
 	var src := request.source_id
 	if src == 0:
 		src = province.nearest_source(request.good, load, province.access_tile(request.dest_id),
@@ -200,7 +210,8 @@ func _assign_wagon(province: ProvinceSim, request: TransportRequest, carters: Ar
 	if (request.source_id != 0 and province.storage(request.source_id) == null) \
 			or (request.dest_id != 0 and not province.accepts_deliveries(request.dest_id)):
 		return false
-	var keep_reserve := province.sites.has(request.dest_id) or province.paving.has(request.dest_id)
+	var keep_reserve := province.sites.has(request.dest_id) or province.paving.has(request.dest_id) \
+			or province.ship_builds.has(request.dest_id)
 	var src := request.source_id
 	if src == 0:
 		src = province.nearest_source(request.good, Carriers.WAGON_MIN,

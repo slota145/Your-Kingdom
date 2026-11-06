@@ -20,6 +20,8 @@ func setup(field: ResourceField) -> void:
 
 func refresh(tile: Vector2i) -> void:
 	var def := _field.def_at(tile)
+	if def != null and def.regrow_time > 0.0:
+		return   # fish shoals: ShoalLayer (M5)
 	if def == null:
 		if _sprites.has(tile):
 			_sprites[tile].queue_free()

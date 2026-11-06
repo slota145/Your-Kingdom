@@ -17,6 +17,8 @@ const KIND_MOVE_IN := &"move_in"
 const KIND_MERCHANT := &"merchant"
 ## A carter taking his wagon back to the stable, or walking to it (M4b-3).
 const KIND_PARK := &"park"
+## A worker aboard a ship whose trip ended at sea sailing it home (M5).
+const KIND_SAIL_HOME := &"sail_home"
 
 var kind: StringName
 ## Recipe id for KIND_RECIPE.

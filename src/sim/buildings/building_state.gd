@@ -52,6 +52,8 @@ var plant_area: Array[Vector2i] = []
 var breed_ticks: int = 0
 ## Storage: handcarts bought for its porters (M4b-3, at most def.max_carts).
 var carts: int = 0
+## Shipyard: ship kinds ordered by the player, the first one on the slipway (M5).
+var ship_orders: Array[StringName] = []
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
@@ -127,6 +129,9 @@ static func yard_goods(building_def: BuildingDef, data: DataRegistry) -> Array[S
 		elif step is GoToStepDef and (step as GoToStepDef).target == &"resource":
 			var node := data.get_resource_node((step as GoToStepDef).resource)
 			good = node.good if node != null else &""
+		elif step is SailStepDef and (step as SailStepDef).target == &"shoal":
+			var shoal := data.get_resource_node((step as SailStepDef).resource)
+			good = shoal.good if shoal != null else &""
 		if good != &"" and not goods.has(good):
 			goods.append(good)
 	if not delivers:
@@ -160,6 +165,11 @@ func entrance_tiles() -> Array[Vector2i]:
 	for o: int in def.door_orientations(orientation):
 		tiles.append(origin + def.entrance_at(o))
 	return tiles
+
+
+## Water tile where this building's ships moor or are launched (M5), Agent.NO_TILE if none.
+func berth_tile() -> Vector2i:
+	return def.berth_at(origin, orientation) if def.has_berth() else Agent.NO_TILE
 
 
 func is_entrance(tile: Vector2i) -> bool:
@@ -232,6 +242,11 @@ func to_dict() -> Dictionary:
 		d["breed"] = breed_ticks
 	if carts != 0:
 		d["carts"] = carts
+	if not ship_orders.is_empty():
+		var orders := []
+		for ship: StringName in ship_orders:
+			orders.append(String(ship))
+		d["ship_orders"] = orders
 	return d
 
 
@@ -264,5 +279,7 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	b.serving_until = int(d.get("serving_until", 0))
 	b.breed_ticks = int(d.get("breed", 0))
 	b.carts = int(d.get("carts", 0))
+	for ship: Variant in d.get("ship_orders", []):
+		b.ship_orders.append(StringName(String(ship)))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

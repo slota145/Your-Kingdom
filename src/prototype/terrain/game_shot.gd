@@ -7,6 +7,8 @@ extends Node
 ## --carts puts 4 porters with handcarts and 4 carters with wagons (half loaded) around the
 ## tile, 8 directions.
 ## --map=<id> starts a new game on that map (default riverlands).
+## --harbour (M5, map coast) puts a shipyard with a boat on its slipway, a fishing wharf, a tar
+## kiln and boats in 8 directions (rowing, casting, waiting, hauling the net) near the tile.
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -22,6 +24,7 @@ var _roads: bool = false
 var _plain: bool = false
 var _paved: bool = false
 var _carts: bool = false
+var _harbour: bool = false
 
 
 func _ready() -> void:
@@ -41,6 +44,8 @@ func _ready() -> void:
 			_paved = true
 		elif arg == "--carts":
 			_carts = true
+		elif arg == "--harbour":
+			_harbour = true
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--map="):
 			Game.start_request = {"map": arg.trim_prefix("--map=")}
@@ -95,3 +100,61 @@ func _arrange() -> void:
 			if dir % 2 == 0:
 				porter.carry_good = &"wood"
 				porter.carry_amount = 3
+
+	if _harbour:
+		_place_harbour(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+
+
+## Places [param id] at the free spot nearest to [param near] (either turn); returns it or null.
+func _place_near(sim: Simulation, id: StringName, near: Vector2i) -> BuildingState:
+	var def := sim.data.get_building(id)
+	for r: int in 20:
+		for y: int in range(near.y - r, near.y + r + 1):
+			for x: int in range(near.x - r, near.x + r + 1):
+				if maxi(absi(x - near.x), absi(y - near.y)) != r:
+					continue
+				for o: int in 2:
+					if sim.execute(PlaceBuildingCommand.new(id, Vector2i(x, y), true, o)) == &"":
+						return sim.province.buildings.get_building(sim.ids.next_id - 1)
+	return null
+
+
+func _place_harbour(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	var shipyard := _place_near(sim, &"shipyard", at)
+	var wharf := _place_near(sim, &"fishing_wharf", at + Vector2i(-2, 6))
+	_place_near(sim, &"tar_kiln", at + Vector2i(-8, -4))
+	print("shipyard ", shipyard.origin if shipyard else null, " wharf ", wharf.origin if wharf else null)
+	if shipyard != null:
+		sim.execute(OrderShipCommand.new(shipyard.id, &"fishing_boat"))
+		var build := Ships.open_build(province, shipyard)
+		build.stage = 1
+		build.stage_started = true
+		var wright := province.spawn_agent(&"shipwright", shipyard.entrance_tile())
+		wright.activity = &"hammer"
+		wright.facing = IsoMath.Dir.SW
+	if wharf != null:
+		var moored := Ships.launch(province, sim.data.get_ship(&"fishing_boat"), wharf)
+		moored.home_id = wharf.id
+	var activities: Array[StringName] = [&"sail", &"cast_net", &"wait_net", &"haul_net"]
+	var placed := 0
+	for y: int in range(at.y - 2, at.y + 26):
+		for x: int in range(at.x - 4, at.x + 26):
+			var tile := Vector2i(x, y)
+			if placed >= IsoMath.DIR_COUNT or not province.boat_nav.is_walkable(tile) or (x + y) % 5 != 0 \
+					or province.boat_nav.is_walkable(tile + Vector2i(-3, 0)) == false:
+				continue
+			var boat := Ships.launch(province, sim.data.get_ship(&"fishing_boat"), wharf if wharf != null else shipyard)
+			boat.pos = IsoMath.tile_center(tile)
+			boat.prev_pos = boat.pos
+			boat.dock_id = 0
+			boat.facing = placed
+			var fisher := province.spawn_agent(&"fisher", tile)
+			Ships.board(boat, fisher)
+			var activity := activities[placed % activities.size()]
+			fisher.activity = &"idle" if activity == &"sail" else activity
+			boat.activity = activity
+			if activity == &"sail":
+				boat.path_state = ShipUnit.PathState.MOVING
+			placed += 1

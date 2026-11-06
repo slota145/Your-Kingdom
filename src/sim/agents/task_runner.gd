@@ -13,7 +13,7 @@ const RETRY_TICKS := 30
 ## plant): 10 s. The worker stands idle either way; looking again costs a search of the
 ## whole work area (M4b-3).
 const IDLE_RETRY_TICKS := 100
-const NOTHING_TO_DO: Array[StringName] = [&"no_resource", &"no_plant_spot"]
+const NOTHING_TO_DO: Array[StringName] = [&"no_resource", &"no_plant_spot", &"no_order", &"no_boat"]
 
 static var _executors: Dictionary[StringName, TaskStep] = {}
 static var _transport_steps: Array[StepDef] = []
@@ -23,6 +23,7 @@ static var _errand_steps: Array[StepDef] = []
 static var _move_in_steps: Array[StepDef] = []
 static var _merchant_steps: Array[StepDef] = []
 static var _park_steps: Array[StepDef] = []
+static var _sail_home_steps: Array[StepDef] = []
 
 const BUILDER_KIND := &"builder"
 
@@ -58,7 +59,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"build": BuildStep.new(), &"field": FieldStep.new(), &"move_in": MoveInStep.new(),
 			&"deposit": DepositStep.new(), &"plant": PlantStep.new(), &"serve": ServeStep.new(),
 			&"choose_stall": ChooseStallStep.new(), &"merchant": MerchantStep.new(),
-			&"park": ParkStep.new(),
+			&"park": ParkStep.new(), &"sail": SailStep.new(), &"ship_build": ShipBuildStep.new(),
 		}
 	return _executors[kind]
 
@@ -137,6 +138,8 @@ static func restore_steps(province: ProvinceSim, task: Task) -> bool:
 			task.steps = merchant_steps()
 		Task.KIND_PARK:
 			task.steps = park_steps()
+		Task.KIND_SAIL_HOME:
+			task.steps = sail_home_steps()
 		Task.KIND_RECIPE:
 			var recipe := province.data.get_recipe(task.recipe_id)
 			if recipe == null:
@@ -183,6 +186,14 @@ static func park_steps() -> Array[StepDef]:
 	return _park_steps
 
 
+static func sail_home_steps() -> Array[StepDef]:
+	if _sail_home_steps.is_empty():
+		var sail := SailStepDef.new()
+		sail.target = &"home"
+		_sail_home_steps = [sail]
+	return _sail_home_steps
+
+
 static func merchant_steps() -> Array[StepDef]:
 	if _merchant_steps.is_empty():
 		_merchant_steps = [MerchantStepDef.new()]
@@ -192,6 +203,13 @@ static func merchant_steps() -> Array[StepDef]:
 static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 	if not agent.is_carrying() and agent.vehicle == Carriers.HANDCART:
 		agent.vehicle = &""   # the handcart goes back to the storage's yard
+	if agent.vehicle == Ships.ABOARD:
+		# A trip that ended at sea: the boat goes home first, goods stay in hand (M5).
+		var back := Task.new()
+		back.kind = Task.KIND_SAIL_HOME
+		back.steps = sail_home_steps()
+		agent.task = back
+		return
 	if agent.is_carrying():
 		var stash := Task.new()
 		stash.kind = Task.KIND_STASH

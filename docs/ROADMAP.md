@@ -487,7 +487,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## M5 — Woda, porty i statki
 
-**Status: plan zaakceptowany 2026-11-06.** Następny krok: część 1. Poprawki z odłożonej oceny M4b-2 i M4b-3 (oraz pomiar FPS na laptopie) mają pierwszeństwo przed dalszą pracą nad M5.
+**Status: plan zaakceptowany 2026-11-06. Część 1 (morze i ryby) gotowa 2026-11-06, czeka na akceptację przed częścią 2.** Poprawki z odłożonej oceny M4b-2 i M4b-3 (oraz pomiar FPS na laptopie) mają pierwszeństwo przed dalszą pracą nad M5.
 
 **Decyzje (2026-11-06, ankieta z właścicielem projektu):**
 - **Nowa mapa „Wybrzeże” 128×128 obok dzisiejszych.** Morze z jednej strony mapy, plaża, osłonięta zatoka na port, rzeka wpadająca do morza, lasy i skały. „Nadrzecze” i „Pojezierze”, stare zapisy, testy i duże miasto z M4b-3 zostają bez zmian. Wyspy czekają na M6.
@@ -527,10 +527,10 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - start bez gotowego ratusza zmienia początek gry: automatyczny gracz i zasiedlanie muszą działać bez ratusza i magazynu, dopóki stoją tylko stos i osadnicy.
 
 **DoD:**
-- [ ] Mapa „Wybrzeże” 128×128 z morzem, plażą i zatoką jest w menu; „Nadrzecze” i „Pojezierze” działają bez zmian (dotychczasowe testy przechodzą).
-- [ ] Statki pływają tylko po wodzie: łódź po płytkiej i głębokiej, koga tylko po głębokiej i torze wodnym; wodna siatka ruchu ma testy.
-- [ ] Smolarnia robi smołę z drewna; stocznia buduje łódź z desek i smoły dostarczonych przez tragarzy.
-- [ ] Przystań rybacka: łódź płynie na ławicę, łowi, wraca, a rybak niesie ryby do magazynu; połów wyraźnie większy niż u wędkarza; ławice się odnawiają.
+- [x] Mapa „Wybrzeże” 128×128 z morzem, plażą i zatoką jest w menu; „Nadrzecze” i „Pojezierze” działają bez zmian (dotychczasowe testy przechodzą; `tests/unit/sim/test_water_nav.gd`).
+- [x] Statki pływają tylko po wodzie: łódź po płytkiej i głębokiej, koga tylko po głębokiej i torze wodnym; wodna siatka ruchu ma testy (`test_water_nav.gd`).
+- [x] Smolarnia robi smołę z drewna; stocznia buduje łódź z desek i smoły dostarczonych przez tragarzy (`tests/scenario/test_m5_chains.gd`).
+- [x] Przystań rybacka: łódź płynie na ławicę, łowi, wraca, a rybak niesie ryby do magazynu; połów wyraźnie większy niż u wędkarza; ławice się odnawiają (`test_m5_chains.gd`: w 10 minut przystań 36 ryb, wędkarz 16).
 - [ ] Widoczny załadunek i rozładunek sztuka po sztuce: portowcy noszą towar po trapie między placem portowym a statkiem.
 - [ ] Ładunek statku zgodny z UI: panel statku pokazuje stan ładowni z symulacji po każdej sztuce (test).
 - [ ] Kupiec morski przypływa tylko do portu, kupuje nadwyżki ponad progi i sprzedaje towary poniżej progu „kupuj do N”.
@@ -541,6 +541,17 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] Bez spadku wydajności: duże miasto z M4b-3 nadal ≤ 4 ms na tick, automatyczny gracz na „Nadrzeczu” i „Pojezierzu” w limicie.
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
 - [ ] **Twoja ocena gry.**
+
+**Ustalone przy realizacji części 1 (2026-11-06, do zmiany na prośbę):**
+- **Brzeg biegnie wzdłuż osi siatki.** Na ekranie brzeg „Wybrzeża” jest ukośny (morze wzdłuż dolnych krawędzi mapy), a w siatce prosty, z uskokami co 5–9 kafli. Powód: przystań i stocznia mają prostokątny pomost albo pochylnię, które na ukośnym w siatce brzegu (schodki) nigdzie się nie mieszczą. Zatoka jest prostokątna (13 kafli szerokości, głęboka woda w środku), rzeka wpada do jej końca. Tereny: `sand` (piasek, budować wolno, pól nie), `sea_shallow`, `sea_deep` (oba liczą się jako woda dla wędkarza i glinianki). Ławice to pojedyncze kafle morza w nieco jaśniejszym kolorze na obrazku mapy (13 sztuk, 2 w zatoce). Mapa: `tools/generate_coast_map.py`.
+- **Budynki na wodzie stoją wodą do kamery.** Kafle pomostu i pochylni (`BuildingDef.water_tiles`) muszą być morzem, reszta lądem; przed pomostem musi być wolna woda (`berth`, miejsce cumowania). Budynek można obrócić tylko na dwa sposoby (jak inne warsztaty), więc woda jest zawsze z przodu (od strony kamery, ART_SPEC §3.2), a wejście z boku, od lądu. Brzegi zwrócone wodą „od kamery” (po drugiej stronie zatoki) zostają bez przystani.
+- **Rozmiary:** przystań 3×3 (chata na 2 rzędach, pomost na trzecim), stocznia 4×4 (warsztat i szopa na 2 rzędach, pochylnia na 2 rzędach wody). Kwadratowe, bo obrót budynku zakłada kwadrat (ARCHITECTURE §5.2). Smolarnia 2×2.
+- **Tor wodny** wyznacza się sam: od miejsca cumowania stoczni najkrótszą drogą po płytkiej wodzie do głębokiej (najwyżej 12 kafli; dalej stoczni postawić nie można: „Za daleko do głębokiej wody”). Po torze pływają kogi, nie jest zapisywany (wynika z budynków).
+- **Połów:** wędkarz łowi 2 ryby na cykl (tak było od M4a), więc rybak z łodzi łowi **6 ryb** na rejs (ławica: 18 ryb, odnawia 1 rybę co 20 s). Pomiar: w 10 minut przystań 36 ryb, wędkarz 16. Ławica szukana w promieniu 24 kafli od pomostu.
+- **Nowa łódź** czeka przy pochylni stoczni; dostaje ją najbliższa przystań bez łodzi, a rybak idzie do stoczni, wsiada i przypływa nią do domu. Łódź bez załogi na morzu (np. rybak stracił pracę) sama wraca do swojej przystani. Rozbiórka przystani: łódź czeka na nową przystań, ryby z rąk rybaka zostają w ładowni.
+- **Stocznia** zamawia od razu wszystkie materiały statku (jak plac budowy) i co sekundę uzupełnia zamówienie, gdyby tragarz z towarem zniknął po drodze. Łódź: 2 etapy (szkielet, poszycie) po 30 s pracy cieśli, potem wodowanie. Kolejka do 5 zamówień; anulowanie statku na pochylni zostawia niezużyte materiały na ziemi.
+- **Rybak w łodzi** to część grafiki łodzi (wiosłuje, zarzuca sieć, czeka przy pływakach, wyciąga sieć z rybami); postać rybaka jest wtedy ukryta.
+- **Zakładka „Morze i statki”** w menu budowy: smolarnia, stocznia, przystań rybacka. Koga ma już dane (`data/ships/cog.tres`), ale zamówić ją będzie można w części 3.
 
 ---
 

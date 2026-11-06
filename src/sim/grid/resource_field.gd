@@ -13,6 +13,9 @@ var _amount: PackedByteArray = PackedByteArray()
 var _claim: PackedInt32Array = PackedInt32Array()
 ## Growing nodes (saplings): tile index -> tick when they grow into their grown form. Saved.
 var _growing: Dictionary[int, int] = {}
+## Kind -> tile indices of that kind, for kinds that regrow (fish shoals); rebuilt when a
+## node is placed or cleared. Not saved.
+var _regrow_tiles: Dictionary[int, PackedInt32Array] = {}
 
 
 func _init(grid_size: Vector2i) -> void:
@@ -34,6 +37,7 @@ func place(tile: Vector2i, def: ResourceNodeDef) -> void:
 	_amount[i] = def.amount
 	_claim[i] = 0
 	_growing.erase(i)
+	_regrow_tiles.clear()
 
 
 func clear(tile: Vector2i) -> void:
@@ -43,6 +47,7 @@ func clear(tile: Vector2i) -> void:
 		_amount[i] = 0
 		_claim[i] = 0
 		_growing.erase(i)
+		_regrow_tiles.clear()
 
 
 ## Places a young node that grows at [param ready_tick] (see ResourceNodeDef.grows_into).
@@ -146,6 +151,35 @@ func find_nearest(id: StringName, center: Vector2i, radius: int) -> Vector2i:
 				best_d = d
 				best = Vector2i(x, y)
 	return best
+
+
+## Node kinds that grow back (ResourceNodeDef.regrow_time > 0), in the order first placed.
+func regrowing_kinds() -> Array[ResourceNodeDef]:
+	var result: Array[ResourceNodeDef] = []
+	for def: ResourceNodeDef in _kinds:
+		if def != null and def.regrow_time > 0.0:
+			result.append(def)
+	return result
+
+
+## Adds one unit to every node of [param def] below its full amount. Returns the tiles that
+## grew, in tile order.
+func regrow(def: ResourceNodeDef) -> Array[Vector2i]:
+	var grown: Array[Vector2i] = []
+	var k := _kinds.find(def) + 1
+	if k == 0:
+		return grown
+	if not _regrow_tiles.has(k):
+		var list := PackedInt32Array()
+		for i: int in _kind.size():
+			if _kind[i] == k:
+				list.append(i)
+		_regrow_tiles[k] = list
+	for i: int in _regrow_tiles[k]:
+		if _kind[i] == k and _amount[i] < def.amount:
+			_amount[i] += 1
+			grown.append(Vector2i(i % size.x, i / size.x))
+	return grown
 
 
 func tiles_with_nodes() -> Array[Vector2i]:

@@ -55,6 +55,12 @@ func test_people_go_in_and_out_through_the_door() -> void:
 		for o: int in def.orientation_count():
 			var sim := SimFixture.make_sim(Vector2i(24, 24))
 			var origin := Vector2i(10, 10)
+			if def.is_on_water():
+				# A pier or a slipway (M5): sea under it and at its berth.
+				var deep := SimFixture.registry().get_terrain(&"sea_deep")
+				for tile: Vector2i in def.water_tiles_at(origin, o) + [def.berth_at(origin, o)]:
+					sim.province.grid.set_terrain(tile, deep.index)
+				sim.province.rebuild_nav()
 			assert_str(String(sim.execute(PlaceBuildingCommand.new(def.id, origin, true, o)))).is_equal("")
 			var building := sim.province.buildings.get_building(sim.ids.next_id - 1)
 			# [entrance, tile in front] of every door of the building.

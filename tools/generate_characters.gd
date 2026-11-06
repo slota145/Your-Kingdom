@@ -89,6 +89,14 @@ const PEOPLE := {
 	"merchant": {"shirt": Color(0.35, 0.22, 0.45), "legs": Color(0.28, 0.24, 0.22), "hair": Color(0.3, 0.2, 0.12),
 			"hat": "wide", "hat_colour": Color(0.4, 0.15, 0.15), "beard": true,
 			"cloak": Color(0.55, 0.18, 0.16), "tool": "staff"},
+	# M5 (the sea)
+	"shipwright": {"shirt": Color(0.4, 0.46, 0.55), "legs": Color(0.34, 0.3, 0.26), "hair": Color(0.5, 0.34, 0.18),
+			"hat": "cap", "hat_colour": Color(0.25, 0.3, 0.42), "beard": true,
+			"apron": Color(0.52, 0.36, 0.22), "tool": "hammer"},
+	"tar_burner": {"shirt": Color(0.3, 0.27, 0.24), "legs": Color(0.24, 0.21, 0.19), "hair": Color(0.15, 0.12, 0.1),
+			"hat": "kerchief", "hat_colour": Color(0.2, 0.18, 0.16), "beard": true, "tool": "staff"},
+	"fisher": {"shirt": Color(0.3, 0.42, 0.55), "legs": Color(0.36, 0.33, 0.3), "hair": Color(0.55, 0.42, 0.25),
+			"hat": "wide", "hat_colour": Color(0.75, 0.62, 0.3), "beard": true, "tool": ""},
 }
 
 ## Activity -> motion and the tool it uses (empty = the profession's own).
@@ -103,6 +111,7 @@ const WORK := {
 	"sew": ["stir", ""], "tend_hives": ["low", "smoker"], "collect_honey": ["bend", ""],
 	"mix": ["stir", "paddle"], "ferment": ["push", ""], "mould": ["push", ""], "fire": ["push", "spade"],
 	"serve": ["push", "mug"],
+	"hammer": ["overhead", "hammer"], "stack": ["bend", ""], "tend_fire": ["low", "staff"], "tap": ["bend", ""],
 	"load": ["bend", ""],
 	"sell": ["throw", ""], "feed": ["throw", ""], "muck": ["low", "spade"], "slaughter": ["overhead", "axe"], "skin": ["push", ""],
 }
@@ -118,6 +127,7 @@ const ACTIVITIES := {
 	"clay_digger": ["dig"], "brickmaker": ["mould", "fire"], "innkeeper": ["serve"],
 	"swineherd": ["feed", "muck"], "butcher": ["slaughter", "skin"], "stallholder": ["sell"],
 	"merchant": [], "porter": ["load"], "carter": ["load"],
+	"shipwright": ["hammer"], "tar_burner": ["stack", "tend_fire", "tap"], "fisher": [],
 }
 
 ## Carry category -> hands (side, front, height) for both hands, the good's anchor and
