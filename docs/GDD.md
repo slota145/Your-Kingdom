@@ -72,7 +72,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
 | Typ | Cechy | Zakres |
 |---|---|---|
 | Kontynentalna | Bez morza. Opcjonalnie z rzeką (rybołówstwo, młyn wodny, przeprawa) lub jeziorem. Nie ma portu morskiego. | [SLICE] tylko wariant z rzeką · M4b-3: „Pojezierze” 128×128 (jezioro z trzcinami, rzeka z brodami, kamieniste wzgórze ze skałami); mapę wybiera się w menu przy nowej grze · [1.0] wszystkie |
-| Przybrzeżna | Ląd z linią brzegową: port, stocznia, rybołówstwo morskie. | [1.0] |
+| Przybrzeżna | Ląd z linią brzegową: port, stocznia, rybołówstwo morskie. | M5 (plan 2026-11-06): „Wybrzeże” 128×128 (morze, plaża, zatoka, rzeka do morza), start ze statku · [1.0] wszystkie |
 | Wyspowa | Jedna lub kilka wysp. Do wyspy można dotrzeć wyłącznie statkiem. | [1.0] |
 
 ---
@@ -275,6 +275,8 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Łódź rybacka | lokalna, przypisana do rybaka |
 | Koga | transport i handel |
 | Okręt wojenny | transport wojsk i walka |
+
+**Plan M5 (decyzje 2026-11-06, szczegóły w ROADMAP):** w M5 tylko łódź rybacka i koga. Łódź pracuje dla nowej **przystani rybackiej** nad morzem (połów z ławic, więcej niż wędkarz, który zostaje). Statki powstają z desek, smoły (nowa **smolarnia**: drewno → smoła) i sukna. **Kupiec morski** przypływa obcą kogą do portu. Własna koga gracza odbywa **rejsy handlowe za horyzont** (wraca ze złotem i zamówionymi towarami). Na „Wybrzeżu” gra zaczyna się od kogi, która wyładowuje osadników na plaży. Reszta drzewka okrętów (IDEAS) później.
 
 ### 5.5 Lista budynków [SLICE]
 
