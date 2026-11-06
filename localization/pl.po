@@ -1726,3 +1726,6 @@ msgstr[2] "%s beczek smoły"
 
 msgid "ui.shipyard.queue_item"
 msgstr "%d. %s"
+
+msgid "ui.command_error.cannot_turn_on_water"
+msgstr "Budynku na wodzie nie da się obrócić."

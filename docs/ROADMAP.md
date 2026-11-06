@@ -551,6 +551,8 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Nowa łódź** czeka przy pochylni stoczni; dostaje ją najbliższa przystań bez łodzi, a rybak idzie do stoczni, wsiada i przypływa nią do domu. Łódź bez załogi na morzu (np. rybak stracił pracę) sama wraca do swojej przystani. Rozbiórka przystani: łódź czeka na nową przystań, ryby z rąk rybaka zostają w ładowni.
 - **Stocznia** zamawia od razu wszystkie materiały statku (jak plac budowy) i co sekundę uzupełnia zamówienie, gdyby tragarz z towarem zniknął po drodze. Łódź: 2 etapy (szkielet, poszycie) po 30 s pracy cieśli, potem wodowanie. Kolejka do 5 zamówień; anulowanie statku na pochylni zostawia niezużyte materiały na ziemi.
 - **Rybak w łodzi** to część grafiki łodzi (wiosłuje, zarzuca sieć, czeka przy pływakach, wyciąga sieć z rybami); postać rybaka jest wtedy ukryta.
+- **Budynku na wodzie nie da się obrócić** po postawieniu (pomost wylądowałby na brzegu); obraca się go tylko przy stawianiu (R).
+- **Pomiary po części 1:** duże miasto z M4b-3 średnio 2,7 ms na tick (20 minut, cel ≤ 4 ms); automatyczny gracz: „Nadrzecze” 4 kamienice patrycjuszy w 70. minucie, „Pojezierze” w 79. (limit 90). Wynik bota zmienia się nieco po każdej zmianie danych.
 - **Zakładka „Morze i statki”** w menu budowy: smolarnia, stocznia, przystań rybacka. Koga ma już dane (`data/ships/cog.tres`), ale zamówić ją będzie można w części 3.
 
 ---

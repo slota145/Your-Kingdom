@@ -126,3 +126,10 @@ func test_coast_map_loads_with_sea_beach_bay_and_shoals() -> void:
 		if id == &"shipyard":
 			var yard := province.add_building(def, spot, true)
 			assert_array(province.cog_nav.find_path(yard.berth_tile(), Vector2i(120, 120))).is_not_empty()
+
+
+func test_a_building_on_the_water_cannot_be_turned() -> void:
+	var sim := _sea_sim()
+	var wharf := SimFixture.place(sim, &"fishing_wharf", Vector2i(5, 22))
+	assert_str(String(sim.execute(RotateBuildingCommand.new(wharf.id)))).is_equal("cannot_turn_on_water")
+	assert_int(wharf.orientation).is_equal(0)

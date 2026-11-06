@@ -246,7 +246,7 @@ func _refresh() -> void:
 	_pause_button.visible = b.is_complete() and b.def.recipe != null
 	_pause_button.text = tr("ui.building.resume" if b.paused else "ui.building.pause")
 	var visual := BuildingVisualDef.for_building(b.def.id)
-	_turn_button.visible = b.def.footprint.x == b.def.footprint.y
+	_turn_button.visible = b.def.footprint.x == b.def.footprint.y and not b.def.is_on_water()
 	_look_button.visible = b.house != null and visual != null and visual.look_count(b.house.level) > 1
 	_refresh_settings(b)
 

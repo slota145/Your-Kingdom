@@ -9,6 +9,7 @@ extends Node
 ## --map=<id> starts a new game on that map (default riverlands).
 ## --harbour (M5, map coast) puts a shipyard with a boat on its slipway, a fishing wharf, a tar
 ## kiln and boats in 8 directions (rowing, casting, waiting, hauling the net) near the tile.
+## --select=<building id> opens the panel of that building.
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -25,6 +26,8 @@ var _plain: bool = false
 var _paved: bool = false
 var _carts: bool = false
 var _harbour: bool = false
+## Building id whose panel is opened (--select=<id>).
+var _select: StringName = &""
 
 
 func _ready() -> void:
@@ -46,6 +49,8 @@ func _ready() -> void:
 			_carts = true
 		elif arg == "--harbour":
 			_harbour = true
+		elif arg.begins_with("--select="):
+			_select = StringName(arg.trim_prefix("--select="))
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--map="):
 			Game.start_request = {"map": arg.trim_prefix("--map=")}
@@ -103,6 +108,9 @@ func _arrange() -> void:
 
 	if _harbour:
 		_place_harbour(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	for b: BuildingState in sim.province.buildings.all():
+		if b.def.id == _select:
+			(_game.get("_building_panel") as BuildingPanel).show_building(sim.province, b.id)
 
 
 ## Places [param id] at the free spot nearest to [param near] (either turn); returns it or null.

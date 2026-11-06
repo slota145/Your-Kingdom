@@ -1705,3 +1705,6 @@ msgstr[1] "%s barrels of tar"
 
 msgid "ui.shipyard.queue_item"
 msgstr "%d. %s"
+
+msgid "ui.command_error.cannot_turn_on_water"
+msgstr "A building on the water cannot be turned."
