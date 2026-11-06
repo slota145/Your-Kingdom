@@ -19,6 +19,9 @@ const QUICK_SLOT := "quick"
 ## A person is picked only when clicked close to the body, so clicks near people still
 ## reach the building behind them (owner feedback 2026-11-05).
 const PICK_RADIUS := 9.0
+## Seconds between two refreshes of the placement preview caused by the simulation (a
+## sped-up town sends events every frame; flooding a service range each time cost frames).
+const PREVIEW_REFRESH := 0.25
 ## How far (world px) from a ship's hull a click still picks it, and how high its sail reaches.
 const SHIP_PICK_RADIUS := 40.0
 const SHIP_PICK_HEIGHT := 90.0
@@ -44,6 +47,9 @@ var _dragging: bool = false
 var _follow_id: int = 0
 var _time: float = 0.0
 var _preview_dirty: bool = false
+## Something in the simulation changed since the preview was drawn (refreshed with a delay).
+var _preview_stale: bool = false
+var _preview_time: float = 0.0
 var _turn: PlacementTurn = PlacementTurn.new()
 
 
@@ -286,9 +292,12 @@ func _process(delta: float) -> void:
 		else:
 			camera.position = IsoMath.grid_to_screen(agent.prev_pos.lerp(agent.pos, Game.alpha()))
 	var tile := ProvinceView.tile_at(get_global_mouse_position())
-	if tile != _hover or _preview_dirty:
+	if tile != _hover or _preview_dirty \
+			or (_preview_stale and _time - _preview_time >= PREVIEW_REFRESH):
 		_hover = tile
 		_preview_dirty = false
+		_preview_stale = false
+		_preview_time = _time
 		_update_preview()
 
 
@@ -297,7 +306,7 @@ func _on_sim_event(event: Dictionary) -> void:
 	view.on_sim_event(event)
 	_notes.on_sim_event(event)
 	if not _tool.is_empty() or _building_panel.visible:
-		_preview_dirty = true
+		_preview_stale = true
 
 
 # --- Tools ---------------------------------------------------------------------------------

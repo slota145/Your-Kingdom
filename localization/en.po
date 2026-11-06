@@ -350,7 +350,7 @@ msgid "ui.house.happiness"
 msgstr "Happiness: %d"
 
 msgid "ui.house.declining"
-msgstr "Warning: basic needs are missing! Happiness is falling, and below %d residents start moving out."
+msgstr "Warning: basic needs are missing! Happiness is falling and people work slower. Below %d residents slowly start moving out, but half of them stay."
 
 msgid "ui.house.upgrade_in"
 msgstr "Upgrade in %d s if nothing runs out"

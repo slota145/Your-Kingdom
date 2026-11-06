@@ -43,7 +43,8 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		var spot := _spot_offset(agent)
 		# Going in through a door: the last step fades out (owner's decision 2026-11-05), and
 		# people resting inside are not drawn. Workers at a work spot stay visible.
-		var fade := _doorway_fade(at) if spot == Vector2.ZERO else 1.0
+		var open := _on_open_ground(at)
+		var fade := _doorway_fade(at) if spot == Vector2.ZERO and not open else 1.0
 		if fade <= 0.0:
 			continue
 		var sprite := _sprite(used)
@@ -53,7 +54,8 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		sprite.position = screen + jitter + spot
 		# A docker who went up the gangway onto a moored ship stands on its deck: drawn over
 		# the hull and the sail (M5 part 2, owner's wish 2026-11-06).
-		sprite.z_index = 1 if _on_ship(agent) else 0
+		# On open ground inside a footprint (a pen): over the flat art of the building.
+		sprite.z_index = 1 if open or _on_ship(agent) else 0
 		sprite.self_modulate = _tint(agent.kind)
 		sprite.modulate.a = fade
 		var good := agent.carry_good if agent.is_carrying() else &""
@@ -82,6 +84,24 @@ func _on_ship(agent: Agent) -> bool:
 		return false
 	var tile := agent.tile()
 	return province.grid.is_inside(tile) and province.grid.occupant(tile) == 0
+
+
+## Whether [param at] lies inside the footprint of a building drawn as open ground.
+func _on_open_ground(at: Vector2) -> bool:
+	var tile := Vector2i(floori(at.x), floori(at.y))
+	if province == null or not province.grid.is_inside(tile):
+		return false
+	var building := province.buildings.get_building(province.grid.occupant(tile))
+	if building == null:
+		return false
+	var visual := _visual_of(building.def.id)
+	return visual != null and visual.open_ground
+
+
+func _visual_of(def_id: StringName) -> BuildingVisualDef:
+	if not _building_visuals.has(def_id):
+		_building_visuals[def_id] = BuildingVisualDef.for_building(def_id)
+	return _building_visuals[def_id]
 
 
 ## 1 outside buildings, falling to 0 within [constant DOORWAY_FADE] tiles inside a footprint.
@@ -142,7 +162,5 @@ func _spot_offset(agent: Agent) -> Vector2:
 	var workplace := province.buildings.get_building(agent.workplace_id)
 	if workplace == null:
 		return Vector2.ZERO
-	if not _building_visuals.has(workplace.def.id):
-		_building_visuals[workplace.def.id] = BuildingVisualDef.for_building(workplace.def.id)
-	var visual := _building_visuals[workplace.def.id]
+	var visual := _visual_of(workplace.def.id)
 	return visual.spot_offsets.get(step.spot, Vector2.ZERO) if visual != null else Vector2.ZERO

@@ -23,18 +23,19 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 		var status := Movement.walk(province, agent, tile)
 		if status != Status.DONE:
 			return status
+	var speed := Population.work_speed(province, agent)
 	match action:
 		"plow":
-			if _work(agent, &"plow", step.plow_time) == Status.DONE:
+			if _work(agent, &"plow", step.plow_time / speed) == Status.DONE:
 				province.fields.set_stage(tile, FieldStore.Stage.PLOWED)
 				return _done(province, agent, tile)
 		"sow":
-			if _work(agent, &"sow", step.sow_time) == Status.DONE:
+			if _work(agent, &"sow", step.sow_time / speed) == Status.DONE:
 				province.fields.sow(tile, province.tick,
 						SimClock.seconds_to_ticks(farm.def.field_grow_time))
 				return _done(province, agent, tile)
 		"harvest":
-			if _work(agent, &"harvest", step.harvest_time) == Status.DONE:
+			if _work(agent, &"harvest", step.harvest_time / speed) == Status.DONE:
 				province.fields.set_stage(tile, FieldStore.Stage.FALLOW)
 				agent.carry_good = step.harvest_good
 				agent.carry_amount = step.harvest_amount
@@ -46,7 +47,7 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 				bb["_action"] = "bind"
 				bb.erase("_work_left")
 		"bind":
-			if _work(agent, &"bind", step.bind_time) == Status.DONE:
+			if _work(agent, &"bind", step.bind_time / speed) == Status.DONE:
 				province.fields.release(tile, agent.id)
 				bb.erase("field")
 				return Status.DONE
@@ -89,7 +90,8 @@ func _done(province: ProvinceSim, agent: Agent, tile: Vector2i) -> Status:
 	return Status.DONE
 
 
-## Counts down a work timer in the blackboard; DONE when it runs out.
+## Counts down a work timer in the blackboard; DONE when it runs out. Field work is already
+## divided by the worker's speed (Population.work_speed), waiting is not.
 static func _work(agent: Agent, activity: StringName, seconds: float) -> Status:
 	var bb := agent.task.bb
 	if not bb.has("_work_left"):

@@ -70,8 +70,9 @@ func test_happiness_follows_satisfied_needs() -> void:
 	var sim := SimFixture.make_sim()
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 4)
 	sim.run_ticks(SimFixture.ticks(60))
-	# Food and firewood but no well, a basic need: happiness sinks to the shortage cap.
-	assert_float(hut.house.happiness).is_equal_approx(Population.SHORTAGE_HAPPINESS, 0.01)
+	# Food and firewood but no well, a basic need: it counts against the house,
+	# 35 + 25 - 25.
+	assert_float(hut.house.happiness).is_equal_approx(35.0, 0.01)
 	SimFixture.place(sim, &"well", Vector2i(16, 12))
 	sim.run_ticks(SimFixture.ticks(40))
 	# Food, firewood and the well, no chapel: 35 + 25 + 25.
@@ -105,6 +106,8 @@ func test_newcomers_walk_in_to_free_places() -> void:
 func test_unhappy_house_gets_no_newcomers() -> void:
 	var sim := SimFixture.make_sim()
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 1, false)
+	# No food, firewood or well: far too unhappy even for the half-house newcomers.
+	hut.house.happiness = 0.0
 	sim.run_ticks(SimFixture.ticks(120))
 	assert_float(hut.house.happiness).is_less(Population.IMMIGRATION_MIN_HAPPINESS)
 	assert_int(hut.house.residents + hut.house.incoming).is_equal(1)
@@ -167,25 +170,53 @@ func test_house_keeps_its_level_but_loses_residents_in_a_shortage() -> void:
 	hut.house.happiness = 80.0
 	var warned := false
 	var left := 0
-	for i: int in SimFixture.ticks(Population.LEAVE_AFTER + Population.LEAVE_EVERY + 5):
+	for i: int in SimFixture.ticks(Population.LEAVE_AFTER + 4 * Population.LEAVE_EVERY + 5):
 		sim.step()
 		for event: Dictionary in sim.events.drain():
 			warned = warned or event["type"] == &"house_warning"
 			if event["type"] == &"resident_left":
 				left += 1
 	assert_bool(warned).is_true()
-	# Gentle: happiness sinks at 1 point/s (to 20 at most); after 3 minutes below 25 one
-	# resident leaves a minute.
+	# Gentle: happiness sinks at 1 point/s; after 5 minutes of shortage one resident leaves
+	# every 3 minutes, but half of the places (the core) always stay: 5 chances, 4 leave.
 	assert_int(hut.house.level).is_equal(2)
 	assert_float(hut.house.happiness).is_less(Population.LEAVE_BELOW)
-	assert_int(left).is_equal(2)
-	assert_int(hut.house.residents).is_equal(6)
+	assert_int(left).is_equal(4)
+	assert_int(hut.house.residents).is_equal(Population.core_residents(hut))
+	assert_int(hut.house.residents).is_equal(4)
 	# Nobody leaves while the house is still fairly happy.
 	var calm := SimFixture.house(sim, Vector2i(16, 16), 4, false)
 	calm.house.happiness = 100.0
 	calm.house.unmet_seconds = Population.LEAVE_AFTER - 1
 	sim.run_ticks(SimFixture.ticks(2))
 	assert_int(calm.house.residents).is_equal(4)
+
+
+func test_house_with_a_shortage_fills_up_to_half() -> void:
+	var sim := SimFixture.make_sim()
+	sim.province.entry_tile = Vector2i(0, 20)
+	# Food and firewood, no well: 35 happiness, enough for newcomers up to half of the hut.
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 1)
+	hut.house.happiness = 35.0
+	sim.run_ticks(SimFixture.ticks(120))
+	assert_float(hut.house.happiness).is_less(Population.IMMIGRATION_MIN_HAPPINESS)
+	assert_int(hut.house.residents).is_equal(2)
+	assert_int(hut.house.incoming).is_equal(0)
+
+
+func test_unhappy_workers_work_slower() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 4)
+	hut.house.happiness = 0.0
+	assert_float(Population.work_speed_of(hut)).is_equal_approx(Population.MIN_WORK_SPEED, 0.001)
+	hut.house.happiness = Population.FULL_SPEED_HAPPINESS / 2.0
+	assert_float(Population.work_speed_of(hut)).is_equal_approx(0.9, 0.001)
+	hut.house.happiness = 100.0
+	assert_float(Population.work_speed_of(hut)).is_equal_approx(1.0, 0.001)
+	assert_float(Population.average_work_speed(sim.province)).is_equal_approx(1.0, 0.001)
+	hut.house.happiness = 0.0
+	assert_float(Population.average_work_speed(sim.province)).is_equal_approx(
+			Population.MIN_WORK_SPEED, 0.001)
 
 
 func test_house_with_needs_met_stops_losing_residents() -> void:

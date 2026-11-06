@@ -126,6 +126,8 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
   - Ocena (Claude): mały koszt (nowy budynek z pracownikami `builder`, cała logika budowy już działa dla wielu budowniczych). Pasuje razem z przesunięciem ratusza. Warto rozważyć limit (np. jeden na 20 domów), żeby nie zastępował planowania.
 - [Claude] **Rejsy w kółko (M5, część 3):** przełącznik „powtarzaj rejs” w panelu portu: koga po rozładunku od razu ładuje ten sam plan i znów wypływa. Ocena: koszt mały, wygoda duża, gdy gracz ma stałą nadwyżkę (np. desek do sprzedania). Do decyzji po ocenie części 3.
   - **Przyjęte do M6 (ankieta 2026-11-06) jako część szlaków handlowych:** szlak to rejs (albo kurs wozu) powtarzany w kółko według progu.
+- [gracz] **Sterowanie kogą w prowincji (2026-11-06):** zaznacz kogę, kliknij prawym na wodę, a koga tam płynie i rzuca kotwicę (np. żeby przestawić ją w inne miejsce). Ocena (Claude): koszt średnio-mały (siatka ruchu po wodzie i kotwiczenie już są). Decyzja właściciela: później, po części 3 M6.
+- [gracz] **Natychmiastowa budowa jak w Anno (2026-11-06):** pomysł, żeby oszczędzić grafik budowy na PixelLabie. Ocena (Claude): odradzam, bo widoczna budowa z tragarzami to filar immersji; grafiki budowy i tak rysuje kod dla każdego budynku i rozmiaru, więc PixelLab potrzebny jest tylko do gotowych budynków. Budowa zostaje, grafikę budowy można później upiększyć (stosy desek, więcej rusztowań).
 
 ## Klimat i immersja
 

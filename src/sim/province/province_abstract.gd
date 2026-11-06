@@ -280,6 +280,8 @@ func _settle_wanderers() -> void:
 
 func _work() -> void:
 	_fields = detail.fields.counts()
+	# Nobody has a home here, so the town's average mood sets the pace (GDD §3.2).
+	var speed := Population.average_work_speed(detail)
 	for building: BuildingState in detail.buildings.all():
 		var workers: int = staff.get(building.id, 0)
 		if workers == 0 or building.paused or not building.is_complete():
@@ -293,7 +295,7 @@ func _work() -> void:
 		if per_second <= 0.0:
 			continue
 		var share := workers / float(maxi(building.def.worker_count(), 1))
-		var done: float = progress.get(building.id, 0.0) + per_second * share
+		var done: float = progress.get(building.id, 0.0) + per_second * share * speed
 		if done >= 1.0 and detail.tick >= _wait_until.get(building.id, 0):
 			if _cycle(building, cycle):
 				done -= 1.0

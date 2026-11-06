@@ -110,16 +110,19 @@ Zasady:
 - **Zadowolenie** domu (0–100) wynika ze spełnienia potrzeb (proste punkty: każda spełniona potrzeba daje swoją część, w slice’ie chleb 40, opał 30, studnia 30; zadowolenie dochodzi do celu płynnie, decyzja 2026-11-05) i wpływa na:
   - podatki,
   - napływ nowych mieszkańców (gdy w domu są wolne miejsca),
-  - wydajność pracowników (±20% tempa pracy).
+  - wydajność pracowników (do −20% tempa pracy poniżej 50; premia za wysokie zadowolenie później).
 
 ### 3.3 Rozwój domów
 
 - Dom **awansuje**, gdy przez określony czas (domyślnie 60 s czasu gry) spełnia **wszystkie potrzeby podstawowe** swojej klasy, a materiały na ulepszenie zostaną **fizycznie dostarczone** (np. deski, cegły). W czasie ulepszenia na domu pojawia się rusztowanie. Chata → dom mieszczański kosztuje 4 deski (M4a).
 - **Awans czeka na towary nowej klasy (M4a, potwierdzone 2026-11-05):** dom zaczyna awans dopiero wtedy, gdy w magazynach jest po pełnej spiżarni każdego towaru podstawowego następnej klasy (np. 4 piwa, 4 ryby, 4 chleby). Panel domu mówi wtedy, na co czeka. Bez tej reguły domy awansowały, po 3 minutach bez piwa spadały i deski przepadały.
 - **Dom nigdy nie cofa się o poziom** (decyzja 2026-11-05, wniosek z gry: cofanie było zbyt surowe, a materiały na awans przepadały). Brak potrzeby podstawowej ma inne, łagodne skutki:
-  - zadowolenie spada powoli (1 pkt/s) i najwyżej do 20, więc dom płaci mniej podatku, a poniżej 50 nie przychodzą do niego nowi mieszkańcy,
+  - **Łagodna kara zamiast pustoszenia (decyzja 2026-11-06, wniosek z gry: mieszkańcy odchodzili za szybko, nikt nie przychodził do domu z brakiem, więc łatwo było utknąć w błędnym kole „brak → mniej ludzi → mniej pracy → większy brak”):**
+  - brakująca potrzeba podstawowa odejmuje od zadowolenia swoją wagę (zamiast cięcia do 20), więc im więcej brakuje, tym niższe zadowolenie; spada powoli (1 pkt/s),
+  - główna kara to **mniejszy podatek** (zależy od zadowolenia) i **wolniejsza praca**: mieszkańcy domu z zadowoleniem poniżej 50 pracują wolniej, liniowo do −20% przy zadowoleniu 0 (w trybie uproszczonym liczy się średnia prowincji); premia za wysokie zadowolenie później,
+  - nowi mieszkańcy przychodzą do każdego wolnego miejsca przy zadowoleniu od 50, a przy zadowoleniu od 30 do połowy miejsc domu,
   - po 60 s gracz dostaje ostrzeżenie,
-  - po 180 s braku, jeśli zadowolenie jest poniżej 25, co 60 s wyprowadza się jeden mieszkaniec. Dom pustoszeje, ale zostaje na swoim poziomie. Gdy potrzeby wrócą, zadowolenie rośnie i dom się zapełnia.
+  - po 5 min braku, jeśli zadowolenie jest poniżej 40, co 3 min wyprowadza się jeden mieszkaniec, ale **połowa miejsc domu (trzon) zostaje zawsze**. Dom zostaje na swoim poziomie. Gdy potrzeby wrócą, zadowolenie rośnie i dom się zapełnia.
 - **Łączenie w kamienice** (od poziomu 2): domy tego samego poziomu, ustawione obok siebie w jednej linii wzdłuż osi siatki i równo wyrównane, wizualnie łączą się w pierzeję. Zamiast osobnych budynków widać fragmenty: koniec lewy, środek i koniec prawy. Łączenie jest **wyłącznie wizualne** i nie zmienia symulacji. Rozważymy później premię (np. mniejsze zużycie opału) [PÓŹNIEJ]. Od M4b-1.5 łączą się tylko domy patrzące w tę samą stronę, dom na styku dwóch rzędów pod kątem prostym staje się narożnikiem, a dwa rzędy mogą stać plecami do siebie, każdy przodem do swojej drogi. **Kamienice stoją szczytem do ulicy** (szkic właściciela 2026-11-05): każdy dom pokazuje ulicy własny szczyt (prosty, wygięty albo schodkowy, według położenia), kalenica biegnie w głąb działki, a dachy sąsiadów stykają się koszami. Dom na rogu ma dwa szczyty, po jednym na każdą ulicę, a często ścięty róg z bramą pod ukośnym szczytem. Na jednej działce stoi kilka węższych domów (mieszczanie 1–3, patrycjusze 1–2) o różnych kolorach i lekko przesuniętych frontach; dla symulacji to nadal jeden dom.
 
 ### 3.4 Ludność i praca
