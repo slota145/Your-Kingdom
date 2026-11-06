@@ -13,5 +13,6 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 	if not province.can_plant(tile):
 		return failed(agent, &"no_resource")
 	province.plant(tile, province.data.get_resource_node(step.sapling))
+	province.note_output(agent, step.sapling, 1)
 	bb.erase("plant")
 	return Status.DONE

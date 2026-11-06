@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ProvinceDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/province_def.gd" id="1_province"]
+
+[resource]
+script = ExtResource("1_province")
+template = &"lakeland"
+richness = 2
+neighbours = Array[StringName]([&"amber_coast", &"willow_vale", &"iron_wold"])
+world_pos = Vector2(900, 170)
+outline = PackedVector2Array(640, 60, 1150, 60, 1150, 282, 1010, 302, 872, 284, 630, 282, 662, 170)
+id = &"mirror_lakes"

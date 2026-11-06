@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 11
+const CURRENT_VERSION := 12
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -40,6 +40,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 11:
 		result = migrate_v10_to_v11(result)
 		version = 11
+	if version < 12:
+		result = migrate_v11_to_v12(result)
+		version = 12
 	return result
 
 
@@ -156,4 +159,15 @@ static func migrate_v9_to_v10(state: Dictionary) -> Dictionary:
 ## "voyage", a start from a ship its landing under "landing" and the building to place first
 ## under "first_building". Older saves have no player's cog and no landing: nothing to add.
 static func migrate_v10_to_v11(state: Dictionary) -> Dictionary:
+	return state
+
+
+## v12 (M6 part 1): the world. An older save is a world with one province (id 1, the
+## player's, viewed in detail); its map is not known any more, which only the world map needs.
+static func migrate_v11_to_v12(state: Dictionary) -> Dictionary:
+	var first := WorldSim.FIRST_ID
+	state["world"] = {"world": "", "provinces": [{"id": first, "map": "", "owner": "player"}]}
+	state["viewed"] = first
+	state["provinces"] = [{"id": first, "mode": "detail", "state": state["province"]}]
+	state.erase("province")
 	return state

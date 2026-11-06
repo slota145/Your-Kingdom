@@ -1,16 +1,19 @@
 extends Node2D
-## The M3 game: one province on the start map (or a loaded save), its view and the UI.
-## The player changes the simulation only through commands.
+## The game: a world of provinces (M6) or a single map (or a loaded save), the viewed
+## province's view, the world map and the UI. The player changes the simulation only through
+## commands.
 ##
 ## Mouse: left = select / use the tool (drag for roads and fields), right or Esc = cancel the
 ## tool. Keys: WASD/arrows pan, wheel or 1-4 zoom, Space pause, +/- speed, F grid,
-## R turns the building being placed, T changes its look, F5 quick save, F9 quick load, F11 pseudolocalization
+## R turns the building being placed, T changes its look, M world map, F5 quick save, F9 quick load, F11 pseudolocalization
 ## (UI text-fit check).
 
 const START_MAP := &"riverlands"
 
-## Map of a new game (main menu, M4b-3).
+## Map of a new single-province game (main menu, M4b-3).
 var _map_id: StringName = START_MAP
+## World of a new game (main menu, M6); empty = a single-province game on [member _map_id].
+var _world_id: StringName = &""
 const QUICK_SLOT := "quick"
 ## Screen pixels around a person's feet that count as clicking them.
 ## A person is picked only when clicked close to the body, so clicks near people still
@@ -31,6 +34,7 @@ var _building_panel: BuildingPanel
 var _agent_panel: AgentPanel
 var _ship_panel: ShipPanel
 var _stocks: KingdomStockWindow
+var _world_map: WorldMapScreen
 var _notes: Notifications
 var _tool: Dictionary = {}
 var _hover: Vector2i = Vector2i(-999, -999)
@@ -46,6 +50,7 @@ func _ready() -> void:
 	InputSetup.ensure_defaults()
 	var load_path := String(Game.start_request.get("load", ""))
 	_map_id = StringName(String(Game.start_request.get("map", START_MAP)))
+	_world_id = StringName(String(Game.start_request.get("world", "")))
 	Game.start_request = {}
 	var loaded: Simulation = null
 	if load_path != "":
@@ -61,6 +66,13 @@ func _exit_tree() -> void:
 
 func _new_game() -> Simulation:
 	var problems := PackedStringArray()
+	var world := Data.registry.get_world(_world_id) if _world_id != &"" else null
+	if world != null:
+		var in_world := Simulation.from_world(Data.registry, world, 1, problems)
+		for problem: String in problems:
+			push_warning("World: " + problem)
+		if in_world != null:
+			return in_world
 	var map := Data.registry.get_map(_map_id)
 	if map == null:
 		map = Data.registry.get_map(START_MAP)
@@ -72,6 +84,17 @@ func _new_game() -> Simulation:
 
 func _start(simulation: Simulation) -> void:
 	sim = simulation
+	_show_province()
+	_world_map.visible = false
+	_top.clock = sim.clock
+	_top.treasury = sim.treasury
+	_building_panel.treasury = sim.treasury
+	Game.start(sim)
+
+
+## Builds the view of the viewed province (a new game, a loaded one, or another province
+## entered from the world map).
+func _show_province() -> void:
 	if view != null:
 		view.queue_free()
 	if camera != null:
@@ -88,14 +111,10 @@ func _start(simulation: Simulation) -> void:
 	camera.position = IsoMath.grid_to_screen(Vector2(_start_tile()))
 	camera.make_current()
 	_top.province = sim.province
-	_top.clock = sim.clock
-	_top.treasury = sim.treasury
-	_building_panel.treasury = sim.treasury
 	_notes.province = sim.province
 	_stocks.visible = false
 	_close_panels()
 	_set_tool({})
-	Game.start(sim)
 
 
 func _start_tile() -> Vector2i:
@@ -123,6 +142,7 @@ func _build_ui() -> void:
 	_top.load_requested.connect(_quick_load)
 	_top.menu_requested.connect(_back_to_menu)
 	_top.stocks_requested.connect(_toggle_stocks)
+	_top.world_requested.connect(_toggle_world_map)
 	root.add_child(_top)
 	_build = BuildMenu.new()
 	_build.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
@@ -168,10 +188,41 @@ func _build_ui() -> void:
 	_ship_panel.visible = false
 	_ship_panel.closed.connect(_close_panels)
 	root.add_child(_ship_panel)
+	_world_map = WorldMapScreen.new()
+	_world_map.visible = false
+	_world_map.closed.connect(_toggle_world_map)
+	_world_map.enter_requested.connect(_enter_province)
+	root.add_child(_world_map)
 	_notes = Notifications.new()
 	_notes.position = Vector2(12, 64)
 	_notes.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_notes)
+
+
+## Opens or closes the world map (M6). A single-province game has none.
+func _toggle_world_map() -> void:
+	if _world_map.visible:
+		_world_map.visible = false
+		return
+	if sim.world.is_single():
+		_notes.push(tr("ui.note.single_province"))
+		return
+	_set_tool({})
+	_close_panels()
+	_world_map.open(sim)
+
+
+## Enters province [param id] from the world map: it comes in detail, the one viewed so far
+## goes to the simplified mode (ARCHITECTURE §7.2).
+func _enter_province(id: int) -> void:
+	_world_map.visible = false
+	if id == sim.viewed_id:
+		return
+	if _execute(EnterProvinceCommand.new(id)) != &"":
+		return
+	_show_province()
+	var def := sim.world.def_of(id, sim.data)
+	_notes.push(tr("ui.note.entered") % (tr(def.name_key()) if def != null else ""))
 
 
 func _toggle_stocks() -> void:
@@ -355,7 +406,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			_extend_drag(_hover)
 			_update_preview()
 		return
-	if event.is_action_pressed(&"ui_cancel"):
+	if _world_map.visible:
+		if event.is_action_pressed(&"ui_cancel") or event.is_action_pressed(&"world_map"):
+			_toggle_world_map()
+		return
+	if event.is_action_pressed(&"world_map"):
+		_toggle_world_map()
+	elif event.is_action_pressed(&"ui_cancel"):
 		if not _tool.is_empty():
 			_set_tool({})
 		else:

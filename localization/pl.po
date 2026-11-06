@@ -264,8 +264,8 @@ msgstr "Duża kraina nad jeziorem: rzeka wpada do jeziora, na wzgórzu kamienist
 msgid "ui.main.new_game"
 msgstr "Nowa gra"
 
-msgid "ui.main.new_game_on"
-msgstr "Nowa gra: %s"
+msgid "ui.main.single_on"
+msgstr "Pojedyncza prowincja: %s"
 
 msgid "ui.main.load_game"
 msgstr "Wczytaj szybki zapis"
@@ -1932,3 +1932,143 @@ msgstr "Koga wypłynęła w rejs."
 
 msgid "ui.note.voyage_returned"
 msgstr "Koga wróciła z rejsu z %d zł."
+
+# --- M6: world and provinces ---
+
+msgid "world.kingdom.name"
+msgstr "Królestwo"
+
+msgid "world.kingdom.desc"
+msgstr "Dziewięć prowincji nad morzem: wybrzeże, doliny rzek, jeziora, dwie wyspy i dwie neutralne osady. Zaczynasz od lądowania kogi w Zatoce Lądowania."
+
+msgid "province.landing_bay.name"
+msgstr "Zatoka Lądowania"
+
+msgid "province.landing_bay.desc"
+msgstr "Osłonięta zatoka z plażą. Tu przybija koga z pierwszymi osadnikami."
+
+msgid "province.amber_coast.name"
+msgstr "Bursztynowe Wybrzeże"
+
+msgid "province.amber_coast.desc"
+msgstr "Długi brzeg z lasami nad morzem, na północ od zatoki."
+
+msgid "province.willow_vale.name"
+msgstr "Wierzbowa Dolina"
+
+msgid "province.willow_vale.desc"
+msgstr "Żyzna dolina rzeki, bogata w lasy i pola."
+
+msgid "province.mirror_lakes.name"
+msgstr "Lustrzane Jeziora"
+
+msgid "province.mirror_lakes.desc"
+msgstr "Kraina jezior i kamienistych wzgórz na północnym wschodzie."
+
+msgid "province.vine_hills.name"
+msgstr "Winne Wzgórza"
+
+msgid "province.vine_hills.desc"
+msgstr "Słoneczne zbocza nad rzeką. Rośnie tu winorośl."
+
+msgid "province.gull_isle.name"
+msgstr "Mewia Wyspa"
+
+msgid "province.gull_isle.desc"
+msgstr "Duża wyspa z zatoką na port. Dopłyniesz tu tylko statkiem. Rośnie tu winorośl."
+
+msgid "province.salt_isle.name"
+msgstr "Solna Wyspa"
+
+msgid "province.salt_isle.desc"
+msgstr "Skalista wyspa na południu, z warzelniami soli. Tylko statkiem."
+
+msgid "province.iron_wold.name"
+msgstr "Żelazny Gród"
+
+msgid "province.iron_wold.desc"
+msgstr "Neutralne miasteczko przy złożach rudy żelaza."
+
+msgid "province.horse_haven.name"
+msgstr "Końska Przystań"
+
+msgid "province.horse_haven.desc"
+msgstr "Neutralna osada portowa wśród pastwisk dla koni."
+
+msgid "ui.hud.world"
+msgstr "Mapa"
+
+msgid "ui.world.hint"
+msgstr "Kliknij prowincję. M albo Esc: powrót do prowincji."
+
+msgid "ui.world.north"
+msgstr "N"
+
+msgid "ui.world.owner"
+msgstr "Właściciel: %s"
+
+msgid "ui.world.owner_player"
+msgstr "ty"
+
+msgid "ui.world.owner_neutral"
+msgstr "osada neutralna"
+
+msgid "ui.world.owner_none"
+msgstr "nikt, prowincja pusta"
+
+msgid "ui.world.population"
+msgstr "Mieszkańcy: %d"
+
+msgid "ui.world.stocks"
+msgstr "Zapasy: %s"
+
+msgid "ui.world.no_stocks"
+msgstr "brak"
+
+msgid "ui.world.rare"
+msgstr "Rzadki surowiec: %s"
+
+msgid "ui.world.rare_none"
+msgstr "brak"
+
+msgid "ui.world.island"
+msgstr "Wyspa: dotrzesz tu tylko statkiem."
+
+msgid "ui.world.enter"
+msgstr "Wejdź"
+
+msgid "ui.world.return"
+msgstr "Wróć do tej prowincji"
+
+msgid "ui.world.back"
+msgstr "Zamknij mapę"
+
+msgid "ui.world.empty_hint"
+msgstr "Pustą prowincję zasiedlisz wyprawą osadników (wkrótce)."
+
+msgid "ui.world.neutral_hint"
+msgstr "Osadę neutralną wykupisz za złoto i dostawy (wkrótce)."
+
+msgid "ui.note.single_province"
+msgstr "To gra na jednej mapie: nie ma tu mapy świata."
+
+msgid "ui.note.entered"
+msgstr "Jesteś w prowincji: %s."
+
+msgid "ui.command_error.unknown_province"
+msgstr "Nie ma takiej zasiedlonej prowincji."
+
+msgid "ui.command_error.not_your_province"
+msgstr "To nie twoja prowincja."
+
+msgid "rare.vines.name"
+msgstr "winorośl"
+
+msgid "rare.salt.name"
+msgstr "sól"
+
+msgid "rare.iron_ore.name"
+msgstr "ruda żelaza"
+
+msgid "rare.horses.name"
+msgstr "pastwiska koni"

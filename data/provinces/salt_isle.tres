@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ProvinceDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/province_def.gd" id="1_province"]
+
+[resource]
+script = ExtResource("1_province")
+template = &"islands"
+mirrored = true
+richness = 1
+rare_resource = &"salt"
+neighbours = Array[StringName]([])
+coastal = true
+island = true
+world_pos = Vector2(240, 585)
+outline = PackedVector2Array(346, 585, 313, 623, 280, 648, 240, 687, 192, 660, 164, 625, 156, 585, 149, 538, 185, 500, 240, 517, 287, 513, 328, 540)
+id = &"salt_isle"

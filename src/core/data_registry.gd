@@ -79,6 +79,14 @@ func get_map(id: StringName) -> MapDef:
 	return get_def(&"map", id) as MapDef
 
 
+func get_province(id: StringName) -> ProvinceDef:
+	return get_def(&"province", id) as ProvinceDef
+
+
+func get_world(id: StringName) -> WorldDef:
+	return get_def(&"world", id) as WorldDef
+
+
 ## Terrains by TileGrid index; null where no terrain uses that index.
 func terrains_by_index() -> Array[TerrainDef]:
 	var result: Array[TerrainDef] = []

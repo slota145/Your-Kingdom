@@ -99,6 +99,19 @@ func is_over() -> bool:
 	return state == State.DONE and settlers.is_empty()
 
 
+## The province is left during the landing (M6, ARCHITECTURE §7.2): it ends at once. The kit
+## lies on the beach, every settler still aboard stands on it, the ship is gone. The settlers
+## keep waiting for the camp and for houses (ProvinceAbstract.wanderers).
+func finish_at_once(province: ProvinceSim) -> void:
+	if state == State.COMING:
+		_unload_kit(province)
+	while not aboard.is_empty():
+		var kind: StringName = aboard.pop_front()
+		settlers.append(province.spawn_agent(kind, beach).id)
+	province.ships.erase(ship_id)
+	state = State.DONE
+
+
 ## The start kit on the beach: one stack per ground pile, on the free tiles nearest to the
 ## beach tile (land, nothing built, no pile yet), in a fixed order.
 func _unload_kit(province: ProvinceSim) -> void:

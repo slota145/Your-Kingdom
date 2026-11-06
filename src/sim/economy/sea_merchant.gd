@@ -125,6 +125,75 @@ func update(province: ProvinceSim) -> void:
 				_reset()
 
 
+## His visits while nobody looks at the province (M6, ARCHITECTURE §7.1): when one is due and
+## a port stands, he trades at once (the same limits as a visit) and sails off. A visit under
+## way when the province was left ends the same way with what is left in his hold.
+func trade_at_once(province: ProvinceSim) -> void:
+	var ship := province.ships.get(ship_id) as ShipUnit
+	match state:
+		State.AWAY:
+			if province.tick < next_visit:
+				return
+			if _port(province) == null:
+				next_visit = province.tick + SimClock.seconds_to_ticks(RETRY)
+				return
+			next_visit = province.tick + SimClock.seconds_to_ticks(VISIT_EVERY)
+			bought = 0
+			earned = 0
+			spent = 0
+			_trade_now(province, OFFER)
+		State.COMING, State.TRADING:
+			if ship != null:
+				if state == State.TRADING:
+					_settle(province, ship)
+					_stop_trading(province)
+				_trade_now(province, ship.hold.totals())
+		State.LEAVING:
+			pass
+	if ship != null:
+		province.jobs.cancel_for_entity(ship_id)
+		province.ships.erase(ship_id)
+	_reset()
+
+
+## Buys the player's surplus (up to MAX_BUY in a visit) and sells from [param offer] what the
+## player wants, straight from and into the storages.
+func _trade_now(province: ProvinceSim, offer: Dictionary) -> void:
+	var near := province.entry_tile
+	for good: StringName in buying(province):
+		var units := mini(province.merchant.surplus(province, good), MAX_BUY - bought)
+		if units <= 0:
+			continue
+		units = province.take_from_storages(good, units, near)
+		var gold := units * Merchant.price(province, good)
+		province.treasury.add(gold)
+		earned += gold
+		bought += units
+	var goods: Array[StringName] = []
+	goods.assign(OFFER.keys())
+	goods.sort()
+	for good: StringName in goods:
+		var wanted := int(buy_up_to.get(good, 0))
+		var price := maxi(sell_price(province, good), 1)
+		var units := mini(wanted - province.kingdom_stock(good), int(offer.get(good, 0)))
+		units = mini(units, province.treasury.gold / price)
+		var left := units
+		while left > 0:
+			var sink := province.nearest_sink(good, 1, near)
+			if sink == 0:
+				break
+			var before := left
+			left = province.storage(sink).add(good, left)
+			if left == before:
+				break
+		var sold := units - left
+		if sold <= 0:
+			continue
+		province.treasury.pay(sold * price)
+		spent += sold * price
+		province.ledger.made(good, sold, province.tick)
+
+
 ## Comes if a port has a free berth and the sea edge leads to it; false when he cannot.
 func _arrive(province: ProvinceSim) -> bool:
 	var port := _port(province)

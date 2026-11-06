@@ -111,6 +111,8 @@ static func fail(province: ProvinceSim, agent: Agent) -> void:
 		else:
 			province.jobs.on_failed(province, task.request_id, amount)
 	agent.last_fail = StringName(String(task.bb.get("fail_reason", "")))
+	if task.kind == Task.KIND_RECIPE and agent.workplace_id != 0:
+		province.production.note_failure(agent.workplace_id)
 	var step := task.current_step()
 	agent.last_fail_good = StringName(String(task.bb.get("good",
 			(step as FetchStepDef).good if step is FetchStepDef else "")))

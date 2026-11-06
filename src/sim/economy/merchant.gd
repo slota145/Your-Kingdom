@@ -95,6 +95,37 @@ func _arrive(province: ProvinceSim) -> void:
 	province.events.emit(&"merchant_coming", {"agent": agent.id, "market": market.id})
 
 
+## His visits while nobody looks at the province (M6, ARCHITECTURE §7.1): when one is due and
+## a market stands, he buys the surplus of every good with a setting at once. A visit under way
+## when the province was left ends: the wagon is paid for, unled pigs are refunded.
+func trade_at_once(province: ProvinceSim) -> void:
+	match state:
+		State.TRADING:
+			_pay_for_wagon(province)
+			_close(province)
+			gone()
+		State.COMING, State.LEAVING:
+			gone()
+		State.AWAY:
+			if province.tick < next_visit:
+				return
+			next_visit = province.tick + SimClock.seconds_to_ticks(VISIT_EVERY)
+			var market := false
+			for building: BuildingState in province.buildings.all():
+				if not building.def.stall_goods.is_empty() and building.is_complete():
+					market = true
+			if not market:
+				return
+			earned = 0
+			var goods: Array[StringName] = []
+			goods.assign(sell_above.keys())
+			goods.sort()
+			for good: StringName in goods:
+				var units := province.take_from_storages(good, surplus(province, good), province.entry_tile)
+				earned += units * price(province, good)
+			province.treasury.add(earned)
+
+
 ## The merchant reached the market: the wagon opens.
 func start_trading(province: ProvinceSim) -> void:
 	state = State.TRADING

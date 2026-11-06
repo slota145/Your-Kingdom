@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WorldDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/world_def.gd" id="1_world"]
+
+[resource]
+script = ExtResource("1_world")
+provinces = Array[StringName]([&"landing_bay", &"amber_coast", &"willow_vale", &"mirror_lakes", &"vine_hills", &"gull_isle", &"salt_isle", &"iron_wold", &"horse_haven"])
+start_province = &"landing_bay"
+size = Vector2(1200, 800)
+ship_speed = 1.3
+wagon_speed = 1.4
+id = &"kingdom"

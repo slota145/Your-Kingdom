@@ -62,6 +62,11 @@ var landing: Landing = null
 var first_building: StringName = &""
 ## Goods made and used per minute (statistics for the player, M4b-2); not saved.
 var ledger: GoodsLedger = GoodsLedger.new()
+## How fast each building works while viewed: the calibration of the simplified mode (M6).
+var production: ProductionLog = ProductionLog.new()
+## Workers per building counted by the simplified mode (ProvinceAbstract.staff); empty while
+## the province is viewed (people are its workers then). Not saved.
+var abstract_staff: Dictionary[int, int] = {}
 ## Where newcomers enter the province.
 var entry_tile: Vector2i = Vector2i.ZERO
 ## Units of a good workshops leave in the province for construction and households
@@ -814,7 +819,8 @@ func market_source(good: StringName, amount: int, house: BuildingState) -> int:
 func _breed_herds() -> void:
 	for building: BuildingState in buildings.all():
 		var good := building.def.herd_good
-		if good == &"" or building.yard == null or building.paused or building.workers.is_empty():
+		if good == &"" or building.yard == null or building.paused \
+				or (building.workers.is_empty() and abstract_staff.get(building.id, 0) == 0):
 			continue
 		var herd := building.yard.total(good)
 		if herd < 2 or building.yard.free_space(good) <= 0:
@@ -1158,6 +1164,14 @@ func release_agent(agent: Agent) -> void:
 
 
 ## Puts what the agent carries on the ground at its tile.
+## A worker of [param agent]'s workplace made [param amount] of [param good] (M6
+## calibration): only the main output of the work cycle is measured (WorkCycle.primary).
+func note_output(agent: Agent, good: StringName, amount: int) -> void:
+	var workplace := buildings.get_building(agent.workplace_id)
+	if workplace != null and WorkCycle.of(workplace.def, data).primary == good:
+		production.note_output(workplace.id, amount, tick)
+
+
 func drop_carried(agent: Agent) -> void:
 	if agent.is_carrying():
 		drop_goods(agent.tile(), agent.carry_good, agent.carry_amount)
@@ -1294,18 +1308,25 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 
 ## Takes [param amount] of [param good] straight out of the storages and yards nearest to
 ## [param near] (a purchase paid in goods, e.g. a handcart). Returns what was taken.
-func take_from_storages(good: StringName, amount: int, near: Vector2i) -> int:
+## [param used]: the goods go out of the economy (statistics); false when they only move
+## (the simplified mode's porters). [param keep_reserve] leaves storage reserves alone.
+func take_from_storages(good: StringName, amount: int, near: Vector2i, used: bool = true,
+		keep_reserve: bool = false) -> int:
 	var taken := 0
 	while taken < amount:
-		var src := nearest_source(good, 1, near)
+		var src := nearest_source(good, 1, near, 0, keep_reserve)
 		var store := storage(src)
 		if store == null or src == 0:
 			break
-		var got := store.remove(good, mini(amount - taken, store.available(good)))
+		var can := store.available(good)
+		if keep_reserve:
+			can = mini(can, maxi(store.available(good) - reserve_of(src, good), 1))
+		var got := store.remove(good, mini(amount - taken, can))
 		if got <= 0:
 			break
 		taken += got
-	ledger.used(good, taken, tick)
+	if used:
+		ledger.used(good, taken, tick)
 	return taken
 
 
@@ -1580,6 +1601,8 @@ func to_dict() -> Dictionary:
 		"jobs": jobs.to_dict(),
 		"path_queue": paths.to_dict(),
 	}
+	if not production.is_empty():
+		d["production"] = production.to_dict()
 	if landing != null:
 		d["landing"] = landing.to_dict()
 	if first_building != &"":
@@ -1644,6 +1667,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 			agent.task = null
 	province.jobs = JobBoard.from_dict(d["jobs"])
 	province.paths = PathRequestQueue.from_dict(d.get("path_queue", []))
+	province.production = ProductionLog.from_dict(d.get("production", {}))
 	for sd: Variant in d.get("ships", []):
 		var ship := ShipUnit.from_dict(sd, registry)
 		province.ships[ship.id] = ship

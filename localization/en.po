@@ -259,8 +259,8 @@ msgstr "A large land by a lake: a river flows into the lake, a stony hill with r
 msgid "ui.main.new_game"
 msgstr "New game"
 
-msgid "ui.main.new_game_on"
-msgstr "New game: %s"
+msgid "ui.main.single_on"
+msgstr "Single province: %s"
 
 msgid "ui.main.load_game"
 msgstr "Load quick save"
@@ -1911,3 +1911,143 @@ msgstr "The cog has set sail."
 
 msgid "ui.note.voyage_returned"
 msgstr "The cog is back from its voyage with %d gold."
+
+# --- M6: world and provinces ---
+
+msgid "world.kingdom.name"
+msgstr "The Kingdom"
+
+msgid "world.kingdom.desc"
+msgstr "Nine provinces by the sea: a coast, river valleys, lakes, two islands and two neutral towns. You start with a cog landing in Landing Bay."
+
+msgid "province.landing_bay.name"
+msgstr "Landing Bay"
+
+msgid "province.landing_bay.desc"
+msgstr "A sheltered bay with a beach. The cog with the first settlers lands here."
+
+msgid "province.amber_coast.name"
+msgstr "Amber Coast"
+
+msgid "province.amber_coast.desc"
+msgstr "A long shore with forests by the sea, north of the bay."
+
+msgid "province.willow_vale.name"
+msgstr "Willow Vale"
+
+msgid "province.willow_vale.desc"
+msgstr "A fertile river valley, rich in forests and fields."
+
+msgid "province.mirror_lakes.name"
+msgstr "Mirror Lakes"
+
+msgid "province.mirror_lakes.desc"
+msgstr "A land of lakes and rocky hills in the north-east."
+
+msgid "province.vine_hills.name"
+msgstr "Vine Hills"
+
+msgid "province.vine_hills.desc"
+msgstr "Sunny slopes above the river. Vines grow here."
+
+msgid "province.gull_isle.name"
+msgstr "Gull Isle"
+
+msgid "province.gull_isle.desc"
+msgstr "A large island with a bay for a port. Reached only by ship. Vines grow here."
+
+msgid "province.salt_isle.name"
+msgstr "Salt Isle"
+
+msgid "province.salt_isle.desc"
+msgstr "A rocky island in the south with salt pans. Only by ship."
+
+msgid "province.iron_wold.name"
+msgstr "Ironhold"
+
+msgid "province.iron_wold.desc"
+msgstr "A neutral town by deposits of iron ore."
+
+msgid "province.horse_haven.name"
+msgstr "Horse Haven"
+
+msgid "province.horse_haven.desc"
+msgstr "A neutral harbour town among horse pastures."
+
+msgid "ui.hud.world"
+msgstr "Map"
+
+msgid "ui.world.hint"
+msgstr "Click a province. M or Esc: back to the province."
+
+msgid "ui.world.north"
+msgstr "N"
+
+msgid "ui.world.owner"
+msgstr "Owner: %s"
+
+msgid "ui.world.owner_player"
+msgstr "you"
+
+msgid "ui.world.owner_neutral"
+msgstr "a neutral town"
+
+msgid "ui.world.owner_none"
+msgstr "nobody, the province is empty"
+
+msgid "ui.world.population"
+msgstr "Residents: %d"
+
+msgid "ui.world.stocks"
+msgstr "Stocks: %s"
+
+msgid "ui.world.no_stocks"
+msgstr "none"
+
+msgid "ui.world.rare"
+msgstr "Rare resource: %s"
+
+msgid "ui.world.rare_none"
+msgstr "none"
+
+msgid "ui.world.island"
+msgstr "An island: you get here only by ship."
+
+msgid "ui.world.enter"
+msgstr "Enter"
+
+msgid "ui.world.return"
+msgstr "Back to this province"
+
+msgid "ui.world.back"
+msgstr "Close the map"
+
+msgid "ui.world.empty_hint"
+msgstr "You settle an empty province with an expedition of settlers (soon)."
+
+msgid "ui.world.neutral_hint"
+msgstr "You buy a neutral town for gold and deliveries (soon)."
+
+msgid "ui.note.single_province"
+msgstr "This is a game on a single map: there is no world map."
+
+msgid "ui.note.entered"
+msgstr "You are in the province: %s."
+
+msgid "ui.command_error.unknown_province"
+msgstr "There is no such settled province."
+
+msgid "ui.command_error.not_your_province"
+msgstr "This is not your province."
+
+msgid "rare.vines.name"
+msgstr "vines"
+
+msgid "rare.salt.name"
+msgstr "salt"
+
+msgid "rare.iron_ore.name"
+msgstr "iron ore"
+
+msgid "rare.horses.name"
+msgstr "horse pastures"
