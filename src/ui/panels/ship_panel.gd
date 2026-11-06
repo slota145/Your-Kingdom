@@ -71,9 +71,18 @@ static func describe(province: ProvinceSim, ship: ShipUnit) -> PackedStringArray
 		lines.append(TranslationServer.translate("ui.ship.leaving"))
 	elif foreign and trader.state == SeaMerchant.State.COMING:
 		lines.append(TranslationServer.translate("ui.ship.coming"))
+	elif ship.voyage != null and ship.path_state != ShipUnit.PathState.MOVING and not ship.is_moored():
+		lines.append(TranslationServer.translate("ui.ship.at_anchor"))
 	else:
 		lines.append(TranslationServer.translate("ui.ship.sailing"))
 	lines.append(TranslationServer.translate("ui.ship.capacity") % [ship.hold.total_amount(), ship.def.capacity()])
+	if ship.voyage != null:
+		# The player's cog (M5 part 3): its plan is set in the panel of its port.
+		var home := province.buildings.get_building(ship.home_id)
+		lines.append(TranslationServer.translate("ui.ship.player_cog") % (TranslationServer.translate(home.def.name_key()) \
+				if home != null else TranslationServer.translate("ui.ship.no_home")))
+	if province.landing != null and province.landing.is_landing_ship(ship):
+		lines.append(TranslationServer.translate("ui.ship.settlers"))
 	if foreign:
 		lines.append(TranslationServer.translate("ui.ship.sea_merchant"))
 		if trader.is_trading():

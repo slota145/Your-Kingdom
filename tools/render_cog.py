@@ -79,15 +79,19 @@ def f_hull(p):
     return np.maximum(shell, -z - 0.01) if CLIP_WATERLINE else shell
 
 
+# Bottom of the keel (the hull reaches D below the deck).
+KEEL_Z = ZD - D
+
+
 def f_frame(p):
     """Keel, stem and stern posts and ribs: the first stage on the slipway."""
     x, y, z = p
     ribs = np.abs(((x + L) % 9.0) - 4.5) - 0.9
     shell = np.maximum(f_hull(p), ribs)
-    keel = box(p, (-L + 2, -1.6, -D - 1), (L - 2, 1.6, -D + 3))
+    keel = box(p, (-L + 2, -1.6, KEEL_Z - 1), (L - 2, 1.6, KEEL_Z + 3))
     keel = np.maximum(keel, hull_outline(x, y, L + 2, W) - 1.0)
-    posts = np.minimum(box(p, (L - 6, -1.4, -D + 2), (L - 1, 1.4, ZD + SHEER)),
-                       box(p, (-L + 1, -1.4, -D + 2), (-L + 6, 1.4, ZD + SHEER)))
+    posts = np.minimum(box(p, (L - 6, -1.4, KEEL_Z + 2), (L - 1, 1.4, ZD + SHEER)),
+                       box(p, (-L + 1, -1.4, KEEL_Z + 2), (-L + 6, 1.4, ZD + SHEER)))
     posts = np.maximum(posts, hull_outline(x, y, L + 1.5, W) - 1.0)
     return np.minimum.reduce([shell, keel, posts])
 
@@ -96,7 +100,7 @@ def f_cradle(p):
     """Keel blocks the ship stands on while it is built."""
     out = np.full(p[0].shape, 99.0)
     for xc in (-36.0, -12.0, 12.0, 36.0):
-        out = np.minimum(out, box(p, (xc - 3, -7, -D - 7), (xc + 3, 7, -D + 1)))
+        out = np.minimum(out, box(p, (xc - 3, -7, KEEL_Z - 7), (xc + 3, 7, KEEL_Z + 1.5)))
     return out
 
 
@@ -219,7 +223,7 @@ def fields(p):
 def use_stage(stage):
     """Sets PARTS (and the water) for a building stage on the slipway."""
     global PARTS, WATER, CLIP_WATERLINE
-    WATER = -D - 7.0
+    WATER = KEEL_Z - 7.0
     CLIP_WATERLINE = False
     hull = ("frame", f_frame) if stage == 0 else ("hull", f_hull)
     parts = [hull, ("cradle", f_cradle)]

@@ -25,6 +25,15 @@ extends GameDef
 @export var trades: bool = false
 
 
+## Art folder in assets/ships when it differs from the id (the settlers' ship looks like the
+## player's cog).
+@export var art: StringName = &""
+
+
+func art_id() -> StringName:
+	return art if art != &"" else id
+
+
 func get_kind() -> StringName:
 	return &"ship"
 

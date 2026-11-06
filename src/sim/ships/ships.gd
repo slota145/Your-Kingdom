@@ -277,7 +277,7 @@ static func update(province: ProvinceSim) -> void:
 	if province.ships.is_empty():
 		return
 	for ship: ShipUnit in province.ships.values():
-		if ship.def.id == SeaMerchant.SHIP or ship.voyage != null:
+		if ship.def.id == SeaMerchant.SHIP or ship.voyage != null or ship.def.id == Landing.SHIP:
 			continue   # cogs go their own way (SeaMerchant, Voyage)
 		if ship.home_id == 0:
 			_find_home(province, ship)

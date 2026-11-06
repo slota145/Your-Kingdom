@@ -317,6 +317,11 @@ static func _free_worker_for(province: ProvinceSim, needy: BuildingState) -> voi
 				"to": needy.id})
 
 
+## Worker kinds [param workplace] still lacks.
+static func missing_kinds(province: ProvinceSim, workplace: BuildingState) -> Array[StringName]:
+	return _missing_kinds(province, workplace)
+
+
 static func _missing_kinds(province: ProvinceSim, workplace: BuildingState) -> Array[StringName]:
 	var missing: Array[StringName] = workplace.def.worker_kinds.duplicate()
 	for id: int in workplace.workers:

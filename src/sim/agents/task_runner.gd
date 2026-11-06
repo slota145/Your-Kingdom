@@ -24,6 +24,7 @@ static var _move_in_steps: Array[StepDef] = []
 static var _merchant_steps: Array[StepDef] = []
 static var _park_steps: Array[StepDef] = []
 static var _sail_home_steps: Array[StepDef] = []
+static var _land_steps: Array[StepDef] = []
 
 const BUILDER_KIND := &"builder"
 
@@ -60,6 +61,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"deposit": DepositStep.new(), &"plant": PlantStep.new(), &"serve": ServeStep.new(),
 			&"choose_stall": ChooseStallStep.new(), &"merchant": MerchantStep.new(),
 			&"park": ParkStep.new(), &"sail": SailStep.new(), &"ship_build": ShipBuildStep.new(),
+			&"land": LandStep.new(),
 		}
 	return _executors[kind]
 
@@ -141,6 +143,8 @@ static func restore_steps(province: ProvinceSim, task: Task) -> bool:
 			task.steps = park_steps()
 		Task.KIND_SAIL_HOME:
 			task.steps = sail_home_steps()
+		Task.KIND_LAND:
+			task.steps = land_steps()
 		Task.KIND_RECIPE:
 			var recipe := province.data.get_recipe(task.recipe_id)
 			if recipe == null:
@@ -193,6 +197,21 @@ static func sail_home_steps() -> Array[StepDef]:
 		sail.target = &"home"
 		_sail_home_steps = [sail]
 	return _sail_home_steps
+
+
+static func land_steps() -> Array[StepDef]:
+	if _land_steps.is_empty():
+		_land_steps = [LandStepDef.new()]
+	return _land_steps
+
+
+## A settler wades from [param from] (the ship at anchor) to [param to] (the beach).
+static func start_landing(agent: Agent, from: Vector2i, to: Vector2i) -> void:
+	var task := Task.new()
+	task.kind = Task.KIND_LAND
+	task.bb = {"from": SimCodec.vec2i(from), "to": SimCodec.vec2i(to), "t": 0}
+	task.steps = land_steps()
+	agent.task = task
 
 
 static func merchant_steps() -> Array[StepDef]:
@@ -250,7 +269,9 @@ static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 			park.steps = park_steps()
 			agent.task = park
 		return
-	if agent.kind == BUILDER_KIND and workplace != null:
+	# The builder who came with the settlers' ship builds before the pioneer camp stands
+	# (M5 part 3): without a workplace he still takes the nearest site.
+	if agent.kind == BUILDER_KIND and (workplace != null or agent.workplace_id == 0):
 		var site := Construction.site_for(province, agent)
 		if site != 0:
 			var build := Task.new()

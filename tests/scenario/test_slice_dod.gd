@@ -43,6 +43,12 @@ func test_four_supplied_patrician_houses_on_lakeland() -> void:
 	_patricians_on(&"lakeland")
 
 
+## M5 part 3: on the Coast map the game starts from a ship (settlers, the start kit on the
+## beach, the pioneer camp first).
+func test_four_supplied_patrician_houses_on_coast_from_the_ship() -> void:
+	_patricians_on(&"coast")
+
+
 func _patricians_on(map_id: StringName) -> void:
 	var sim := _new_game(map_id)
 	var bot := SliceBot.new(sim)

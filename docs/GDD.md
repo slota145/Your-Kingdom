@@ -72,7 +72,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
 | Typ | Cechy | Zakres |
 |---|---|---|
 | Kontynentalna | Bez morza. Opcjonalnie z rzeką (rybołówstwo, młyn wodny, przeprawa) lub jeziorem. Nie ma portu morskiego. | [SLICE] tylko wariant z rzeką · M4b-3: „Pojezierze” 128×128 (jezioro z trzcinami, rzeka z brodami, kamieniste wzgórze ze skałami); mapę wybiera się w menu przy nowej grze · [1.0] wszystkie |
-| Przybrzeżna | Ląd z linią brzegową: port, stocznia, rybołówstwo morskie. | M5 (plan 2026-11-06): „Wybrzeże” 128×128 (morze płytkie i głębokie, plaża, zatoka, rzeka do morza, ławice ryb; część 1 gotowa), start ze statku (część 3) · [1.0] wszystkie |
+| Przybrzeżna | Ląd z linią brzegową: port, stocznia, rybołówstwo morskie. | M5 (plan 2026-11-06): „Wybrzeże” 128×128 (morze płytkie i głębokie, plaża, zatoka, rzeka do morza, ławice ryb; część 1 gotowa), start ze statku (część 3: koga rzuca kotwicę w zatoce, 6 osadników brodzi na plażę, zestaw startowy leży na plaży, najpierw obóz pionierów) · [1.0] wszystkie |
 | Wyspowa | Jedna lub kilka wysp. Do wyspy można dotrzeć wyłącznie statkiem. | [1.0] |
 
 ---
@@ -232,6 +232,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 - **Kupcy wędrowni** odwiedzają targowisko lub port co pewien czas, z ograniczoną ofertą kupna i sprzedaży.
 - **Stan w M4b-2 (decyzje 2026-11-05):** kupiec przyjeżdża z krawędzi mapy co ok. 10 minut gry i stoi 3 minuty przy targowisku (bez targowiska nie przyjeżdża). Kupuje po stałych cenach (cena bazowa towaru) wszystko, co magazyny mają ponad próg ustawiony przez gracza przy towarze w oknie „Zapasy królestwa”; domyślnie nic. Tragarze noszą towar do jego wozu. Sprzedaje tylko świnie (4 na wizytę, 30 złota), które tragarz prowadzi do chlewu.
 - **Stan w M5, część 2 (2026-11-06):** kupiec morski przypływa obcą kogą zza krawędzi morza co ok. 12 minut gry do portu z wolnym nabrzeżem (bez portu nie przypływa) i stoi 4 minuty. Kupuje do 40 sztuk nadwyżek po cenie bazowej według tych samych progów „sprzedaj ponad N” co kupiec wędrowny, ale nie kupuje towarów, które sam sprzedaje. Przywozi 20 desek, 10 smoły i 10 sukna i sprzedaje je po cenie bazowej +50%, dopóki królestwo ma mniej, niż gracz ustawił w oknie „Zapasy królestwa” w kolumnie „Kupno z morza” (próg „kupuj do N”), i dopóki starcza złota. Każdą sztukę portowcy niosą po trapie, a złoto przechodzi z rąk do rąk przy każdej sztuce.
+- **Stan w M5, część 3 (2026-11-06):** własna koga gracza odbywa **rejsy za horyzont**. W panelu portu gracz układa plan: towary na sprzedaż (po 5 sztuk, do 4 miejsc w ładowni po 10) i zamówienie z oferty kupca morskiego (deski, smoła, sukno). Koga czeka na kotwicy w zatoce, na rozkaz podpływa do nabrzeża, portowcy ładują towar po trapie, a ona wypływa za krawędź mapy. Za horyzontem sprzedaje ładunek po cenie bazowej +25% i kupuje zamówienie po cenie kupca morskiego (złoto na zamówienie bierze ze skarbca przy wypłynięciu, „sakiewka”). Wraca po ok. 6 minutach; złoto ze sprzedaży wpływa po zacumowaniu, a portowcy znoszą zamówienie na plac. Przycisk „Odpłyń teraz” wysyła kogę z tym, co już załadowano.
 - W prowincjach z portem dostępny jest handel z obcymi portami: stałe ceny z wahaniami.
 
 ---
@@ -286,6 +287,8 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 
 **Port (M5, część 2):** 4×4, dwa rzędy lądu (plac portowy na 6 stosów) i dwa rzędy nabrzeża na palach nad wodą; jedno miejsce cumowania przed nabrzeżem, z torem wodnym do głębokiej wody. Statek płynący do portu rezerwuje miejsce przy nabrzeżu. Dwóch portowców nosi towar sztuka po sztuce: od wejścia przez nabrzeże i po trapie na statek albo ze statku na plac. Plac portowy jest prywatny: tragarze przynoszą na niego towar tylko na załadunek, a to, co czeka bez statku (np. kupione od kupca), odnoszą do magazynów.
 
+**Koga gracza (M5, część 3):** stocznia buduje kogę w 4 widocznych etapach: szkielet (8 desek), poszycie (10 desek, 4 smoły), maszt z żaglem (2 deski, 4 sukna) i wodowanie (2 smoły), każdy ok. 1 minuty pracy cieśli. Po wodowaniu koga szuka portu (jedna koga na port) i czeka na kotwicy w zatoce, żeby nabrzeże zostało wolne dla kupca morskiego. Rejsy: §4.6.
+
 **Plan M5 (decyzje 2026-11-06, szczegóły w ROADMAP):** w M5 tylko łódź rybacka i koga. Łódź pracuje dla nowej **przystani rybackiej** nad morzem (połów z ławic, więcej niż wędkarz, który zostaje). Statki powstają z desek, smoły (nowa **smolarnia**: drewno → smoła) i sukna. **Kupiec morski** przypływa obcą kogą do portu. Własna koga gracza odbywa **rejsy handlowe za horyzont** (wraca ze złotem i zamówionymi towarami). Na „Wybrzeżu” gra zaczyna się od kogi, która wyładowuje osadników na plaży. Reszta drzewka okrętów (IDEAS) później.
 
 ### 5.5 Lista budynków [SLICE]
@@ -293,6 +296,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Budynek | Rozmiar (kafle) | Funkcja |
 |---|---|---|
 | Ratusz | 4×4 | start osady, siedziba tragarzy |
+| Obóz pionierów (M5, część 3) | 3×3 | pierwszy budynek po starcie ze statku: budowniczy i 2 tragarzy, podatki do czasu ratusza; najwyżej jeden na prowincję |
 | Magazyn (plac składowy) | 4×4, 15 slotów (od M4b-1; wcześniej 12) | składowanie towarów |
 | Chata | 2×2 | dom poziomu 1 → 2 |
 | Studnia | 1×1 | usługa w zasięgu |

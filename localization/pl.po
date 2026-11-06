@@ -1593,7 +1593,7 @@ msgid "ship.cog.name"
 msgstr "Koga"
 
 msgid "ship.cog.desc"
-msgstr "Duży statek handlowy. Pływa tylko po głębokiej wodzie."
+msgstr "Duży statek handlowy na rejsy za horyzont (40 sztuk w ładowni). Pływa tylko po głębokiej wodzie. Koszt: 20 desek, 6 beczek smoły, 4 bele sukna; 4 etapy budowy."
 
 msgid "ui.build.tab.harbour"
 msgstr "Morze i statki"
@@ -1816,3 +1816,119 @@ msgstr "Kupiec morski nie sprzedaje tego towaru."
 
 msgid "ui.command_error.not_a_port"
 msgstr "To nie jest port."
+
+# --- M5 part 3: the player's cog, trade voyages, the start from a ship ---
+
+msgid "building.pioneer_camp.name"
+msgstr "Obóz pionierów"
+
+msgid "building.pioneer_camp.desc"
+msgstr "Pierwszy dom osadników: chata z bali, namioty i ognisko. Pracują tu budowniczy i 2 tragarzy. Można postawić tylko jeden. Tu ustawiasz podatki, dopóki nie stanie ratusz."
+
+msgid "ship.settler_cog.name"
+msgstr "Koga z osadnikami"
+
+msgid "ship.settler_cog.desc"
+msgstr "Przywiozła osadników i zapasy. Po wyładunku odpływa."
+
+msgid "ui.command_error.build_camp_first"
+msgstr "Najpierw postaw obóz pionierów."
+
+msgid "ui.command_error.only_one"
+msgstr "Taki budynek może stać tylko jeden."
+
+msgid "ui.command_error.unknown_ship"
+msgstr "Nie ma takiego statku."
+
+msgid "ui.command_error.cannot_sell"
+msgstr "Tego towaru nie da się sprzedać w rejsie."
+
+msgid "ui.command_error.hold_full"
+msgstr "To się nie zmieści w ładowni (4 miejsca po 10 sztuk)."
+
+msgid "ui.command_error.not_loading"
+msgstr "Koga teraz nie ładuje towaru."
+
+msgid "ui.command_error.no_port"
+msgstr "Koga nie ma portu. Postaw port nad zatoką."
+
+msgid "ui.command_error.ship_busy"
+msgstr "Koga jest w rejsie."
+
+msgid "ui.voyage.title"
+msgstr "Rejs handlowy"
+
+msgid "ui.voyage.no_cog"
+msgstr "Port nie ma kogi. Zamów ją w stoczni."
+
+msgid "ui.voyage.sell"
+msgstr "Na sprzedaż (miejsca w ładowni: %d z %d):"
+
+msgid "ui.voyage.order"
+msgstr "Zamówienie (miejsca: %d z %d, koszt %d zł):"
+
+msgid "ui.voyage.sell_price"
+msgstr "po %d zł"
+
+msgid "ui.voyage.add_good"
+msgstr "Dodaj towar na sprzedaż…"
+
+msgid "ui.voyage.start"
+msgstr "Wypłyń w rejs"
+
+msgid "ui.voyage.start_hint"
+msgstr "Koga podpłynie do nabrzeża, portowcy załadują towar, a ona popłynie za horyzont. Wróci po ok. 6 minutach ze złotem i zamówieniem."
+
+msgid "ui.voyage.now"
+msgstr "Odpłyń teraz"
+
+msgid "ui.voyage.now_hint"
+msgstr "Koga odpływa z tym, co już ma na pokładzie."
+
+msgid "ui.voyage.state.idle"
+msgstr "Koga stoi na kotwicy w zatoce."
+
+msgid "ui.voyage.state.to_berth"
+msgstr "Koga płynie do nabrzeża."
+
+msgid "ui.voyage.state.loading"
+msgstr "Załadunek. Na pokładzie: %s"
+
+msgid "ui.voyage.state.outbound"
+msgstr "Koga wypływa na morze."
+
+msgid "ui.voyage.state.away"
+msgstr "Koga jest za horyzontem. Wróci za ok. %d min."
+
+msgid "ui.voyage.state.inbound"
+msgstr "Koga wraca do portu z %d zł."
+
+msgid "ui.voyage.state.unloading"
+msgstr "Rozładunek. Na pokładzie: %s"
+
+msgid "ui.voyage.last"
+msgstr "Ostatni rejs: sprzedano %d szt. za %d zł, kupiono %d szt. za %d zł."
+
+msgid "ui.ship.player_cog"
+msgstr "Twoja koga. Port: %s (plan rejsu w panelu portu)."
+
+msgid "ui.ship.no_home"
+msgstr "brak"
+
+msgid "ui.ship.settlers"
+msgstr "Przywiozła twoich osadników."
+
+msgid "ui.ship.at_anchor"
+msgstr "Stoi na kotwicy."
+
+msgid "ui.doing.wade_ashore"
+msgstr "brodzi do brzegu"
+
+msgid "ui.note.landing"
+msgstr "Koga rzuciła kotwicę. Osadnicy schodzą na plażę. Postaw obóz pionierów!"
+
+msgid "ui.note.voyage_departed"
+msgstr "Koga wypłynęła w rejs."
+
+msgid "ui.note.voyage_returned"
+msgstr "Koga wróciła z rejsu z %d zł."

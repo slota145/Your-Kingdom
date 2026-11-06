@@ -53,6 +53,8 @@ var _ship_orders: HFlowContainer
 var _ship_queue: VBoxContainer
 var _ship_queue_shown: Array[StringName] = []
 var _ship_shown_for: int = 0
+## Port (M5 part 3): the voyage plan of its cog.
+var _voyage: VoyagePanel
 var _timer: float = 0.0
 
 
@@ -162,6 +164,9 @@ func _build_settings(box: VBoxContainer) -> void:
 	_ship_box.add_child(_ship_orders)
 	_ship_queue = VBoxContainer.new()
 	_ship_box.add_child(_ship_queue)
+	_voyage = VoyagePanel.new()
+	_voyage.command_requested.connect(func(command: Command) -> void: command_requested.emit(command))
+	box.add_child(_voyage)
 
 
 func show_building(source: ProvinceSim, id: int) -> void:
@@ -270,7 +275,11 @@ func _refresh_settings(b: BuildingState) -> void:
 				or province.stored(&"planks") < int(Carriers.HANDCART_COST[&"planks"])
 	_refresh_keep(b)
 	_refresh_ships(b)
-	_tax_box.visible = b.def.id == TOWN_HALL and b.is_complete() and treasury != null
+	_voyage.visible = b.def.is_port() and b.is_complete()
+	if _voyage.visible:
+		_voyage.refresh(province, b)
+	# The pioneer camp has the town hall's tax rate until a town hall stands (M5 part 3).
+	_tax_box.visible = (b.def.id == TOWN_HALL or b.def.id == &"pioneer_camp") and b.is_complete() and treasury != null
 	if _tax_box.visible:
 		_tax_label.text = tr("ui.tax.title") % tr("ui.tax.%s" % ["low", "normal", "high"][treasury.tax_rate])
 

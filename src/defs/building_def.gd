@@ -85,6 +85,10 @@ extends GameDef
 @export var gangway: Vector2i = Vector2i(-1, -1)
 
 
+## At most one per province (the pioneer camp, M5 part 3; owner's decision 2026-11-06).
+@export var unique: bool = false
+
+
 func get_kind() -> StringName:
 	return &"building"
 

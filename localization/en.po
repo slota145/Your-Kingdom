@@ -1573,7 +1573,7 @@ msgid "ship.cog.name"
 msgstr "Cog"
 
 msgid "ship.cog.desc"
-msgstr "A big trading ship. Sails on deep water only."
+msgstr "A big trading ship for voyages over the horizon (40 units in the hold). Sails on deep water only. Cost: 20 planks, 6 barrels of tar, 4 bolts of cloth; built in 4 stages."
 
 msgid "ui.build.tab.harbour"
 msgstr "Sea and ships"
@@ -1795,3 +1795,119 @@ msgstr "The sea merchant does not sell this good."
 
 msgid "ui.command_error.not_a_port"
 msgstr "This is not a port."
+
+# --- M5 part 3: the player's cog, trade voyages, the start from a ship ---
+
+msgid "building.pioneer_camp.name"
+msgstr "Pioneer camp"
+
+msgid "building.pioneer_camp.desc"
+msgstr "The settlers' first home: a log hut, tents and a camp fire. A builder and 2 porters work here. Only one can be built. Set the taxes here until a town hall stands."
+
+msgid "ship.settler_cog.name"
+msgstr "Settlers' cog"
+
+msgid "ship.settler_cog.desc"
+msgstr "It brought the settlers and supplies. It sails away once unloaded."
+
+msgid "ui.command_error.build_camp_first"
+msgstr "Build the pioneer camp first."
+
+msgid "ui.command_error.only_one"
+msgstr "Only one building of this kind can stand."
+
+msgid "ui.command_error.unknown_ship"
+msgstr "There is no such ship."
+
+msgid "ui.command_error.cannot_sell"
+msgstr "This good cannot be sold on a voyage."
+
+msgid "ui.command_error.hold_full"
+msgstr "That will not fit into the hold (4 places of 10 units)."
+
+msgid "ui.command_error.not_loading"
+msgstr "The cog is not loading now."
+
+msgid "ui.command_error.no_port"
+msgstr "The cog has no port. Build a port by the bay."
+
+msgid "ui.command_error.ship_busy"
+msgstr "The cog is on a voyage."
+
+msgid "ui.voyage.title"
+msgstr "Trade voyage"
+
+msgid "ui.voyage.no_cog"
+msgstr "The port has no cog. Order one at the shipyard."
+
+msgid "ui.voyage.sell"
+msgstr "To sell (hold places: %d of %d):"
+
+msgid "ui.voyage.order"
+msgstr "Order (places: %d of %d, cost %d gold):"
+
+msgid "ui.voyage.sell_price"
+msgstr "at %d gold"
+
+msgid "ui.voyage.add_good"
+msgstr "Add a good to sell…"
+
+msgid "ui.voyage.start"
+msgstr "Set sail"
+
+msgid "ui.voyage.start_hint"
+msgstr "The cog comes to the quay, dockers load the goods and it sails over the horizon. It comes back after about 6 minutes with gold and the order."
+
+msgid "ui.voyage.now"
+msgstr "Cast off now"
+
+msgid "ui.voyage.now_hint"
+msgstr "The cog leaves with what is already aboard."
+
+msgid "ui.voyage.state.idle"
+msgstr "The cog lies at anchor in the bay."
+
+msgid "ui.voyage.state.to_berth"
+msgstr "The cog is sailing to the quay."
+
+msgid "ui.voyage.state.loading"
+msgstr "Loading. Aboard: %s"
+
+msgid "ui.voyage.state.outbound"
+msgstr "The cog is sailing out to sea."
+
+msgid "ui.voyage.state.away"
+msgstr "The cog is over the horizon. Back in about %d min."
+
+msgid "ui.voyage.state.inbound"
+msgstr "The cog is coming back to port with %d gold."
+
+msgid "ui.voyage.state.unloading"
+msgstr "Unloading. Aboard: %s"
+
+msgid "ui.voyage.last"
+msgstr "Last voyage: sold %d units for %d gold, bought %d units for %d gold."
+
+msgid "ui.ship.player_cog"
+msgstr "Your cog. Port: %s (voyage plan in the port panel)."
+
+msgid "ui.ship.no_home"
+msgstr "none"
+
+msgid "ui.ship.settlers"
+msgstr "It brought your settlers."
+
+msgid "ui.ship.at_anchor"
+msgstr "At anchor."
+
+msgid "ui.doing.wade_ashore"
+msgstr "wading ashore"
+
+msgid "ui.note.landing"
+msgstr "The cog has dropped anchor. The settlers come ashore. Build the pioneer camp!"
+
+msgid "ui.note.voyage_departed"
+msgstr "The cog has set sail."
+
+msgid "ui.note.voyage_returned"
+msgstr "The cog is back from its voyage with %d gold."
