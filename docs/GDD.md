@@ -71,7 +71,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
 
 | Typ | Cechy | Zakres |
 |---|---|---|
-| Kontynentalna | Bez morza. Opcjonalnie z rzeką (rybołówstwo, młyn wodny, przeprawa) lub jeziorem. Nie ma portu morskiego. | [SLICE] tylko wariant z rzeką · [1.0] wszystkie |
+| Kontynentalna | Bez morza. Opcjonalnie z rzeką (rybołówstwo, młyn wodny, przeprawa) lub jeziorem. Nie ma portu morskiego. | [SLICE] tylko wariant z rzeką · M4b-3: „Pojezierze” 128×128 (jezioro z trzcinami, rzeka z brodami, kamieniste wzgórze ze skałami); mapę wybiera się w menu przy nowej grze · [1.0] wszystkie |
 | Przybrzeżna | Ląd z linią brzegową: port, stocznia, rybołówstwo morskie. | [1.0] |
 | Wyspowa | Jedna lub kilka wysp. Do wyspy można dotrzeć wyłącznie statkiem. | [1.0] |
 
@@ -249,7 +249,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 | Zasięg usług | liczony długością ścieżki, więc drogi pośrednio poszerzają zasięg studni, targu i kościoła |
 | Dla obu stron | wrogie wojsko i bandyci też szybciej poruszają się po drogach, co jest decyzją taktyczną |
 
-Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blokują przejście. **Drzewa da się przejść (M4b-2):** przez las idzie się 1,5× wolniej niż po trawie, także przez drzewa posadzone na trawie. Leśniczy sadzi kafel w kafel, bez limitu drzew, ale nigdy na drogach, polach ani tuż przy budynkach.
+Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blokują przejście. **Kamienisty grunt (M4b-3):** chodzi się 1,2× wolniej, można budować i kłaść drogi, ale nie da się założyć pola; wydobyta skała zostawia kamienisty grunt. **Jezioro** działa dla wędkarza i glinianki jak rzeka. **Drzewa da się przejść (M4b-2):** przez las idzie się 1,5× wolniej niż po trawie, także przez drzewa posadzone na trawie. Leśniczy sadzi kafel w kafel, bez limitu drzew, ale nigdy na drogach, polach ani tuż przy budynkach.
 
 ### 5.3 Mury i fortyfikacje [1.0, prototyp wcześniej]
 

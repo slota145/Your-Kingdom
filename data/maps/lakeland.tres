@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="MapDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/map_def.gd" id="1_map"]
+[ext_resource type="Image" path="res://data/maps/lakeland.png" id="2_img"]
+[ext_resource type="Script" path="res://src/defs/start_building_def.gd" id="3_start"]
+
+[sub_resource type="Resource" id="town_hall"]
+script = ExtResource("3_start")
+building = &"town_hall"
+origin = Vector2i(54, 68)
+
+[sub_resource type="Resource" id="stockpile"]
+script = ExtResource("3_start")
+building = &"stockpile"
+origin = Vector2i(60, 68)
+goods = Dictionary[StringName, int]({
+&"bread": 12,
+&"wood": 50
+})
+
+[sub_resource type="Resource" id="hut_a"]
+script = ExtResource("3_start")
+building = &"hut"
+origin = Vector2i(54, 75)
+residents = 4
+goods = Dictionary[StringName, int]({
+&"bread": 2,
+&"wood": 2
+})
+
+[sub_resource type="Resource" id="hut_b"]
+script = ExtResource("3_start")
+building = &"hut"
+origin = Vector2i(57, 75)
+residents = 4
+goods = Dictionary[StringName, int]({
+&"bread": 2,
+&"wood": 2
+})
+
+[sub_resource type="Resource" id="hut_c"]
+script = ExtResource("3_start")
+building = &"hut"
+origin = Vector2i(60, 75)
+residents = 4
+goods = Dictionary[StringName, int]({
+&"bread": 2,
+&"wood": 2
+})
+
+[resource]
+script = ExtResource("1_map")
+terrain_image = ExtResource("2_img")
+entry_tile = Vector2i(0, 80)
+start_buildings = Array[ExtResource("3_start")]([SubResource("town_hall"), SubResource("stockpile"), SubResource("hut_a"), SubResource("hut_b"), SubResource("hut_c")])
+start_gold = 100
+id = &"lakeland"

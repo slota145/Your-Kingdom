@@ -274,7 +274,7 @@ Pliki leżą w folderze budynku domu (`buildings/hut/`), a ich nazwy wskazuje `d
 
 | Kategoria | Zawartość [SLICE] | [1.0] |
 |---|---|---|
-| Teren | tekstury terenu organicznego (§8.1): `grass/a`, `grass/light`, `grass/dark`, `meadow/a`, `forest/a` (ściółka), `water/a`, `water/b`, `ford/a`, `bank/a` (skarpa brzegu); ozdoby `grass_decor/*` | `sea/a`, `sea/b`, `sea/shallow`, `sand/a` (gotowe w prototypie), skała, bagno, zbocza |
+| Teren | tekstury terenu organicznego (§8.1): `grass/a`, `grass/light`, `grass/dark`, `meadow/a`, `forest/a` (ściółka), `water/a`, `water/b`, `ford/a`, `bank/a` (skarpa brzegu); ozdoby `grass_decor/*`; M4b-3: `stony/a`, `stony/b` (kamienisty grunt), `lake/a`, `lake/b` (jezioro), trzciny `reeds/{a,b,c}` (kod, 24×32, stopa w (12, 29), na kaflach jeziora przy brzegu) | `sea/a`, `sea/b`, `sea/shallow`, `sand/a` (gotowe w prototypie), zbocza; **gotowe na później** (PixelLab, M4b-3): `bedrock/a` (spękana skała), `gravel/a` (żwir), `marsh/a`, `marsh/b` (bagno), `clay/a` (glina), `stubble/a` (ściernisko), `ice/a` (lód), `peat/a` (torf) |
 | Pojazdy | wózek ręczny (M4b-3, kod: `tools/generate_goods.gd`): `vehicles/handcart/empty.png`, `loaded.png`, 5 wierszy (S, SE, E, NE, N) po 48×40, środek wózka na ziemi w (24, 30), stoi 0,4 kafla przed stopami tragarza; wóz konny: `vehicles/wagon/empty.png`, `loaded.png`, 5 wierszy po 112×80, punkt między wozem a koniem na ziemi w (56, 52), 0,6 kafla za woźnicą | |
 | Drogi | ubita: `road/a`, `road/b`; bruk: `paving/a` (PixelLab, ten sam zestaw `create_tiles_pro` co woda i droga, kafel 14 „cobblestone pavement”, krawędzie wyrównane `pixellab_tile_edges.py`), `paving/b` (lustro `a`); kształt drogi rysuje shader | |
 | Pola | `terrain/field/`: `fallow` (ugór, też po żniwach), `plowed` (zaorane), `sown_1..3` (zasiane, rośnie, prawie dojrzałe), `ripe` (dojrzałe) | chmiel, winorośl, len (`terrain/field_<crop>/…`) |
@@ -371,6 +371,7 @@ Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
 - **Kafle mają przyciemnione dolne krawędzie** (jakby miały grubość, mimo `tile_depth_ratio=0`). Ułożone obok siebie dają widoczną kratkę. Poprawka: `tools/pixellab_tile_edges.py` wyrównuje jasność pasa przy każdej krawędzi do środka kafla i przycina wynik do rombu 64×32.
 - **Nawet idealne styki nie ukryją siatki,** bo oko łapie powtarzający się co 64 px wzór. Rozwiązanie to teren organiczny (§8.1). Wzory o dużym kontraście (fale na wodzie) trzeba złagodzić (zmieszać ze średnim kolorem) i mieszać dwa warianty.
 - PixelLab nie ma narzędzia, które gwarantuje bezszwowe kafle izometryczne ani organiczne przejścia (potwierdzone w ich pomocy).
+- **Druga paczka (M4b-3, 15 generacji):** `create_tiles_pro` w trybie stylu z trzema kaflami pierwszego zestawu (łąka, droga, bruk) jako wzorem. Udane: kamienisty grunt ×2, spękana skała, żwir, woda jeziora, bagno ×2, glina, ściernisko, lód, torf. Nieudane (krzywy kształt albo inny materiał): płytki brzeg, sucha trawa, błoto, spalona ziemia, śnieg. Woda jeziora miała jasne i ciemne krawędzie mimo `pixellab_tile_edges.py`, więc kafel złożono od nowa ze środka oryginału (lustrzane powtórzenie, bez szwów) i zmieszano w 35% ze średnim kolorem.
 
 ### 10.3 Budynki rysowane kodem (2026-11-05)
 

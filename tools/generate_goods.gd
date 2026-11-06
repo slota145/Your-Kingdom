@@ -86,6 +86,7 @@ func _init() -> void:
 	_merchant_cart()
 	_handcart()
 	_wagon()
+	_reeds()
 	print("Goods and nature written to ", OUT)
 	quit()
 
@@ -419,6 +420,31 @@ func _handcart() -> void:
 			_outline(img)
 			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, CART_FRAME), Vector2i(0, row * CART_FRAME.y))
 		_save(sheet, "vehicles/handcart/%s.png" % state)
+
+
+## Reed tufts for lake shallows (M4b-3): terrain/reeds/{a,b,c}.png, 24x32, the tuft's foot
+## at (12, 29). Green blades leaning a little, some with a brown cattail head.
+func _reeds() -> void:
+	var greens := [Color(0.42, 0.55, 0.26), Color(0.5, 0.62, 0.3), Color(0.36, 0.48, 0.22), Color(0.6, 0.66, 0.34)]
+	for v: int in 3:
+		var img := Image.create_empty(24, 32, false, Image.FORMAT_RGBA8)
+		var foot := Vector2(12, 29)
+		var blades := 7 + v * 2
+		for k: int in blades:
+			var base := foot + Vector2(-6 + 12.0 * k / blades + _hash(k, v, 3) * 2.0, _hash(k, v, 5) * 2.0)
+			var height := 14.0 + 12.0 * _hash(k, v, 7)
+			var lean := (_hash(k, v, 11) - 0.5) * 8.0
+			var tip := base + Vector2(lean, -height)
+			var colour: Color = greens[(k + v) % greens.size()]
+			_line(img, base, base.lerp(tip, 0.6), colour.darkened(0.1), 1)
+			_line(img, base.lerp(tip, 0.6), tip, colour.lightened(0.08), 1)
+			if k % 3 == v % 3 and height > 18.0:
+				var head := base.lerp(tip, 0.78)
+				_line(img, head, head + Vector2(lean * 0.1, -4), Color(0.45, 0.28, 0.16), 2)
+		# A dark wet line where the stems meet the water.
+		for x: int in range(5, 19):
+			_pixel(img, Vector2(x, 30), Color(0.12, 0.2, 0.18, 0.55))
+		_save(img, "terrain/reeds/%s.png" % ["a", "b", "c"][v])
 
 
 ## A horse wagon led by its carter (M4b-3): a four-wheeled wagon box with shafts and a brown

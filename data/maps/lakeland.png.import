@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://bg5jsm0fqo2k6"
+path="res://.godot/imported/lakeland.png-5317a8f699a63584f0e5e632b4d80396.image"
+
+[deps]
+
+source_file="res://data/maps/lakeland.png"
+dest_files=["res://.godot/imported/lakeland.png-5317a8f699a63584f0e5e632b4d80396.image"]
+
+[params]
+

@@ -14,10 +14,10 @@ const FIELD_ART: Dictionary[int, String] = {
 	FieldStore.Stage.FALLOW: "fallow", FieldStore.Stage.PLOWED: "plowed", FieldStore.Stage.RIPE: "ripe",
 }
 ## Art slots known to the shader (order matches its constants).
-enum Slot { GRASS, MEADOW, FOREST, WATER, FORD, SEA, SAND }
+enum Slot { GRASS, MEADOW, FOREST, WATER, FORD, SEA, SAND, STONY, LAKE }
 const SLOT_BY_TERRAIN: Dictionary[StringName, Slot] = {
 	&"grass": Slot.GRASS, &"meadow": Slot.MEADOW, &"forest": Slot.FOREST, &"water": Slot.WATER,
-	&"ford": Slot.FORD, &"sea": Slot.SEA, &"sand": Slot.SAND,
+	&"ford": Slot.FORD, &"sea": Slot.SEA, &"sand": Slot.SAND, &"stony": Slot.STONY, &"lake": Slot.LAKE,
 }
 ## Shader texture uniform -> art file.
 const TEXTURES: Dictionary[String, String] = {
@@ -26,12 +26,19 @@ const TEXTURES: Dictionary[String, String] = {
 	"forest_tex": "terrain/forest/a.png", "water_tex": "terrain/water/a.png",
 	"water_alt_tex": "terrain/water/b.png", "sea_alt_tex": "terrain/sea/b.png",
 	"road_alt_tex": "terrain/road/b.png",
+	"stony_tex": "terrain/stony/a.png", "stony_alt_tex": "terrain/stony/b.png",
+	"lake_tex": "terrain/lake/a.png", "lake_alt_tex": "terrain/lake/b.png",
 	"paving_tex": "terrain/paving/a.png", "paving_alt_tex": "terrain/paving/b.png",
 	"ford_tex": "terrain/ford/a.png", "sea_tex": "terrain/sea/a.png",
 	"shallow_tex": "terrain/sea/shallow.png", "sand_tex": "terrain/sand/a.png",
 	"bank_tex": "terrain/bank/a.png", "road_tex": "terrain/road/a.png",
 }
 const DECOR_NAMES: PackedStringArray = ["flowers_white", "flowers_yellow", "flowers_purple", "clover"]
+## Reed tufts in the shallows along lake shores (M4b-3); feet at REED_FOOT of each image.
+const REED_NAMES: PackedStringArray = ["a", "b", "c"]
+const REED_FOOT := Vector2(12, 29)
+## Share of lake tiles on the shore that grow reeds.
+const REED_CHANCE := 0.7
 ## Share of plain grass tiles that get a flower decal.
 const DECOR_CHANCE := 0.06
 const MEADOW_DECOR_CHANCE := 0.2
@@ -58,6 +65,7 @@ var _material: ShaderMaterial
 var _mask: Texture2D
 var _grid: Texture2D
 var _decor: Array[Texture2D] = []
+var _reeds: Array[Texture2D] = []
 var _fields: Dictionary[String, Texture2D] = {}
 var _grounds: Array[_Ground] = []
 var _decors: Array[_Decor] = []
@@ -87,8 +95,18 @@ class _Decor:
 		for y: int in range(tiles.position.y, tiles.end.y):
 			for x: int in range(tiles.position.x, tiles.end.x):
 				var tile := Vector2i(x, y)
-				var chance := layer._decor_chance(tile)
 				var h := TerrainLayer.tile_hash(tile)
+				var shore := layer._reed_shore(tile)
+				if shore != Vector2.ZERO and h % 1000 < int(TerrainLayer.REED_CHANCE * 1000.0):
+					# Two or three tufts in the shallows, leaning towards the bank.
+					for k: int in 2 + h % 2:
+						var hk := TerrainLayer.tile_hash(tile * 7 + Vector2i(k, 3 * k))
+						var jitter := Vector2((hk % 41 - 20) / 100.0, ((hk >> 8) % 41 - 20) / 100.0)
+						var at := IsoMath.tile_center(tile) + shore * 0.3 + jitter
+						var reed: Texture2D = layer._reeds[(hk >> 4) % layer._reeds.size()]
+						draw_texture(reed, (IsoMath.grid_to_screen(at) - TerrainLayer.REED_FOOT).round())
+					continue
+				var chance := layer._decor_chance(tile)
 				if h % 1000 >= int(chance * 1000.0):
 					continue
 				var tex: Texture2D = layer._decor[(h / 1000) % layer._decor.size()]
@@ -210,6 +228,8 @@ func _build(size: Vector2i) -> void:
 	_grid = ArtPaths.texture("terrain/grid/a.png")
 	for name: String in DECOR_NAMES:
 		_decor.append(ArtPaths.texture("terrain/grass_decor/%s.png" % name))
+	for name: String in REED_NAMES:
+		_reeds.append(ArtPaths.texture("terrain/reeds/%s.png" % name))
 	_map_texture = ImageTexture.create_from_image(_map_image)
 	_material = ShaderMaterial.new()
 	_material.shader = load("res://src/view/terrain/organic_ground.gdshader") as Shader
@@ -242,6 +262,22 @@ func _build(size: Vector2i) -> void:
 		overlay.tiles = rect
 		add_child(overlay)
 		_overlays.append(overlay)
+
+
+## For a lake tile with land beside it (4 neighbours): the direction to that land, else zero.
+func _reed_shore(tile: Vector2i) -> Vector2:
+	var area := Rect2i(Vector2i.ZERO, map_size)
+	if roundi(_map_image.get_pixelv(tile).r * 255.0) != Slot.LAKE:
+		return Vector2.ZERO
+	var towards := Vector2.ZERO
+	for step: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+		var t := tile + step
+		if not area.has_point(t):
+			continue
+		var slot := roundi(_map_image.get_pixelv(t).r * 255.0)
+		if slot != Slot.LAKE and slot != Slot.WATER and slot != Slot.FORD and slot != Slot.SEA:
+			towards += Vector2(step)
+	return towards.normalized() if towards != Vector2.ZERO else Vector2.ZERO
 
 
 ## Flowers only on plain grass or meadow, away from water, roads and fields.

@@ -200,6 +200,18 @@ msgstr "Ford"
 msgid "terrain.ford.desc"
 msgstr "A shallow place in the river. It can be crossed, but slowly."
 
+msgid "terrain.stony.name"
+msgstr "Stony ground"
+
+msgid "terrain.stony.desc"
+msgstr "Earth full of stones. You can build and lay roads here, but fields will not grow. Walking is a little slower."
+
+msgid "terrain.lake.name"
+msgstr "Lake"
+
+msgid "terrain.lake.desc"
+msgstr "Calm water. Anglers fish here and clay pits dig clay on the shore."
+
 msgid "need.food.name"
 msgstr "Food"
 
@@ -236,10 +248,19 @@ msgstr "Riverlands"
 msgid "map.riverlands.desc"
 msgstr "A land of meadows and forests cut by a river with two fords."
 
+msgid "map.lakeland.name"
+msgstr "Lakeland"
+
+msgid "map.lakeland.desc"
+msgstr "A large land by a lake: a river flows into the lake, a stony hill with rocks, forests and meadows around. Room for a great town."
+
 # --- M3: game UI ---
 
 msgid "ui.main.new_game"
 msgstr "New game"
+
+msgid "ui.main.new_game_on"
+msgstr "New game: %s"
 
 msgid "ui.main.load_game"
 msgstr "Load quick save"
@@ -522,6 +543,9 @@ msgstr "This place is taken."
 
 msgid "ui.command_error.terrain_not_buildable"
 msgstr "You cannot build here."
+
+msgid "ui.command_error.terrain_not_farmable"
+msgstr "Nothing grows on stony ground."
 
 msgid "ui.command_error.tile_has_people"
 msgstr "Someone is standing here."

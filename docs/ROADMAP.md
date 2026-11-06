@@ -450,7 +450,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Tragarz z wózkiem wiezie 3 sztuki, wóz 6 sztuk tylko po drogach; dyspozytor daje drobne i krótkie zlecenia pieszym, a duże wozom i wózkom; przy celu bez drogi wóz nie dostaje zlecenia (`tests/unit/sim/economy/test_handcarts.gd`, `test_wagons.gd`).
 - [x] Bruk kosztuje 1 kamień na kafel, układa go budowniczy, a pieszy i wóz jadą po nim szybciej niż po drodze ubitej (`tests/unit/sim/test_paving.gd`: budowniczy układa kafle z kamieniem z magazynu, bruk 1,2× szybszy od drogi ubitej).
 - [x] Stajnia z woźnicami działa w grze: wozy wożą na budowy, odnoszą stosy i ładują wóz kupca (`tests/scenario/test_m4b3_chains.gd`: 10 sztuk na budowę, 10 drewna ze stosu, 22 z 24 desek na wóz kupca).
-- [ ] Nowa mapa 128×128 z jeziorem i kamienistym gruntem: wędkarz i glinianka działają nad jeziorem, na kamienistym gruncie nie da się postawić pola, kamieniołom pracuje przy skałach (testy). Automatyczny gracz dochodzi na niej do patrycjuszy w limicie.
+- [x] Nowa mapa 128×128 z jeziorem i kamienistym gruntem: wędkarz i glinianka działają nad jeziorem, na kamienistym gruncie nie da się postawić pola, kamieniołom pracuje przy skałach (`tests/unit/sim/test_lakeland.gd`). Automatyczny gracz dochodzi na niej do 4 kamienic patrycjuszy w **77. minucie** (limit 90, `test_slice_dod.gd`).
 - [ ] Duże miasto (400+ postaci, gotowy zapis): brak zakleszczeń przez 2 godziny przy 4×.
 - [ ] Wydajność według ARCHITECTURE §9.1: czas ticku ≤ 4 ms przy 500 postaciach (pomiar w chmurze, wynik w §9.3).
 - [ ] Pomiar FPS na laptopie na dużym mieście (osobna sesja z właścicielem projektu, wynik w §9.3).
@@ -465,6 +465,14 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Wózki:** kupione wózki należą do magazynu, każdy tragarz tego magazynu może wziąć jeden. Wózek zostaje przy tragarzu, dopóki ten ma towar (także gdy odkłada go po nieudanym kursie). Tragarze ratusza nie mają wózków.
 - **Wozy:** woźnica wyjeżdża tylko ze stajni (wóz czeka w stajni) albo jedzie dalej z miejsca poprzedniego kursu. Między kursami odstawia wóz pod stajnię i wchodzi do środka; nowy kurs może mu przerwać powrót. Ładuje i rozładowuje na drodze przed tymi drzwiami budynku, przed którymi jest droga. Żywe zwierzęta (świnie) nie jadą wozem. Woźnica idzie przodem i prowadzi konia za uzdę (grafika).
 - **Ładowanie** wózka i wozu ma animację „schyla się i ładuje” (tragarz i woźnica).
+
+**Ustalone przy realizacji części 2 (2026-11-06, do zmiany na prośbę):**
+- **Grafika terenu z PixelLab** (prośba właściciela): kamienisty grunt i woda jeziora z nowej paczki kafli w stylu pierwszego zestawu. W tej samej paczce powstały kafle na później (spękana skała, żwir, bagno, glina, ściernisko, lód, torf; lista w ART_SPEC §3). Trzcin i skał nie było w grafikach właściciela, więc trzciny rysuje kod, a skały to dotychczasowe skały z kodu.
+- **Mapa „Pojezierze”:** jezioro na północnym wschodzie, rzeka z północy wpada do jeziora (2 brody), kamieniste wzgórze ze skupiskami skał na południowym zachodzie i mała grupa skał blisko miasta, lasy przy krawędziach i zagajnik obok miasta. Osadnicy przychodzą z zachodniej krawędzi. Start jak na „Nadrzeczu” (ratusz, magazyn, 3 chaty).
+- **Kamienisty grunt:** koszt ruchu 1,2. Wydobyta skała zostawia kamienisty grunt także na „Nadrzeczu”.
+- **Jezioro** to osobny teren (`lake`), który dla budynków liczy się jak woda. Woda w jeziorze płynie wolniej niż w rzece. Trzciny rosną na ok. 70% kafli jeziora przy brzegu.
+- **Menu:** zamiast jednego przycisku „Nowa gra” jest „Nowa gra: Nadrzecze” i „Nowa gra: Pojezierze”.
+- **Automatyczny gracz** przesuwa budynek do najbliższych skał, drzew albo wody, gdy w zasięgu miejsca z planu ich nie ma (na „Nadrzeczu” nic się nie zmienia).
 
 ---
 

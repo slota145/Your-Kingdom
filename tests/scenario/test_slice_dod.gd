@@ -10,10 +10,10 @@ extends GdUnitTestSuite
 const PATRICIAN_LIMIT := 90
 
 
-func _new_game() -> Simulation:
+func _new_game(map_id: StringName = &"riverlands") -> Simulation:
 	var registry := SimFixture.registry()
 	var problems := PackedStringArray()
-	var sim := Simulation.from_map(registry, registry.get_map(&"riverlands"), 1, problems)
+	var sim := Simulation.from_map(registry, registry.get_map(map_id), 1, problems)
 	assert_array(Array(problems)).is_empty()
 	return sim
 
@@ -35,7 +35,16 @@ func test_six_supplied_burgher_houses_within_50_minutes() -> void:
 
 ## M4b-1: patrician townhouses with every basic need met (also clothes and mead).
 func test_four_supplied_patrician_houses() -> void:
-	var sim := _new_game()
+	_patricians_on(&"riverlands")
+
+
+## M4b-3: the same on the 128x128 Lakeland map (quarry by the stony hill, anglers by the lake).
+func test_four_supplied_patrician_houses_on_lakeland() -> void:
+	_patricians_on(&"lakeland")
+
+
+func _patricians_on(map_id: StringName) -> void:
+	var sim := _new_game(map_id)
 	var bot := SliceBot.new(sim)
 	var result := {"minute": -1}
 	var trace := PackedStringArray()
@@ -46,7 +55,7 @@ func test_four_supplied_patrician_houses() -> void:
 					sim.province.goods_total(&"clothes"), sim.province.goods_total(&"mead"), sim.treasury.gold])
 		if result["minute"] == -1 and bot.supplied_houses(3) >= 4:
 			result["minute"] = minute)
-	print("4 supplied patrician houses at minute ", result["minute"], "; bot log: ", bot.log)
+	print(map_id, ": 4 supplied patrician houses at minute ", result["minute"], "; bot log: ", bot.log)
 	print("\n".join(trace))
 	assert_array(Array(bot.log)).is_empty()
 	assert_int(int(result["minute"])).is_between(1, PATRICIAN_LIMIT)

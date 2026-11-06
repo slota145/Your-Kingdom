@@ -26,6 +26,10 @@ uniform sampler2D sand_tex : filter_nearest;
 uniform sampler2D bank_tex : filter_nearest;
 uniform sampler2D road_tex : filter_nearest;
 uniform sampler2D road_alt_tex : filter_nearest;
+uniform sampler2D stony_tex : filter_nearest;
+uniform sampler2D stony_alt_tex : filter_nearest;
+uniform sampler2D lake_tex : filter_nearest;
+uniform sampler2D lake_alt_tex : filter_nearest;
 uniform sampler2D paving_tex : filter_nearest;
 uniform sampler2D paving_alt_tex : filter_nearest;
 
@@ -37,6 +41,7 @@ uniform bool organic = true;
 uniform bool animated = true;
 uniform vec2 river_flow = vec2(7.0, 3.5);  // px per second
 uniform vec2 sea_drift = vec2(-4.0, 2.0);
+uniform vec2 lake_drift = vec2(-1.5, 0.75);
 
 const int GRASS = 0;
 const int MEADOW = 1;
@@ -45,6 +50,8 @@ const int WATER = 3;
 const int FORD = 4;
 const int SEA = 5;
 const int SAND = 6;
+const int STONY = 7;
+const int LAKE = 8;
 
 varying vec2 world_pos;
 
@@ -139,7 +146,7 @@ int slot_at(vec2 grid) {
 }
 
 bool is_water(int slot) {
-	return slot == WATER || slot == FORD || slot == SEA;
+	return slot == WATER || slot == FORD || slot == SEA || slot == LAKE;
 }
 
 const vec2 RING[4] = vec2[](vec2(0.707, 0.707), vec2(-0.707, 0.707), vec2(0.707, -0.707), vec2(-0.707, -0.707));
@@ -187,6 +194,8 @@ vec3 ground_colour(int slot, vec2 grid, vec2 pixel) {
 	if (slot == FORD) return sample_diamond(ford_tex, grid).rgb;
 	if (slot == SEA) return mixed(sea_tex, sea_alt_tex, grid, pixel, 9.1);
 	if (slot == SAND) return sample_diamond(sand_tex, grid).rgb;
+	if (slot == STONY) return mixed(stony_tex, stony_alt_tex, grid, pixel, 31.7);
+	if (slot == LAKE) return mixed(lake_tex, lake_alt_tex, grid, pixel, 17.3);
 	// Grass: lighter and darker patches with dithered edges.
 	vec3 colour = sample_diamond(grass_tex, grid).rgb;
 	float threshold = bayer4(pixel);
@@ -220,6 +229,7 @@ void fragment() {
 	if (slot == WATER) flow = floor(river_flow * t);
 	else if (slot == FORD) flow = floor(river_flow * 0.5 * t);
 	else if (slot == SEA) flow = floor(sea_drift * t);
+	else if (slot == LAKE) flow = floor(lake_drift * t);
 	vec2 moved_pixel = pixel - flow;
 	vec2 moved_grid = screen_to_grid(moved_pixel);
 	vec3 colour = ground_colour(slot, moved_grid, moved_pixel);

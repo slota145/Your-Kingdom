@@ -205,6 +205,18 @@ msgstr "Bród"
 msgid "terrain.ford.desc"
 msgstr "Płytkie miejsce na rzece. Można je przejść, ale powoli."
 
+msgid "terrain.stony.name"
+msgstr "Kamienisty grunt"
+
+msgid "terrain.stony.desc"
+msgstr "Ziemia pełna kamieni. Można tu budować i kłaść drogi, ale pola tu nie urosną. Chodzi się trochę wolniej."
+
+msgid "terrain.lake.name"
+msgstr "Jezioro"
+
+msgid "terrain.lake.desc"
+msgstr "Spokojna woda. Wędkarz łowi tu ryby, a glinianka kopie glinę na brzegu."
+
 msgid "need.food.name"
 msgstr "Żywność"
 
@@ -241,10 +253,19 @@ msgstr "Nadrzecze"
 msgid "map.riverlands.desc"
 msgstr "Kraina łąk i lasów przecięta rzeką z dwoma brodami."
 
+msgid "map.lakeland.name"
+msgstr "Pojezierze"
+
+msgid "map.lakeland.desc"
+msgstr "Duża kraina nad jeziorem: rzeka wpada do jeziora, na wzgórzu kamienisty grunt ze skałami, wokół lasy i łąki. Miejsce na wielkie miasto."
+
 # --- M3: game UI ---
 
 msgid "ui.main.new_game"
 msgstr "Nowa gra"
+
+msgid "ui.main.new_game_on"
+msgstr "Nowa gra: %s"
 
 msgid "ui.main.load_game"
 msgstr "Wczytaj szybki zapis"
@@ -527,6 +548,9 @@ msgstr "To miejsce jest zajęte."
 
 msgid "ui.command_error.terrain_not_buildable"
 msgstr "Tu nie da się budować."
+
+msgid "ui.command_error.terrain_not_farmable"
+msgstr "Na kamienistym gruncie nic nie urośnie."
 
 msgid "ui.command_error.tile_has_people"
 msgstr "Ktoś tu stoi."

@@ -130,9 +130,13 @@ func load_map(map: MapDef) -> PackedStringArray:
 	var problems := PackedStringArray()
 	var image := map.terrain_image
 	var by_color: Dictionary[int, TerrainDef] = {}
+	var with_node: Dictionary[int, TerrainDef] = {}
 	for terrain: TerrainDef in terrains:
 		if terrain != null:
 			by_color[terrain.map_color.to_rgba32() | 0xff] = terrain
+			if terrain.extra_node != &"":
+				by_color[terrain.extra_map_color.to_rgba32() | 0xff] = terrain
+				with_node[terrain.extra_map_color.to_rgba32() | 0xff] = terrain
 	for y: int in mini(grid.size.y, image.get_height()):
 		for x: int in mini(grid.size.x, image.get_width()):
 			var tile := Vector2i(x, y)
@@ -142,7 +146,9 @@ func load_map(map: MapDef) -> PackedStringArray:
 				problems.append("unknown colour %08x at %s" % [color, tile])
 				continue
 			grid.set_terrain(tile, terrain.index)
-			if terrain.resource_node != &"":
+			if with_node.has(color):
+				resources.place(tile, data.get_resource_node(terrain.extra_node))
+			elif terrain.resource_node != &"":
 				resources.place(tile, data.get_resource_node(terrain.resource_node))
 	for tile: Vector2i in map.resource_spots:
 		var node := data.get_resource_node(map.resource_spots[tile])
@@ -234,7 +240,7 @@ func _access_error(def: BuildingDef, origin: Vector2i, orientation: int) -> Stri
 			fronts.append(front)
 		else:
 			var terrain := terrain_at(front) if grid.is_inside(front) else null
-			water = water or (terrain != null and terrain.id == &"water")
+			water = water or (terrain != null and terrain.is_kind(&"water"))
 	if fronts.is_empty():
 		return &"entrance_faces_water" if water else &"no_access"
 	var blocked: Dictionary[Vector2i, bool] = {}
@@ -535,7 +541,7 @@ func has_terrain_near(def: BuildingDef, origin: Vector2i) -> bool:
 	for y: int in range(area.position.y, area.end.y):
 		for x: int in range(area.position.x, area.end.x):
 			var terrain := terrain_at(Vector2i(x, y))
-			if terrain != null and terrain.id == def.needs_terrain_near:
+			if terrain != null and terrain.is_kind(def.needs_terrain_near):
 				return true
 	return false
 
@@ -569,7 +575,7 @@ func find_shore(building: BuildingState, from: Vector2i) -> Vector2i:
 func shore_water(tile: Vector2i, terrain_id: StringName) -> Vector2i:
 	for step: Vector2i in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]:
 		var terrain := terrain_at(tile + step) if grid.is_inside(tile + step) else null
-		if terrain != null and terrain.id == terrain_id:
+		if terrain != null and terrain.is_kind(terrain_id):
 			return tile + step
 	return Agent.NO_TILE
 
@@ -635,6 +641,14 @@ func can_plant(tile: Vector2i, node_id: StringName = &"tree") -> bool:
 
 ## A felled tree taken with its stump leaves grass where the forest floor was (owner's
 ## decision 2026-11-05): cleared land turns green.
+## Turns the ground under a used-up node into its ResourceNodeDef.leaves_terrain (M4b-3).
+func leave_terrain(tile: Vector2i, node_def: ResourceNodeDef) -> void:
+	var terrain := data.get_terrain(node_def.leaves_terrain) if node_def.leaves_terrain != &"" else null
+	if terrain != null and grid.terrain(tile) != terrain.index:
+		grid.set_terrain(tile, terrain.index)
+		events.emit(&"terrain_changed", {"tile": tile, "terrain": terrain.id})
+
+
 func clear_forest_floor(tile: Vector2i) -> void:
 	var terrain := terrain_at(tile)
 	if terrain == null or terrain.id != &"forest":
@@ -807,6 +821,9 @@ func field_error(farm_id: int, tile: Vector2i) -> StringName:
 	var rect := Rect2i(farm.origin, farm.def.footprint).grow(farm.def.work_radius)
 	if not rect.has_point(tile):
 		return &"out_of_range"
+	var terrain := terrain_at(tile)
+	if terrain != null and not terrain.farmable:
+		return &"terrain_not_farmable"
 	return _free_ground_error(tile)
 
 

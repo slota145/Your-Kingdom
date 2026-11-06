@@ -6,6 +6,7 @@ extends Node
 ##      [--tile=X,Y] [--zoom=N] [--roads [--paved]] [--plain]
 ## --carts puts 4 porters with handcarts and 4 carters with wagons (half loaded) around the
 ## tile, 8 directions.
+## --map=<id> starts a new game on that map (default riverlands).
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -40,6 +41,9 @@ func _ready() -> void:
 			_paved = true
 		elif arg == "--carts":
 			_carts = true
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--map="):
+			Game.start_request = {"map": arg.trim_prefix("--map=")}
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D
 	add_child(_game)
 

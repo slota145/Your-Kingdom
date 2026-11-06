@@ -24,3 +24,6 @@ extends GameDef
 
 func get_kind() -> StringName:
 	return &"resource_node"
+## Terrain the tile turns into when the node is used up (a quarried rock leaves stony ground,
+## M4b-3); empty = unchanged.
+@export var leaves_terrain: StringName = &""

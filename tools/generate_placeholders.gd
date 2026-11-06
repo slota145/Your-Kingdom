@@ -94,6 +94,8 @@ func _terrain() -> void:
 		"water/b": Color(0.21, 0.42, 0.68), "sea/b": Color(0.13, 0.29, 0.52),
 		"road/b": Color(0.58, 0.48, 0.34),
 		"paving/a": Color(0.6, 0.58, 0.54), "paving/b": Color(0.56, 0.54, 0.5),
+		"stony/a": Color(0.6, 0.55, 0.47), "stony/b": Color(0.57, 0.52, 0.45),
+		"lake/a": Color(0.12, 0.32, 0.4), "lake/b": Color(0.13, 0.34, 0.42),
 	}
 	for name: String in ground:
 		_save(_diamond(ground[name], ground[name]), "terrain/%s.png" % name)
@@ -104,6 +106,13 @@ func _terrain() -> void:
 	}
 	for name: String in decor:
 		_save(_specks(decor[name]), "terrain/grass_decor/%s.png" % name)
+	# Reed tufts (M4b-3): 24x32, a green fan of lines from the foot at (12, 29).
+	for name: String in ["a", "b", "c"]:
+		var reed := _blank(Vector2i(24, 32))
+		for k: int in 5:
+			var foot := Vector2(12, 29)
+			_line(reed, foot, foot + Vector2(-8 + k * 4, -20), Color(0.4, 0.55, 0.25), 1)
+		_save(reed, "terrain/reeds/%s.png" % name)
 	_save(_diamond(Color(0.5, 0.42, 0.28), Color(0.44, 0.36, 0.24)), "terrain/field/fallow.png")
 	_save(_furrows(Color(0.42, 0.3, 0.18), Color(0.32, 0.22, 0.13), Color(0, 0, 0, 0)), "terrain/field/plowed.png")
 	_save(_furrows(Color(0.42, 0.3, 0.18), Color(0.32, 0.22, 0.13), Color(0.45, 0.62, 0.25)), "terrain/field/sown_1.png")
