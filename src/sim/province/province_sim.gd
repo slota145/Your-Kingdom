@@ -30,6 +30,18 @@ var paths: PathRequestQueue = PathRequestQueue.new()
 var treasury: Treasury = Treasury.new()
 ## Derived from buildings and the map; not saved.
 var coverage: ServiceCoverage = ServiceCoverage.new()
+
+const _NO_BUILDINGS: Array[BuildingState] = []
+var _goods_index_version: int = -1
+var _storage_buildings: Array[BuildingState] = []
+var _market_buildings: Array[BuildingState] = []
+var _yard_buildings: Dictionary[StringName, Array] = {}
+## Building def id -> goods its yard (or herd) can hold.
+var _yard_goods_of: Dictionary[StringName, Array] = {}
+## Bumped whenever a ground pile is added or removed (index for _pile_at).
+var _piles_version: int = 0
+var _pile_index_version: int = -1
+var _pile_index: Dictionary[Vector2i, int] = {}
 ## The travelling merchant (M4b-2).
 var merchant: Merchant = Merchant.new()
 ## Goods made and used per minute (statistics for the player, M4b-2); not saved.
@@ -62,11 +74,17 @@ func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entit
 	road_nav.set_solid_rect(Rect2i(Vector2i.ZERO, size), true)
 	resources = ResourceField.new(size)
 	terrains = registry.terrains_by_index()
+	coverage.setup(size)
 
 
 func step() -> void:
 	jobs.update(self)
 	for agent: Agent in agents.all():
+		# Someone walking to the next step has nothing to decide (TaskRunner.tick_agent would
+		# return at once): skipped here without the call (M4b-3).
+		if agent.task != null and (agent.path_state == Agent.PathState.MOVING \
+				or agent.path_state == Agent.PathState.WAITING):
+			continue
 		if agents.has_agent(agent.id):
 			TaskRunner.tick_agent(self, agent)
 	Movement.serve_paths(self)
@@ -99,8 +117,15 @@ func is_tile_solid(tile: Vector2i) -> bool:
 	return grid.occupant(tile) != 0
 
 
+## Changes whenever a planned path may have become impossible: a tile turned solid or free
+## for people or for wagons (Movement checks the rest of its path then).
+func blocking_version() -> int:
+	return nav.solid_version + road_nav.solid_version
+
+
 func refresh_tile(tile: Vector2i) -> void:
 	var nav_solid := is_tile_solid(tile)
+	var version := nav.version
 	nav.set_solid(tile, nav_solid)
 	var cost := 1.0
 	if grid.has_road(tile):
@@ -111,6 +136,10 @@ func refresh_tile(tile: Vector2i) -> void:
 		var terrain := terrain_at(tile)
 		if terrain != null:
 			cost = terrain.move_cost
+	# Service reach counts roads, fields and terrain but not trees (M4b-3): cutting and
+	# planting near the town does not make every service measure its reach again.
+	coverage.set_tile(tile, cost, nav.version != version)
+	if not grid.has_road(tile) and not fields.has_field(tile):
 		# Trees are walkable but slow people down like the forest floor (M4b-2).
 		var node := resources.def_at(tile)
 		if node != null and node.move_cost > cost and not resources.is_depleted(tile):
@@ -530,6 +559,7 @@ func turn_building(building: BuildingState, orientation: int) -> void:
 				agent.path_state = Agent.PathState.WAITING
 				paths.push(agent.id)
 	nav.version += 1   # paths through the old doors are planned again
+	nav.solid_version += 1
 	events.emit(&"building_turned", {"building": building.id, "orientation": orientation})
 
 
@@ -601,11 +631,12 @@ func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2
 	var best := Agent.NO_TILE
 	var best_d := 1 << 30
 	for tile: Vector2i in candidates:
-		if taken.has(tile) or not area.has_point(tile) or not can_plant(tile, node_id):
-			continue
+		# Distance first: the other checks cost more and only a nearer tile can win (M4b-3).
 		var stump := resources.is_depleted(tile) and resources.def_at(tile).id == node_id
 		var d := (tile - from).length_squared() + (0 if stump else 1 << 20)
-		if d < best_d and approach_tile(tile, from) != Agent.NO_TILE:
+		if d >= best_d or taken.has(tile) or not area.has_point(tile) or not can_plant(tile, node_id):
+			continue
+		if approach_tile(tile, from) != Agent.NO_TILE:
 			best_d = d
 			best = tile
 	return best
@@ -677,11 +708,14 @@ func _update_markets() -> void:
 func market_source(good: StringName, amount: int, house: BuildingState) -> int:
 	var best := 0
 	var best_d := 1 << 30
-	for market: BuildingState in buildings.all():
+	var doors: Array[Vector2i] = []
+	for market: BuildingState in market_buildings():
 		if market.def.stall_goods.is_empty() or market.supply == null 				or not market.supply.can_supply(good, amount):
 			continue
 		var reached := false
-		for door: Vector2i in door_tiles(house):
+		if doors.is_empty():
+			doors = door_tiles(house)
+		for door: Vector2i in doors:
 			if coverage.covers(market.def.id, door, grid.size):
 				reached = true
 				break
@@ -989,8 +1023,20 @@ func remove_agent(agent: Agent) -> void:
 
 ## Releases every reservation and claim the agent holds.
 func release_agent(agent: Agent) -> void:
-	for store: Stockpile in all_storages().values():
-		store.release_owner(agent.id)
+	# The same stores as all_storages(), without building the dictionary (M4b-3: this runs
+	# whenever a task ends early or someone leaves).
+	for building: BuildingState in buildings.all():
+		for store: Stockpile in [building.stock, building.supply, building.yard]:
+			if store != null and store.reservation_count() > 0:
+				store.release_owner(agent.id)
+	for site: ConstructionSite in sites.values():
+		site.stock.release_owner(agent.id)
+	for paving_site: PavingSite in paving.values():
+		paving_site.stock.release_owner(agent.id)
+	for pile: GroundPile in piles.values():
+		pile.stock.release_owner(agent.id)
+	if merchant.wagon != null:
+		merchant.wagon.release_owner(agent.id)
 	fields.release_owner(agent.id)
 	if agent.claimed_node != Agent.NO_TILE:
 		resources.release(agent.claimed_node, agent.id)
@@ -1088,7 +1134,7 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 		keep_reserve: bool = false) -> int:
 	var best := 0
 	var best_d := 1 << 30
-	for building: BuildingState in buildings.all():
+	for building: BuildingState in storage_buildings():
 		if building.stock != null and building.id != exclude \
 				and can_give(building.id, good, amount, keep_reserve):
 			var d := (building.entrance_tile() - from).length_squared()
@@ -1101,7 +1147,7 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 			if d < best_d:
 				best_d = d
 				best = pile.id
-	for building: BuildingState in buildings.all():
+	for building: BuildingState in yard_buildings(good):
 		var yard := yard_id(building.id)
 		# A herd always keeps its last animals for breeding (M4b-2).
 		var keep := building.def.herd_keep if building.def.herd_good == good else 0
@@ -1133,14 +1179,60 @@ func take_from_storages(good: StringName, amount: int, near: Vector2i) -> int:
 ## Units of [param good] in storage buildings and production yards that can still be taken.
 func stored(good: StringName) -> int:
 	var sum := 0
-	for building: BuildingState in buildings.all():
+	for building: BuildingState in storage_buildings():
 		if building.stock != null:
 			sum += building.stock.available(good)
+	for building: BuildingState in yard_buildings(good):
 		if building.yard != null:
 			sum += building.yard.available(good)
-		if not building.def.stall_goods.is_empty() and building.supply != null:
+	for building: BuildingState in market_buildings():
+		if building.supply != null:
 			sum += building.supply.available(good)
 	return sum
+
+
+## Buildings that can hold goods for others, by kind, in id order (M4b-3: searches for a
+## source or a sink look only at these instead of every building). Rebuilt when buildings
+## are added or removed; whether the store exists yet (a finished building) is checked by
+## the caller.
+func storage_buildings() -> Array[BuildingState]:
+	_refresh_goods_index()
+	return _storage_buildings
+
+
+## Buildings whose production yard or herd can hold [param good].
+func yard_buildings(good: StringName) -> Array[BuildingState]:
+	_refresh_goods_index()
+	return _yard_buildings.get(good, _NO_BUILDINGS)
+
+
+func market_buildings() -> Array[BuildingState]:
+	_refresh_goods_index()
+	return _market_buildings
+
+
+func _refresh_goods_index() -> void:
+	if _goods_index_version == buildings.version:
+		return
+	_goods_index_version = buildings.version
+	_storage_buildings = []
+	_market_buildings = []
+	_yard_buildings = {}
+	for building: BuildingState in buildings.all():
+		var def := building.def
+		if def.storage_slots > 0:
+			_storage_buildings.append(building)
+		if not def.stall_goods.is_empty():
+			_market_buildings.append(building)
+		if not _yard_goods_of.has(def.id):
+			var goods := BuildingState.yard_goods(def, data)
+			if def.herd_good != &"":
+				goods = [def.herd_good]
+			_yard_goods_of[def.id] = goods
+		for good: StringName in _yard_goods_of[def.id]:
+			if not _yard_buildings.has(good):
+				_yard_buildings[good] = [] as Array[BuildingState]
+			_yard_buildings[good].append(building)
 
 
 ## Units of [param good] the kingdom holds (the "Kingdom stocks" window, M4b-2): storages,
@@ -1194,7 +1286,7 @@ func nearest_sink(good: StringName, amount: int, from: Vector2i, exclude: int = 
 	var best_d := 1 << 30
 	var good_def := data.get_good(good)
 	if good_def != null and good_def.is_live():
-		for building: BuildingState in buildings.all():
+		for building: BuildingState in yard_buildings(good):
 			var herd := yard_id(building.id)
 			if building.def.herd_good == good and building.yard != null and herd != exclude 					and building.yard.can_accept(good, amount):
 				var d := (building.entrance_tile() - from).length_squared()
@@ -1202,7 +1294,7 @@ func nearest_sink(good: StringName, amount: int, from: Vector2i, exclude: int = 
 					best_d = d
 					best = herd
 		return best
-	for building: BuildingState in buildings.all():
+	for building: BuildingState in storage_buildings():
 		if building.stock != null and building.id != exclude and building.stock.can_accept(good, amount):
 			var d := (building.entrance_tile() - from).length_squared()
 			if d < best_d:
@@ -1228,6 +1320,7 @@ func drop_goods(tile: Vector2i, good: StringName, amount: int) -> int:
 		var before := left
 		left = pile.stock.add(good, left)
 		piles[pile.id] = pile
+		_piles_version += 1
 		jobs.add(good, before - left, pile.id, 0)
 		events.emit(&"pile_created", {"pile": pile.id, "tile": tile, "good": good})
 		last = pile.id
@@ -1235,16 +1328,21 @@ func drop_goods(tile: Vector2i, good: StringName, amount: int) -> int:
 
 
 func _pile_at(tile: Vector2i) -> int:
-	for pile: GroundPile in piles.values():
-		if pile.tile == tile:
-			return pile.id
-	return 0
+	if _pile_index_version != _piles_version:
+		# Tile -> first pile on it, rebuilt when piles come or go (M4b-3).
+		_pile_index_version = _piles_version
+		_pile_index.clear()
+		for pile: GroundPile in piles.values():
+			if not _pile_index.has(pile.tile):
+				_pile_index[pile.tile] = pile.id
+	return _pile_index.get(tile, 0)
 
 
 func _remove_empty_piles() -> void:
 	for pile: GroundPile in piles.values():
 		if pile.stock.is_empty():
 			piles.erase(pile.id)
+			_piles_version += 1
 			jobs.cancel_for_entity(pile.id)
 			events.emit(&"pile_removed", {"pile": pile.id, "tile": pile.tile})
 
@@ -1368,6 +1466,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 	for pd: Variant in d.get("piles", []):
 		var pile := GroundPile.from_dict(pd, registry)
 		province.piles[pile.id] = pile
+		province._piles_version += 1
 	for sd: Variant in d.get("sites", []):
 		var site := ConstructionSite.from_dict(sd, registry)
 		province.sites[site.id] = site

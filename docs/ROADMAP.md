@@ -451,10 +451,10 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Bruk kosztuje 1 kamień na kafel, układa go budowniczy, a pieszy i wóz jadą po nim szybciej niż po drodze ubitej (`tests/unit/sim/test_paving.gd`: budowniczy układa kafle z kamieniem z magazynu, bruk 1,2× szybszy od drogi ubitej).
 - [x] Stajnia z woźnicami działa w grze: wozy wożą na budowy, odnoszą stosy i ładują wóz kupca (`tests/scenario/test_m4b3_chains.gd`: 10 sztuk na budowę, 10 drewna ze stosu, 22 z 24 desek na wóz kupca).
 - [x] Nowa mapa 128×128 z jeziorem i kamienistym gruntem: wędkarz i glinianka działają nad jeziorem, na kamienistym gruncie nie da się postawić pola, kamieniołom pracuje przy skałach (`tests/unit/sim/test_lakeland.gd`). Automatyczny gracz dochodzi na niej do 4 kamienic patrycjuszy w **77. minucie** (limit 90, `test_slice_dod.gd`).
-- [ ] Duże miasto (400+ postaci, gotowy zapis): brak zakleszczeń przez 2 godziny przy 4×.
-- [ ] Wydajność według ARCHITECTURE §9.1: czas ticku ≤ 4 ms przy 500 postaciach (pomiar w chmurze, wynik w §9.3).
+- [x] Duże miasto (400+ postaci, gotowy zapis): brak zakleszczeń przez 2 godziny przy 4× (`tests/scenario/test_big_city.gd` na fixturze `big_city.json` ze skryptu `tools/build_big_city.gd`: 412 budynków, średnio 436 postaci, 324–580; wszystkie łańcuchy produkują do końca).
+- [x] Wydajność według ARCHITECTURE §9.1: czas ticku ≤ 4 ms przy 500 postaciach (pomiar w chmurze, wynik w §9.3): 3,5–3,8 ms przy 460–480 postaciach, średnio 3,6 ms przez 2 h; przed poprawkami 50 ms.
 - [ ] Pomiar FPS na laptopie na dużym mieście (osobna sesja z właścicielem projektu, wynik w §9.3).
-- [ ] Automatyczny gracz na mapie `riverlands` dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`).
+- [x] Automatyczny gracz na mapie `riverlands` dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`: 78. minuta po poprawkach wydajności, „Pojezierze” 77.).
 - [x] Zapis z M4b-2 wczytuje się po migracji (v7 → v8) bez utraty towaru, nowa fixtura `v8_town.json` (`test_save_round_trip.gd`). Jeśli część 2 albo 3 zmieni format, fixturę v8 wygenerujemy od nowa (wersja 8 nie trafiła jeszcze do gry na `main`).
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
 - [ ] **Twoja ocena gry.** Zamyka też całe M4b (DoD M4b wyżej).
@@ -473,6 +473,13 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Jezioro** to osobny teren (`lake`), który dla budynków liczy się jak woda. Woda w jeziorze płynie wolniej niż w rzece. Trzciny rosną na ok. 70% kafli jeziora przy brzegu.
 - **Menu:** zamiast jednego przycisku „Nowa gra” jest „Nowa gra: Nadrzecze” i „Nowa gra: Pojezierze”.
 - **Automatyczny gracz** przesuwa budynek do najbliższych skał, drzew albo wody, gdy w zasięgu miejsca z planu ich nie ma (na „Nadrzeczu” nic się nie zmienia).
+
+**Ustalone przy realizacji części 3 (2026-11-06, do zmiany na prośbę):**
+- **Duże miasto** buduje skrypt (`tools/build_big_city.gd`, układ w `tests/support/big_city.gd`): siatka ulic z brukowanymi głównymi ulicami, gotowe budynki w dzielnicach, domy od razu zamieszkane (54 chaty, 31 domów mieszczan, 24 kamienice), zapasy w magazynach, wózki w magazynach, 6 świń w każdym chlewie, kupiec skupuje nadwyżki. Potem 5 minut gry (ludzie idą do pracy) i zapis. Młyny, piekarnie i browary stoją przy magazynach obok pól, bo warsztaty same chodzą po surowce: przy dalekim magazynie pracowały 2–3× wolniej. Miasto rośnie samo: po godzinie ma ok. 1150 mieszkańców.
+- **Postacie** to pracownicy, tragarze, woźnice i domownicy w drodze (GDD §3.4), więc ich liczba faluje: średnio 436 w ciągu 2 godzin, od 324 do 580. Test sprawdza średnią ≥ 400 i minimum ≥ 300.
+- **Drzewa nie skracają zasięgu usług** (studnia, kościół, targ, tawerna; GDD §5.2). Drogi, bruk, pola i teren dalej się liczą. Powód: wydajność, każda ścinka przy mieście przeliczała kilka zasięgów.
+- **Pracownik bez pracy w zasięgu** (brak drzew, skał, miejsca na sadzonkę) szuka ponownie co 10 s, a nie co 3 s. Zlecenie tragarzy bez towaru albo miejsca wraca po 2 s.
+- **Domy sprawdzane w różnych tickach sekundy** (według id), każdy dalej raz na sekundę. Nowi osadnicy wybierają dom w ostatnim ticku sekundy.
 
 ---
 

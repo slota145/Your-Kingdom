@@ -1,7 +1,7 @@
 class_name Population
 extends RefCounted
-## Houses, needs, happiness and the workforce (GDD §3, ROADMAP M3 decisions). Runs once per
-## second of game time (step 8 of ARCHITECTURE §4.2):
+## Houses, needs, happiness and the workforce (GDD §3, ROADMAP M3 decisions). Each house
+## updates once per second of game time, in the tick of its id (step 8 of ARCHITECTURE §4.2):
 ## - households eat from their pantry; a householder fetches more when it runs low,
 ## - happiness moves towards the sum of satisfied need weights,
 ## - all basic needs met long enough -> upgrade site; a house never goes back a level: unmet
@@ -38,26 +38,36 @@ const SETTLER_KIND := &"settler"
 
 
 static func update(province: ProvinceSim) -> void:
-	if province.tick % UPDATE_TICKS != 0:
-		return
+	# Each house has its own tick within the second (its id), so a big town does not do all
+	# its houses in one tick (M4b-3, ARCHITECTURE §9.3).
+	var slot := province.tick % UPDATE_TICKS
 	province.coverage.update(province)
+	# Goods in storage do not change while houses update (errands and upgrade sites reserve
+	# nothing yet), so each good is counted once per tick.
+	var stored: Dictionary[StringName, int] = {}
 	for building: BuildingState in province.buildings.all():
-		if building.house != null:
-			_update_house(province, building)
-	if province.tick % (IMMIGRATION_EVERY * UPDATE_TICKS) == 0:
+		if building.house != null and building.id % UPDATE_TICKS == slot:
+			_update_house(province, building, stored)
+	# Newcomers choose in the last tick of the second, when every house has updated.
+	if province.tick % (IMMIGRATION_EVERY * UPDATE_TICKS) == UPDATE_TICKS - 1:
 		_immigrate(province)
-	_balance_workforce(province)
+	if slot == 0:
+		_balance_workforce(province)
 
 
 # --- Households ----------------------------------------------------------------------------
 
-static func _update_house(province: ProvinceSim, building: BuildingState) -> void:
+static func _update_house(province: ProvinceSim, building: BuildingState,
+		stored: Dictionary[StringName, int]) -> void:
 	var house := building.house
 	var level := building.level_def()
 	var target := 0.0
 	var basic_met := true
+	var doors: Array[Vector2i] = []
 	for need: NeedDef in level.needs:
-		var ok := _need_met(province, building, need)
+		if need.is_service() and doors.is_empty():
+			doors = province.door_tiles(building)
+		var ok := _need_met(province, building, need, doors)
 		house.satisfied[need.id] = ok
 		if ok:
 			target += level.weight_of(need)
@@ -69,7 +79,7 @@ static func _update_house(province: ProvinceSim, building: BuildingState) -> voi
 		target = minf(target, SHORTAGE_HAPPINESS)
 		speed = SHORTAGE_SPEED
 	house.happiness = move_toward(house.happiness, target, speed)
-	_request_supplies(province, building)
+	_request_supplies(province, building, stored)
 	_pay_taxes(province, building)
 	if house.residents == 0:
 		house.met_seconds = 0
@@ -80,7 +90,7 @@ static func _update_house(province: ProvinceSim, building: BuildingState) -> voi
 		house.unmet_seconds = 0
 		if house.met_seconds >= UPGRADE_AFTER and building.site_id == 0 \
 				and house.level < building.def.house_levels.size() \
-				and next_level_available(province, building):
+				and _next_level_ready(province, building, stored):
 			Construction.open_upgrade_site(province, building, building.def.house_levels[house.level])
 	else:
 		house.met_seconds = 0
@@ -98,13 +108,19 @@ static func _update_house(province: ProvinceSim, building: BuildingState) -> voi
 ## house would upgrade, go short and decline again, wasting the materials (M4a balance, found
 ## by the automatic player).
 static func next_level_available(province: ProvinceSim, building: BuildingState) -> bool:
+	return _next_level_ready(province, building, {})
+
+
+## [method next_level_available] with the storage totals counted so far in [param stored].
+static func _next_level_ready(province: ProvinceSim, building: BuildingState,
+		stored: Dictionary[StringName, int]) -> bool:
 	var next := building.def.house_levels[building.house.level]
 	for need: NeedDef in next.needs:
 		if not need.is_basic or need.is_service():
 			continue
 		var found := 0
 		for good: StringName in need.goods:
-			found += building.supply.total(good) + province.stored(good)
+			found += building.supply.total(good) + _stored(province, good, stored)
 		if found < next.supply_units:
 			return false
 	return true
@@ -119,10 +135,11 @@ static func _pay_taxes(province: ProvinceSim, building: BuildingState) -> void:
 
 
 ## Eats from the pantry and tells whether the need is met right now.
-static func _need_met(province: ProvinceSim, building: BuildingState, need: NeedDef) -> bool:
+static func _need_met(province: ProvinceSim, building: BuildingState, need: NeedDef,
+		doors: Array[Vector2i]) -> bool:
 	var house := building.house
 	if need.is_service():
-		for door: Vector2i in province.door_tiles(building):
+		for door: Vector2i in doors:
 			if province.coverage.covers(need.service, door, province.grid.size):
 				return true
 		return false
@@ -143,8 +160,27 @@ static func _need_met(province: ProvinceSim, building: BuildingState, need: Need
 	return house.residents == 0
 
 
+## Units of [param good] in storages, stalls and ground piles: what the searches for a source
+## can find at most. Counted once per update ([param stored]).
+static func _stored(province: ProvinceSim, good: StringName, stored: Dictionary[StringName, int]) -> int:
+	if not stored.has(good):
+		stored[good] = province.stored(good)
+	return stored[good]
+
+
+static func _findable(province: ProvinceSim, good: StringName, cache: Dictionary[StringName, int]) -> int:
+	var key := StringName("pile:" + good)
+	if not cache.has(key):
+		var sum := 0
+		for pile: GroundPile in province.piles.values():
+			sum += pile.stock.total(good)
+		cache[key] = sum
+	return cache[key] + _stored(province, good, cache)
+
+
 ## Sends a householder to the nearest storage when a good in the pantry is down to half.
-static func _request_supplies(province: ProvinceSim, building: BuildingState) -> void:
+static func _request_supplies(province: ProvinceSim, building: BuildingState,
+		stored: Dictionary[StringName, int]) -> void:
 	var house := building.house
 	if house.residents == 0:
 		return
@@ -157,6 +193,10 @@ static func _request_supplies(province: ProvinceSim, building: BuildingState) ->
 			if have * 2 > limit:
 				continue
 			var amount := mini(limit - have, ERRAND_LOAD)
+			# No search can find more than the town holds (cheap check first, M4b-3).
+			amount = mini(amount, _findable(province, good, stored))
+			if amount <= 0 or not building.supply.can_accept(good, 1):
+				continue
 			# A market in range with the good on its stalls comes first (M4b-2).
 			var market := 0
 			while amount > 0:
@@ -215,10 +255,16 @@ static func employed_from(province: ProvinceSim, house_id: int) -> Array[Agent]:
 static func _balance_workforce(province: ProvinceSim) -> void:
 	var free: Dictionary[int, int] = {}
 	var houses: Array[BuildingState] = []
+	var employed_by_house: Dictionary[int, Array] = {}
+	for agent: Agent in province.agents.all():
+		if agent.home_id != 0 and agent.workplace_id != 0:
+			if not employed_by_house.has(agent.home_id):
+				employed_by_house[agent.home_id] = []
+			employed_by_house[agent.home_id].append(agent)
 	for building: BuildingState in province.buildings.all():
 		if building.house == null:
 			continue
-		var employed := employed_from(province, building.id)
+		var employed: Array = employed_by_house.get(building.id, [])
 		var spare := building.house.workforce() - employed.size()
 		while spare < 0:
 			province.remove_agent(employed.pop_back())

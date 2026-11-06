@@ -64,25 +64,10 @@ func _patricians_on(map_id: StringName) -> void:
 func test_two_hours_without_deadlocks() -> void:
 	var sim := _new_game()
 	var bot := SliceBot.new(sim)
-	# Agent id -> [task, step index, minute first seen]: a task stuck on one step for
-	# 5 minutes is a deadlock (all real steps take seconds; waiting restarts the task).
-	var seen: Dictionary[int, Array] = {}
-	var stuck: Array[String] = []
+	var watch := DeadlockWatch.new()
 	var produced := {}
 	bot.run(2 * 60 * 60, func(minute: int) -> void:
-		var holds := sim.province.dangling_holds()
-		if not holds.is_empty():
-			stuck.append("minute %d: %s" % [minute, ", ".join(holds)])
-		for agent: Agent in sim.province.agents.all():
-			if agent.task == null or _waits_for_room(sim, agent):
-				seen.erase(agent.id)
-				continue
-			var last: Array = seen.get(agent.id, [])
-			if last.is_empty() or not is_same(last[0], agent.task) or last[1] != agent.task.step_index:
-				seen[agent.id] = [agent.task, agent.task.step_index, minute]
-			elif minute - int(last[2]) >= 5:
-				stuck.append("minute %d: %s %d on %s step %d" % [minute, agent.kind, agent.id,
-						agent.task.kind, agent.task.step_index])
+		watch.check(sim, minute)
 		if minute % 20 == 0:
 			var unmet := {}
 			for b: BuildingState in sim.province.buildings.all():
@@ -93,7 +78,7 @@ func test_two_hours_without_deadlocks() -> void:
 			produced[minute] = "bread %d, wood %d, pigs %d, meat made %d, supplied %d, unmet %s" % [
 					sim.province.goods_total(&"bread"), sim.province.goods_total(&"wood"),
 					sim.province.goods_total(&"pig"), bot.produced.get(&"meat", 0), bot.supplied_houses(2), unmet])
-	assert_array(stuck).is_empty()
+	assert_array(watch.stuck).is_empty()
 	# M4b-2: the meat chain runs on pigs bought from the merchant, who also buys the surplus.
 	print("sold to the merchant: ", bot.sold)
 	assert_int(int(bot.produced.get(&"meat", 0))).is_greater(0)
@@ -103,11 +88,3 @@ func test_two_hours_without_deadlocks() -> void:
 	print("every 20 minutes: ", produced)
 	assert_int(bot.supplied_houses(2)).is_greater_equal(6)
 
-
-## A worker waiting with his output because every storage and his yard are full is not stuck
-## (M4b-2): he goes on as soon as there is room.
-func _waits_for_room(sim: Simulation, agent: Agent) -> bool:
-	if not agent.task.bb.has("_yard_full"):
-		return false
-	var yard := sim.province.storage(ProvinceSim.yard_id(agent.workplace_id))
-	return yard != null and not yard.can_accept(agent.carry_good, agent.carry_amount) 			and sim.province.nearest_sink(agent.carry_good, agent.carry_amount, agent.tile()) == 0

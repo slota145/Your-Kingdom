@@ -124,17 +124,27 @@ func take(tile: Vector2i) -> int:
 ## Ties go to the lower row, then the lower column, so the result is deterministic.
 ## Returns Vector2i(-1, -1) when none.
 func find_nearest(id: StringName, center: Vector2i, radius: int) -> Vector2i:
+	# Kind indices of [param id] (usually one); flat arrays, no calls per tile (M4b-3).
+	var wanted := PackedByteArray()
+	for k: int in _kinds.size():
+		if _kinds[k].id == id:
+			wanted.append(k + 1)
 	var best := Vector2i(-1, -1)
+	if wanted.is_empty():
+		return best
 	var best_d := 1 << 30
 	for y: int in range(maxi(center.y - radius, 0), mini(center.y + radius + 1, size.y)):
+		var dy := (y - center.y) * (y - center.y)
+		if dy > best_d:
+			continue
 		for x: int in range(maxi(center.x - radius, 0), mini(center.x + radius + 1, size.x)):
-			var t := Vector2i(x, y)
-			if not has_node(t, id) or _claim[_index(t)] != 0:
+			var i := y * size.x + x
+			if _kind[i] == 0 or _amount[i] == 0 or _claim[i] != 0 or not wanted.has(_kind[i]):
 				continue
-			var d := (t - center).length_squared()
+			var d := (x - center.x) * (x - center.x) + dy
 			if d < best_d:
 				best_d = d
-				best = t
+				best = Vector2i(x, y)
 	return best
 
 

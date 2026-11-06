@@ -11,6 +11,8 @@ const MAX_ASSIGNMENTS := 32
 const PORTER_LOAD := 1
 ## Wait before a request is offered again after a failed trip (5 s).
 const RETRY_TICKS := 50
+## Wait before a request nobody could take (no goods, no room) is offered again (2 s).
+const NO_MATCH_RETRY_TICKS := 20
 const PORTER_KIND := &"porter"
 
 var _requests: Dictionary[int, TransportRequest] = {}
@@ -126,6 +128,7 @@ func update(province: ProvinceSim) -> void:
 			carters.append(agent)
 	var assigned := 0
 	for request: TransportRequest in all():
+		var porter_failed := false
 		while not carters.is_empty() and assigned < MAX_ASSIGNMENTS \
 				and request.unassigned() >= Carriers.WAGON_MIN and request.retry_at <= province.tick:
 			if not _assign_wagon(province, request, carters):
@@ -134,8 +137,13 @@ func update(province: ProvinceSim) -> void:
 		while not idle.is_empty() and assigned < MAX_ASSIGNMENTS and request.unassigned() > 0 \
 				and request.retry_at <= province.tick:
 			if not _assign_one(province, request, idle):
+				porter_failed = true
 				break
 			assigned += 1
+		if porter_failed and request.in_flight == 0:
+			# Nothing to take or no room for it now: ask again a little later, not every
+			# round (M4b-3: each try searches the storages).
+			request.retry_at = province.tick + NO_MATCH_RETRY_TICKS
 		if (idle.is_empty() and carters.is_empty()) or assigned >= MAX_ASSIGNMENTS:
 			return
 

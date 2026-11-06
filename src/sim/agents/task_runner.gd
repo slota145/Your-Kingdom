@@ -9,6 +9,11 @@ extends RefCounted
 
 ## Wait after a failure before trying again (3 s).
 const RETRY_TICKS := 30
+## Wait when there is simply nothing to work on (no tree to fell, no rock, no free tile to
+## plant): 10 s. The worker stands idle either way; looking again costs a search of the
+## whole work area (M4b-3).
+const IDLE_RETRY_TICKS := 100
+const NOTHING_TO_DO: Array[StringName] = [&"no_resource", &"no_plant_spot"]
 
 static var _executors: Dictionary[StringName, TaskStep] = {}
 static var _transport_steps: Array[StepDef] = []
@@ -112,7 +117,7 @@ static func fail(province: ProvinceSim, agent: Agent) -> void:
 		agent.vehicle = &""
 	agent.clear_path()
 	agent.activity = &"idle"
-	agent.cooldown = RETRY_TICKS
+	agent.cooldown = IDLE_RETRY_TICKS if NOTHING_TO_DO.has(agent.last_fail) else RETRY_TICKS
 
 
 ## Rebuilds the step list of a task loaded from a save. Returns false if it cannot be resumed.

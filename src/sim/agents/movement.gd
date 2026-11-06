@@ -40,16 +40,17 @@ static func serve_paths(province: ProvinceSim) -> void:
 			agent.prev_pos = agent.pos
 		agent.path = path
 		agent.path_index = 0
-		agent.path_version = province.nav.version
+		agent.path_version = province.blocking_version()
 		agent.path_state = Agent.PathState.MOVING
 		_face_segment(agent)
 
 
 static func move_all(province: ProvinceSim) -> void:
+	var blocking := province.blocking_version()
 	for agent: Agent in province.agents.all():
 		agent.prev_pos = agent.pos
 		if agent.path_state == Agent.PathState.MOVING:
-			if agent.path_version != province.nav.version:
+			if agent.path_version != blocking:
 				_check_path(province, agent)
 			if agent.path_state == Agent.PathState.MOVING:
 				_advance(province, agent)
@@ -57,10 +58,10 @@ static func move_all(province: ProvinceSim) -> void:
 
 ## Re-plans when a tile ahead became blocked (a building or a wall was placed on the way).
 static func _check_path(province: ProvinceSim, agent: Agent) -> void:
-	agent.path_version = province.nav.version
+	agent.path_version = province.blocking_version()
+	var nav := province.road_nav if agent.vehicle == Carriers.WAGON else province.nav
 	for i: int in range(agent.path_index, agent.path.size()):
 		var t := agent.path[i]
-		var nav := province.road_nav if agent.vehicle == Carriers.WAGON else province.nav
 		if not nav.is_walkable(t) and province.building_entered_at(t) == null:
 			var goal := agent.path_goal
 			agent.clear_path()
@@ -79,13 +80,15 @@ static func _face_segment(agent: Agent) -> void:
 
 static func _advance(province: ProvinceSim, agent: Agent) -> void:
 	var budget := BASE_SPEED * SimClock.TICK
+	var nav := province.nav
 	while budget > 0.0:
-		var target := IsoMath.tile_center(agent.path[agent.path_index])
+		var tile := agent.path[agent.path_index]
+		var target := Vector2(tile.x + 0.5, tile.y + 0.5)   # IsoMath.tile_center, inlined
 		var delta := target - agent.pos
 		var length := delta.length()
-		var cost := province.nav.get_cost(agent.path[agent.path_index])
+		var cost := nav.get_cost(tile)
 		if agent.vehicle != &"":
-			cost *= Carriers.speed_penalty(province, agent, agent.path[agent.path_index])
+			cost *= Carriers.speed_penalty(province, agent, tile)
 		var reach := budget / cost
 		if length <= reach:
 			agent.pos = target

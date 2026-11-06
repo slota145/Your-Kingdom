@@ -74,3 +74,20 @@ func test_source_demolished_while_walking_releases_everything() -> void:
 	assert_int(sim.province.goods_total(&"grain")).is_equal(2)
 	assert_int(sim.province.piles.size()).is_greater(0)
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## M4b-3: with nothing to work on (no tree in reach) the worker waits longer before looking
+## again than after a failure that may clear up soon.
+func test_nothing_to_work_on_waits_longer() -> void:
+	var sim := SimFixture.make_sim()
+	SimFixture.place(sim, &"stockpile", Vector2i(4, 4))
+	var hut := SimFixture.place(sim, &"woodcutter", Vector2i(12, 6))
+	var worker := SimFixture.spawn(sim, &"woodcutter", hut.entrance_tile())
+	assert_str(String(sim.execute(AssignWorkerCommand.new(worker.id, hut.id)))).is_empty()
+	sim.run_ticks(2)
+	assert_object(worker.task).is_null()
+	assert_str(String(worker.last_fail)).is_equal("no_resource")
+	assert_int(worker.cooldown).is_greater(TaskRunner.RETRY_TICKS)
+	SimFixture.plant_trees(sim, Rect2i(16, 2, 2, 2))
+	sim.run_ticks(TaskRunner.IDLE_RETRY_TICKS + 2)
+	assert_object(worker.task).is_not_null()
