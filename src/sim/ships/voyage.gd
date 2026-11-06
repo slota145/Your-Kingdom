@@ -179,6 +179,8 @@ func sail_by_the_clock(province: ProvinceSim, ship: ShipUnit) -> void:
 				var left := ship.hold.add(good, taken)
 				if left > 0:
 					province.drop_goods(province.door_tile(port), good, left)
+			if _waits_to_be_sent(province):
+				return
 			_cast_off(province, ship)
 			_go_over_horizon(province, ship)
 			if expedition == 0:
@@ -207,6 +209,7 @@ func sail_by_the_clock(province: ProvinceSim, ship: ShipUnit) -> void:
 				ship.hold.remove(good, goods[good] - left)
 			if ship.hold.is_empty():
 				state = State.IDLE
+				_usual_hold(province, ship)
 				_anchor_now(province, ship, port)
 
 
@@ -354,7 +357,19 @@ func _load(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> void:
 	if expedition != 0 and province.departure != null and not province.departure.all_aboard():
 		return   # the settlers are not all aboard yet
 	if not _dockers_busy(province, ship) or waited:
+		if _waits_to_be_sent(province):
+			return
 		_cast_off(province, ship)
+
+
+## An expedition aboard that is ready but not sent yet: the cog stays moored (M6 part 2).
+func _waits_to_be_sent(province: ProvinceSim) -> bool:
+	if expedition == 0 or province.departure == null or province.departure.id != expedition:
+		return false
+	if province.departure.is_sent():
+		return false
+	province.departure.mark_ready(province)
+	return true
 
 
 func _sorted(plan: Dictionary[StringName, int]) -> Array[StringName]:
@@ -489,10 +504,8 @@ func _go_over_horizon(province: ProvinceSim, ship: ShipUnit) -> void:
 
 func _come_back(province: ProvinceSim, ship: ShipUnit) -> void:
 	state = State.INBOUND
-	if expedition != 0 and ship.hold.is_empty():
-		# Back from an expedition: the usual hold again (Departure.begin).
-		ship.hold = Stockpile.new(ship.def.hold_slots, province.data)
-		ship.hold.stack_limit = ship.def.hold_stack
+	if expedition != 0:
+		_usual_hold(province, ship)
 	expedition = 0
 	var goods := ship.hold.totals()
 	for good: StringName in _sorted(goods):
@@ -523,10 +536,42 @@ func _unload(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> void
 	if ship.hold.is_empty() and not _dockers_busy(province, ship):
 		province.jobs.cancel_for_entity(ship.id)
 		state = State.IDLE
+		_usual_hold(province, ship)
 		ship.dock_id = 0
 		ship.berth_id = 0
 		province.events.emit(&"voyage_done", {"ship": ship.id, "port": port.id})
 		_go_to_anchor(province, ship, port)
+
+
+## Back from (or done with) an expedition and empty: the usual hold again (Departure.begin
+## gave it a bigger one).
+static func _usual_hold(province: ProvinceSim, ship: ShipUnit) -> void:
+	if ship.hold.is_empty() and ship.hold.slot_count() != ship.def.hold_slots:
+		ship.hold = Stockpile.new(ship.def.hold_slots, province.data)
+		ship.hold.stack_limit = ship.def.hold_stack
+
+
+## The expedition aboard was disbanded before it was sent (Departure.disband): dockers carry
+## the kit back onto the quay (porters take it to storages), then the cog goes to anchor.
+func abandon_expedition(province: ProvinceSim, ship: ShipUnit) -> void:
+	if expedition == 0:
+		return
+	var port := province.buildings.get_building(ship.home_id)
+	_fail_dockers(province, ship)
+	_stop_loading(province, ship, port)
+	province.jobs.cancel_for_entity(ship.id)
+	expedition = 0
+	stopped_at = 0
+	depart_now = false
+	if not ship.hold.is_empty():
+		state = State.UNLOADING
+	else:
+		state = State.IDLE
+		_usual_hold(province, ship)
+		if ship.berth_id != 0 or ship.dock_id != 0:
+			ship.dock_id = 0
+			ship.berth_id = 0
+			ship.clear_path()
 
 
 ## The player starts a voyage with the plan (StartVoyageCommand).

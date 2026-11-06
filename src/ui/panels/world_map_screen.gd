@@ -4,8 +4,13 @@ extends Control
 ## it, the panel of the province clicked: owner, people, stocks, rare resource, "Enter".
 ## Opened and closed with M (or Esc); the viewed province keeps living meanwhile (owner's
 ## decision 2026-11-06).
+## Expeditions of settlers (M6 part 2, owner's decision 2026-11-06): the panel of the player's
+## province prepares one (by land or by sea); a ready one stands by its town on the map, a
+## click selects it and a right click on a province sends it there.
 
 signal enter_requested(id: int)
+## Prepare, send or disband an expedition; the game scene executes it.
+signal command_requested(command: Command)
 signal closed
 
 const STOCK_LINES := 6
@@ -18,6 +23,9 @@ var _name: Label
 var _lines: Label
 var _hint: Label
 var _enter: Button
+var _expedition: ExpeditionBox
+## The answer to the last right click (why it cannot go there), shown until another click.
+var _send_note: String = ""
 var _selected: int = 0
 
 
@@ -35,6 +43,8 @@ func _init() -> void:
 	_canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_canvas.province_clicked.connect(select)
+	_canvas.expedition_clicked.connect(_expedition_clicked)
+	_canvas.send_requested.connect(_send)
 	row.add_child(_canvas)
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size.x = UiKit.PANEL_WIDTH
@@ -46,9 +56,14 @@ func _init() -> void:
 	style.content_margin_bottom = 14.0
 	panel.add_theme_stylebox_override(&"panel", style)
 	row.add_child(panel)
+	# Scrolls when the province's panel with its expedition does not fit on the screen.
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override(&"separation", 10)
-	panel.add_child(box)
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(box)
 	_title = UiKit.title()
 	box.add_child(_title)
 	box.add_child(UiKit.label("ui.world.hint"))
@@ -62,6 +77,12 @@ func _init() -> void:
 	box.add_child(_hint)
 	_enter = UiKit.button("ui.world.enter", func() -> void: enter_requested.emit(_selected))
 	box.add_child(_enter)
+	box.add_child(HSeparator.new())
+	_expedition = ExpeditionBox.new()
+	_expedition.command_requested.connect(func(command: Command) -> void:
+		command_requested.emit(command)
+		_refresh())
+	box.add_child(_expedition)
 	box.add_child(UiKit.button("ui.world.back", func() -> void: closed.emit()))
 
 
@@ -75,7 +96,28 @@ func open(simulation: Simulation) -> void:
 func select(id: int) -> void:
 	_selected = id
 	_canvas.selected = id
+	_send_note = ""
 	_refresh()
+
+
+## The ready expedition of province [param from] is selected: its province's panel says what
+## to do next.
+func _expedition_clicked(from: int) -> void:
+	select(from)
+	_send_note = tr("ui.world.expedition_selected")
+	_refresh()
+
+
+## Right click on [param to] with the expedition of [param from] selected.
+func _send(from: int, to: int) -> void:
+	var error := SendExpeditionCommand.error_for(sim, from, to)
+	if error != &"":
+		_send_note = tr("ui.command_error.%s" % error)
+		_refresh()
+		return
+	command_requested.emit(SendExpeditionCommand.new(from, to))
+	_canvas.expedition_from = 0
+	select(from)
 
 
 func _process(_delta: float) -> void:
@@ -89,11 +131,13 @@ func _refresh() -> void:
 	var world_def := sim.data.get_world(sim.world.world_id)
 	_title.text = tr(world_def.name_key()) if world_def != null else ""
 	var def := sim.world.def_of(_selected, sim.data)
+	_expedition.show_for(sim, _selected)
 	if def == null:
 		_name.text = ""
 		_lines.text = ""
 		_hint.text = ""
 		_enter.visible = false
+		_expedition.visible = false
 		return
 	_name.text = tr(def.name_key())
 	var owner := sim.world.owner_of(_selected)
@@ -127,6 +171,8 @@ func _refresh() -> void:
 		_hint.text = tr("ui.world.neutral_hint")
 	else:
 		_hint.text = tr("ui.world.empty_hint")
+	if not _send_note.is_empty():
+		_hint.text = _send_note if _hint.text.is_empty() else _send_note + "\n" + _hint.text
 
 
 static func _residents(province: ProvinceSim) -> int:

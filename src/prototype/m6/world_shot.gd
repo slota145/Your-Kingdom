@@ -4,7 +4,8 @@ extends Node
 ## Run (cloud): xvfb-run -a "$GODOT" --path . --rendering-driver opengl3 \
 ##   res://src/prototype/m6/world_shot.tscn -- --out=/tmp/world.png [--select=<province id>] [--settle]
 ##   [--expeditions] (a cog on its way to Gull Isle, a wagon to Willow Vale, one waiting at
-##   Amber Coast, all made up for the picture)
+##   Amber Coast, all made up for the picture) [--ready] (a ready land expedition by the start
+##   town, selected, the mouse over Willow Vale)
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
 const SETTLE_FRAMES := 10
@@ -16,6 +17,7 @@ var _out: String = ""
 var _select: StringName = &""
 var _settle: bool = false
 var _expeditions: bool = false
+var _ready_one: bool = false
 
 
 func _ready() -> void:
@@ -28,6 +30,8 @@ func _ready() -> void:
 			_settle = true
 		elif arg == "--expeditions":
 			_expeditions = true
+		elif arg == "--ready":
+			_ready_one = true
 	Game.start_request = {"world": "kingdom"}
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D
 	add_child(_game)
@@ -53,7 +57,18 @@ func _process(_delta: float) -> void:
 				e.depart_at = sim.clock.tick - roundi(1000 * plan[i][3])
 				e.arrive_at = e.depart_at + 1000
 				sim.world.expeditions[e.id] = e
+		if _ready_one:
+			var departure := Departure.new()
+			departure.id = 990
+			departure.state = Departure.State.READY
+			departure.stand = sim.province.entry_tile
+			sim.province.departure = departure
 		_game.call("_toggle_world_map")
+		if _ready_one:
+			var screen := _game.get("_world_map") as WorldMapScreen
+			screen._canvas.expedition_from = sim.viewed_id
+			screen._expedition_clicked(sim.viewed_id)
+			screen._canvas._hover = sim.world.id_of(&"willow_vale")
 		if _select != &"":
 			(_game.get("_world_map") as WorldMapScreen).select(sim.world.id_of(_select))
 	elif _frames == SHOT_FRAMES and not _out.is_empty():

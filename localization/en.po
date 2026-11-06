@@ -2023,7 +2023,7 @@ msgid "ui.world.back"
 msgstr "Close the map"
 
 msgid "ui.world.empty_hint"
-msgstr "You settle an empty province with an expedition of settlers (soon)."
+msgstr "You settle an empty province with an expedition of settlers. Prepare one in the town hall or here, in the panel of your province."
 
 msgid "ui.world.neutral_hint"
 msgstr "You buy a neutral town for gold and deliveries (soon)."
@@ -2090,32 +2090,17 @@ msgstr "Not enough residents: an expedition takes 6 settlers."
 msgid "ui.command_error.not_enough_goods"
 msgstr "Not enough stocks for the expedition's kit (90 wood and 20 bread)."
 
-msgid "ui.expedition.open"
-msgstr "Expedition of settlers"
-
 msgid "ui.expedition.title"
 msgstr "Expedition of settlers"
 
 msgid "ui.expedition.cost"
-msgstr "Cost: %d gold. %d settlers leave your houses with a kit of %s from the storages."
+msgstr "Cost: %d gold, paid when it is sent. %d settlers leave your houses with a kit from the storages: %s."
 
 msgid "ui.expedition.gathering"
-msgstr "The expedition to %s is gathering. Settlers ready: %d of %d. Loaded: %d of %d."
+msgstr "The %s expedition is gathering. Settlers ready: %d of %d. Loaded: %d of %d."
 
 msgid "ui.expedition.leaving"
-msgstr "The expedition to %s is setting out."
-
-msgid "ui.expedition.by_sea"
-msgstr "By sea (about %d min)"
-
-msgid "ui.expedition.by_land"
-msgstr "By land (about %d min)"
-
-msgid "ui.expedition.unreachable"
-msgstr "You cannot get there from here."
-
-msgid "ui.expedition.none_left"
-msgstr "There are no empty provinces left."
+msgstr "The %s expedition sets out for %s."
 
 msgid "ui.world.land"
 msgstr "Enter and land"
@@ -2131,3 +2116,38 @@ msgstr "An expedition of settlers set out for %s."
 
 msgid "ui.note.expedition_arrived"
 msgstr "The expedition reached %s. Enter it from the world map (M) to see the landing."
+
+# --- M6 part 2: expeditions prepared by kind, sent from the world map ---
+
+msgid "ui.expedition.prepare_land"
+msgstr "Land expedition"
+
+msgid "ui.expedition.prepare_sea"
+msgstr "Sea expedition"
+
+msgid "ui.expedition.kind_land"
+msgstr "land"
+
+msgid "ui.expedition.kind_sea"
+msgstr "sea"
+
+msgid "ui.expedition.ready"
+msgstr "The %s expedition is ready and waits in town. Open the world map (M), click the expedition, then right-click an empty province."
+
+msgid "ui.expedition.disband"
+msgstr "Disband the expedition"
+
+msgid "ui.expedition.disband_hint"
+msgstr "The settlers go back home and the kit back to the storages. You pay nothing."
+
+msgid "ui.world.expedition_selected"
+msgstr "Expedition selected. Right-click the empty province it should go to. A green line: it can go there; red: it cannot."
+
+msgid "ui.command_error.no_expedition"
+msgstr "This province has no expedition that can be sent."
+
+msgid "ui.command_error.expedition_not_ready"
+msgstr "The expedition is still gathering. Send it when it is ready."
+
+msgid "ui.note.expedition_ready"
+msgstr "The expedition of settlers is ready. Send it from the world map (M)."

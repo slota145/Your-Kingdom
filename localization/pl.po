@@ -2044,7 +2044,7 @@ msgid "ui.world.back"
 msgstr "Zamknij mapę"
 
 msgid "ui.world.empty_hint"
-msgstr "Pustą prowincję zasiedlisz wyprawą osadników (wkrótce)."
+msgstr "Pustą prowincję zasiedlisz wyprawą osadników. Przygotuj ją w ratuszu albo tutaj, w panelu swojej prowincji."
 
 msgid "ui.world.neutral_hint"
 msgstr "Osadę neutralną wykupisz za złoto i dostawy (wkrótce)."
@@ -2111,32 +2111,17 @@ msgstr "Za mało mieszkańców: wyprawa zabiera 6 osadników."
 msgid "ui.command_error.not_enough_goods"
 msgstr "Za mało zapasów na zestaw wyprawy (90 drewna i 20 chleba)."
 
-msgid "ui.expedition.open"
-msgstr "Wyprawa osadników"
-
 msgid "ui.expedition.title"
 msgstr "Wyprawa osadników"
 
 msgid "ui.expedition.cost"
-msgstr "Koszt: %d zł. Wyrusza %d osadników z twoich domów z zestawem: %s z magazynów."
+msgstr "Koszt: %d zł, płacisz przy wysłaniu. Wyrusza %d osadników z twoich domów z zestawem z magazynów: %s."
 
 msgid "ui.expedition.gathering"
-msgstr "Wyprawa do: %s zbiera się. Osadnicy na miejscu: %d z %d. Załadowano: %d z %d."
+msgstr "Wyprawa %s zbiera się. Osadnicy na miejscu: %d z %d. Załadowano: %d z %d."
 
 msgid "ui.expedition.leaving"
-msgstr "Wyprawa do: %s wyrusza."
-
-msgid "ui.expedition.by_sea"
-msgstr "Morzem (ok. %d min)"
-
-msgid "ui.expedition.by_land"
-msgstr "Lądem (ok. %d min)"
-
-msgid "ui.expedition.unreachable"
-msgstr "Stąd nie da się tam dotrzeć."
-
-msgid "ui.expedition.none_left"
-msgstr "Nie ma już pustych prowincji."
+msgstr "Wyprawa %s wyrusza do: %s."
 
 msgid "ui.world.land"
 msgstr "Wejdź i wyląduj"
@@ -2152,3 +2137,38 @@ msgstr "Wyprawa osadników wyruszyła do: %s."
 
 msgid "ui.note.expedition_arrived"
 msgstr "Wyprawa dotarła do: %s. Wejdź tam z mapy świata (M), żeby zobaczyć lądowanie."
+
+# --- M6 part 2: expeditions prepared by kind, sent from the world map ---
+
+msgid "ui.expedition.prepare_land"
+msgstr "Wyprawa lądowa"
+
+msgid "ui.expedition.prepare_sea"
+msgstr "Wyprawa morska"
+
+msgid "ui.expedition.kind_land"
+msgstr "lądowa"
+
+msgid "ui.expedition.kind_sea"
+msgstr "morska"
+
+msgid "ui.expedition.ready"
+msgstr "Wyprawa %s jest gotowa i czeka w mieście. Otwórz mapę świata (M), kliknij wyprawę, a potem kliknij prawym przyciskiem pustą prowincję."
+
+msgid "ui.expedition.disband"
+msgstr "Rozwiąż wyprawę"
+
+msgid "ui.expedition.disband_hint"
+msgstr "Osadnicy wracają do domów, a zestaw do magazynów. Nic nie płacisz."
+
+msgid "ui.world.expedition_selected"
+msgstr "Wyprawa wybrana. Kliknij prawym przyciskiem pustą prowincję, do której ma ruszyć. Zielona linia: można tam ruszyć, czerwona: nie."
+
+msgid "ui.command_error.no_expedition"
+msgstr "Ta prowincja nie ma wyprawy, którą można wysłać."
+
+msgid "ui.command_error.expedition_not_ready"
+msgstr "Wyprawa jeszcze się zbiera. Wyślesz ją, gdy będzie gotowa."
+
+msgid "ui.note.expedition_ready"
+msgstr "Wyprawa osadników jest gotowa. Wyślij ją z mapy świata (M)."

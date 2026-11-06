@@ -3,8 +3,14 @@ extends Control
 ## The world map drawn in code like an old map on parchment (ROADMAP M6, part 1): the sea
 ## with waves, the provinces as land with their borders, owners' colours and coats of arms,
 ## towns, names and rare resources. Reads the simulation only; a click selects a province.
+## An expedition of settlers getting ready stands by its town (M6 part 2): a click on a ready
+## one selects it, and a right click on a province then asks to send it there.
 
 signal province_clicked(id: int)
+## A ready expedition (of province [param from]) was clicked.
+signal expedition_clicked(from: int)
+## Right click on province [param to] with the expedition of [param from] selected.
+signal send_requested(from: int, to: int)
 
 const PARCHMENT := Color(0.88, 0.80, 0.63)
 const PARCHMENT_DARK := Color(0.62, 0.50, 0.33)
@@ -24,9 +30,15 @@ const OWNER_ARMS: Dictionary[StringName, Color] = {
 	ProvinceDef.OWNER_NEUTRAL: Color(0.45, 0.47, 0.46),
 }
 const MARGIN := 24.0
+## How near (parchment pixels) a click has to be to an expedition's mark.
+const MARK_RADIUS := 22.0
+const ROUTE_OK := Color(0.20, 0.45, 0.18)
+const ROUTE_BAD := Color(0.65, 0.15, 0.10)
 
 var sim: Simulation
 var selected: int = 0
+## The province whose ready expedition is selected, 0 = none.
+var expedition_from: int = 0
 var _hover: int = 0
 
 
@@ -64,16 +76,49 @@ func province_at(at: Vector2) -> int:
 	return 0
 
 
+## The province whose expedition's mark is under [param at] (control pixels), 0 if none.
+func expedition_at(at: Vector2) -> int:
+	var local := _fit().affine_inverse() * at
+	for id: int in sim.runtime_ids():
+		var p := sim.province_state(id)
+		if p != null and p.departure != null and not p.departure.is_sent() \
+				and local.distance_to(departure_point(id)) <= MARK_RADIUS:
+			return id
+	return 0
+
+
+## Where the expedition of province [param id] waits (parchment pixels): a cog off its coast,
+## a wagon beside its town.
+func departure_point(id: int) -> Vector2:
+	var p := sim.province_state(id)
+	if p != null and p.departure != null and p.departure.by_sea:
+		return _offshore(id)
+	return sim.world.def_of(id, sim.data).world_pos + Vector2(48, 14)
+
+
 func _gui_input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion != null:
 		_hover = province_at(motion.position)
 	var button := event as InputEventMouseButton
 	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
-		var id := province_at(button.position)
-		if id != 0:
-			selected = id
-			province_clicked.emit(id)
+		var from := expedition_at(button.position)
+		if from != 0:
+			expedition_from = from
+			selected = from
+			expedition_clicked.emit(from)
+		else:
+			var id := province_at(button.position)
+			if id != 0:
+				selected = id
+				province_clicked.emit(id)
+		accept_event()
+	elif button != null and button.pressed and button.button_index == MOUSE_BUTTON_RIGHT:
+		var to := province_at(button.position)
+		if expedition_from != 0 and to != 0 and to != expedition_from:
+			send_requested.emit(expedition_from, to)
+		else:
+			expedition_from = 0   # right click elsewhere lets go of the expedition
 		accept_event()
 
 
@@ -95,6 +140,9 @@ func _draw() -> void:
 		_draw_town(id)
 	for expedition: Expedition in sim.world.expeditions.values():
 		_draw_expedition(expedition)
+	for id: int in sim.runtime_ids():
+		_draw_departure(id)
+	_draw_planned_route()
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 	for id: int in sim.world.ids():
 		_draw_label(id, fit)
@@ -273,19 +321,69 @@ func _draw_expedition(e: Expedition) -> void:
 		var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 250.0)
 		draw_circle(at, 18.0 + pulse * 4.0, Color(SELECTED, 0.25 + 0.25 * pulse))
 	if e.by_sea:
-		var hull := PackedVector2Array([at + Vector2(-12 * flip, -2), at + Vector2(12 * flip, -2),
-				at + Vector2(8 * flip, 5), at + Vector2(-9 * flip, 5)])
-		draw_colored_polygon(hull, Color(0.45, 0.28, 0.14))
-		draw_line(at + Vector2(0, -2), at + Vector2(0, -20), INK, 1.5)
-		draw_colored_polygon(PackedVector2Array([at + Vector2(1 * flip, -19), at + Vector2(1 * flip, -5),
-				at + Vector2(11 * flip, -6)]), Color(0.95, 0.92, 0.85))
-		draw_rect(Rect2(at + Vector2(-1, -22), Vector2(2, 3)), OWNER_ARMS[ProvinceDef.OWNER_PLAYER])
+		_draw_cog(at, flip)
 	else:
-		draw_rect(Rect2(at + Vector2(-10, -10), Vector2(20, 9)), Color(0.55, 0.38, 0.20))
-		draw_arc(at + Vector2(0, -10), 9.0, PI, TAU, 10, Color(0.92, 0.88, 0.78), 3.0)
-		for x: float in [-6.0, 6.0]:
-			draw_circle(at + Vector2(x, 1), 3.5, INK)
-		draw_line(at + Vector2(10 * flip, -4), at + Vector2(17 * flip, -4), INK, 1.5)
+		_draw_wagon(at, flip)
+
+
+## The expedition of province [param id] getting ready (faint) or ready (with a flag) by its
+## town; the selected one glows.
+func _draw_departure(id: int) -> void:
+	var p := sim.province_state(id)
+	if p == null or p.departure == null or p.departure.is_sent():
+		return
+	var at := departure_point(id)
+	var ready := p.departure.is_ready()
+	if id == expedition_from:
+		var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 200.0)
+		draw_circle(at, 20.0 + pulse * 4.0, Color(SELECTED, 0.35 + 0.3 * pulse))
+	elif ready:
+		draw_arc(at, 19.0, 0.0, TAU, 24, Color(SELECTED, 0.8), 2.0)
+	var alpha := 1.0 if ready else 0.45
+	if p.departure.by_sea:
+		_draw_cog(at, 1.0, alpha)
+	else:
+		_draw_wagon(at, 1.0, alpha)
+	if ready:
+		draw_line(at + Vector2(-14, -4), at + Vector2(-14, -26), INK, 1.5)
+		draw_colored_polygon(PackedVector2Array([at + Vector2(-14, -26), at + Vector2(-2, -22),
+				at + Vector2(-14, -18)]), OWNER_ARMS[ProvinceDef.OWNER_PLAYER])
+
+
+## With an expedition selected: a dashed line to the province under the mouse, green where it
+## can go, red where it cannot.
+func _draw_planned_route() -> void:
+	if expedition_from == 0 or _hover == 0 or _hover == expedition_from:
+		return
+	var p := sim.province_state(expedition_from)
+	if p == null or p.departure == null or p.departure.is_sent():
+		expedition_from = 0
+		return
+	var ok := SendExpeditionCommand.error_for(sim, expedition_from, _hover) == &""
+	var to := sim.world.def_of(_hover, sim.data)
+	if to == null:
+		return
+	var width := 3.0 / maxf(_fit().get_scale().x, 0.01)
+	draw_dashed_line(departure_point(expedition_from), to.world_pos, ROUTE_OK if ok else ROUTE_BAD,
+			width, width * 4.0)
+
+
+func _draw_cog(at: Vector2, flip: float, alpha: float = 1.0) -> void:
+	var hull := PackedVector2Array([at + Vector2(-12 * flip, -2), at + Vector2(12 * flip, -2),
+			at + Vector2(8 * flip, 5), at + Vector2(-9 * flip, 5)])
+	draw_colored_polygon(hull, Color(0.45, 0.28, 0.14, alpha))
+	draw_line(at + Vector2(0, -2), at + Vector2(0, -20), Color(INK, alpha), 1.5)
+	draw_colored_polygon(PackedVector2Array([at + Vector2(1 * flip, -19), at + Vector2(1 * flip, -5),
+			at + Vector2(11 * flip, -6)]), Color(0.95, 0.92, 0.85, alpha))
+	draw_rect(Rect2(at + Vector2(-1, -22), Vector2(2, 3)), Color(OWNER_ARMS[ProvinceDef.OWNER_PLAYER], alpha))
+
+
+func _draw_wagon(at: Vector2, flip: float, alpha: float = 1.0) -> void:
+	draw_rect(Rect2(at + Vector2(-10, -10), Vector2(20, 9)), Color(0.55, 0.38, 0.20, alpha))
+	draw_arc(at + Vector2(0, -10), 9.0, PI, TAU, 10, Color(0.92, 0.88, 0.78, alpha), 3.0)
+	for x: float in [-6.0, 6.0]:
+		draw_circle(at + Vector2(x, 1), 3.5, Color(INK, alpha))
+	draw_line(at + Vector2(10 * flip, -4), at + Vector2(17 * flip, -4), Color(INK, alpha), 1.5)
 
 
 ## A small shield in the owner's colour.
