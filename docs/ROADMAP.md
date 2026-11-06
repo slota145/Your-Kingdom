@@ -487,7 +487,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## M5 — Woda, porty i statki
 
-**Status: plan zaakceptowany 2026-11-06. Część 1 (morze i ryby) gotowa i zaakceptowana przez właściciela 2026-11-06, scalona do `main`. Część 2 (port i kupiec morski) gotowa 2026-11-06, czeka na akceptację właściciela. Potem część 3 (koga gracza i start ze statku).** Poprawki z odłożonej oceny M4b-2 i M4b-3 (oraz pomiar FPS na laptopie) mają pierwszeństwo przed dalszą pracą nad M5.
+**Status: plan zaakceptowany 2026-11-06. Część 1 (morze i ryby) gotowa i zaakceptowana przez właściciela 2026-11-06, scalona do `main`. Część 2 (port i kupiec morski) gotowa i zaakceptowana przez właściciela 2026-11-06, scalona do `main`. Następny krok: część 3 (koga gracza, rejsy, start ze statku).** Poprawki z odłożonej oceny M4b-2 i M4b-3 (oraz pomiar FPS na laptopie) mają pierwszeństwo przed dalszą pracą nad M5.
 
 **Decyzje (2026-11-06, ankieta z właścicielem projektu):**
 - **Nowa mapa „Wybrzeże” 128×128 obok dzisiejszych.** Morze z jednej strony mapy, plaża, osłonięta zatoka na port, rzeka wpadająca do morza, lasy i skały. „Nadrzecze” i „Pojezierze”, stare zapisy, testy i duże miasto z M4b-3 zostają bez zmian. Wyspy czekają na M6.
