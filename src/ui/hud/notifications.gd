@@ -26,6 +26,12 @@ func on_sim_event(event: Dictionary) -> void:
 	if type == &"merchant_arrived":
 		push(tr("ui.note.merchant_arrived"))
 		return
+	if type == &"sea_merchant_arrived":
+		push(tr("ui.note.sea_merchant_arrived"))
+		return
+	if type == &"sea_merchant_left" and int(event.get("earned", 0)) + int(event.get("spent", 0)) > 0:
+		push(tr("ui.note.sea_merchant_left") % [int(event["earned"]), int(event["spent"])])
+		return
 	if type == &"merchant_left" and int(event.get("earned", 0)) > 0:
 		push(tr("ui.note.merchant_left") % int(event["earned"]))
 		return

@@ -4,6 +4,8 @@ extends PanelContainer
 ## (Stockpile.totals), so the numbers always match what the player sees.
 
 var stock: Stockpile
+## Translation key of the title (a ship's hold sets its own).
+var title_key: String = "ui.stockpile.title"
 
 var _title: Label
 ## Two columns, so a full stockpile still fits above the build bar.
@@ -23,6 +25,11 @@ func _init() -> void:
 
 
 func _process(_delta: float) -> void:
+	refresh()
+
+
+## Shows the slots as they are now (also called every frame).
+func refresh() -> void:
 	if stock == null:
 		return
 	var totals := stock.totals()
@@ -33,13 +40,18 @@ func _process(_delta: float) -> void:
 	_rebuild()
 
 
+## Goods and units the list shows now (tests compare it with the stockpile).
+func listed() -> Dictionary[StringName, int]:
+	return _shown
+
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED and _list != null:
 		_rebuild()
 
 
 func _rebuild() -> void:
-	_title.text = tr(&"ui.stockpile.title")
+	_title.text = tr(title_key)
 	for child: Node in _list.get_children():
 		child.queue_free()
 	if _shown.is_empty():

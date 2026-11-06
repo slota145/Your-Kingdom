@@ -255,6 +255,12 @@ const BUILDINGS := {
 			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.3, 0.45, 0.6)}],
 		"props": [["nets", 0.2, 1.0], ["fish_rack", 0.45, 1.75], ["bollard", 0.5, 2.8], ["bollard", 2.5, 2.8],
 			["barrel", 2.2, 2.3]]}],
+	# M5 part 2: the port. Its land tiles are left see-through: the quay yard (planks and the
+	# stacks of goods) is drawn by the view (QuayYard), so stacks are never hidden by the art.
+	"port": [{"min_height": 64.0, "ground_decks": true, "volumes": [
+		{"kind": "deck", "rect": [0.05, 1.9, 3.95, 3.95], "h": 6.0}],
+		"props": [["gate_posts", 3.55, 1.0], ["port_crane", 0.75, 2.55], ["barrels", 1.4, 2.35],
+			["bollard", 0.5, 3.75], ["bollard", 1.7, 3.75], ["bollard", 3.55, 3.75], ["lantern", 3.7, 2.2]]}],
 	"well": [{"special": "well"}],
 	"market": [{"special": "market"}],
 	"stockpile": [{"special": "yard"}],
@@ -325,7 +331,10 @@ func _make(id: String, def: BuildingDef) -> void:
 			"yard":
 				pass
 			_:
-				_write(id, name, _compose(look))
+				var art := _compose(look)
+				_write(id, name, art)
+				if art.has("ground"):
+					_write(id, name + "_ground", {"img": art["ground"], "pivot": art["pivot"]})
 	for phase: int in [1, 2]:
 		_write(id, "construction_%d" % phase, _site_image(phase, id))
 	if def.is_house():
@@ -346,16 +355,21 @@ func _make(id: String, def: BuildingDef) -> void:
 
 func _compose(look: Dictionary) -> Dictionary:
 	var volumes: Array = look["volumes"]
-	var top := 0.0
+	var top: float = look.get("min_height", 0.0)
 	for vol: Dictionary in volumes:
 		top = maxf(top, float(vol.get("h", 0.0)) + float(vol.get("rh", 0.0)) + float(vol.get("spire", 0.0))
 				+ (12.0 if vol.has("chimney") else 0.0) + (40.0 if vol.get("sails", false) else 0.0))
 	var c := _canvas(top + 4.0, 12)
 	var img: Image = c["img"]
 	var pivot: Vector2i = c["pivot"]
+	# A port's quay is ground people walk on (M5 part 2): drawn into its own image, which
+	# the view lays under everything (QuayYard), not into the sorted strips.
+	var ground: Image = null
+	if look.get("ground_decks", false):
+		ground = Image.create_empty(img.get_width(), img.get_height(), false, Image.FORMAT_RGBA8)
 	for vol: Dictionary in volumes:
 		if vol["kind"] == "deck":
-			_deck(img, pivot, vol)
+			_deck(ground if ground != null else img, pivot, vol)
 	var ordered := _back_to_front(volumes.filter(func(v: Dictionary) -> bool: return v["kind"] != "deck"))
 	var door_done := false
 	for vol: Dictionary in ordered:
@@ -374,6 +388,9 @@ func _compose(look: Dictionary) -> Dictionary:
 	for prop: Array in look.get("props", []):
 		_prop(img, Vector2(pivot) + IsoMath.grid_to_screen(Vector2(prop[1], prop[2]) - Vector2(_footprint)), String(prop[0]))
 	_finish(img)
+	if ground != null:
+		_finish(ground)
+		return {"img": img, "pivot": pivot, "ground": ground}
 	return {"img": img, "pivot": pivot}
 
 
@@ -1070,6 +1087,22 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 			_plank_pile(img, p)
 		"stone_blocks":
 			_stone_pile(img, p)
+		"port_crane":
+			# A tall timber crane on the quay: post, strut, jib out over the water, a crate
+			# hanging from the rope.
+			_box(img, p, Vector2(12, 6), 4.0, C_BEAM.lightened(0.1))
+			_line(img, p - Vector2(0, 4), p - Vector2(0, 56), C_BEAM, 3)
+			_line(img, p - Vector2(0, 18), p + Vector2(-14, -40), C_BEAM.lightened(0.05), 2)
+			_line(img, p - Vector2(0, 54), p + Vector2(-30, -42), C_BEAM, 2)
+			_line(img, p + Vector2(-29, -42), p + Vector2(-29, -20), Color(0.75, 0.65, 0.45), 1)
+			_crate(img, p + Vector2(-29, -12), Color(0.62, 0.46, 0.28))
+		"gate_posts":
+			for k: int in 2:
+				var q := p + Vector2(-12 + k * 22, -6 + k * 11)
+				_box(img, q, Vector2(5, 3), 22.0, C_BEAM)
+		"lantern":
+			_line(img, p, p - Vector2(0, 26), C_IRON, 1)
+			_box(img, p - Vector2(0, 26), Vector2(4, 2), 5.0, Color(0.95, 0.8, 0.4))
 		"crane":
 			_line(img, p, p - Vector2(0, 30), C_BEAM, 2)
 			_line(img, p - Vector2(0, 28), p + Vector2(-16, -24), C_BEAM, 2)

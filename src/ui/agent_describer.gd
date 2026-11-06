@@ -95,6 +95,8 @@ static func _storage_name(province: ProvinceSim, id: int) -> String:
 		return _t("ui.doing.ground")
 	if province.ship_builds.has(id):
 		return _f("ui.doing.slipway_of", [_building_name(province, province.ship_builds[id].shipyard_id)])
+	if province.ships.has(id):
+		return _f("ui.doing.ship", [_t(province.ships[id].def.name_key())])
 	if id < 0:
 		return _t("ui.doing.yard")
 	return _building_name(province, id)

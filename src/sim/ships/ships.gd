@@ -163,6 +163,8 @@ static func on_building_removed(province: ProvinceSim, building_id: int) -> void
 			ship.home_id = 0
 		if ship.dock_id == building_id:
 			ship.dock_id = 0
+		if ship.berth_id == building_id:
+			ship.berth_id = 0
 	for build: ShipBuild in province.ship_builds.values():
 		if build.shipyard_id == building_id:
 			close_build(province, build, false)
@@ -275,6 +277,8 @@ static func update(province: ProvinceSim) -> void:
 	if province.ships.is_empty():
 		return
 	for ship: ShipUnit in province.ships.values():
+		if ship.def.id == SeaMerchant.SHIP:
+			continue   # the sea merchant's cog goes its own way (SeaMerchant)
 		if ship.home_id == 0:
 			_find_home(province, ship)
 		if ship.crew == 0 and ship.dock_id == 0 and ship.path_state != ShipUnit.PathState.MOVING:

@@ -65,7 +65,7 @@ static func road_sink(province: ProvinceSim, good: StringName, amount: int, from
 	var best := 0
 	var best_d := 1 << 30
 	for building: BuildingState in province.buildings.all():
-		if building.stock == null or building.id == exclude or not building.stock.can_accept(good, amount):
+		if building.def.storage_slots == 0 or building.stock == null or building.id == exclude or not building.stock.can_accept(good, amount):
 			continue
 		var stop := province.road_stop(building.id, from)
 		if stop == Agent.NO_TILE:

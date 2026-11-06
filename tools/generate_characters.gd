@@ -97,6 +97,10 @@ const PEOPLE := {
 			"hat": "kerchief", "hat_colour": Color(0.2, 0.18, 0.16), "beard": true, "tool": "staff"},
 	"fisher": {"shirt": Color(0.3, 0.42, 0.55), "legs": Color(0.36, 0.33, 0.3), "hair": Color(0.55, 0.42, 0.25),
 			"hat": "wide", "hat_colour": Color(0.75, 0.62, 0.3), "beard": true, "tool": ""},
+	# M5 part 2 (the port)
+	"docker": {"shirt": Color(0.62, 0.58, 0.5), "legs": Color(0.25, 0.28, 0.38), "hair": Color(0.25, 0.17, 0.1),
+			"hat": "kerchief", "hat_colour": Color(0.6, 0.2, 0.18), "beard": false,
+			"apron": Color(0.42, 0.32, 0.22), "tool": ""},
 }
 
 ## Activity -> motion and the tool it uses (empty = the profession's own).
@@ -112,7 +116,7 @@ const WORK := {
 	"mix": ["stir", "paddle"], "ferment": ["push", ""], "mould": ["push", ""], "fire": ["push", "spade"],
 	"serve": ["push", "mug"],
 	"hammer": ["overhead", "hammer"], "stack": ["bend", ""], "tend_fire": ["low", "staff"], "tap": ["bend", ""],
-	"load": ["bend", ""],
+	"load": ["bend", ""], "hand_over": ["bend", ""],
 	"sell": ["throw", ""], "feed": ["throw", ""], "muck": ["low", "spade"], "slaughter": ["overhead", "axe"], "skin": ["push", ""],
 }
 
@@ -128,6 +132,7 @@ const ACTIVITIES := {
 	"swineherd": ["feed", "muck"], "butcher": ["slaughter", "skin"], "stallholder": ["sell"],
 	"merchant": [], "porter": ["load"], "carter": ["load"],
 	"shipwright": ["hammer"], "tar_burner": ["stack", "tend_fire", "tap"], "fisher": [],
+	"docker": ["hand_over"],
 }
 
 ## Carry category -> hands (side, front, height) for both hands, the good's anchor and
@@ -150,7 +155,13 @@ var _right: Vector2
 
 
 func _init() -> void:
+	var only := ""
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--only="):
+			only = arg.trim_prefix("--only=")
 	for kind: String in PEOPLE:
+		if not only.is_empty() and kind != only:
+			continue
 		_look = PEOPLE[kind]
 		_save(_sheet(4, func(_f: int, t: float) -> Dictionary: return {"breath": sin(t * TAU)}), kind, "idle")
 		_save(_sheet(8, func(_f: int, t: float) -> Dictionary: return {"swing": sin(t * TAU)}), kind, "walk")

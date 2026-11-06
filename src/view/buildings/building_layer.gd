@@ -26,6 +26,7 @@ var _views: Dictionary[int, Node2D] = {}
 var _keys: Dictionary[int, String] = {}
 var _site_piles: Dictionary[int, StackSprite] = {}
 var _stockpiles: Array[StockpileView] = []
+var _quays: Array[QuayYard] = []
 var _marks: Dictionary[int, Label] = {}
 var _ghost: BuildingView
 var _ghost_key: String = ""
@@ -56,6 +57,8 @@ func refresh_all() -> void:
 func update_view() -> void:
 	for view: StockpileView in _stockpiles:
 		view.update_view()
+	for quay: QuayYard in _quays:
+		quay.update_view()
 	for id: int in _site_piles:
 		var building := province.buildings.get_building(id)
 		var site := province.sites.get(building.site_id) as ConstructionSite if building != null else null
@@ -166,6 +169,11 @@ func _build(building: BuildingState, key: String) -> void:
 	else:
 		for art: String in key.split("|"):
 			add_art(holder, art, building.origin)
+	if building.def.is_port() and building.is_complete():
+		var quay := QuayYard.new()
+		holder.add_child(quay)
+		quay.setup(building)
+		_quays.append(quay)
 	if building.under_construction or building.site_id != 0:
 		var pile := StackSprite.new()
 		# Materials lie on the tile in front of the door.
@@ -180,6 +188,8 @@ func _drop(id: int) -> void:
 		for child: Node in holder.get_children():
 			if child is StockpileView:
 				_stockpiles.erase(child)
+			if child is QuayYard:
+				_quays.erase(child)
 		holder.queue_free()
 	_views.erase(id)
 	_keys.erase(id)

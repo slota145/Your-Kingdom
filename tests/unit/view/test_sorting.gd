@@ -279,3 +279,33 @@ func _check_walls(walls: Array[Vector2i], gates: Array[Vector2i], key_bias: floa
 				failures.append("agent %s (y=%.1f) %s %s (key %.1f)" % [
 					p, a.y, "in front of" if rel == DepthOracle.IN_FRONT else "behind", piece.name, key])
 	return failures
+
+
+# --- Ports (M5 part 2) -----------------------------------------------------------------
+
+## A docker handing goods over on a moored ship is drawn over the ship and the gangway plank
+## (his feet sort just past the ship's middle, the plank 1 px past it), for both turns of the
+## port. The quay deck and the quay yard are ground decals (z -1), under everybody.
+func test_docker_on_ship_deck_sorts_over_ship_and_plank() -> void:
+	for orientation: int in 2:
+		var sim := SimFixture.make_sim(Vector2i(48, 48))
+		SimFixture.coast(sim, 30, 33)
+		if orientation == 1:
+			# Sea to the east instead: the mirrored port faces it.
+			var land := sim.data.get_terrain(&"grass")
+			var shallow := sim.data.get_terrain(&"sea_shallow")
+			var deep := sim.data.get_terrain(&"sea_deep")
+			for y: int in 48:
+				for x: int in 48:
+					var t := land if x < 30 else (shallow if x < 33 else deep)
+					sim.province.grid.set_terrain(Vector2i(x, y), t.index)
+			sim.province.rebuild_nav()
+		var origin := Vector2i(20, 28) if orientation == 0 else Vector2i(28, 20)
+		assert_str(String(sim.execute(PlaceBuildingCommand.new(&"port", origin, true, orientation)))).is_empty()
+		var port := sim.province.buildings.get_building(sim.province.grid.occupant(origin))
+		var ship_y := IsoMath.grid_to_screen(IsoMath.tile_center(port.berth_tile())).y
+		var on_deck := IsoMath.grid_to_screen(Harbour.gangway_points(port)[2]).y
+		assert_float(on_deck).is_greater(ship_y + 1.0)
+		# He still stands on the berth tile (the hold is handed over there).
+		var feet := Harbour.gangway_points(port)[2]
+		assert_vector(Vector2i(floori(feet.x), floori(feet.y))).is_equal(port.berth_tile())

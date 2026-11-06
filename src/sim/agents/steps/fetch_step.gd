@@ -27,6 +27,8 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 			return failed(agent, &"no_source")
 		bb["_src"] = src
 		bb["_res"] = res
+	if Harbour.is_walking_back(agent):
+		return Harbour.walk_back(agent)
 	var src_id := int(bb["_src"])
 	var source := province.storage(src_id)
 	if source == null or not source.has_reservation(int(bb["_res"])):
@@ -34,13 +36,21 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 	var status := Movement.walk(province, agent, Carriers.stop_for(province, agent, src_id))
 	if status != Status.DONE:
 		return status
-	if Carriers.still_handling(agent, amount):
+	# A ship moored at a port: over the quay and up the gangway first (M5 part 2).
+	var port := Harbour.port_of(province, src_id)
+	if port != null:
+		if Harbour.walk_out(agent, port):
+			return Status.RUNNING
+	elif Carriers.still_handling(agent, amount):
 		return Status.RUNNING
 	var taken := source.commit(int(bb["_res"]))
 	agent.carry_good = good
 	agent.carry_amount = taken
 	province.events.emit(&"good_taken", {"agent": agent.id, "storage": src_id, "good": good,
 			"amount": taken})
+	if port != null:
+		Harbour.turn_back(agent, port)
+		return Status.RUNNING
 	return Status.DONE
 
 

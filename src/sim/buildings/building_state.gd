@@ -30,7 +30,8 @@ var look: int = 0
 var under_construction: bool = false
 ## Construction or upgrade site entity id, 0 = none.
 var site_id: int = 0
-## Public storage, present on finished buildings with def.storage_slots > 0.
+## Public storage, present on finished buildings with def.storage_slots > 0. On a port
+## (def.quay_slots > 0) the quay yard: private, only requests naming the port use it (M5).
 var stock: Stockpile
 ## Private pantry of a house (only its householders deliver here, nobody takes from it), or
 ## the input store of a workshop with def.input_goods (only its workers use it).
@@ -73,6 +74,8 @@ func finish(data: DataRegistry) -> void:
 	if def.storage_slots > 0 and stock == null:
 		stock = Stockpile.new(def.storage_slots, data)
 		reserves = def.default_reserves.duplicate()
+	if def.quay_slots > 0 and stock == null:
+		stock = Stockpile.new(def.quay_slots, data)
 	if not def.input_goods.is_empty() and supply == null:
 		supply = Stockpile.new(def.input_goods.size(), data)
 		supply.stack_limit = INPUT_UNITS
@@ -170,6 +173,11 @@ func entrance_tiles() -> Array[Vector2i]:
 ## Water tile where this building's ships moor or are launched (M5), Agent.NO_TILE if none.
 func berth_tile() -> Vector2i:
 	return def.berth_at(origin, orientation) if def.has_berth() else Agent.NO_TILE
+
+
+## Port: the quay tile at the foot of the gangway (M5 part 2), Agent.NO_TILE if none.
+func gangway_tile() -> Vector2i:
+	return def.gangway_at(origin, orientation) if def.is_port() else Agent.NO_TILE
 
 
 func is_entrance(tile: Vector2i) -> bool:

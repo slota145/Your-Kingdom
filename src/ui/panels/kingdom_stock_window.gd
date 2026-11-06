@@ -4,12 +4,14 @@ extends PanelContainer
 ## stacks by workshops, herds, market stalls and goods on the ground), how much it makes and
 ## uses per minute (average of the last 5 minutes) and the balance, green or red. The last
 ## column says what the travelling merchant may buy: everything above the number, when ticked.
+## The column after it (M5 part 2) is for the goods the sea merchant sells: he unloads them
+## while the kingdom holds less than the number, when ticked.
 
 signal command_requested(command: Command)
 signal closed
 
 const REFRESH := 0.5
-const COLUMNS := 7
+const COLUMNS := 8
 
 var province: ProvinceSim
 
@@ -36,11 +38,11 @@ func _init() -> void:
 	head.add_child(title)
 	head.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
 	_hint = UiKit.label("ui.stocks.hint")
-	_hint.custom_minimum_size.x = 640.0
+	_hint.custom_minimum_size.x = 820.0
 	_hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
 	box.add_child(_hint)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(720, 520)
+	scroll.custom_minimum_size = Vector2(900, 520)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	box.add_child(scroll)
 	_grid = GridContainer.new()
@@ -77,7 +79,7 @@ func _build_rows() -> void:
 		child.queue_free()
 	_rows.clear()
 	for key: String in ["", "ui.stocks.good", "ui.stocks.stock", "ui.stocks.made", "ui.stocks.used",
-			"ui.stocks.balance", "ui.stocks.sell"]:
+			"ui.stocks.balance", "ui.stocks.sell", "ui.stocks.buy"]:
 		var header := _small(key)
 		header.add_theme_color_override(&"font_color", Color(0.95, 0.82, 0.5))
 		_grid.add_child(header)
@@ -123,6 +125,34 @@ func _build_rows() -> void:
 		_grid.add_child(sell)
 		_rows[good] = {"stock": stock, "made": made, "used": used, "balance": balance,
 				"tick": tick, "amount": amount}
+		_grid.add_child(_buy_cell(good))
+
+
+## "Buy up to N" from the sea merchant, for the goods he sells (an empty cell otherwise).
+func _buy_cell(good: StringName) -> Control:
+	var cell := HBoxContainer.new()
+	if not SeaMerchant.OFFER.has(good):
+		return cell
+	var tick := CheckBox.new()
+	tick.tooltip_text = "ui.stocks.buy_hint"
+	var amount := SpinBox.new()
+	amount.min_value = 1
+	amount.max_value = SeaMerchant.MAX_BUY_UP_TO
+	amount.step = 1
+	amount.value = 10
+	amount.tooltip_text = "ui.stocks.buy_hint"
+	amount.get_line_edit().add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
+	tick.toggled.connect(func(on: bool) -> void:
+		command_requested.emit(SetBuyUpToCommand.new(good, int(amount.value) if on else 0)))
+	amount.value_changed.connect(func(value: float) -> void:
+		if tick.button_pressed:
+			command_requested.emit(SetBuyUpToCommand.new(good, int(value))))
+	cell.add_child(tick)
+	cell.add_child(amount)
+	cell.add_child(_small(tr("ui.stocks.buy_price") % SeaMerchant.sell_price(province, good)))
+	_rows[good]["buy_tick"] = tick
+	_rows[good]["buy_amount"] = amount
+	return cell
 
 
 func _refresh() -> void:
@@ -146,3 +176,9 @@ func _refresh() -> void:
 		var spin := row["amount"] as SpinBox
 		if selling and not spin.get_line_edit().has_focus():
 			spin.set_value_no_signal(int(province.merchant.sell_above[good]))
+		if row.has("buy_tick"):
+			var buying := province.sea_merchant.buy_up_to.has(good)
+			(row["buy_tick"] as CheckBox).set_pressed_no_signal(buying)
+			var buy_spin := row["buy_amount"] as SpinBox
+			if buying and not buy_spin.get_line_edit().has_focus():
+				buy_spin.set_value_no_signal(int(province.sea_merchant.buy_up_to[good]))

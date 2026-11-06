@@ -18,7 +18,7 @@ func validate(sim: Simulation) -> StringName:
 	var building := sim.province.buildings.get_building(building_id)
 	if building == null:
 		return &"unknown_building"
-	if building.stock == null:
+	if building.stock == null or building.def.storage_slots == 0:
 		return &"not_a_storage"
 	if sim.data.get_good(good) == null:
 		return &"unknown_good"
