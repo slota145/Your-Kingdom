@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_vis")
 art_id = "pigsty"
+open_ground = true
 spot_offsets = Dictionary[StringName, Vector2]({
 &"trough": Vector2(24, -2),
 &"pen": Vector2(8, 10)

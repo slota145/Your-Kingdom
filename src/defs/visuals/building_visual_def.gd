@@ -13,6 +13,10 @@ extends Resource
 @export_range(0, 3) var row_from_level: int = 0
 ## Drawn as an open yard with stacks instead of a box (stockpiles).
 @export var yard: bool = false
+## People inside the footprint stand on open ground (a pen): they are drawn over the
+## building's art and do not fade out as at a door (owner feedback 2026-11-06: swineherds
+## and porters vanished under the pigsty's pens).
+@export var open_ground: bool = false
 ## Number of looks of the "base" art: "base", "base_2", "base_3"... Each building picks one
 ## by its position, so a village of huts is not a row of copies.
 @export_range(1, 8) var base_variants: int = 1
