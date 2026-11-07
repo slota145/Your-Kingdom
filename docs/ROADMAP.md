@@ -798,7 +798,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## G1 — Grafika budynków z PixelLab, część 1 (pionierzy)
 
-**Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu), w toku. Ocena po etapie.**
+**Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu). Gotowe 2026-11-07, czeka na ocenę wyglądu właściciela.**
 
 **Decyzje (ankieta 2026-11-07):**
 - **Obóz pionierów:** nowa generacja na cały romb 3×3 (więcej namiotów, sterty, ognisko), nie obóz z próby.
@@ -809,9 +809,16 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Budżet (195 generacji do 27.11):** najpierw cały zestaw (5 budynków z etapami budowy), warianty chaty na końcu, ile się zmieści; ok. 10 generacji zapasu.
 - **Wzór stylu:** pierwszy gotowy budynek jest „style image” dla następnych. Drwal, kamieniołom i rybak mają podwórko na stos (paczka 2), więc ich chata zajmuje tylko 2 tylne kafle, a podwórko dalej rysuje kod.
 
+**Zmiany w trakcie (ankiety 2026-11-07):**
+- **Narzędzie: Pixen zamiast Pro Flash** (`create_image_pixen`, widok „high top-down”, kierunek „south-east”, „highly detailed”, „selective outline”, 1 generacja za obrazek). Pro Flash rysował drzwi na złej (lewej) ścianie, a przemalowanie chaty z kodu dało płaski styl. Właściciel porównał Pro Flash, Pro (4 kandydatów za 10 generacji, najwięcej detali) i Pixen i wybrał Pixen: prawdziwa izometria 2:1 (ściany pod kątem kafli), drzwi po prawej w opisie „door in the gable wall facing the lower right”, prawie darmowy. Pixen nie bierze wzoru stylu, więc spójność trzyma ten sam opis. Lustro obrazka (gdy drzwi wyjdą po lewej) odrzucone, zostaje opis i przeróbka.
+- **Etapy budowy i tyły chat:** przeróbka gotowego budynku w Pixenie (`edit_image_pixen`, 1 generacja), na tym samym płótnie, więc leżą dokładnie na budynku. Fundament: „remove the whole building completely… only a flat stone foundation”.
+- **Obóz pionierów z osobnych elementów** (prośba właściciela): obóz wygenerowany w całości miał własny grunt w innym kolorze niż nasza ziemia i wychodził poza kratki. Teraz domek z bali, 2 namioty, ognisko z kociołkiem, flaga, drewno i beczka ze skrzynią to osobne obrazki z Pixena, a skrypt `tools/compose_pixellab_camp.py` układa je w rombie 3×3 na naszej trawie (przód wolny na wejście). Etap 1: podłoga domku, jeden namiot i zapasy; etap 2: szkielet domku, oba namioty i ognisko.
+
+**Stan (2026-11-07):** wszystkie 5 budynków z PixelLab w grze: obóz (gotowy i 2 etapy budowy), chata w 3 wyglądach (szachulec ze strzechą, bale z gontem, tynk z łupkiem) z tyłami i 2 etapami budowy (oba także od tyłu), drwal, kamieniarz i rybak z podwórkiem i 2 etapami. Surowe obrazki: `tools/pixellab_src/buildings/` (Godot ich nie importuje), budowa grafik: `python3 tools/build_pixellab_buildings.py` (ART_SPEC §10.12). Test sortowania prawdziwych grafik i ich luster: `test_pixellab_building_art_sorts_correctly`. Zrzuty: `game_shot.tscn -- --map=lakeland --tile=84,64 --zoom=1 --g1=finished` (gotowe) i `--g1=sites` (place budowy). Budżet: zużyte 128 generacji (ok. 67 na próby Pro Flash i Pro, ok. 61 na Pixen), zostało 67 do 27.11. Zapis bez zmian (v17).
+
 **Skąd ten etap:** budynki rysowane kodem są czytelne, ale „płaskie” obok terenu i menu z PixelLab. Próba 2026-11-07 (ART_SPEC §10.11): obóz pionierów i chata wygenerowane od zera w PixelLab dwoma narzędziami i wstawione na próbę do sceny gry. Wybór właściciela: **Pro Flash** (`create_object_pro_flash`, widok „high top-down”, 1 kierunek, ok. 6–9 generacji za budynek), **rozjaśnione średnio** skryptem `tools/brighten_pixellab.py`. „Obiekt na mapę” odpada (obóz wyszedł jako latająca wysepka ze skarpą). Pliki próby: `src/prototype/g1/`.
 
-**Zakres (do potwierdzenia w planie):** zestaw pionierów, czyli pierwsze minuty gry: obóz pionierów, chata, drwal, kamieniołom, rybak.
+**Zakres:** zestaw pionierów, czyli pierwsze minuty gry: obóz pionierów, chata, drwal, kamieniołom, rybak.
 
 **Do rozstrzygnięcia w planie (ankieta):**
 - rozmiar względem obrysu (obóz z próby jest mniejszy niż 3×3 kafle) i wejście na właściwym kaflu (drzwi chaty z próby są na prawej ścianie),
@@ -821,10 +828,10 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - miejsca pracy i podwórka widoczne od strony kamery (ART_SPEC §3.2),
 - budżet: ok. 195 generacji do 27 listopada.
 
-**DoD (wstępnie):**
-- [ ] Budynki zestawu pionierów z PixelLab w grze, z pivotem, wejściem i cięciem do sortowania (`test_sorting.gd`), etapami budowy i obiema orientacjami.
-- [ ] Przepływ pracy opisany w ART_SPEC (opis stylu, rozjaśnienie, przycięcie, pivot), żeby kolejne partie były spójne.
-- [ ] Testy przechodzą (szybkie i długie).
+**DoD:**
+- [x] Budynki zestawu pionierów z PixelLab w grze, z pivotem, wejściem i cięciem do sortowania (`test_sorting.gd`), etapami budowy i obiema orientacjami.
+- [x] Przepływ pracy opisany w ART_SPEC (opis stylu, rozjaśnienie, przycięcie, pivot), żeby kolejne partie były spójne.
+- [x] Testy przechodzą (szybkie i długie).
 - [ ] **Twoja ocena wyglądu.**
 
 ---

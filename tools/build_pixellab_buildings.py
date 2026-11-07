@@ -25,12 +25,12 @@ FIT = os.path.join(ROOT, "tools", "fit_pixellab_building.py")
 WORKSHOP = ["--footprint=2,2", "--entrance=1,1", "--volume=0,0,1,2", "--yard=1,0"]
 BUILDINGS = {
     "pioneer_camp": (
-        # The camp's patch of trodden earth is drawn a little larger than 3x3 tiles: it is
-        # moved down onto the footprint and cut along the front edges.
-        ["--footprint=3,3", "--entrance=1,2", "--inset=-4", "--dx=6", "--dy=13", "--clip-front=1"],
+        # Laid out from separate pieces by tools/compose_pixellab_camp.py (no ground of its
+        # own, inside the 3x3 tiles); the front corner sits at its PIVOT.
+        ["--footprint=3,3", "--entrance=1,2", "--pivot=120,190"],
         [("base", "base", {}),
-         ("construction_1", "construction_1", {"like": "base"}),
-         ("construction_2", "construction_2", {"like": "base"})]),
+         ("construction_1", "construction_1", {}),
+         ("construction_2", "construction_2", {})]),
     "hut": (
         ["--footprint=2,2", "--entrance=1,1"],
         [("base", "base", {}),
@@ -58,6 +58,9 @@ BUILDINGS = {
 
 def main():
     only = sys.argv[1:]
+    if not only or "pioneer_camp" in only:
+        subprocess.run([sys.executable, os.path.join(ROOT, "tools", "compose_pixellab_camp.py")],
+                       check=True)
     for building, (opts, images) in BUILDINGS.items():
         if only and building not in only:
             continue

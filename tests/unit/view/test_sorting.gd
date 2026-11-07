@@ -15,6 +15,34 @@ func test_building_strips_sort_correctly() -> void:
 				"footprint %s:\n%s" % [footprint, "\n".join(failures.slice(0, 10))]).is_empty()
 
 
+## G1: the pioneer set drawn by PixelLab is wider than the code-drawn art (eaves, props) and
+## its pivot need not sit in the middle; the strips of every such image (and its mirror)
+## must still sort right with people walking around.
+func test_pixellab_building_art_sorts_correctly() -> void:
+	var arts: Array[String] = []
+	for building: String in ["pioneer_camp", "hut", "woodcutter", "quarry", "fishing_hut"]:
+		for name: String in ["base", "construction_1", "construction_2"]:
+			arts.append("res://assets/buildings/%s/%s.json" % [building, name])
+	for name: String in ["base_2", "base_3", "base_back", "base_2_back", "base_3_back",
+			"construction_1_back", "construction_2_back"]:
+		arts.append("res://assets/buildings/hut/%s.json" % name)
+	for path: String in arts:
+		var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
+		var fp := Vector2i(int(meta["footprint"][0]), int(meta["footprint"][1]))
+		var pivot := Vector2i(int(meta["pivot"][0]), int(meta["pivot"][1]))
+		var tex := load(path.replace(".json", ".png")) as Texture2D
+		assert_object(tex).override_failure_message(path).is_not_null()
+		var size := Vector2i(tex.get_size())
+		assert_bool(Rect2i(Vector2i.ZERO, size).has_point(pivot - Vector2i(0, 1))).override_failure_message(
+				"%s: pivot %s outside %s" % [path, pivot, size]).is_true()
+		for mirrored: bool in [false, true]:
+			var p := Vector2i(size.x - pivot.x, pivot.y) if mirrored else pivot
+			var f := Vector2i(fp.y, fp.x) if mirrored else fp
+			var failures := _check_building(Vector2i(10, 10), f, 0.0, p, size)
+			assert_array(Array(failures)).override_failure_message("%s%s:\n%s" % [
+					path, " mirrored" if mirrored else "", "\n".join(failures.slice(0, 10))]).is_empty()
+
+
 func test_oracle_catches_wrong_sort_keys() -> void:
 	# Control check: shifting sort points far enough must be detected.
 	assert_int(_check_building(Vector2i(10, 10), Vector2i(3, 3), 16.0).size()).is_greater(10)
@@ -144,15 +172,16 @@ func _depth_range(poly: PackedVector2Array, x0: float, x1: float) -> Vector2:
 	return Vector2(lo, hi)
 
 
-func _check_building(origin: Vector2i, footprint: Vector2i, key_bias: float = 0.0) -> PackedStringArray:
+func _check_building(origin: Vector2i, footprint: Vector2i, key_bias: float = 0.0,
+		art_pivot: Vector2i = Vector2i(-1, -1), art_size: Vector2i = Vector2i.ZERO) -> PackedStringArray:
 	var failures := PackedStringArray()
 	var rect := Rect2i(origin, footprint)
 	var poly := PackedVector2Array([
 		Vector2(rect.position), Vector2(rect.end.x, rect.position.y),
 		Vector2(rect.end), Vector2(rect.position.x, rect.end.y)])
-	# Placeholder-like image: 8 px eaves on both sides, 120 px tall.
-	var pivot := Vector2i(32 * footprint.x + 8, 120)
-	var image := Vector2i(32 * (footprint.x + footprint.y) + 16, 120)
+	# Placeholder-like image: 8 px eaves on both sides, 120 px tall (or the given real art).
+	var pivot := Vector2i(32 * footprint.x + 8, 120) if art_pivot.x < 0 else art_pivot
+	var image := Vector2i(32 * (footprint.x + footprint.y) + 16, 120) if art_size == Vector2i.ZERO else art_size
 	var b_screen := IsoMath.grid_to_screen(Vector2(rect.end))
 	var strips := BuildingSlicer.slices(footprint, pivot, image)
 	var area := rect.grow(3)

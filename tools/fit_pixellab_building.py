@@ -19,6 +19,10 @@ drawn under it as trodden earth (--yard=x,y), like tools/generate_art.gd does.
 Run: python3 tools/fit_pixellab_building.py <raw.png> <assets/buildings/<id>/<name>>
        --footprint=2,2 --entrance=1,1 [--volume=x0,y0,x1,y1] [--inset=4] [--dx=0] [--dy=0]
        [--like=<raw.png>] [--yard=x,y] [--no-brighten] [--margin=12] [--clip-front=<px>]
+       [--pivot=x,y]
+
+--pivot=x,y says where the front corner of the footprint already is on the raw canvas (art
+composed on the footprint by a script, tools/compose_pixellab_camp.py): no shift by the bbox.
 
 --clip-front cuts away whatever hangs below the two front edges of the footprint diamond
 (plus <px> pixels of slack): a patch of ground drawn a little wider than the footprint
@@ -151,7 +155,11 @@ def main():
 
     raw = drop_specks(Image.open(args[0]).convert("RGBA"))
     anchor = drop_specks(Image.open(opts["like"]).convert("RGBA")) if "like" in opts else raw
-    sx, sy = shift_of(anchor, footprint, volume, inset, dx, dy)
+    if "pivot" in opts:
+        px0, py0 = ints(opts["pivot"])
+        sx, sy = -px0 + dx, -py0 + dy
+    else:
+        sx, sy = shift_of(anchor, footprint, volume, inset, dx, dy)
     art = raw if "no-brighten" in opts else brighten(raw)
     box = art.getbbox()
 
