@@ -282,3 +282,15 @@ func test_quay_comes_up_onto_the_shore() -> void:
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return province.paving.is_empty(), 300)).is_true()
 	assert_int(province.grid.quay(Vector2i(18, 28))).is_equal(TileGrid.PIER)
 	assert_int(province.grid.quay(Vector2i(18, 30))).is_equal(TileGrid.PIER)
+
+
+## Where a quay comes up onto the shore its side runs down the bank: full height at the water,
+## nothing two tiles inland (owner's request 2026-11-07).
+func test_quay_side_runs_down_the_bank() -> void:
+	var sim := _coast_sim()
+	_lay(sim, _column(16, 28, 31), TileGrid.STONE_QUAY)
+	var layer: QuayLayer = auto_free(QuayLayer.new())
+	layer.setup(sim.province)
+	assert_float(layer._bank_height(Vector2i(17, 30), true)).is_equal_approx(QuayLayer.STONE_ABOVE, 0.01)
+	assert_float(layer._bank_height(Vector2i(17, 29), true)).is_equal_approx(QuayLayer.STONE_ABOVE * 0.5, 0.01)
+	assert_float(layer._bank_height(Vector2i(17, 28), true)).is_equal_approx(0.0, 0.01)

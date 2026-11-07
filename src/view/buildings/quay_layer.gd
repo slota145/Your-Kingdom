@@ -159,7 +159,15 @@ func _draw_tile(tile: Vector2i, kind: int) -> void:
 		var p := IsoMath.grid_to_screen(Vector2(tile) + _CORNERS[a])
 		var q := IsoMath.grid_to_screen(Vector2(tile) + _CORNERS[b])
 		if ground:
-			# On the shore (N1, a quay coming up onto land): a kerb where it meets the ground.
+			# On the shore (N1, a quay coming up onto land): where its side faces the camera, the
+			# wall runs down the slope of the bank, full height at the water and nothing a couple
+			# of tiles inland (owner's request 2026-11-07); a kerb where it meets the ground.
+			if normal.x + normal.y > 0:
+				var hp := _bank_height(tile + Vector2i(_CORNERS[a]), stone)
+				var hq := _bank_height(tile + Vector2i(_CORNERS[b]), stone)
+				if maxf(hp, hq) > 0.5:
+					var light := 0.82 if normal == Vector2i(1, 0) else (0.68 if normal == Vector2i(0, 1) else 0.75)
+					_slope_side(p, q, hp, hq, light, stone)
 			draw_line(p, q, (STONE_DARK if stone else BEAM).darkened(0.2), 2.0)
 			continue
 		if not open or normal.x + normal.y <= 0:
@@ -413,6 +421,59 @@ func _under_water(p: Vector2, q: Vector2, wall: Color) -> void:
 func _clipped_line(a: Vector2, b: Vector2, poly: PackedVector2Array, color: Color) -> void:
 	for seg: PackedVector2Array in Geometry2D.intersect_polyline_with_polygon(PackedVector2Array([a, b]), poly):
 		draw_polyline(seg, color, 1.0)
+
+
+## How high the side of a quay stands at the grid point [param point] on the shore: full at
+## the water, down to nothing two tiles inland (the bank rises), in px.
+func _bank_height(point: Vector2i, stone: bool) -> float:
+	var full := STONE_ABOVE if stone else PIER_ABOVE
+	var best := 3.0
+	for ty: int in range(point.y - 3, point.y + 3):
+		for tx: int in range(point.x - 3, point.x + 3):
+			if not _is_water(Vector2i(tx, ty)):
+				continue
+			# Distance from the point to the square of the tile, in tiles (Chebyshev).
+			var dx := maxf(maxf(tx - point.x, point.x - (tx + 1)), 0.0)
+			var dy := maxf(maxf(ty - point.y, point.y - (ty + 1)), 0.0)
+			best = minf(best, maxf(dx, dy))
+	return full * clampf(1.0 - best / 2.0, 0.0, 1.0)
+
+
+## A side of a quay running down the bank from [param p] (height [param hp]) to [param q]
+## (height [param hq]): stone courses, or the pier's beam and piles getting shorter.
+func _slope_side(p: Vector2, q: Vector2, hp: float, hq: float, light: float, stone: bool) -> void:
+	var shade := Color(light, light, light)
+	var face := PackedVector2Array([p, q, q + Vector2(0, hq), p + Vector2(0, hp)])
+	var length := p.distance_to(q)
+	var along := (q - p) / maxf(length, 0.001)
+	if stone:
+		var wall := STONE_DARK * shade
+		draw_colored_polygon(face, wall)
+		for row: int in 5:
+			var y := 4.0 * (row + 1)
+			_clipped_line(p + Vector2(0, y), q + Vector2(0, y), face, wall.darkened(0.22))
+			var x := 5.0 if row % 2 == 0 else 0.0
+			while x < length:
+				var at := p + along * x
+				_clipped_line(at + Vector2(0, 4.0 * row), at + Vector2(0, 4.0 * row + 4.0), face, wall.darkened(0.18))
+				x += 10.0
+		# The cornice goes down the bank too.
+		draw_line(p + Vector2(0, 1), q + Vector2(0, 1), STONE * Color(light + 0.1, light + 0.1, light + 0.1), 2.0)
+		# Earth piled against its foot.
+		draw_line(p + Vector2(0, hp), q + Vector2(0, hq), Color(0.55, 0.47, 0.33), 2.0)
+	else:
+		var beam := BEAM * Color(light + 0.1, light + 0.1, light + 0.1)
+		var n := maxi(2, roundi(length / 12.0))
+		for k: int in n + 1:
+			var t := float(k) / n
+			var h := lerpf(hp, hq, t)
+			if h < 2.0:
+				continue
+			var foot := p.lerp(q, t)
+			draw_line(foot, foot + Vector2(0, h), PLANK_DARK * shade, 3.0)
+		var band := minf(3.0, maxf(hp, hq))
+		draw_colored_polygon(PackedVector2Array([p, q, q + Vector2(0, minf(band, hq + 1.0)),
+				p + Vector2(0, minf(band, hp + 1.0))]), beam)
 
 
 func _is_water(tile: Vector2i) -> bool:
