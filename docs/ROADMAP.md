@@ -464,7 +464,14 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Automatyczny gracz na mapie `riverlands` dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`: 78. minuta po poprawkach wydajności, „Pojezierze” 77.).
 - [x] Zapis z M4b-2 wczytuje się po migracji (v7 → v8) bez utraty towaru, nowa fixtura `v8_town.json` (`test_save_round_trip.gd`). Jeśli część 2 albo 3 zmieni format, fixturę v8 wygenerujemy od nowa (wersja 8 nie trafiła jeszcze do gry na `main`).
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
-- [ ] **Twoja ocena gry.** Zamyka też całe M4b (DoD M4b wyżej).
+- [x] **Twoja ocena gry:** 5/5 (2026-11-07, ankieta na laptopie). Zamyka też całe M4b (DoD M4b wyżej). Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Zacięcia symulacji:** na dużym mieście co kilka sekund gry jeden tick trwa ok. 80 ms (przy 4× zacięcie ok. raz na sekundę, ARCHITECTURE §9.3). Znaleźć i rozłożyć ten koszt.
+- [ ] **Zacięcia przy stawianiu budynku usługowego** (kaplica, studnia): podgląd zasięgu przelicza się przy każdym ruchu myszy. Do sprawdzenia i poprawki (np. liczyć raz na kafel albo rzadziej).
+- [ ] **Znacznik zaplanowanego bruku:** wyraźnie widać, które kafle czekają na bruk, i da się taki plan anulować.
+- [ ] **Animacja obracających się kół** przy wózkach i wozach.
+- [ ] **Tekstury wody i kamienistego gruntu:** warianty kafli losowane na mapie, żeby wzór się nie powtarzał (jezioro, kamienisty grunt); kamienisty grunt bez szwów; łagodne przejścia między wodą rzeki a jeziorem i między wodą rzeki a morzem.
 
 **Ustalone przy realizacji części 1 (2026-11-05, do zmiany na prośbę):**
 - **Grafika bruku z PixelLab:** kafel 14 („cobblestone pavement”) z zestawu kafli terenu właściciela (`Flat isometric ground texture tiles…`), z wyrównanymi krawędziami jak reszta terenu; wariant `b` to lustro `a`.
