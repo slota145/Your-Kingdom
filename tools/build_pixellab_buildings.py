@@ -2,8 +2,7 @@
 """Builds the game art of the buildings drawn by PixelLab (G1, ART_SPEC §10.12) from the raw
 PixelLab images kept in tools/pixellab_src/buildings/<id>/ (not imported by Godot).
 
-Every image goes through tools/fit_pixellab_building.py: brightened (owner's "medium"
-level), placed on its footprint with the pivot in the front corner, the production yard
+Every image goes through tools/fit_pixellab_building.py: placed on its footprint with the pivot in the front corner, the production yard
 drawn under it. A construction stage or the back of a house is an edit of its finished
 building on the same canvas, so it takes the finished building's placement (--like).
 
@@ -17,6 +16,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tools", "pixellab_src", "buildings")
 OUT = os.path.join(ROOT, "assets", "buildings")
 FIT = os.path.join(ROOT, "tools", "fit_pixellab_building.py")
+# Pixen art is as bright as the code-drawn buildings: the owner turned the brightening of the
+# trial (tools/brighten_pixellab.py, made for the darker Pro Flash) off on 2026-11-07.
+COMMON = ["--no-brighten"]
 
 # Building id -> (fit options shared by all its images, {art name: raw image it is made of}).
 # The first raw named in each group is the finished building the others line up with.
@@ -66,7 +68,7 @@ def main():
             continue
         for name, raw, extra in images:
             args = [sys.executable, FIT, os.path.join(SRC, building, raw + ".png"),
-                    os.path.join(OUT, building, name)] + opts
+                    os.path.join(OUT, building, name)] + opts + COMMON
             if "like" in extra:
                 args.append("--like=" + os.path.join(SRC, building, extra["like"] + ".png"))
             subprocess.run(args, check=True)
