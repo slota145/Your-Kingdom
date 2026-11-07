@@ -16,6 +16,10 @@ const VEHICLES: Dictionary[StringName, Dictionary] = {
 	&"wagon": {"frame": Vector2i(112, 80), "centre": Vector2(56, 52), "ahead": -0.6},
 	&"trade_wagon": {"frame": Vector2i(112, 80), "centre": Vector2(56, 52), "ahead": -0.6},
 }
+## Columns of turning wheels in a vehicle sheet (review fix 2026-11-07), shown in turn while
+## the vehicle moves, this many per second.
+const WHEEL_FRAMES := 4
+const WHEEL_FPS := 10.0
 ## Forward vector in grid space of the vehicle rows (as in tools/generate_goods.gd).
 const ROW_FORWARD: Array[Vector2] = [Vector2(0.7071, 0.7071), Vector2(1, 0), Vector2(0.7071, -0.7071),
 		Vector2(0, -1), Vector2(-0.7071, -0.7071)]
@@ -53,12 +57,14 @@ func show_state(visual: CharacterVisual, anim: StringName, dir: int, time: float
 	var column := sheet.frame_at(time)
 	frame = row_flip.x * sheet.frames + column
 	flip_h = row_flip.y == 1
-	_update_vehicle(row_flip, vehicle, loaded)
+	var wheel := int(time * WHEEL_FPS) % WHEEL_FRAMES if String(anim).begins_with("walk") else 0
+	_update_vehicle(row_flip, vehicle, loaded, wheel)
 	_update_good(sheet, row_flip, column, carry_category, &"" if vehicle != &"" else good)
 
 
 ## A handcart in front of the person (M4b-3), pushed by the handles; goods ride on it.
-func _update_vehicle(row_flip: Vector2i, vehicle: StringName, loaded: bool) -> void:
+## [param wheel]: column of the turned wheels.
+func _update_vehicle(row_flip: Vector2i, vehicle: StringName, loaded: bool, wheel: int = 0) -> void:
 	_vehicle.visible = vehicle != &""
 	if vehicle == &"":
 		return
@@ -66,7 +72,11 @@ func _update_vehicle(row_flip: Vector2i, vehicle: StringName, loaded: bool) -> v
 	var frame_size: Vector2i = spec["frame"]
 	var row := mini(row_flip.x, ROW_FORWARD.size() - 1)
 	_vehicle.texture = _carried_texture_at("vehicles/%s/%s.png" % [vehicle, "loaded" if loaded else "empty"])
-	_vehicle.region_rect = Rect2(0, row * frame_size.y, frame_size.x, frame_size.y)
+	# Mirrored rows roll the other way round: their columns run backwards.
+	var column := (WHEEL_FRAMES - wheel) % WHEEL_FRAMES if row_flip.y == 1 else wheel
+	if _vehicle.texture.get_width() < (column + 1) * frame_size.x:
+		column = 0   # a sheet without turning wheels (placeholders)
+	_vehicle.region_rect = Rect2(column * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
 	_vehicle.flip_h = row_flip.y == 1
 	var ahead_tiles: float = spec["ahead"]
 	var g := ROW_FORWARD[row] * ahead_tiles

@@ -407,6 +407,10 @@ func _merchant_cart() -> void:
 
 ## Frame of one direction of a vehicle sheet, and the ground point under the vehicle's centre.
 const CART_FRAME := Vector2i(48, 40)
+## Columns of a vehicle sheet: the wheels turned on by a sixth of a turn over them (their
+## three spokes look the same after a sixth), shown in turn while the vehicle moves
+## (review fix 2026-11-07).
+const WHEEL_FRAMES := 4
 const CART_CENTRE := Vector2(24, 30)
 ## Forward vector in grid space of rows S, SE, E, NE, N (the view mirrors the other three).
 const ROW_FORWARD: Array[Vector2] = [Vector2(0.7071, 0.7071), Vector2(1, 0), Vector2(0.7071, -0.7071),
@@ -418,6 +422,8 @@ const C_HORSE := Color(0.48, 0.3, 0.18)
 
 ## Ground point of the vehicle being drawn (_cart_point).
 var _vehicle_origin: Vector2 = CART_CENTRE
+## Turn of the wheels in the frame being drawn (radians).
+var _spin: float = 0.0
 
 
 ## A two-wheeled handcart pushed by a porter: an open tray on two wheels with handles at the
@@ -425,8 +431,10 @@ var _vehicle_origin: Vector2 = CART_CENTRE
 ## the cart's centre on the ground at (24, 30).
 func _handcart() -> void:
 	for state: String in ["empty", "loaded"]:
-		var sheet := Image.create_empty(CART_FRAME.x, CART_FRAME.y * 5, false, Image.FORMAT_RGBA8)
-		for row: int in 5:
+		var sheet := Image.create_empty(CART_FRAME.x * WHEEL_FRAMES, CART_FRAME.y * 5, false, Image.FORMAT_RGBA8)
+		for cell: int in 5 * WHEEL_FRAMES:
+			var row := cell / WHEEL_FRAMES
+			_spin = (cell % WHEEL_FRAMES) * PI / 3.0 / WHEEL_FRAMES
 			var img := Image.create_empty(CART_FRAME.x, CART_FRAME.y, false, Image.FORMAT_RGBA8)
 			var fwd := ROW_FORWARD[row]
 			var parts: Array = []   # [depth, callable]
@@ -447,7 +455,8 @@ func _handcart() -> void:
 			for part: Array in parts:
 				(part[1] as Callable).call()
 			_outline(img)
-			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, CART_FRAME), Vector2i(0, row * CART_FRAME.y))
+			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, CART_FRAME),
+					Vector2i(cell % WHEEL_FRAMES * CART_FRAME.x, row * CART_FRAME.y))
 		_save(sheet, "vehicles/handcart/%s.png" % state)
 
 
@@ -483,8 +492,10 @@ func _reeds() -> void:
 func _wagon(trade: bool = false) -> void:
 	_vehicle_origin = WAGON_CENTRE
 	for state: String in ["empty", "loaded"]:
-		var sheet := Image.create_empty(WAGON_FRAME.x, WAGON_FRAME.y * 5, false, Image.FORMAT_RGBA8)
-		for row: int in 5:
+		var sheet := Image.create_empty(WAGON_FRAME.x * WHEEL_FRAMES, WAGON_FRAME.y * 5, false, Image.FORMAT_RGBA8)
+		for cell: int in 5 * WHEEL_FRAMES:
+			var row := cell / WHEEL_FRAMES
+			_spin = (cell % WHEEL_FRAMES) * PI / 3.0 / WHEEL_FRAMES
 			var img := Image.create_empty(WAGON_FRAME.x, WAGON_FRAME.y, false, Image.FORMAT_RGBA8)
 			var fwd := ROW_FORWARD[row]
 			var parts: Array = []
@@ -522,7 +533,8 @@ func _wagon(trade: bool = false) -> void:
 			for part: Array in parts:
 				(part[1] as Callable).call()
 			_outline(img)
-			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, WAGON_FRAME), Vector2i(0, row * WAGON_FRAME.y))
+			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, WAGON_FRAME),
+					Vector2i(cell % WHEEL_FRAMES * WAGON_FRAME.x, row * WAGON_FRAME.y))
 		_save(sheet, "vehicles/%s/%s.png" % ["trade_wagon" if trade else "wagon", state])
 	_vehicle_origin = CART_CENTRE
 
@@ -584,7 +596,7 @@ func _cart_wheel(img: Image, fwd: Vector2, hub: Vector3, radius: float) -> void:
 	_polygon(img, rim, C_WOOD.darkened(0.3))
 	var centre := _cart_point(fwd, hub)
 	for k: int in 3:
-		var t := k * PI / 3.0
+		var t := k * PI / 3.0 + _spin
 		var d := _cart_point(fwd, hub + Vector3(cos(t) * radius * 0.8 / 36.0, 0.0, sin(t) * radius * 0.8)) - centre
 		_line(img, centre - d, centre + d, C_WOOD_END.darkened(0.2), 1)
 	_pixel(img, centre, C_IRON)
