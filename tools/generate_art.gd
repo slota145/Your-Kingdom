@@ -26,6 +26,8 @@ const LIGHT_ROOF_BACK := 0.72
 const OVERHANG := 0.12
 ## Gap between the footprint edge and the walls, in tiles (some ground shows around).
 const INSET := 0.14
+## A wall this far behind the entrance tile still gets the door (in tiles).
+const DOOR_REACH := 0.15
 
 const C_BEAM := Color(0.33, 0.21, 0.13)
 const C_PLASTER := Color(0.9, 0.85, 0.73)
@@ -76,78 +78,46 @@ const BUILDINGS := {
 		 "props": [["flowers", 0.5, 1.4], ["fence", 0.2, 1.85]]},
 	],
 	"woodcutter": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.86], "h": 36.0, "rh": 22.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "logs", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)},
-		{"kind": "lean", "rect": [1.3, 0.2, 1.86, 1.12], "low": "x", "h": 28.0, "hh": 36.0,
-			"roof": "shingle", "walls": "logs", "open": true, "inside": [["log_stack", 1.55, 1.0]]}],
-		"props": [["chopping_block", 1.75, 1.65], ["log_pile", 0.55, 2.0]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.86], "h": 36.0, "rh": 22.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "logs", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)}],
+		"props": [["chopping_block", 1.3, 1.75], ["log_pile", 0.5, 2.0]]}],
 	"sawmill": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.0], "h": 36.0, "rh": 20.0, "ridge": "x",
-			"ends": ["gable", "gable"], "walls": "planks", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)},
-		{"kind": "lean", "rect": [0.2, 1.0, 1.86, 1.86], "low": "y", "h": 31.0, "hh": 36.0,
-			"roof": "shingle", "walls": "planks", "open": true,
-			"inside": [["saw_horse", 1.1, 1.65], ["plank_stack", 0.55, 1.7]]}],
-		"props": [["log_pile", 1.95, 0.6]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.45], "h": 38.0, "rh": 20.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "planks", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)},
+		{"kind": "lean", "rect": [0.14, 1.45, 1.0, 1.86], "low": "y", "h": 24.0, "hh": 32.0, "roof": "shingle", "walls": "planks", "open": true, "inside": [["saw_horse", 0.62, 1.68]]}],
+		"props": [["plank_stack", 1.3, 1.82], ["log_pile", 0.2, 1.98]]}],
 	"quarry": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.15, 1.2], "h": 34.0, "rh": 18.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "stone", "roof": "slate", "shutters": Color(0.4, 0.38, 0.36)},
-		{"kind": "lean", "rect": [1.15, 0.14, 1.86, 1.86], "low": "x", "h": 28.0, "hh": 34.0,
-			"roof": "planks_roof", "walls": "planks", "open": true, "inside": [["stone_blocks", 1.6, 1.4]]}],
-		"props": [["stone_blocks", 0.6, 1.75], ["crane", 1.95, 0.5]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.86], "h": 34.0, "rh": 18.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "stone", "roof": "slate", "shutters": Color(0.4, 0.38, 0.36)}],
+		"props": [["stone_blocks", 1.3, 1.78], ["crane", 0.3, 1.95]]}],
 	"farm": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.1], "h": 42.0, "rh": 26.0, "ridge": "x",
-			"ends": ["gable", "hip"], "walls": "timber", "roof": "thatch",
-			"shutters": Color(0.6, 0.25, 0.2), "chimney": [0.45, 0.55]},
-		{"kind": "house", "rect": [1.0, 1.1, 1.86, 1.86], "h": 34.0, "rh": 22.0, "ridge": "y",
-			"ends": ["open", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.5, 0.35, 0.2)}],
-		"props": [["sheaves", 0.45, 1.6], ["cart_wheel", 0.9, 1.9]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.86], "h": 42.0, "rh": 26.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2), "chimney": [0.55, 0.6]}],
+		"props": [["sheaves", 1.3, 1.78], ["cart_wheel", 0.55, 1.98]]}],
 	"hop_farm": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.25, 1.86], "h": 39.0, "rh": 24.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.3, 0.5, 0.3)},
-		{"kind": "round", "centre": [1.55, 0.75], "r": 0.3, "h": 36.0, "rh": 26.0, "walls": "stone_plaster",
-			"roof": "tile", "sails": false, "cowl": true}],
-		"props": [["hop_poles", 1.8, 1.4], ["baskets", 1.5, 1.85]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.4], "h": 39.0, "rh": 24.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.3, 0.5, 0.3)},
+		{"kind": "round", "centre": [0.52, 1.66], "r": 0.27, "h": 34.0, "rh": 24.0, "walls": "stone_plaster", "roof": "tile", "sails": false, "cowl": true}],
+		"props": [["hop_poles", 1.25, 1.85], ["baskets", 1.45, 1.92]]}],
 	# M6 part 3 (wine): a vintner's farmstead with a stone press-house; a stone press-house with
 	# a big screw press under a lean-to and casks.
 	"vineyard": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.9, 1.5], "h": 42.0, "rh": 26.0, "ridge": "x",
-			"ends": ["gable", "hip"], "walls": "stone_plaster", "roof": "tile",
-			"shutters": Color(0.5, 0.2, 0.32), "chimney": [0.5, 0.6]},
-		{"kind": "house", "rect": [1.9, 0.3, 2.86, 1.5], "h": 32.0, "rh": 20.0, "ridge": "y",
-			"ends": ["open", "gable"], "walls": "timber", "roof": "tile", "shutters": Color(0.45, 0.3, 0.2)}],
-		"props": [["hop_poles", 0.5, 2.6], ["hop_poles", 1.3, 2.7], ["baskets", 2.3, 2.4], ["barrel", 2.7, 1.8]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.9, 1.5], "h": 42.0, "rh": 26.0, "ridge": "x", "ends": ["gable", "hip"], "walls": "stone_plaster", "roof": "tile", "shutters": Color(0.5, 0.2, 0.32), "chimney": [0.5, 0.6]},
+		{"kind": "house", "rect": [0.14, 1.5, 1.1, 2.55], "h": 32.0, "rh": 20.0, "ridge": "y", "ends": ["open", "gable"], "walls": "timber", "roof": "tile", "shutters": Color(0.45, 0.3, 0.2)}],
+		"props": [["hop_poles", 0.4, 2.8], ["baskets", 1.5, 2.6], ["barrel", 2.25, 2.6]]}],
 	"wine_press": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.2], "h": 44.0, "rh": 24.0, "ridge": "x",
-			"ends": ["gable", "gable"], "walls": "stone_plaster", "roof": "tile",
-			"shutters": Color(0.5, 0.15, 0.22), "chimney": [1.4, 0.55]},
-		{"kind": "lean", "rect": [0.3, 1.2, 1.86, 1.86], "low": "y", "h": 30.0, "hh": 38.0,
-			"roof": "tile", "walls": "stone_plaster", "open": true,
-			"inside": [["mead_vat", 0.8, 1.7], ["cask_rack", 1.45, 1.7]]}],
-		"props": [["barrel", 0.2, 1.98], ["baskets", 1.95, 0.6]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.45], "h": 44.0, "rh": 24.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "stone_plaster", "roof": "tile", "shutters": Color(0.5, 0.15, 0.22), "chimney": [0.55, 0.5]},
+		{"kind": "lean", "rect": [0.14, 1.45, 1.0, 1.86], "low": "y", "h": 28.0, "hh": 36.0, "roof": "tile", "walls": "stone_plaster", "open": true, "inside": [["mead_vat", 0.4, 1.7], ["cask_rack", 0.8, 1.72]]}],
+		"props": [["barrel", 1.25, 1.85], ["baskets", 0.15, 1.98]]}],
 	"mill": [{"volumes": [
-		{"kind": "round", "centre": [1.0, 1.0], "r": 0.66, "h": 92.0, "rh": 30.0, "walls": "stone_plaster",
-			"roof": "shingle", "sails": true}],
-		"props": [["sacks", 1.85, 1.15], ["sacks", 0.4, 1.85]]}],
+		{"kind": "round", "centre": [0.58, 1.0], "r": 0.44, "h": 92.0, "rh": 30.0, "walls": "stone_plaster", "roof": "shingle", "sails": true}],
+		"props": [["sacks", 1.28, 1.78], ["sacks", 0.4, 1.85]]}],
 	"bakery": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.2], "h": 42.0, "rh": 22.0, "ridge": "x",
-			"ends": ["gable", "gable"], "walls": "timber", "roof": "tile",
-			"shutters": Color(0.6, 0.25, 0.2), "chimney": [1.3, 0.55]},
-		{"kind": "lean", "rect": [0.3, 1.2, 1.86, 1.86], "low": "y", "h": 31.0, "hh": 39.0,
-			"roof": "tile", "walls": "timber", "open": true,
-			"inside": [["oven", 1.45, 1.7], ["table", 0.8, 1.7]]}],
-		"props": [["sacks", 0.2, 1.95]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.45], "h": 42.0, "rh": 22.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "timber", "roof": "tile", "shutters": Color(0.6, 0.25, 0.2), "chimney": [0.5, 0.55]},
+		{"kind": "lean", "rect": [0.14, 1.45, 1.0, 1.86], "low": "y", "h": 28.0, "hh": 36.0, "roof": "tile", "walls": "timber", "open": true, "inside": [["table", 0.35, 1.7], ["oven", 0.75, 1.7]]}],
+		"props": [["sacks", 1.28, 1.85], ["sign_bread", 1.05, 1.98]]}],
 	"brewery": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.35, 1.86], "h": 48.0, "rh": 22.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "stone_plaster", "roof": "tile",
-			"shutters": Color(0.3, 0.35, 0.5), "chimney": [0.5, 0.5]},
-		{"kind": "lean", "rect": [1.35, 0.3, 1.86, 1.86], "low": "x", "h": 31.0, "hh": 42.0,
-			"roof": "tile", "walls": "stone_plaster", "open": true,
-			"inside": [["kettle", 1.62, 0.9], ["barrels", 1.62, 1.6]]}],
-		"props": [["barrel", 0.5, 2.0]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.45], "h": 48.0, "rh": 22.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "stone_plaster", "roof": "tile", "shutters": Color(0.3, 0.35, 0.5), "chimney": [0.5, 0.5]},
+		{"kind": "lean", "rect": [0.14, 1.45, 1.0, 1.86], "low": "y", "h": 28.0, "hh": 38.0, "roof": "tile", "walls": "stone_plaster", "open": true, "inside": [["barrels", 0.35, 1.7], ["kettle", 0.75, 1.68]]}],
+		"props": [["barrel", 1.28, 1.85]]}],
 	"fishing_hut": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.6], "h": 34.0, "rh": 22.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.3, 0.45, 0.6)}],
-		"props": [["nets", 1.6, 0.6], ["fish_rack", 0.7, 1.95], ["boat", 1.65, 1.6]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.6], "h": 34.0, "rh": 22.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.3, 0.45, 0.6)}],
+		"props": [["fish_rack", 1.3, 1.8], ["boat", 0.55, 1.98]]}],
 	"chapel": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.4, 1.86, 1.6], "h": 42.0, "rh": 24.0, "ridge": "x",
 			"ends": ["gable", "gable"], "walls": "plaster", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)},
@@ -179,10 +149,9 @@ const BUILDINGS := {
 		"pens": [[1.3, 0.15, 1.92, 1.05, "saplings"]],
 		"props": [["sapling_pots", 0.55, 1.95], ["spade", 1.4, 1.75]]}],
 	"sheep_farm": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.2, 1.5], "h": 34.0, "rh": 24.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2)}],
-		"pens": [[1.28, 0.12, 1.94, 1.05, "sheep"], [0.12, 1.58, 1.0, 1.94, "sheep"]],
-		"props": [["hay", 1.55, 1.75]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.5], "h": 34.0, "rh": 24.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2)}],
+		"pens": [[0.12, 1.58, 1.0, 1.94, "sheep"]],
+		"props": [["hay", 1.3, 1.82]]}],
 	# M4b-2 (meat): a pigsty with a muddy pen, a stone slaughterhouse with an open shed.
 	"pigsty": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.5], "h": 30.0, "rh": 22.0, "ridge": "y",
@@ -209,50 +178,30 @@ const BUILDINGS := {
 		"pens": [[1.7, 1.7, 2.9, 2.9, "horses"]],
 		"props": [["hay", 0.55, 2.35], ["trough", 1.3, 2.75], ["wagon", 0.75, 1.95]]}],
 	"slaughterhouse": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.15], "h": 40.0, "rh": 22.0, "ridge": "x",
-			"ends": ["gable", "hip"], "walls": "timber_stone", "roof": "tile",
-			"shutters": Color(0.55, 0.22, 0.2), "chimney": [1.4, 0.5]},
-		{"kind": "lean", "rect": [0.3, 1.15, 1.86, 1.86], "low": "y", "h": 28.0, "hh": 38.0,
-			"roof": "tile", "walls": "timber", "open": true,
-			"inside": [["butcher_block", 0.75, 1.65], ["meat_hooks", 1.45, 1.6]]}],
-		"props": [["hide_rack", 1.98, 0.5], ["barrel", 0.2, 1.98]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.45], "h": 40.0, "rh": 22.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "timber_stone", "roof": "tile", "shutters": Color(0.55, 0.22, 0.2), "chimney": [0.5, 0.5]},
+		{"kind": "lean", "rect": [0.14, 1.45, 1.0, 1.86], "low": "y", "h": 28.0, "hh": 36.0, "roof": "tile", "walls": "timber", "open": true, "inside": [["butcher_block", 0.38, 1.68], ["meat_hooks", 0.78, 1.66]]}],
+		"props": [["hide_rack", 1.25, 1.85], ["barrel", 0.15, 1.98]]}],
 	"weaver": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.35, 1.86], "h": 42.0, "rh": 22.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "timber", "roof": "shingle",
-			"shutters": Color(0.3, 0.38, 0.6), "chimney": [0.5, 0.6]},
-		{"kind": "lean", "rect": [1.35, 0.3, 1.86, 1.86], "low": "x", "h": 30.0, "hh": 38.0,
-			"roof": "shingle", "walls": "timber", "open": true,
-			"inside": [["spinning_wheel", 1.62, 0.9], ["loom", 1.62, 1.62]]}],
-		"props": [["cloth_bolts", 0.5, 2.0], ["sign_cloth", 1.95, 0.25]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.45], "h": 42.0, "rh": 22.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "timber", "roof": "shingle", "shutters": Color(0.3, 0.38, 0.6), "chimney": [0.5, 0.6]},
+		{"kind": "lean", "rect": [0.14, 1.45, 1.0, 1.86], "low": "y", "h": 28.0, "hh": 36.0, "roof": "shingle", "walls": "timber", "open": true, "inside": [["spinning_wheel", 0.38, 1.68], ["loom", 0.78, 1.68]]}],
+		"props": [["cloth_bolts", 1.28, 1.85], ["sign_cloth", 0.15, 1.98]]}],
 	"tailor": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.2], "h": 44.0, "rh": 22.0, "ridge": "x",
-			"ends": ["gable", "gable"], "walls": "plaster", "roof": "tile",
-			"shutters": Color(0.55, 0.3, 0.55), "chimney": [1.3, 0.55]},
-		{"kind": "lean", "rect": [0.3, 1.2, 1.86, 1.86], "low": "y", "h": 30.0, "hh": 40.0,
-			"roof": "tile", "walls": "timber", "open": true,
-			"inside": [["cutting_table", 1.1, 1.7], ["cloth_bolts", 0.55, 1.7]]}],
-		"props": [["clothes_line", 1.95, 1.3], ["sign_shirt", 0.2, 1.95]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.45], "h": 44.0, "rh": 22.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "plaster", "roof": "tile", "shutters": Color(0.55, 0.3, 0.55), "chimney": [0.5, 0.55]},
+		{"kind": "lean", "rect": [0.14, 1.45, 1.0, 1.86], "low": "y", "h": 28.0, "hh": 38.0, "roof": "tile", "walls": "timber", "open": true, "inside": [["cutting_table", 0.62, 1.7], ["cloth_bolts", 0.3, 1.72]]}],
+		"props": [["clothes_line", 1.25, 1.88], ["sign_shirt", 0.15, 1.98]]}],
 	"apiary": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.15, 1.5], "h": 30.0, "rh": 22.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.75, 0.6, 0.2)}],
-		"props": [["skeps", 1.65, 0.45], ["skeps", 1.62, 1.25], ["skeps", 0.55, 1.85], ["flowers", 1.2, 1.95],
-			["honey_pots", 1.35, 1.75]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.5], "h": 30.0, "rh": 22.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.75, 0.6, 0.2)}],
+		"props": [["skeps", 1.28, 1.82], ["skeps", 0.6, 1.88], ["skeps", 0.22, 1.75], ["flowers", 1.05, 1.98], ["honey_pots", 1.5, 1.92]]}],
 	"meadery": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.2], "h": 42.0, "rh": 24.0, "ridge": "x",
-			"ends": ["hip", "gable"], "walls": "timber_stone", "roof": "thatch",
-			"shutters": Color(0.7, 0.5, 0.15), "chimney": [0.5, 0.6]},
-		{"kind": "lean", "rect": [0.3, 1.2, 1.86, 1.86], "low": "y", "h": 30.0, "hh": 38.0,
-			"roof": "thatch", "walls": "timber", "open": true,
-			"inside": [["mead_vat", 0.8, 1.7], ["cask_rack", 1.45, 1.7]]}],
-		"props": [["barrel", 0.2, 1.98], ["honey_pots", 1.95, 0.6]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.45], "h": 42.0, "rh": 24.0, "ridge": "y", "ends": ["hip", "gable"], "walls": "timber_stone", "roof": "thatch", "shutters": Color(0.7, 0.5, 0.15), "chimney": [0.5, 0.6]},
+		{"kind": "lean", "rect": [0.14, 1.45, 1.0, 1.86], "low": "y", "h": 28.0, "hh": 36.0, "roof": "thatch", "walls": "timber", "open": true, "inside": [["mead_vat", 0.4, 1.7], ["cask_rack", 0.8, 1.72]]}],
+		"props": [["honey_pots", 1.28, 1.85], ["barrel", 0.15, 1.98]]}],
 	"clay_pit": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.15, 1.45], "h": 30.0, "rh": 20.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.45, 0.3, 0.18)}],
-		"props": [["clay_pit", 1.58, 0.62], ["clay_mound", 0.6, 1.85], ["clay_mound", 1.62, 1.5], ["spade", 1.25, 1.85]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.45], "h": 30.0, "rh": 20.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.45, 0.3, 0.18)}],
+		"props": [["clay_pit", 0.55, 1.72], ["clay_mound", 1.3, 1.82], ["spade", 1.1, 1.55]]}],
 	"brickworks": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.25, 1.86], "h": 36.0, "rh": 20.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "planks", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)}],
-		"props": [["kiln", 1.62, 0.7], ["mould_table", 1.62, 1.72], ["brick_stack", 0.55, 2.0]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.4], "h": 36.0, "rh": 20.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "planks", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)}],
+		"props": [["kiln", 0.55, 1.7], ["mould_table", 1.3, 1.82], ["brick_stack", 0.12, 1.98]]}],
 	"tavern": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.5, 1.86], "h": 58.0, "rh": 28.0, "ridge": "y",
 			"ends": ["hip", "gable"], "walls": "timber_stone", "roof": "tile",
@@ -261,9 +210,8 @@ const BUILDINGS := {
 			["sign_mug", 1.55, 1.0]]}],
 	# M5: the sea. Decks (piers, slipways) are drawn first, low over the water rows.
 	"tar_kiln": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.1, 1.3], "h": 30.0, "rh": 18.0, "ridge": "y",
-			"ends": ["gable", "gable"], "walls": "logs", "roof": "planks_roof", "shutters": Color(0.3, 0.25, 0.2)}],
-		"props": [["tar_pit", 1.5, 1.0], ["log_pile", 0.5, 1.9], ["tar_barrels", 1.75, 1.85]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.3], "h": 30.0, "rh": 18.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "logs", "roof": "planks_roof", "shutters": Color(0.3, 0.25, 0.2)}],
+		"props": [["tar_pit", 0.55, 1.68], ["tar_barrels", 1.3, 1.85], ["log_pile", 0.15, 1.95]]}],
 	"shipyard": [{"volumes": [
 		{"kind": "deck", "rect": [0.7, 1.55, 2.3, 4.0], "h": 7.0, "h_end": -3.0, "slip": true},
 		{"kind": "house", "rect": [0.14, 0.14, 2.0, 1.4], "h": 38.0, "rh": 22.0, "ridge": "x",
@@ -276,10 +224,8 @@ const BUILDINGS := {
 			["bollard", 2.95, 3.6]]}],
 	# N1: the pier over the water is the shared quay strip (QuayLayer), not part of the art.
 	"fishing_wharf": [{"volumes": [
-		{"kind": "house", "rect": [0.75, 0.14, 2.86, 1.55], "h": 34.0, "rh": 22.0, "ridge": "x",
-			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.3, 0.45, 0.6)}],
-		"props": [["nets", 0.2, 1.0], ["fish_rack", 0.45, 1.75], ["bollard", 0.5, 2.8], ["bollard", 2.5, 2.8],
-			["barrel", 2.2, 2.3]]}],
+		{"kind": "house", "rect": [0.14, 0.14, 1.9, 1.55], "h": 34.0, "rh": 22.0, "ridge": "x", "ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.3, 0.45, 0.6)}],
+		"props": [["nets", 2.3, 1.85], ["fish_rack", 0.45, 1.8], ["bollard", 0.5, 2.8], ["bollard", 2.5, 2.8], ["barrel", 1.3, 1.85]]}],
 	# M5 part 2: the port. Its land tiles are left see-through: the quay yard (planks and the
 	# stacks of goods) is drawn by the view (QuayYard), so stacks are never hidden by the art.
 	# N1: a mooring on the quay: bollards with a coiled rope, a lantern, a few barrels. The
@@ -339,6 +285,8 @@ const HUT_BACKS := [
 
 var _entrance: Vector2i
 var _footprint: Vector2i
+## Tile (as drawn) of the production yard, drawn as trodden earth; (-1, -1) = none.
+var _yard: Vector2i = Vector2i(-1, -1)
 
 
 func _init() -> void:
@@ -355,14 +303,17 @@ func _init() -> void:
 		if def == null:
 			push_error("generate_art: unknown building %s" % id)
 			continue
-		_make(id, def)
+		_make(id, def, registry)
 	print("Building art written to ", OUT)
 	quit()
 
 
-func _make(id: String, def: BuildingDef) -> void:
+func _make(id: String, def: BuildingDef, registry: DataRegistry) -> void:
 	_footprint = def.footprint
 	_entrance = def.entrance
+	_yard = Vector2i(-1, -1)
+	if def.herd_good == &"" and not BuildingState.yard_goods(def, registry).is_empty():
+		_yard = def.yard_at(0)
 	var looks: Array = BUILDINGS[id]
 	for i: int in looks.size():
 		var look: Dictionary = looks[i]
@@ -411,6 +362,8 @@ func _compose(look: Dictionary) -> Dictionary:
 	var ground: Image = null
 	if look.get("ground_decks", false):
 		ground = Image.create_empty(img.get_width(), img.get_height(), false, Image.FORMAT_RGBA8)
+	if _yard != Vector2i(-1, -1) and not look.has("special"):
+		_yard_ground(img, pivot, _yard)
 	for vol: Dictionary in volumes:
 		if vol["kind"] == "deck":
 			_deck(ground if ground != null else img, pivot, vol)
@@ -486,6 +439,25 @@ func _deck(img: Image, pivot: Vector2i, vol: Dictionary) -> void:
 
 ## A fenced enclosure on the ground (grid rect): back fences, the contents (sheep grazing on
 ## trodden grass, saplings in rows), then the front fences over them.
+## The production yard beside the door (review fix 2026-11-07): a patch of trodden earth
+## with a few chips and straws, where the stack of goods grows (PileLayer).
+func _yard_ground(img: Image, pivot: Vector2i, tile: Vector2i) -> void:
+	var f := Vector2(_footprint)
+	var s := func(p: Vector2) -> Vector2: return Vector2(pivot) + IsoMath.grid_to_screen(p - f)
+	var t := Vector2(tile)
+	var inset := 0.06
+	var ground := PackedVector2Array([s.call(t + Vector2(inset, inset)), s.call(t + Vector2(1.0 - inset, inset)),
+			s.call(t + Vector2(1.0 - inset, 1.0 - inset)), s.call(t + Vector2(inset, 1.0 - inset))])
+	var earth := Color(0.5, 0.4, 0.28)
+	_fill_shader(img, ground, func(x: int, y: int) -> Color:
+		var n := _hash(x / 2, y / 2, 91)
+		if n > 0.93:
+			return Color(0.72, 0.6, 0.4)   # a chip or a straw
+		if n < 0.08:
+			return earth.darkened(0.22)    # a pebble or a hoof print
+		return earth.darkened(0.12 * _hash(x / 3, y / 3, 17)).lightened(0.05 * _hash(x, y, 5)))
+
+
 func _pen(img: Image, pivot: Vector2i, r: Rect2, contents: String) -> void:
 	var f := Vector2(_footprint)
 	var s := func(p: Vector2) -> Vector2: return Vector2(pivot) + IsoMath.grid_to_screen(p - f)
@@ -639,12 +611,14 @@ func _house(img: Image, pivot: Vector2i, vol: Dictionary, door_done: bool) -> bo
 	if not door_done:
 		var tile := Rect2(Vector2(_entrance), Vector2.ONE)
 		var on_se := _entrance.x == _footprint.x - 1
-		if on_se and r.end.x > tile.position.x and r.end.x <= tile.end.x + 0.01:
+		# A wall just behind the entrance tile also takes the door (the entrance tile is then
+		# open ground in front of it, beside the yard tile: review fix 2026-11-07).
+		if on_se and r.end.x > tile.position.x - DOOR_REACH and r.end.x <= tile.end.x + 0.01:
 			var lo := maxf(r.position.y, tile.position.y)
 			var hi := minf(r.end.y, tile.end.y)
 			if hi - lo >= 0.35:
 				se_door = (lo + hi) * 0.5 - r.position.y
-		elif not on_se and r.end.y > tile.position.y and r.end.y <= tile.end.y + 0.01:
+		elif not on_se and r.end.y > tile.position.y - DOOR_REACH and r.end.y <= tile.end.y + 0.01:
 			var lo := maxf(r.position.x, tile.position.x)
 			var hi := minf(r.end.x, tile.end.x)
 			if hi - lo >= 0.35:

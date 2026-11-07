@@ -14,8 +14,10 @@ func _init() -> void:
 
 
 ## [param sort_shift]: the sprite stands that many pixels below the tile centre (to sort in
-## front of a building) while the stack is still drawn on the tile.
-func show_stack(good: StringName, stage: int, sort_shift: float = 0.0) -> void:
+## front of a building) while the stack is still drawn on the tile. [param half]: 0 draws only
+## the left half of the stack, 1 the right half (yard stacks sort each half on its own),
+## -1 the whole stack.
+func show_stack(good: StringName, stage: int, sort_shift: float = 0.0, half: int = -1) -> void:
 	visible = good != &"" and stage > 0
 	if not visible:
 		return
@@ -23,6 +25,9 @@ func show_stack(good: StringName, stage: int, sort_shift: float = 0.0) -> void:
 	var frame := Vector2(texture.get_width() / float(STAGES), texture.get_height())
 	region_rect = Rect2(frame.x * (stage - 1), 0, frame.x, frame.y)
 	offset = -Vector2(frame.x / 2.0, frame.y - 16.0 + sort_shift)
+	if half >= 0:
+		region_rect = Rect2(region_rect.position.x + frame.x / 2.0 * half, 0, frame.x / 2.0, frame.y)
+		offset.x = -frame.x / 2.0 + frame.x / 2.0 * half
 
 
 static func _sheet(good: StringName) -> Texture2D:
