@@ -79,7 +79,7 @@ def _add(total, stats):
             t[i] += m[i]
 
 
-def correction(group_stats, set_means, group_value, set_value):
+def correction(group_stats, set_means, group_value, set_value, value_strength=None):
     """Per material (hue shift in degrees, saturation factor) and the value gamma."""
     shifts = {}
     for k, (h, s) in _means(group_stats).items():
@@ -91,7 +91,8 @@ def correction(group_stats, set_means, group_value, set_value):
         f = (ts / s) if s > 0 else 1.0
         f = max(SAT_LIMITS[0], min(SAT_LIMITS[1], 1.0 + (f - 1.0) * SAT_STRENGTH))
         shifts[k] = (dh, f)
-    target = group_value + (set_value - group_value) * VALUE_STRENGTH
+    strength = VALUE_STRENGTH if value_strength is None else value_strength
+    target = group_value + (set_value - group_value) * strength
     gamma = math.log(target) / math.log(group_value) if 0 < group_value < 1 and 0 < target < 1 else 1.0
     return shifts, gamma
 
@@ -119,8 +120,9 @@ def apply(img, shifts, gamma):
     return img
 
 
-def harmonize(groups):
-    """groups: {name: [(path_in, path_out), ...]}, the finished building first."""
+def harmonize(groups, value_strength=None):
+    """groups: {name: [(path_in, path_out), ...]}, the finished building first.
+    [value_strength] overrides VALUE_STRENGTH (goods: 0, white flour stays white)."""
     measured = {}
     total = {}
     vsum = 0.0
@@ -135,7 +137,7 @@ def harmonize(groups):
     set_value = vsum / max(1, n)
     for name, files in groups.items():
         stats, value = measured[name]
-        shifts, gamma = correction(stats, set_means, value, set_value)
+        shifts, gamma = correction(stats, set_means, value, set_value, value_strength)
         for path_in, path_out in files:
             apply(Image.open(path_in), shifts, gamma).save(path_out)
     return set_means, set_value

@@ -31,7 +31,7 @@ func update_view(piles: Dictionary[int, GroundPile]) -> void:
 			add_child(sprite)
 			_sprites[pile.id] = sprite
 		var visual := StockpileLayout.visual_for(pile.stock, 0)
-		sprite.show_stack(visual["good"], visual["fill_stage"])
+		sprite.show_stack(visual["good"], visual["amount"], visual["stack_size"])
 
 
 ## Stacks of every production yard: on the free yard tile beside the door (BuildingDef.yard_at),
@@ -56,7 +56,7 @@ func update_yards(buildings: BuildingStore) -> void:
 				seen[key] = true
 				var sprite := _yard_sprite(key)
 				sprite.position = IsoMath.tile_center_screen(tiles[slot % tiles.size()]) 						+ Vector2(0.0, HERD_SORT_SHIFT)
-				sprite.show_stack(visual["good"], visual["fill_stage"], HERD_SORT_SHIFT)
+				sprite.show_stack(visual["good"], visual["amount"], visual["stack_size"], HERD_SORT_SHIFT)
 				continue
 			var centre := IsoMath.grid_to_screen(spots[slot])
 			for half: int in 2:
@@ -66,7 +66,8 @@ func update_yards(buildings: BuildingStore) -> void:
 				var front := IsoMath.grid_to_screen(Vector2(building.origin + building.def.footprint))
 				var sort_y := yard_sort_y(front, centre.x + (half - 0.5) * IsoMath.HALF_W)
 				sprite.position = Vector2(centre.x, sort_y)
-				sprite.show_stack(visual["good"], visual["fill_stage"], sort_y - centre.y, half)
+				sprite.show_stack(visual["good"], visual["amount"], visual["stack_size"],
+						sort_y - centre.y, half)
 	for key: String in _yard_sprites.keys():
 		if not seen.has(key):
 			_yard_sprites[key].queue_free()

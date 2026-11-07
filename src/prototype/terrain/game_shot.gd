@@ -30,6 +30,8 @@ extends Node
 ## as drawn and mirrored, huts in their 3 looks and turned 4 ways (2 and 3 show the back), the
 ## woodcutter, quarry and fishing hut both ways with full yards; --g1=sites puts their
 ## building sites in both stages.
+## --g2 (G2) puts stockpiles around --tile with every good drawn by PixelLab, each slot
+## holding a different number of pieces (1 up to a full stack), so the stacks grow in sight.
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -67,6 +69,7 @@ var _vineyard: bool = false
 var _yards: PackedStringArray = PackedStringArray()
 ## --g1=finished|sites (G1): which half of the pioneer set to lay out; "" = none.
 var _g1: String = ""
+var _g2: bool = false
 
 
 func _ready() -> void:
@@ -112,6 +115,8 @@ func _ready() -> void:
 			_vineyard = true
 		elif arg.begins_with("--yards="):
 			_yards = arg.trim_prefix("--yards=").split(",")
+		elif arg == "--g2":
+			_g2 = true
 		elif arg.begins_with("--g1"):
 			_g1 = arg.trim_prefix("--g1=") if arg.begins_with("--g1=") else "finished"
 		elif arg.begins_with("--select="):
@@ -198,6 +203,8 @@ func _arrange() -> void:
 		_place_cogs(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _vineyard:
 		_place_vineyard(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _g2:
+		_place_g2(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _g1 != "":
 		_place_g1(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
@@ -238,6 +245,36 @@ func _place_vineyard(sim: Simulation, at: Vector2i) -> void:
 			view.terrain.refresh_tile(tile)
 	view.vines.refresh()
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(vineyard.origin + Vector2i(0, 5))
+
+
+## Stockpiles with every good of G2 (--g2): three stockpiles side by side, one good per slot,
+## each slot a different number of pieces.
+func _place_g2(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	sim.province.first_building = &""
+	var goods: Array[StringName] = [&"wood", &"planks", &"stone", &"bricks", &"clay", &"flour",
+			&"grain", &"bread", &"fish", &"grapes", &"meat", &"hides", &"wool", &"cloth",
+			&"clothes", &"hops", &"beer", &"wine", &"mead", &"honey", &"tar"]
+	var def := sim.data.get_building(&"stockpile")
+	var k := 0
+	for n: int in 3:
+		var origin := at + Vector2i(-7 + 5 * n, -2)
+		if sim.execute(PlaceBuildingCommand.new(def.id, origin, true, 0)) != &"":
+			print("g2: could not place a stockpile at ", origin)
+			continue
+		var b: BuildingState = null
+		for placed: BuildingState in sim.province.buildings.all():
+			if placed.origin == origin and placed.def == def:
+				b = placed
+		for slot: int in 7:
+			if k >= goods.size():
+				break
+			var good := goods[k]
+			var size := b.stock.stack_size(good)
+			# 1, a third, half, two thirds, full... so each stack shows a different size.
+			var amounts: Array[int] = [size, 1, size / 3, size / 2, size * 2 / 3, size - 1, size]
+			b.stock.add(good, maxi(1, amounts[k % amounts.size()]))
+			k += 1
 
 
 ## The pioneer set of G1 (--g1): rows of finished buildings and sites, see the header.

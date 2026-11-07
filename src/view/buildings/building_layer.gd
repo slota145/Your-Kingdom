@@ -71,7 +71,7 @@ func update_view() -> void:
 			if site.stock.slot_amount[s] > 0:
 				good = site.stock.slot_good[s]
 				break
-		pile.show_stack(good, StockpileLayout.fill_stage(site.stock.total_amount(), 8))
+		pile.show_stack(good, site.stock.total_amount(), 8)
 	for building: BuildingState in province.buildings.all():
 		_update_mark(building)
 
