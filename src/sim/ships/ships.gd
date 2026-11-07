@@ -243,6 +243,10 @@ static func close_build(province: ProvinceSim, build: ShipBuild, launched: bool)
 		if not shipyard.ship_orders.is_empty():
 			shipyard.ship_orders.remove_at(0)
 		var ship := launch(province, province.data.get_ship(build.ship), shipyard)
+		# It slid down the slipway bow first (review fix 2026-11-07: no turn after the launch).
+		var bow := slipway_dir(shipyard)
+		if bow >= 0:
+			ship.facing = bow
 		province.events.emit(&"ship_launched", {"ship": ship.id, "def": build.ship,
 				"building": shipyard.id})
 	var at := province.door_tile(shipyard) if shipyard != null else province.entry_tile
@@ -253,6 +257,13 @@ static func close_build(province: ProvinceSim, build: ShipBuild, launched: bool)
 		province.drop_goods(at, good, leftovers[good])
 	province.events.emit(&"ship_build_closed", {"build": build.id, "building": build.shipyard_id,
 			"launched": launched})
+
+
+## Direction (IsoMath.Dir) down the slipway of [param shipyard], towards its berth.
+static func slipway_dir(shipyard: BuildingState) -> int:
+	var def := shipyard.def
+	return IsoMath.screen_dir(Vector2(def.turned(Vector2i(0, 1), shipyard.orientation)
+			- def.turned(Vector2i.ZERO, shipyard.orientation)))
 
 
 ## A new ship moored at the berth of [param building].

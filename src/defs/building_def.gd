@@ -73,6 +73,10 @@ extends GameDef
 ## Footprint tiles (as drawn) that stand on the sea (M5): a pier, a slipway. They must be
 ## sea water, the others land. Empty = a building on land.
 @export var water_tiles: Array[Vector2i] = []
+## Footprint tile (as drawn, relative to the origin) left free in the art, where the stack of
+## the production yard grows (review fix 2026-11-07). (-1, -1) = the tile beside the entrance
+## along the door's wall, towards the back (yard_at).
+@export var yard_tile: Vector2i = Vector2i(-1, -1)
 ## Water tile (as drawn, relative to the origin, outside the footprint) where this building's
 ## ships moor or are launched; (-1, -1) = none.
 @export var berth: Vector2i = Vector2i(-1, -1)
@@ -222,6 +226,15 @@ func turned(tile: Vector2i, orientation: int) -> Vector2i:
 		3:
 			return Vector2i(n - tile.y, n - tile.x)
 	return tile
+
+
+## The yard tile (relative to the origin) of the building turned to [param orientation].
+func yard_at(orientation: int) -> Vector2i:
+	var tile := yard_tile
+	if tile == Vector2i(-1, -1):
+		var d := door_dir(0)
+		tile = entrance - Vector2i(d.y, d.x)
+	return turned(tile, orientation)
 
 
 func is_on_water() -> bool:

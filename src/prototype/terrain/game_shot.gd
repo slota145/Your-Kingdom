@@ -24,6 +24,8 @@ extends Node
 ## slipway in that stage (3 = halfway down the slipway at the launch) and the player's cog
 ## at anchor by a port with a voyage plan; --select=port shows the plan (--scroll=<px> scrolls
 ## the panel down to it).
+## --yards=<id,id,...> (review fix 2026-11-07) puts those workshops in a row from --tile, every
+## other one mirrored, each with a full production yard (the stack on its yard tile).
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -54,6 +56,11 @@ var _advance: int = 0
 ## Scrolls the building panel down this far (px) before the shot (--scroll=N).
 var _scroll: int = 0
 var _cog_stage: int = -1
+## --launch=<0..1> (with --cog_stage=3): how far the launch slide has come; 1 = launched.
+var _launch: float = -1.0
+## --vineyard (review fix 2026-11-07): a vineyard at --tile with rows of fields in every stage.
+var _vineyard: bool = false
+var _yards: PackedStringArray = PackedStringArray()
 
 
 func _ready() -> void:
@@ -93,6 +100,12 @@ func _ready() -> void:
 			_advance = int(arg.trim_prefix("--advance="))
 		elif arg.begins_with("--cog_stage="):
 			_cog_stage = int(arg.trim_prefix("--cog_stage="))
+		elif arg.begins_with("--launch="):
+			_launch = float(arg.trim_prefix("--launch="))
+		elif arg == "--vineyard":
+			_vineyard = true
+		elif arg.begins_with("--yards="):
+			_yards = arg.trim_prefix("--yards=").split(",")
 		elif arg.begins_with("--select="):
 			_select = StringName(arg.trim_prefix("--select="))
 	for arg: String in OS.get_cmdline_user_args():
@@ -175,12 +188,71 @@ func _arrange() -> void:
 					break
 	if _cog_stage >= 0:
 		_place_cogs(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _vineyard:
+		_place_vineyard(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if not _yards.is_empty():
+		_place_yards(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _build_tool != &"":
 		_game.call("_set_tool", {"kind": &"building", "def": _build_tool})
 		get_viewport().warp_mouse(get_viewport().get_visible_rect().size / 2.0)
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == _select:
 			(_game.get("_building_panel") as BuildingPanel).show_building(sim.province, b.id)
+
+
+## A vineyard with 5 rows of 3 fields in front of it: pruned, budding, leafy, green grapes,
+## ripe (--vineyard).
+func _place_vineyard(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	province.rare_resource = &"vines"   # a wine province, for the shot
+	var vineyard := _place_near(sim, &"vineyard", at)
+	if vineyard == null:
+		return
+	var view: ProvinceView = _game.get("view")
+	var grow := 1000
+	for row: int in 5:
+		for k: int in 3:
+			var tile := vineyard.origin + Vector2i(k - 1, 4 + row)
+			if not province.grid.is_inside(tile) or province.fields.has_field(tile):
+				continue
+			province.fields.add(tile, vineyard.id)
+			match row:
+				0:
+					province.fields.set_stage(tile, FieldStore.Stage.PLOWED)
+				4:
+					province.fields.set_stage(tile, FieldStore.Stage.RIPE)
+				_:
+					# Sown so that the growth stage is row (1..3) now.
+					province.fields.sow(tile, province.tick - grow * (row * 2 - 1) / 6, grow)
+			view.terrain.refresh_tile(tile)
+	view.vines.refresh()
+	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(vineyard.origin + Vector2i(0, 5))
+
+
+## Workshops in a row with full yards (--yards).
+func _place_yards(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var x := at.x - 6
+	for k: int in _yards.size():
+		var def := sim.data.get_building(StringName(_yards[k]))
+		var o := k % 2
+		var placed := false
+		for dy: int in range(0, 12):
+			var origin := Vector2i(x, at.y - 2 + (dy if dy % 2 == 0 else -dy))
+			if sim.province.placement_error(def, origin, o) == &"" 					and sim.execute(PlaceBuildingCommand.new(def.id, origin, true, o)) == &"":
+				placed = true
+				break
+		x += def.footprint.x + 1
+		if not placed:
+			continue
+		var b := sim.province.buildings.get_building(sim.ids.next_id - 1)
+		b.ensure_yard(sim.data)
+		if b.yard != null:
+			for good: StringName in BuildingState.yard_goods(def, sim.data):
+				b.yard.add(good, 999)
+	var view: ProvinceView = _game.get("view")
+	view.piles.update_yards(sim.province.buildings)
 
 
 ## Places [param id] at the free spot nearest to [param near] (either turn); returns it or null.
@@ -449,6 +521,11 @@ func _place_cogs(sim: Simulation, at: Vector2i) -> void:
 		build.stage = _cog_stage
 		build.stage_started = true
 		build.work_left = build.stage_ticks / 2 if _cog_stage == 3 else build.stage_ticks
+		if _cog_stage == 3 and _launch >= 0.0:
+			var slide_ticks := mini(SimClock.seconds_to_ticks(ShipLayer.LAUNCH_SLIDE), build.stage_ticks)
+			build.work_left = maxi(roundi(slide_ticks * (1.0 - _launch)), 0)
+			if _launch >= 1.0:
+				Ships.close_build(province, build, true)
 		var wright := province.spawn_agent(&"shipwright", shipyard.entrance_tile())
 		wright.activity = &"hammer"
 		wright.facing = IsoMath.Dir.SW

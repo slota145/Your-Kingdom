@@ -174,6 +174,70 @@ func _check_building(origin: Vector2i, footprint: Vector2i, key_bias: float = 0.
 	return failures
 
 
+## Review fix 2026-11-07: the stack of a production yard stands on a free front tile of its
+## building, each half sorted after the building strip over its columns (PileLayer). People
+## walking around must still be drawn in front of it or behind it correctly, and no strip
+## of its own building may cover it.
+func test_yard_stack_sorts_correctly() -> void:
+	# [footprint, yard tile (relative)]: 2x2 workshops and 3x3 (vineyard, wharf) both ways round.
+	var cases: Array = [[Vector2i(2, 2), Vector2i(1, 0)], [Vector2i(2, 2), Vector2i(0, 1)],
+			[Vector2i(3, 3), Vector2i(2, 0)], [Vector2i(3, 3), Vector2i(0, 2)]]
+	for case: Array in cases:
+		var failures := _check_yard(Vector2i(10, 10), case[0], case[1])
+		assert_array(Array(failures)).override_failure_message(
+				"%s yard %s:
+%s" % [case[0], case[1], "
+".join(failures.slice(0, 10))]).is_empty()
+
+
+func test_yard_tile_is_beside_the_door() -> void:
+	var data := DataRegistry.new()
+	data.load_from("res://data")
+	for id: StringName in [&"woodcutter", &"fishing_hut", &"bakery", &"vineyard", &"fishing_wharf"]:
+		var def := data.get_def(&"building", id) as BuildingDef
+		for o: int in 2:
+			var yard := def.yard_at(o)
+			assert_bool(Rect2i(Vector2i.ZERO, def.footprint).has_point(yard)).is_true()
+			assert_bool(yard == def.entrance_at(o) or yard == def.entrance_at(o + 2)).is_false()
+			assert_bool(def.water_tiles.has(def.turned(yard, o))).is_false()
+	var woodcutter := data.get_def(&"building", &"woodcutter") as BuildingDef
+	assert_that(woodcutter.yard_at(0)).is_equal(Vector2i(1, 0))
+	assert_that(woodcutter.yard_at(1)).is_equal(Vector2i(0, 1))
+
+
+func _check_yard(origin: Vector2i, footprint: Vector2i, yard: Vector2i) -> PackedStringArray:
+	var failures := PackedStringArray()
+	var rect := Rect2i(origin, footprint)
+	var pivot := Vector2i(32 * footprint.x + 8, 120)
+	var image := Vector2i(32 * (footprint.x + footprint.y) + 16, 120)
+	var b_screen := IsoMath.grid_to_screen(Vector2(rect.end))
+	var strips := BuildingSlicer.slices(footprint, pivot, image)
+	var tile := origin + yard
+	var poly := _poly(Rect2i(tile, Vector2i.ONE))
+	var centre := IsoMath.tile_center_screen(tile)
+	var blocked := func(t: Vector2i) -> bool: return rect.has_point(t)
+	for half: int in 2:
+		var h0 := centre.x - 32.0 + 32.0 * half
+		var h1 := h0 + 32.0
+		var key := PileLayer.yard_sort_y(b_screen, (h0 + h1) * 0.5)
+		# The building strips over these columns are drawn first.
+		for strip: BuildingSlicer.Strip in strips:
+			var s0 := b_screen.x + strip.region.position.x - pivot.x
+			var s1 := b_screen.x + strip.region.end.x - pivot.x
+			if minf(s1, h1) - maxf(s0, h0) >= 1.0 and b_screen.y + strip.sort_offset.y >= key:
+				failures.append("strip at x=%.0f covers the stack half %d" % [s0, half])
+		for p: Vector2 in DepthOracle.walk_samples(rect.grow(3), blocked):
+			var a := IsoMath.grid_to_screen(p)
+			var c0 := maxf(a.x - DepthOracle.AGENT_HALF_WIDTH, h0)
+			var c1 := minf(a.x + DepthOracle.AGENT_HALF_WIDTH, h1)
+			if c0 >= c1:
+				continue
+			var rel := DepthOracle.relation(p, poly, c0, c1)
+			if (rel == DepthOracle.IN_FRONT and a.y <= key) or (rel == DepthOracle.BEHIND and a.y >= key):
+				failures.append("agent %s (y=%.1f) vs stack half %d (key %.1f)" % [p, a.y, half, key])
+	return failures
+
+
 # --- Walls ---------------------------------------------------------------------------
 
 func test_wall_straight_along_x() -> void:

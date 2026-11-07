@@ -21,6 +21,7 @@ var range_overlay: TileOverlay
 var paving_plan: PavingPlanLayer
 var world: Node2D
 var nature: NatureLayer
+var vines: VineLayer
 var buildings: BuildingLayer
 var piles: PileLayer
 var agents: AgentViewPool
@@ -69,6 +70,9 @@ func setup(source: ProvinceSim) -> void:
 	nature = NatureLayer.new()
 	world.add_child(nature)
 	nature.setup(province.resources)
+	vines = VineLayer.new()
+	world.add_child(vines)
+	vines.setup(province)
 	buildings = BuildingLayer.new()
 	world.add_child(buildings)
 	buildings.setup(province)
@@ -112,6 +116,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 	if _field_timer >= FIELD_REDRAW:
 		_field_timer = 0.0
 		terrain.refresh_fields()
+		vines.refresh()
 
 
 func on_sim_event(event: Dictionary) -> void:

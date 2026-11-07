@@ -436,6 +436,21 @@ func _nature() -> void:
 		_pyramid(img, Vector2i(foot), base, 28.0 * s, 10.0 * s, rock.lightened(0.15))
 		_ellipse(img, foot + Vector2(10, -3), Vector2(4, 2) * s + Vector2(1, 1), rock.darkened(0.2))
 		_save(img, "nature/rock/%s.png" % state)
+	# Vine rows on vineyard fields (review fix 2026-11-07): 64x56, tile centre at (32, 44).
+	for v: int in 5:
+		var vine := _blank(Vector2i(64, 56))
+		var a := Vector2(16, 36)
+		var b := Vector2(48, 52)
+		for p: Vector2 in [a, b]:
+			_line(vine, p, p - Vector2(0, 21), Color(0.45, 0.32, 0.18), 2)
+		_line(vine, a - Vector2(0, 14), b - Vector2(0, 14), Color(0.55, 0.52, 0.46), 1)
+		if v > 0:
+			for k: int in 2 + v:
+				var at := a.lerp(b, (k + 0.5) / float(2 + v)) - Vector2(0, 14)
+				_ellipse(vine, at, Vector2(1 + v, 1 + v * 0.7), Color(0.3, 0.52, 0.2))
+				if v == 4:
+					_ellipse(vine, at + Vector2(0, 4), Vector2(1.5, 2), Color(0.36, 0.14, 0.38))
+		_save(vine, "nature/vines/%s.png" % ["pruned", "bud", "leaf", "full", "ripe"][v])
 
 
 # --- Buildings -------------------------------------------------------------------------
