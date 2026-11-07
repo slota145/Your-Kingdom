@@ -97,10 +97,16 @@ func _terrain() -> void:
 		"paving/a": Color(0.6, 0.58, 0.54), "paving/b": Color(0.56, 0.54, 0.5),
 		"stony/a": Color(0.6, 0.55, 0.47), "stony/b": Color(0.57, 0.52, 0.45),
 		"lake/a": Color(0.12, 0.32, 0.4), "lake/b": Color(0.13, 0.34, 0.42),
+		"stony/big_a": Color(0.6, 0.55, 0.47), "stony/big_b": Color(0.57, 0.52, 0.45),
+		"stony/big_c": Color(0.59, 0.54, 0.46), "lake/big_a": Color(0.12, 0.32, 0.4),
+		"lake/big_b": Color(0.13, 0.34, 0.42), "lake/big_c": Color(0.125, 0.33, 0.41),
 	}
 	for name: String in ground:
 		_save(_diamond(ground[name], ground[name]), "terrain/%s.png" % name)
 	_save(_diamond(Color(0, 0, 0, 0), Color(1, 1, 1, 0.3)), "terrain/grid/a.png")
+	# Rock layers over stony ground (review fixes 2026-11-07): empty in the placeholders.
+	for name: String in ["rocks_a", "rocks_b"]:
+		_save(_diamond(Color(0, 0, 0, 0), Color(0, 0, 0, 0)), "terrain/stony/%s.png" % name)
 	var decor := {
 		"flowers_white": Color(0.95, 0.95, 0.9), "flowers_yellow": Color(0.95, 0.8, 0.3),
 		"flowers_purple": Color(0.7, 0.55, 0.85), "clover": Color(0.6, 0.78, 0.45),

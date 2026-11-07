@@ -26,10 +26,17 @@ uniform sampler2D sand_tex : filter_nearest;
 uniform sampler2D bank_tex : filter_nearest;
 uniform sampler2D road_tex : filter_nearest;
 uniform sampler2D road_alt_tex : filter_nearest;
-uniform sampler2D stony_tex : filter_nearest;
-uniform sampler2D stony_alt_tex : filter_nearest;
-uniform sampler2D lake_tex : filter_nearest;
-uniform sampler2D lake_alt_tex : filter_nearest;
+// Review fixes 2026-11-07: lake and stony ground repeat only every 4x4 tiles (256x128
+// pictures of a 4x4 tile diamond, tools/generate_terrain_variants.py), 3 variants each.
+uniform sampler2D stony_a_tex : filter_nearest;
+uniform sampler2D stony_b_tex : filter_nearest;
+uniform sampler2D stony_c_tex : filter_nearest;
+// Rocks over the stony soil: two transparent layers repeating every 5 and 7 tiles.
+uniform sampler2D rocks_a_tex : filter_nearest;
+uniform sampler2D rocks_b_tex : filter_nearest;
+uniform sampler2D lake_a_tex : filter_nearest;
+uniform sampler2D lake_b_tex : filter_nearest;
+uniform sampler2D lake_c_tex : filter_nearest;
 uniform sampler2D paving_tex : filter_nearest;
 uniform sampler2D paving_alt_tex : filter_nearest;
 uniform sampler2D vine_tex : filter_nearest;
@@ -87,6 +94,15 @@ float fbm(vec2 q) {
 	n += value_noise(q) * 0.28;
 	q = ROT_A * q * 2.3 + 5.0;
 	return n + value_noise(q) * 0.12;
+}
+
+// Integer hash for per-pixel randomness (glints): no stripes far from the origin.
+float hash_cell(vec2 cell) {
+	uvec2 q = uvec2(ivec2(cell) + ivec2(65536));
+	uint h = q.x * 1597334677u ^ q.y * 3812015801u;
+	h = (h ^ (h >> 16u)) * 2246822519u;
+	h ^= h >> 13u;
+	return float(h & 16777215u) / 16777216.0;
 }
 
 float bayer4(vec2 pixel) {
@@ -190,6 +206,34 @@ vec4 sample_diamond(sampler2D tex, vec2 grid) {
 	return texture(tex, (floor(local) + 0.5) / vec2(64.0, 32.0));
 }
 
+// Periodic lookup of a big texture: a picture of a period x period tile diamond, so the
+// pattern repeats only every period tiles. Placeholders may be smaller (scaled to fit).
+const float BIG = 4.0;
+
+vec4 sample_periodic(sampler2D tex, vec2 grid, float period) {
+	vec2 local = grid_to_screen(fract(grid / period) * period) + vec2(32.0 * period, 0.0);
+	vec2 size = vec2(textureSize(tex, 0));
+	vec2 texel = floor(local * size / vec2(64.0 * period, 32.0 * period));
+	return texture(tex, (clamp(texel, vec2(0.0), size - 1.0) + 0.5) / size);
+}
+
+vec4 sample_big(sampler2D tex, vec2 grid) {
+	return sample_periodic(tex, grid, BIG);
+}
+
+// Three big variants swapped in soft dithered patches of two independent noises.
+vec3 mixed3(sampler2D a, sampler2D b, sampler2D c, vec2 grid, vec2 pixel, float seed) {
+	vec2 squashed = vec2(pixel.x * 0.5, pixel.y);
+	float threshold = bayer4(pixel);
+	if (smoothstep(0.44, 0.56, fbm(squashed / 70.0 + seed)) > threshold) {
+		return sample_big(c, grid).rgb;
+	}
+	if (smoothstep(0.44, 0.56, fbm(squashed / 45.0 + seed * 1.7 + 13.0)) > threshold) {
+		return sample_big(b, grid).rgb;
+	}
+	return sample_big(a, grid).rgb;
+}
+
 // Two variants of one texture swapped in soft dithered patches, so the 64x32 pattern does not
 // repeat in a visible lattice.
 vec3 mixed(sampler2D a, sampler2D b, vec2 grid, vec2 pixel, float seed) {
@@ -207,8 +251,13 @@ vec3 ground_colour(int slot, vec2 grid, vec2 pixel) {
 	if (slot == SEA) return mixed(sea_tex, sea_alt_tex, grid, pixel, 9.1);
 	if (slot == SAND) return sample_diamond(sand_tex, grid).rgb;
 	if (slot == SHALLOW) return mixed(shallow_tex, sea_tex, grid, pixel, 4.7) * 0.15 + sample_diamond(shallow_tex, grid).rgb * 0.85;
-	if (slot == STONY) return mixed(stony_tex, stony_alt_tex, grid, pixel, 31.7);
-	if (slot == LAKE) return mixed(lake_tex, lake_alt_tex, grid, pixel, 17.3);
+	if (slot == STONY) {
+		vec3 soil = mixed3(stony_a_tex, stony_b_tex, stony_c_tex, grid, pixel, 31.7);
+		vec4 rock = sample_periodic(rocks_b_tex, grid + vec2(2.3, 0.6), 7.0);
+		if (rock.a < 0.5) rock = sample_periodic(rocks_a_tex, grid, 5.0);
+		return rock.a > 0.5 ? rock.rgb : soil;
+	}
+	if (slot == LAKE) return mixed3(lake_a_tex, lake_b_tex, lake_c_tex, grid, pixel, 17.3);
 	// Grass: lighter and darker patches with dithered edges.
 	vec3 colour = sample_diamond(grass_tex, grid).rgb;
 	float threshold = bayer4(pixel);
@@ -218,6 +267,63 @@ vec3 ground_colour(int slot, vec2 grid, vec2 pixel) {
 	if (light > threshold) colour = sample_diamond(grass_light_tex, grid).rgb;
 	if (dark > threshold) colour = sample_diamond(grass_dark_tex, grid).rgb;
 	return colour;
+}
+
+// Texture drift of a water slot: whole pixels, so the water stays crisp.
+vec2 water_flow(int slot, float t) {
+	if (slot == WATER) return floor(river_flow * t);
+	if (slot == FORD) return floor(river_flow * 0.5 * t);
+	if (slot == SEA || slot == SHALLOW) return floor(sea_drift * t);
+	if (slot == LAKE) return floor(lake_drift * t);
+	return vec2(0.0);
+}
+
+// Kind of water: 0 river (and ford), 1 lake, 2 sea; -1 land.
+int water_kind(int slot) {
+	if (slot == WATER || slot == FORD) return 0;
+	if (slot == LAKE) return 1;
+	if (slot == SEA || slot == SHALLOW) return 2;
+	return -1;
+}
+
+const vec2 RING8[8] = vec2[](vec2(1.0, 0.0), vec2(-1.0, 0.0), vec2(0.0, 1.0), vec2(0.0, -1.0),
+		vec2(0.707, 0.707), vec2(-0.707, 0.707), vec2(0.707, -0.707), vec2(-0.707, -0.707));
+
+// Mixes in the other kind of water near a river mouth: samples on two rings (0.7 and 1.5 tiles)
+// give the share of the other water around this pixel, and that share of pixels (ordered
+// dither, nudged by noise so the band is uneven) shows the other water, with its own drift.
+vec3 water_meeting(int slot, vec2 grid, vec2 pixel, float t, vec3 colour) {
+	int kind = water_kind(slot);
+	// Cheap test first: raw tiles 2 apart around here; most water is far from a mouth.
+	bool mouth = false;
+	for (int dy = -1; dy <= 1; dy++) {
+		for (int dx = -1; dx <= 1; dx++) {
+			int k = water_kind(int(round(texel(floor(grid) + vec2(float(dx), float(dy)) * 2.0).r * 255.0)));
+			if (k >= 0 && k != kind) mouth = true;
+		}
+	}
+	if (!mouth) return colour;
+	int other_slot = -1;
+	float other = 0.0;
+	for (int i = 0; i < 8; i++) {
+		for (int r = 0; r < 2; r++) {
+			int s = slot_at(grid + RING8[i] * (r == 0 ? 0.7 : 1.5));
+			int k = water_kind(s);
+			if (k >= 0 && k != kind) {
+				other += r == 0 ? 1.0 : 0.6;
+				other_slot = s;
+			}
+		}
+	}
+	if (other_slot < 0) return colour;
+	float share = other / (8.0 * 1.6 + 1.0) * 1.1 + (fbm(grid * 1.3 + 7.1) - 0.5) * 0.35;
+	if (share <= bayer4(pixel)) return colour;
+	vec2 moved = pixel - water_flow(other_slot, t);
+	if (water_kind(other_slot) == 2) {
+		// The sea at a river mouth is shallow.
+		return sample_diamond(shallow_tex, screen_to_grid(moved)).rgb;
+	}
+	return ground_colour(other_slot, screen_to_grid(moved), moved);
 }
 
 void vertex() {
@@ -238,12 +344,7 @@ void fragment() {
 	int slot = int(round(here.x));
 	float t = animated ? TIME : 0.0;
 	// Water textures slide under a fixed shoreline.
-	vec2 flow = vec2(0.0);
-	if (slot == WATER) flow = floor(river_flow * t);
-	else if (slot == FORD) flow = floor(river_flow * 0.5 * t);
-	else if (slot == SEA || slot == SHALLOW) flow = floor(sea_drift * t);
-	else if (slot == LAKE) flow = floor(lake_drift * t);
-	vec2 moved_pixel = pixel - flow;
+	vec2 moved_pixel = pixel - water_flow(slot, t);
 	vec2 moved_grid = screen_to_grid(moved_pixel);
 	vec3 colour = ground_colour(slot, moved_grid, moved_pixel);
 	if (organic) {
@@ -264,9 +365,12 @@ void fragment() {
 				// Dark line where river water meets the bank, as if the bank threw a shadow.
 				colour *= 0.78;
 			}
+			// Where a river runs into a lake or the sea, the two waters mix in a wide dithered
+			// band instead of meeting on a sharp line (review fixes 2026-11-07).
+			colour = water_meeting(slot, warped, pixel, t, colour);
 			// Glints: single bright pixels that flicker on and off.
 			vec2 cell = floor(pixel / vec2(2.0, 1.0));
-			if (hash(cell + floor(t * 1.5) * vec2(7.13, 3.71)) > 0.9965) {
+			if (hash_cell(cell + floor(t * 1.5) * vec2(7.0, 3.0)) > 0.9965) {
 				colour = mix(colour, vec3(0.95, 0.98, 1.0), 0.7);
 			}
 		} else if (slot != SAND && water_near(warped, 0.2)) {
