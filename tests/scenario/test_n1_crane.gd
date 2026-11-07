@@ -186,6 +186,8 @@ func test_v16_fixture_loads_and_continues() -> void:
 		if agent.kind == Cranes.OPERATOR_KIND:
 			operator = agent
 	assert_float(Cranes.lift_progress(operator)).is_greater(0.0)
+	# Both ends of the lift are held, by the operator's task.
+	assert_array(Array(province.dangling_holds())).is_empty()
 	var load := int(operator.task.bb["_load"])
 	var ship_id := int(operator.task.bb["_dst"])
 	var ship := province.ships.get(ship_id) as ShipUnit

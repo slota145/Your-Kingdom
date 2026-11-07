@@ -2547,3 +2547,9 @@ msgstr "Czeka na statek"
 
 msgid "ui.crane.lifting"
 msgstr "Podnosi: %s"
+
+msgid "ui.reason.no_ship"
+msgstr "przy nabrzeżu nie ma statku"
+
+msgid "ui.reason.no_cargo"
+msgstr "nie ma nic do przeniesienia"

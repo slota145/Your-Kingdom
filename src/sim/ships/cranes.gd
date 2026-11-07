@@ -4,7 +4,8 @@ extends RefCounted
 ## mooring; its operator treads the wheel and lifts CRANE_LOAD units at a time between that
 ## berth's quay yard and the moored ship. The dockers keep carrying over the gangway beside
 ## it: both take the same transport requests (ARCHITECTURE §5.2), so a load is never carried
-## twice. Static helpers over ProvinceSim state, like Harbour.
+## twice. The crane lifts less than a full load only for the last of a good: while porters
+## still bring it to the yard, it waits. Static helpers over ProvinceSim state, like Harbour.
 ##
 ## One lift: the hook is made fast at the source (HOOK_TICKS), swings over (SWING_TICKS),
 ## is let down and unhooked at the destination (HOOK_TICKS), when the goods change hands, and
@@ -25,6 +26,8 @@ const CYCLE_TICKS := 2 * HOOK_TICKS + 2 * SWING_TICKS
 const HANDOVER_TICK := 2 * HOOK_TICKS + SWING_TICKS
 ## How often an idle operator looks for cargo (0.5 s).
 const LOOK_TICKS := 5
+## How long he looks before giving up for a while (2 s).
+const WAIT_TICKS := 20
 
 
 ## The harbour building (port or mooring) whose berth the crane [param crane] stands by: the
@@ -84,6 +87,10 @@ static func take_load(province: ProvinceSim, agent: Agent, port: BuildingState) 
 			load -= 1
 		if load <= 0:
 			continue
+		# Less than a full load only for the last of it: while porters still bring that good
+		# to the yard, the crane waits (the dockers carry single units meanwhile).
+		if load < CRANE_LOAD and _more_coming(province, request.source_id, request.good):
+			continue
 		var bb := agent.task.bb
 		bb["_src"] = request.source_id
 		bb["_dst"] = request.dest_id
@@ -96,6 +103,15 @@ static func take_load(province: ProvinceSim, agent: Agent, port: BuildingState) 
 		bb["good"] = String(request.good)
 		request.in_flight += load
 		return true
+	return false
+
+
+## Whether more of [param good] is on its way into the store [param id] (a quay yard filled
+## by porters).
+static func _more_coming(province: ProvinceSim, id: int, good: StringName) -> bool:
+	for request: TransportRequest in province.jobs.all():
+		if request.dest_id == id and request.good == good and request.amount > 0:
+			return true
 	return false
 
 

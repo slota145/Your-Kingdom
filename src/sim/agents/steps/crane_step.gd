@@ -3,7 +3,9 @@ extends TaskStep
 ## The crane operator at work (N1 part 2, Cranes): waits at the wheel for a ship at his
 ## crane's berth, then makes one lift of up to Cranes.CRANE_LOAD units between the quay yard
 ## and the ship, treading the wheel. DONE after the jib has swung back; the recipe then starts
-## over. Fails with &"no_berth" when the crane stands by no finished port or mooring.
+## over. Fails with &"no_berth" when the crane stands by no finished port or mooring, with
+## &"no_ship" when no ship lies at its berth and with &"no_cargo" when there has been nothing
+## to lift for a while (the task then starts over after a short rest, TaskRunner.RETRY_TICKS).
 
 
 func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
@@ -17,10 +19,15 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 		if port == null:
 			return failed(agent, &"no_berth")
 		agent.activity = &"idle"
-		# Right after a lift he looks at once; while waiting, every Cranes.LOOK_TICKS.
-		var look := not bb.has("_waited") or (province.tick + agent.id) % Cranes.LOOK_TICKS == 0
-		bb["_waited"] = 1
-		if not look or not Cranes.take_load(province, agent, port):
+		if Cranes.moored_ship(province, port) == null:
+			return failed(agent, &"no_ship")
+		# Right after a lift he looks at once, then every Cranes.LOOK_TICKS for a while.
+		var waited := int(bb.get("_waited", 0))
+		bb["_waited"] = waited + 1
+		if waited == 0 or (province.tick + agent.id) % Cranes.LOOK_TICKS == 0:
+			if not Cranes.take_load(province, agent, port):
+				return failed(agent, &"no_cargo") if waited >= Cranes.WAIT_TICKS else Status.RUNNING
+		else:
 			return Status.RUNNING
 		bb["_port"] = port.id
 		var dir := IsoMath.screen_dir(IsoMath.tile_center(port.berth_tile()) - agent.pos)

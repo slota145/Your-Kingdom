@@ -2081,6 +2081,8 @@ func dangling_holds() -> PackedStringArray:
 			var bb: Dictionary = agent.task.bb if agent != null and agent.task != null else {}
 			var held := int(bb.get("_res", 0)) == res.id \
 					and (int(bb.get("_src", 0)) == storage_id or int(bb.get("_dst", 0)) == storage_id)
+			# A crane lift holds both ends at once (N1 part 2, Cranes.take_load).
+			held = held or (int(bb.get("_res_in", 0)) == res.id and int(bb.get("_dst", 0)) == storage_id)
 			if not held:
 				problems.append("reservation %d in %d by %d" % [res.id, storage_id, res.owner])
 	for tile: Vector2i in resources.tiles_with_nodes():

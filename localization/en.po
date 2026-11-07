@@ -2524,3 +2524,9 @@ msgstr "Waiting for a ship"
 
 msgid "ui.crane.lifting"
 msgstr "Lifting: %s"
+
+msgid "ui.reason.no_ship"
+msgstr "no ship at the berth"
+
+msgid "ui.reason.no_cargo"
+msgstr "nothing to lift"
