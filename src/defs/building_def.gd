@@ -88,6 +88,13 @@ extends GameDef
 ## Port: the quay tile (as drawn) at the foot of the gangway to a ship moored at the berth;
 ## dockers walk from the entrance over the quay to it, then up the gangway. (-1, -1) = none.
 @export var gangway: Vector2i = Vector2i(-1, -1)
+## May stand on a quay (N1): harbour buildings, on their water tiles or their land tiles.
+@export var on_quay: bool = false
+## Stands only on a quay, every tile (a mooring, N1).
+@export var quay_only: bool = false
+## Has no dockers of its own: those of the nearest port within Harbour.SERVE_RADIUS carry
+## its cargo (a mooring, N1). Needs such a port to be placed.
+@export var served_by_port: bool = false
 
 
 ## At most one per province (the pioneer camp, M5 part 3; owner's decision 2026-11-06).

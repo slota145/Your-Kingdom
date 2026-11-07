@@ -12,6 +12,8 @@ extends Node
 ## --port (M5 part 2, map coast) puts a port near the tile with the sea merchant's cog moored
 ## at the quay, goods on the quay yard and in the hold, dockers on the quay and the gangway,
 ## and foreign cogs sailing in 8 directions; --select=ship opens the cog's panel.
+## --quays (N1, with --port) joins a stone quay to the port, lays a timber pier with a mooring
+## and a cog tied up at it, a diagonal stone quay, and orders a second pier (outline only).
 ## --select=<building id> opens the panel of that building.
 ## --advance=<seconds> runs the simulation that long first (M5 part 3: the landing on Coast).
 ## --cog_stage=<0..3> (M5 part 3, map coast) puts a shipyard with the player's cog on its
@@ -35,6 +37,7 @@ var _paved: bool = false
 var _carts: bool = false
 var _harbour: bool = false
 var _port: bool = false
+var _quays: bool = false
 ## Building id whose panel is opened (--select=<id>).
 var _select: StringName = &""
 var _advance: int = 0
@@ -64,6 +67,8 @@ func _ready() -> void:
 			_harbour = true
 		elif arg == "--port":
 			_port = true
+		elif arg == "--quays":
+			_quays = true
 		elif arg.begins_with("--scroll="):
 			_scroll = int(arg.trim_prefix("--scroll="))
 		elif arg.begins_with("--advance="):
@@ -139,6 +144,11 @@ func _arrange() -> void:
 		_place_harbour(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _port:
 		_place_port(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+		if _quays:
+			for b: BuildingState in sim.province.buildings.all():
+				if b.def.id == &"port":
+					_place_quays(sim, b)
+					break
 	if _cog_stage >= 0:
 		_place_cogs(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	for b: BuildingState in sim.province.buildings.all():
@@ -203,6 +213,73 @@ func _place_harbour(sim: Simulation, at: Vector2i) -> void:
 			placed += 1
 
 
+## N1: quays around [param port]: a stone quay along the shore beside it (two tiles deep),
+## a timber pier further on with a mooring and a cog at its end, and an ordered pier.
+func _place_quays(sim: Simulation, port: BuildingState) -> void:
+	var province := sim.province
+	var def := port.def
+	var o := port.orientation
+	var sea := def.turned(Vector2i(0, 1), o) - def.turned(Vector2i.ZERO, o)
+	var along := def.turned(Vector2i(1, 0), o) - def.turned(Vector2i.ZERO, o)
+	# First sea tile of the shore column k tiles along from the port.
+	var shore := func(k: int) -> Vector2i:
+		var t := port.origin + along * k
+		for i: int in 24:
+			if province.sail_depth(t) > 0:
+				return t
+			t += sea
+		return Agent.NO_TILE
+	var lay := func(tiles: Array, quay: int) -> void:
+		for t: Vector2i in tiles:
+			if province.quay_error(t) == &"":
+				province.grid.set_quay(t, quay)
+				province.refresh_tile(t)
+	var stone: Array = []
+	for k: int in range(4, 7):
+		var s0: Vector2i = shore.call(k)
+		if s0 != Agent.NO_TILE:
+			stone.append_array([s0, s0 + sea])
+	lay.call(stone, TileGrid.STONE_QUAY)
+	var s1: Vector2i = shore.call(7)
+	var pier: Array = []
+	for j: int in range(-2, 4):   # two tiles of it on the shore
+		for m: int in 2:
+			pier.append(s1 + sea * j + along * m)
+	lay.call(pier, TileGrid.PIER)
+	province.refresh_fairways()
+	var mooring_at := s1 + sea * 2
+	var error := sim.execute(PlaceBuildingCommand.new(&"mooring", mooring_at, true, o))
+	print("mooring ", mooring_at, " ", error)
+	var mooring := province.buildings.get_building(sim.ids.next_id - 1)
+	if error == &"" and mooring != null:
+		var cog := ShipUnit.new(province.ids.take(), sim.data.get_ship(SeaMerchant.SHIP),
+				IsoMath.tile_center(mooring.berth_tile()), sim.data)
+		province.ships[cog.id] = cog
+		Harbour.moor(cog, mooring)
+		mooring.stock.add(&"wood", 8)
+		mooring.stock.add(&"fish", 5)
+	# A diagonal stone quay (8 directions, like walls), out to sea and back along the shore.
+	var s3: Vector2i = shore.call(16)
+	var diagonal := BuildQuayCommand.line(s3 - sea * 2, s3 + (sea - along) * 4)
+	var plan := province.quay_plan(diagonal)
+	lay.call(plan["tiles"], TileGrid.STONE_QUAY)
+	province.refresh_fairways()
+	print("diagonal ", (plan["tiles"] as Array).size(), " of ", diagonal.size(), " ", plan["errors"])
+	# A slanting timber pier starting on the shore.
+	var s4: Vector2i = shore.call(22)
+	var slant := BuildQuayCommand.line(s4 - sea * 2, s4 - sea * 2 + (sea - along) * 5)
+	lay.call(province.quay_plan(slant)["tiles"], TileGrid.PIER)
+	province.refresh_fairways()
+	var s2: Vector2i = shore.call(11)
+	var ordered: Array[Vector2i] = []
+	for j: int in 4:
+		ordered.append(s2 + sea * j)
+	print("ordered pier ", sim.execute(BuildQuayCommand.new(ordered, TileGrid.PIER)))
+	var view: ProvinceView = _game.get("view")
+	view.quays.refresh()
+	view.buildings.refresh_all()
+
+
 func _place_port(sim: Simulation, at: Vector2i) -> void:
 	Game.paused = true
 	var province := sim.province
@@ -253,8 +330,8 @@ func _place_port(sim: Simulation, at: Vector2i) -> void:
 	porter.carry_amount = 1
 	porter.activity = &"walk"
 	porter.facing = IsoMath.Dir.NW
-	# Foreign cogs in 8 directions out at sea.
-	var placed := 0
+	# Foreign cogs in 8 directions out at sea (not with --quays: they would hide the quays).
+	var placed := IsoMath.DIR_COUNT if _quays else 0
 	for y: int in range(at.y + 4, at.y + 40, 3):
 		for x: int in range(at.x - 20, at.x + 30, 7):
 			var tile := Vector2i(x, y)

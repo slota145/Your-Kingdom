@@ -52,6 +52,8 @@ func test_people_go_in_and_out_through_the_door() -> void:
 	for def: BuildingDef in _defs():
 		if def.needs_terrain_near != &"":
 			continue   # the fishing hut needs a river (its own test below)
+		if def.quay_only:
+			continue   # a mooring needs a quay and a port (test_n1_quays.gd)
 		for o: int in def.orientation_count():
 			var sim := SimFixture.make_sim(Vector2i(24, 24))
 			sim.province.rare_resource = def.needs_rare   # a vineyard: a province with vines (M6)

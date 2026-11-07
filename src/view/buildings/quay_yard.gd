@@ -1,7 +1,8 @@
 class_name QuayYard
 extends Node2D
 ## The quay yard of a port (M5 part 2): planked ground on the land tiles of the port, drawn
-## under everything (the port art leaves it see-through), and the stacks of goods waiting
+## under everything (the port art leaves it see-through; its quay over the water is the
+## QuayLayer's, N1), and the stacks of goods waiting
 ## there, one per slot, from the same Stockpile as the building panel (ARCHITECTURE §6.5).
 ## Child of the y-sorted world.
 
@@ -61,7 +62,6 @@ func setup(state: BuildingState) -> void:
 	# Ground decals: below everything that stands in the y-sorted world.
 	ground.z_index = -1
 	add_child(ground)
-	add_child(_quay_deck(state))
 	if state.stock == null:
 		return
 	for slot: int in state.stock.slot_count():
@@ -69,30 +69,6 @@ func setup(state: BuildingState) -> void:
 		sprite.position = IsoMath.tile_center_screen(slot_tile(state, slot))
 		add_child(sprite)
 		_stacks.append(sprite)
-
-
-## The quay deck over the water (buildings/<art>/base_ground, generate_art.gd), laid under the
-## people walking on it; mirrored with the building.
-static func _quay_deck(state: BuildingState) -> Sprite2D:
-	var visual := BuildingVisualDef.for_building(state.def.id)
-	var art := "buildings/%s/base_ground" % (visual.art_id if visual != null else String(state.def.id))
-	var deck := Sprite2D.new()
-	deck.centered = false
-	deck.z_index = -1
-	var path := ArtPaths.resolve(art + ".json")
-	if not FileAccess.file_exists(path):
-		return deck
-	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
-	var pv: Array = meta["pivot"]
-	var pivot := Vector2(float(pv[0]), float(pv[1]))
-	var tex := ArtPaths.texture(art + ".png")
-	if state.orientation % 2 == 1 and tex != null:
-		tex = BuildingView.mirror_texture(art, tex)
-		pivot.x = tex.get_width() - pivot.x
-	deck.texture = tex
-	deck.position = IsoMath.grid_to_screen(Vector2(state.origin + state.def.footprint))
-	deck.offset = -pivot
-	return deck
 
 
 func update_view() -> void:

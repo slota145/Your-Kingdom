@@ -3,7 +3,8 @@ extends TaskStep
 ## Walks to the construction site, starts the current phase when its materials are there
 ## (using them up) and hammers until the phase is done. Ends when the phase is finished or
 ## there is nothing to do, so the builder can pick the next site. On a paving site (M4b-3)
-## he walks onto the next tile and lays its cobbles.
+## he walks onto the next tile and lays its cobbles; on a quay site (N1) he stands next to the
+## next tile (on land or quay) and lays its planks or stones.
 
 
 func run(province: ProvinceSim, agent: Agent, _def: StepDef) -> Status:
@@ -55,12 +56,22 @@ func _pave(province: ProvinceSim, agent: Agent, paving_site: PavingSite) -> Stat
 		# The tile was taken off the order (road removed): start over with the next one.
 		agent.activity = &"idle"
 		return Status.DONE
-	var status := Movement.walk(province, agent, tile)
-	if status != Status.DONE:
-		return status
-	if paving_site.stock.available(PavingSite.GOOD) < PavingSite.STONE_PER_TILE:
+	var stand := province.paving_stand(paving_site)
+	if stand == Agent.NO_TILE:
 		agent.activity = &"idle"
 		return Status.DONE
+	var status := Movement.walk(province, agent, stand)
+	if status != Status.DONE:
+		return status
+	if paving_site.stock.available(paving_site.good()) < paving_site.per_tile() \
+			or not province.can_lay(paving_site):
+		agent.activity = &"idle"
+		return Status.DONE
+	if paving_site.is_quay() and not bb.has("_faced"):
+		bb["_faced"] = 1
+		var dir := IsoMath.screen_dir(Vector2(tile) - Vector2(stand))
+		if dir >= 0:
+			agent.facing = dir
 	agent.activity = &"build"
 	paving_site.work_left -= 1
 	if paving_site.work_left <= 0:

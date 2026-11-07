@@ -22,6 +22,8 @@ var agents: AgentViewPool
 ## Ships and ships on slipways (M5), fish shoals on the water.
 var ships: ShipLayer
 var shoals: ShoalLayer
+## Quays on the sea and harbour buildings' strips over the water, as one mass (N1).
+var quays: QuayLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 
@@ -43,6 +45,10 @@ func setup(source: ProvinceSim) -> void:
 	shoals.z_index = -1
 	add_child(shoals)
 	shoals.setup(province)
+	quays = QuayLayer.new()
+	quays.z_index = -1
+	add_child(quays)
+	quays.setup(province)
 	world = Node2D.new()
 	world.y_sort_enabled = true
 	add_child(world)
@@ -95,6 +101,9 @@ func on_sim_event(event: Dictionary) -> void:
 				&"site_phase_started", &"site_phase_finished", &"house_upgraded", &"building_turned", \
 				&"look_changed", &"ship_build_closed":
 			_buildings_dirty = true
+			quays.refresh()
+		&"quay_changed", &"quay_ordered", &"paving_closed":
+			quays.refresh()
 		&"road_changed":
 			terrain.refresh_tile(event["tile"])
 			_buildings_dirty = true   # a road beside houses can make a corner
