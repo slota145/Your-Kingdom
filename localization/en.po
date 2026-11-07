@@ -2428,7 +2428,7 @@ msgid "ui.build.pier"
 msgstr "Pier"
 
 msgid "ui.build.pier_tip"
-msgstr "A timber pier on the sea: 2 planks a tile. Drag from the shore out to sea (at most 8 tiles). Rows side by side join into one wide quay. People walk on it, ships cannot pass. Ports, shipyards, fishing wharves and moorings can stand on it."
+msgstr "A timber pier on the sea: 2 planks a tile. Drag from the shore out to sea (at most 8 tiles), like a wall: straight or slanting, in 8 directions (a slant takes more tiles). Rows side by side join into one wide quay. People walk on it, ships cannot pass. Ports, shipyards, fishing wharves and moorings can stand on it."
 
 msgid "ui.build.stone_quay"
 msgstr "Quay"

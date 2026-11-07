@@ -716,6 +716,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Interfejs:** przyciski „Pomost” i „Nabrzeże” w pasku budowy (przeciąganie jak droga, podgląd całej linii na zielono albo czerwono), miejsce cumowania w zakładce „Morze i statki”, rozbiórka kafla nabrzeża.
 - **Zapis v15** z migracją i fixturą `v15_quays.json` (`"$GODOT" --headless --path . -s res://tools/build_quay_fixture.gd`). Testy: `tests/scenario/test_n1_quays.gd` (budowa, koszt, zasięg, odcięcie morza, budynki na nabrzeżu, kupiec przy miejscu cumowania obsłużony przez portowców, rozbiórka, zapis, fixtura v15, migracja), fixtura w `test_m6_modes.gd`.
 - Zrzut: `game_shot.tscn -- --map=coast --tile=76,84 --zoom=2 --port --quays`.
+- **Zmiany po rozmowie z właścicielem (2026-11-07, przed oceną):** nabrzeża stawia się **jak mury, w 8 kierunkach**: przeciągnięcie przyciąga się do prostej albo skosu, a skos dostaje po bokach każdego kroku kliny (jak „prosto” przy murze kamiennym, ARCHITECTURE §6.3), więc ludzie po nim chodzą, a widok ścina kliny od strony wody i boki biegną prosto. Skos zużywa ok. 3 kafle na krok; krok po skosie liczy się jako 1 kafel zasięgu (8 kroków od brzegu). Nabrzeża są **wyższe**: pokład jest na wysokości lądu, a ściana opada do wody (kamień 20 px z **profilem jak w Anno 1404** według referencji właściciela: przypory z pachołkami, łuki schodzące do wody, gzyms; pomost 12 px z palami i zastrzałami), i **widać, że chowają się pod wodą**: pod linią wody z pianą ściana i pale idą dalej, coraz bardziej niebieskie i przezroczyste. Przy okazji: plac nabrzeża co sekundę zamawia dokładnie brakujący materiał (tragarz, który nie doniósł ładunku, bo budowniczy przeszedł dalej, nie zatrzymuje już budowy).
 - Uproszczenia: w trybie uproszczonym (prowincja nieoglądana) budowa nabrzeży czeka jak bruk; pas budynku nad wodą to zawsze pomost (chyba że stoi na kamiennym nabrzeżu); burzenie nabrzeża nie zwraca materiału.
 
 **Decyzje (ankieta 2026-11-07):**
@@ -726,7 +727,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Wartości wyjściowe (do strojenia przy realizacji):**
 - pomost drewniany: 2 deski na kafel; nabrzeże kamienne: 3 kamienie na kafel (w M7 mocniejsze),
-- stawiane linią jak mury i drogi, na wodzie morskiej płytkiej i głębokiej, najwyżej 8 kafli od lądu (liczone po nabrzeżu); pierwszy kafel musi dotykać lądu albo innego nabrzeża,
+- stawiane linią jak mury, w 8 kierunkach (decyzja 2026-11-07), na wodzie morskiej płytkiej i głębokiej, najwyżej 8 kafli od lądu (liczone po nabrzeżu); pierwszy kafel musi dotykać lądu albo innego nabrzeża,
 - rzędy obok siebie zlewają się w jedno szerokie nabrzeże (model bryłowy jak mur kamienny, ARCHITECTURE §6.3, ale płaski),
 - ludzie chodzą po nabrzeżu jak po drodze; statki i łodzie nie przepływają; stawianie jest zabronione, jeśli odcięłoby od morza miejsce cumowania, pochylnię, przystań albo ławicę,
 - budowa jak droga: budowniczy i tragarze, kafel po kaflu,

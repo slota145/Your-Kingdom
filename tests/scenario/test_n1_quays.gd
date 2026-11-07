@@ -203,3 +203,55 @@ func test_v14_save_migrates_to_v15_without_quays() -> void:
 	var sim := Simulation.from_dict(state, SimFixture.registry())
 	assert_int(sim.province.grid.quay_count()).is_equal(0)
 	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+
+
+## Quays are dragged like walls (owner's request 2026-11-07): snapped to 8 directions; a
+## diagonal takes the wedge tiles beside each step.
+func test_quay_line_snaps_to_eight_directions() -> void:
+	assert_array(BuildQuayCommand.line(Vector2i(0, 0), Vector2i(5, 1))).is_equal(
+			[Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0), Vector2i(4, 0), Vector2i(5, 0)])
+	assert_array(BuildQuayCommand.line(Vector2i(0, 0), Vector2i(-1, -4))).is_equal(
+			[Vector2i(0, 0), Vector2i(0, -1), Vector2i(0, -2), Vector2i(0, -3), Vector2i(0, -4)])
+	# Near a diagonal: snapped onto it, each step with its two wedges.
+	assert_array(BuildQuayCommand.line(Vector2i(0, 0), Vector2i(3, -2))).is_equal([Vector2i(0, 0),
+			Vector2i(1, 0), Vector2i(0, -1), Vector2i(1, -1), Vector2i(2, -1), Vector2i(1, -2),
+			Vector2i(2, -2), Vector2i(3, -2), Vector2i(2, -3), Vector2i(3, -3)])
+
+
+## A diagonal step counts as one tile of reach; the builder lays a diagonal quay from the
+## shore outwards and people walk along it.
+func test_diagonal_quay_reaches_eight_steps_and_is_walkable() -> void:
+	var sim := _coast_sim()
+	var province := sim.province
+	var line := BuildQuayCommand.line(Vector2i(14, 30), Vector2i(23, 39))
+	var plan := province.quay_plan(line)
+	var accepted: Array = plan["tiles"]
+	assert_bool(accepted.has(Vector2i(21, 37))).is_true()
+	assert_bool(accepted.has(Vector2i(22, 38))).is_false()
+	assert_str(String((plan["errors"] as Dictionary)[Vector2i(22, 38)])).is_equal("too_far_from_shore")
+	# A shorter one is laid (porters bring the stone one at a time from the village).
+	var short := BuildQuayCommand.line(Vector2i(14, 30), Vector2i(17, 33))
+	assert_str(String(sim.execute(BuildQuayCommand.new(short, TileGrid.STONE_QUAY)))).is_empty()
+	var done := SimFixture.run_until(sim, func() -> bool: return province.paving.is_empty(), 1200)
+	assert_bool(done).is_true()
+	assert_bool(province.grid.has_quay(Vector2i(17, 33))).is_true()
+	assert_array(province.find_path(Vector2i(14, 28), Vector2i(17, 33))).is_not_empty()
+	assert_bool(province.boat_nav.is_walkable(Vector2i(25, 36))).is_true()
+
+
+## The view cuts the wedges of a diagonal quay on the water side, so its edges run straight,
+## and keeps the outer corner of a right-angled turn square.
+func test_quay_layer_cuts_wedges_of_diagonal_quays() -> void:
+	var sim := _coast_sim()
+	_lay(sim, BuildQuayCommand.line(Vector2i(14, 30), Vector2i(18, 34)))
+	var turn := _column(30, 30, 33)
+	turn.append_array([Vector2i(31, 33), Vector2i(32, 33)])
+	_lay(sim, turn)
+	var layer: QuayLayer = auto_free(QuayLayer.new())
+	layer.setup(sim.province)
+	# Wedge (15, 31) beside the step (15, 30)-(16, 31)... and its twin on the other side.
+	assert_int(layer.cut_corner(Vector2i(16, 31))).is_equal(1)
+	assert_int(layer.cut_corner(Vector2i(15, 32))).is_equal(3)
+	assert_int(layer.cut_corner(Vector2i(16, 32))).is_equal(-1)
+	# The right-angled turn of the other quay stays square.
+	assert_int(layer.cut_corner(Vector2i(30, 33))).is_equal(-1)

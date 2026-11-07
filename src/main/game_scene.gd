@@ -484,7 +484,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_left_release()
 		return
 	if event is InputEventMouseMotion and _dragging:
-		if _drag_tiles.is_empty() or _drag_tiles.back() != _hover:
+		var kind: StringName = _tool.get("kind", &"")
+		if kind == &"pier" or kind == &"quay":
+			# Quays are drawn like walls: a straight line in 8 directions from the first tile (N1).
+			var line := BuildQuayCommand.line(_drag_tiles[0], _hover)
+			if line != _drag_tiles:
+				_drag_tiles = line
+				_update_preview()
+		elif _drag_tiles.is_empty() or _drag_tiles.back() != _hover:
 			_extend_drag(_hover)
 			_update_preview()
 		return

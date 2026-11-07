@@ -2451,7 +2451,7 @@ msgid "ui.build.pier"
 msgstr "Pomost"
 
 msgid "ui.build.pier_tip"
-msgstr "Drewniany pomost na morzu: 2 deski na kafel. Przeciągnij myszą od brzegu w głąb morza (najwyżej 8 kafli). Rzędy obok siebie łączą się w jedno szerokie nabrzeże. Ludzie po nim chodzą, statki nie przepływają. Na pomoście stawiasz port, stocznię, przystań i miejsce cumowania."
+msgstr "Drewniany pomost na morzu: 2 deski na kafel. Przeciągnij myszą od brzegu w głąb morza (najwyżej 8 kafli), jak mur: prosto albo po skosie, w 8 kierunkach (skos zajmuje więcej kafli). Rzędy obok siebie łączą się w jedno szerokie nabrzeże. Ludzie po nim chodzą, statki nie przepływają. Na pomoście stawiasz port, stocznię, przystań i miejsce cumowania."
 
 msgid "ui.build.stone_quay"
 msgstr "Nabrzeże"

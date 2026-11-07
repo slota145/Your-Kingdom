@@ -134,6 +134,8 @@ func step() -> void:
 	Ships.move_all(self)
 	_remove_empty_piles()
 	if tick % GROW_CHECK_TICKS == 0:
+		if not paving.is_empty():
+			_top_up_paving()
 		_grow_saplings()
 		_regrow_nodes()
 		if landing != null:
@@ -1199,6 +1201,23 @@ func pave_next(paving_site: PavingSite) -> void:
 		_close_paving(paving_site, tile)
 
 
+## Once a second: each paving or quay site asks for exactly the material it still lacks. A
+## porter who could not deliver (the builder's spot moves on with every quay tile laid) leaves
+## his load on the ground; without this the site would wait for it for good.
+func _top_up_paving() -> void:
+	for paving_site: PavingSite in paving.values():
+		var missing := paving_site.stone_missing()
+		var good := paving_site.good()
+		var found := false
+		for request: TransportRequest in jobs.all():
+			if request.dest_id == paving_site.id and request.good == good:
+				found = true
+				jobs.set_amount(good, request.source_id, paving_site.id, missing - request.in_flight)
+				missing = 0
+		if not found and missing > 0:
+			jobs.add(good, missing, 0, paving_site.id)
+
+
 ## A road tile removed before it was paved leaves its site (stone not needed any more is
 ## not asked for; stone already there goes on the ground when the site closes).
 func _withdraw_paving(tile: Vector2i) -> void:
@@ -1240,6 +1259,8 @@ func _close_paving(paving_site: PavingSite, at: Vector2i = Agent.NO_TILE) -> voi
 const QUAY_REACH := 8
 
 const _STEPS4: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
+const _STEPS8: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1),
+		Vector2i(1, 1), Vector2i(-1, 1), Vector2i(-1, -1), Vector2i(1, -1)]
 
 
 ## Where the builder stands for the next tile of [param paving_site] (porters bring the
@@ -1336,19 +1357,45 @@ func quay_plan(tiles: Array[Vector2i]) -> Dictionary:
 			if not depth.has(land) and _is_shore_land(land):
 				depth[land] = 0
 				queue.append(land)
-	var accepted: Array[Vector2i] = []
+	var shore := queue.duplicate()
+	var is_quay := func(t: Vector2i) -> bool:
+		return wanted.has(t) or ordered.has(t) or grid.has_quay(t)
+	# A diagonal step counts as one tile of reach (8-direction quays, N1) when a tile beside it
+	# is quay too, so people can walk it.
+	var in_reach: Dictionary[Vector2i, bool] = {}
 	var head := 0
 	while head < queue.size():
 		var tile := queue[head]
 		head += 1
 		if wanted.has(tile) and depth[tile] <= QUAY_REACH:
-			accepted.append(tile)
-		for step: Vector2i in _STEPS4:
+			in_reach[tile] = true
+		for step: Vector2i in _STEPS8:
 			var next := tile + step
-			if depth.has(next) or not (wanted.has(next) or ordered.has(next) or grid.has_quay(next)):
+			if depth.has(next) or not is_quay.call(next):
+				continue
+			if step.x != 0 and step.y != 0 and not (is_quay.call(tile + Vector2i(step.x, 0)) \
+					or is_quay.call(tile + Vector2i(0, step.y))):
 				continue
 			depth[next] = depth[tile] + 1
 			queue.append(next)
+	# The order a builder lays them: each next to the shore or to quay laid before it.
+	var accepted: Array[Vector2i] = []
+	var seen: Dictionary[Vector2i, bool] = {}
+	queue = shore
+	for t: Vector2i in queue:
+		seen[t] = true
+	head = 0
+	while head < queue.size():
+		var tile := queue[head]
+		head += 1
+		for step: Vector2i in _STEPS4:
+			var next := tile + step
+			if seen.has(next) or not (in_reach.has(next) or ordered.has(next) or grid.has_quay(next)):
+				continue
+			seen[next] = true
+			queue.append(next)
+			if in_reach.has(next):
+				accepted.append(next)
 	for tile: Vector2i in wanted:
 		if not accepted.has(tile):
 			errors[tile] = &"too_far_from_shore" if depth.has(tile) else &"not_at_shore"

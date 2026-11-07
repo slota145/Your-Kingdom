@@ -437,7 +437,7 @@ Narzędzie: `tools/generate_goods.gd`, wynik w `assets/goods/` i `assets/nature/
 
 ### 10.9a Nabrzeża rysowane kodem (N1, część 1, 2026-11-07)
 
-- `QuayLayer` (widok, bez plików grafik): pomost to deski w poprzek kafla, belka na krawędzi i pale w wodzie; nabrzeże kamienne to płyty w dwóch rzędach z przesuniętymi spoinami, jasna krawędź i ściana z mokrym pasem przy wodzie. Wierzch 4 px nad wodą, boki tylko od strony wody.
+- `QuayLayer` (widok, bez plików grafik): pomost to deski w poprzek kafla, belka na krawędzi i pale w wodzie; nabrzeże kamienne to płyty w dwóch rzędach z przesuniętymi spoinami, jasna krawędź i ściana z mokrym pasem przy wodzie. Pokład na wysokości lądu; ściana opada do wody (kamień 20 px z profilem według referencji właściciela z Anno 1404: przypory z kamienną czapą i pachołkiem na każdym rogu kafla, między nimi łukowe wnęki schodzące pod wodę, gzyms wzdłuż górnej krawędzi, warstwy bloków i pas wodorostów; pomost 12 px z belką, palami i zastrzałami), a pod linią wody z pianą idzie dalej 16 px, coraz bardziej w kolorze wody. Boki tylko od strony wody i tylko widoczne dla kamery. Skos w 8 kierunkach ma ścięte kliny, więc jego boki są proste.
 - Port, przystań i stocznia (pas obok pochylni) nie mają już pomostu w grafice (`tools/generate_art.gd`): ich pas nad wodą rysuje `QuayLayer`, więc łączy się z nabrzeżem gracza. Miejsce cumowania to same rekwizyty (pachołki, latarnia, beczki, sieci) na nabrzeżu.
 - Zrzut: `game_shot.tscn -- --map=coast --tile=76,84 --zoom=2 --port --quays`.
 

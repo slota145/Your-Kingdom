@@ -31,5 +31,35 @@ func apply(sim: Simulation) -> void:
 	sim.province.order_quay(accepted, quay)
 
 
+## The tiles of a quay dragged from [param from] to [param to], like a wall (GDD §5.3, owner's
+## request 2026-11-07): snapped to one of 8 directions. A diagonal line takes both tiles beside
+## each step too (the wedges, as in the stone wall's "straight" diagonals, ARCHITECTURE §6.3),
+## so people walk along it and its sides are drawn straight (QuayLayer).
+static func line(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
+	var d := to - from
+	var ax := absi(d.x)
+	var ay := absi(d.y)
+	var dir := Vector2i(signi(d.x), signi(d.y))
+	var n := 0
+	if ax >= 2 * ay:
+		dir.y = 0
+		n = ax
+	elif ay >= 2 * ax:
+		dir.x = 0
+		n = ay
+	else:
+		n = roundi((ax + ay) / 2.0)
+	var tiles: Array[Vector2i] = []
+	for i: int in n + 1:
+		var t := from + dir * i
+		if not tiles.has(t):
+			tiles.append(t)
+		if dir.x != 0 and dir.y != 0 and i < n:
+			for wedge: Vector2i in [t + Vector2i(dir.x, 0), t + Vector2i(0, dir.y)]:
+				if not tiles.has(wedge):
+					tiles.append(wedge)
+	return tiles
+
+
 func get_name() -> StringName:
 	return &"build_quay"
