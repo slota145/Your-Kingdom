@@ -706,7 +706,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## N1 — Nabrzeża i port
 
-**Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu), przed M7 i przed oceną gry M4b-2, M4b-3, M5, M6 i UI-1 (poprawki z ocen mają pierwszeństwo).** Pomysł gracza z IDEAS („Nabrzeża budowane w głąb morza”), wersja średnia: 2 części, ocena po każdej.
+**Status: zamknięty 2026-11-07 (obie części zaakceptowane i scalone do `main`). Plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu), przed M7 i przed oceną gry M4b-2, M4b-3, M5, M6 i UI-1 (poprawki z ocen mają pierwszeństwo).** Pomysł gracza z IDEAS („Nabrzeża budowane w głąb morza”), wersja średnia: 2 części, ocena po każdej.
 
 **Część 1, stan (2026-11-07): zaakceptowana przez właściciela 2026-11-07 i scalona do `main`.** Zrobione:
 - **Nabrzeża w symulacji:** warstwa nabrzeży w siatce (pomost i kamień), chodzenie po nich (pomost jak droga ubita, nabrzeże jak bruk), statki i łodzie nie przepływają; budowa jak bruk: tragarze niosą deski albo kamień, budowniczy stoi obok i układa kafel po kaflu od brzegu (6 s na kafel); zamówione kafle są od razu zamknięte dla statków. Zasady: tylko morze, najwyżej 8 kafli od brzegu, nie na torze wodnym ani miejscu cumowania, a cała linia jest odrzucana, gdy odcięłaby od morza miejsce cumowania, ławicę albo statek. Rozbiórka kafla, jeśli reszta nabrzeża dalej sięga brzegu.
@@ -718,6 +718,15 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Zrzut: `game_shot.tscn -- --map=coast --tile=76,84 --zoom=2 --port --quays`.
 - **Zmiany po rozmowie z właścicielem (2026-11-07, przed oceną):** nabrzeża stawia się **jak mury, w 8 kierunkach**: przeciągnięcie przyciąga się do prostej albo skosu, a skos dostaje po bokach każdego kroku kliny (jak „prosto” przy murze kamiennym, ARCHITECTURE §6.3), więc ludzie po nim chodzą, a widok ścina kliny od strony wody i boki biegną prosto. Skos zużywa ok. 3 kafle na krok; krok po skosie liczy się jako 1 kafel zasięgu (8 kroków od brzegu). Nabrzeża są **wyższe**: pokład jest na wysokości lądu, a ściana opada do wody (kamień 20 px z **profilem jak w Anno 1404** według referencji właściciela: przypory z pachołkami, łuki schodzące do wody, gzyms; pomost 12 px z palami i zastrzałami), i **widać, że chowają się pod wodą**: pod linią wody z pianą ściana i pale idą dalej, coraz bardziej niebieskie i przezroczyste. **Druga rozmowa (2026-11-07):** **pomost bogatszy, jak w Anno** (pale z zastrzałami na krzyż, belka z końcami desek i listwa pod nią, wysokie słupy cumownicze na rogach, czasem drabinka do wody, deski w odcieniach z gwoździami; pomost 14 px nad wodą) i **nabrzeża wchodzą na ląd** na najwyżej 2 kafle od morza, także po skosie: na lądzie leżą jak bruk portowy (krawężnik od strony ziemi, a bok widoczny dla kamery schodzi trójkątem po skarpie: pełna wysokość przy wodzie, zero 2 kafle w głąb lądu; prośba właściciela), liczą się jako brzeg (nie zużywają zasięgu), a drogi, pola i domy na nie nie wchodzą. Przy okazji: plac nabrzeża co sekundę zamawia dokładnie brakujący materiał (tragarz, który nie doniósł ładunku, bo budowniczy przeszedł dalej, nie zatrzymuje już budowy).
 - Uproszczenia: w trybie uproszczonym (prowincja nieoglądana) budowa nabrzeży czeka jak bruk; pas budynku nad wodą to zawsze pomost (chyba że stoi na kamiennym nabrzeżu); burzenie nabrzeża nie zwraca materiału.
+
+**Część 2, stan (2026-11-07): zaakceptowana przez właściciela 2026-11-07 i scalona do `main`** (po uwadze właściciela: masywniejszy dźwig, koga cumuje dalej od nabrzeża). Decyzje z ankiety (2026-11-07, wszystkie według rekomendacji): dźwig pracuje **razem z portowcami** (nie zamiast nich), wygląd z **kołem deptakowym i ładunkiem na linie**, magazyn portowy to **zwykły magazyn** na nabrzeżu, automatyczny gracz stawia **pełny port z kogą**. Zrobione:
+- **Dźwig przeładunkowy:** 2×2, tylko na nabrzeżu, najwyżej 2 kafle od miejsca, gdzie cumuje statek (przy porcie albo miejscu cumowania), 12 desek i 4 kamienie, 1 dźwigowy. Dźwigowy chodzi w kole, a ramię przenosi po 3 sztuki w siatce między placem a statkiem, obok portowców: sam dźwig ok. 1,8× tyle co dwóch portowców, razem statek ładuje się ok. 2,8× szybciej (24 drewna: portowcy 69 s, dźwig 38 s, razem 25 s). Mniej niż 3 sztuki tylko na koniec towaru: gdy tragarze dopiero znoszą towar na plac, dźwig czeka na pełny ładunek, a portowcy w tym czasie noszą pojedyncze sztuki. Przerwany załadunek (statek odpływa) niczego nie gubi.
+- **Magazyn portowy:** 3×3, tylko na nabrzeżu, 8 desek i 4 kamienie, 8 stosów, 2 tragarzy; zwykły magazyn, najbliżej statków.
+- **Wygląd:** maszt z kołem deptakowym rysowany kodem; ramię obraca się od placu nad statek, hak z ładunkiem w siatce podnosi się i opuszcza na pokład (`CraneLayer`). Panel dźwigu: które miejsce obsługuje, statek przy nim, co teraz podnosi.
+- **Automatyczny gracz na „Wybrzeżu”** (`tests/support/harbour_bot.gd`, `tests/long/test_n1_harbour_bot.gd`, 130 minut): obok zwykłego planu miasta od 45. minuty stawia port, smolarnię, pomost z miejscem cumowania i dźwigiem, drugi pomost z magazynem portowym i stocznię (na południe, żeby domem kogi było miejsce cumowania), kupuje u kupca smołę i sukno, a gdy miejsce cumowania i dźwig stoją, zamawia kogę i wysyła ją w rejsy (deski tam, smoła i sukno z powrotem). Wynik: kupiec przy porcie i koga przy miejscu cumowania stoją naraz łącznie ok. 11 minut, 3 rejsy, dźwig przeniósł 28 sztuk w 11 podniesieniach, magazyn portowy przyjął 231 sztuk, bez zakleszczeń.
+- **Zapis v16** (bez zmiany formatu: nowe budynki, a podniesienie żyje w zadaniu dźwigowego) z migracją i fixturą `v16_crane.json` (`"$GODOT" --headless --path . -s res://tools/build_crane_fixture.gd`; dźwig w połowie podniesienia). Testy: `tests/scenario/test_n1_crane.gd`, fixtura w `test_m6_modes.gd`.
+- Zrzut: `game_shot.tscn -- --map=coast --tile=73,103 --zoom=2 --port --quays --crane [--lift=<0..1>]`.
+- Uproszczenia: dźwig sięga placu miejsca cumowania (przy porcie: stopy trapu) z każdego miejsca w zasięgu; w trybie uproszczonym (prowincja nieoglądana) dźwig nie pracuje, bo kupiec handluje od razu, a koga płynie według zegara, jak dotąd; koło w grafice się nie obraca (ruch widać po dźwigowym, ramieniu i haku). Przy okazji poprawka: automatyczny gracz pokazał, że na „Wybrzeżu” szybko kończy się kamień, gdy koga go sprzedaje, więc jego drugi pomost jest drewniany.
 
 **Decyzje (ankieta 2026-11-07):**
 - **Mały etap przed M7** (zamiast po M7, wbrew rekomendacji, decyzja właściciela): port rośnie, zanim przyjdzie wojsko i oblężenia od morza.
@@ -753,10 +762,10 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Ludzie chodzą po nabrzeżu, statki nie; nie da się odciąć miejsca cumowania, pochylni, przystani ani ławicy od morza (testy).
 - [x] Miejsce cumowania przyjmuje drugi statek, a portowcy go ładują i rozładowują.
 - [x] Port, stocznia i przystań stoją także na nabrzeżu, a ich pas nad wodą łączy się z nabrzeżem gracza w jedną bryłę (zrzuty).
-- [ ] Dźwig przeładunkowy i magazyn portowy działają (część 2).
-- [ ] Zapis v15 i v16 z migracjami i fixturami; stare zapisy wczytują się z nowym wyglądem pomostów. (v15 zrobione w części 1.)
-- [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
-- [ ] **Twoja ocena gry** (po każdej części; część 1 zaakceptowana 2026-11-07).
+- [x] Dźwig przeładunkowy i magazyn portowy działają (część 2; `test_n1_crane.gd`, automatyczny gracz w `test_n1_harbour_bot.gd`).
+- [x] Zapis v15 i v16 z migracjami i fixturami; stare zapisy wczytują się z nowym wyglądem pomostów.
+- [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
+- [x] **Twoja ocena gry** (po każdej części; część 1 i część 2 zaakceptowane 2026-11-07).
 
 ---
 

@@ -305,7 +305,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 
 **Koga gracza (M5, część 3):** stocznia buduje kogę w 4 widocznych etapach: szkielet (8 desek), poszycie (10 desek, 4 smoły), maszt z żaglem (2 deski, 4 sukna) i wodowanie (2 smoły), każdy ok. 1 minuty pracy cieśli. Po wodowaniu koga szuka portu (jedna koga na port) i czeka na kotwicy w zatoce, żeby nabrzeże zostało wolne dla kupca morskiego. Rejsy: §4.6.
 
-**Nabrzeża (N1, ankieta 2026-11-07):** gracz stawia linią, jak mury w 8 kierunkach (także po skosie), drewniane pomosty i kamienne nabrzeża w głąb morza, a także do 2 kafli na lądzie przy brzegu; są wysokie nad wodą i widać, jak schodzą pod wodę; rzędy zlewają się w jedno nabrzeże, ludzie po nim chodzą, statki nie. Miejsce cumowania na krawędzi nabrzeża przyjmuje kolejny statek. Część budynków nad wodą (port, stocznia, przystań) to ten sam pas nabrzeża, więc razem z nabrzeżem gracza tworzą jedną bryłę portu, jak w Anno; te budynki można też stawiać na nabrzeżu. Później dźwig przeładunkowy i magazyn portowy. Wartości: ROADMAP, N1.
+**Nabrzeża (N1, ankieta 2026-11-07):** gracz stawia linią, jak mury w 8 kierunkach (także po skosie), drewniane pomosty i kamienne nabrzeża w głąb morza, a także do 2 kafli na lądzie przy brzegu; są wysokie nad wodą i widać, jak schodzą pod wodę; rzędy zlewają się w jedno nabrzeże, ludzie po nim chodzą, statki nie. Miejsce cumowania na krawędzi nabrzeża przyjmuje kolejny statek. Część budynków nad wodą (port, stocznia, przystań) to ten sam pas nabrzeża, więc razem z nabrzeżem gracza tworzą jedną bryłę portu, jak w Anno; te budynki można też stawiać na nabrzeżu. **Dźwig przeładunkowy** (część 2, ankieta 2026-11-07) stoi na nabrzeżu najwyżej 2 kafle od miejsca, gdzie cumuje statek: dźwigowy chodzi w kole deptakowym, a ramię przenosi po 3 sztuki w siatce między placem a statkiem, obok portowców (sam ok. 2× tyle co dwóch portowców, razem statek ładuje się ok. 3× szybciej). **Magazyn portowy** to zwykły magazyn stojący na nabrzeżu, najbliżej statków. Wartości: ROADMAP, N1.
 
 **Plan M5 (decyzje 2026-11-06, szczegóły w ROADMAP):** w M5 tylko łódź rybacka i koga. Łódź pracuje dla nowej **przystani rybackiej** nad morzem (połów z ławic, więcej niż wędkarz, który zostaje). Statki powstają z desek, smoły (nowa **smolarnia**: drewno → smoła) i sukna. **Kupiec morski** przypływa obcą kogą do portu. Własna koga gracza odbywa **rejsy handlowe za horyzont** (wraca ze złotem i zamówionymi towarami). Na „Wybrzeżu” gra zaczyna się od kogi, która wyładowuje osadników na plaży. Reszta drzewka okrętów (IDEAS) później.
 
@@ -348,6 +348,8 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Port [M5] | 4×4 (nabrzeże na 2 rzędach wody), 40 złota | plac portowy, 2 portowców, 1 miejsce cumowania; tu cumuje kupiec morski |
 | Pomost / nabrzeże [N1] | kafel na morzu, linią; 2 deski albo 3 kamienie | ludzie chodzą, statki nie; najwyżej 8 kafli od brzegu; port, stocznia i przystań mogą na nim stać |
 | Miejsce cumowania [N1] | 2×2 na nabrzeżu, 4 deski | kolejne miejsce dla statku i mały plac na 3 stosy; obsługują je portowcy portu w zasięgu 12 kafli |
+| Dźwig przeładunkowy [N1] | 2×2 na nabrzeżu, 12 desek i 4 kamienie, 1 dźwigowy | najwyżej 2 kafle od miejsca cumowania (portu albo miejsca cumowania); przenosi po 3 sztuki między placem a statkiem, obok portowców |
+| Magazyn portowy [N1] | 3×3 na nabrzeżu, 8 desek i 4 kamienie, 2 tragarzy | zwykły magazyn na 8 stosów, najbliżej statków |
 
 ---
 

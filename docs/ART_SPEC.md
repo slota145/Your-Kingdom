@@ -441,6 +441,13 @@ Narzędzie: `tools/generate_goods.gd`, wynik w `assets/goods/` i `assets/nature/
 - Port, przystań i stocznia (pas obok pochylni) nie mają już pomostu w grafice (`tools/generate_art.gd`): ich pas nad wodą rysuje `QuayLayer`, więc łączy się z nabrzeżem gracza. Miejsce cumowania to same rekwizyty (pachołki, latarnia, beczki, sieci) na nabrzeżu.
 - Zrzut: `game_shot.tscn -- --map=coast --tile=76,84 --zoom=2 --port --quays`.
 
+### 10.9b Dźwig i magazyn portowy (N1, część 2, 2026-11-07)
+
+- **Dźwig** (`tools/generate_art.gd`, `crane`, 2×2; masywniejszy po uwadze właściciela 2026-11-07): kamienny cokół z drewnianym podestem, gruby maszt z kantówki (bryła 3D, jasna i cienista ściana, żelazne opaski z nitami) na czterech zastrzałach ze stężeniami, obrotowy kołnierz z okuciem na wysokości ok. 95 px i daszek z gontu nad krążkiem na szczycie; przy wejściu duże koło deptakowe (obręcze 22 px, 28 szczebli, podwójne szprychy, bęben z nawiniętą liną, ciężkie kozły na podwalinach). Ramię, liny, hak i ładunek nie są w grafice: rysuje je `CraneLayer` (gruba belka ramienia z okuciami, zastrzał od masztu, lina od daszku, blok z krążkiem na końcu, blok haka z żelaznym hakiem; ramię kończy się 100 px nad placem albo statkiem, hak wisi 66 px nad ziemią w czasie obrotu, a przy statku opuszcza się do pokładu, 26 px), więc dźwig obraca się w stronę każdego miejsca cumowania. Ładunek to do 3 ikon towaru (`goods/icons`) w siatce z lin. Dźwigowy ma wygląd portowca i „idzie” w kole.
+- **Koga przy nabrzeżu** (uwaga właściciela 2026-11-07: wchodziła na nabrzeże): statek staje 0,45 kafla za środkiem miejsca cumowania (`Harbour.MOOR_OFFSET`), a widok rysuje kadłub kogi jeszcze 0,5 kafla dalej (`ShipLayer.MOORED_HULL_SHIFT`, narasta przy podpływaniu), więc między burtą a nabrzeżem widać wodę, a trap i portowiec na pokładzie sięgają bliższej burty.
+- **Magazyn portowy:** plac jak zwykły magazyn (`yard`), rysowany przez widok na nabrzeżu.
+- Zrzut: `game_shot.tscn -- --map=coast --tile=73,103 --zoom=2 --port --quays --crane [--lift=<0..1>]`.
+
 ### 10.10 Interfejs „pergamin i drewno” i menu główne (UI-1, 2026-11-07)
 
 - **Skala:** grafiki interfejsu i menu mają piksel rysunku = 2×2 piksele ekranu bazowego 1280×720 (jak obraz menu 640×360 w skali 2). Nic nie jest rysowane w skali 1 ani skalowane nierówno.

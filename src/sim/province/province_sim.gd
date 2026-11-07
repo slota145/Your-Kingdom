@@ -464,6 +464,8 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 			return &"no_berth"
 	if def.served_by_port and Harbour.serving_port(self, origin + Vector2i(def.footprint) / 2) == null:
 		return &"no_port_nearby"
+	if def.crane_reach > 0 and Cranes.berth_building(self, def, origin, false) == null:
+		return &"no_berth_nearby"
 	var area := Rect2i(origin, def.footprint)
 	for ship: ShipUnit in ships.values():
 		if area.has_point(ship.tile()):
@@ -2079,6 +2081,8 @@ func dangling_holds() -> PackedStringArray:
 			var bb: Dictionary = agent.task.bb if agent != null and agent.task != null else {}
 			var held := int(bb.get("_res", 0)) == res.id \
 					and (int(bb.get("_src", 0)) == storage_id or int(bb.get("_dst", 0)) == storage_id)
+			# A crane lift holds both ends at once (N1 part 2, Cranes.take_load).
+			held = held or (int(bb.get("_res_in", 0)) == res.id and int(bb.get("_dst", 0)) == storage_id)
 			if not held:
 				problems.append("reservation %d in %d by %d" % [res.id, storage_id, res.owner])
 	for tile: Vector2i in resources.tiles_with_nodes():

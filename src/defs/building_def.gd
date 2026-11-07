@@ -96,6 +96,10 @@ extends GameDef
 ## its cargo (a mooring, N1). Needs such a port to be placed.
 @export var served_by_port: bool = false
 
+## A cargo crane (N1 part 2) when > 0: the berth of a port or a mooring must lie within this
+## many tiles (Chebyshev) of the footprint; its workers lift cargo between that berth's quay
+## yard and the moored ship (Cranes).
+@export_range(0, 8) var crane_reach: int = 0
 
 ## At most one per province (the pioneer camp, M5 part 3; owner's decision 2026-11-06).
 @export var unique: bool = false

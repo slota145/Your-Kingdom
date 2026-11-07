@@ -71,6 +71,11 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
     - Propozycja kolejności: najpierw pomost drewniany i kamienne nabrzeże (stawianie linią, chodzenie, blokada dla statków) oraz „miejsce cumowania” jako mały budynek na nabrzeżu; port z placem zostaje jako budynek lądowy. Potem dźwigi (przeładunek szybszy niż portowcy na plecach, naprawa uszkodzonych statków po bitwach P1), magazyn portowy, większa chata rybacka z kutrem (kuter: nowy statek, dalsze ławice). Balisty i wieże portowe razem z walką okrętów (M7, P1). Latarnia: tani, ładny detal; mogłaby pozwalać statkom pływać nocą albo przy mgle, jeśli kiedyś będzie pogoda, więc na razie tylko jako ozdoba.
     - Koszt: duży (to osobny etap, wielkości M4b-3). Kiedy: po M5, najlepiej przed M7 (walka okrętów i oblężenia od morza).
   - **Przyjęte jako etap N1 „Nabrzeża i port” przed M7 (ankieta 2026-11-07), wersja średnia:** pomost, nabrzeże kamienne, miejsce cumowania, budynki nad wodą na nabrzeżu i wtopione w nie jak w Anno (pomysł właściciela), potem dźwig przeładunkowy i magazyn portowy. Kuter, latarnia, dźwig naprawczy, balisty i wieże portowe czekają tutaj. Szczegóły w ROADMAP (N1).
+- [Claude] **Port po N1, część 2 (pomysły z realizacji, 2026-11-07):**
+  - **Koga szuka wolnego miejsca:** dziś koga gracza czeka na kotwicy, gdy kupiec zajął jej port, nawet jeśli obok stoi wolne miejsce cumowania. Mogłaby cumować przy dowolnym wolnym miejscu swojego portu. Koszt mały, ryzyko: rejs zaczyna się wtedy z innego placu.
+  - **Dźwig wybiera statek:** dźwig dziś obsługuje jedno najbliższe miejsce; przy dwóch miejscach w zasięgu mógłby obracać się do tego, przy którym jest więcej ładunku.
+  - **Obracające się koło:** koło deptakowe w grafice stoi; mogłoby mieć 4 klatki obrotu, gdy dźwigowy w nim idzie. Koszt mały (grafika i widok).
+  - **Skrzynie i beczki na linie:** zamiast ikon towaru w siatce osobne rysunki ładunku (skrzynia, beczka, wiązka desek).
 
 - [gracz] **Stopnie transportu:** tragarz niesie 1 sztukę, mały wózek ręczny 3, duży wóz konny 5–6.
   - **Zatwierdzone 2026-11-05 (ładowności):** zapisane w GDD §5.2. Szybkości, czas załadunku i reguły dyspozytora z oceny poniżej czekają na decyzję (M4).

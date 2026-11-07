@@ -257,6 +257,8 @@ func _refresh() -> void:
 			lines.append(_boat_line(b))
 		if b.def.is_port() and b.is_complete():
 			lines.append_array(_port_lines(b))
+		if b.def.crane_reach > 0 and b.is_complete():
+			lines.append_array(_crane_lines(b))
 	_body.text = "\n".join(lines)
 	_stock.visible = b.stock != null
 	_stock.stock = b.stock
@@ -462,6 +464,26 @@ func _port_lines(b: BuildingState) -> PackedStringArray:
 	if trader.state == SeaMerchant.State.AWAY:
 		var minutes := ceili(maxi(trader.next_visit - province.tick, 0) / float(SimClock.TICKS_PER_SECOND) / 60.0)
 		lines.append(tr("ui.port.next_merchant") % maxi(minutes, 1))
+	return lines
+
+
+## Cargo crane (N1 part 2): which berth it serves, the ship there, what it lifts now.
+func _crane_lines(b: BuildingState) -> PackedStringArray:
+	var lines := PackedStringArray()
+	var port := Cranes.berth_building(province, b.def, b.origin)
+	if port == null:
+		lines.append(tr("ui.crane.no_berth"))
+		return lines
+	lines.append(tr("ui.crane.serves") % tr("building.%s.name" % port.def.id))
+	var ship := Cranes.moored_ship(province, port)
+	lines.append(tr("ui.port.berth_moored") % tr(ship.def.name_key()) if ship != null \
+			else tr("ui.crane.no_ship"))
+	for id: int in b.workers:
+		var operator := province.agents.get_agent(id)
+		if operator != null and Cranes.lift_progress(operator) >= 0.0:
+			var bb := operator.task.bb
+			lines.append(tr("ui.crane.lifting") % UiKit.goods_list(
+					{StringName(String(bb.get("good", ""))): int(bb.get("_load", 0))}))
 	return lines
 
 

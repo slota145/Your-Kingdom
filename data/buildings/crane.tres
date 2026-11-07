@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/building_def.gd" id="1_bld"]
+[ext_resource type="Resource" path="res://data/recipes/crane_work.tres" id="2_recipe"]
+
+[resource]
+script = ExtResource("1_bld")
+category = &"harbour"
+footprint = Vector2i(2, 2)
+entrance = Vector2i(0, 1)
+build_cost = Dictionary[StringName, int]({
+&"planks": 12,
+&"stone": 4
+})
+build_time = 30.0
+worker_kinds = Array[StringName]([&"crane_operator"])
+staffing_priority = 6
+recipe = ExtResource("2_recipe")
+door_sides = &"all"
+on_quay = true
+quay_only = true
+crane_reach = 2
+id = &"crane"
