@@ -17,6 +17,8 @@ signal command_requested(command: Command)
 signal closed
 ## Open the trade routes window with routes from province [param from].
 signal routes_requested(from: int)
+## "Send goods" to the neutral settlement [param to]: the routes window with its demand.
+signal goods_requested(to: int)
 
 const STOCK_LINES := 6
 
@@ -85,7 +87,7 @@ func _init() -> void:
 		command_requested.emit(PaySettlementCommand.new(_selected))
 		_refresh())
 	box.add_child(_pay)
-	_send_goods = UiKit.button("ui.world.send_goods", func() -> void: routes_requested.emit(sim.viewed_id))
+	_send_goods = UiKit.button("ui.world.send_goods", func() -> void: goods_requested.emit(_selected))
 	box.add_child(_send_goods)
 	box.add_child(HSeparator.new())
 	_expedition = ExpeditionBox.new()

@@ -1,9 +1,10 @@
 class_name Landing
 extends RefCounted
 ## The start from a ship (ROADMAP M5 part 3, IDEAS: colonisation): on a map that starts by
-## ship (MapDef.start_by_ship) no town stands yet. A cog comes in over the sea edge and drops
-## anchor off the beach; the settlers wade ashore one by one and the start kit lies on the
-## beach as one heap of ground piles. Then the cog sails away over the horizon (owner's
+## ship (MapDef.start_by_ship) no town stands yet. The cog already lies at anchor off the beach
+## when the game starts (review fix 2026-11-07: sailing in from the edge took too long); the
+## settlers wade ashore one by one, each to his own spot along the shore, and the start kit
+## lies on the beach as one heap of ground piles. Then the cog sails away over the horizon (owner's
 ## decision 2026-11-06: the player builds his own cog at a shipyard).
 ##
 ## The settlers: a builder and porters. Until the pioneer camp stands, the builder builds
@@ -20,6 +21,8 @@ const SHIP := &"settler_cog"
 const CAMP_INLAND := 12
 ## Seconds between two settlers stepping off the ship.
 const LAND_EVERY := 2.0
+## How far along the shore from the beach tile the settlers spread (tiles).
+const SHORE_REACH := 3
 
 var state: State = State.COMING
 var ship_id: int = 0
@@ -36,6 +39,8 @@ var kit: Dictionary[StringName, int] = {}
 var next_at: int = 0
 ## Settlers ashore without a workplace or a house yet (agent ids).
 var settlers: Array[int] = []
+## Settlers stepped off so far: the next one wades to the next spot along the shore.
+var landed: int = 0
 ## The expedition that brought them (M6 part 2); 0 = the start of a game.
 var expedition: int = 0
 ## By land (M6 part 2): the settlers and their wagon come in over the map edge
@@ -66,14 +71,11 @@ static func arrive_by_sea(province: ProvinceSim, map: MapDef, mirrored: bool,
 	var def := province.data.get_ship(SHIP)
 	var nav := Ships.nav_for(province, def)
 	landing.edge = SeaMerchant._edge_for(province, nav, landing.anchor)
-	var from := landing.edge if landing.edge != Agent.NO_TILE else landing.anchor
-	var ship := ShipUnit.new(province.ids.take(), def, IsoMath.tile_center(from), province.data)
+	var ship := ShipUnit.new(province.ids.take(), def, IsoMath.tile_center(landing.anchor), province.data)
 	province.ships[ship.id] = ship
 	landing.ship_id = ship.id
-	if not Ships.sail_to(province, ship, landing.anchor):
-		ship.pos = IsoMath.tile_center(landing.anchor)
-		ship.clear_path()
-		ship.path_state = ShipUnit.PathState.ARRIVED
+	ship.clear_path()
+	ship.path_state = ShipUnit.PathState.ARRIVED
 	province.events.emit(&"landing_coming", {"ship": ship.id})
 	return landing
 
@@ -241,9 +243,39 @@ func _land_one(province: ProvinceSim, ship: ShipUnit) -> void:
 	var kind: StringName = aboard.pop_front()
 	var from := ship.tile() if ship != null else anchor
 	var agent := province.spawn_agent(kind, from)
-	TaskRunner.start_landing(agent, from, beach)
+	var spots := shore_spots(province)
+	var to := spots[landed % spots.size()] if not spots.is_empty() else beach
+	landed += 1
+	TaskRunner.start_landing(agent, from, to)
 	settlers.append(agent.id)
 	province.events.emit(&"settler_landed", {"agent": agent.id, "kind": kind})
+
+
+## Where the settlers come ashore (review fix 2026-11-07: spread along the beach instead of
+## all on one tile): free land tiles at the water's edge within [constant SHORE_REACH] of the
+## beach tile, the beach tile first, then the nearest, in a fixed order.
+func shore_spots(province: ProvinceSim) -> Array[Vector2i]:
+	var spots: Array[Vector2i] = []
+	for y: int in range(beach.y - SHORE_REACH, beach.y + SHORE_REACH + 1):
+		for x: int in range(beach.x - SHORE_REACH, beach.x + SHORE_REACH + 1):
+			var tile := Vector2i(x, y)
+			if tile == beach or not _is_dry_free(province, tile):
+				continue
+			for step: Vector2i in IsoMath.DIR_GRID_STEP:
+				var next := tile + step
+				if province.grid.is_inside(next) and province.sail_depth(next) > 0:
+					spots.append(tile)
+					break
+	spots.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		var da := (a - beach).length_squared()
+		var db := (b - beach).length_squared()
+		return da < db or (da == db and (a.y < b.y or (a.y == b.y and a.x < b.x))))
+	spots.push_front(beach)
+	return spots
+
+
+static func _is_dry_free(province: ProvinceSim, tile: Vector2i) -> bool:
+	return province.grid.is_inside(tile) and province.nav.is_walkable(tile) 			and province.sail_depth(tile) == 0 and province.grid.occupant(tile) == 0
 
 
 func _wading(province: ProvinceSim) -> bool:
@@ -324,6 +356,8 @@ func to_dict() -> Dictionary:
 			"kit": kit_dict, "next_at": next_at, "settlers": settlers.duplicate()}
 	if expedition != 0:
 		d["expedition"] = expedition
+	if landed != 0:
+		d["landed"] = landed
 	if by_land:
 		d["by_land"] = true
 		d["wagon"] = wagon_agent
@@ -346,6 +380,7 @@ static func from_dict(d: Dictionary) -> Landing:
 	for id: Variant in d.get("settlers", []):
 		landing.settlers.append(int(id))
 	landing.expedition = int(d.get("expedition", 0))
+	landing.landed = int(d.get("landed", 0))
 	landing.by_land = bool(d.get("by_land", false))
 	landing.wagon_agent = int(d.get("wagon", 0))
 	return landing

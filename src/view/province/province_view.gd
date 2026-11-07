@@ -14,6 +14,11 @@ const CART_FOOT := Vector2(48.0, 64.0)
 var province: ProvinceSim
 var terrain: TerrainLayer
 var overlay: TileOverlay
+## The reach of the services already standing (below the cursor overlay): redrawn only when
+## the coverage changes, not with every move of the mouse (review fix 2026-11-07).
+var range_overlay: TileOverlay
+## Tiles waiting for cobbles (review fix 2026-11-07).
+var paving_plan: PavingPlanLayer
 var world: Node2D
 var nature: NatureLayer
 var buildings: BuildingLayer
@@ -40,6 +45,9 @@ func setup(source: ProvinceSim) -> void:
 	terrain.z_index = -3
 	add_child(terrain)
 	terrain.setup_province(province)
+	range_overlay = TileOverlay.new()
+	range_overlay.z_index = -2
+	add_child(range_overlay)
 	overlay = TileOverlay.new()
 	overlay.z_index = -2
 	add_child(overlay)
@@ -47,6 +55,10 @@ func setup(source: ProvinceSim) -> void:
 	shoals.z_index = -1
 	add_child(shoals)
 	shoals.setup(province)
+	paving_plan = PavingPlanLayer.new()
+	paving_plan.z_index = -2
+	add_child(paving_plan)
+	paving_plan.setup(province)
 	quays = QuayLayer.new()
 	quays.z_index = -1
 	add_child(quays)
@@ -103,6 +115,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 
 func on_sim_event(event: Dictionary) -> void:
 	nature.on_sim_event(event)
+	paving_plan.on_sim_event(event)
 	match event["type"]:
 		&"building_placed", &"building_removed", &"building_completed", &"site_opened", \
 				&"site_phase_started", &"site_phase_finished", &"house_upgraded", &"building_turned", \

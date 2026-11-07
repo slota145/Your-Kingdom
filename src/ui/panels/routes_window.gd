@@ -5,6 +5,8 @@ extends PanelContainer
 ## vehicle and what it is doing, and up to 3 goods, each with the units of a run and the
 ## threshold ("while B has less than N"); a route can be paused or removed. Below, a new route:
 ## from, to, by sea or by land, a free cog or the merchant wagon of a trading post of A, and its first good.
+## To a neutral settlement the new route takes its whole demand instead of one good (review fix
+## 2026-11-07: "Send goods" on the world map opens this window with the settlement chosen).
 ## Reads the simulation; changes go out as commands.
 
 signal command_requested(command: Command)
@@ -24,6 +26,9 @@ var _to: OptionButton
 var _way: OptionButton
 var _vehicle: OptionButton
 var _good: OptionButton
+## What a route to a settlement will take (its demand), instead of the good choice.
+var _demand: Label
+var _demand_lines: Array[Dictionary] = []
 var _create: Button
 var _note: Label
 var _timer: float = 0.0
@@ -66,6 +71,8 @@ func _init() -> void:
 	_way = _option(row, func(_i: int) -> void: _fill_new(false))
 	_vehicle = _option(row, func(_i: int) -> void: _check_new())
 	_good = _option(row, func(_i: int) -> void: _check_new())
+	_demand = UiKit.label("", false)
+	row.add_child(_demand)
 	_create = UiKit.button("ui.routes.create", _create_route)
 	row.add_child(_create)
 	_note = UiKit.label()
@@ -81,12 +88,12 @@ func _option(parent: Control, on_selected: Callable) -> OptionButton:
 	return option
 
 
-func open(simulation: Simulation, from: int = 0) -> void:
+func open(simulation: Simulation, from: int = 0, to: int = 0) -> void:
 	sim = simulation
 	visible = true
 	_shown = ""
 	_note.text = ""
-	_fill_new(true, from)
+	_fill_new(true, from, to)
 	_refresh()
 
 
@@ -289,14 +296,15 @@ func _player_provinces() -> Array[int]:
 	return ids
 
 
-## Fills the new route's choices; [param reset] chooses [param from] (or the viewed province).
-func _fill_new(reset: bool, from: int = 0) -> void:
+## Fills the new route's choices; [param reset] chooses [param from] (or the viewed province)
+## and [param to].
+func _fill_new(reset: bool, from: int = 0, to: int = 0) -> void:
 	var from_id := _selected(_from)
 	var to_id := _selected(_to)
 	var sea := _way.get_selected_id() == 1
 	if reset:
 		from_id = from if from != 0 else sim.viewed_id
-		to_id = 0
+		to_id = to
 	var provinces := _player_provinces()
 	_fill(_from, provinces, from_id)
 	from_id = _selected(_from)
@@ -325,6 +333,13 @@ func _fill_new(reset: bool, from: int = 0) -> void:
 		for vehicle: int in CreateTradeRouteCommand.free_vehicles(sim, from_id, sea):
 			_vehicle.add_item(_vehicle_name(from_id, sea, vehicle), vehicle)
 	_fill_goods(_good, from_id, [])
+	_demand_lines = TradeRoutes.demand_lines(sim, to_id)
+	var demand := {}
+	for entry: Dictionary in _demand_lines:
+		demand[entry["good"]] = entry["amount"]
+	_demand.text = tr("ui.routes.demand") % UiKit.goods_list(demand) if not demand.is_empty() else ""
+	_demand.visible = not demand.is_empty()
+	_good.visible = demand.is_empty()
 	_check_new()
 
 
@@ -365,7 +380,7 @@ func _fill_goods(option: OptionButton, from: int, skip: Array[StringName]) -> vo
 
 func _check_new() -> void:
 	_vehicle.visible = _vehicle.item_count > 0
-	var ok := _vehicle.item_count > 0 and _good.selected > 0
+	var ok := _vehicle.item_count > 0 and (_good.selected > 0 or not _demand_lines.is_empty())
 	_create.disabled = not ok
 	if _to.item_count == 0:
 		_note.text = tr("ui.routes.no_target")
@@ -380,11 +395,13 @@ static func _default_amount(sea: bool) -> int:
 
 
 func _create_route() -> void:
-	if _good.selected <= 0 or _vehicle.item_count == 0:
+	if (_good.selected <= 0 and _demand_lines.is_empty()) or _vehicle.item_count == 0:
 		return
 	var sea := _way.get_selected_id() == 1
-	var lines: Array[Dictionary] = [TradeRoute.line(StringName(String(_good.get_item_metadata(_good.selected))),
-			_default_amount(sea), TradeRoute.DEFAULT_BELOW)]
+	var lines: Array[Dictionary] = _demand_lines.duplicate(true)
+	if lines.is_empty():
+		lines = [TradeRoute.line(StringName(String(_good.get_item_metadata(_good.selected))),
+				_default_amount(sea), TradeRoute.DEFAULT_BELOW)]
 	var command := CreateTradeRouteCommand.new(_selected(_from), _selected(_to), sea,
 			_vehicle.get_selected_id(), lines)
 	var error := command.validate(sim)

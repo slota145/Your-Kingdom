@@ -5,6 +5,24 @@ extends RefCounted
 ## RouteWagon) and happen at once in a province nobody looks at.
 
 
+## The lines a route to the neutral settlement [param to] starts with (review fix 2026-11-07:
+## "Send goods" fills in the demand): each good it still asks for, as many units as it lacks,
+## at most MAX_LINES goods in a fixed order. Empty when it asks for no goods.
+static func demand_lines(sim: Simulation, to: int) -> Array[Dictionary]:
+	var lines: Array[Dictionary] = []
+	var settlement := sim.world.settlements.get(to) as NeutralSettlement
+	if settlement == null or settlement.state != NeutralSettlement.State.ASKING:
+		return lines
+	var goods: Array[StringName] = []
+	goods.assign(settlement.goods.keys())
+	goods.sort()
+	for good: StringName in goods:
+		var missing := settlement.missing(good)
+		if missing > 0 and lines.size() < TradeRoute.MAX_LINES:
+			lines.append(TradeRoute.line(good, missing, TradeRoute.DEFAULT_BELOW))
+	return lines
+
+
 ## Once a second (Simulation._update_world).
 static func update(sim: Simulation) -> void:
 	var ids: Array[int] = []

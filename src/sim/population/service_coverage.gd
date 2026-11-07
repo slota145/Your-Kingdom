@@ -23,6 +23,8 @@ var _solid_version: int = -1
 ## Sources flooded whole and patched in place since the start (tests and measurements).
 var full_floods: int = 0
 var patched_floods: int = 0
+## Grows whenever a covered tile changes (the view redraws the reach only then).
+var version: int = 0
 
 
 class _Source:
@@ -214,6 +216,7 @@ func _patch(province: ProvinceSim, source: _Source, changed: Array[Vector2i]) ->
 	_expand(solid, cost_map, w, h, source.radius, best, heap_d, heap_i, source.covered, newly)
 	if newly.is_empty():
 		return true
+	version += 1
 	var counts: PackedInt32Array = _counts.get(source.service, PackedInt32Array())
 	for i: int in newly:
 		source.tiles.append(i)
@@ -272,6 +275,7 @@ func _came_from(source: _Source, from: int, to: int, step: Vector2i, to_tile: Ve
 
 
 func _uncover(source: _Source, i: int) -> void:
+	version += 1
 	source.best[i] = INF
 	source.covered[i] = 0
 	var at := source.tiles.find(i)
@@ -287,6 +291,7 @@ func _set_active(source: _Source, active: bool, size: Vector2i) -> void:
 	if source.active == active:
 		return
 	source.active = active
+	version += 1
 	if not _counts.has(source.service):
 		var empty := PackedInt32Array()
 		empty.resize(size.x * size.y)
@@ -326,16 +331,22 @@ func _flood_source(province: ProvinceSim, building: BuildingState) -> _Source:
 	return source
 
 
+## Indices of the tiles a service at [param start] would reach (the build preview).
+static func reach_of(province: ProvinceSim, start: Vector2i, radius: float) -> PackedInt32Array:
+	var size := province.grid.size
+	var covered := PackedByteArray()
+	covered.resize(size.x * size.y)
+	var best := PackedFloat64Array()
+	best.resize(size.x * size.y)
+	best.fill(INF)
+	var tiles := PackedInt32Array()
+	_flood_into(province, start, radius, covered, best, tiles)
+	return tiles
+
+
 ## Dijkstra over walkable tiles with movement costs, marking tiles within [param radius].
 ## Binary heap with lazy deletion (parallel arrays of distance and tile index), reading flat
 ## arrays: NavGrid.solid_map and the reach costs (cost_map, without trees).
-static func flood(province: ProvinceSim, start: Vector2i, radius: float, out: PackedByteArray) -> void:
-	var best := PackedFloat64Array()
-	best.resize(province.grid.size.x * province.grid.size.y)
-	best.fill(INF)
-	_flood_into(province, start, radius, out, best, PackedInt32Array())
-
-
 static func _flood_into(province: ProvinceSim, start: Vector2i, radius: float, out: PackedByteArray,
 		best: PackedFloat64Array, tiles: PackedInt32Array) -> void:
 	var w := province.grid.size.x
