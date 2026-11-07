@@ -36,6 +36,9 @@ func _init() -> void:
 	_save(_person(), "icon_people.png")
 	_save(_hammer(), "icon_workers.png")
 	_save(_hourglass(), "icon_time.png")
+	_save(_pause_icon(), "icon_pause.png")
+	for speed: int in [1, 2, 3]:
+		_save(_play_icon(speed), "icon_speed_%d.png" % speed)
 	print("UI art written to ", OUT)
 	quit()
 
@@ -247,4 +250,30 @@ func _hourglass() -> Image:
 	for x: int in range(1, 9):
 		img.set_pixel(x, 0, WOOD)
 		img.set_pixel(x, 9, WOOD)
+	return img
+
+
+## Time control icons (owner's request 2026-11-07): light symbols with a dark outline, drawn
+## on the wooden buttons. Pause: two bars.
+func _pause_icon() -> Image:
+	var img := _blank(9, 9)
+	for x: int in [1, 5]:
+		for y: int in range(0, 9):
+			for dx: int in 3:
+				var edge := dx == 0 or dx == 2 or y == 0 or y == 8
+				img.set_pixel(x + dx, y, OUTLINE if edge else PARCHMENT_LIGHT)
+	return img
+
+
+## [param count] play triangles side by side (1x, 2x, 4x).
+func _play_icon(count: int) -> Image:
+	var w := 4 * count + 2
+	var img := _blank(w, 9)
+	for i: int in count:
+		var left := 1 + i * 4
+		for y: int in 9:
+			var half := 4 - absi(y - 4)
+			for x: int in range(0, half + 1):
+				var edge := x == half or x == 0 or y == 0 or y == 8
+				img.set_pixel(left + x, y, OUTLINE if edge else PARCHMENT_LIGHT)
 	return img

@@ -4,7 +4,7 @@ extends Node
 ## screenshot. For checking the new buildings and panels in the cloud.
 ##
 ## Run: godot --path . res://src/prototype/m4a/town_shot.tscn -- --shot=<png>
-##      [--minutes=N] [--select=<building id>] [--zoom=N] [--layout] [--focus=<block>] [--stocks]
+##      [--minutes=N] [--select=<building id>] [--zoom=N] [--layout] [--focus=<block>] [--stocks] [--hide_build]
 ##
 ## --layout (M4b-1.5) adds a street quarter next to the bot's town: burgher and patrician
 ## houses in a straight row, rows meeting at corners and two rows back to back, each facing
@@ -25,6 +25,8 @@ var _layout: bool = false
 var _focus: String = "all"
 ## --stocks (M4b-2): open the "Kingdom stocks" window.
 var _stocks: bool = false
+## --hide_build (2026-11-07): the build bar hidden, the "Build" button in its place.
+var _hide_build: bool = false
 ## Block name -> grid point the camera looks at (set by _add_quarter).
 var _blocks: Dictionary[String, Vector2] = {}
 
@@ -70,6 +72,8 @@ func _ready() -> void:
 			_layout = true
 		elif arg == "--stocks":
 			_stocks = true
+		elif arg == "--hide_build":
+			_hide_build = true
 		elif arg.begins_with("--focus="):
 			_focus = arg.trim_prefix("--focus=")
 	var sim := Simulation.from_map(Data.registry, Data.registry.get_map(&"riverlands"))
@@ -98,6 +102,8 @@ func _arrange() -> void:
 	camera.set_zoom_index(_zoom)
 	if _stocks:
 		_game.call("_toggle_stocks")
+	if _hide_build:
+		_game.call("_show_build_menu", false)
 	if _layout and _blocks.has(_focus):
 		camera.position = IsoMath.grid_to_screen(_blocks[_focus])
 	for b: BuildingState in sim.province.buildings.all():
