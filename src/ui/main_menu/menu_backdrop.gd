@@ -11,8 +11,12 @@ const ART := "res://assets/ui/menu/"
 const ART_SIZE := Vector2(640, 360)
 const PAD := 8.0
 ## How far (art pixels) each layer moves when the mouse goes from the centre to an edge.
+## Never more than PAD: the mirrored margin of each layer hides the picture's edge.
 const SKY_SHIFT := 2.0
 const LAND_SHIFT := 5.0
+## Time (s) the layers take to catch up with the mouse: they ease in and out like on a
+## spring instead of jumping (review fix 2026-11-07).
+const FOLLOW_TIME := 0.45
 ## Chimneys the smoke rises from (art pixels of the picture).
 const CHIMNEYS: Array[Vector2] = [Vector2(498, 142), Vector2(606, 157), Vector2(455, 172)]
 const SMOKE_EVERY := 0.45
@@ -24,6 +28,7 @@ var _water: TextureRect
 var _scale: float = 2.0
 var _origin: Vector2 = Vector2.ZERO
 var _mouse: Vector2 = Vector2.ZERO
+var _mouse_speed: Vector2 = Vector2.ZERO
 var _time: float = 0.0
 var _smoke_timer: float = 0.0
 ## Puffs of smoke: [position, age, life, size].
@@ -71,7 +76,7 @@ func _process(delta: float) -> void:
 	var target := Vector2.ZERO
 	if size.x > 0.0 and size.y > 0.0:
 		target = ((get_local_mouse_position() - centre) / centre).clamp(Vector2(-1, -1), Vector2(1, 1))
-	_mouse = _mouse.lerp(target, minf(delta * 3.0, 1.0))
+	_follow(target, delta)
 	for cloud: Array in _clouds:
 		var at: Vector2 = cloud[0]
 		at.x += float(cloud[1]) * delta
@@ -92,6 +97,18 @@ func _process(delta: float) -> void:
 	_water.position = land_at - Vector2(PAD, PAD) * _scale
 	_water.size = (ART_SIZE + Vector2(PAD, PAD) * 2.0) * _scale
 	queue_redraw()
+
+
+## Moves _mouse towards [param target] on a critically damped spring (no overshoot): it
+## speeds up gently, slows down before it arrives and never jumps, even after a long frame.
+func _follow(target: Vector2, delta: float) -> void:
+	var omega := 2.0 / FOLLOW_TIME
+	var x := omega * delta
+	var decay := 1.0 / (1.0 + x + 0.48 * x * x + 0.235 * x * x * x)
+	var change := _mouse - target
+	var temp := (_mouse_speed + change * omega) * delta
+	_mouse_speed = (_mouse_speed - temp * omega) * decay
+	_mouse = target + (change + temp) * decay
 
 
 ## Top-left corner (screen) of the picture's own area for a layer moving [param shift] pixels.

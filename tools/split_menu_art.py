@@ -5,9 +5,13 @@ into the layers of the living menu:
              through when the layers move apart),
   land.png   the town, the sea, the cog and the quay, the sky cut out (transparent),
   water.png  a mask of the open sea (white where the waves glitter).
-Every layer gets PAD pixels of the edge repeated on each side, so moving it a little with the
+Every layer gets PAD pixels of the picture mirrored at each side (review fix 2026-11-07: a
+mirror instead of the repeated edge, which looked stretched), so moving it a little with the
 mouse never shows an empty border. The sky is found by a flood fill from the top edge over sky
-blues and cloud whites, down to the horizon, and from the EXTRA_SKY points (enclosed pieces).
+blues and cloud whites, down to the horizon, from the EXTRA_SKY points, and from every piece
+of sky enclosed by the rigging (RIGGING box: the gaps between the yard and the sail). Behind
+the land the sky layer takes the colour of the nearest sky pixel, so a sliver of it shown when
+the layers move apart continues the sky right next to it (no stripes down the columns).
 Run from the project root: python3 tools/split_menu_art.py (needs Pillow)."""
 from collections import deque
 
@@ -19,6 +23,8 @@ PAD = 8
 HORIZON = 215
 ## Pieces of sky the flood fill from the top cannot reach (between the sail and its rope).
 EXTRA_SKY = [(293, 160)]
+## Box (x0, y0, x1, y1) of the cog's rigging: any enclosed piece of sky in it is sky.
+RIGGING = (270, 80, 420, 215)
 
 
 def is_sky(c):
@@ -35,6 +41,15 @@ def is_sea(c):
     return g > 120 and b > 140 and r < 120 and b >= g - 10
 
 
+def mirror(i, n):
+    """Index i (may be outside 0..n-1) mirrored back into the picture."""
+    if i < 0:
+        return -i - 1
+    if i >= n:
+        return 2 * n - i - 1
+    return i
+
+
 def pad(img):
     w, h = img.size
     out = Image.new("RGBA", (w + 2 * PAD, h + 2 * PAD))
@@ -45,7 +60,7 @@ def pad(img):
         for x in range(w + 2 * PAD):
             if PAD <= x < w + PAD and PAD <= y < h + PAD:
                 continue
-            dst[x, y] = src[min(max(x - PAD, 0), w - 1), min(max(y - PAD, 0), h - 1)]
+            dst[x, y] = src[mirror(x - PAD, w), mirror(y - PAD, h)]
     return out
 
 
@@ -62,6 +77,12 @@ def main():
     for x, y in EXTRA_SKY:
         sky[y][x] = True
         queue.append((x, y))
+    x0, y0, x1, y1 = RIGGING
+    for y in range(y0, y1):
+        for x in range(x0, x1):
+            if is_sky(px[x, y]):
+                sky[y][x] = True
+                queue.append((x, y))
     while queue:
         x, y = queue.popleft()
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
@@ -75,16 +96,23 @@ def main():
     s = sky_img.load()
     land = land_img.load()
     water = water_img.load()
-    for x in range(w):
-        last = px[x, 0]
-        for y in range(h):
+    # Behind the land: the colour of the nearest sky pixel (breadth-first from all sky).
+    filled = [row[:] for row in sky]
+    front = deque((x, y) for y in range(h) for x in range(w) if sky[y][x])
+    while front:
+        x, y = front.popleft()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < w and 0 <= ny < h and not filled[ny][nx]:
+                filled[ny][nx] = True
+                s[nx, ny] = s[x, y]
+                front.append((nx, ny))
+    for y in range(h):
+        for x in range(w):
             if sky[y][x]:
-                last = px[x, y]
                 land[x, y] = (0, 0, 0, 0)
-            else:
-                s[x, y] = last   # the sky goes on behind the land
-                if y >= HORIZON - 5 and is_sea(px[x, y]):
-                    water[x, y] = (255, 255, 255, 255)
+            elif y >= HORIZON - 5 and is_sea(px[x, y]):
+                water[x, y] = (255, 255, 255, 255)
     pad(sky_img).save(OUT + "sky.png")
     pad(land_img).save(OUT + "land.png")
     pad(water_img).save(OUT + "water.png")
