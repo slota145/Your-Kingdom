@@ -720,7 +720,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **DoD:**
 - [x] Wszystkie okna, panele, pasek i menu budowy mają styl pergaminu i drewna; tekst jest czytelny (kontrast, także w zrzutach w obu językach).
 - [x] Menu główne z obrazkiem z PixelLab, warstwami i animacjami; działa w 1280×720 i 1920×1080.
-- [ ] Testy przechodzą (szybkie i długie).
+- [x] Testy przechodzą (szybkie i długie; 2026-11-07 na laptopie: 395 szybkich, 10 długich).
 - [x] **Twoja ocena wyglądu:** 5/5 (2026-11-07, ankieta na laptopie). Okna „ładne i czytelne”, pasek u góry wygodny, menu „dobrze, ale drobiazgi”. Wnioski w GDD §11.1.
 
 **Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
