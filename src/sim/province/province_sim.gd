@@ -1257,6 +1257,9 @@ func _close_paving(paving_site: PavingSite, at: Vector2i = Agent.NO_TILE) -> voi
 
 ## How far a quay may reach into the sea, in quay tiles from the shore (ROADMAP N1).
 const QUAY_REACH := 8
+## How far a quay may come up onto the land, in tiles from the sea (owner's request
+## 2026-11-07: quays and piers reach a little onto the shore, straight or slanting).
+const QUAY_LAND_REACH := 2
 
 const _STEPS4: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
 const _STEPS8: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1),
@@ -1288,6 +1291,24 @@ func can_lay(paving_site: PavingSite) -> bool:
 	return true
 
 
+## Whether sea water (by terrain, quay or not) lies within [param reach] tiles (Chebyshev) of
+## [param tile].
+func _near_sea(tile: Vector2i, reach: int) -> bool:
+	for dy: int in range(-reach, reach + 1):
+		for dx: int in range(-reach, reach + 1):
+			var t := tile + Vector2i(dx, dy)
+			var terrain := terrain_at(t) if grid.is_inside(t) else null
+			if terrain != null and terrain.sail_depth > 0:
+				return true
+	return false
+
+
+## Whether [param tile] is land (by terrain): a quay there lies on the shore (N1).
+func _is_land(tile: Vector2i) -> bool:
+	var terrain := terrain_at(tile) if grid.is_inside(tile) else null
+	return terrain != null and terrain.sail_depth == 0 and terrain.walkable
+
+
 ## Whether [param tile] is land people stand on (a quay grows from it).
 func _is_shore_land(tile: Vector2i) -> bool:
 	if not grid.is_inside(tile) or grid.has_quay(tile):
@@ -1306,7 +1327,11 @@ func quay_error(tile: Vector2i) -> StringName:
 	if not paving.is_empty() and paving_site_at(tile) != 0:
 		return &"already_ordered"
 	if sail_depth(tile) == 0:
-		return &"needs_sea"
+		# On land: free ground at most QUAY_LAND_REACH tiles from the sea.
+		var error := _free_ground_error(tile)
+		if error != &"":
+			return error
+		return &"" if _near_sea(tile, QUAY_LAND_REACH) else &"too_far_from_sea"
 	if grid.occupant(tile) != 0 or grid.is_blocked(tile) or resources.has_node(tile):
 		return &"tile_occupied"
 	for building: BuildingState in buildings.all():
@@ -1352,6 +1377,10 @@ func quay_plan(tiles: Array[Vector2i]) -> Dictionary:
 	var depth: Dictionary[Vector2i, int] = {}
 	var queue: Array[Vector2i] = []
 	for tile: Vector2i in quay_tiles:
+		# A quay on land is shore itself (it counts no reach).
+		if _is_land(tile) and not depth.has(tile):
+			depth[tile] = 0
+			queue.append(tile)
 		for step: Vector2i in _STEPS4:
 			var land := tile + step
 			if not depth.has(land) and _is_shore_land(land):
@@ -1384,6 +1413,8 @@ func quay_plan(tiles: Array[Vector2i]) -> Dictionary:
 	queue = shore
 	for t: Vector2i in queue:
 		seen[t] = true
+		if in_reach.has(t):
+			accepted.append(t)   # on land: laid from the ground beside it
 	head = 0
 	while head < queue.size():
 		var tile := queue[head]
@@ -1521,6 +1552,10 @@ func remove_quay_error(tile: Vector2i) -> StringName:
 			rest[t] = true
 	var joined: Dictionary[Vector2i, bool] = {}
 	for t: Vector2i in rest:
+		if _is_land(t):
+			joined[t] = true
+			queue.append(t)
+			continue
 		for step: Vector2i in _STEPS4:
 			if _is_shore_land(t + step):
 				joined[t] = true
@@ -1557,6 +1592,8 @@ func _free_ground_error(tile: Vector2i) -> StringName:
 	if grid.is_blocked(tile) or grid.occupant(tile) != 0 or resources.has_node(tile):
 		return &"tile_occupied"
 	if fields.has_field(tile) or grid.has_road(tile) or _pile_at(tile) != 0:
+		return &"tile_occupied"
+	if grid.has_quay(tile) or (not paving.is_empty() and paving_site_at(tile) != 0):
 		return &"tile_occupied"
 	return &""
 

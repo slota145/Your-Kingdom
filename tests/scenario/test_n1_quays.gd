@@ -80,7 +80,7 @@ func test_quay_reaches_at_most_eight_tiles_from_the_shore() -> void:
 	plan = sim.province.quay_plan(_column(20, 34, 35))
 	assert_array(plan["tiles"]).is_empty()
 	assert_str(String((plan["errors"] as Dictionary)[Vector2i(20, 34)])).is_equal("not_at_shore")
-	assert_str(String(sim.province.quay_error(Vector2i(16, 20)))).is_equal("needs_sea")
+	assert_str(String(sim.province.quay_error(Vector2i(16, 20)))).is_equal("too_far_from_sea")
 	# A quay grows on from an older one: its reach counts from the shore.
 	_lay(sim, _column(16, 30, 33))
 	plan = sim.province.quay_plan(_column(16, 34, 38))
@@ -255,3 +255,30 @@ func test_quay_layer_cuts_wedges_of_diagonal_quays() -> void:
 	assert_int(layer.cut_corner(Vector2i(16, 32))).is_equal(-1)
 	# The right-angled turn of the other quay stays square.
 	assert_int(layer.cut_corner(Vector2i(30, 33))).is_equal(-1)
+
+
+## A quay may come up to 2 tiles onto the shore (owner's request 2026-11-07); there it counts
+## as shore (no reach), and roads, fields and houses stay off it.
+func test_quay_comes_up_onto_the_shore() -> void:
+	var sim := _coast_sim()
+	var province := sim.province
+	assert_str(String(province.quay_error(Vector2i(16, 29)))).is_empty()
+	assert_str(String(province.quay_error(Vector2i(16, 28)))).is_empty()
+	assert_str(String(province.quay_error(Vector2i(16, 27)))).is_equal("too_far_from_sea")
+	# Two tiles on land, then eight out to sea: all of it.
+	var plan := province.quay_plan(_column(16, 28, 37))
+	assert_int((plan["tiles"] as Array).size()).is_equal(10)
+	# A slanting quay on the shore alone is fine too.
+	plan = province.quay_plan(BuildQuayCommand.line(Vector2i(20, 28), Vector2i(21, 29)))
+	assert_int((plan["tiles"] as Array).size()).is_equal(4)
+	_lay(sim, [Vector2i(16, 28), Vector2i(16, 29)], TileGrid.STONE_QUAY)
+	assert_str(String(province.road_error(Vector2i(16, 28)))).is_equal("tile_occupied")
+	assert_str(String(province.placement_error(sim.data.get_building(&"hut"), Vector2i(15, 27)))).is_equal("not_on_quay")
+	assert_float(province.nav.get_cost(Vector2i(16, 28))).is_equal_approx(ProvinceSim.PAVED_COST, 0.001)
+	# The land part can be taken away; the sea part then still reaches the shore by itself.
+	assert_str(String(sim.execute(RemoveQuayCommand.new(Vector2i(16, 28))))).is_empty()
+	# The builder lays a quay starting on the shore.
+	assert_str(String(sim.execute(BuildQuayCommand.new(_column(18, 28, 30), TileGrid.PIER)))).is_empty()
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return province.paving.is_empty(), 300)).is_true()
+	assert_int(province.grid.quay(Vector2i(18, 28))).is_equal(TileGrid.PIER)
+	assert_int(province.grid.quay(Vector2i(18, 30))).is_equal(TileGrid.PIER)

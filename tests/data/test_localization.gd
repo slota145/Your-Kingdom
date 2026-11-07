@@ -104,7 +104,7 @@ func test_dynamic_ui_keys_exist() -> void:
 			"not_enough_gold", "not_a_storage", "unknown_good", "invalid_value",
 			# N1: quays and moorings
 			"not_on_quay", "needs_quay", "no_port_nearby", "already_quay", "keeps_fairway", "keeps_berth",
-			"too_far_from_shore", "not_at_shore", "blocks_sea", "no_quay", "cuts_quay", "bad_quay"]:
+			"too_far_from_shore", "not_at_shore", "too_far_from_sea", "blocks_sea", "no_quay", "cuts_quay", "bad_quay"]:
 		keys.append("ui.command_error.%s" % error)
 	for def: GameDef in registry.all_of(&"building"):
 		var building := def as BuildingDef

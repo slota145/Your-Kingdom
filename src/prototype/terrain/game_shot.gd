@@ -242,7 +242,7 @@ func _place_quays(sim: Simulation, port: BuildingState) -> void:
 	lay.call(stone, TileGrid.STONE_QUAY)
 	var s1: Vector2i = shore.call(7)
 	var pier: Array = []
-	for j: int in 4:
+	for j: int in range(-2, 4):   # two tiles of it on the shore
 		for m: int in 2:
 			pier.append(s1 + sea * j + along * m)
 	lay.call(pier, TileGrid.PIER)
@@ -260,11 +260,16 @@ func _place_quays(sim: Simulation, port: BuildingState) -> void:
 		mooring.stock.add(&"fish", 5)
 	# A diagonal stone quay (8 directions, like walls), out to sea and back along the shore.
 	var s3: Vector2i = shore.call(16)
-	var diagonal := BuildQuayCommand.line(s3, s3 + (sea - along) * 4)
+	var diagonal := BuildQuayCommand.line(s3 - sea * 2, s3 + (sea - along) * 4)
 	var plan := province.quay_plan(diagonal)
 	lay.call(plan["tiles"], TileGrid.STONE_QUAY)
 	province.refresh_fairways()
 	print("diagonal ", (plan["tiles"] as Array).size(), " of ", diagonal.size(), " ", plan["errors"])
+	# A slanting timber pier starting on the shore.
+	var s4: Vector2i = shore.call(22)
+	var slant := BuildQuayCommand.line(s4 - sea * 2, s4 - sea * 2 + (sea - along) * 5)
+	lay.call(province.quay_plan(slant)["tiles"], TileGrid.PIER)
+	province.refresh_fairways()
 	var s2: Vector2i = shore.call(11)
 	var ordered: Array[Vector2i] = []
 	for j: int in 4:

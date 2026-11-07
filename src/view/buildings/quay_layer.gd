@@ -13,7 +13,7 @@ extends Node2D
 ## The deck is at ground level (people walk on it as on land); the sea lies lower. How far
 ## the side shows above the water, and how far it is seen going down under the water.
 const STONE_ABOVE := 20.0
-const PIER_ABOVE := 12.0
+const PIER_ABOVE := 14.0
 const UNDER := 16.0
 const PLANK := Color(0.6, 0.45, 0.29)
 const PLANK_DARK := Color(0.46, 0.34, 0.21)
@@ -117,7 +117,8 @@ func cut_corner(tile: Vector2i) -> int:
 		var out_b := tile + Vector2i(0, d.y)
 		var in_a := tile - Vector2i(d.x, 0)
 		var in_b := tile - Vector2i(0, d.y)
-		if _tiles.has(out_a) or _tiles.has(out_b) or not _is_water(out_a) or not _is_water(out_b):
+		# Open water or open ground beside the corner (a slanting quay comes up onto the shore too).
+		if _tiles.has(out_a) or _tiles.has(out_b):
 			continue
 		if not (_tiles.has(in_a) and _tiles.has(in_b)):
 			continue
@@ -143,23 +144,33 @@ func _draw_tile(tile: Vector2i, kind: int) -> void:
 		var b := corners[(i + 1) % corners.size()]
 		var normal: Vector2i
 		var open := true
+		var ground := false
 		if (a + 1) % 4 == b:
 			normal = _SIDE_NORMALS[a]
 			var next := tile + normal
 			open = not _tiles.has(next) and _is_water(next)
+			ground = not _tiles.has(next) and not _is_water(next)
 		else:
 			normal = _CORNER_DIRS[cut]   # the cut side of a wedge looks where the corner was
-		if not open or normal.x + normal.y <= 0:
-			continue
+			var beside_a := tile + Vector2i(normal.x, 0)
+			var beside_b := tile + Vector2i(0, normal.y)
+			open = _is_water(beside_a) and _is_water(beside_b)
+			ground = not open
 		var p := IsoMath.grid_to_screen(Vector2(tile) + _CORNERS[a])
 		var q := IsoMath.grid_to_screen(Vector2(tile) + _CORNERS[b])
+		if ground:
+			# On the shore (N1, a quay coming up onto land): a kerb where it meets the ground.
+			draw_line(p, q, (STONE_DARK if stone else BEAM).darkened(0.2), 2.0)
+			continue
+		if not open or normal.x + normal.y <= 0:
+			continue
 		var light := 0.82 if normal == Vector2i(1, 0) else (0.68 if normal == Vector2i(0, 1) else 0.75)
 		if stone:
 			var out := IsoMath.grid_to_screen(Vector2(normal)) - IsoMath.grid_to_screen(Vector2.ZERO)
 			_stone_side(p, q, light, tile, out.normalized())
 		else:
-			_pier_side(p, q, light)
-			draw_line(p, q, BEAM, 1.0)
+			var out := IsoMath.grid_to_screen(Vector2(normal)) - IsoMath.grid_to_screen(Vector2.ZERO)
+			_pier_side(p, q, light, tile, out.normalized())
 
 
 func _deck_pattern(tile: Vector2i, stone: bool, top: PackedVector2Array) -> void:
@@ -185,7 +196,18 @@ func _deck_pattern(tile: Vector2i, stone: bool, top: PackedVector2Array) -> void
 		for l: Array in lines:
 			_clipped_line(_at(tile, l[0]), _at(tile, l[1]), top, STONE_DARK)
 	else:
-		# Planks across the tile (along y).
+		# Planks across the tile (along y), each a shade of its own, nailed at both ends.
+		for k: int in 4:
+			var h := absi(tile.x * 11 + tile.y * 5 + k * 7) % 4
+			var shade := PLANK.darkened(0.05 * h) if h != 3 else PLANK.lightened(0.05)
+			var strip := PackedVector2Array([_at(tile, Vector2(k / 4.0, 0.0)), _at(tile, Vector2((k + 1) / 4.0, 0.0)),
+					_at(tile, Vector2((k + 1) / 4.0, 1.0)), _at(tile, Vector2(k / 4.0, 1.0))])
+			for poly: PackedVector2Array in Geometry2D.intersect_polygons(strip, top):
+				draw_colored_polygon(poly, shade)
+			for y: float in [0.12, 0.88]:
+				var nail := _at(tile, Vector2((k + 0.5) / 4.0, y))
+				if Geometry2D.is_point_in_polygon(nail, top):
+					draw_rect(Rect2(nail, Vector2(1, 1)), PLANK_DARK.darkened(0.3))
 		for k: int in range(1, 4):
 			_clipped_line(_at(tile, Vector2(k / 4.0, 0.0)), _at(tile, Vector2(k / 4.0, 1.0)), top, PLANK_DARK)
 
@@ -304,28 +326,67 @@ func _buttress(at: Vector2, along: Vector2, out: Vector2, light: float) -> void:
 	draw_line(foot - Vector2(2, 5), foot - Vector2(-2, 5), BOLLARD.lightened(0.2), 1.0)
 
 
-## A timber pier side: the edge beam, posts down into the water with braces between them,
-## the posts going on under the water, fading into it.
-func _pier_side(p: Vector2, q: Vector2, light: float) -> void:
-	var beam := BEAM * Color(light + 0.1, light + 0.1, light + 0.1)
-	draw_colored_polygon(PackedVector2Array([p, q, q + Vector2(0, 3), p + Vector2(0, 3)]), beam)
-	var posts: Array[Vector2] = []
-	for k: int in 3:
-		posts.append(p.lerp(q, (k + 0.5) / 3.0))
-	for i: int in posts.size() - 1:
-		draw_line(posts[i] + Vector2(0, 3), posts[i + 1] + Vector2(0, PIER_ABOVE - 2.0), beam.darkened(0.15), 1.0)
+## A timber pier side, like the owner's Anno reference (2026-11-07): the ends of the deck
+## planks over a thick edge beam and a wale below it, log piles standing a little out
+## ([param out]) with cross braces between them, tall mooring posts at the corners, now and
+## then a ladder down to the water; under the water the piles go on, fading.
+func _pier_side(p: Vector2, q: Vector2, light: float, tile: Vector2i, out: Vector2) -> void:
+	var shade := Color(light + 0.1, light + 0.1, light + 0.1)
+	var beam := BEAM * shade
+	var length := p.distance_to(q)
+	var along := (q - p) / maxf(length, 0.001)
 	var water := Vector2(0, PIER_ABOVE)
-	for post: Vector2 in posts:
-		draw_line(post + Vector2(0, 3), post + water, beam, 2.0)
-		# Under the water: the post goes on, fading.
-		var steps := 4
-		for s: int in steps:
-			var a := post + water + Vector2(0, UNDER * s / steps)
-			var b := post + water + Vector2(0, UNDER * (s + 1) / steps)
-			var c := beam.lerp(WATER, 0.3 + 0.12 * s)
+	var piles: Array[float] = []
+	var n := maxi(2, roundi(length / 12.0))
+	for k: int in n + 1:
+		piles.append(length * k / n)
+	# Cross braces between the piles, behind them.
+	for i: int in piles.size() - 1:
+		var a := p + along * piles[i]
+		var b := p + along * piles[i + 1]
+		draw_line(a + Vector2(0, 6), b + water - Vector2(0, 1), beam.darkened(0.25), 1.0)
+		draw_line(b + Vector2(0, 6), a + water - Vector2(0, 1), beam.darkened(0.25), 1.0)
+		# Under the water the braces are only a shadow.
+		var faint := beam.lerp(WATER, 0.6)
+		faint.a = 0.35
+		draw_line(a + water, b + water + Vector2(0, UNDER * 0.6), faint, 1.0)
+	# Edge beam with the plank ends showing on it, and a wale below.
+	draw_colored_polygon(PackedVector2Array([p, q, q + Vector2(0, 3), p + Vector2(0, 3)]), beam)
+	var x := 0.0
+	var k := 0
+	while x < length - 1.0:
+		var at := p + along * x
+		draw_line(at, at + along * minf(2.0, length - x), PLANK.darkened(0.12 * (k % 2)), 1.0)
+		x += 3.0
+		k += 1
+	draw_colored_polygon(PackedVector2Array([p + Vector2(0, 4), q + Vector2(0, 4), q + Vector2(0, 6), p + Vector2(0, 6)]),
+			beam.darkened(0.2))
+	# Log piles.
+	for i: int in piles.size():
+		var foot := p + along * piles[i] + out * 1.5
+		var log := PLANK_DARK * shade
+		draw_line(foot, foot + water, log, 3.0)
+		draw_line(foot - along, foot - along + water, log.lightened(0.2), 1.0)
+		for s: int in 4:
+			var a := foot + water + Vector2(0, UNDER * s / 4.0)
+			var b := foot + water + Vector2(0, UNDER * (s + 1) / 4.0)
+			var c := log.lerp(WATER, 0.3 + 0.12 * s)
 			c.a = 0.9 - 0.22 * s
-			draw_line(a, b, c, 2.0)
-		draw_line(post + water + Vector2(-2, 0), post + water + Vector2(2, 0), FOAM, 1.0)
+			draw_line(a, b, c, 3.0)
+		draw_line(foot + water + Vector2(-3, 0), foot + water + Vector2(3, 0), FOAM, 1.0)
+		# Tall mooring posts at the ends, with a dark cap.
+		if i == 0 or i == piles.size() - 1:
+			draw_line(foot, foot - Vector2(0, 7), log.lightened(0.05), 3.0)
+			draw_line(foot - Vector2(1, 8), foot - Vector2(-2, 8), BOLLARD, 2.0)
+	# A ladder down to the water on some sides.
+	if absi(tile.x * 7 + tile.y * 3) % 5 == 0 and length > 20.0:
+		var mid := p + along * (length * 0.5) + out * 2.0
+		for side: float in [-2.0, 2.0]:
+			draw_line(mid + along * side, mid + along * side + water + Vector2(0, 4), BEAM.lightened(0.1), 1.0)
+		for r: int in range(1, 6):
+			var y := Vector2(0, 3.0 * r)
+			draw_line(mid - along * 2.0 + y, mid + along * 2.0 + y, BEAM.lightened(0.2), 1.0)
+	draw_line(p, q, BEAM, 1.0)
 
 
 ## The part of a side under the water from the waterline [param p]-[param q]: the wall goes
