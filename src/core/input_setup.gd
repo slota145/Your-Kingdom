@@ -22,6 +22,7 @@ const DEFAULTS: Dictionary[StringName, Array] = {
 	&"rotate_building": [KEY_R],
 	&"cycle_look": [KEY_T],
 	&"world_map": [KEY_M],
+	&"toggle_build_menu": [KEY_B],
 }
 
 

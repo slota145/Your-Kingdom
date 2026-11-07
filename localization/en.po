@@ -2413,3 +2413,15 @@ msgstr "%d / %d"
 
 msgid "ui.hud.time"
 msgstr "%d:%02d"
+
+msgid "ui.build.hide"
+msgstr "Hide"
+
+msgid "ui.build.hide_tip"
+msgstr "Hides the build bar (B key)"
+
+msgid "ui.build.show"
+msgstr "Build"
+
+msgid "ui.build.show_tip"
+msgstr "Shows the build bar (B key)"

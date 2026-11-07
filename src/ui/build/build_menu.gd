@@ -5,6 +5,8 @@ extends PanelContainer
 ## always on the right. Tooltips name the building, what it does and what it costs.
 
 signal tool_selected(tool: Dictionary)
+## The player hides the build bar (owner's request 2026-11-07); the "Build" button or B shows it.
+signal hide_requested
 
 ## Tab id -> its buildings in order (ids missing from the data are skipped).
 const TABS: Array[Dictionary] = [
@@ -61,6 +63,9 @@ func setup(registry: DataRegistry) -> void:
 	var demolish := UiKit.button("ui.build.demolish", func() -> void: tool_selected.emit({"kind": &"demolish"}))
 	demolish.tooltip_text = "ui.build.demolish_tip"
 	tabs.add_child(demolish)
+	var hide := UiKit.button("ui.build.hide", func() -> void: hide_requested.emit())
+	hide.tooltip_text = "ui.build.hide_tip"
+	tabs.add_child(hide)
 	for tab: Dictionary in TABS:
 		var row := HFlowContainer.new()
 		box.add_child(row)

@@ -5,7 +5,7 @@ extends Node2D
 ##
 ## Mouse: left = select / use the tool (drag for roads and fields), right or Esc = cancel the
 ## tool. Keys: WASD/arrows pan, wheel or 1-4 zoom, Space pause, +/- speed, F grid,
-## R turns the building being placed, T changes its look, M world map, F5 quick save, F9 quick load, F11 pseudolocalization
+## R turns the building being placed, B shows or hides the build bar, T changes its look, M world map, F5 quick save, F9 quick load, F11 pseudolocalization
 ## (UI text-fit check).
 
 const START_MAP := &"riverlands"
@@ -33,6 +33,8 @@ var camera: GameCamera
 var _ui: CanvasLayer
 var _top: TopBar
 var _build: BuildMenu
+## Shows the build bar again while it is hidden (owner's request 2026-11-07).
+var _build_show: Button
 var _building_panel: BuildingPanel
 var _agent_panel: AgentPanel
 var _ship_panel: ShipPanel
@@ -159,7 +161,15 @@ func _build_ui() -> void:
 	_build.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	_build.setup(Data.registry)
 	_build.tool_selected.connect(_set_tool)
+	_build.hide_requested.connect(_show_build_menu.bind(false))
 	root.add_child(_build)
+	_build_show = UiKit.button("ui.build.show", _show_build_menu.bind(true))
+	_build_show.tooltip_text = "ui.build.show_tip"
+	_build_show.theme = UiKit.board_theme()
+	_build_show.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_build_show.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, 12)
+	_build_show.visible = false
+	root.add_child(_build_show)
 	_building_panel = BuildingPanel.new()
 	_building_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_building_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
@@ -261,6 +271,14 @@ func _enter_province(id: int) -> void:
 	_show_province()
 	var def := sim.world.def_of(id, sim.data)
 	_notes.push(tr("ui.note.entered") % (tr(def.name_key()) if def != null else ""))
+
+
+## Shows or hides the build bar (button, B); hiding it drops the tool in hand.
+func _show_build_menu(on: bool) -> void:
+	_build.visible = on
+	_build_show.visible = not on
+	if not on:
+		_set_tool({})
 
 
 ## Opens or closes the trade routes window (M6 part 3). A single-province game has none.
@@ -464,6 +482,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed(&"world_map"):
 		_toggle_world_map()
+	elif event.is_action_pressed(&"toggle_build_menu"):
+		_show_build_menu(not _build.visible)
 	elif event.is_action_pressed(&"ui_cancel"):
 		if not _tool.is_empty():
 			_set_tool({})

@@ -2436,3 +2436,15 @@ msgstr "%d / %d"
 
 msgid "ui.hud.time"
 msgstr "%d:%02d"
+
+msgid "ui.build.hide"
+msgstr "Schowaj"
+
+msgid "ui.build.hide_tip"
+msgstr "Chowa pasek budowy (klawisz B)"
+
+msgid "ui.build.show"
+msgstr "Budowa"
+
+msgid "ui.build.show_tip"
+msgstr "Pokazuje pasek budowy (klawisz B)"
