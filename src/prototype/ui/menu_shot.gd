@@ -2,12 +2,15 @@ extends Node
 ## UI-1 prototype: opens the main menu (or a game scene) and saves a screenshot.
 ## Run (cloud): xvfb-run -a "$GODOT" --path . --rendering-driver opengl3 \
 ##   res://src/prototype/ui/menu_shot.tscn -- --out=/tmp/menu.png [--frames=60] [--open=maps|tools]
+##   [--shift=x,y]  holds the backdrop layers as if the mouse were at x,y (-1..1, 1 = the
+##   right or bottom edge): the review fix 2026-11-07 check that the picture's edges never show.
 
 var _frames: int = 0
 var _wait: int = 60
 var _out: String = ""
 var _open: String = ""
 var _menu: Control
+var _shift: Vector2 = Vector2.INF
 
 
 func _ready() -> void:
@@ -18,12 +21,19 @@ func _ready() -> void:
 			_wait = int(arg.trim_prefix("--frames="))
 		elif arg.begins_with("--open="):
 			_open = arg.trim_prefix("--open=")
+		elif arg.begins_with("--shift="):
+			var parts := arg.trim_prefix("--shift=").split(",")
+			_shift = Vector2(float(parts[0]), float(parts[1]))
+	# Runs after the backdrop, so the held shift wins over the real mouse.
+	process_priority = 10
 	_menu = (load("res://src/main/main.tscn") as PackedScene).instantiate() as Control
 	add_child(_menu)
 
 
 func _process(_delta: float) -> void:
 	_frames += 1
+	if _shift != Vector2.INF:
+		_menu.get_child(0).set("_mouse", _shift)
 	if _frames == 5 and _open != "":
 		_menu.get("_" + _open).set("visible", true)
 	if _frames == 30:
