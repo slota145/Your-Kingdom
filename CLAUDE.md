@@ -28,7 +28,9 @@ Godot 4.7.2 nie jest w PATH. Skąd go wziąć:
 GODOT="/c/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"   # tylko Windows
 "$GODOT" --path .                                                   # uruchomienie gry
 "$GODOT" --headless --path . --import                               # reimport zasobów i cache klas
-tools/run_tests.sh                                                  # wszystkie testy (gdUnit4 v6.2.2), headless
+tools/run_tests.sh                                                  # szybkie testy (ok. 2 min), przed każdym commitem
+tools/run_tests.sh --long                                           # długie testy równolegle (ok. 5 min), przed scaleniem do main
+tools/run_tests.sh --all                                            # oba poziomy naraz
 "$GODOT" --headless --path . -s res://tools/generate_placeholders.gd   # generowanie placeholderów
 "$GODOT" --headless --path . -s res://tools/generate_art.gd            # grafiki budynków rysowane kodem (assets/buildings)
 "$GODOT" --headless --path . -s res://tools/generate_characters.gd     # postacie rysowane kodem (assets/characters)
@@ -46,7 +48,7 @@ Repozytorium zdalne: `origin` = https://github.com/slota145/Your-Kingdom.git, ga
 - Pracujemy **etapami z ROADMAP.md**. Po ukończeniu etapu (wszystkie punkty DoD): krótkie podsumowanie i **stop, czekamy na akceptację**.
 - Nie piszemy kodu wykraczającego poza bieżący etap.
 - Zmiana decyzji z dokumentów oznacza aktualizację odpowiedniego dokumentu w tym samym commicie.
-- Każda zmiana w `src/sim` ma testy. Testy muszą przechodzić przed commitem.
+- Każda zmiana w `src/sim` ma testy. **Szybkie testy muszą przechodzić przed każdym commitem, a długie (`--long`) przed scaleniem do `main` i na koniec części etapu** (decyzja właściciela 2026-11-07, ARCHITECTURE §12). Test dłuższy niż ok. 20 s trafia do `tests/long`.
 - **Commity bez pytania (decyzja właściciela 2026-11-05):** commituj gotowe, przetestowane kawałki pracy i wysyłaj je na bieżącą gałąź roboczą bez pytania (w chmurze kontener znika, więc nic nie może czekać tylko lokalnie). Scalanie do `main` (PR) dalej tylko na prośbę właściciela.
 - **Po każdym scaleniu PR do `main`** podaj komendę do aktualizacji gry na laptopie (w folderze gry): `powershell -ExecutionPolicy Bypass -File aktualizuj.ps1`. Skrypt sprawdza lokalne zmiany, pobiera `main` i wczytuje grafiki do Godota.
 - **Po dużym zadaniu albo etapie** (jeśli jest następny krok) przygotuj gotowy prompt do wklejenia w nowej sesji, żeby oszczędzać tokeny. Ma być krótki i samodzielny: cel i zakres z ROADMAP, dokumenty do przeczytania, stan po poprzedniej sesji, otwarte decyzje i to, gdzie się zatrzymać. Nie przepisuj dokumentów, tylko na nie wskaż.
