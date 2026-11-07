@@ -53,7 +53,7 @@ var plant_area: Array[Vector2i] = []
 var breed_ticks: int = 0
 ## Storage: handcarts bought for its porters (M4b-3, at most def.max_carts).
 var carts: int = 0
-## Stable: wagons lent to trade routes (M6 part 3); their carters stay at the stable.
+## Trading post: merchant wagons lent to trade routes (M6 part 3).
 var lent: int = 0
 ## Shipyard: ship kinds ordered by the player, the first one on the slipway (M5).
 var ship_orders: Array[StringName] = []

@@ -3,7 +3,7 @@ extends RefCounted
 ## A trade route between two of the player's provinces (ROADMAP M6 part 3, GDD §4.5): from A
 ## to B, up to MAX_LINES goods, each with the units taken on a run and a threshold ("bring
 ## bread while B has less than 20"). One vehicle runs it in circles: the player's cog (by sea)
-## or a wagon lent by a stable of A (by land, to a land neighbour only).
+## or the merchant wagon of a trading post of A (by land, to a land neighbour only).
 ##
 ## WAITING: the vehicle is at home in A; once a second the route looks whether B is short of
 ##   one of its goods while A has it.
@@ -18,10 +18,14 @@ extends RefCounted
 enum State { WAITING, LOADING, TRAVELLING, UNLOADING, RETURNING }
 
 const MAX_LINES := 3
-## Units a route wagon carries. ROADMAP M6 started from a horse wagon's 6; tuned to 12 while
-## building part 3: with 6 a run of about 6 minutes brought too little to buy a settlement by
-## land within its 20 minutes.
-const WAGON_LOAD := 12
+## Units the merchant wagon of a trading post carries (owner's decision 2026-11-07: a wagon of
+## its own for trade between provinces, as much as a cog; one run brings a settlement's whole
+## demand). ROADMAP M6 started from a stable's horse wagon with 6.
+const WAGON_LOAD := 40
+## The merchant wagon is heavy: its journeys take this much longer than a plain wagon's.
+const WAGON_SLOWNESS := 1.25
+## The building keeping merchant wagons.
+const TRADING_POST := &"trading_post"
 ## Default units of a new line and default threshold.
 const DEFAULT_AMOUNT := 10
 const DEFAULT_BELOW := 20
@@ -30,7 +34,7 @@ var id: int = 0
 var from: int = 0
 var to: int = 0
 var by_sea: bool = false
-## The cog (an entity of province [member from]) or the stable lending its wagon.
+## The cog (an entity of province [member from]) or the trading post lending its wagon.
 var vehicle: int = 0
 ## Goods: [{good, amount, below}], at most MAX_LINES.
 var lines: Array[Dictionary] = []

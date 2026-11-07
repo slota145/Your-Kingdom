@@ -33,7 +33,7 @@ static func _update(sim: Simulation, route: TradeRoute) -> void:
 			if cargo == null:
 				return
 			route.cargo = cargo
-			var seconds := maxf(sim.world.travel_seconds(route.from, route.to, route.by_sea, sim.data), 0.0)
+			var seconds := travel_seconds(sim, route)
 			route.depart_at = tick
 			if route.cargo.is_empty():
 				# Nothing came aboard after all: it comes back at once.
@@ -75,13 +75,19 @@ static func cog(sim: Simulation, route: TradeRoute) -> ShipUnit:
 	return ship if ship != null and ship.voyage != null else null
 
 
-## The stable lending the route's wagon, or null.
-static func stable(sim: Simulation, route: TradeRoute) -> BuildingState:
+## Seconds a journey of the route takes one way (a merchant wagon is slower than a cart).
+static func travel_seconds(sim: Simulation, route: TradeRoute) -> float:
+	var seconds := maxf(sim.world.travel_seconds(route.from, route.to, route.by_sea, sim.data), 0.0)
+	return seconds if route.by_sea else seconds * TradeRoute.WAGON_SLOWNESS
+
+
+## The trading post lending the route's merchant wagon, or null.
+static func depot(sim: Simulation, route: TradeRoute) -> BuildingState:
 	var p := home(sim, route)
 	if p == null or route.by_sea:
 		return null
 	var building := p.buildings.get_building(route.vehicle)
-	return building if building != null and building.def.id == &"stable" else null
+	return building if building != null and building.def.id == TradeRoute.TRADING_POST else null
 
 
 ## Whether the vehicle is at home and free for the next run.
@@ -91,7 +97,7 @@ static func vehicle_ready(sim: Simulation, route: TradeRoute) -> bool:
 		return ship != null and ship.home_id != 0 and ship.voyage.route == route.id \
 				and ship.voyage.expedition == 0 and ship.voyage.state == Voyage.State.IDLE \
 				and ship.hold.is_empty()
-	var building := stable(sim, route)
+	var building := depot(sim, route)
 	return building != null and building.is_complete() and not building.paused \
 			and not home(sim, route).route_wagons.has(route.id)
 
@@ -161,9 +167,9 @@ static func _begin_loading(sim: Simulation, route: TradeRoute, run: Dictionary[S
 	if route.by_sea:
 		cog(sim, route).voyage.start_route_run(run)
 	elif sim.is_detailed(route.from):
-		a.route_wagons[route.id] = RouteWagon.to_load(a, route.id, run, stable(sim, route))
+		a.route_wagons[route.id] = RouteWagon.to_load(a, route.id, run, depot(sim, route))
 	else:
-		var near := a.door_tile(stable(sim, route))
+		var near := a.door_tile(depot(sim, route))
 		var cargo: Dictionary[StringName, int] = {}
 		for good: StringName in RouteWagon._sorted(run):
 			var taken := a.take_from_storages(good, run[good], near, false)
@@ -251,7 +257,7 @@ static func _return(sim: Simulation, route: TradeRoute) -> void:
 	route.state = TradeRoute.State.RETURNING
 	route.depart_at = sim.clock.tick
 	route.arrive_at = sim.clock.tick + SimClock.seconds_to_ticks(
-			maxf(sim.world.travel_seconds(route.from, route.to, route.by_sea, sim.data), 0.0))
+			travel_seconds(sim, route))
 
 
 static func _call_cog_home(sim: Simulation, route: TradeRoute) -> void:
@@ -267,7 +273,7 @@ static func remove(sim: Simulation, route: TradeRoute) -> void:
 	if ship != null and ship.voyage.route == route.id:
 		ship.voyage.route = 0
 		ship.voyage.route_run = {}
-	var building := stable(sim, route)
+	var building := depot(sim, route)
 	if building != null:
 		building.lent = maxi(building.lent - 1, 0)
 	var a := home(sim, route)

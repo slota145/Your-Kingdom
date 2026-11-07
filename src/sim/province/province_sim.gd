@@ -64,6 +64,8 @@ var route_wagons: Dictionary[int, RouteWagon] = {}
 ## Until a building of this id is placed, nothing else may be (the pioneer camp on a map that
 ## starts by ship, M5 part 3); empty = anything.
 var first_building: StringName = &""
+## The province's rare resource (M6 part 3: vines let vineyards be built), from its ProvinceDef.
+var rare_resource: StringName = &""
 ## Goods made and used per minute (statistics for the player, M4b-2); not saved.
 var ledger: GoodsLedger = GoodsLedger.new()
 ## How fast each building works while viewed: the calibration of the simplified mode (M6).
@@ -81,7 +83,7 @@ var terrains: Array[TerrainDef] = []
 
 ## The building that makes a province the seat of a town (M6 part 2).
 const SEAT := &"town_hall"
-## Vine soil (M6 part 3): laid in provinces with vines, tended by vineyards.
+## Vine soil (M6 part 3): laid in provinces with vines; vines grow faster there.
 const VINES := &"vines"
 const VINE_SOIL := &"vine_soil"
 const VINE_PATCHES := 5
@@ -245,6 +247,7 @@ func load_map(map: MapDef, mirrored: bool = false, richness: int = 2, settled: b
 		rare: StringName = &"") -> PackedStringArray:
 	var problems := _load_terrain(map, mirrored)
 	_apply_richness(richness)
+	rare_resource = rare
 	if rare == VINES:
 		_lay_vine_soil()
 	entry_tile = _variant_tile(map.entry_tile, mirrored)
@@ -409,6 +412,8 @@ func approach_tile(node: Vector2i, from: Vector2i) -> Vector2i:
 func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -> StringName:
 	if def == null:
 		return &"unknown_building"
+	if def.needs_rare != &"" and rare_resource != def.needs_rare:
+		return StringName("needs_%s" % def.needs_rare)
 	if orientation < 0 or orientation >= def.orientation_count():
 		return &"bad_orientation"
 	if first_building != &"" and def.id != first_building:
@@ -1083,8 +1088,6 @@ func field_error(farm_id: int, tile: Vector2i) -> StringName:
 	var terrain := terrain_at(tile)
 	if terrain != null and not terrain.farmable:
 		return &"terrain_not_farmable"
-	if farm.def.field_terrain != &"" and (terrain == null or not terrain.is_kind(farm.def.field_terrain)):
-		return StringName("needs_%s" % farm.def.field_terrain)
 	return _free_ground_error(tile)
 
 
@@ -1771,6 +1774,8 @@ func to_dict() -> Dictionary:
 		d["route_wagons"] = wagons
 	if first_building != &"":
 		d["first_building"] = String(first_building)
+	if rare_resource != &"":
+		d["rare"] = String(rare_resource)
 	return d
 
 
@@ -1830,6 +1835,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 		var wagon := RouteWagon.from_dict(wd, registry)
 		province.route_wagons[wagon.id] = wagon
 	province.first_building = StringName(String(d.get("first_building", "")))
+	province.rare_resource = StringName(String(d.get("rare", "")))
 	province.agents = AgentStore.from_dict(d["agents"])
 	for agent: Agent in province.agents.all():
 		if agent.task != null and not TaskRunner.restore_steps(province, agent.task):

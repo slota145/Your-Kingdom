@@ -63,7 +63,7 @@ static func from_world(registry: DataRegistry, def: WorldDef, seed_value: int = 
 	sim.runtimes[start] = sim.province
 	sim.viewed_id = start
 	sim.world.get_province(start).owner = ProvinceDef.OWNER_PLAYER
-	problems.append_array(sim.province.load_map(map, pdef.mirrored, pdef.richness))
+	problems.append_array(sim.province.load_map(map, pdef.mirrored, pdef.richness, false, pdef.rare_resource))
 	problems.append_array(sim._open_neutral_towns())
 	sim.events.drain()
 	return sim

@@ -2161,7 +2161,7 @@ msgid "ui.routes.title"
 msgstr "Trade routes"
 
 msgid "ui.routes.hint"
-msgstr "A route carries goods from one of your provinces to another. For each good you set how much one run takes and below what stock in the destination it is brought (\"while … has less than\"). A cog sails between coasts, a stable's wagon drives only to a neighbour."
+msgstr "A route carries goods from one of your provinces to another. For each good you set how much one run takes and below what stock in the destination it is brought (\"while … has less than\"). A cog sails between coasts, a trading post's merchant wagon drives only to a neighbour."
 
 msgid "ui.routes.none"
 msgstr "You have no trade routes yet."
@@ -2202,8 +2202,6 @@ msgstr "(has %d)"
 msgid "ui.routes.add_good"
 msgstr "+ add a good"
 
-msgid "ui.routes.stable_wagon"
-msgstr "Stable wagon (free: %d)"
 
 msgid "ui.routes.no_target"
 msgstr "No other province can be reached by road or by sea."
@@ -2211,8 +2209,6 @@ msgstr "No other province can be reached by road or by sea."
 msgid "ui.routes.no_cog"
 msgstr "No free cog in this province's port."
 
-msgid "ui.routes.no_stable"
-msgstr "No stable with a free wagon in this province."
 
 msgid "ui.routes.state.waiting"
 msgstr "Waiting at home until goods run short."
@@ -2327,7 +2323,7 @@ msgid "building.vineyard.name"
 msgstr "Vineyard"
 
 msgid "building.vineyard.desc"
-msgstr "The winegrower plants vines on vine soil nearby and picks the grapes. It is built only by vine soil (provinces with vines)."
+msgstr "The winegrower plants vines on the fields around and picks the grapes. It is built in a province with vines; on vine soil the vines grow faster."
 
 msgid "building.wine_press.name"
 msgstr "Wine press"
@@ -2363,16 +2359,12 @@ msgid "terrain.vine_soil.name"
 msgstr "Vine soil"
 
 msgid "terrain.vine_soil.desc"
-msgstr "Warm, stony soil on the slopes. Only here do vines grow."
+msgstr "Warm, stony soil on the slopes. Vines grow half as fast again here."
 
 msgid "ui.activity.press"
 msgstr "presses grapes"
 
-msgid "ui.command_error.no_vine_soil_nearby"
-msgstr "A vineyard has to stand by vine soil."
 
-msgid "ui.command_error.needs_vine_soil"
-msgstr "Vines grow only on vine soil."
 
 msgid "good.grapes.count"
 msgid_plural "good.grapes.count_plural"
@@ -2383,3 +2375,18 @@ msgid "good.wine.count"
 msgid_plural "good.wine.count_plural"
 msgstr[0] "%s barrel of wine"
 msgstr[1] "%s barrels of wine"
+
+msgid "ui.command_error.needs_vines"
+msgstr "A vineyard is built only in a province with vines."
+
+msgid "ui.routes.merchant_wagon"
+msgstr "Merchant wagon"
+
+msgid "ui.routes.no_trading_post"
+msgstr "No trading post with a free wagon in this province."
+
+msgid "building.trading_post.name"
+msgstr "Trading post"
+
+msgid "building.trading_post.desc"
+msgstr "Keeps a big covered merchant wagon for 40 units. It runs only trade routes to neighbouring provinces (a little slower than a plain wagon). One trading post, one wagon."

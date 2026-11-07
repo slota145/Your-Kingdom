@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## M6 part 3 DoD: wine. Provinces with vines get patches of vine soil; a vineyard stands only
-## by vine soil and lays its vines only there; its grapes go to the wine press (3 baskets ->
+## in a province with vines, its vines grow faster on vine soil; its grapes go to the wine press (3 baskets ->
 ## a barrel in about 40 s); wine is an extra need of patricians: met, it raises happiness and
 ## tax; unmet, nothing changes (old maps without vines play as before).
 
@@ -37,28 +37,38 @@ func test_only_provinces_with_vines_get_vine_soil() -> void:
 	assert_int(_count_terrain(again, &"vine_soil")).is_equal(soil)
 
 
-## 40x40 village with vine soil on the east side, vineyard and press.
+## 40x40 village in a province with vines, vine soil on part of the east side, vineyard and
+## press. Vines grow anywhere around the vineyard, faster on vine soil (owner's decision
+## 2026-11-07).
 func test_vineyard_grapes_become_wine() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	var village := SimFixture.village(sim, 30, 40)
 	SimFixture.place(sim, &"well", Vector2i(9, 9))
 	for i: int in 3:
 		SimFixture.house(sim, Vector2i(2 + 3 * i, 14))
-	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"vineyard", Vector2i(24, 20))))).is_equal("no_vine_soil_nearby")
+	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"vineyard", Vector2i(23, 22))))).is_equal("needs_vines")
+	sim.province.rare_resource = &"vines"
 	var soil := _registry().get_terrain(&"vine_soil")
 	for y: int in range(26, 34):
-		for x: int in range(20, 30):
+		for x: int in range(24, 30):
 			sim.province.grid.set_terrain(Vector2i(x, y), soil.index)
 			sim.province.refresh_tile(Vector2i(x, y))
 	var vineyard := SimFixture.place(sim, &"vineyard", Vector2i(23, 22))
-	# Vines only on vine soil.
-	assert_str(String(sim.execute(PlaceFieldCommand.new(vineyard.id, Vector2i(20, 21))))).is_equal("needs_vine_soil")
+	# Five vines on vine soil, five on plain grass.
+	var on_soil: Array[Vector2i] = []
 	var fields := 0
-	for y: int in range(26, 30):
+	for y: int in range(26, 28):
 		for x: int in range(21, 28):
-			if fields < 10 and sim.execute(PlaceFieldCommand.new(vineyard.id, Vector2i(x, y))) == &"":
+			var tile := Vector2i(x, y)
+			var soil_tile := x >= 24
+			if (on_soil.size() < 5 if soil_tile else fields - on_soil.size() < 5) \
+					and sim.execute(PlaceFieldCommand.new(vineyard.id, tile)) == &"":
 				fields += 1
+				if soil_tile:
+					on_soil.append(tile)
 	assert_int(fields).is_equal(10)
+	var harvested_on_soil := 0
+	var harvested_off := 0
 	SimFixture.place(sim, &"wine_press", Vector2i(16, 4))
 	var grapes := 0
 	var wine := 0
@@ -69,9 +79,21 @@ func test_vineyard_grapes_become_wine() -> void:
 		for e: Dictionary in sim.events.drain():
 			if e["type"] == &"good_harvested" and e["good"] == &"grapes":
 				grapes += int(e["amount"])
+				if on_soil.has(e["tile"] as Vector2i):
+					harvested_on_soil += 1
+				else:
+					harvested_off += 1
 			if e["type"] == &"good_produced" and e["good"] == &"wine":
 				wine += int(e["amount"])
-	print("vineyard in 12 min: grapes %d, wine %d" % [grapes, wine])
+	print("vineyard in 12 min: grapes %d (vine soil %d, grass %d), wine %d" % [grapes,
+			harvested_on_soil, harvested_off, wine])
+	assert_int(harvested_on_soil).is_greater_equal(harvested_off)
+	# Every vine sown on vine soil grows in 100 s, on grass in 150 s.
+	for tile: Vector2i in sim.province.fields.tiles_of(vineyard.id):
+		var f: PackedInt64Array = sim.province.fields._tiles[tile]
+		if f[3] > f[2]:
+			var seconds := (f[3] - f[2]) / float(SimClock.TICKS_PER_SECOND)
+			assert_float(seconds).is_equal_approx(100.0 if on_soil.has(tile) else 150.0, 0.2)
 	assert_int(grapes).is_greater_equal(9)
 	assert_int(wine).is_greater_equal(3)
 	assert_int(sim.province.goods_total(&"wine")).is_equal(before + wine)

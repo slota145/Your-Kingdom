@@ -1,7 +1,7 @@
 extends SceneTree
 ## Builds the save fixture of M6 part 3 (save version 14): the Riverlands town playing Landing
 ## Bay in the world runs a wagon route with bread and planks to Willow Vale (settled, not
-## viewed); porters are loading the wagon in front of the stable. A second, made-up route is on
+## viewed); porters are loading the wagon in front of the trading post. A second, made-up route is on
 ## its way back from the vale.
 ## Run: "$GODOT" --headless --path . -s res://tools/build_routes_fixture.gd
 
@@ -21,9 +21,8 @@ func _init() -> void:
 	var vale := sim.world.id_of(&"willow_vale")
 	sim.open_province(vale, registry.get_map(&"riverlands"))
 	var stable := _place_stable(sim)
-	for i: int in 2:
-		var carter := sim.province.spawn_agent(Carriers.CARTER_KIND, stable.entrance_tile())
-		sim.execute(AssignWorkerCommand.new(carter.id, stable.id))
+	var carter := sim.province.spawn_agent(Carriers.CARTER_KIND, stable.entrance_tile())
+	sim.execute(AssignWorkerCommand.new(carter.id, stable.id))
 	for i: int in 4:
 		sim.province.spawn_agent(JobBoard.PORTER_KIND, sim.province.seat().entrance_tile())
 	var lines: Array[Dictionary] = [TradeRoute.line(&"bread", 4, 500), TradeRoute.line(&"planks", 2, 500)]
@@ -57,15 +56,15 @@ func _init() -> void:
 	quit()
 
 
-## A finished stable on the first free spot by the town hall.
+## A finished trading post on the first free spot by the town hall.
 func _place_stable(sim: Simulation) -> BuildingState:
-	var def := sim.data.get_building(&"stable")
+	var def := sim.data.get_building(&"trading_post")
 	var hall := sim.province.seat().origin
 	for r: int in range(4, 30):
 		for dy: int in range(-r, r + 1):
 			for dx: int in range(-r, r + 1):
 				var origin := hall + Vector2i(dx, dy)
 				if sim.province.placement_error(def, origin, 0) == &"":
-					sim.execute(PlaceBuildingCommand.new(&"stable", origin, true))
+					sim.execute(PlaceBuildingCommand.new(&"trading_post", origin, true))
 					return sim.province.buildings.get_building(sim.ids.next_id - 1)
 	return null

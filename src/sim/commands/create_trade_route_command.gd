@@ -2,7 +2,7 @@ class_name CreateTradeRouteCommand
 extends Command
 ## Sets up a trade route from the player's province [member from_id] to his province
 ## [member to_id] (ROADMAP M6 part 3, the routes window): by sea with the player's cog
-## [member vehicle] of A, or by land to a neighbour with a wagon lent by stable [member vehicle]
+## [member vehicle] of A, or by land to a neighbour with the merchant wagon of trading post [member vehicle]
 ## of A. The goods are lines {good, amount, below} (TradeRoute.line), 1 to MAX_LINES.
 
 var from_id: int
@@ -50,7 +50,7 @@ static func route_error(sim: Simulation, from: int, to: int, sea: bool) -> Strin
 
 
 ## Whether [param vehicle] of province [param from] can take a route: the player's cog with a
-## port, not on a route or an expedition; a finished stable with a wagon not lent yet.
+## port, not on a route or an expedition; a finished trading post whose wagon is free.
 static func vehicle_free(sim: Simulation, from: int, sea: bool, vehicle: int) -> bool:
 	var province := sim.province_state(from)
 	if province == null:
@@ -59,12 +59,12 @@ static func vehicle_free(sim: Simulation, from: int, sea: bool, vehicle: int) ->
 		var ship := province.ships.get(vehicle) as ShipUnit
 		return ship != null and ship.voyage != null and ship.home_id != 0 and ship.voyage.route == 0 \
 				and ship.voyage.expedition == 0
-	var stable := province.buildings.get_building(vehicle)
-	return stable != null and stable.def.id == &"stable" and stable.is_complete() \
-			and stable.lent < stable.def.worker_count()
+	var depot := province.buildings.get_building(vehicle)
+	return depot != null and depot.def.id == TradeRoute.TRADING_POST and depot.is_complete() \
+			and depot.lent < depot.def.worker_count()
 
 
-## Vehicles of province [param from] free for a new route (ids): cogs by sea, stables by land.
+## Vehicles of province [param from] free for a new route (ids): cogs by sea, trading posts by land.
 static func free_vehicles(sim: Simulation, from: int, sea: bool) -> Array[int]:
 	var result: Array[int] = []
 	var province := sim.province_state(from)

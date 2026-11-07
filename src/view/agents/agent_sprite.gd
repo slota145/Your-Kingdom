@@ -14,6 +14,7 @@ const LED_OFFSET := Vector2(13.0, -7.0)
 const VEHICLES: Dictionary[StringName, Dictionary] = {
 	&"handcart": {"frame": Vector2i(48, 40), "centre": Vector2(24, 30), "ahead": 0.4},
 	&"wagon": {"frame": Vector2i(112, 80), "centre": Vector2(56, 52), "ahead": -0.6},
+	&"trade_wagon": {"frame": Vector2i(112, 80), "centre": Vector2(56, 52), "ahead": -0.6},
 }
 ## Forward vector in grid space of the vehicle rows (as in tools/generate_goods.gd).
 const ROW_FORWARD: Array[Vector2] = [Vector2(0.7071, 0.7071), Vector2(1, 0), Vector2(0.7071, -0.7071),

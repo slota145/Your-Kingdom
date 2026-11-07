@@ -16,6 +16,6 @@ outline = PackedVector2Array(452, 520, 622, 540, 652, 652, 640, 760, 446, 760, 4
 town_buildings = Dictionary[StringName, int]({&"bakery": 1, &"brewery": 1, &"chapel": 1, &"farm": 2, &"fishing_wharf": 2, &"forester": 1, &"hop_farm": 1, &"hut": 12, &"market": 1, &"mill": 1, &"pigsty": 1, &"sawmill": 1, &"stockpile": 2, &"well": 3, &"woodcutter": 2})
 town_burghers = 6
 demand_gold = 300
-demand_goods = Dictionary[StringName, int]({&"bread": 30, &"planks": 20})
+demand_goods = Dictionary[StringName, int]({&"bread": 25, &"planks": 15})
 demand_minutes = 20.0
 id = &"horse_haven"

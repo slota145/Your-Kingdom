@@ -107,6 +107,8 @@ func test_dynamic_ui_keys_exist() -> void:
 		var building := def as BuildingDef
 		if building.needs_terrain_near != &"":
 			keys.append("ui.command_error.no_%s_nearby" % building.needs_terrain_near)
+		if building.needs_rare != &"":
+			keys.append("ui.command_error.needs_%s" % building.needs_rare)
 	for priority: String in ["high", "normal", "low"]:
 		keys.append("ui.priority.%s" % priority)
 	for rate: String in ["low", "normal", "high"]:

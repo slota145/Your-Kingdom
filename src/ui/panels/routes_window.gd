@@ -4,7 +4,7 @@ extends PanelContainer
 ## from the top bar and from the world map). Lists every route of the kingdom: from, to, the
 ## vehicle and what it is doing, and up to 3 goods, each with the units of a run and the
 ## threshold ("while B has less than N"); a route can be paused or removed. Below, a new route:
-## from, to, by sea or by land, a free cog or stable wagon of A, and its first good.
+## from, to, by sea or by land, a free cog or the merchant wagon of a trading post of A, and its first good.
 ## Reads the simulation; changes go out as commands.
 
 signal command_requested(command: Command)
@@ -281,7 +281,7 @@ func _state_text(route: TradeRoute) -> String:
 
 
 func _vehicle_exists(route: TradeRoute) -> bool:
-	return TradeRoutes.cog(sim, route) != null if route.by_sea else TradeRoutes.stable(sim, route) != null
+	return TradeRoutes.cog(sim, route) != null if route.by_sea else TradeRoutes.depot(sim, route) != null
 
 
 # --- A new route ---------------------------------------------------------------------------
@@ -350,8 +350,7 @@ func _vehicle_name(from: int, sea: bool, vehicle: int) -> String:
 	if sea:
 		var ship := province.ships.get(vehicle) as ShipUnit
 		return tr(ship.def.name_key()) if ship != null else ""
-	var stable := province.buildings.get_building(vehicle)
-	return tr("ui.routes.stable_wagon") % (stable.def.worker_count() - stable.lent)
+	return tr("ui.routes.merchant_wagon")
 
 
 ## Goods province [param from] has that can go on a route, without [param skip]; the first
@@ -376,7 +375,7 @@ func _check_new() -> void:
 	if _to.item_count == 0:
 		_note.text = tr("ui.routes.no_target")
 	elif _vehicle.item_count == 0:
-		_note.text = tr("ui.routes.no_cog") if _way.get_selected_id() == 1 else tr("ui.routes.no_stable")
+		_note.text = tr("ui.routes.no_cog") if _way.get_selected_id() == 1 else tr("ui.routes.no_trading_post")
 	else:
 		_note.text = ""
 

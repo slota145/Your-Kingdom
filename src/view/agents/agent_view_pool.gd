@@ -70,8 +70,7 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 			anim = &"idle"
 		sprite.show_state(CharacterVisual.get_visual(_character(agent.kind)), anim, agent.facing,
 				time + agent.id * 0.137, category, good if agent.activity == &"walk" else &"",
-				Carriers.WAGON if agent.vehicle == Carriers.SETTLER_WAGON \
-						or agent.vehicle == Carriers.TRADE_WAGON else agent.vehicle,
+				Carriers.WAGON if agent.vehicle == Carriers.SETTLER_WAGON else agent.vehicle,
 				good != &"" or agent.vehicle == Carriers.SETTLER_WAGON \
 						or agent.vehicle == Carriers.TRADE_WAGON)
 	for j: int in range(used, _pool.size()):

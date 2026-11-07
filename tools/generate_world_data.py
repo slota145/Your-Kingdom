@@ -55,7 +55,7 @@ TOWNS = {
     "horse_haven": ({"stockpile": 2, "well": 3, "chapel": 1, "market": 1, "hut": 12, "woodcutter": 2,
                      "forester": 1, "farm": 2, "mill": 1, "bakery": 1, "fishing_wharf": 2, "brewery": 1,
                      "hop_farm": 1, "sawmill": 1, "pigsty": 1}, 6,
-                    300, {"bread": 30, "planks": 20}, 20),
+                    300, {"bread": 25, "planks": 15}, 20),
 }
 
 

@@ -192,6 +192,15 @@ const BUILDINGS := {
 		"pens": [[1.25, 1.1, 2.9, 2.9, "pigs"], [0.12, 1.6, 1.15, 2.9, "pigs"]],
 		"props": [["trough", 2.2, 1.35], ["bucket", 1.05, 2.98]]}],
 	# M4b-3: a stable with a hay loft, an open wagon shed and a paddock.
+	# M6 part 3 (owner's decision 2026-11-07): the trading post keeps the big covered merchant
+	# wagon that runs trade routes between provinces: a stone warehouse with a loading bay.
+	"trading_post": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.9, 1.7], "h": 52.0, "rh": 26.0, "ridge": "x",
+			"ends": ["gable", "hip"], "walls": "timber_stone", "roof": "tile",
+			"shutters": Color(0.25, 0.35, 0.55), "floors": 2},
+		{"kind": "lean", "rect": [1.9, 0.2, 2.86, 1.7], "low": "x", "h": 28.0, "hh": 40.0,
+			"roof": "tile", "walls": "planks", "open": true, "inside": [["barrels", 2.35, 1.0]]}],
+		"props": [["sacks", 0.4, 2.4], ["barrel", 1.2, 2.6], ["wagon", 2.2, 2.35]]}],
 	"stable": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.75, 1.6], "h": 40.0, "rh": 26.0, "ridge": "x",
 			"ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.45, 0.3, 0.2)},

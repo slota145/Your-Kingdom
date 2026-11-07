@@ -109,7 +109,7 @@ static func carter_ready(province: ProvinceSim, agent: Agent) -> bool:
 	var stable := province.buildings.get_building(agent.workplace_id)
 	if stable == null or not stable.is_complete() or stable.paused:
 		return false
-	# Wagons lent to trade routes (M6 part 3): their carters stay at the stable.
-	if stable.lent > 0 and stable.workers.find(agent.id) >= stable.def.worker_count() - stable.lent:
+	# The carter of a trading post drives only its merchant wagon on trade routes (M6 part 3).
+	if stable.def.id == TradeRoute.TRADING_POST:
 		return false
 	return agent.vehicle == WAGON or province.building_entered_at(agent.tile()) == stable

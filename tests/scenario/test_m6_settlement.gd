@@ -41,17 +41,17 @@ func test_new_world_has_two_neutral_towns_that_wait() -> void:
 	assert_str(String(sim.execute(EnterProvinceCommand.new(sim.world.id_of(&"iron_wold"))))).is_not_empty()
 
 
-## Landing Bay (48x48, a stable) buys Horse Haven: gold paid, bread and planks by wagon.
+## Landing Bay (48x48, a trading post) buys Horse Haven: gold paid, bread and planks in one
+## run of the merchant wagon (owner's decision 2026-11-07).
 func test_buying_a_settlement_with_gold_and_a_wagon_route() -> void:
 	var sim := SimFixture.make_sim(Vector2i(48, 48))
 	sim.world = WorldSim.from_def(_registry().get_world(&"kingdom"), _registry())
 	sim.world.get_province(WorldSim.FIRST_ID).owner = ProvinceDef.OWNER_PLAYER
 	var village := SimFixture.village(sim, 40, 80)
 	(village["stock"] as BuildingState).stock.add(&"planks", 40)
-	var stable := SimFixture.place(sim, &"stable", Vector2i(20, 10))
-	for i: int in 2:
-		var carter := SimFixture.spawn(sim, Carriers.CARTER_KIND, stable.entrance_tile())
-		sim.execute(AssignWorkerCommand.new(carter.id, stable.id))
+	var stable := SimFixture.place(sim, &"trading_post", Vector2i(20, 10))
+	var carter := SimFixture.spawn(sim, Carriers.CARTER_KIND, stable.entrance_tile())
+	sim.execute(AssignWorkerCommand.new(carter.id, stable.id))
 	for i: int in 4:
 		SimFixture.spawn(sim, JobBoard.PORTER_KIND, Vector2i(12, 6))
 	sim.province.entry_tile = Vector2i(47, 20)
@@ -66,14 +66,16 @@ func test_buying_a_settlement_with_gold_and_a_wagon_route() -> void:
 	assert_str(String(sim.execute(PaySettlementCommand.new(haven)))).is_empty()
 	assert_int(sim.treasury.gold).is_less_equal(1000 - 300)
 	assert_str(String(sim.execute(PaySettlementCommand.new(haven)))).is_equal("already_paid")
-	# Both wagons of the stable: one route each.
+	var lines: Array[Dictionary] = []
 	for good: StringName in s.goods:
-		var lines: Array[Dictionary] = [TradeRoute.line(good, TradeRoute.WAGON_LOAD, 0)]
-		assert_str(String(sim.execute(CreateTradeRouteCommand.new(WorldSim.FIRST_ID, haven, false,
-				stable.id, lines)))).is_empty()
+		lines.append(TradeRoute.line(good, s.goods[good], 0))
+	assert_str(String(sim.execute(CreateTradeRouteCommand.new(WorldSim.FIRST_ID, haven, false,
+			stable.id, lines)))).is_empty()
+	var route: TradeRoute = sim.world.routes.values()[0]
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
 		return sim.world.owner_of(haven) == ProvinceDef.OWNER_PLAYER, 20 * 60)).is_true()
 	assert_bool(sim.world.settlements.has(haven)).is_false()
+	assert_int(route.runs).is_equal(1)   # the whole demand in one run
 	assert_int(town.buildings.count()).is_equal(buildings)
 	assert_int(_residents(town)).is_equal(residents)
 	# Now it is the player's: it runs and can be entered.

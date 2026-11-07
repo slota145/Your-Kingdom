@@ -949,6 +949,15 @@ func _vehicles() -> void:
 			if state == "loaded":
 				_ellipse(wagon, centre + Vector2(-14, -20), Vector2(10, 4), Color(0.86, 0.8, 0.64))
 		_save(wagon, "vehicles/wagon/%s.png" % state)
+	# Merchant wagon of trade routes (M6 part 3): the same frames, a tall canvas cover.
+	for state: String in ["empty", "loaded"]:
+		var wagon := _blank(Vector2i(112, 400))
+		for row: int in 5:
+			var centre := Vector2(56, 52 + row * 80)
+			_ellipse(wagon, centre + Vector2(-16, -12), Vector2(22, 8), Color(0.55, 0.4, 0.25))
+			_ellipse(wagon, centre + Vector2(-16, -24), Vector2(18, 9), Color(0.9, 0.86, 0.74))
+			_ellipse(wagon, centre + Vector2(12, -16), Vector2(9, 6), Color(0.48, 0.3, 0.18))
+		_save(wagon, "vehicles/trade_wagon/%s.png" % state)
 
 
 func _save(img: Image, relative: String) -> void:

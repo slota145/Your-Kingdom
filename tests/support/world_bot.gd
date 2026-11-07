@@ -1,14 +1,14 @@
 class_name WorldBot
 extends RefCounted
 ## The automatic player of a world game (ROADMAP M6 part 3): SliceBot builds the start town on
-## the Coast (Landing Bay), with a town hall (the seat, M6 part 2) and a stable added; then
+## the Coast (Landing Bay), with a town hall (the seat, M6 part 2) and a trading post added; then
 ## the world bot settles the land neighbours one after another (Willow Vale, Amber Coast) by
 ## land expeditions, looks at each new province for a few minutes while its own SliceBot lays
-## out the camp and the first buildings, goes home, and sets up a wagon route with bread to
+## out the camp and the first buildings, goes home, and sets up a merchant wagon route with bread to
 ## the first of them. Each province's SliceBot acts only while its province is viewed (its
 ## plan runs on its own clock, counting only those seconds).
 
-## When the town hall and the stable go up in the start town (game seconds).
+## When the town hall and the trading post go up in the start town (game seconds).
 const HALL_AT := 900
 const STABLE_AT := 1500
 ## From when expeditions are prepared, and how long a new province is looked at.
@@ -37,7 +37,7 @@ func _init(simulation: Simulation) -> void:
 	home = sim.viewed_id
 	var bot := SliceBot.new(sim)
 	bot.add({"at": HALL_AT, "build": &"town_hall", "near": bot.town() + Vector2i(2, 2)})
-	bot.add({"at": STABLE_AT, "build": &"stable", "near": bot.town() + Vector2i(-2, 4)})
+	bot.add({"at": STABLE_AT, "build": &"trading_post", "near": bot.town() + Vector2i(-2, 4)})
 	bots[home] = bot
 	bot_seconds[home] = 0
 
@@ -100,7 +100,8 @@ func _world(second: int) -> void:
 			log.append(String(error))
 
 
-## Once the first new province is settled and the stable stands: bread to it by wagon.
+## Once the first new province is settled and the trading post stands: bread to it by its
+## merchant wagon.
 func _route(second: int) -> void:
 	if route_at >= 0 or settled_at.is_empty():
 		return

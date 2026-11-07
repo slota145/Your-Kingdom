@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## M6 part 3 DoD: a trade route by wagon and by cog carries goods by its threshold, with the
-## loading visible in the viewed province (porters fill the wagon in front of the stable,
+## loading visible in the viewed province (porters fill the wagon in front of the trading post,
 ## dockers load the cog) and done at once in one nobody looks at; a wagon is unloaded by
 ## porters in B when B is viewed. The port's voyage "to my province" carries the plan there.
 ## No goods are lost on the way, and a save taken mid-run plays on.
@@ -10,8 +10,8 @@ func _registry() -> DataRegistry:
 	return SimFixture.registry()
 
 
-## 48x48 town playing Landing Bay: town hall, stockpile with bread and planks, a stable with
-## its carters, porters without a house; Willow Vale (a land neighbour) settled on Riverlands
+## 48x48 town playing Landing Bay: town hall, stockpile with bread and planks, a trading post
+## with its carter, porters without a house; Willow Vale (a land neighbour) settled on Riverlands
 ## and left alone.
 func _land_world() -> Dictionary:
 	var sim := SimFixture.make_sim(Vector2i(48, 48))
@@ -20,10 +20,9 @@ func _land_world() -> Dictionary:
 	var village := SimFixture.village(sim, 40, 60)
 	var stock: BuildingState = village["stock"]
 	stock.stock.add(&"planks", 30)
-	var stable := SimFixture.place(sim, &"stable", Vector2i(20, 10))
-	for i: int in 2:
-		var carter := SimFixture.spawn(sim, Carriers.CARTER_KIND, stable.entrance_tile())
-		assert_str(String(sim.execute(AssignWorkerCommand.new(carter.id, stable.id)))).is_empty()
+	var stable := SimFixture.place(sim, &"trading_post", Vector2i(20, 10))
+	var carter := SimFixture.spawn(sim, Carriers.CARTER_KIND, stable.entrance_tile())
+	assert_str(String(sim.execute(AssignWorkerCommand.new(carter.id, stable.id)))).is_empty()
 	for i: int in 4:
 		SimFixture.spawn(sim, JobBoard.PORTER_KIND, Vector2i(12, 6))
 	sim.province.entry_tile = Vector2i(47, 20)
@@ -65,7 +64,7 @@ func test_wagon_route_loads_visibly_and_delivers_by_threshold() -> void:
 			_bread_lines(bread_b + 10))))).is_empty()
 	assert_int(stable.lent).is_equal(1)
 	var route: TradeRoute = sim.world.routes.values()[0]
-	# The wagon stands in front of the stable, porters fill it, the carter drives off.
+	# The wagon stands in front of the trading post, porters fill it, the carter drives off.
 	sim.run_ticks(SimFixture.ticks(2))
 	assert_int(route.state).is_equal(TradeRoute.State.LOADING)
 	var wagon := sim.province.route_wagons.get(route.id) as RouteWagon
@@ -90,14 +89,14 @@ func test_wagon_route_loads_visibly_and_delivers_by_threshold() -> void:
 	# Back home it runs again while the vale is still short of bread.
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
 		return route.state == TradeRoute.State.LOADING, 400)).is_true()
-	# Above the threshold it waits: the wagon stays in the stable.
+	# Above the threshold it waits: the wagon stays at the trading post.
 	assert_str(String(sim.execute(SetTradeRouteCommand.new(route.id, _bread_lines(0))))).is_empty()
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
 		return route.state == TradeRoute.State.WAITING, 900)).is_true()
 	sim.run_ticks(SimFixture.ticks(30))
 	assert_int(route.state).is_equal(TradeRoute.State.WAITING)
 	assert_int(route.runs).is_equal(2)
-	# Removed: the wagon goes back to its stable.
+	# Removed: the wagon goes back to its trading post.
 	assert_str(String(sim.execute(RemoveTradeRouteCommand.new(route.id)))).is_empty()
 	assert_bool(sim.world.routes.is_empty()).is_true()
 	assert_int(stable.lent).is_equal(0)

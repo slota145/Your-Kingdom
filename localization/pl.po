@@ -2182,7 +2182,7 @@ msgid "ui.routes.title"
 msgstr "Szlaki handlowe"
 
 msgid "ui.routes.hint"
-msgstr "Szlak wozi towary z jednej Twojej prowincji do drugiej. Przy każdym towarze ustawiasz, ile zabrać na jeden kurs i przy jakim zapasie w prowincji docelowej trzeba dowieźć („gdy w … mniej niż”). Koga pływa między wybrzeżami, wóz ze stajni jeździ tylko do sąsiada."
+msgstr "Szlak wozi towary z jednej Twojej prowincji do drugiej. Przy każdym towarze ustawiasz, ile zabrać na jeden kurs i przy jakim zapasie w prowincji docelowej trzeba dowieźć („gdy w … mniej niż”). Koga pływa między wybrzeżami, wóz kupiecki ze składu kupieckiego jeździ tylko do sąsiada."
 
 msgid "ui.routes.none"
 msgstr "Nie masz jeszcze żadnego szlaku."
@@ -2223,8 +2223,6 @@ msgstr "(jest %d)"
 msgid "ui.routes.add_good"
 msgstr "+ dodaj towar"
 
-msgid "ui.routes.stable_wagon"
-msgstr "Wóz ze stajni (wolne: %d)"
 
 msgid "ui.routes.no_target"
 msgstr "Brak drugiej prowincji, do której da się dojechać albo dopłynąć."
@@ -2232,8 +2230,6 @@ msgstr "Brak drugiej prowincji, do której da się dojechać albo dopłynąć."
 msgid "ui.routes.no_cog"
 msgstr "Brak wolnej kogi w porcie tej prowincji."
 
-msgid "ui.routes.no_stable"
-msgstr "Brak stajni z wolnym wozem w tej prowincji."
 
 msgid "ui.routes.state.waiting"
 msgstr "Czeka w domu, aż zabraknie towaru."
@@ -2348,7 +2344,7 @@ msgid "building.vineyard.name"
 msgstr "Winnica"
 
 msgid "building.vineyard.desc"
-msgstr "Winogrodnik sadzi krzewy na kaflach winnych w pobliżu i zbiera winogrona. Stawia się ją tylko przy kaflach winnych (prowincje z winoroślą)."
+msgstr "Winogrodnik sadzi krzewy winorośli na polach wokół i zbiera winogrona. Stawia się ją w prowincji z winoroślą; na ziemi winnej krzewy rosną szybciej."
 
 msgid "building.wine_press.name"
 msgstr "Tłocznia"
@@ -2384,16 +2380,12 @@ msgid "terrain.vine_soil.name"
 msgstr "Ziemia winna"
 
 msgid "terrain.vine_soil.desc"
-msgstr "Ciepła, kamienista ziemia na zboczach. Tylko tu rośnie winorośl."
+msgstr "Ciepła, kamienista ziemia na zboczach. Winorośl rośnie tu o połowę szybciej."
 
 msgid "ui.activity.press"
 msgstr "tłoczy winogrona"
 
-msgid "ui.command_error.no_vine_soil_nearby"
-msgstr "Winnica musi stać przy kaflach winnych."
 
-msgid "ui.command_error.needs_vine_soil"
-msgstr "Krzewy winorośli rosną tylko na kaflach winnych."
 
 msgid "good.grapes.count"
 msgid_plural "good.grapes.count_plural"
@@ -2406,3 +2398,18 @@ msgid_plural "good.wine.count_plural"
 msgstr[0] "%s beczka wina"
 msgstr[1] "%s beczki wina"
 msgstr[2] "%s beczek wina"
+
+msgid "ui.command_error.needs_vines"
+msgstr "Winnicę stawia się tylko w prowincji z winoroślą."
+
+msgid "ui.routes.merchant_wagon"
+msgstr "Wóz kupiecki"
+
+msgid "ui.routes.no_trading_post"
+msgstr "Brak składu kupieckiego z wolnym wozem w tej prowincji."
+
+msgid "building.trading_post.name"
+msgstr "Skład kupiecki"
+
+msgid "building.trading_post.desc"
+msgstr "Trzyma duży kryty wóz kupiecki na 40 sztuk. Wóz jeździ tylko szlakami handlowymi do sąsiednich prowincji (trochę wolniej niż zwykły wóz). Jeden skład to jeden wóz."

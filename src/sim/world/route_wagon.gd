@@ -3,7 +3,7 @@ extends RefCounted
 ## The wagon of a trade route in the viewed province (ROADMAP M6 part 3, GDD §4.5): a store
 ## addressed by the route's id, standing in front of a building, and its carter.
 ##
-## Loading (province A): the wagon stands in front of the stable that lent it; porters bring
+## Loading (province A): the wagon stands in front of its trading post; porters bring
 ## the goods of the run from the storages; when all is aboard (or nothing more can come) the
 ## carter drives to the map edge and is gone.
 ## Unloading (province B): the carter drives in from the map edge to the storage nearest to it;
@@ -36,14 +36,14 @@ var since: int = 0
 var seen: int = 0
 
 
-## A wagon to load in front of [param stable] with [param run] (good -> units).
+## A wagon to load in front of trading post [param depot] with [param run] (good -> units).
 static func to_load(province: ProvinceSim, route_id: int, run: Dictionary[StringName, int],
-		stable: BuildingState) -> RouteWagon:
+		depot: BuildingState) -> RouteWagon:
 	var wagon := RouteWagon.new()
 	wagon.id = route_id
 	wagon.store = Stockpile.new(SLOTS, province.data)
 	wagon.plan = run.duplicate()
-	wagon.stand = province.door_tile(stable) if stable != null else province.entry_tile
+	wagon.stand = province.door_tile(depot) if depot != null else province.entry_tile
 	wagon.state = State.WORKING
 	wagon.since = province.tick
 	wagon._ensure_carter(province)

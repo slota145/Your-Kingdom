@@ -21,6 +21,7 @@ const C_WOOD := Color(0.55, 0.36, 0.2)
 const C_WOOD_END := Color(0.86, 0.7, 0.46)
 const C_PLANK := Color(0.82, 0.64, 0.4)
 const C_SACK := Color(0.86, 0.8, 0.64)
+const C_CANVAS := Color(0.9, 0.86, 0.74)
 const C_FLOUR := Color(0.96, 0.95, 0.9)
 const C_STONE := Color(0.64, 0.63, 0.6)
 const C_IRON := Color(0.3, 0.3, 0.32)
@@ -93,6 +94,7 @@ func _init() -> void:
 	_merchant_cart()
 	_handcart()
 	_wagon()
+	_wagon(true)
 	_reeds()
 	print("Goods and nature written to ", OUT)
 	quit()
@@ -478,7 +480,7 @@ func _reeds() -> void:
 ## horse in front. vehicles/wagon/{empty,loaded}.png, 5 rows (S, SE, E, NE, N) of 112x80;
 ## the local origin (between wagon and horse) on the ground at (56, 52). The carter walks
 ## 0.45 tiles in front of it, at the horse's head.
-func _wagon() -> void:
+func _wagon(trade: bool = false) -> void:
 	_vehicle_origin = WAGON_CENTRE
 	for state: String in ["empty", "loaded"]:
 		var sheet := Image.create_empty(WAGON_FRAME.x, WAGON_FRAME.y * 5, false, Image.FORMAT_RGBA8)
@@ -486,14 +488,20 @@ func _wagon() -> void:
 			var img := Image.create_empty(WAGON_FRAME.x, WAGON_FRAME.y, false, Image.FORMAT_RGBA8)
 			var fwd := ROW_FORWARD[row]
 			var parts: Array = []
-			for f: float in [-0.95, -0.4]:
+			for f: float in ([-1.15, -0.4] if trade else [-0.95, -0.4]):
 				for side: float in [-0.25, 0.25]:
 					var hub := Vector3(f, side, 7.0)
 					parts.append([_cart_depth(fwd, hub), _cart_wheel.bind(img, fwd, hub, 7.0)])
 			parts.append([_cart_depth(fwd, Vector3(-0.68, 0, 0)) + 0.001, func() -> void:
-				_cart_box(img, fwd, Vector3(-1.1, -0.21, 9.0), Vector3(-0.25, 0.21, 17.0),
+				_cart_box(img, fwd, Vector3(-1.35 if trade else -1.1, -0.21, 9.0), Vector3(-0.25, 0.21, 17.0),
 						C_PLANK.darkened(0.12), C_WOOD.darkened(0.3))
-				if state == "loaded":
+				if trade:
+					# The merchant wagon: a tall canvas cover over hoops, tied down at the back.
+					_cart_box(img, fwd, Vector3(-1.32, -0.2, 17.0), Vector3(-0.3, 0.2, 31.0), C_CANVAS, C_CANVAS.lightened(0.08))
+					for hoop: float in [-1.1, -0.8, -0.5]:
+						_line(img, _cart_point(fwd, Vector3(hoop, -0.2, 17.0)), _cart_point(fwd, Vector3(hoop, -0.2, 31.0)),
+								C_CANVAS.darkened(0.2), 1)
+				elif state == "loaded":
 					_cart_box(img, fwd, Vector3(-1.02, -0.16, 17.0), Vector3(-0.72, 0.16, 24.0), C_SACK, C_SACK)
 					_cart_box(img, fwd, Vector3(-0.68, -0.15, 17.0), Vector3(-0.47, 0.13, 23.0), C_CRATE, C_CRATE)
 					_cart_box(img, fwd, Vector3(-0.44, -0.12, 17.0), Vector3(-0.3, 0.12, 21.0), C_BARREL, C_BARREL)
@@ -515,7 +523,7 @@ func _wagon() -> void:
 				(part[1] as Callable).call()
 			_outline(img)
 			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, WAGON_FRAME), Vector2i(0, row * WAGON_FRAME.y))
-		_save(sheet, "vehicles/wagon/%s.png" % state)
+		_save(sheet, "vehicles/%s/%s.png" % ["trade_wagon" if trade else "wagon", state])
 	_vehicle_origin = CART_CENTRE
 
 
