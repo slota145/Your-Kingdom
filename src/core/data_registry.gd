@@ -75,6 +75,18 @@ func get_ship(id: StringName) -> ShipDef:
 	return get_def(&"ship", id) as ShipDef
 
 
+func get_unit(id: StringName) -> UnitDef:
+	return get_def(&"unit", id) as UnitDef
+
+
+## Kinds of soldiers in panel order (M7).
+func units() -> Array[UnitDef]:
+	var result: Array[UnitDef] = []
+	result.assign(all_of(&"unit"))
+	result.sort_custom(func(a: UnitDef, b: UnitDef) -> bool: return a.order < b.order)
+	return result
+
+
 func get_map(id: StringName) -> MapDef:
 	return get_def(&"map", id) as MapDef
 
@@ -112,6 +124,17 @@ func goods() -> Array[GoodDef]:
 func buildings() -> Array[BuildingDef]:
 	var result: Array[BuildingDef] = []
 	result.assign(all_of(&"building"))
+	return result
+
+
+## Good categories only special storages take (weapons: only an armoury, M7): every
+## category some building's storage_accepts lists.
+func special_storage_categories() -> Array[StringName]:
+	var result: Array[StringName] = []
+	for building: BuildingDef in buildings():
+		for category: StringName in building.storage_accepts:
+			if not result.has(category):
+				result.append(category)
 	return result
 
 

@@ -63,6 +63,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"choose_stall": ChooseStallStep.new(), &"merchant": MerchantStep.new(),
 			&"park": ParkStep.new(), &"sail": SailStep.new(), &"ship_build": ShipBuildStep.new(),
 			&"land": LandStep.new(), &"travel": TravelStep.new(), &"crane": CraneStep.new(),
+			&"enlist": EnlistStep.new(), &"soldier": SoldierStep.new(),
 		}
 	return _executors[kind]
 
@@ -151,6 +152,10 @@ static func restore_steps(province: ProvinceSim, task: Task) -> bool:
 			task.steps = land_steps()
 		Task.KIND_TRAVEL:
 			task.steps = travel_steps()
+		Task.KIND_ENLIST:
+			task.steps = Barracks.enlist_steps()
+		Task.KIND_SOLDIER:
+			task.steps = Barracks.soldier_steps()
 		Task.KIND_RECIPE:
 			var recipe := province.data.get_recipe(task.recipe_id)
 			if recipe == null:
@@ -256,6 +261,9 @@ static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 		back.steps = sail_home_steps()
 		agent.task = back
 		return
+	if Barracks.is_military(province, agent):
+		Barracks.start_next(province, agent)   # M7: soldiers and recruits
+		return
 	if agent.is_carrying():
 		var stash := Task.new()
 		stash.kind = Task.KIND_STASH
@@ -314,10 +322,12 @@ static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 		agent.cooldown = RETRY_TICKS
 		return
 	if workplace != null and workplace.def.recipe != null and not workplace.def.recipe.steps.is_empty():
+		# A blacksmith makes spears or swords, as the player set it or taking turns (M7).
+		var recipe := workplace.take_recipe()
 		var task := Task.new()
 		task.kind = Task.KIND_RECIPE
-		task.recipe_id = workplace.def.recipe.id
-		task.steps = workplace.def.recipe.steps
+		task.recipe_id = recipe.id
+		task.steps = recipe.steps
 		agent.task = task
 
 

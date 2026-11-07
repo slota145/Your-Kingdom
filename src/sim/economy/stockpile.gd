@@ -19,6 +19,10 @@ var stack_limit: int = 0
 var stack_divisor: int = 1
 ## Each good keeps to one slot (market stalls, M4b-2): no second stack of a good it holds.
 var one_slot_per_good: bool = false
+## Good categories a storage takes (M7): an armoury only weapons; a common storage
+## everything but the categories in [member never]. Set from the building's data, not saved.
+var only: Array[StringName] = []
+var never: Array[StringName] = []
 
 var _data: DataRegistry
 var _reservations: Dictionary[int, Reservation] = {}
@@ -100,8 +104,21 @@ func available(good: StringName) -> int:
 	return sum
 
 
+## Whether the categories of this storage allow [param good] at all (M7).
+func takes(good: StringName) -> bool:
+	if only.is_empty() and never.is_empty():
+		return true
+	var def := _data.get_good(good)
+	var category := def.category if def != null else &""
+	if not only.is_empty():
+		return only.has(category)
+	return not never.has(category)
+
+
 ## Units of space that can still be reserved for drop-off.
 func free_space(good: StringName) -> int:
+	if not takes(good):
+		return 0
 	var stack := stack_size(good)
 	var sum := 0
 	var held := false
@@ -223,6 +240,8 @@ func remove(good: StringName, amount: int) -> int:
 
 ## Stores goods directly, without carriers (map setup, tests). Returns what did not fit.
 func add(good: StringName, amount: int) -> int:
+	if not takes(good):
+		return amount
 	var left := amount
 	var stack := stack_size(good)
 	for pass_empty: bool in [false, true]:
@@ -309,6 +328,8 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> Stockpile:
 
 
 func _slot_for_incoming(good: StringName, amount: int) -> int:
+	if not takes(good):
+		return -1
 	var stack := stack_size(good)
 	for s: int in slot_count():
 		if slot_good[s] == good and slot_amount[s] + slot_in[s] + amount <= stack:

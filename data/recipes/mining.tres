@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/gather_step_def.gd" id="8_gather"]
+[ext_resource type="Script" path="res://src/defs/steps/deliver_step_def.gd" id="6_deliver"]
+
+[sub_resource type="Resource" id="goto_0"]
+script = ExtResource("3_goto")
+target = &"resource"
+resource = &"ore_vein"
+
+[sub_resource type="Resource" id="work_1"]
+script = ExtResource("4_work")
+activity = &"pick"
+duration = 30.0
+
+[sub_resource type="Resource" id="gather_2"]
+script = ExtResource("8_gather")
+
+[sub_resource type="Resource" id="work_3"]
+script = ExtResource("4_work")
+activity = &"shape"
+duration = 3.0
+
+[sub_resource type="Resource" id="deliver_4"]
+script = ExtResource("6_deliver")
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("goto_0"), SubResource("work_1"), SubResource("gather_2"), SubResource("work_3"), SubResource("deliver_4")])
+id = &"mining"

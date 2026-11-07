@@ -2565,3 +2565,386 @@ msgstr "przy nabrzeżu nie ma statku"
 
 msgid "ui.reason.no_cargo"
 msgstr "nie ma nic do przeniesienia"
+
+# --- M7 part 1: metals, weapons, barracks ---
+
+msgid "good.charcoal.name"
+msgstr "Węgiel drzewny"
+
+msgid "good.charcoal.desc"
+msgstr "Czarne, lekkie bryłki z wypalonego drewna. Daje żar, jakiego potrzebuje huta."
+
+msgid "good.iron_ore.name"
+msgstr "Ruda żelaza"
+
+msgid "good.iron_ore.desc"
+msgstr "Rdzawe bryły skały wykute z żyły rudy. W hucie stają się żelazem."
+
+msgid "good.iron.name"
+msgstr "Żelazo"
+
+msgid "good.iron.desc"
+msgstr "Sztaby żelaza z huty. Z nich kowal kuje broń, a płatnerz kolczugi."
+
+msgid "good.spear.name"
+msgstr "Włócznia"
+
+msgid "good.spear.desc"
+msgstr "Długie drzewce z żelaznym grotem. Broń włócznika, groźna dla jeźdźców."
+
+msgid "good.bow.name"
+msgstr "Łuk"
+
+msgid "good.bow.desc"
+msgstr "Łuk z giętkiego drewna, z cięciwą. Broń łucznika."
+
+msgid "good.sword.name"
+msgstr "Miecz"
+
+msgid "good.sword.desc"
+msgstr "Prosty miecz z żelaza. Broń miecznika i jeźdźca."
+
+msgid "good.chainmail.name"
+msgstr "Kolczuga"
+
+msgid "good.chainmail.desc"
+msgstr "Koszula z tysięcy żelaznych kółek. Chroni miecznika i jeźdźca."
+
+msgid "good.horse.name"
+msgstr "Koń"
+
+msgid "good.horse.desc"
+msgstr "Koń wierzchowy ze stadniny. Bez niego nie ma jeźdźca."
+
+msgid "building.charcoal_burner.name"
+msgstr "Węglarz"
+
+msgid "building.charcoal_burner.desc"
+msgstr "Węglarz układa drewno w mielerz, przykrywa go darnią i pali powoli przez wiele godzin. Z 2 drewien robi worek węgla."
+
+msgid "building.mine.name"
+msgstr "Kopalnia rudy"
+
+msgid "building.mine.desc"
+msgstr "Górnik wykuwa rudę żelaza z pobliskiej żyły i nosi ją do magazynu. Stawiaj przy żyle rudy w skałach."
+
+msgid "building.smelter.name"
+msgstr "Huta"
+
+msgid "building.smelter.desc"
+msgstr "Hutnik sypie rudę i węgiel do pieca, dmie miechami i wytapia sztabę żelaza."
+
+msgid "building.blacksmith.name"
+msgstr "Kowal"
+
+msgid "building.blacksmith.desc"
+msgstr "Kowal rozgrzewa żelazo w palenisku i kuje na kowadle: z żelaza i deski 2 włócznie albo z żelaza miecz. W panelu wybierasz, co ma kuć."
+
+msgid "building.armourer.name"
+msgstr "Płatnerz"
+
+msgid "building.armourer.desc"
+msgstr "Płatnerz splata kółko po kółku kolczugę z 2 sztab żelaza."
+
+msgid "building.bowyer.name"
+msgstr "Łuczarz"
+
+msgid "building.bowyer.desc"
+msgstr "Łuczarz struga łęczysko z 2 desek, wygina je i nakłada cięciwę."
+
+msgid "building.stud_farm.name"
+msgstr "Stadnina"
+
+msgid "building.stud_farm.desc"
+msgstr "Stajenny karmi i czesze konie, a stado samo się powiększa. Na start para koni. Tylko w prowincji z pastwiskami koni."
+
+msgid "building.armoury.name"
+msgstr "Zbrojownia"
+
+msgid "building.armoury.desc"
+msgstr "Tu trafia cała broń i zbroje. Rekruci przychodzą tu po swój ekwipunek."
+
+msgid "building.barracks.name"
+msgstr "Koszary"
+
+msgid "building.barracks.desc"
+msgstr "Dom żołnierzy: 24 łóżka. Tu rekrutujesz wojsko. Żołnierze jedzą z magazynu, dostają żołd i ćwiczą na placu przed koszarami."
+
+msgid "recipe.charcoal_making.name"
+msgstr "Wypalanie węgla"
+
+msgid "recipe.charcoal_making.desc"
+msgstr "2 drewna → 1 węgiel drzewny (ok. 40 s)."
+
+msgid "recipe.mining.name"
+msgstr "Wydobycie rudy"
+
+msgid "recipe.mining.desc"
+msgstr "Górnik wykuwa 1 rudę z żyły (ok. 45 s z drogą)."
+
+msgid "recipe.smelting.name"
+msgstr "Wytop żelaza"
+
+msgid "recipe.smelting.desc"
+msgstr "1 ruda + 1 węgiel → 1 żelazo (ok. 40 s)."
+
+msgid "recipe.forging_spears.name"
+msgstr "Kucie włóczni"
+
+msgid "recipe.forging_spears.desc"
+msgstr "1 żelazo + 1 deska → 2 włócznie (ok. 45 s)."
+
+msgid "recipe.forging_swords.name"
+msgstr "Kucie mieczy"
+
+msgid "recipe.forging_swords.desc"
+msgstr "1 żelazo → 1 miecz (ok. 45 s)."
+
+msgid "recipe.armouring.name"
+msgstr "Plecenie kolczug"
+
+msgid "recipe.armouring.desc"
+msgstr "2 żelaza → 1 kolczuga (ok. 60 s)."
+
+msgid "recipe.bow_making.name"
+msgstr "Robienie łuków"
+
+msgid "recipe.bow_making.desc"
+msgstr "2 deski → 1 łuk (ok. 30 s)."
+
+msgid "recipe.horse_breeding.name"
+msgstr "Hodowla koni"
+
+msgid "recipe.horse_breeding.desc"
+msgstr "Stado rośnie samo, gdy stajenny o nie dba: nowy koń co ok. 2 minuty przy parze."
+
+msgid "resource_node.ore_vein.name"
+msgstr "Żyła rudy żelaza"
+
+msgid "resource_node.ore_vein.desc"
+msgstr "Skała z rdzawymi pręgami rudy. Kopalnia obok wydobywa z niej rudę żelaza."
+
+msgid "unit.spearman.name"
+msgstr "Włócznik"
+
+msgid "unit.spearman.desc"
+msgstr "Włócznia. 10 zł. Tani i liczny, podwójnie groźny dla jeźdźców."
+
+msgid "unit.archer.name"
+msgstr "Łucznik"
+
+msgid "unit.archer.desc"
+msgstr "Łuk. 15 zł. Strzela z daleka (7 kafli), z muru jeszcze dalej."
+
+msgid "unit.swordsman.name"
+msgstr "Miecznik"
+
+msgid "unit.swordsman.desc"
+msgstr "Miecz i kolczuga. 30 zł. Silny i wytrzymały."
+
+msgid "unit.knight.name"
+msgstr "Jeździec"
+
+msgid "unit.knight.desc"
+msgstr "Koń, miecz i kolczuga. 50 zł. Najsilniejszy i dwa razy szybszy."
+
+msgid "ui.kind.charcoal_burner"
+msgstr "Węglarz"
+
+msgid "ui.kind.miner"
+msgstr "Górnik"
+
+msgid "ui.kind.smelter"
+msgstr "Hutnik"
+
+msgid "ui.kind.blacksmith"
+msgstr "Kowal"
+
+msgid "ui.kind.armourer"
+msgstr "Płatnerz"
+
+msgid "ui.kind.bowyer"
+msgstr "Łuczarz"
+
+msgid "ui.kind.groom"
+msgstr "Stajenny"
+
+msgid "ui.kind.recruit"
+msgstr "Rekrut"
+
+msgid "ui.kind.spearman"
+msgstr "Włócznik"
+
+msgid "ui.kind.archer"
+msgstr "Łucznik"
+
+msgid "ui.kind.swordsman"
+msgstr "Miecznik"
+
+msgid "ui.kind.knight"
+msgstr "Jeździec"
+
+msgid "ui.activity.rake"
+msgstr "rozgarnia mielerz"
+
+msgid "ui.activity.pick"
+msgstr "kuje rudę"
+
+msgid "ui.activity.bellows"
+msgstr "dmie miechami"
+
+msgid "ui.activity.heat"
+msgstr "rozgrzewa żelazo"
+
+msgid "ui.activity.forge"
+msgstr "kuje na kowadle"
+
+msgid "ui.activity.quench"
+msgstr "hartuje w wodzie"
+
+msgid "ui.activity.rivet"
+msgstr "splata kółka"
+
+msgid "ui.activity.polish"
+msgstr "poleruje"
+
+msgid "ui.activity.carve"
+msgstr "struga łęczysko"
+
+msgid "ui.activity.bend"
+msgstr "wygina łuk"
+
+msgid "ui.activity.string"
+msgstr "nakłada cięciwę"
+
+msgid "ui.activity.groom"
+msgstr "czesze konie"
+
+msgid "ui.activity.drill"
+msgstr "ćwiczy"
+
+msgid "ui.command_error.no_ore_vein_nearby"
+msgstr "W pobliżu nie ma żyły rudy."
+
+msgid "ui.command_error.needs_horses"
+msgstr "Tylko w prowincji z pastwiskami koni."
+
+msgid "ui.command_error.barracks_has_soldiers"
+msgstr "W koszarach mieszkają żołnierze."
+
+msgid "ui.command_error.not_barracks"
+msgstr "To nie są koszary."
+
+msgid "ui.command_error.unknown_unit"
+msgstr "Nieznany rodzaj wojska."
+
+msgid "ui.command_error.not_finished"
+msgstr "Budynek nie jest jeszcze gotowy."
+
+msgid "ui.command_error.barracks_full"
+msgstr "Koszary są pełne."
+
+msgid "ui.command_error.no_gear"
+msgstr "Brak broni w zbrojowni."
+
+msgid "ui.command_error.no_free_resident"
+msgstr "Nie ma wolnego mieszkańca: wszyscy zdolni do pracy już pracują."
+
+msgid "ui.command_error.bad_choice"
+msgstr "Nie ma takiego wyboru."
+
+msgid "ui.reason.no_gear"
+msgstr "czeka na broń w zbrojowni"
+
+msgid "ui.build.tab.military"
+msgstr "Wojsko"
+
+msgid "good.charcoal.count"
+msgid_plural "good.charcoal.count_plural"
+msgstr[0] "%s worek węgla"
+msgstr[1] "%s worki węgla"
+msgstr[2] "%s worków węgla"
+
+msgid "good.iron_ore.count"
+msgid_plural "good.iron_ore.count_plural"
+msgstr[0] "%s bryła rudy"
+msgstr[1] "%s bryły rudy"
+msgstr[2] "%s brył rudy"
+
+msgid "good.iron.count"
+msgid_plural "good.iron.count_plural"
+msgstr[0] "%s sztaba żelaza"
+msgstr[1] "%s sztaby żelaza"
+msgstr[2] "%s sztab żelaza"
+
+msgid "good.spear.count"
+msgid_plural "good.spear.count_plural"
+msgstr[0] "%s włócznia"
+msgstr[1] "%s włócznie"
+msgstr[2] "%s włóczni"
+
+msgid "good.bow.count"
+msgid_plural "good.bow.count_plural"
+msgstr[0] "%s łuk"
+msgstr[1] "%s łuki"
+msgstr[2] "%s łuków"
+
+msgid "good.sword.count"
+msgid_plural "good.sword.count_plural"
+msgstr[0] "%s miecz"
+msgstr[1] "%s miecze"
+msgstr[2] "%s mieczy"
+
+msgid "good.chainmail.count"
+msgid_plural "good.chainmail.count_plural"
+msgstr[0] "%s kolczuga"
+msgstr[1] "%s kolczugi"
+msgstr[2] "%s kolczug"
+
+msgid "good.horse.count"
+msgid_plural "good.horse.count_plural"
+msgstr[0] "%s koń"
+msgstr[1] "%s konie"
+msgstr[2] "%s koni"
+
+msgid "ui.barracks.recruit"
+msgstr "Rekrutuj:"
+
+msgid "ui.barracks.beds"
+msgstr "Żołnierze: %d z %d łóżek"
+
+msgid "ui.barracks.on_the_way"
+msgstr "Rekruci w drodze: %d"
+
+msgid "ui.barracks.pantry"
+msgstr "Spiżarnia: %s"
+
+msgid "ui.barracks.wages"
+msgstr "Żołd: %d zł na minutę"
+
+msgid "ui.barracks.needs"
+msgstr "Potrzeba: %s i %d zł"
+
+msgid "ui.barracks.in_stock"
+msgstr "Gotowe do wydania: %s"
+
+msgid "ui.workshop.makes"
+msgstr "Robi:"
+
+msgid "ui.workshop.take_turns"
+msgstr "Na zmianę"
+
+msgid "ui.workshop.take_turns_hint"
+msgstr "Raz jedno, raz drugie."
+
+msgid "ui.doing.enlist_gear"
+msgstr "idzie po: %s"
+
+msgid "ui.doing.enlist_barracks"
+msgstr "idzie do: %s"
+
+msgid "ui.doing.soldier_resting"
+msgstr "odpoczywa w koszarach"
+
+msgid "ui.doing.soldier_ranks"
+msgstr "stoi w szeregu"

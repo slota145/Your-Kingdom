@@ -29,6 +29,8 @@ var cooldown: int = 0
 ## Why the last task failed and which good it was about (UI only, not saved).
 var last_fail: StringName = &""
 var last_fail_good: StringName = &""
+## A soldier's fighting state (M7); null for civilians and recruits on their way.
+var combat: CombatState = null
 ## Resource node tile claimed by this agent, NO_TILE if none.
 var claimed_node: Vector2i = NO_TILE
 
@@ -77,6 +79,8 @@ func to_dict() -> Dictionary:
 		d["task"] = task.to_dict()
 	if vehicle != &"":
 		d["vehicle"] = String(vehicle)
+	if combat != null:
+		d["combat"] = combat.to_dict()
 	return d
 
 
@@ -99,4 +103,6 @@ static func from_dict(d: Dictionary) -> Agent:
 	a.path_index = int(p[3])
 	if d.has("task"):
 		a.task = Task.from_dict(d["task"])
+	if d.has("combat"):
+		a.combat = CombatState.from_dict(d["combat"])
 	return a

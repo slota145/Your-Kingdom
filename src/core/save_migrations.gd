@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 17
+const CURRENT_VERSION := 18
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -58,6 +58,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 17:
 		result = migrate_v16_to_v17(result)
 		version = 17
+	if version < 18:
+		result = migrate_v17_to_v18(result)
+		version = 18
 	return result
 
 
@@ -245,3 +248,51 @@ static func migrate_v15_to_v16(state: Dictionary) -> Dictionary:
 ## ("grace_until"). An older game is past its start: no protection, nothing to change.
 static func migrate_v16_to_v17(state: Dictionary) -> Dictionary:
 	return state
+
+
+## v18 (M7 part 1): metals, weapons, barracks and soldiers. Buildings keep a blacksmith's
+## choice ("recipe_mode", "next_choice"), a barracks' soldiers, recruits, meals and garrison;
+## agents a soldier's "combat"; tasks the kinds "enlist" and "soldier". A v17 game has none
+## of them. Ore veins are new on every map: the rocks chosen by ProvinceSim.choose_ore_veins
+## (the same as in a new game) become veins, but not those a stonecutter is working on.
+static func migrate_v17_to_v18(state: Dictionary) -> Dictionary:
+	var vein_amount := 40
+	var vein_def := load("res://data/resource_nodes/ore_vein.tres") as ResourceNodeDef
+	if vein_def != null:
+		vein_amount = vein_def.amount
+	for entry: Variant in state.get("provinces", []):
+		var province: Dictionary = (entry as Dictionary)["state"]
+		if province.has("province"):
+			province = province["province"]   # the simplified mode keeps its detail inside
+		_lay_ore_veins(province, vein_amount)
+	return state
+
+
+static func _lay_ore_veins(province: Dictionary, vein_amount: int) -> void:
+	var res: Dictionary = province.get("resources", {})
+	var kinds: Array = res.get("kinds", [])
+	var rock := kinds.find("rock") + 1
+	if rock == 0 or kinds.has("ore_vein"):
+		return
+	var size := SimCodec.to_vec2i((province["grid"] as Dictionary)["size"])
+	var kind := Marshalls.base64_to_raw(String(res.get("kind", "")))
+	var amount := Marshalls.base64_to_raw(String(res.get("amount", "")))
+	var claimed: Dictionary[int, bool] = {}
+	var claims: Array = res.get("claims", [])
+	for i: int in range(0, claims.size() - 1, 2):
+		claimed[int(claims[i])] = true
+	var rocks: Array[Vector2i] = []
+	for i: int in kind.size():
+		if kind[i] == rock and not claimed.has(i):
+			rocks.append(Vector2i(i % size.x, i / size.x))
+	var veins := ProvinceSim.choose_ore_veins(rocks, String(province.get("rare", "")) == "iron_ore")
+	if veins.is_empty():
+		return
+	kinds.append("ore_vein")
+	res["kinds"] = kinds
+	for tile: Vector2i in veins:
+		var i := tile.y * size.x + tile.x
+		kind[i] = kinds.size()
+		amount[i] = vein_amount
+	res["kind"] = Marshalls.raw_to_base64(kind)
+	res["amount"] = Marshalls.raw_to_base64(amount)

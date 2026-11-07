@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+[ext_resource type="Script" path="res://src/defs/steps/fetch_step_def.gd" id="2_fetch"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/produce_step_def.gd" id="5_produce"]
+[ext_resource type="Script" path="res://src/defs/steps/deliver_step_def.gd" id="6_deliver"]
+
+[sub_resource type="Resource" id="fetch_0"]
+script = ExtResource("2_fetch")
+good = &"planks"
+amount = 2
+
+[sub_resource type="Resource" id="goto_1"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="work_2"]
+script = ExtResource("4_work")
+activity = &"carve"
+duration = 18.0
+spot = &"bench"
+
+[sub_resource type="Resource" id="work_3"]
+script = ExtResource("4_work")
+activity = &"bend"
+duration = 8.0
+spot = &"bench"
+
+[sub_resource type="Resource" id="work_4"]
+script = ExtResource("4_work")
+activity = &"string"
+duration = 4.0
+spot = &"bench"
+
+[sub_resource type="Resource" id="produce_5"]
+script = ExtResource("5_produce")
+output = &"bow"
+amount = 1
+
+[sub_resource type="Resource" id="deliver_6"]
+script = ExtResource("6_deliver")
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("fetch_0"), SubResource("goto_1"), SubResource("work_2"), SubResource("work_3"), SubResource("work_4"), SubResource("produce_5"), SubResource("deliver_6")])
+id = &"bow_making"

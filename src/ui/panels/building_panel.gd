@@ -58,6 +58,8 @@ var _ship_queue_shown: Array[StringName] = []
 var _ship_shown_for: int = 0
 ## Port (M5 part 3): the voyage plan of its cog.
 var _voyage: VoyagePanel
+## M7: a blacksmith's choice, a barracks' soldiers and recruitment.
+var _military: MilitaryBox
 var _timer: float = 0.0
 
 
@@ -180,6 +182,9 @@ func _build_settings(box: VBoxContainer) -> void:
 	_ship_box.add_child(_ship_orders)
 	_ship_queue = VBoxContainer.new()
 	_ship_box.add_child(_ship_queue)
+	_military = MilitaryBox.new()
+	_military.command_requested.connect(func(command: Command) -> void: command_requested.emit(command))
+	box.add_child(_military)
 	_voyage = VoyagePanel.new()
 	_voyage.command_requested.connect(func(command: Command) -> void: command_requested.emit(command))
 	box.add_child(_voyage)
@@ -236,7 +241,7 @@ func _refresh() -> void:
 				lines.append(tr("ui.building.stalls_empty" if not b.def.stall_goods.is_empty() 						else "ui.building.service_needs_supply"))
 		if b.house != null:
 			lines.append_array(_house_lines(b))
-		elif b.supply != null and b.def.stall_goods.is_empty():
+		elif b.supply != null and b.def.stall_goods.is_empty() and b.def.soldier_beds == 0:
 			var inputs := b.supply.totals()
 			lines.append(tr("ui.building.inputs") % (UiKit.goods_list(inputs) if not inputs.is_empty() \
 					else tr("ui.stockpile.empty")))
@@ -298,6 +303,7 @@ func _refresh_settings(b: BuildingState) -> void:
 				or province.stored(&"planks") < int(Carriers.HANDCART_COST[&"planks"])
 	_refresh_keep(b)
 	_refresh_ships(b)
+	_military.refresh(province, b)
 	_expedition.visible = b.def.id == TOWN_HALL and b.is_complete() and sim != null
 	if _expedition.visible:
 		_expedition.show_for(sim, sim.viewed_id)

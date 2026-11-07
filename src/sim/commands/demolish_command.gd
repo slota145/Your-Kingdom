@@ -10,7 +10,13 @@ func _init(id: int) -> void:
 
 
 func validate(sim: Simulation) -> StringName:
-	return &"" if sim.province.buildings.has_building(building_id) else &"unknown_building"
+	var building := sim.province.buildings.get_building(building_id)
+	if building == null:
+		return &"unknown_building"
+	# Soldiers live in their barracks (M7): it stands while it has any.
+	if building.def.soldier_beds > 0 and Barracks.beds_taken(building) > 0:
+		return &"barracks_has_soldiers"
+	return &""
 
 
 func apply(sim: Simulation) -> void:

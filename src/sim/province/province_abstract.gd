@@ -122,6 +122,7 @@ func thaw(tick: int, events: SimEvents) -> ProvinceSim:
 		if detail.landing != null:
 			detail.landing.settlers.append(agent.id)
 	Population.staff_at_workplaces(detail)
+	Barracks.thaw(detail)
 	return detail
 
 
@@ -139,6 +140,7 @@ func step(tick: int) -> void:
 	detail._regrow_nodes()
 	detail._breed_herds()
 	Population.update_abstract(detail, _doors)
+	Barracks.update_abstract(detail)
 	_trade()
 	detail.events.drain()
 
@@ -158,6 +160,11 @@ func _take_off(agent: Agent, settler: bool) -> void:
 		var ship := Ships.ship_with_crew(p, agent)
 		if ship != null and amount > 0:
 			amount = ship.hold.add(good, amount)
+	if Barracks.is_military(p, agent) and Barracks.take_off(p, agent):
+		# A soldier (or a recruit, armed at once) is kept by kind in his barracks (M7).
+		amount = 0
+		p.remove_agent(agent)
+		return
 	if agent.home_id != 0 and agent.workplace_id == 0:
 		var home := p.buildings.get_building(agent.home_id)
 		if home != null and home.house != null and task != null and task.kind == Task.KIND_MOVE_IN:

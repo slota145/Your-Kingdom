@@ -26,6 +26,12 @@ const KIND_LAND := &"land"
 ## the expedition).
 const KIND_TRAVEL := &"travel"
 
+## A recruit fetching his gear and walking to the barracks (M7, bb "unit", "picks": source
+## and reservation id pairs, one per gear good in sorted order, "pick": goods taken so far).
+const KIND_ENLIST := &"enlist"
+## A soldier at his barracks: drilling on the parade ground or resting inside (M7).
+const KIND_SOLDIER := &"soldier"
+
 var kind: StringName
 ## Recipe id for KIND_RECIPE.
 var recipe_id: StringName = &""

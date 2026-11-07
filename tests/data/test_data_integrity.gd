@@ -229,3 +229,16 @@ func test_every_building_is_in_the_build_menu() -> void:
 	for building: BuildingDef in _registry.buildings():
 		assert_bool(listed.has(building.id)).override_failure_message(
 				"%s is in no build menu tab" % building.id).is_true()
+
+
+## Every resource node drawn on the map has its states in the art (an ore vein, M7).
+func test_every_resource_node_on_land_has_art() -> void:
+	var registry := SimFixture.registry()
+	for def: GameDef in registry.all_of(&"resource_node"):
+		if def.id in [&"fish_shoal", &"sapling"]:
+			continue   # drawn by their own layers
+		for state: String in ["grown", "felled", "stump"]:
+			for base: String in ["res://assets", "res://assets/_placeholder"]:
+				var path := "%s/nature/%s/%s.png" % [base, def.id, state]
+				assert_bool(FileAccess.file_exists(path) or ResourceLoader.exists(path)) \
+						.override_failure_message("missing art " + path).is_true()
