@@ -17,6 +17,12 @@ const BIG_FRAMES := {&"foreign_cog": [Vector2i(220, 220), Vector2(110, 168)],
 const SLIP_LIFT := 6.0
 ## How far (tiles) a cog on the slipway lies past the slipway centre, towards the water.
 const COG_ON_SLIP := 0.9
+## The launch (review fix 2026-11-07): the shipwrights spend the launch stage knocking out the
+## blocks; the hull slides down the slipway and floats out to the berth in the last this many
+## seconds of the stage, speeding up on the slipway and slowing down on the water.
+const LAUNCH_SLIDE := 8.0
+## A cog this close (tiles) to a shipyard's berth sorts in front of the shipyard.
+const LAUNCH_REACH := 1.2
 ## Gangway plank between a port's quay and a moored ship (M5 part 2).
 const PLANK := Color(0.55, 0.4, 0.25)
 const PLANK_EDGE := Color(0.3, 0.21, 0.13)
@@ -108,8 +114,23 @@ func _show_big(sprite: Sprite2D, ship: ShipUnit, alpha: float, time: float) -> v
 	sprite.hframes = frames
 	sprite.vframes = IsoMath.DIR_COUNT
 	sprite.frame = ship.facing * frames + int(time * FPS * 0.5 + ship.id * 0.37) % frames
-	sprite.position = IsoMath.grid_to_screen(ship.prev_pos.lerp(ship.pos, alpha) + hull_shift(province, ship))
-	sprite.offset = -pivot
+	var screen := IsoMath.grid_to_screen(ship.prev_pos.lerp(ship.pos, alpha) + hull_shift(province, ship))
+	# Just launched, by the shipyard: sorted in front of it like the hull on the slipway was,
+	# so the end of the slipway does not cut into the stern (review fix 2026-11-07).
+	var sort_y := maxf(screen.y, _slipway_front(ship.pos))
+	sprite.position = Vector2(screen.x, sort_y)
+	sprite.offset = -pivot - Vector2(0, sort_y - screen.y)
+
+
+## Sort y of the front of a shipyard whose berth lies within LAUNCH_REACH tiles of
+## [param at] (one past its front corner, as the hull on its slipway), -INF if none.
+func _slipway_front(at: Vector2) -> float:
+	for building: BuildingState in province.buildings.all():
+		if building.def.ship_kinds.is_empty() or not building.def.has_berth():
+			continue
+		if IsoMath.tile_center(building.berth_tile()).distance_to(at) <= LAUNCH_REACH:
+			return IsoMath.grid_to_screen(Vector2(building.origin + building.def.footprint)).y + 1.0
+	return -INF
 
 
 ## A plank from the quay up to the gunwale of every ship moored at a port.
@@ -194,14 +215,19 @@ func _update_builds() -> void:
 			continue
 		# A cog lies along the slipway, bow to the water, sliding down at the launch.
 		sprite.frame = maxi(dir, 0)
-		var slide := 0.0
-		if build.stage >= 3 and build.stage_started:
-			slide = 1.0 - float(build.work_left) / maxf(build.stage_ticks, 1.0)
+		var slide := launch_slide(build)
+		if slide > 0.0:
+			# Off its blocks: the hull as it will float (ShipLayer._show_big draws it the same
+			# way at the berth, so nothing jumps when the ship takes over).
+			sprite.texture = _texture("ships/%s/idle.png" % build.ship)
+			var frames := maxi(sprite.texture.get_width() / (BIG_FRAMES[build.ship][0] as Vector2i).x, 1)
+			sprite.hframes = frames
+			sprite.frame = maxi(dir, 0) * frames
 		var berth := IsoMath.tile_center(shipyard.berth_tile())
 		# A cog is longer than the slipway: it lies with its stern at the shore end of the
 		# slipway and its bow over the water, so the workshop never covers the stern.
 		var start := centre + Vector2(towards) * COG_ON_SLIP
-		var at := start.lerp(berth, slide * slide)
+		var at := start.lerp(berth, slide)
 		var pivot: Vector2 = BIG_FRAMES[build.ship][1]
 		var lift := SLIP_LIFT * (1.0 - slide)
 		# Sorted just in front of the whole shipyard (its front corner, where the building
@@ -212,6 +238,16 @@ func _update_builds() -> void:
 		var screen := IsoMath.grid_to_screen(at)
 		sprite.position = Vector2(screen.x, sort_y)
 		sprite.offset = -pivot - Vector2(0, sort_y - screen.y + lift)
+
+
+## How far (0..1) the hull of a cog being launched has come from the slipway to the berth:
+## 0 until the last LAUNCH_SLIDE seconds of the launch stage, then eased in and out.
+static func launch_slide(build: ShipBuild) -> float:
+	if build.stage < 3 or not build.stage_started:
+		return 0.0
+	var slide_ticks := minf(SimClock.seconds_to_ticks(LAUNCH_SLIDE), maxf(build.stage_ticks, 1.0))
+	var u := clampf(1.0 - float(build.work_left) / slide_ticks, 0.0, 1.0)
+	return u * u * (3.0 - 2.0 * u)
 
 
 func _sprite() -> Sprite2D:

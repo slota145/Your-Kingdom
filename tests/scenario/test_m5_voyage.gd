@@ -71,6 +71,8 @@ func test_cog_is_built_in_four_stages_and_waits_at_anchor() -> void:
 	assert_int(launched).is_not_zero()
 	var cog := sim.province.ships[launched] as ShipUnit
 	assert_object(cog.voyage).is_not_null()
+	# Review fix 2026-11-07: it lies bow down the slipway, as it slid into the water.
+	assert_int(cog.facing).is_equal(Ships.slipway_dir(shipyard))
 	# It finds the port, leaves the shipyard and waits at anchor in deep water, the berth free.
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
 		return cog.home_id == port.id and cog.tile() == cog.voyage.anchor, 120)).is_true()

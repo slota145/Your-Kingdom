@@ -56,6 +56,8 @@ var _advance: int = 0
 ## Scrolls the building panel down this far (px) before the shot (--scroll=N).
 var _scroll: int = 0
 var _cog_stage: int = -1
+## --launch=<0..1> (with --cog_stage=3): how far the launch slide has come; 1 = launched.
+var _launch: float = -1.0
 var _yards: PackedStringArray = PackedStringArray()
 
 
@@ -96,6 +98,8 @@ func _ready() -> void:
 			_advance = int(arg.trim_prefix("--advance="))
 		elif arg.begins_with("--cog_stage="):
 			_cog_stage = int(arg.trim_prefix("--cog_stage="))
+		elif arg.begins_with("--launch="):
+			_launch = float(arg.trim_prefix("--launch="))
 		elif arg.begins_with("--yards="):
 			_yards = arg.trim_prefix("--yards=").split(",")
 		elif arg.begins_with("--select="):
@@ -481,6 +485,11 @@ func _place_cogs(sim: Simulation, at: Vector2i) -> void:
 		build.stage = _cog_stage
 		build.stage_started = true
 		build.work_left = build.stage_ticks / 2 if _cog_stage == 3 else build.stage_ticks
+		if _cog_stage == 3 and _launch >= 0.0:
+			var slide_ticks := mini(SimClock.seconds_to_ticks(ShipLayer.LAUNCH_SLIDE), build.stage_ticks)
+			build.work_left = maxi(roundi(slide_ticks * (1.0 - _launch)), 0)
+			if _launch >= 1.0:
+				Ships.close_build(province, build, true)
 		var wright := province.spawn_agent(&"shipwright", shipyard.entrance_tile())
 		wright.activity = &"hammer"
 		wright.facing = IsoMath.Dir.SW
