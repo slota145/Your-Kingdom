@@ -26,6 +26,10 @@ extends Node
 ## the panel down to it).
 ## --yards=<id,id,...> (review fix 2026-11-07) puts those workshops in a row from --tile, every
 ## other one mirrored, each with a full production yard (the stack on its yard tile).
+## --g1=finished (G1) puts the pioneer set drawn by PixelLab around --tile: the pioneer camp
+## as drawn and mirrored, huts in their 3 looks and turned 4 ways (2 and 3 show the back), the
+## woodcutter, quarry and fishing hut both ways with full yards; --g1=sites puts their
+## building sites in both stages.
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -61,6 +65,8 @@ var _launch: float = -1.0
 ## --vineyard (review fix 2026-11-07): a vineyard at --tile with rows of fields in every stage.
 var _vineyard: bool = false
 var _yards: PackedStringArray = PackedStringArray()
+## --g1=finished|sites (G1): which half of the pioneer set to lay out; "" = none.
+var _g1: String = ""
 
 
 func _ready() -> void:
@@ -106,6 +112,8 @@ func _ready() -> void:
 			_vineyard = true
 		elif arg.begins_with("--yards="):
 			_yards = arg.trim_prefix("--yards=").split(",")
+		elif arg.begins_with("--g1"):
+			_g1 = arg.trim_prefix("--g1=") if arg.begins_with("--g1=") else "finished"
 		elif arg.begins_with("--select="):
 			_select = StringName(arg.trim_prefix("--select="))
 	for arg: String in OS.get_cmdline_user_args():
@@ -190,6 +198,8 @@ func _arrange() -> void:
 		_place_cogs(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _vineyard:
 		_place_vineyard(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _g1 != "":
+		_place_g1(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
 		_place_yards(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _build_tool != &"":
@@ -228,6 +238,62 @@ func _place_vineyard(sim: Simulation, at: Vector2i) -> void:
 			view.terrain.refresh_tile(tile)
 	view.vines.refresh()
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(vineyard.origin + Vector2i(0, 5))
+
+
+## The pioneer set of G1 (--g1): rows of finished buildings and sites, see the header.
+func _place_g1(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	sim.province.first_building = &""
+	# [id, screen column (96 px), screen row (32 px), orientation, look, site phase (0 = finished)]
+	var plan: Array = [
+		[&"pioneer_camp", -3, -5, 0, 0, 0], [&"pioneer_camp", 1, -5, 1, 0, 0],
+		[&"hut", -5, 0, 0, 1, 0], [&"hut", -3, 0, 0, 2, 0], [&"hut", -1, 0, 0, 3, 0],
+		[&"hut", 1, 0, 1, 2, 0], [&"hut", 3, 0, 2, 1, 0], [&"hut", 5, 0, 3, 3, 0],
+		[&"woodcutter", -5, 5, 0, 0, 0], [&"quarry", -3, 5, 0, 0, 0], [&"fishing_hut", -1, 5, 0, 0, 0],
+		[&"woodcutter", 1, 5, 1, 0, 0], [&"quarry", 3, 5, 1, 0, 0], [&"fishing_hut", 5, 5, 1, 0, 0],
+	]
+	if _g1 == "sites":
+		plan = [
+			[&"pioneer_camp", -3, -4, 0, 0, 1], [&"pioneer_camp", 1, -4, 0, 0, 2],
+			[&"hut", -5, 1, 0, 0, 1], [&"hut", -3, 1, 0, 0, 2], [&"hut", -1, 1, 2, 0, 2],
+			[&"woodcutter", 1, 1, 0, 0, 1], [&"woodcutter", 3, 1, 0, 0, 2],
+			[&"quarry", -3, 6, 0, 0, 1], [&"quarry", -1, 6, 0, 0, 2],
+			[&"fishing_hut", 1, 6, 0, 0, 1], [&"fishing_hut", 3, 6, 0, 0, 2],
+		]
+	# Prototype only: the camp is unique in the game, the shot shows it 4 times.
+	sim.data.get_building(&"pioneer_camp").unique = false
+	# Prototype only: the fishing hut may stand away from water in the shot.
+	sim.data.get_building(&"fishing_hut").needs_terrain_near = &""
+	for item: Array in plan:
+		var def := sim.data.get_building(item[0])
+		# Screen column c and row r to grid: x - y = 3c (96 px), x + y = 2r (32 px).
+		var c: int = item[1]
+		var r: int = item[2]
+		var origin := at + Vector2i((3 * c + 2 * r) / 2, (2 * r - 3 * c) / 2)
+		var phase: int = item[5]
+		var b: BuildingState = null
+		for dy: int in range(0, 3):
+			var o := origin + Vector2i(dy, dy)
+			if sim.province.placement_error(def, o, item[3]) == &"" and sim.execute(
+					PlaceBuildingCommand.new(def.id, o, phase == 0, item[3], item[4])) == &"":
+				for placed: BuildingState in sim.province.buildings.all():
+					if placed.origin == o and placed.def == def:
+						b = placed
+				break
+		if b == null:
+			print("g1: could not place ", item)
+			continue
+		if phase > 0:
+			var site := sim.province.sites.get(b.site_id) as ConstructionSite
+			if site != null:
+				site.phase = mini(phase, site.phase_count())
+		elif b.def.id != &"hut" and b.def.id != &"pioneer_camp":
+			b.ensure_yard(sim.data)
+			if b.yard != null:
+				for good: StringName in BuildingState.yard_goods(def, sim.data):
+					b.yard.add(good, 999)
+	var view: ProvinceView = _game.get("view")
+	view.piles.update_yards(sim.province.buildings)
 
 
 ## Workshops in a row with full yards (--yards).
