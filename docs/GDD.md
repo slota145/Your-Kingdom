@@ -470,6 +470,7 @@ Szczegóły i kryteria ukończenia: [ROADMAP.md](ROADMAP.md), etap M3. W skróci
 - W 20–30 minut da się dojść do 6 domów poziomu 2. Łańcuch chleba widać w trybie „śledź” od pola do kosza. Opis postaci zawsze zgadza się z tym, co robi. Teksty w PL i EN bez uwag.
 - **M4a: 4/5.** Mieszczanie, ryby, piwo i logistyka działają. Brakuje „autentyczności”, bo grafiki to wciąż placeholdery. To nie jest problem rozgrywki, tylko grafiki: wzmacnia sens etapu M9 (produkcja grafik, ROADMAP).
 - **M4b-1: 4/5, wygląd kamienic 2/5.** Patrycjusze osiągalne, tawerna działa. Wnioski: miasto ma wyglądać jak zwarte pierzeje z narożnikami, domy przodem do drogi (etap M4b-1.5), a gospodarka potrzebuje ujścia nadwyżek i podglądu zapasów oraz produkcji (M4b-2).
+- **M4b-2: 5/5 (2026-11-07).** Gęsty las, świnie, kupiec i okno „Zapasy” działają i są czytelne. Brak drewna nie przeszkadza. Do poprawki: stos przy budynku leży na kaflach budynku i wystaje zza jego ścian (drwal, rybak). Decyzja: budynki ze stosem dostają **podwórko**, czyli wolne pole przed wejściem, na którym rośnie stos. Targ: **więcej straganiarzy**, bo 2 nie nadążają w dużym mieście.
 
 ### 11.2 Odłożone [PÓŹNIEJ]
 

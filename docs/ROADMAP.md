@@ -395,7 +395,11 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Brak zakleszczeń przez 2 godziny przy 4×, także przy pełnych magazynach (`test_slice_dod.gd`; czekanie przy pełnym stosie nie jest zakleszczeniem). Kupiec kupił w tym czasie 58 desek i 22 skóry.
 - [x] Zapis z M4b-1.5 wczytuje się po migracji (v6 → v7) bez utraty towaru, nowa fixtura `v7_town.json` (`test_save_round_trip.gd`).
 - [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń (test kluczy; panele chlewu i targu obejrzane na zrzutach w PL).
-- [ ] **Twoja ocena gry.**
+- [x] **Twoja ocena gry:** 5/5 (2026-11-07, ankieta na laptopie). Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Podwórko przy budynkach ze stosem:** stos nie może leżeć na kaflach budynku (teraz wystaje zza ścian chaty drwala i chaty rybaka). Budynek ze stosem dostaje wolne pole przed wejściem i tam rośnie stos. Wymaga zmiany rozmiaru lub rysunku tych budynków i testu sortowania.
+- [ ] **Więcej straganiarzy na targu** (np. 3–4 zamiast 2), żeby kramy w dużym mieście nie stały puste.
 
 **Do sprawdzenia przy ocenie gry (lista na laptop):**
 - Stos przy budynku: czy przy pełnych magazynach drwal przestaje rąbać, stos widać przy chacie, a tragarze go odnoszą, gdy zrobi się miejsce. Czy panel mówi „czeka: stos przy budynku jest pełny”.
