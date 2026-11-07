@@ -346,6 +346,8 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Stocznia [M5] | 4×4 (pochylnia na 2 rzędach wody), 30 złota | statki na zamówienie (w części 1 łódź rybacka) |
 | Przystań rybacka [M5] | 3×3 (pomost na wodzie) | ryby z ławic, łódź ze stoczni |
 | Port [M5] | 4×4 (nabrzeże na 2 rzędach wody), 40 złota | plac portowy, 2 portowców, 1 miejsce cumowania; tu cumuje kupiec morski |
+| Pomost / nabrzeże [N1] | kafel na morzu, linią; 2 deski albo 3 kamienie | ludzie chodzą, statki nie; najwyżej 8 kafli od brzegu; port, stocznia i przystań mogą na nim stać |
+| Miejsce cumowania [N1] | 2×2 na nabrzeżu, 4 deski | kolejne miejsce dla statku i mały plac na 3 stosy; obsługują je portowcy portu w zasięgu 12 kafli |
 
 ---
 

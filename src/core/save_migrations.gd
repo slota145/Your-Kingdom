@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 14
+const CURRENT_VERSION := 15
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -49,6 +49,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 14:
 		result = migrate_v13_to_v14(result)
 		version = 14
+	if version < 15:
+		result = migrate_v14_to_v15(result)
+		version = 15
 	return result
 
 
@@ -204,4 +207,22 @@ static func migrate_v13_to_v14(state: Dictionary) -> Dictionary:
 				var slots: Array = (b["supply"] as Dictionary)["slots"]
 				while slots.size() < 8:
 					slots.append(["", 0])
+	return state
+
+
+## v15 (N1 part 1): quays on the sea. Each province grid keeps them under "quays" (one byte a
+## tile: 0 none, 1 timber pier, 2 stone quay); paving sites that lay quay say so ("kind"). A
+## v14 game has no quays: an empty layer. Moorings are a new building (nothing to change).
+static func migrate_v14_to_v15(state: Dictionary) -> Dictionary:
+	for entry: Variant in state.get("provinces", []):
+		var province: Dictionary = (entry as Dictionary)["state"]
+		if province.has("province"):
+			province = province["province"]   # the simplified mode keeps its detail inside
+		var grid: Dictionary = province["grid"]
+		if grid.has("quays"):
+			continue
+		var size := SimCodec.to_vec2i(grid["size"])
+		var empty := PackedByteArray()
+		empty.resize(size.x * size.y)
+		grid["quays"] = Marshalls.raw_to_base64(empty)
 	return state

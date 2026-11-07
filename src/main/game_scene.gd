@@ -386,6 +386,14 @@ func _update_preview() -> void:
 		&"paving":
 			for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
 				tiles[t] = "ok" if sim.province.paving_error(t) == &"" else "bad"
+		&"pier", &"quay":
+			# The whole line is checked together: reach from the shore, way to the open sea (N1).
+			var line: Array[Vector2i] = _drag_tiles.duplicate() if _dragging else [_hover] as Array[Vector2i]
+			var plan := sim.province.quay_plan(line)
+			for t: Vector2i in line:
+				tiles[t] = "bad"
+			for t: Vector2i in plan["tiles"]:
+				tiles[t] = "ok"
 		&"field":
 			var farm := sim.province.buildings.get_building(int(_tool["farm"]))
 			if farm != null:
@@ -448,6 +456,10 @@ func _demolish_target(tile: Vector2i) -> Command:
 	if sim.province.grid.has_road(tile):
 		var road: Array[Vector2i] = [tile]
 		return RemoveRoadCommand.new(road)
+	# A quay tile, laid or only ordered (N1).
+	if sim.province.grid.has_quay(tile) or (not sim.province.paving.is_empty() \
+			and sim.province.paving_site_at(tile) != 0 and not sim.province.grid.has_road(tile)):
+		return RemoveQuayCommand.new(tile)
 	return null
 
 
@@ -528,7 +540,7 @@ func _on_left_press() -> void:
 			var command := _demolish_target(_hover)
 			if command != null:
 				_execute(command)
-		&"road", &"paving", &"field", &"plant":
+		&"road", &"paving", &"pier", &"quay", &"field", &"plant":
 			_dragging = true
 			_drag_tiles = [_hover]
 			_update_preview()
@@ -553,6 +565,9 @@ func _on_left_release() -> void:
 				to_pave.append(t)
 		if not to_pave.is_empty():
 			_execute(BuildPavingCommand.new(to_pave))
+	elif kind == &"pier" or kind == &"quay":
+		var quay := TileGrid.STONE_QUAY if kind == &"quay" else TileGrid.PIER
+		_execute(BuildQuayCommand.new(_drag_tiles.duplicate(), quay))
 	elif kind == &"plant":
 		var marked: Array[Vector2i] = _drag_tiles.duplicate()
 		_execute(SetPlantAreaCommand.new(int(_tool["building"]), marked))

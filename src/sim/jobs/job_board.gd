@@ -145,7 +145,7 @@ func update(province: ProvinceSim) -> void:
 			docker_count += 1
 	var assigned := 0
 	for request: TransportRequest in all():
-		var port := Harbour.request_port(province, request) if not province.ships.is_empty() else 0
+		var port := Harbour.request_crew(province, request) if not province.ships.is_empty() else 0
 		if port != 0:
 			# Cargo of a ship: only the dockers of the port where it is moored.
 			var crew: Array[Agent] = dockers.get(port, [] as Array[Agent])

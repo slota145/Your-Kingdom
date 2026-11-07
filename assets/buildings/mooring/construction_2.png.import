@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://or5o75i65cnv"
-path="res://.godot/imported/base_ground.png-93b2e5104f66c11de6f4832e3b65d775.ctex"
+uid="uid://cypwty0x2bddq"
+path="res://.godot/imported/construction_2.png-72e0b8268ea4e7119e453ddc57d4c28b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/buildings/port/base_ground.png"
-dest_files=["res://.godot/imported/base_ground.png-93b2e5104f66c11de6f4832e3b65d775.ctex"]
+source_file="res://assets/buildings/mooring/construction_2.png"
+dest_files=["res://.godot/imported/construction_2.png-72e0b8268ea4e7119e453ddc57d4c28b.ctex"]
 
 [params]
 

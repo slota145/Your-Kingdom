@@ -708,6 +708,16 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu), przed M7 i przed oceną gry M4b-2, M4b-3, M5, M6 i UI-1 (poprawki z ocen mają pierwszeństwo).** Pomysł gracza z IDEAS („Nabrzeża budowane w głąb morza”), wersja średnia: 2 części, ocena po każdej.
 
+**Część 1, stan (2026-11-07): gotowa, czeka na ocenę właściciela.** Zrobione:
+- **Nabrzeża w symulacji:** warstwa nabrzeży w siatce (pomost i kamień), chodzenie po nich (pomost jak droga ubita, nabrzeże jak bruk), statki i łodzie nie przepływają; budowa jak bruk: tragarze niosą deski albo kamień, budowniczy stoi obok i układa kafel po kaflu od brzegu (6 s na kafel); zamówione kafle są od razu zamknięte dla statków. Zasady: tylko morze, najwyżej 8 kafli od brzegu, nie na torze wodnym ani miejscu cumowania, a cała linia jest odrzucana, gdy odcięłaby od morza miejsce cumowania, ławicę albo statek. Rozbiórka kafla, jeśli reszta nabrzeża dalej sięga brzegu.
+- **Budynki na nabrzeżu:** port, stocznia, przystań stoją na wodzie albo na nabrzeżu (także częścią lądową); inne budynki nie.
+- **Miejsce cumowania** (zmiana: 2×2 zamiast 1×2, bo budynki mają kwadratowy obrys): 4 deski, tylko na nabrzeżu, przód do wody, mały plac na 3 stosy; obsługują je portowcy najbliższego portu w zasięgu 12 kafli (bez portu nie da się postawić). Kupiec morski, koga gracza i szlaki traktują je jak drugi port.
+- **Jedna bryła portu:** `QuayLayer` rysuje nabrzeża gracza i pas nad wodą portu, przystani i stoczni (obok pochylni) tym samym kodem; grafiki tych budynków nie mają już pomostów, także w starych zapisach.
+- **Interfejs:** przyciski „Pomost” i „Nabrzeże” w pasku budowy (przeciąganie jak droga, podgląd całej linii na zielono albo czerwono), miejsce cumowania w zakładce „Morze i statki”, rozbiórka kafla nabrzeża.
+- **Zapis v15** z migracją i fixturą `v15_quays.json` (`"$GODOT" --headless --path . -s res://tools/build_quay_fixture.gd`). Testy: `tests/scenario/test_n1_quays.gd` (budowa, koszt, zasięg, odcięcie morza, budynki na nabrzeżu, kupiec przy miejscu cumowania obsłużony przez portowców, rozbiórka, zapis, fixtura v15, migracja), fixtura w `test_m6_modes.gd`.
+- Zrzut: `game_shot.tscn -- --map=coast --tile=76,84 --zoom=2 --port --quays`.
+- Uproszczenia: w trybie uproszczonym (prowincja nieoglądana) budowa nabrzeży czeka jak bruk; pas budynku nad wodą to zawsze pomost (chyba że stoi na kamiennym nabrzeżu); burzenie nabrzeża nie zwraca materiału.
+
 **Decyzje (ankieta 2026-11-07):**
 - **Mały etap przed M7** (zamiast po M7, wbrew rekomendacji, decyzja właściciela): port rośnie, zanim przyjdzie wojsko i oblężenia od morza.
 - **Wersja średnia:** część 1 to pomost, nabrzeże kamienne, miejsce cumowania i budynki nad wodą stawiane na nabrzeżu; część 2 to dźwig przeładunkowy i magazyn portowy. Kuter z większą chatą rybacką i latarnia zostają w IDEAS; balisty i wieże portowe razem z walką okrętów.
@@ -720,7 +730,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - rzędy obok siebie zlewają się w jedno szerokie nabrzeże (model bryłowy jak mur kamienny, ARCHITECTURE §6.3, ale płaski),
 - ludzie chodzą po nabrzeżu jak po drodze; statki i łodzie nie przepływają; stawianie jest zabronione, jeśli odcięłoby od morza miejsce cumowania, pochylnię, przystań albo ławicę,
 - budowa jak droga: budowniczy i tragarze, kafel po kaflu,
-- miejsce cumowania 1×2 (2 deski) na krawędzi nabrzeża, przodem do głębokiej wody: kolejne miejsce dla statku (koga gracza, kupiec morski, koga szlaku); obsługują je portowcy portu w zasięgu 12 kafli, a towar idzie na plac portu,
+- miejsce cumowania 1×2 (2 deski; **przy realizacji 2×2 i 4 deski**, bo obrysy budynków są kwadratowe) na krawędzi nabrzeża, przodem do głębokiej wody: kolejne miejsce dla statku (koga gracza, kupiec morski, koga szlaku); obsługują je portowcy portu w zasięgu 12 kafli, a towar idzie na plac portu,
 - port, stocznia i przystań można stawiać także na nabrzeżu: ich część „wodna” może stać na wodzie albo na nabrzeżu, a wejście od lądu albo od nabrzeża (krzywy brzeg przestaje przeszkadzać),
 - część 2: dźwig przeładunkowy (2×2 na nabrzeżu przy miejscu cumowania, 12 desek, 4 kamienie, 1 dźwigowy; załadunek 3 sztuki naraz, ok. 2× szybciej niż portowcy na plecach), magazyn portowy (3×3 na nabrzeżu, 8 pól, zwykły magazyn z tragarzami, bliżej statków),
 - zapis: v15 (część 1), v16 (część 2).
@@ -738,12 +748,12 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - zmiana wyglądu budynków nad wodą na wszystkich mapach: zrzuty przed i po, a stare zapisy w testach migracji.
 
 **DoD:**
-- [ ] Pomost i nabrzeże kamienne stawia się linią na morzu; rzędy zlewają się w jedno nabrzeże; budowa idzie przez budowniczego i tragarzy.
-- [ ] Ludzie chodzą po nabrzeżu, statki nie; nie da się odciąć miejsca cumowania, pochylni, przystani ani ławicy od morza (testy).
-- [ ] Miejsce cumowania przyjmuje drugi statek, a portowcy go ładują i rozładowują.
-- [ ] Port, stocznia i przystań stoją także na nabrzeżu, a ich pas nad wodą łączy się z nabrzeżem gracza w jedną bryłę (zrzuty).
+- [x] Pomost i nabrzeże kamienne stawia się linią na morzu; rzędy zlewają się w jedno nabrzeże; budowa idzie przez budowniczego i tragarzy.
+- [x] Ludzie chodzą po nabrzeżu, statki nie; nie da się odciąć miejsca cumowania, pochylni, przystani ani ławicy od morza (testy).
+- [x] Miejsce cumowania przyjmuje drugi statek, a portowcy go ładują i rozładowują.
+- [x] Port, stocznia i przystań stoją także na nabrzeżu, a ich pas nad wodą łączy się z nabrzeżem gracza w jedną bryłę (zrzuty).
 - [ ] Dźwig przeładunkowy i magazyn portowy działają (część 2).
-- [ ] Zapis v15 i v16 z migracjami i fixturami; stare zapisy wczytują się z nowym wyglądem pomostów.
+- [ ] Zapis v15 i v16 z migracjami i fixturami; stare zapisy wczytują się z nowym wyglądem pomostów. (v15 zrobione w części 1.)
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
 - [ ] **Twoja ocena gry** (po każdej części).
 

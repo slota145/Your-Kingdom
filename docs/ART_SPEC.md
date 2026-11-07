@@ -435,6 +435,12 @@ Narzędzie: `tools/generate_goods.gd`, wynik w `assets/goods/` i `assets/nature/
 - **Skład kupiecki i wóz kupiecki (2026-11-07):** skład to dwupiętrowy magazyn z muru pruskiego z dachówką i otwartą wiatą (beczki, worki, wóz); wóz kupiecki (`vehicles/trade_wagon/`, `tools/generate_goods.gd`) to dłuższy wóz konny z wysokim płóciennym dachem na obręczach, te same klatki co zwykły wóz (112×80, 5 rzędów).
 - **Uwaga:** `tools/generate_art.gd` przy okazji rysuje od nowa kamienice patrycjuszy (`assets/buildings/hut/level_3_*`), a te w repozytorium są dopracowane ręcznie. Po uruchomieniu przywróć je: `git checkout assets/buildings/hut/`.
 
+### 10.9a Nabrzeża rysowane kodem (N1, część 1, 2026-11-07)
+
+- `QuayLayer` (widok, bez plików grafik): pomost to deski w poprzek kafla, belka na krawędzi i pale w wodzie; nabrzeże kamienne to płyty w dwóch rzędach z przesuniętymi spoinami, jasna krawędź i ściana z mokrym pasem przy wodzie. Wierzch 4 px nad wodą, boki tylko od strony wody.
+- Port, przystań i stocznia (pas obok pochylni) nie mają już pomostu w grafice (`tools/generate_art.gd`): ich pas nad wodą rysuje `QuayLayer`, więc łączy się z nabrzeżem gracza. Miejsce cumowania to same rekwizyty (pachołki, latarnia, beczki, sieci) na nabrzeżu.
+- Zrzut: `game_shot.tscn -- --map=coast --tile=76,84 --zoom=2 --port --quays`.
+
 ### 10.10 Interfejs „pergamin i drewno” i menu główne (UI-1, 2026-11-07)
 
 - **Skala:** grafiki interfejsu i menu mają piksel rysunku = 2×2 piksele ekranu bazowego 1280×720 (jak obraz menu 640×360 w skali 2). Nic nie jest rysowane w skali 1 ani skalowane nierówno.

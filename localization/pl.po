@@ -2444,3 +2444,62 @@ msgstr "Pauza (spacja)"
 
 msgid "ui.hud.speed_tip"
 msgstr "Tempo gry: %d×"
+
+# N1: quays and moorings
+
+msgid "ui.build.pier"
+msgstr "Pomost"
+
+msgid "ui.build.pier_tip"
+msgstr "Drewniany pomost na morzu: 2 deski na kafel. Przeciągnij myszą od brzegu w głąb morza (najwyżej 8 kafli). Rzędy obok siebie łączą się w jedno szerokie nabrzeże. Ludzie po nim chodzą, statki nie przepływają. Na pomoście stawiasz port, stocznię, przystań i miejsce cumowania."
+
+msgid "ui.build.stone_quay"
+msgstr "Nabrzeże"
+
+msgid "ui.build.stone_quay_tip"
+msgstr "Kamienne nabrzeże: 3 kamienie na kafel. Działa jak pomost, ale ludzie chodzą po nim szybciej, jak po bruku."
+
+msgid "ui.doing.quay"
+msgstr "na nabrzeże"
+
+msgid "building.mooring.name"
+msgstr "Miejsce cumowania"
+
+msgid "building.mooring.desc"
+msgstr "Pachołki i liny na krawędzi nabrzeża: przybija tu jeszcze jeden statek. Nie ma własnych ludzi: towar noszą portowcy z portu w odległości do 12 kafli. Stawiaj na pomoście albo nabrzeżu, przodem do wody."
+
+msgid "ui.command_error.not_on_quay"
+msgstr "Na nabrzeżu stoją tylko budynki portowe."
+
+msgid "ui.command_error.needs_quay"
+msgstr "Ten budynek stoi tylko na pomoście albo nabrzeżu."
+
+msgid "ui.command_error.no_port_nearby"
+msgstr "W pobliżu (do 12 kafli) nie ma portu, którego portowcy obsłużą statek."
+
+msgid "ui.command_error.already_quay"
+msgstr "Tu już jest nabrzeże."
+
+msgid "ui.command_error.keeps_fairway"
+msgstr "Tędy statki dopływają do głębokiej wody."
+
+msgid "ui.command_error.keeps_berth"
+msgstr "Tu cumują statki."
+
+msgid "ui.command_error.too_far_from_shore"
+msgstr "Za daleko od brzegu (najwyżej 8 kafli)."
+
+msgid "ui.command_error.not_at_shore"
+msgstr "Nabrzeże musi zaczynać się przy brzegu albo przy innym nabrzeżu."
+
+msgid "ui.command_error.blocks_sea"
+msgstr "To nabrzeże odcięłoby od morza statek, miejsce cumowania albo ławicę ryb."
+
+msgid "ui.command_error.no_quay"
+msgstr "Tu nie ma nabrzeża."
+
+msgid "ui.command_error.cuts_quay"
+msgstr "Reszta nabrzeża straciłaby połączenie z brzegiem."
+
+msgid "ui.command_error.bad_quay"
+msgstr "Nieznany rodzaj nabrzeża."

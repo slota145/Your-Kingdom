@@ -5,3 +5,4 @@
 [resource]
 script = ExtResource("1_vis")
 art_id = "shipyard"
+quay_tiles = Array[Vector2i]([Vector2i(3, 2), Vector2i(3, 3)])

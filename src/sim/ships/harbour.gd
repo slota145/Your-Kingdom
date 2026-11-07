@@ -19,7 +19,36 @@ const ON_DECK := 0.15
 const HAND_OVER := &"hand_over"
 
 
+## How far (tiles, Chebyshev between centres) a port's dockers serve a mooring (N1).
+const SERVE_RADIUS := 12
+
+
 # --- Mooring -------------------------------------------------------------------------------
+
+## The finished port with dockers of its own nearest to [param centre] within SERVE_RADIUS,
+## or null (who serves a mooring, N1).
+static func serving_port(province: ProvinceSim, centre: Vector2i) -> BuildingState:
+	var best: BuildingState = null
+	var best_d := 1 << 30
+	for building: BuildingState in province.buildings.all():
+		if not building.def.is_port() or building.def.served_by_port or not building.is_complete():
+			continue
+		var c := building.origin + building.def.footprint / 2
+		var d := maxi(absi(c.x - centre.x), absi(c.y - centre.y))
+		if d <= SERVE_RADIUS and (d < best_d or (d == best_d and building.id < best.id)):
+			best_d = d
+			best = building
+	return best
+
+
+## Whose dockers work at [param port]: the port itself, or for a mooring the port serving it
+## (0 when none does).
+static func crew_of(province: ProvinceSim, port: BuildingState) -> int:
+	if not port.def.served_by_port:
+		return port.id
+	var serving := serving_port(province, port.origin + port.def.footprint / 2)
+	return serving.id if serving != null else 0
+
 
 ## The ship that reserved the berth of [param port] (moored or on its way in), or null.
 static func berth_holder(province: ProvinceSim, port: BuildingState) -> ShipUnit:
@@ -82,6 +111,20 @@ static func request_port(province: ProvinceSim, request: TransportRequest) -> in
 		if id > 0 and province.ships.has(id):
 			var port := port_of(province, id)
 			return port.id if port != null else -1
+	return 0
+
+
+## Like [method request_port], but the port whose dockers carry the request (a mooring is
+## served by a nearby port, N1): -1 when nobody can carry it now.
+static func request_crew(province: ProvinceSim, request: TransportRequest) -> int:
+	var port_id := request_port(province, request)
+	if port_id <= 0:
+		return port_id
+	var port := province.buildings.get_building(port_id)
+	if port != null and port.def.served_by_port:
+		var crew := crew_of(province, port)
+		return crew if crew != 0 else -1
+	return port_id
 	return 0
 
 

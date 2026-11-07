@@ -266,7 +266,6 @@ const BUILDINGS := {
 		"props": [["tar_pit", 1.5, 1.0], ["log_pile", 0.5, 1.9], ["tar_barrels", 1.75, 1.85]]}],
 	"shipyard": [{"volumes": [
 		{"kind": "deck", "rect": [0.7, 1.55, 2.3, 4.0], "h": 7.0, "h_end": -3.0, "slip": true},
-		{"kind": "deck", "rect": [2.45, 1.85, 3.05, 3.8], "h": 5.0},
 		{"kind": "house", "rect": [0.14, 0.14, 2.0, 1.4], "h": 38.0, "rh": 22.0, "ridge": "x",
 			"ends": ["gable", "gable"], "walls": "planks", "roof": "shingle", "shutters": Color(0.35, 0.3, 0.25),
 			"chimney": [0.6, 0.5]},
@@ -275,16 +274,21 @@ const BUILDINGS := {
 			"inside": [["plank_stack", 2.9, 1.2], ["saw_horse", 3.4, 0.8]]}],
 		"props": [["crane", 2.6, 1.9], ["tar_barrels", 0.4, 1.85], ["log_pile", 3.55, 1.9],
 			["bollard", 2.95, 3.6]]}],
+	# N1: the pier over the water is the shared quay strip (QuayLayer), not part of the art.
 	"fishing_wharf": [{"volumes": [
-		{"kind": "deck", "rect": [0.15, 1.85, 2.85, 2.95], "h": 4.0},
 		{"kind": "house", "rect": [0.75, 0.14, 2.86, 1.55], "h": 34.0, "rh": 22.0, "ridge": "x",
 			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.3, 0.45, 0.6)}],
 		"props": [["nets", 0.2, 1.0], ["fish_rack", 0.45, 1.75], ["bollard", 0.5, 2.8], ["bollard", 2.5, 2.8],
 			["barrel", 2.2, 2.3]]}],
 	# M5 part 2: the port. Its land tiles are left see-through: the quay yard (planks and the
 	# stacks of goods) is drawn by the view (QuayYard), so stacks are never hidden by the art.
-	"port": [{"min_height": 64.0, "ground_decks": true, "volumes": [
-		{"kind": "deck", "rect": [0.05, 1.9, 3.95, 3.95], "h": 6.0}],
+	# N1: a mooring on the quay: bollards with a coiled rope, a lantern, a few barrels. The
+	# quay under it is the QuayLayer's.
+	"mooring": [{"min_height": 40.0, "volumes": [],
+		"props": [["bollard", 0.35, 1.8], ["bollard", 1.65, 1.8], ["barrels", 0.55, 0.55], ["lantern", 1.75, 0.3],
+			["nets", 0.25, 1.15]]}],
+	# N1: its quay over the water is the shared quay strip (QuayLayer).
+	"port": [{"min_height": 64.0, "volumes": [],
 		"props": [["gate_posts", 3.55, 1.0], ["port_crane", 0.75, 2.55], ["barrels", 1.4, 2.35],
 			["bollard", 0.5, 3.75], ["bollard", 1.7, 3.75], ["bollard", 3.55, 3.75], ["lantern", 3.7, 2.2]]}],
 	# M5 part 3: the pioneer camp, the first building after a start from a ship: a log hut,

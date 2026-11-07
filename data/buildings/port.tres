@@ -22,4 +22,5 @@ berth = Vector2i(2, 4)
 berth_fairway = true
 quay_slots = 6
 gangway = Vector2i(2, 3)
+on_quay = true
 id = &"port"

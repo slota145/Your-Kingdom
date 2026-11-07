@@ -166,7 +166,7 @@ func is_tile_solid(tile: Vector2i) -> bool:
 	if grid.is_blocked(tile) or resources.blocks_movement(tile):
 		return true
 	var terrain := terrain_at(tile)
-	if terrain != null and not terrain.walkable:
+	if terrain != null and not terrain.walkable and not grid.has_quay(tile):
 		return true
 	# A whole building is solid, its entrances too: people step onto an entrance only from
 	# the tile in front of its door (find_path), never across a corner of the building.
@@ -186,6 +186,8 @@ func refresh_tile(tile: Vector2i) -> void:
 	var cost := 1.0
 	if grid.has_road(tile):
 		cost = PAVED_COST if grid.is_paved(tile) else ROAD_COST
+	elif grid.has_quay(tile):
+		cost = PAVED_COST if grid.quay(tile) == TileGrid.STONE_QUAY else ROAD_COST
 	elif fields.has_field(tile):
 		cost = FIELD_COST
 	else:
@@ -207,13 +209,17 @@ func refresh_tile(tile: Vector2i) -> void:
 	if on_road and not is_equal_approx(road_nav.get_cost(tile), cost):
 		road_nav.set_cost(tile, cost)
 	var depth := sail_depth(tile)
-	var open_water := depth > 0 and grid.occupant(tile) == 0 and not grid.is_blocked(tile)
+	var open_water := depth > 0 and grid.occupant(tile) == 0 and not grid.is_blocked(tile) \
+			and (paving.is_empty() or paving_site_at(tile) == 0)
 	boat_nav.set_solid(tile, not open_water)
 	cog_nav.set_solid(tile, not (open_water and (depth >= 2 or fairway.has(tile))))
 
 
 ## Which ships sail on [param tile] (TerrainDef.sail_depth): 0 none, 1 boats, 2 boats and cogs.
+## A quay (N1) is no water for ships.
 func sail_depth(tile: Vector2i) -> int:
+	if grid.has_quay(tile):
+		return 0
 	var terrain := terrain_at(tile)
 	return terrain.sail_depth if terrain != null else 0
 
@@ -427,11 +433,19 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 		if not grid.is_inside(tile):
 			return &"outside_map"
 		var terrain := terrain_at(tile)
-		if on_water.has(tile):
+		# A quay (N1) carries harbour buildings, on their water tiles or their land tiles.
+		if grid.has_quay(tile):
+			if not def.on_quay:
+				return &"not_on_quay"
+		elif def.quay_only:
+			return &"needs_quay"
+		elif on_water.has(tile):
 			if sail_depth(tile) == 0:
 				return &"needs_sea"
 		elif terrain != null and not terrain.buildable:
 			return &"terrain_not_buildable"
+		if not paving.is_empty() and paving_site_at(tile) != 0:
+			return &"tile_occupied"
 		if grid.is_blocked(tile) or grid.occupant(tile) != 0 or resources.has_node(tile):
 			return &"tile_occupied"
 		if _pile_at(tile) != 0 or fields.has_field(tile) or grid.has_road(tile):
@@ -444,6 +458,10 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 			return &"no_berth"
 		if def.berth_fairway and Ships.fairway_from(self, berth).is_empty() and sail_depth(berth) < 2:
 			return &"no_deep_water"
+		if not paving.is_empty() and paving_site_at(berth) != 0:
+			return &"no_berth"
+	if def.served_by_port and Harbour.serving_port(self, origin + Vector2i(def.footprint) / 2) == null:
+		return &"no_port_nearby"
 	var area := Rect2i(origin, def.footprint)
 	for ship: ShipUnit in ships.values():
 		if area.has_point(ship.tile()):
@@ -1157,20 +1175,26 @@ func order_paving(tiles: Array[Vector2i]) -> int:
 			set_road(tile, true)
 	var paving_site := PavingSite.new(ids.take(), tiles.duplicate(), data)
 	paving[paving_site.id] = paving_site
-	jobs.add(PavingSite.GOOD, tiles.size() * PavingSite.STONE_PER_TILE, 0, paving_site.id)
+	jobs.add(paving_site.good(), tiles.size() * paving_site.per_tile(), 0, paving_site.id)
 	events.emit(&"paving_ordered", {"site": paving_site.id, "tiles": tiles.size()})
 	return paving_site.id
 
 
-## Lays the cobbles of the next tile of [param paving_site] with its stone.
+## Lays the next tile of [param paving_site] with its material: cobbles, or a quay tile (N1).
 func pave_next(paving_site: PavingSite) -> void:
 	var tile := paving_site.tiles.pop_front() as Vector2i
-	paving_site.stock.remove(PavingSite.GOOD, PavingSite.STONE_PER_TILE)
-	ledger.used(PavingSite.GOOD, PavingSite.STONE_PER_TILE, tick)
-	paving_site.work_left = PavingSite.tile_ticks()
-	grid.set_paved(tile, true)
-	refresh_tile(tile)
-	events.emit(&"road_changed", {"tile": tile, "road": true, "paved": true})
+	paving_site.stock.remove(paving_site.good(), paving_site.per_tile())
+	ledger.used(paving_site.good(), paving_site.per_tile(), tick)
+	paving_site.work_left = paving_site.tile_ticks()
+	if paving_site.is_quay():
+		grid.set_quay(tile, paving_site.quay_value())
+		refresh_tile(tile)
+		refresh_fairways()
+		events.emit(&"quay_changed", {"tile": tile, "quay": paving_site.quay_value()})
+	else:
+		grid.set_paved(tile, true)
+		refresh_tile(tile)
+		events.emit(&"road_changed", {"tile": tile, "road": true, "paved": true})
 	if paving_site.tiles.is_empty():
 		_close_paving(paving_site, tile)
 
@@ -1188,11 +1212,11 @@ func _withdraw_paving(tile: Vector2i) -> void:
 		_close_paving(paving_site, tile)
 		return
 	if first:
-		paving_site.work_left = PavingSite.tile_ticks()
+		paving_site.work_left = paving_site.tile_ticks()
 		# Porters on the way head for the new next tile on arrival (access_tile).
 	for request: TransportRequest in jobs.all():
 		if request.dest_id == id:
-			jobs.set_amount(PavingSite.GOOD, request.source_id, id,
+			jobs.set_amount(paving_site.good(), request.source_id, id,
 					paving_site.stone_missing() - request.in_flight)
 
 
@@ -1208,6 +1232,275 @@ func _close_paving(paving_site: PavingSite, at: Vector2i = Agent.NO_TILE) -> voi
 	for good: StringName in leftovers:
 		drop_goods(at if at != Agent.NO_TILE else entry_tile, good, leftovers[good])
 	events.emit(&"paving_closed", {"site": paving_site.id})
+
+
+# --- Quays (N1) ----------------------------------------------------------------------------
+
+## How far a quay may reach into the sea, in quay tiles from the shore (ROADMAP N1).
+const QUAY_REACH := 8
+
+const _STEPS4: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
+
+
+## Where the builder stands for the next tile of [param paving_site] (porters bring the
+## material there): the tile itself for cobbles, a walkable neighbour for a quay tile;
+## Agent.NO_TILE when none can be reached now.
+func paving_stand(paving_site: PavingSite) -> Vector2i:
+	var tile := paving_site.next_tile()
+	if tile == Agent.NO_TILE or not paving_site.is_quay():
+		return tile
+	for step: Vector2i in _STEPS4:
+		var t := tile + step
+		if nav.is_walkable(t):
+			return t
+	return Agent.NO_TILE
+
+
+## Whether the next tile of [param paving_site] can be laid now (no ship lies on a quay tile).
+func can_lay(paving_site: PavingSite) -> bool:
+	if not paving_site.is_quay():
+		return true
+	var tile := paving_site.next_tile()
+	for ship: ShipUnit in ships.values():
+		if ship.tile() == tile:
+			return false
+	return true
+
+
+## Whether [param tile] is land people stand on (a quay grows from it).
+func _is_shore_land(tile: Vector2i) -> bool:
+	if not grid.is_inside(tile) or grid.has_quay(tile):
+		return false
+	var terrain := terrain_at(tile)
+	return terrain != null and terrain.walkable
+
+
+## &"" when a quay tile can be ordered on [param tile] on its own (open sea, nothing there);
+## the reach from the shore and the way to the open sea are checked by [method quay_plan].
+func quay_error(tile: Vector2i) -> StringName:
+	if not grid.is_inside(tile):
+		return &"outside_map"
+	if grid.has_quay(tile):
+		return &"already_quay"
+	if not paving.is_empty() and paving_site_at(tile) != 0:
+		return &"already_ordered"
+	if sail_depth(tile) == 0:
+		return &"needs_sea"
+	if grid.occupant(tile) != 0 or grid.is_blocked(tile) or resources.has_node(tile):
+		return &"tile_occupied"
+	for building: BuildingState in buildings.all():
+		if building.def.has_berth() and building.berth_tile() == tile:
+			return &"keeps_berth"
+	if fairway.has(tile):
+		return &"keeps_fairway"
+	for ship: ShipUnit in ships.values():
+		if ship.tile() == tile:
+			return &"tile_has_ship"
+	return &""
+
+
+## Which of [param tiles] can be ordered as quay together: {"tiles": accepted tiles in the
+## order a builder lays them (from the shore outwards), "errors": tile -> reason for the
+## rest}. A tile must be within QUAY_REACH quay tiles of the shore (over existing quay,
+## ordered quay and the other tiles); all of them are refused (&"blocks_sea") when they would
+## cut a berth, a shoal or a ship off the open sea (the edge of the map).
+func quay_plan(tiles: Array[Vector2i]) -> Dictionary:
+	var errors: Dictionary[Vector2i, StringName] = {}
+	var wanted: Dictionary[Vector2i, bool] = {}
+	for tile: Vector2i in tiles:
+		var error := quay_error(tile)
+		if error == &"":
+			wanted[tile] = true
+		elif not errors.has(tile):
+			errors[tile] = error
+	# Distance from the shore over quay (existing, ordered and wanted), shore tiles first.
+	var ordered: Dictionary[Vector2i, bool] = {}
+	for paving_site: PavingSite in paving.values():
+		if paving_site.is_quay():
+			for tile: Vector2i in paving_site.tiles:
+				ordered[tile] = true
+	# Flood from the shore over all quay tiles (existing, ordered, wanted).
+	var quay_tiles: Array[Vector2i] = []
+	quay_tiles.append_array(wanted.keys())
+	quay_tiles.append_array(ordered.keys())
+	if grid.quay_count() > 0:
+		for y: int in grid.size.y:
+			for x: int in grid.size.x:
+				if grid.has_quay(Vector2i(x, y)):
+					quay_tiles.append(Vector2i(x, y))
+	var depth: Dictionary[Vector2i, int] = {}
+	var queue: Array[Vector2i] = []
+	for tile: Vector2i in quay_tiles:
+		for step: Vector2i in _STEPS4:
+			var land := tile + step
+			if not depth.has(land) and _is_shore_land(land):
+				depth[land] = 0
+				queue.append(land)
+	var accepted: Array[Vector2i] = []
+	var head := 0
+	while head < queue.size():
+		var tile := queue[head]
+		head += 1
+		if wanted.has(tile) and depth[tile] <= QUAY_REACH:
+			accepted.append(tile)
+		for step: Vector2i in _STEPS4:
+			var next := tile + step
+			if depth.has(next) or not (wanted.has(next) or ordered.has(next) or grid.has_quay(next)):
+				continue
+			depth[next] = depth[tile] + 1
+			queue.append(next)
+	for tile: Vector2i in wanted:
+		if not accepted.has(tile):
+			errors[tile] = &"too_far_from_shore" if depth.has(tile) else &"not_at_shore"
+	if not accepted.is_empty():
+		var blocked: Dictionary[Vector2i, bool] = ordered.duplicate()
+		var cut := false
+		var before := _sea_reach(blocked)
+		for tile: Vector2i in accepted:
+			blocked[tile] = true
+		var after := _sea_reach(blocked)
+		for target: Vector2i in before:
+			if not after.has(target):
+				cut = true
+				break
+		if cut:
+			for tile: Vector2i in accepted:
+				errors[tile] = &"blocks_sea"
+			accepted.clear()
+	return {"tiles": accepted, "errors": errors}
+
+
+## Berths, shoals and ships the open sea (water on the edge of the map) reaches, by boat and,
+## for berths cogs use, by cog; [param blocked] tiles count as quay.
+func _sea_reach(blocked: Dictionary[Vector2i, bool]) -> Dictionary[Vector2i, bool]:
+	var targets: Dictionary[Vector2i, int] = {}   # tile -> 1 boat, 2 cog
+	for building: BuildingState in buildings.all():
+		if building.def.has_berth():
+			targets[building.berth_tile()] = 2 if building.def.berth_fairway else 1
+	for ship: ShipUnit in ships.values():
+		targets[ship.tile()] = maxi(int(targets.get(ship.tile(), 0)), 1)
+	for tile: Vector2i in resources.tiles_with_nodes():
+		if sail_depth(tile) > 0:
+			targets[tile] = maxi(int(targets.get(tile, 0)), 1)
+	var reached: Dictionary[Vector2i, bool] = {}
+	if targets.is_empty():
+		return reached
+	for cog: bool in [false, true]:
+		var seen := _sea_flood(blocked, cog)
+		for tile: Vector2i in targets:
+			if (targets[tile] == 2) == cog and seen[tile.y * grid.size.x + tile.x] == 1:
+				reached[tile] = true
+	return reached
+
+
+## Flood over open sea from the edge of the map (4 neighbours); 1 = reached.
+func _sea_flood(blocked: Dictionary[Vector2i, bool], cog: bool) -> PackedByteArray:
+	var w := grid.size.x
+	var seen := PackedByteArray()
+	seen.resize(w * grid.size.y)
+	var queue: Array[Vector2i] = []
+	var sailable := func(t: Vector2i) -> bool:
+		if not grid.is_inside(t) or blocked.has(t):
+			return false
+		var depth := sail_depth(t)
+		if depth == 0 or grid.occupant(t) != 0 or grid.is_blocked(t):
+			return false
+		return not cog or depth >= 2 or fairway.has(t)
+	for x: int in w:
+		for t: Vector2i in [Vector2i(x, 0), Vector2i(x, grid.size.y - 1)]:
+			if sailable.call(t) and seen[t.y * w + t.x] == 0:
+				seen[t.y * w + t.x] = 1
+				queue.append(t)
+	for y: int in grid.size.y:
+		for t: Vector2i in [Vector2i(0, y), Vector2i(w - 1, y)]:
+			if sailable.call(t) and seen[t.y * w + t.x] == 0:
+				seen[t.y * w + t.x] = 1
+				queue.append(t)
+	var head := 0
+	while head < queue.size():
+		var tile := queue[head]
+		head += 1
+		for step: Vector2i in _STEPS4:
+			var next := tile + step
+			if not grid.is_inside(next) or seen[next.y * w + next.x] == 1 or not sailable.call(next):
+				continue
+			seen[next.y * w + next.x] = 1
+			queue.append(next)
+	return seen
+
+
+## Orders quay of [param quay] (TileGrid.PIER or STONE_QUAY) on [param tiles] (from
+## quay_plan, in its order): porters bring planks or stone, a builder lays it tile by tile.
+## Ships keep off the tiles at once. Returns the site id.
+func order_quay(tiles: Array[Vector2i], quay: int) -> int:
+	if tiles.is_empty():
+		return 0
+	var paving_site := PavingSite.new(ids.take(), tiles.duplicate(), data, PavingSite.kind_for_quay(quay))
+	paving[paving_site.id] = paving_site
+	jobs.add(paving_site.good(), tiles.size() * paving_site.per_tile(), 0, paving_site.id)
+	for tile: Vector2i in tiles:
+		refresh_tile(tile)
+	events.emit(&"quay_ordered", {"site": paving_site.id, "tiles": tiles.size(), "quay": quay})
+	return paving_site.id
+
+
+## &"" when the quay (or the ordered quay) on [param tile] can be taken away: nothing
+## stands on it, it is no door, and the rest of the quay stays joined to the shore.
+func remove_quay_error(tile: Vector2i) -> StringName:
+	if not grid.is_inside(tile):
+		return &"outside_map"
+	var ordered := not paving.is_empty() and paving_site_at(tile) != 0 \
+			and (paving[paving_site_at(tile)] as PavingSite).is_quay()
+	if ordered:
+		return &""
+	if not grid.has_quay(tile):
+		return &"no_quay"
+	if grid.occupant(tile) != 0 or _pile_at(tile) != 0:
+		return &"tile_occupied"
+	for agent: Agent in agents.all():
+		if agent.tile() == tile:
+			return &"tile_has_people"
+	for building: BuildingState in buildings.all():
+		if door_tiles(building).has(tile):
+			return &"blocks_access"
+	# The rest of the quay must still reach the shore (people on it, buildings on it).
+	var rest: Dictionary[Vector2i, bool] = {}
+	var queue: Array[Vector2i] = []
+	for y: int in grid.size.y:
+		for x: int in grid.size.x:
+			var t := Vector2i(x, y)
+			if t == tile or not grid.has_quay(t):
+				continue
+			rest[t] = true
+	var joined: Dictionary[Vector2i, bool] = {}
+	for t: Vector2i in rest:
+		for step: Vector2i in _STEPS4:
+			if _is_shore_land(t + step):
+				joined[t] = true
+				queue.append(t)
+				break
+	var head := 0
+	while head < queue.size():
+		var t := queue[head]
+		head += 1
+		for step: Vector2i in _STEPS4:
+			var next := t + step
+			if rest.has(next) and not joined.has(next):
+				joined[next] = true
+				queue.append(next)
+	return &"" if joined.size() == rest.size() else &"cuts_quay"
+
+
+## Takes the quay (or the order for it) off [param tile]; checked with remove_quay_error.
+func remove_quay(tile: Vector2i) -> void:
+	var id := paving_site_at(tile) if not paving.is_empty() else 0
+	if id != 0:
+		_withdraw_paving(tile)
+	else:
+		grid.set_quay(tile, 0)
+		refresh_fairways()
+		events.emit(&"quay_changed", {"tile": tile, "quay": 0})
+	refresh_tile(tile)
 
 
 func _free_ground_error(tile: Vector2i) -> StringName:
@@ -1392,7 +1685,7 @@ func access_tile(id: int) -> Vector2i:
 		return target.entrance_tile() if target != null else Agent.NO_TILE
 	var paving_site := paving.get(id) as PavingSite
 	if paving_site != null:
-		return paving_site.next_tile()
+		return paving_stand(paving_site)
 	var pile := piles.get(id) as GroundPile
 	if pile != null:
 		return pile.tile

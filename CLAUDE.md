@@ -12,7 +12,7 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
-**Bieżący etap:** N1 „Nabrzeża i port” (ROADMAP, N1): plan zaakceptowany 2026-11-07 (wersja średnia, 2 części, ocena po każdej), przed M7. Potem M7 „Wojsko, mury i oblężenia” (plan i decyzje zaakceptowane 2026-11-07, ROADMAP, M7).
+**Bieżący etap:** N1 „Nabrzeża i port” (ROADMAP, N1): plan zaakceptowany 2026-11-07 (wersja średnia, 2 części, ocena po każdej), przed M7. **Część 1 (pomost, nabrzeże, miejsce cumowania, jedna bryła portu, zapis v15) gotowa, czeka na ocenę właściciela**; część 2: dźwig przeładunkowy i magazyn portowy. Zrzut: `game_shot.tscn -- --map=coast --tile=76,84 --zoom=2 --port --quays`. Fixtura v15: `"$GODOT" --headless --path . -s res://tools/build_quay_fixture.gd`. Potem M7 „Wojsko, mury i oblężenia” (plan i decyzje zaakceptowane 2026-11-07, ROADMAP, M7).
 
 **Poprzedni etap:** UI-1 „Wygląd interfejsu i menu główne” (ROADMAP, UI-1): gotowy, czeka na ocenę wyglądu. Grafiki interfejsu: `"$GODOT" --headless --path . -s res://tools/generate_ui.gd`, warstwy menu: `python3 tools/split_menu_art.py`, zrzut menu: `src/prototype/ui/menu_shot.tscn -- --out=<plik.png> [--open=maps|tools]`.
 

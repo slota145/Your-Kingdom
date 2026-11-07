@@ -139,9 +139,9 @@ static func site_for(province: ProvinceSim, builder: Agent) -> int:
 	# Paving (M4b-3) comes after buildings: a builder lays cobbles when no site needs him.
 	var paving: Array[Array] = []
 	for paving_site: PavingSite in province.paving.values():
-		if paving_site.is_workable():
-			paving.append([(paving_site.next_tile() - builder.tile()).length_squared(),
-					paving_site.id, paving_site.next_tile()])
+		var stand := province.paving_stand(paving_site)
+		if paving_site.is_workable() and stand != Agent.NO_TILE:
+			paving.append([(stand - builder.tile()).length_squared(), paving_site.id, stand])
 	candidates.sort_custom(func(a: Array, b: Array) -> bool:
 		return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
 	paving.sort_custom(func(a: Array, b: Array) -> bool:

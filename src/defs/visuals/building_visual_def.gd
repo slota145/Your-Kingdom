@@ -23,6 +23,10 @@ extends Resource
 ## Number of looks of each town-house row piece (gable shapes, M4b-1.5): "<piece>",
 ## "<piece>_2"... picked by position along the row, so neighbours differ.
 @export_range(1, 8) var row_variants: int = 1
+## Harbour buildings (N1): which water tiles (as drawn) are drawn as the shared quay strip
+## that joins the player's quays (QuayLayer). Empty = all of BuildingDef.water_tiles; a
+## shipyard leaves its slipway out.
+@export var quay_tiles: Array[Vector2i] = []
 ## Work spot name -> pixel offset from the entrance tile centre where the worker is drawn.
 @export var spot_offsets: Dictionary[StringName, Vector2] = {}
 
