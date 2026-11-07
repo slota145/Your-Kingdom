@@ -21,8 +21,9 @@ M0 Fundament
                 ├─► M4 Miasto i ekonomia (M4a mieszczanie ─► M4b patrycjusze)
                 │    └─► M5 Woda, porty i statki
                 │         └─► M6 Mapa świata i prowincje
-                │              └─► M7 Wojsko, mury i oblężenia
-                │                   └─► M8 Przeciwnicy i sandbox ──► M10 Wersja 1.0
+                │              └─► N1 Nabrzeża i port (UI-1 obok)
+                │                   └─► M7 Wojsko, mury i oblężenia
+                │                        └─► M8 Przeciwnicy i sandbox ──► M10 Wersja 1.0
                 └─► M9 Produkcja grafik (równolegle od M4, partiami)
 Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 ```
@@ -703,7 +704,69 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ---
 
+## N1 — Nabrzeża i port
+
+**Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu), przed M7 i przed oceną gry M4b-2, M4b-3, M5, M6 i UI-1 (poprawki z ocen mają pierwszeństwo).** Pomysł gracza z IDEAS („Nabrzeża budowane w głąb morza”), wersja średnia: 2 części, ocena po każdej.
+
+**Decyzje (ankieta 2026-11-07):**
+- **Mały etap przed M7** (zamiast po M7, wbrew rekomendacji, decyzja właściciela): port rośnie, zanim przyjdzie wojsko i oblężenia od morza.
+- **Wersja średnia:** część 1 to pomost, nabrzeże kamienne, miejsce cumowania i budynki nad wodą stawiane na nabrzeżu; część 2 to dźwig przeładunkowy i magazyn portowy. Kuter z większą chatą rybacką i latarnia zostają w IDEAS; balisty i wieże portowe razem z walką okrętów.
+- **Jedna bryła portu, jak w Anno** (pomysł właściciela 2026-11-07): część budynku nad wodą (pomost portu, przystani, pochylnia stoczni) to ten sam pas nabrzeża, który stawia gracz. Pas łączy się z nabrzeżem obok bez szwów, więc port, stocznia, przystań i nabrzeża wyglądają jak jedna budowla.
+- **Nowy wygląd wszędzie:** port, stocznia i przystań na wszystkich mapach i w starych zapisach od razu mają nowy pas nabrzeża (zmiana tylko wyglądu, zasady bez zmian).
+
+**Wartości wyjściowe (do strojenia przy realizacji):**
+- pomost drewniany: 2 deski na kafel; nabrzeże kamienne: 3 kamienie na kafel (w M7 mocniejsze),
+- stawiane linią jak mury i drogi, na wodzie morskiej płytkiej i głębokiej, najwyżej 8 kafli od lądu (liczone po nabrzeżu); pierwszy kafel musi dotykać lądu albo innego nabrzeża,
+- rzędy obok siebie zlewają się w jedno szerokie nabrzeże (model bryłowy jak mur kamienny, ARCHITECTURE §6.3, ale płaski),
+- ludzie chodzą po nabrzeżu jak po drodze; statki i łodzie nie przepływają; stawianie jest zabronione, jeśli odcięłoby od morza miejsce cumowania, pochylnię, przystań albo ławicę,
+- budowa jak droga: budowniczy i tragarze, kafel po kaflu,
+- miejsce cumowania 1×2 (2 deski) na krawędzi nabrzeża, przodem do głębokiej wody: kolejne miejsce dla statku (koga gracza, kupiec morski, koga szlaku); obsługują je portowcy portu w zasięgu 12 kafli, a towar idzie na plac portu,
+- port, stocznia i przystań można stawiać także na nabrzeżu: ich część „wodna” może stać na wodzie albo na nabrzeżu, a wejście od lądu albo od nabrzeża (krzywy brzeg przestaje przeszkadzać),
+- część 2: dźwig przeładunkowy (2×2 na nabrzeżu przy miejscu cumowania, 12 desek, 4 kamienie, 1 dźwigowy; załadunek 3 sztuki naraz, ok. 2× szybciej niż portowcy na plecach), magazyn portowy (3×3 na nabrzeżu, 8 pól, zwykły magazyn z tragarzami, bliżej statków),
+- zapis: v15 (część 1), v16 (część 2).
+
+**Zakres:**
+- część 1: kafle nabrzeża w siatce (pomost i kamień, przejezdne dla ludzi, zamknięte dla statków), narzędzie stawiania linią z podglądem i kosztem, budowa przez budowniczego, burzenie; sprawdzenie, czy statki dalej mają drogę do morza; miejsce cumowania i obsługa przez portowców; nowa reguła stawiania budynków nad wodą (wodą albo nabrzeżem); pas nabrzeża budynków nad wodą rysowany tym samym kodem co nabrzeże gracza, łączenie w jedną bryłę; nabrzeże w trybie uproszczonym (ARCHITECTURE §7) i przy przełączaniu trybów; zapis v15 z migracją, fixturą i testami; teksty PL i EN; aktualizacja GDD §5.4, ARCHITECTURE §5.3, §6.3 i ART_SPEC,
+- część 2: dźwig przeładunkowy, magazyn portowy, automatyczny gracz na „Wybrzeżu” korzysta z nabrzeża i drugiego miejsca cumowania; zapis v16,
+- grafika rysowana kodem: deski na palach, kamienne bloki z obramowaniem, pachołki, liny, drabinki do wody; dźwig z kołem deptakowym (część 2).
+
+**Poza zakresem:** kuter i większa chata rybacka, latarnia, dźwig naprawczy (po bitwach, P1), balisty i wieże portowe (M7 i P1), nabrzeża na jeziorach i rzekach, mosty, przewozy między dwoma portami jednej mapy.
+
+**Ryzyka etapu:**
+- chodzenie po wodzie: nabrzeże zmienia siatki ruchu ludzi i statków naraz; łatwo odciąć statek albo ławicę. Ochrona: sprawdzenie łączności przy stawianiu i testy siatek,
+- sortowanie głębi dużych statków przy długich pomostach (R1): przypadki do `test_sorting.gd`,
+- zmiana wyglądu budynków nad wodą na wszystkich mapach: zrzuty przed i po, a stare zapisy w testach migracji.
+
+**DoD:**
+- [ ] Pomost i nabrzeże kamienne stawia się linią na morzu; rzędy zlewają się w jedno nabrzeże; budowa idzie przez budowniczego i tragarzy.
+- [ ] Ludzie chodzą po nabrzeżu, statki nie; nie da się odciąć miejsca cumowania, pochylni, przystani ani ławicy od morza (testy).
+- [ ] Miejsce cumowania przyjmuje drugi statek, a portowcy go ładują i rozładowują.
+- [ ] Port, stocznia i przystań stoją także na nabrzeżu, a ich pas nad wodą łączy się z nabrzeżem gracza w jedną bryłę (zrzuty).
+- [ ] Dźwig przeładunkowy i magazyn portowy działają (część 2).
+- [ ] Zapis v15 i v16 z migracjami i fixturami; stare zapisy wczytują się z nowym wyglądem pomostów.
+- [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
+- [ ] **Twoja ocena gry** (po każdej części).
+
+---
+
 ## M7 — Wojsko, mury i oblężenia
+
+**Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu). Start po N1 „Nabrzeża i port”.**
+
+**Decyzje (ankieta 2026-11-07):**
+- **Trzy części, ocena po każdej:** (1) metale, broń, koszary i rekrutacja; (2) mury, bramy i walka w widoku prowincji; (3) armie na mapie świata, `BattleResolver`, oblężenia nieoglądane i okręt wojenny.
+- **Przeciwnik w M7: bandyci i osady neutralne.** Bandyci z obozu w pustej prowincji co jakiś czas napadają na gracza (rzadko, słabo). Osadę neutralną można zdobyć siłą zamiast wykupu: ma mury i straż. Władcy AI dalej w M8.
+- **Sterowanie jak w Twierdzy:** klik albo ramka zaznacza żołnierzy, prawy przycisk na ziemi to „idź”, na wrogu „atakuj”, Ctrl+1..9 zapamiętuje grupę, przyciski postawy: atakuj sam, broń się, stój w miejscu.
+- **Przejęcie: rozbić drzwi ratusza** (albo obozu pionierów). Ratusz ma wytrzymałość jak brama; gdy drzwi padną, a przy ratuszu nie ma obrońców, napastnik zajmuje prowincję. Mieszkańcy i budynki zostają, zadowolenie spada (wartość niżej).
+- **Ruda żelaza: małe złoża wszędzie.** Każda mapa ma kilka żył rudy w skałach, a prowincja z rudą (Żelazny Gród) ma ich dużo. Konie zostają rzadkie (stadnina tylko w prowincji z pastwiskami).
+- **Żołnierz mieszka w koszarach:** rekrut wyprowadza się z domu (dom przyjmuje przybysza), śpi w koszarach i je z magazynu, a do tego dostaje żołd.
+
+**Wartości wyjściowe (do strojenia przy realizacji):**
+- jednostki: włócznik (włócznia, 10 zł, życie 100, cios 10, ×2 przeciw jeźdźcom), łucznik (łuk, 15 zł, życie 70, strzała 8, zasięg 7 kafli; na murze +2 kafle i połowa obrażeń), miecznik (miecz i kolczuga, 30 zł, życie 160, cios 16), jeździec (koń, miecz i kolczuga, 50 zł, życie 200, cios 18, 2× szybszy); taran (20 desek, 4 żelaza, pcha go 4 żołnierzy), drabina (4 deski, niesie 1 żołnierz); żołd 1 zł na minutę,
+- łańcuchy: węglarz (2 drewna → 1 węgiel drzewny, 40 s), kopalnia przy żyle rudy (ruda co 45 s), huta (ruda + węgiel → żelazo, 40 s), kowal (żelazo + deska → 2 włócznie albo żelazo → miecz, 45 s), płatnerz (2 żelaza → kolczuga, 60 s), łuczarz (2 deski → łuk, 30 s), stadnina (koń co 120 s, tylko pastwiska), zbrojownia 3×3 (magazyn broni), koszary 3×3 (60 zł, 24 łóżka),
+- mury: palisada (2 drewna na kafel, wytrzymałość 300), mur kamienny (3 kamienie, 1000), wieża bramna 3×3 (30 kamieni, 10 desek, 1500), baszta 2×2 (20 kamieni, 1500), schody (4 kamienie); drzwi ratusza 1500; po przejęciu zadowolenie −30 przez 10 minut,
+- świat: armia nosi zapas jedzenia (1 chleb na 10 żołnierzy na minutę), w prowincjach gracza uzupełnia go z magazynu; okręt wojenny wiezie 30 żołnierzy i powstaje w stoczni etapami jak koga,
+- zapis: kolejne wersje po N1 (po jednej na część).
 
 **Zakres:**
 - metale i broń (kopalnia, huta, kowal, płatnerz, łuczarz), zbrojownia,

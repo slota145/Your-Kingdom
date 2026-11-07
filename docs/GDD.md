@@ -201,7 +201,7 @@ pierwsze świnie od kupca wędrownego (30 złota sztuka); ostatnie 2 świnie zaw
 sad ──► jabłka
 winnica★ ──► winogrona ──► winiarnia ──► wino   ← od M6 (tłocznia)
 drewno ──► węglarz ──► węgiel drzewny
-kopalnia★ ──► ruda żelaza + węgiel ──► huta ──► żelazo ──► kowal ──► narzędzia / miecze / włócznie
+kopalnia (żyły rudy na każdej mapie, dużo w prowincji z rudą★; decyzja 2026-11-07) ──► ruda żelaza + węgiel ──► huta ──► żelazo ──► kowal ──► narzędzia / miecze / włócznie
 drewno ──► łuczarz ──► łuki
 skóry ──► garbarz-płatnerz ──► zbroje skórzane · żelazo ──► płatnerz ──► kolczugi
 stadnina★ ──► konie
@@ -305,6 +305,8 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 
 **Koga gracza (M5, część 3):** stocznia buduje kogę w 4 widocznych etapach: szkielet (8 desek), poszycie (10 desek, 4 smoły), maszt z żaglem (2 deski, 4 sukna) i wodowanie (2 smoły), każdy ok. 1 minuty pracy cieśli. Po wodowaniu koga szuka portu (jedna koga na port) i czeka na kotwicy w zatoce, żeby nabrzeże zostało wolne dla kupca morskiego. Rejsy: §4.6.
 
+**Nabrzeża (N1, ankieta 2026-11-07):** gracz stawia linią drewniane pomosty i kamienne nabrzeża w głąb morza; rzędy zlewają się w jedno nabrzeże, ludzie po nim chodzą, statki nie. Miejsce cumowania na krawędzi nabrzeża przyjmuje kolejny statek. Część budynków nad wodą (port, stocznia, przystań) to ten sam pas nabrzeża, więc razem z nabrzeżem gracza tworzą jedną bryłę portu, jak w Anno; te budynki można też stawiać na nabrzeżu. Później dźwig przeładunkowy i magazyn portowy. Wartości: ROADMAP, N1.
+
 **Plan M5 (decyzje 2026-11-06, szczegóły w ROADMAP):** w M5 tylko łódź rybacka i koga. Łódź pracuje dla nowej **przystani rybackiej** nad morzem (połów z ławic, więcej niż wędkarz, który zostaje). Statki powstają z desek, smoły (nowa **smolarnia**: drewno → smoła) i sukna. **Kupiec morski** przypływa obcą kogą do portu. Własna koga gracza odbywa **rejsy handlowe za horyzont** (wraca ze złotem i zamówionymi towarami). Na „Wybrzeżu” gra zaczyna się od kogi, która wyładowuje osadników na plaży. Reszta drzewka okrętów (IDEAS) później.
 
 ### 5.5 Lista budynków [SLICE]
@@ -353,6 +355,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 
 - Jednostkę rekrutuje się w **koszarach**. Potrzebny jest wolny mieszkaniec z puli siły roboczej, broń i pancerz ze zbrojowni oraz złoto.
 - Rekrut fizycznie przychodzi do koszar, odbiera broń i zmienia wygląd.
+- **Plan M7 (ankieta 2026-11-07):** rekrut wyprowadza się z domu i mieszka w koszarach (dom przyjmuje przybysza), je z magazynu i dostaje żołd. Ruda żelaza ma małe żyły na każdej mapie, a dużo w prowincji z rudą; konie tylko ze stadniny w prowincji z pastwiskami. Wartości: ROADMAP, M7.
 
 ### 6.2 Typy jednostek
 
@@ -392,6 +395,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
   - taran niszczy bramę, drabiny pozwalają wejść na mur,
   - mury i bramy mają wytrzymałość.
 - Cywile uciekają do ratusza lub twierdzy. Produkcja w zagrożonej strefie staje.
+- **Plan M7 (ankieta 2026-11-07):** sterowanie jak w Twierdzy (klik albo ramka, prawy przycisk: idź albo atakuj, grupy Ctrl+1..9, postawy). Ratusz ma drzwi z wytrzymałością: napastnik najpierw je rozbija, a gdy przy ratuszu nie ma obrońców, zajmuje prowincję. W M7 atakują bandyci, a gracz może zdobyć siłą osadę neutralną (mury i straż).
 - **Zwycięstwo atakującego** to zajęcie ratusza (twierdzy) i brak obrońców. Prowincja przechodzi wtedy do atakującego, a mieszkańcy zostają, z karą do zadowolenia.
 - Gdy gracz nie ogląda oblężenia, wynik jest rozstrzygany automatycznie. Uwzględnia mury, garnizon i machiny oblężnicze.
 
