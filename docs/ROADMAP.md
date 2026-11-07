@@ -564,7 +564,13 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Zapis i odczyt w trakcie załadunku, w trakcie budowy statku i w czasie rejsu nie gubią towarów; zapis z M4b-3 wczytuje się po migracji (v8 → v9), nowa fixtura v9. (Część 2: zapis w trakcie załadunku gra dalej identycznie, migracja v9 → v10 i fixtura `v10_port.json`. Część 3: zapis w trakcie budowy kogi, za horyzontem i w czasie lądowania gra dalej identycznie, migracja v10 → v11, fixtura `v11_voyage.json`.)
 - [ ] Bez spadku wydajności: duże miasto z M4b-3 nadal ≤ 4 ms na tick, automatyczny gracz na „Nadrzeczu” i „Pojezierzu” w limicie.
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
-- [ ] **Twoja ocena gry.**
+- [x] **Twoja ocena gry:** 5/5 (2026-11-07, część 3; części 1 i 2 zaakceptowane wcześniej). Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Start bez czekania na kogę:** koga od razu stoi na kotwicy w zatoce i zaczyna wyładunek (teraz za długo płynie od krawędzi).
+- [ ] **Osadnicy rozproszeni na plaży** zamiast w jednym punkcie.
+- [ ] **Czas ochronny na start** (ankieta 2026-11-07): przez pierwsze ok. 15 minut (albo do postawienia kilku chat) mieszkańcy się nie złoszczą i nie odchodzą; na pasku widać, ile ochrony zostało. Wartości do strojenia.
+- [ ] **Płynne wodowanie kogi:** kadłub zjeżdża z pochylni i wpływa na wodę bez przeskoku (teraz bardzo wolno sunie, a potem nagle jest na wodzie).
 
 **Ustalone przy realizacji części 1 (2026-11-06, do zmiany na prośbę):**
 - **Brzeg biegnie wzdłuż osi siatki.** Na ekranie brzeg „Wybrzeża” jest ukośny (morze wzdłuż dolnych krawędzi mapy), a w siatce prosty, z uskokami co 5–9 kafli. Powód: przystań i stocznia mają prostokątny pomost albo pochylnię, które na ukośnym w siatce brzegu (schodki) nigdzie się nie mieszczą. Zatoka jest prostokątna (13 kafli szerokości, głęboka woda w środku), rzeka wpada do jej końca. Tereny: `sand` (piasek, budować wolno, pól nie), `sea_shallow`, `sea_deep` (oba liczą się jako woda dla wędkarza i glinianki). Ławice to pojedyncze kafle morza w nieco jaśniejszym kolorze na obrazku mapy (13 sztuk, 2 w zatoce). Mapa: `tools/generate_coast_map.py`.
