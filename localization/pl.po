@@ -14,7 +14,7 @@ msgid "ui.main.title"
 msgstr "Twoje Królestwo"
 
 msgid "ui.main.subtitle"
-msgstr "Etap M4a: mieszczanie i logistyka"
+msgstr "Zbuduj miasto, rozwiń handel, poszerz królestwo"
 
 msgid "ui.main.toggle_language"
 msgstr "Zmień język: English"
@@ -264,8 +264,6 @@ msgstr "Duża kraina nad jeziorem: rzeka wpada do jeziora, na wzgórzu kamienist
 msgid "ui.main.new_game"
 msgstr "Nowa gra"
 
-msgid "ui.main.single_on"
-msgstr "Pojedyncza prowincja: %s"
 
 msgid "ui.main.load_game"
 msgstr "Wczytaj szybki zapis"
@@ -273,8 +271,6 @@ msgstr "Wczytaj szybki zapis"
 msgid "ui.close"
 msgstr "Zamknij"
 
-msgid "ui.hud.stats"
-msgstr "Mieszkańcy: %d · Pracujący: %d z %d · Czas: %d:%02d"
 
 msgid "ui.hud.speed"
 msgstr "Tempo: %d×"
@@ -812,8 +808,6 @@ msgstr "Piwowar"
 msgid "ui.doing.go_to_shore"
 msgstr "idzie nad wodę"
 
-msgid "ui.hud.gold"
-msgstr "Złoto: %d"
 
 msgid "ui.build.gold_cost"
 msgstr "Złoto: %d"
@@ -2413,3 +2407,32 @@ msgstr "Skład kupiecki"
 
 msgid "building.trading_post.desc"
 msgstr "Trzyma duży kryty wóz kupiecki na 40 sztuk. Wóz jeździ tylko szlakami handlowymi do sąsiednich prowincji (trochę wolniej niż zwykły wóz). Jeden skład to jeden wóz."
+
+# --- UI-1: look of the interface ---
+
+msgid "ui.hud.residents_tip"
+msgstr "Mieszkańcy prowincji"
+
+msgid "ui.hud.workers_tip"
+msgstr "Pracujący i wszyscy, którzy mogą pracować"
+
+msgid "ui.hud.time_tip"
+msgstr "Czas gry (minuty:sekundy)"
+
+msgid "ui.hud.gold_tip"
+msgstr "Złoto w skarbcu królestwa"
+
+msgid "ui.main.single_provinces"
+msgstr "Pojedyncza prowincja"
+
+msgid "ui.main.tools"
+msgstr "Narzędzia twórców"
+
+msgid "ui.main.quit"
+msgstr "Wyjdź z gry"
+
+msgid "ui.hud.workers"
+msgstr "%d / %d"
+
+msgid "ui.hud.time"
+msgstr "%d:%02d"

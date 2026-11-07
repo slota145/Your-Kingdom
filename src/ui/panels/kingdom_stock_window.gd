@@ -22,12 +22,7 @@ var _timer: float = 0.0
 
 
 func _init() -> void:
-	# Opaque: the window covers a busy town and has many small numbers.
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.13, 0.11, 0.09, 0.97)
-	style.set_content_margin_all(12.0)
-	style.set_corner_radius_all(4)
-	add_theme_stylebox_override(&"panel", style)
+	# The theme's parchment panel (opaque: the window covers a busy town, ROADMAP UI-1).
 	var box := VBoxContainer.new()
 	add_child(box)
 	var head := HBoxContainer.new()
@@ -81,7 +76,7 @@ func _build_rows() -> void:
 	for key: String in ["", "ui.stocks.good", "ui.stocks.stock", "ui.stocks.made", "ui.stocks.used",
 			"ui.stocks.balance", "ui.stocks.sell", "ui.stocks.buy"]:
 		var header := _small(key)
-		header.add_theme_color_override(&"font_color", Color(0.95, 0.82, 0.5))
+		header.add_theme_color_override(&"font_color", UiKit.HEADING)
 		_grid.add_child(header)
 	var goods := province.data.goods()
 	goods.sort_custom(func(a: GoodDef, b: GoodDef) -> bool: return tr(a.name_key()) < tr(b.name_key()))
@@ -167,8 +162,8 @@ func _refresh() -> void:
 		(row["used"] as Label).text = tr("ui.stocks.rate") % used
 		var balance := row["balance"] as Label
 		balance.text = tr("ui.stocks.balance_value") % (made - used)
-		var colour := Color(0.55, 0.9, 0.45) if made - used > 0.05 else (Color(1.0, 0.45, 0.4) \
-				if made - used < -0.05 else Color(0.85, 0.85, 0.85))
+		var colour := UiKit.GOOD if made - used > 0.05 else (UiKit.BAD \
+				if made - used < -0.05 else UiKit.INK_SOFT)
 		balance.add_theme_color_override(&"font_color", colour)
 		var selling := province.merchant.sell_above.has(good)
 		var check := row["tick"] as CheckBox

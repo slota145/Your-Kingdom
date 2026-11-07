@@ -424,6 +424,12 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 
 ---
 
+### 6.8 Interfejs: motyw i menu główne (UI-1)
+
+- **Jeden motyw:** `UiKit.theme()` (pergamin i drewno, grafiki z `tools/generate_ui.gd`) jest ustawiony na korzeniu interfejsu gry i menu. Okna nie nadpisują stylu paneli ani kolorów ramek; kolory tekstu biorą ze stałych `UiKit` (`INK`, `INK_SOFT`, `HEADING`, `GOOD`, `BAD`, `LIGHT`, `GOLD`). Paski z deski (pasek u góry, menu budowy) mają własny, mały motyw `UiKit.board_theme()` (deska, jasny tekst z obrysem, mniejsze przyciski); reszta typów spada na motyw główny przodka.
+- **Dziewięć pól powtarzanych, nie rozciąganych** (`AXIS_STRETCH_MODE_TILE_FIT`), żeby włókna pergaminu i słoje drewna zostały piksel w piksel.
+- **Menu główne** (`src/main/main.gd`) buduje się w kodzie: `MenuBackdrop` (warstwy obrazu, chmury, dym, mewy, shader wody) i pergaminowy panel z przyciskami. Obraz pokrywa okno skalą całkowitą, jeśli tylko się da (1280×720: ×2, 1920×1080: ×3).
+
 ## 7. Prowincje nieoglądane: symulacja dwutrybowa
 
 **Decyzja:**
