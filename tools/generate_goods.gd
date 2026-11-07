@@ -96,6 +96,7 @@ func _init() -> void:
 	_wagon()
 	_wagon(true)
 	_reeds()
+	_vines()
 	print("Goods and nature written to ", OUT)
 	quit()
 
@@ -458,6 +459,87 @@ func _handcart() -> void:
 			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, CART_FRAME),
 					Vector2i(cell % WHEEL_FRAMES * CART_FRAME.x, row * CART_FRAME.y))
 		_save(sheet, "vehicles/handcart/%s.png" % state)
+
+
+# --- Vineyard (review fix 2026-11-07) -------------------------------------------------------
+
+## Vine rows standing on vineyard fields: nature/vines/<state>.png, 64x56, the tile centre on
+## the ground at (32, 44). One trellis row per tile along grid x through the tile centre: a
+## post at each end, two wires, two vine stocks. States follow the field: "pruned" (fallow and
+## ploughed: bare stocks cut back to the wire), "bud", "leaf", "full" (green grapes), "ripe"
+## (purple grapes). Field ground under them: terrain/field_grapes/<stage>.png.
+const VINE_FRAME := Vector2i(64, 56)
+const VINE_FOOT := Vector2(32, 44)
+const C_POST := Color(0.48, 0.36, 0.22)
+const C_WIRE := Color(0.55, 0.52, 0.46)
+const C_CANE := Color(0.42, 0.28, 0.16)
+const C_GRAPE := Color(0.36, 0.14, 0.38)
+const C_GRAPE_GREEN := Color(0.56, 0.68, 0.3)
+
+
+func _vines() -> void:
+	var states := ["pruned", "bud", "leaf", "full", "ripe"]
+	for v: int in states.size():
+		var img := Image.create_empty(VINE_FRAME.x, VINE_FRAME.y, false, Image.FORMAT_RGBA8)
+		var row := func(t: float, h: float) -> Vector2:
+			return VINE_FOOT + Vector2((t - 0.5) * 32.0, (t - 0.5) * 16.0 - h)
+		# Posts at both ends (shared with the next tile of the row), the far one first.
+		for t: float in [0.0, 1.0]:
+			_line(img, row.call(t, 0.0), row.call(t, 21.0), C_POST.darkened(0.35), 2)
+			_line(img, row.call(t, 0.0) + Vector2(1, 0), row.call(t, 21.0) + Vector2(1, 0), C_POST, 1)
+		for h: float in [9.0, 17.0]:
+			_line(img, row.call(0.0, h), row.call(1.0, h), C_WIRE, 1)
+		for k: int in 2:
+			var t := 0.27 + 0.46 * k
+			# The stock: a gnarled trunk up to the lower wire, canes tied along it.
+			_line(img, row.call(t, 0.0), row.call(t, 9.0), C_CANE.darkened(0.15), 2)
+			_line(img, row.call(t - 0.2, 9.0), row.call(t + 0.2, 9.0), C_CANE, 1)
+			if v == 0:
+				for c: float in [-0.12, 0.12]:
+					_line(img, row.call(t + c, 9.0), row.call(t + c * 1.3, 12.0), C_CANE, 1)
+				continue
+			var leaves: int = [0, 0, 12, 22, 24][v]
+			var green := Color(0.3, 0.52, 0.2)
+			if v == 1:
+				for c: float in [-0.15, -0.05, 0.06, 0.16]:
+					var at: Vector2 = row.call(t + c, 10.0 + 3.0 * _hash(k, int(c * 100), 3))
+					_line(img, row.call(t + c, 9.0), at, C_CANE, 1)
+					_ellipse(img, at, Vector2(1.0, 1.0), green.lightened(0.25))
+				continue
+			for n: int in leaves:
+				var u := t + (_hash(n, k, v) - 0.5) * 0.48
+				var h := 7.0 + 14.0 * _hash(n, k, v + 7) * (0.6 if v == 2 else 1.0)
+				var tone := green.lightened(0.12 * _hash(n, k, 13)).darkened(0.18 * _hash(n, k, 17))
+				if v == 4 and _hash(n, k, 19) > 0.7:
+					tone = tone.lerp(Color(0.62, 0.55, 0.22), 0.35)   # a leaf turning in autumn
+				_ellipse(img, row.call(u, h), Vector2(2.6, 2.0), tone)
+			if v >= 3:
+				for g: int in 3:
+					var u := t - 0.16 + 0.16 * g
+					var top: Vector2 = row.call(u, 8.0 + 1.5 * (g % 2))
+					var grape := C_GRAPE if v == 4 else C_GRAPE_GREEN
+					var big := 1.0 if v == 4 else 0.6
+					_ellipse(img, top + Vector2(0, 1.5), Vector2(1.6 * big + 0.4, 1.4), grape.lightened(0.12))
+					_ellipse(img, top + Vector2(0, 3.5), Vector2(1.1 * big + 0.3, 1.6), grape)
+		_save(img, "nature/vines/%s.png" % states[v])
+	# The field ground: tilled vine soil, a trodden strip under the row, grass between rows.
+	for stage: String in ["fallow", "plowed", "sown_1", "sown_2", "sown_3", "ripe"]:
+		var tile := Image.create_empty(64, 32, false, Image.FORMAT_RGBA8)
+		for y: int in 32:
+			for x: int in 64:
+				var g := Vector2((x + 0.5 - 32.0) / 64.0 + (y + 0.5) / 32.0, (y + 0.5) / 32.0 - (x + 0.5 - 32.0) / 64.0)
+				if g.x < 0.0 or g.x > 1.0 or g.y < 0.0 or g.y > 1.0:
+					continue
+				var soil := Color(0.5, 0.35, 0.25).darkened(0.1 * _hash(x / 2, y, 41))
+				var off := absf(g.y - 0.5)
+				if off < 0.12:
+					soil = soil.darkened(0.12)   # the trodden strip under the wires
+				elif off > 0.3 and _hash(x, y, 43) > (0.55 if stage == "fallow" else 0.8):
+					soil = Color(0.42, 0.52, 0.26).darkened(0.15 * _hash(x, y, 47))   # grass between rows
+				elif (x + 2 * y) % 7 == 0 and stage != "fallow":
+					soil = soil.darkened(0.08)   # hoed clods
+				tile.set_pixel(x, y, soil)
+		_save(tile, "terrain/field_grapes/%s.png" % stage)
 
 
 ## Reed tufts for lake shallows (M4b-3): terrain/reeds/{a,b,c}.png, 24x32, the tuft's foot

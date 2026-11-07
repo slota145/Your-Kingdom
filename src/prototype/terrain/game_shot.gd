@@ -58,6 +58,8 @@ var _scroll: int = 0
 var _cog_stage: int = -1
 ## --launch=<0..1> (with --cog_stage=3): how far the launch slide has come; 1 = launched.
 var _launch: float = -1.0
+## --vineyard (review fix 2026-11-07): a vineyard at --tile with rows of fields in every stage.
+var _vineyard: bool = false
 var _yards: PackedStringArray = PackedStringArray()
 
 
@@ -100,6 +102,8 @@ func _ready() -> void:
 			_cog_stage = int(arg.trim_prefix("--cog_stage="))
 		elif arg.begins_with("--launch="):
 			_launch = float(arg.trim_prefix("--launch="))
+		elif arg == "--vineyard":
+			_vineyard = true
 		elif arg.begins_with("--yards="):
 			_yards = arg.trim_prefix("--yards=").split(",")
 		elif arg.begins_with("--select="):
@@ -184,6 +188,8 @@ func _arrange() -> void:
 					break
 	if _cog_stage >= 0:
 		_place_cogs(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _vineyard:
+		_place_vineyard(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
 		_place_yards(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _build_tool != &"":
@@ -192,6 +198,36 @@ func _arrange() -> void:
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == _select:
 			(_game.get("_building_panel") as BuildingPanel).show_building(sim.province, b.id)
+
+
+## A vineyard with 5 rows of 3 fields in front of it: pruned, budding, leafy, green grapes,
+## ripe (--vineyard).
+func _place_vineyard(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	province.rare_resource = &"vines"   # a wine province, for the shot
+	var vineyard := _place_near(sim, &"vineyard", at)
+	if vineyard == null:
+		return
+	var view: ProvinceView = _game.get("view")
+	var grow := 1000
+	for row: int in 5:
+		for k: int in 3:
+			var tile := vineyard.origin + Vector2i(k - 1, 4 + row)
+			if not province.grid.is_inside(tile) or province.fields.has_field(tile):
+				continue
+			province.fields.add(tile, vineyard.id)
+			match row:
+				0:
+					province.fields.set_stage(tile, FieldStore.Stage.PLOWED)
+				4:
+					province.fields.set_stage(tile, FieldStore.Stage.RIPE)
+				_:
+					# Sown so that the growth stage is row (1..3) now.
+					province.fields.sow(tile, province.tick - grow * (row * 2 - 1) / 6, grow)
+			view.terrain.refresh_tile(tile)
+	view.vines.refresh()
+	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(vineyard.origin + Vector2i(0, 5))
 
 
 ## Workshops in a row with full yards (--yards).
