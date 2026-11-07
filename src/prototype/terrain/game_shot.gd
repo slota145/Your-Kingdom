@@ -4,6 +4,8 @@ extends Node
 ##
 ## Run: godot --path . res://src/prototype/terrain/game_shot.tscn -- --shot=<png>
 ##      [--tile=X,Y] [--zoom=N] [--roads [--paved]] [--plain]
+## --plan_paving (with --roads) orders cobbles on the unpaved part (the marker of planned
+## paving); --build=<id> takes that building tool with the cursor on the tile (reach preview).
 ## --carts puts 4 porters with handcarts and 4 carters with wagons (half loaded) around the
 ## tile, 8 directions.
 ## --map=<id> starts a new game on that map (default riverlands).
@@ -36,6 +38,10 @@ var _zoom: int = 1
 var _roads: bool = false
 var _plain: bool = false
 var _paved: bool = false
+## Review fixes 2026-11-07: cobbles ordered on the unpaved part of --roads; a building tool
+## (its reach preview) with the cursor on --tile.
+var _plan_paving: bool = false
+var _build_tool: StringName = &""
 var _carts: bool = false
 var _harbour: bool = false
 var _port: bool = false
@@ -65,6 +71,10 @@ func _ready() -> void:
 			_plain = true
 		elif arg == "--paved":
 			_paved = true
+		elif arg == "--plan_paving":
+			_plan_paving = true
+		elif arg.begins_with("--build="):
+			_build_tool = StringName(arg.trim_prefix("--build="))
 		elif arg == "--carts":
 			_carts = true
 		elif arg == "--harbour":
@@ -133,6 +143,12 @@ func _arrange() -> void:
 				sim.province.grid.set_paved(tile, true)
 				sim.province.refresh_tile(tile)
 			view.terrain.refresh_tile(tile)
+		if _plan_paving:
+			var plan: Array[Vector2i] = []
+			for tile: Vector2i in tiles:
+				if tile.x - centre.x < -2:
+					plan.append(tile)
+			_game.call("_execute", BuildPavingCommand.new(plan))
 	if _carts:
 		var at := _tile if _tile.x >= 0 else sim.province.grid.size / 2
 		Game.paused = true
@@ -159,6 +175,9 @@ func _arrange() -> void:
 					break
 	if _cog_stage >= 0:
 		_place_cogs(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _build_tool != &"":
+		_game.call("_set_tool", {"kind": &"building", "def": _build_tool})
+		get_viewport().warp_mouse(get_viewport().get_visible_rect().size / 2.0)
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == _select:
 			(_game.get("_building_panel") as BuildingPanel).show_building(sim.province, b.id)
