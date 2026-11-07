@@ -22,8 +22,9 @@ M0 Fundament
                 │    └─► M5 Woda, porty i statki
                 │         └─► M6 Mapa świata i prowincje
                 │              └─► N1 Nabrzeża i port (UI-1 obok)
-                │                   └─► M7 Wojsko, mury i oblężenia
-                │                        └─► M8 Przeciwnicy i sandbox ──► M10 Wersja 1.0
+                │                   └─► G1 Grafika budynków z PixelLab, część 1 (pionierzy)
+                │                        └─► M7 Wojsko, mury i oblężenia
+                │                             └─► M8 Przeciwnicy i sandbox ──► M10 Wersja 1.0
                 └─► M9 Produkcja grafik (równolegle od M4, partiami)
 Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 ```
@@ -792,6 +793,30 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Zapis v15 i v16 z migracjami i fixturami; stare zapisy wczytują się z nowym wyglądem pomostów.
 - [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
 - [x] **Twoja ocena gry** (po każdej części; część 1 i część 2 zaakceptowane 2026-11-07).
+
+---
+
+## G1 — Grafika budynków z PixelLab, część 1 (pionierzy)
+
+**Status: dopisany 2026-11-07 na prośbę właściciela projektu, przed M7. Plan do przygotowania i akceptacji (ankieta), ocena po etapie.**
+
+**Skąd ten etap:** budynki rysowane kodem są czytelne, ale „płaskie” obok terenu i menu z PixelLab. Próba 2026-11-07 (ART_SPEC §10.11): obóz pionierów i chata wygenerowane od zera w PixelLab dwoma narzędziami i wstawione na próbę do sceny gry. Wybór właściciela: **Pro Flash** (`create_object_pro_flash`, widok „high top-down”, 1 kierunek, ok. 6–9 generacji za budynek), **rozjaśnione średnio** skryptem `tools/brighten_pixellab.py`. „Obiekt na mapę” odpada (obóz wyszedł jako latająca wysepka ze skarpą). Pliki próby: `src/prototype/g1/`.
+
+**Zakres (do potwierdzenia w planie):** zestaw pionierów, czyli pierwsze minuty gry: obóz pionierów, chata, drwal, kamieniołom, rybak.
+
+**Do rozstrzygnięcia w planie (ankieta):**
+- rozmiar względem obrysu (obóz z próby jest mniejszy niż 3×3 kafle) i wejście na właściwym kaflu (drzwi chaty z próby są na prawej ścianie),
+- druga orientacja: lustro (światło z drugiej strony) czy osobna generacja,
+- etapy budowy (`construction_1`, `construction_2`): z PixelLab na podstawie gotowego budynku czy kodem,
+- warianty i tył chaty (`base_2`, `base_3`, `*_back`), kamienice na wyższych poziomach zostają na razie bez zmian,
+- miejsca pracy i podwórka widoczne od strony kamery (ART_SPEC §3.2),
+- budżet: ok. 195 generacji do 27 listopada.
+
+**DoD (wstępnie):**
+- [ ] Budynki zestawu pionierów z PixelLab w grze, z pivotem, wejściem i cięciem do sortowania (`test_sorting.gd`), etapami budowy i obiema orientacjami.
+- [ ] Przepływ pracy opisany w ART_SPEC (opis stylu, rozjaśnienie, przycięcie, pivot), żeby kolejne partie były spójne.
+- [ ] Testy przechodzą (szybkie i długie).
+- [ ] **Twoja ocena wyglądu.**
 
 ---
 
