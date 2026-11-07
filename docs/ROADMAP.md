@@ -693,7 +693,11 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Gra z 5 prowincjami gracza działa płynnie: tick ≤ 4 ms przy dużym mieście oglądanym i 4 prowincjach w trybie uproszczonym (2,83 ms w chmurze; pomiar na laptopie u właściciela); automatyczny gracz zasiedla kolejne prowincje i prowadzi szlak.
 - [x] Zapis obejmuje cały świat: prowincje w obu trybach, wyprawy, szlaki, osady neutralne; stare zapisy wczytują się po migracji jako świat z jedną prowincją.
 - [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
-- [ ] **Twoja ocena gry.**
+- [x] **Twoja ocena gry:** 5/5 (2026-11-07, ankieta na laptopie, na gotowym świecie z `src/prototype/m6/review_world.gd`). Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Wykup osady: „Wyślij towar” od razu wybiera to, czego osada żąda** (towary i ilości z jej żądań).
+- [ ] **Wygląd winnicy:** rzędy pali z linkami i krzewy winorośli, które rosną i owocują (teraz pole wina to placeholder).
 
 ---
 

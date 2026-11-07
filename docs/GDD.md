@@ -473,6 +473,7 @@ Szczegóły i kryteria ukończenia: [ROADMAP.md](ROADMAP.md), etap M3. W skróci
 - **M4b-2: 5/5 (2026-11-07).** Gęsty las, świnie, kupiec i okno „Zapasy” działają i są czytelne. Brak drewna nie przeszkadza. Do poprawki: stos przy budynku leży na kaflach budynku i wystaje zza jego ścian (drwal, rybak). Decyzja: budynki ze stosem dostają **podwórko**, czyli wolne pole przed wejściem, na którym rośnie stos. Targ: **więcej straganiarzy**, bo 2 nie nadążają w dużym mieście.
 - **M4b-3: 5/5 (2026-11-07).** Bruk, wózki, woźnice z wozami, wędkarz, glinianka i kamieniołom działają („woźnica działa!”). Do poprawki: wyraźny znacznik zaplanowanego bruku z możliwością anulowania, obracające się koła wózków i wozów, powtarzalny wzór jeziora i kamienistego gruntu (szwy), sztuczne przejścia rzeka–jezioro i rzeka–morze, zacięcia (duże miasto i podgląd zasięgu przy stawianiu kaplicy lub studni).
 - **M5 część 3: 5/5 (2026-11-07).** Start z obozem pionierów „bardzo dobry”, budowa kogi „prawie idealna”, plan rejsu zrozumiały. Do poprawki: koga na starcie od razu czeka w zatoce, osadnicy rozchodzą się po plaży, płynne wodowanie, a start jest za trudny, więc dostaje **czas ochronny** (mieszkańcy się nie złoszczą i nie odchodzą). Most i łagodniejsze wybrzeże: osobny mały etap po M7 (IDEAS).
+- **M6: 5/5 (2026-11-07).** Mapa świata, tryb uproszczony, wyprawy, szlaki i wino działają. Do poprawki: przy wykupie osady „Wyślij towar” od razu wybiera żądane towary, a winnica dostaje wygląd prawdziwej winnicy (pale z linkami i krzewy winorośli).
 
 ### 11.2 Odłożone [PÓŹNIEJ]
 
