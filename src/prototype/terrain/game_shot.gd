@@ -14,6 +14,8 @@ extends Node
 ## and foreign cogs sailing in 8 directions; --select=ship opens the cog's panel.
 ## --quays (N1, with --port) joins a stone quay to the port, lays a timber pier with a mooring
 ## and a cog tied up at it, a diagonal stone quay, and orders a second pier (outline only).
+## --crane (N1 part 2, with --port --quays) puts a cargo crane by the mooring, its operator in
+## the middle of a lift (--lift=<0..1>, default 0.35), and a port warehouse with goods.
 ## --select=<building id> opens the panel of that building.
 ## --advance=<seconds> runs the simulation that long first (M5 part 3: the landing on Coast).
 ## --cog_stage=<0..3> (M5 part 3, map coast) puts a shipyard with the player's cog on its
@@ -38,6 +40,8 @@ var _carts: bool = false
 var _harbour: bool = false
 var _port: bool = false
 var _quays: bool = false
+var _crane: bool = false
+var _lift: float = 0.35
 ## Building id whose panel is opened (--select=<id>).
 var _select: StringName = &""
 var _advance: int = 0
@@ -69,6 +73,10 @@ func _ready() -> void:
 			_port = true
 		elif arg == "--quays":
 			_quays = true
+		elif arg == "--crane":
+			_crane = true
+		elif arg.begins_with("--lift="):
+			_lift = float(arg.trim_prefix("--lift="))
 		elif arg.begins_with("--scroll="):
 			_scroll = int(arg.trim_prefix("--scroll="))
 		elif arg.begins_with("--advance="):
@@ -258,6 +266,17 @@ func _place_quays(sim: Simulation, port: BuildingState) -> void:
 		Harbour.moor(cog, mooring)
 		mooring.stock.add(&"wood", 8)
 		mooring.stock.add(&"fish", 5)
+		if _crane:
+			_place_crane(sim, mooring, s1, sea, along, lay)
+			# The port warehouse on a stone quay on the other side of the port.
+			var store: Array = []
+			for k: int in range(-4, -1):
+				var s0: Vector2i = shore.call(k)
+				if s0 != Agent.NO_TILE:
+					store.append_array([s0, s0 + sea, s0 + sea * 2])
+			lay.call(store, TileGrid.STONE_QUAY)
+			province.refresh_fairways()
+			_place_warehouse(sim, store, o)
 	# A diagonal stone quay (8 directions, like walls), out to sea and back along the shore.
 	var s3: Vector2i = shore.call(16)
 	var diagonal := BuildQuayCommand.line(s3 - sea * 2, s3 + (sea - along) * 4)
@@ -278,6 +297,57 @@ func _place_quays(sim: Simulation, port: BuildingState) -> void:
 	var view: ProvinceView = _game.get("view")
 	view.quays.refresh()
 	view.buildings.refresh_all()
+
+
+## N1 part 2: a crane on a pier beside [param mooring] with its operator lifting wood, and a
+## port warehouse on a pier block on the shore beside it.
+func _place_crane(sim: Simulation, mooring: BuildingState, s1: Vector2i, sea: Vector2i,
+		along: Vector2i, lay: Callable) -> void:
+	var province := sim.province
+	var o := mooring.orientation
+	var block: Array = []
+	for j: int in range(2, 4):
+		for m: int in range(2, 4):
+			block.append(s1 + sea * j + along * m)
+	var walk: Array = [s1 + sea + along * 2, s1 + sea + along * 3]
+	lay.call(block, TileGrid.PIER)
+	lay.call(walk, TileGrid.PIER)
+	province.refresh_fairways()
+	var at: Vector2i = block[0]
+	for t: Vector2i in block:
+		at = Vector2i(mini(at.x, t.x), mini(at.y, t.y))
+	var error := sim.execute(PlaceBuildingCommand.new(&"crane", at, true, o))
+	print("crane ", at, " ", error)
+	if error != &"":
+		return
+	var crane := province.buildings.get_building(sim.ids.next_id - 1)
+	var operator := province.spawn_agent(Cranes.OPERATOR_KIND, crane.entrance_tile())
+	province.assign_worker(operator, crane)
+	var task := Task.new()
+	task.kind = Task.KIND_RECIPE
+	task.recipe_id = crane.def.recipe.id
+	task.steps = crane.def.recipe.steps
+	task.step_index = 1
+	task.bb = {"_lift": roundi(_lift * Cranes.CYCLE_TICKS), "_out": 1, "good": "wood", "_load": 3,
+			"_port": mooring.id}
+	operator.task = task
+	operator.activity = &"walk"
+	operator.facing = IsoMath.screen_dir(IsoMath.tile_center(mooring.berth_tile()) - operator.pos)
+
+
+func _place_warehouse(sim: Simulation, store: Array, o: int) -> void:
+	var province := sim.province
+	var corner: Vector2i = store[0]
+	for t: Vector2i in store:
+		corner = Vector2i(mini(corner.x, t.x), mini(corner.y, t.y))
+	var error := sim.execute(PlaceBuildingCommand.new(&"port_warehouse", corner, true, o))
+	print("port warehouse ", corner, " ", error)
+	if error == &"":
+		var warehouse := province.buildings.get_building(sim.ids.next_id - 1)
+		warehouse.stock.add(&"planks", 12)
+		warehouse.stock.add(&"tar", 6)
+		warehouse.stock.add(&"cloth", 5)
+		warehouse.stock.add(&"wood", 10)
 
 
 func _place_port(sim: Simulation, at: Vector2i) -> void:

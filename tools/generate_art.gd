@@ -294,7 +294,7 @@ const BUILDINGS := {
 	# N1 part 2: the cargo crane on the quay: a treadwheel by the door (the operator walks in
 	# it) and a tall mast. The jib, the rope and the load are drawn by the view (CraneLayer),
 	# which swings them between the quay yard and the ship.
-	"crane": [{"min_height": 96.0, "volumes": [],
+	"crane": [{"min_height": 124.0, "volumes": [],
 		"props": [["crane_mast", 1.15, 0.85], ["treadwheel", 0.5, 1.5], ["bollard", 1.75, 1.75]]}],
 	"port_warehouse": [{"special": "yard"}],
 	# M5 part 3: the pioneer camp, the first building after a start from a ship: a log hut,
@@ -1170,15 +1170,17 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 			_crate(img, p + Vector2(-29, -12), Color(0.62, 0.46, 0.28))
 		"crane_mast":
 			# N1 part 2: a timber mast on a plank footing with two raking struts and an iron cap
-			# (the jib is drawn by the view from the cap, CraneLayer.MAST_HEIGHT).
+			# (the jib is drawn by the view from the collar, CraneLayer.HEEL_HEIGHT).
 			_box(img, p, Vector2(18, 9), 6.0, C_PLANK, "planks")
 			for side: float in [-1.0, 1.0]:
 				_line(img, p + Vector2(side * 8, -4), p - Vector2(0, 44), C_BEAM.lightened(0.08), 2)
-			_line(img, p - Vector2(0, 5), p - Vector2(0, 86), C_BEAM, 5)
-			_line(img, p - Vector2(1, 5), p - Vector2(1, 86), C_BEAM.lightened(0.3), 1)
-			for k: int in 4:
+			_line(img, p - Vector2(0, 5), p - Vector2(0, 112), C_BEAM, 5)
+			_line(img, p - Vector2(1, 5), p - Vector2(1, 112), C_BEAM.lightened(0.3), 1)
+			for k: int in 6:
 				_line(img, p - Vector2(2, 20 + k * 16), p - Vector2(-2, 20 + k * 16), C_IRON, 1)
-			_box(img, p - Vector2(0, 86), Vector2(7, 4), 4.0, C_IRON.lightened(0.2))
+			# The slewing collar the jib hangs from, and the cap with its sheave.
+			_box(img, p - Vector2(0, 94), Vector2(9, 5), 5.0, C_BEAM.lightened(0.15))
+			_box(img, p - Vector2(0, 112), Vector2(7, 4), 4.0, C_IRON.lightened(0.2))
 		"treadwheel":
 			# N1 part 2: a big wheel of two rims joined by treads, on an A-frame either side.
 			var c := p - Vector2(0, 21)

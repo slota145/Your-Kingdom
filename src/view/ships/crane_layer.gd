@@ -10,13 +10,15 @@ extends Node2D
 const MAST_FOOT := Vector2(1.15, 0.85)
 const WHEEL_FOOT := Vector2(0.5, 1.5)
 ## Heights (screen px) of the jib's heel on the mast, of the mast cap, and of the jib head.
-const HEEL_HEIGHT := 72.0
-const CAP_HEIGHT := 88.0
-const HEAD_HEIGHT := 70.0
+const HEEL_HEIGHT := 98.0
+const CAP_HEIGHT := 114.0
+const HEAD_HEIGHT := 100.0
 const AXLE_HEIGHT := 21.0
-## Hook heights over the ground: hoisted while the jib swings, down at the yard or the ship.
-const HOOK_UP := 34.0
+## Hook heights over the ground: hoisted while the jib swings, down at the yard or on the
+## ship's deck.
+const HOOK_UP := 66.0
 const HOOK_DOWN := 6.0
+const HOOK_DECK := 26.0
 ## The jib at rest points this far from the yard towards the ship.
 const REST := 0.35
 const C_JIB := Color(0.36, 0.23, 0.14)
@@ -61,8 +63,8 @@ func _draw_crane(crane: BuildingState, operator: Agent) -> void:
 	var heel := mast - Vector2(0, HEEL_HEIGHT)
 	var cap := mast - Vector2(0, CAP_HEIGHT)
 	# Where the hook goes: the quay yard (the foot of the gangway) and the ship at the berth.
-	var yard := IsoMath.grid_to_screen(Vector2(crane.origin) + Vector2(crane.def.footprint) * 0.5 \
-			+ Vector2(0.0, 0.0)) if port == null else IsoMath.tile_center_screen(port.gangway_tile())
+	var yard := IsoMath.grid_to_screen(Vector2(crane.origin) + Vector2(crane.def.footprint) * 0.5) \
+			if port == null else IsoMath.tile_center_screen(port.gangway_tile())
 	var ship := yard + Vector2(-40, 20) if port == null else IsoMath.tile_center_screen(port.berth_tile())
 	var t := Cranes.lift_progress(operator) if operator != null else -1.0
 	var out := operator != null and operator.task != null and int(operator.task.bb.get("_out", 1)) == 1
@@ -75,16 +77,18 @@ func _draw_crane(crane: BuildingState, operator: Agent) -> void:
 		var ticks := t * Cranes.CYCLE_TICKS
 		var h := float(Cranes.HOOK_TICKS)
 		var s := float(Cranes.SWING_TICKS)
+		var low_from := HOOK_DOWN if out else HOOK_DECK
+		var low_to := HOOK_DECK if out else HOOK_DOWN
 		if ticks < h:
 			at = from
-			hook = lerpf(HOOK_DOWN, HOOK_UP, ticks / h)
+			hook = lerpf(low_from, HOOK_UP, ticks / h)
 			loaded = true
 		elif ticks < h + s:
 			at = from.lerp(to, _ease((ticks - h) / s))
 			loaded = true
 		elif ticks < 2.0 * h + s:
 			at = to
-			hook = lerpf(HOOK_UP, HOOK_DOWN, (ticks - h - s) / h)
+			hook = lerpf(HOOK_UP, low_to, (ticks - h - s) / h)
 			loaded = ticks < 2.0 * h + s - 1.0
 		else:
 			at = to.lerp(from, _ease((ticks - 2.0 * h - s) / s))
@@ -108,19 +112,23 @@ func _draw_crane(crane: BuildingState, operator: Agent) -> void:
 ## A cargo net with [param count] goods under the hook.
 func _draw_load(top: Vector2, good: StringName, count: int) -> void:
 	var icon := _icon(good)
-	var size := 13.0
+	var size := 14.0
 	for i: int in count:
-		var offset := Vector2((i - (count - 1) * 0.5) * 8.0, 4.0 + float(i % 2) * 2.0)
+		var offset := Vector2((i - (count - 1) * 0.5) * 8.0, 5.0 - float(i % 2) * 4.0)
 		var rect := Rect2(top + offset - Vector2(size * 0.5, 0), Vector2(size, size))
 		if icon != null:
 			draw_texture_rect(icon, rect, false)
 		else:
 			draw_rect(rect, Color(0.6, 0.45, 0.28))
-	var left := top + Vector2(-(count * 4.0 + 4.0), 8.0)
-	var right := top + Vector2(count * 4.0 + 4.0, 8.0)
-	draw_line(top, left, C_NET, 1.0)
-	draw_line(top, right, C_NET, 1.0)
-	draw_line(left + Vector2(0, 8), right + Vector2(0, 8), C_NET, 1.0)
+	# The net: ropes from the hook down around the goods, and a mesh under them.
+	var half := count * 4.0 + 4.0
+	var left := top + Vector2(-half, 9.0)
+	var right := top + Vector2(half, 9.0)
+	for end: Vector2 in [left, right, top + Vector2(-half * 0.4, 12.0), top + Vector2(half * 0.4, 12.0)]:
+		draw_line(top, end, C_NET, 1.0)
+	draw_line(left, left + Vector2(2, 9), C_NET, 1.0)
+	draw_line(right, right + Vector2(-2, 9), C_NET, 1.0)
+	draw_line(left + Vector2(2, 9), right + Vector2(-2, 9), C_NET, 1.0)
 
 
 func _icon(good: StringName) -> Texture2D:
