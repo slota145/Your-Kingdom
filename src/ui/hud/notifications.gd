@@ -58,7 +58,9 @@ func on_sim_event(event: Dictionary) -> void:
 
 func push(text: String) -> void:
 	var l := UiKit.label(text)
-	l.add_theme_color_override(&"font_outline_color", Color.BLACK)
+	# Over the town, not on parchment: light text with a dark outline.
+	l.add_theme_color_override(&"font_color", UiKit.LIGHT)
+	l.add_theme_color_override(&"font_outline_color", Color(0.14, 0.08, 0.05))
 	l.add_theme_constant_override(&"outline_size", 6)
 	add_child(l)
 	var tween := l.create_tween()

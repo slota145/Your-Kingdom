@@ -42,7 +42,7 @@ func _init() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var backdrop := ColorRect.new()
-	backdrop.color = Color(0.14, 0.11, 0.08)
+	backdrop.color = Color(0.26, 0.16, 0.09)   # dark wood around the parchment map
 	backdrop.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(backdrop)
 	var row := HBoxContainer.new()
@@ -57,13 +57,6 @@ func _init() -> void:
 	row.add_child(_canvas)
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size.x = UiKit.PANEL_WIDTH
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.18, 0.14, 0.10)
-	style.content_margin_left = 14.0
-	style.content_margin_right = 14.0
-	style.content_margin_top = 14.0
-	style.content_margin_bottom = 14.0
-	panel.add_theme_stylebox_override(&"panel", style)
 	row.add_child(panel)
 	# Scrolls when the province's panel with its expedition does not fit on the screen.
 	var scroll := ScrollContainer.new()
@@ -82,7 +75,7 @@ func _init() -> void:
 	_lines = UiKit.label()
 	box.add_child(_lines)
 	_hint = UiKit.label()
-	_hint.add_theme_color_override(&"font_color", Color(0.8, 0.8, 0.75))
+	_hint.add_theme_color_override(&"font_color", UiKit.INK_SOFT)
 	box.add_child(_hint)
 	_enter = UiKit.button("ui.world.enter", func() -> void: enter_requested.emit(_selected))
 	box.add_child(_enter)

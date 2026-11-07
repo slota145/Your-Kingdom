@@ -13,7 +13,7 @@ msgid "ui.main.title"
 msgstr "Your Kingdom"
 
 msgid "ui.main.subtitle"
-msgstr "Milestone M4a: burghers and logistics"
+msgstr "Build a town, grow your trade, widen your kingdom"
 
 msgid "ui.main.toggle_language"
 msgstr "Change language: Polski"
@@ -259,8 +259,6 @@ msgstr "A large land by a lake: a river flows into the lake, a stony hill with r
 msgid "ui.main.new_game"
 msgstr "New game"
 
-msgid "ui.main.single_on"
-msgstr "Single province: %s"
 
 msgid "ui.main.load_game"
 msgstr "Load quick save"
@@ -268,8 +266,6 @@ msgstr "Load quick save"
 msgid "ui.close"
 msgstr "Close"
 
-msgid "ui.hud.stats"
-msgstr "Residents: %d · Working: %d of %d · Time: %d:%02d"
 
 msgid "ui.hud.speed"
 msgstr "Speed: %d×"
@@ -807,8 +803,6 @@ msgstr "Brewer"
 msgid "ui.doing.go_to_shore"
 msgstr "going to the water"
 
-msgid "ui.hud.gold"
-msgstr "Gold: %d"
 
 msgid "ui.build.gold_cost"
 msgstr "Gold: %d"
@@ -2390,3 +2384,32 @@ msgstr "Trading post"
 
 msgid "building.trading_post.desc"
 msgstr "Keeps a big covered merchant wagon for 40 units. It runs only trade routes to neighbouring provinces (a little slower than a plain wagon). One trading post, one wagon."
+
+# --- UI-1: look of the interface ---
+
+msgid "ui.hud.residents_tip"
+msgstr "Residents of the province"
+
+msgid "ui.hud.workers_tip"
+msgstr "Working, and everybody who could work"
+
+msgid "ui.hud.time_tip"
+msgstr "Game time (minutes:seconds)"
+
+msgid "ui.hud.gold_tip"
+msgstr "Gold in the kingdom's treasury"
+
+msgid "ui.main.single_provinces"
+msgstr "Single province"
+
+msgid "ui.main.tools"
+msgstr "Developer tools"
+
+msgid "ui.main.quit"
+msgstr "Quit"
+
+msgid "ui.hud.workers"
+msgstr "%d / %d"
+
+msgid "ui.hud.time"
+msgstr "%d:%02d"

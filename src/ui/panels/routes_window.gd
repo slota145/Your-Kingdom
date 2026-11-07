@@ -33,11 +33,6 @@ var _state_labels: Dictionary[int, Label] = {}
 
 
 func _init() -> void:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.13, 0.11, 0.09, 0.97)
-	style.set_content_margin_all(12.0)
-	style.set_corner_radius_all(4)
-	add_theme_stylebox_override(&"panel", style)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override(&"separation", 8)
 	add_child(box)
@@ -74,7 +69,7 @@ func _init() -> void:
 	_create = UiKit.button("ui.routes.create", _create_route)
 	row.add_child(_create)
 	_note = UiKit.label()
-	_note.add_theme_color_override(&"font_color", Color(0.9, 0.75, 0.5))
+	_note.add_theme_color_override(&"font_color", UiKit.BAD)
 	box.add_child(_note)
 
 
@@ -171,7 +166,7 @@ func _route_box(route: TradeRoute) -> Control:
 		remove.disabled = route.closing
 		head.add_child(remove)
 	var state := _small("")
-	state.add_theme_color_override(&"font_color", Color(0.8, 0.8, 0.72))
+	state.add_theme_color_override(&"font_color", UiKit.INK_SOFT)
 	box.add_child(state)
 	_state_labels[route.id] = state
 	for i: int in route.lines.size():

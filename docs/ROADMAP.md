@@ -679,6 +679,30 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ---
 
+## UI-1 — Wygląd interfejsu i menu główne
+
+**Status: start 2026-11-07, przed oceną gry M4b-2, M4b-3, M5 i M6 (decyzja właściciela; ankieta 2026-11-07).** Mały etap między M6 a M7: zmienia wygląd, nie zasady gry.
+
+**Stan (2026-11-07):** gotowe i czeka na ocenę wyglądu. Obraz menu: wariant 2 z 3 (wybór właściciela), cięty na warstwy (`python3 tools/split_menu_art.py`; kawałek nieba za żaglem dopisany na uwagę właściciela). Motyw i grafiki interfejsu: `tools/generate_ui.gd`, `UiKit`. Pasek u góry z ikonami (mieszkańcy, pracujący, czas, złoto). Menu: „Nowa gra”, „Wczytaj szybki zapis”, „Pojedyncza prowincja” (rozwijane nazwy map), język, „Narzędzia twórców” (piaskownica, benchmark, próba czcionki i liczby mnogiej), „Wyjdź z gry”. Zrzut menu: `xvfb-run -a "$GODOT" --path . --rendering-driver opengl3 res://src/prototype/ui/menu_shot.tscn -- --out=<plik.png> [--open=maps|tools]`. Do sprawdzenia na laptopie: menu w 1920×1080 (skala ×3; w chmurze nie da się zmienić rozmiaru okna). Uproszczenia: nabrzeże nie jest osobną warstwą (przesuwa się razem z miastem), koga się nie kołysze.
+
+**Decyzje (ankieta 2026-11-07):**
+- **Styl „pergamin i drewno”, rysowany kodem:** panele jak pergamin w ramkach z ciemnego drewna z okuciami, przyciski jak drewniane tabliczki, nagłówki w kolorze ciemnej czerwieni i złota, pasek u góry jak deska z ikonami. Jeden wspólny motyw (`UiKit.theme()`), żadnych kolorów okien na sztywno.
+- **Obrazek menu głównego z PixelLab** (pomysł właściciela): drewniane nabrzeże ze skrzyniami i beczkami na pierwszym planie, koga przy nabrzeżu ustawiona skośnie, dziobem w naszą stronę, z granatowym żaglem, w tle całe miasto na wzgórzu z zamkiem; **pogodny dzień**. Obraz 640×360 powiększony 3 razy (1920×1080). Właściciel wybiera jeden z wariantów.
+- **Menu „żywe”:** obraz w warstwach przesuwa się lekko przy ruchu myszy, woda faluje, z kominów leci dym, krążą mewy, chmury płyną (rysowane kodem nad obrazem).
+- **Nowe menu główne:** tytuł, „Nowa gra”, „Wczytaj”, „Pojedyncza prowincja” (rozwijane), język, „Wyjdź”; narzędzia deweloperskie (piaskownica, benchmark, próba liczby mnogiej) schowane pod jednym przyciskiem.
+
+**Zakres:** generator grafik interfejsu (`tools/generate_ui.gd`: pergamin, ramki, przyciski w 4 stanach, deska paska, separatory, ikony złota i ludzi), motyw w `UiKit`, przepięcie wszystkich okien i paneli na motyw, nowe menu główne z warstwami i animacjami, teksty PL i EN, aktualizacja ART_SPEC i ARCHITECTURE (UI).
+
+**Poza zakresem:** zmiana układu okien i nowych funkcji (po ocenie gry), dźwięki, animowane przejścia między ekranami, ikony budynków w menu budowy (M9).
+
+**DoD:**
+- [x] Wszystkie okna, panele, pasek i menu budowy mają styl pergaminu i drewna; tekst jest czytelny (kontrast, także w zrzutach w obu językach).
+- [x] Menu główne z obrazkiem z PixelLab, warstwami i animacjami; działa w 1280×720 i 1920×1080.
+- [ ] Testy przechodzą (szybkie i długie).
+- [ ] **Twoja ocena wyglądu.**
+
+---
+
 ## M7 — Wojsko, mury i oblężenia
 
 **Zakres:**

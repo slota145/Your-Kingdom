@@ -26,7 +26,7 @@ func _init() -> void:
 	_cost.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
 	add_child(_cost)
 	_status = UiKit.label("")
-	_status.add_theme_color_override(&"font_color", Color(0.95, 0.82, 0.5))
+	_status.add_theme_color_override(&"font_color", UiKit.HEADING)
 	add_child(_status)
 	_buttons = HBoxContainer.new()
 	add_child(_buttons)
@@ -42,7 +42,7 @@ func _init() -> void:
 	add_child(_disband)
 	_why = UiKit.label("")
 	_why.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
-	_why.add_theme_color_override(&"font_color", Color(0.75, 0.72, 0.65))
+	_why.add_theme_color_override(&"font_color", UiKit.INK_SOFT)
 	add_child(_why)
 
 

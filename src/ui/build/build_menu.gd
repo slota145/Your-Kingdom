@@ -30,6 +30,7 @@ var _locked_to: StringName = &""
 
 
 func setup(registry: DataRegistry) -> void:
+	theme = UiKit.board_theme()   # a wooden board like the top bar (ROADMAP UI-1)
 	var box := VBoxContainer.new()
 	add_child(box)
 	var tabs := HBoxContainer.new()
