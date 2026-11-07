@@ -708,7 +708,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu), przed M7 i przed oceną gry M4b-2, M4b-3, M5, M6 i UI-1 (poprawki z ocen mają pierwszeństwo).** Pomysł gracza z IDEAS („Nabrzeża budowane w głąb morza”), wersja średnia: 2 części, ocena po każdej.
 
-**Część 1, stan (2026-11-07): gotowa, czeka na ocenę właściciela.** Zrobione:
+**Część 1, stan (2026-11-07): zaakceptowana przez właściciela 2026-11-07 i scalona do `main`.** Zrobione:
 - **Nabrzeża w symulacji:** warstwa nabrzeży w siatce (pomost i kamień), chodzenie po nich (pomost jak droga ubita, nabrzeże jak bruk), statki i łodzie nie przepływają; budowa jak bruk: tragarze niosą deski albo kamień, budowniczy stoi obok i układa kafel po kaflu od brzegu (6 s na kafel); zamówione kafle są od razu zamknięte dla statków. Zasady: tylko morze, najwyżej 8 kafli od brzegu, nie na torze wodnym ani miejscu cumowania, a cała linia jest odrzucana, gdy odcięłaby od morza miejsce cumowania, ławicę albo statek. Rozbiórka kafla, jeśli reszta nabrzeża dalej sięga brzegu.
 - **Budynki na nabrzeżu:** port, stocznia, przystań stoją na wodzie albo na nabrzeżu (także częścią lądową); inne budynki nie.
 - **Miejsce cumowania** (zmiana: 2×2 zamiast 1×2, bo budynki mają kwadratowy obrys): 4 deski, tylko na nabrzeżu, przód do wody, mały plac na 3 stosy; obsługują je portowcy najbliższego portu w zasięgu 12 kafli (bez portu nie da się postawić). Kupiec morski, koga gracza i szlaki traktują je jak drugi port.
@@ -756,7 +756,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] Dźwig przeładunkowy i magazyn portowy działają (część 2).
 - [ ] Zapis v15 i v16 z migracjami i fixturami; stare zapisy wczytują się z nowym wyglądem pomostów. (v15 zrobione w części 1.)
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
-- [ ] **Twoja ocena gry** (po każdej części).
+- [ ] **Twoja ocena gry** (po każdej części; część 1 zaakceptowana 2026-11-07).
 
 ---
 
