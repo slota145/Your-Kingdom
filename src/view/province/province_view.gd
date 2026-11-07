@@ -77,6 +77,7 @@ func setup(source: ProvinceSim) -> void:
 	agents = AgentViewPool.new()
 	agents.province = province
 	world.add_child(agents)
+	agents.warm_up(province)
 	ships = ShipLayer.new()
 	world.add_child(ships)
 	ships.setup(province)

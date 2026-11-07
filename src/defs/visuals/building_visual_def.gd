@@ -60,6 +60,14 @@ func look_count(level: int) -> int:
 	return base_variants
 
 
+## Visual defs by building id, null kept too (looked up once: checking the file on disk for
+## each of 400 buildings took ~80 ms, a visible stutter on every building change; review fix
+## 2026-11-07).
+static var _cache: Dictionary[StringName, BuildingVisualDef] = {}
+
+
 static func for_building(id: StringName) -> BuildingVisualDef:
-	var path := "res://data/visuals/buildings/%s.tres" % id
-	return load(path) as BuildingVisualDef if ResourceLoader.exists(path) else null
+	if not _cache.has(id):
+		var path := "res://data/visuals/buildings/%s.tres" % id
+		_cache[id] = load(path) as BuildingVisualDef if ResourceLoader.exists(path) else null
+	return _cache[id]
