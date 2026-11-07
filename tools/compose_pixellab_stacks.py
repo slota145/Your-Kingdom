@@ -44,7 +44,10 @@ BARRELS = ([(3, 2), (2, 2), (2, 1)], 0.3, 0.72)       # 12: barrels standing on 
 BOLTS = ([(3, 3), (2, 2), (2, 1), (1, 1)], 0.27, 0.45)  # 16: rolls of cloth
 SHEAVES = ([(4, 3), (3, 2), (2, 1)], 0.22, 0.45)      # 20: upright sheaves
 LOGS = ([(6, 1), (5, 1), (4, 1), (3, 1), (2, 1)], 0.13, 0.3)   # 20: a pyramid of logs
-PLANKS = ([(4, 1)] * 5, 0.11, 0.28)                    # 20: boards side by side in layers
+# 20 boards crosswise (owner 2026-11-07): the board as drawn lies along x; a layer of them
+# side by side over the whole tile, the next one across (mirrored, along y), then along x
+# again. A layer here is (columns, rows, step along x, step along y, mirrored).
+PLANKS = ([(2, 4, 0.5, 0.2, False), (4, 2, 0.2, 0.5, True), (2, 2, 0.5, 0.2, False)], 0.0, 0.3)
 
 # Pieces drawn darker than the old stacks: brightened by this gamma (lower = brighter).
 GAMMA = {"stone": 0.6}
@@ -67,15 +70,18 @@ def spots(layout, count, piece_h):
     """[(layer, gx, gy, lift px)] in the order pieces are laid down."""
     layers, step, lift = layout
     result = []
-    for layer, (nx, ny) in enumerate(layers):
+    for layer, spec in enumerate(layers):
+        nx, ny = spec[0], spec[1]
+        sx, sy = (spec[2], spec[3]) if len(spec) > 2 else (step, step)
+        mirrored = len(spec) > 4 and spec[4]
         cells = []
         for i in range(nx):
             for j in range(ny):
-                gx = (i - (nx - 1) / 2.0) * step
-                gy = (j - (ny - 1) / 2.0) * step
+                gx = (i - (nx - 1) / 2.0) * sx
+                gy = (j - (ny - 1) / 2.0) * sy
                 cells.append((gx + gy, gx - gy, gx, gy))
         for _depth, _side, gx, gy in sorted(cells):      # back to front
-            result.append((layer, gx, gy, round(layer * lift * piece_h)))
+            result.append((layer, gx, gy, round(layer * lift * piece_h), mirrored))
     if len(result) < count:
         raise SystemExit("layout too small: %d spots for %d pieces" % (len(result), count))
     return result[:count]
@@ -83,15 +89,17 @@ def spots(layout, count, piece_h):
 
 def sheet(piece, count, layout):
     piece = piece.crop(piece.getbbox())
+    flipped = piece.transpose(Image.FLIP_LEFT_RIGHT)
     places = spots(layout, count, piece.height)
     out = Image.new("RGBA", (FRAME_W * count, FRAME_H), (0, 0, 0, 0))
     for k in range(count):
         frame = Image.new("RGBA", (FRAME_W, FRAME_H), (0, 0, 0, 0))
         laid = places[:k + 1]
-        for layer, gx, gy, lift in sorted(laid, key=lambda p: (p[0], p[1] + p[2], p[1] - p[2])):
+        for layer, gx, gy, lift, mirrored in sorted(laid, key=lambda p: (p[0], p[1] + p[2], p[1] - p[2])):
             fx = FRAME_W / 2 + (gx - gy) * 32
             fy = FRAME_H - 16 + (gx + gy) * 16 - lift
-            frame.alpha_composite(piece, (round(fx - piece.width / 2), round(fy - piece.height + 3)))
+            img = flipped if mirrored else piece
+            frame.alpha_composite(img, (round(fx - img.width / 2), round(fy - img.height + 3)))
         out.paste(frame, (FRAME_W * k, 0))
     return out
 
