@@ -798,7 +798,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## G1 — Grafika budynków z PixelLab, część 1 (pionierzy)
 
-**Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu). Gotowe 2026-11-07, czeka na ocenę wyglądu właściciela.**
+**Status: zaakceptowany przez właściciela 2026-11-07 („jest super”), scalony do `main`. Etap zamknięty.**
 
 **Decyzje (ankieta 2026-11-07):**
 - **Obóz pionierów:** nowa generacja na cały romb 3×3 (więcej namiotów, sterty, ognisko), nie obóz z próby.
@@ -832,7 +832,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Budynki zestawu pionierów z PixelLab w grze, z pivotem, wejściem i cięciem do sortowania (`test_sorting.gd`), etapami budowy i obiema orientacjami.
 - [x] Przepływ pracy opisany w ART_SPEC (opis stylu, rozjaśnienie, przycięcie, pivot), żeby kolejne partie były spójne.
 - [x] Testy przechodzą (szybkie i długie).
-- [ ] **Twoja ocena wyglądu.**
+- [x] **Twoja ocena wyglądu** (2026-11-07: zaakceptowane, po wyłączeniu rozjaśnienia i ujednoliceniu kolorów).
 
 ---
 
