@@ -13,10 +13,14 @@ extends RefCounted
 const DOCKER_KIND := &"docker"
 ## Handing one unit over at the ship (ROADMAP M5: about 1 s per unit).
 const HANDLING_TICKS := 10
-## How far (tiles) past the berth centre a docker stands on the ship's deck.
-const ON_DECK := 0.15
 ## Activity of a docker handing goods over at the ship.
 const HAND_OVER := &"hand_over"
+
+
+## How far (tiles) past the berth centre, away from the quay, a ship lies moored (owner's
+## request 2026-11-07: the cog's hull reached over the quay). It stays on the berth tile; the
+## view draws a cog's hull a little further still (ShipLayer.MOORED_HULL_SHIFT).
+const MOOR_OFFSET := 0.45
 
 
 ## How far (tiles, Chebyshev between centres) a port's dockers serve a mooring (N1).
@@ -70,6 +74,8 @@ static func claim_berth(province: ProvinceSim, ship: ShipUnit, port: BuildingSta
 ## Moors [param ship] at the berth of [param port], lying along the quay.
 static func moor(ship: ShipUnit, port: BuildingState) -> void:
 	Ships.dock(ship, port)
+	ship.pos = moor_point(port.gangway_tile(), port.berth_tile())
+	ship.prev_pos = ship.pos
 	ship.berth_id = port.id
 	var along := port.def.turned(Vector2i(1, 0), port.orientation) - port.def.turned(Vector2i.ZERO, port.orientation)
 	var dir := IsoMath.screen_dir(Vector2(along))
@@ -136,12 +142,21 @@ static func gangway_points(port: BuildingState) -> PackedVector2Array:
 	return _points(port.entrance_tile(), port.gangway_tile(), port.berth_tile())
 
 
-## Entrance and gangway foot tile centres, and the spot on the ship's deck just past its
-## middle (so the docker is drawn on the deck, in front of the hull).
+## Where a ship moored at [param berth] lies (grid space): the berth centre moved
+## MOOR_OFFSET away from the quay (from the gangway foot [param foot]). Still on the berth tile.
+static func moor_point(foot: Vector2i, berth: Vector2i) -> Vector2:
+	var away := Vector2(berth - foot)
+	if away == Vector2.ZERO:
+		return IsoMath.tile_center(berth)
+	return IsoMath.tile_center(berth) + away.normalized() * MOOR_OFFSET
+
+
+## Entrance and gangway foot tile centres, and the spot on the ship's deck where the ship
+## lies (moor_point; the view draws the hull a little further, so he stands by its near rail).
 static func _points(door: Vector2i, foot: Vector2i, berth: Vector2i) -> PackedVector2Array:
 	var a := IsoMath.tile_center(foot)
-	var b := IsoMath.tile_center(berth)
-	return PackedVector2Array([IsoMath.tile_center(door), a, b + (b - a).normalized() * ON_DECK])
+	var b := moor_point(foot, berth)
+	return PackedVector2Array([IsoMath.tile_center(door), a, b])
 
 
 static func _length(points: PackedVector2Array) -> float:

@@ -80,6 +80,24 @@ func _update_ships(alpha: float, time: float) -> void:
 		sprite.offset = -BOAT_PIVOT
 
 
+## A moored cog's hull is drawn this much further from the quay than the ship's position
+## (tiles; owner's request 2026-11-07): the plank and the dockers on deck reach its near
+## side. Grows as the ship comes in, so it does not jump.
+const MOORED_HULL_SHIFT := 0.5
+
+
+## Grid-space shift of the hull of [param ship] away from the quay of the berth it holds.
+static func hull_shift(province: ProvinceSim, ship: ShipUnit) -> Vector2:
+	var port := province.buildings.get_building(ship.berth_id) if ship.berth_id != 0 else null
+	if port == null or not port.def.is_port():
+		return Vector2.ZERO
+	var away := Vector2(port.berth_tile() - port.gangway_tile())
+	if away == Vector2.ZERO:
+		return Vector2.ZERO
+	var near := clampf(1.0 - ship.pos.distance_to(IsoMath.tile_center(port.berth_tile())) / 1.5, 0.0, 1.0)
+	return away.normalized() * MOORED_HULL_SHIFT * near
+
+
 ## A cog: one sheet (ships/<id>/idle.png) whose frames rock it gently on the waves.
 func _show_big(sprite: Sprite2D, ship: ShipUnit, alpha: float, time: float) -> void:
 	var size: Vector2i = BIG_FRAMES[ship.def.art_id()][0]
@@ -90,7 +108,7 @@ func _show_big(sprite: Sprite2D, ship: ShipUnit, alpha: float, time: float) -> v
 	sprite.hframes = frames
 	sprite.vframes = IsoMath.DIR_COUNT
 	sprite.frame = ship.facing * frames + int(time * FPS * 0.5 + ship.id * 0.37) % frames
-	sprite.position = IsoMath.grid_to_screen(ship.prev_pos.lerp(ship.pos, alpha))
+	sprite.position = IsoMath.grid_to_screen(ship.prev_pos.lerp(ship.pos, alpha) + hull_shift(province, ship))
 	sprite.offset = -pivot
 
 
@@ -113,7 +131,7 @@ func _update_planks() -> void:
 			plank.add_child(edge)
 			_planks[ship.id] = plank
 		var foot := IsoMath.tile_center(port.gangway_tile())
-		var berth := IsoMath.tile_center(port.berth_tile())
+		var berth := Harbour.moor_point(port.gangway_tile(), port.berth_tile())
 		var top := berth + (foot - berth).normalized() * PLANK_INBOARD
 		# Sorted just in front of the ship: the plank lies on its gunwale, over the hull.
 		plank.position = IsoMath.grid_to_screen(berth) + Vector2(0, 1)

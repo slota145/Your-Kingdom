@@ -294,8 +294,9 @@ const BUILDINGS := {
 	# N1 part 2: the cargo crane on the quay: a treadwheel by the door (the operator walks in
 	# it) and a tall mast. The jib, the rope and the load are drawn by the view (CraneLayer),
 	# which swings them between the quay yard and the ship.
-	"crane": [{"min_height": 124.0, "volumes": [],
-		"props": [["crane_mast", 1.15, 0.85], ["treadwheel", 0.5, 1.5], ["bollard", 1.75, 1.75]]}],
+	"crane": [{"min_height": 136.0, "volumes": [],
+		"props": [["crane_mast", 1.15, 0.85], ["treadwheel", 0.5, 1.5], ["barrels", 1.7, 1.8],
+			["bollard", 1.85, 0.25]]}],
 	"port_warehouse": [{"special": "yard"}],
 	# M5 part 3: the pioneer camp, the first building after a start from a ship: a log hut,
 	# canvas tents, a camp fire and the settlers' tools.
@@ -1169,40 +1170,77 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 			_line(img, p + Vector2(-29, -42), p + Vector2(-29, -20), Color(0.75, 0.65, 0.45), 1)
 			_crate(img, p + Vector2(-29, -12), Color(0.62, 0.46, 0.28))
 		"crane_mast":
-			# N1 part 2: a timber mast on a plank footing with two raking struts and an iron cap
-			# (the jib is drawn by the view from the collar, CraneLayer.HEEL_HEIGHT).
-			_box(img, p, Vector2(18, 9), 6.0, C_PLANK, "planks")
+			# N1 part 2: a heavy squared timber mast on a stone plinth, four raking struts with
+			# cross braces, iron bands, a slewing collar (the jib's heel, CraneLayer.HEEL_HEIGHT)
+			# and a little gabled hood over the sheave at the top.
+			_box(img, p + Vector2(0, 2), Vector2(30, 15), 8.0, C_STONE, "stone")
+			_box(img, p - Vector2(0, 8), Vector2(22, 11), 3.0, C_PLANK, "planks")
+			var foot := p - Vector2(0, 11)
+			var knee := foot - Vector2(0, 46)
+			for corner: Vector2 in [Vector2(-10, -5), Vector2(10, -5), Vector2(-10, 5), Vector2(10, 5)]:
+				if corner.y < 0:
+					_line(img, foot + corner, knee, C_BEAM.darkened(0.2), 3)
+			_box(img, foot, Vector2(9, 5), 104.0, C_BEAM.lightened(0.12))
+			for corner: Vector2 in [Vector2(-10, 5), Vector2(10, 5)]:
+				_line(img, foot + corner, knee + Vector2(corner.x * 0.15, 2), C_BEAM, 3)
+				_line(img, foot + corner + Vector2(-1, -1), knee + Vector2(corner.x * 0.15 - 1, 1), C_BEAM.lightened(0.25), 1)
+			# Cross braces between the front struts and the mast.
 			for side: float in [-1.0, 1.0]:
-				_line(img, p + Vector2(side * 8, -4), p - Vector2(0, 44), C_BEAM.lightened(0.08), 2)
-			_line(img, p - Vector2(0, 5), p - Vector2(0, 112), C_BEAM, 5)
-			_line(img, p - Vector2(1, 5), p - Vector2(1, 112), C_BEAM.lightened(0.3), 1)
-			for k: int in 6:
-				_line(img, p - Vector2(2, 20 + k * 16), p - Vector2(-2, 20 + k * 16), C_IRON, 1)
-			# The slewing collar the jib hangs from, and the cap with its sheave.
-			_box(img, p - Vector2(0, 94), Vector2(9, 5), 5.0, C_BEAM.lightened(0.15))
-			_box(img, p - Vector2(0, 112), Vector2(7, 4), 4.0, C_IRON.lightened(0.2))
+				_line(img, foot + Vector2(side * 7, 2), foot + Vector2(0, -30), C_BEAM.darkened(0.1), 2)
+			for k: int in 7:
+				var y := 18.0 + k * 13.0
+				_line(img, foot - Vector2(5, y), foot - Vector2(-5, y + 2.5), C_IRON, 1)
+				_px(img, Vector2i(foot - Vector2(2, y + 1)), C_IRON.lightened(0.5))
+			# The slewing collar: a thick timber ring with iron straps.
+			_box(img, foot - Vector2(0, 80), Vector2(16, 8), 8.0, C_BEAM.lightened(0.2))
+			_line(img, foot - Vector2(8, 84), foot - Vector2(-8, 84), C_IRON, 1)
+			# The hood: a small gabled roof of planks over the sheave, a finial.
+			var top := foot - Vector2(0, 104)
+			_box(img, top + Vector2(0, 2), Vector2(12, 6), 5.0, C_BEAM)
+			var ridge_l := top + Vector2(-9, -6)
+			var ridge_r := top + Vector2(9, -6)
+			var apex := top + Vector2(0, -15)
+			_fill(img, PackedVector2Array([top + Vector2(-11, 0), top + Vector2(0, 4), apex + Vector2(0, 3), ridge_l]), _lit(C_SHINGLE, LIGHT_ROOF_SW))
+			_fill(img, PackedVector2Array([top + Vector2(0, 4), top + Vector2(11, 0), ridge_r, apex + Vector2(0, 3)]), _lit(C_SHINGLE, LIGHT_ROOF_SE))
+			_outline(img, PackedVector2Array([top + Vector2(-11, 0), top + Vector2(0, 4), top + Vector2(11, 0), ridge_r, apex, ridge_l]), C_SHINGLE.darkened(0.6))
+			_line(img, apex, apex - Vector2(0, 5), C_IRON, 1)
 		"treadwheel":
-			# N1 part 2: a big wheel of two rims joined by treads, on an A-frame either side.
-			var c := p - Vector2(0, 21)
-			var depth := Vector2(8, -4)
+			# N1 part 2: a big treadwheel: two thick rims joined by tread boards, double spokes,
+			# a drum on the axle with the hoist rope wound on it, heavy A-frames on sill beams.
+			var c := p - Vector2(0, 25)
+			var depth := Vector2(10, -5)
 			var rim := Color(0.56, 0.38, 0.22)
+			var r := 22.0
+			_line(img, p + Vector2(-18, 2), p + Vector2(18, 2) , C_BEAM.darkened(0.2), 3)
+			_line(img, p + Vector2(-18, 2) + depth, p + Vector2(18, 2) + depth, C_BEAM.darkened(0.3), 3)
 			for side: float in [-1.0, 1.0]:
-				_line(img, p + Vector2(side * 14, 1) + depth, c + depth, C_BEAM.darkened(0.15), 2)
-			_circle(img, c + depth, 18.0, rim.darkened(0.35), 2)
-			for k: int in 20:
-				var a := TAU * k / 20.0
-				var q := c + Vector2(cos(a), sin(a)) * 17.0
-				if sin(a) > -0.2:
-					_line(img, q, q + depth, rim.lightened(0.12) if k % 2 == 0 else rim.darkened(0.12), 2)
-			_circle(img, c, 18.0, rim, 2)
-			_circle(img, c, 15.0, rim.darkened(0.25), 1)
+				_line(img, p + Vector2(side * 17, 1) + depth, c + depth, C_BEAM.darkened(0.25), 3)
+			_circle(img, c + depth, r, rim.darkened(0.4), 3)
+			for k: int in 8:
+				var a := TAU * k / 8.0 + 0.2
+				_line(img, c + depth, c + depth + Vector2(cos(a), sin(a)) * (r - 2.0), rim.darkened(0.45), 1)
+			# Tread boards across, lit on the lower half where the operator walks.
+			for k: int in 28:
+				var a := TAU * k / 28.0
+				var q := c + Vector2(cos(a), sin(a)) * (r - 1.0)
+				var lit := rim.lightened(0.18) if sin(a) > 0.3 else rim.darkened(0.05)
+				_line(img, q, q + depth, lit, 2)
+				_line(img, q + Vector2(0, 1), q + depth + Vector2(0, 1), rim.darkened(0.35), 1)
+			_circle(img, c, r, rim, 3)
+			_circle(img, c, r - 3.5, rim.darkened(0.25), 1)
+			for k: int in 8:
+				var a := TAU * k / 8.0 + 0.2
+				_line(img, c, c + Vector2(cos(a), sin(a)) * (r - 2.0), rim.darkened(0.15), 2)
+			# The drum with rope wound on it, the axle bearings.
+			_box(img, c + Vector2(5, 5) , Vector2(12, 6), 7.0, Color(0.48, 0.33, 0.2))
 			for k: int in 4:
-				var a := PI * k / 4.0 + PI / 8.0
-				_line(img, c - Vector2(cos(a), sin(a)) * 15.0, c + Vector2(cos(a), sin(a)) * 15.0, rim.darkened(0.2), 1)
-			_box(img, c + Vector2(4, 3), Vector2(9, 4), 4.0, C_IRON.lightened(0.15))
+				_line(img, c + Vector2(-1 + k * 3, -1 - k * 1.5), c + Vector2(-1 + k * 3, 4 - k * 1.5), Color(0.82, 0.72, 0.5), 1)
+			_ellipse(img, c, Vector2(3, 3), C_IRON.lightened(0.2))
+			_ellipse(img, c + depth, Vector2(2, 2), C_IRON)
 			for side: float in [-1.0, 1.0]:
-				_line(img, p + Vector2(side * 14, 1), c, C_BEAM, 3)
-			_line(img, p + Vector2(-14, 1), p + Vector2(14, 1), C_BEAM.darkened(0.1), 2)
+				_line(img, p + Vector2(side * 17, 1), c, C_BEAM, 4)
+				_line(img, p + Vector2(side * 17 - 1, 0), c + Vector2(-1, 0), C_BEAM.lightened(0.25), 1)
+			_line(img, p + Vector2(-10, -10), p + Vector2(10, -10), C_BEAM, 2)
 		"gate_posts":
 			for k: int in 2:
 				var q := p + Vector2(-12 + k * 22, -6 + k * 11)

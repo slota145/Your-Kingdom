@@ -110,7 +110,8 @@ func test_crane_loads_about_twice_as_fast_as_two_dockers() -> void:
 	assert_int(lifted.count(Cranes.CRANE_LOAD)).is_greater_equal(6)
 	assert_float(dockers / crane).is_between(1.7, 2.6)
 	assert_float(both).is_less(crane)
-	assert_int(sim_c.province.jobs.count()).is_equal(0)
+	# The last docker walks back down the gangway, then his request is done.
+	assert_bool(SimFixture.run_until(sim_c, func() -> bool: return sim_c.province.jobs.count() == 0, 30)).is_true()
 
 
 ## A save in the middle of a lift resumes there: the load lands aboard.

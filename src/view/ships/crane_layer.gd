@@ -10,10 +10,10 @@ extends Node2D
 const MAST_FOOT := Vector2(1.15, 0.85)
 const WHEEL_FOOT := Vector2(0.5, 1.5)
 ## Heights (screen px) of the jib's heel on the mast, of the mast cap, and of the jib head.
-const HEEL_HEIGHT := 98.0
-const CAP_HEIGHT := 114.0
+const HEEL_HEIGHT := 95.0
+const CAP_HEIGHT := 118.0
 const HEAD_HEIGHT := 100.0
-const AXLE_HEIGHT := 21.0
+const AXLE_HEIGHT := 25.0
 ## Hook heights over the ground: hoisted while the jib swings, down at the yard or on the
 ## ship's deck.
 const HOOK_UP := 66.0
@@ -25,6 +25,7 @@ const C_JIB := Color(0.36, 0.23, 0.14)
 const C_JIB_LIGHT := Color(0.55, 0.38, 0.22)
 const C_ROPE := Color(0.78, 0.68, 0.48)
 const C_NET := Color(0.45, 0.33, 0.2)
+const C_IRON := Color(0.24, 0.24, 0.26)
 
 var province: ProvinceSim
 var _icons: Dictionary[StringName, Texture2D] = {}
@@ -65,7 +66,10 @@ func _draw_crane(crane: BuildingState, operator: Agent) -> void:
 	# Where the hook goes: the quay yard (the foot of the gangway) and the ship at the berth.
 	var yard := IsoMath.grid_to_screen(Vector2(crane.origin) + Vector2(crane.def.footprint) * 0.5) \
 			if port == null else IsoMath.tile_center_screen(port.gangway_tile())
-	var ship := yard + Vector2(-40, 20) if port == null else IsoMath.tile_center_screen(port.berth_tile())
+	var ship := yard + Vector2(-40, 20) if port == null \
+			else IsoMath.grid_to_screen(Harbour.moor_point(port.gangway_tile(), port.berth_tile()) \
+			+ (Vector2(port.berth_tile() - port.gangway_tile()).normalized() * ShipLayer.MOORED_HULL_SHIFT \
+			if port.berth_tile() != port.gangway_tile() else Vector2.ZERO))
 	var t := Cranes.lift_progress(operator) if operator != null else -1.0
 	var out := operator != null and operator.task != null and int(operator.task.bb.get("_out", 1)) == 1
 	var from := yard if out else ship
@@ -96,16 +100,29 @@ func _draw_crane(crane: BuildingState, operator: Agent) -> void:
 	# Hoist rope from the treadwheel's drum up to the cap and along the jib.
 	var axle := _art_point(crane, WHEEL_FOOT) - Vector2(0, AXLE_HEIGHT)
 	draw_line(axle, cap, C_ROPE.darkened(0.2), 1.0)
-	# The jib, its stay from the cap, and the rope down to the hook.
-	draw_line(heel, head, C_JIB, 4.0)
-	draw_line(heel + Vector2(0, -1), head + Vector2(0, -1), C_JIB_LIGHT, 1.0)
+	# The jib: a heavy beam (dark underside, lit top), a brace from lower on the mast to its
+	# middle, the stay from the cap, a block with a sheave at its head.
+	var brace := heel.lerp(head, 0.45)
+	draw_line(heel + Vector2(0, 26), brace, C_JIB.darkened(0.15), 3.0)
+	draw_line(heel, head, C_JIB.darkened(0.25), 6.0)
+	draw_line(heel + Vector2(0, -2), head + Vector2(0, -2), C_JIB, 3.0)
+	draw_line(heel + Vector2(0, -3), head + Vector2(0, -3), C_JIB_LIGHT, 1.0)
+	for k: int in range(1, 5):
+		var q := heel.lerp(head, k / 5.0)
+		draw_line(q + Vector2(0, -3), q + Vector2(0, 3), C_IRON, 1.0)
 	draw_line(cap, head, C_ROPE, 1.0)
-	draw_rect(Rect2(head - Vector2(2, 2), Vector2(4, 4)), C_JIB.darkened(0.3))
+	draw_line(cap, brace, C_ROPE.darkened(0.15), 1.0)
+	draw_rect(Rect2(head - Vector2(4, 4), Vector2(8, 8)), C_JIB.darkened(0.3))
+	draw_circle(head + Vector2(0, 1), 2.5, C_IRON)
 	var hook_at := at - Vector2(0, hook)
-	draw_line(head, hook_at, C_ROPE, 1.0)
-	draw_line(hook_at, hook_at + Vector2(0, 3), Color(0.25, 0.25, 0.27), 2.0)
+	draw_line(head + Vector2(-1, 4), hook_at + Vector2(-1, -5), C_ROPE, 1.0)
+	draw_line(head + Vector2(1, 4), hook_at + Vector2(1, -5), C_ROPE, 1.0)
+	# The hook block and the iron hook.
+	draw_rect(Rect2(hook_at - Vector2(3, 6), Vector2(6, 5)), C_JIB.darkened(0.2))
+	draw_line(hook_at + Vector2(0, -1), hook_at + Vector2(0, 2), C_IRON, 2.0)
+	draw_arc(hook_at + Vector2(-1.5, 2.5), 1.8, 0.0, PI, 6, C_IRON, 1.5)
 	if loaded:
-		_draw_load(hook_at + Vector2(0, 3), StringName(String(operator.task.bb.get("good", ""))),
+		_draw_load(hook_at + Vector2(0, 4), StringName(String(operator.task.bb.get("good", ""))),
 				int(operator.task.bb.get("_load", 1)))
 
 
