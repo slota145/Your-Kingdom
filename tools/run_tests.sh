@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
-# Runs all gdUnit4 tests headless. Usage: tools/run_tests.sh [extra gdUnit4 args]
+# Runs the gdUnit4 tests headless, in two tiers (owner's decision 2026-11-07, ARCHITECTURE §12):
+#   tools/run_tests.sh           fast tests: tests/unit, tests/data, tests/scenario (about 1 min);
+#                                before every commit
+#   tools/run_tests.sh --long    long tests: tests/long (automatic players, two hours of the big
+#                                city, mode coherence; about 5 min), one Godot per suite in
+#                                parallel; before merging to main and at the end of a part
+#   tools/run_tests.sh --all     both tiers, in parallel
+#   tools/run_tests.sh <args>    gdUnit4 arguments as they are, e.g. "-a res://tests/unit/view"
+# Logs and reports of parallel runs: reports/<name>.log and reports/<name>/.
 # GODOT may point to the Godot 4.7 executable. Otherwise the owner's Windows install is used
 # if present, and on Linux (cloud sessions) Godot is downloaded by tools/setup_godot.sh.
 set -euo pipefail
@@ -17,9 +25,63 @@ fi
 # Refresh imports and the global class cache (needed after adding class_name scripts).
 "$GODOT" --headless --path . --import > /dev/null 2>&1
 
-# Default: the whole suite. Pass e.g. "-a res://tests/unit/view" to run a subset.
-if [ $# -eq 0 ]; then set -- -a res://tests; fi
-
 # --remote-debug to an unbound port avoids Godot's interactive debugger on script errors.
-"$GODOT" --headless --path . -s -d --remote-debug tcp://127.0.0.1:0 \
-	res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode "$@"
+gdunit() {
+	"$GODOT" --headless --path . -s -d --remote-debug tcp://127.0.0.1:0 \
+		res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode "$@"
+}
+
+FAST=(-a res://tests/unit -a res://tests/data -a res://tests/scenario)
+
+# Runs every job ("name|gdUnit args") in its own Godot at once, then prints each job's
+# summary and failures; fails when any job failed or did not finish.
+run_parallel() {
+	mkdir -p reports
+	local pids=() names=()
+	for job in "$@"; do
+		local name="${job%%|*}"
+		local args="${job#*|}"
+		# shellcheck disable=SC2086
+		gdunit -c $args -rd "reports/$name" > "reports/$name.log" 2>&1 &
+		pids+=($!)
+		names+=("$name")
+	done
+	local failed=0
+	for i in "${!pids[@]}"; do
+		wait "${pids[$i]}" || true
+		local log="reports/${names[$i]}.log"
+		local summary
+		summary="$(sed 's/\x1b\[[0-9;]*m//g' "$log" | grep "Overall Summary" | tail -1 || true)"
+		echo "${names[$i]}: ${summary:-no summary, see $log}"
+		sed 's/\x1b\[[0-9;]*m//g' "$log" | grep -E " FAILED|SCRIPT ERROR" || true
+		if [ -z "$summary" ] || ! echo "$summary" | grep -q "| 0 errors | 0 failures"; then
+			failed=1
+		fi
+	done
+	return $failed
+}
+
+long_jobs() {
+	for suite in tests/long/test_*.gd; do
+		local name
+		name="long_$(basename "$suite" .gd)"
+		echo "$name|-a res://$suite"
+	done
+}
+
+case "${1:-}" in
+	"")
+		gdunit -c "${FAST[@]}"
+		;;
+	--long)
+		mapfile -t jobs < <(long_jobs)
+		run_parallel "${jobs[@]}"
+		;;
+	--all)
+		mapfile -t jobs < <(long_jobs)
+		run_parallel "fast|${FAST[*]}" "${jobs[@]}"
+		;;
+	*)
+		gdunit "$@"
+		;;
+esac

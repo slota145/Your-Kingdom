@@ -632,7 +632,13 @@ Zasady:
 | Dane | integralność id, kompletność wizualizacji i lokalizacji | gdUnit4 |
 | Wydajność | benchmark 500 postaci (ręcznie lub w nocnym przebiegu, nie blokuje commitów) | scena benchmarkowa + log |
 
-**Zasada:** każda zmiana w `src/sim` ma test. Testy muszą przechodzić przed commitem.
+**Dwa poziomy testów (decyzja właściciela 2026-11-07):**
+- **Szybkie** (`tests/unit`, `tests/data`, `tests/scenario`; ok. 375 testów, ok. 2 minuty z przygotowaniem): `tools/run_tests.sh`. Muszą przechodzić przed **każdym commitem**.
+- **Długie** (`tests/long`: automatyczni gracze na trzech mapach i w świecie, duże miasto przez 2 godziny gry, spójność trybów na dużym mieście; 9 testów): `tools/run_tests.sh --long`, każdy plik w osobnym Godocie naraz (ok. 5 minut zamiast 11 po kolei). Muszą przechodzić przed **scaleniem do `main`** i na koniec części etapu. Wyłapują rzadkie rzeczy (zakleszczenia po godzinie gry, balans, wydajność), które rzadko psuje pojedyncza zmiana.
+- `tools/run_tests.sh --all` puszcza oba poziomy naraz. Logi i raporty przebiegów równoległych: `reports/<nazwa>.log`.
+- Nowy test trafia do `tests/long` tylko wtedy, gdy trwa dłużej niż ok. 20 sekund.
+
+**Zasada:** każda zmiana w `src/sim` ma test.
 
 ---
 

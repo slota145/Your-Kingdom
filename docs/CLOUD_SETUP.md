@@ -40,7 +40,7 @@ Setup script jest opcjonalny. Bez niego hook i tak pobierze Godota (78 MB) na po
 
 | Działa | Nie działa (robimy lokalnie, na laptopie) |
 |---|---|
-| testy (`tools/run_tests.sh`) | benchmark wydajności (brak karty graficznej, wyniki byłyby nieporównywalne) |
+| testy (`tools/run_tests.sh`, długie: `--long`) | benchmark wydajności (brak karty graficznej, wyniki byłyby nieporównywalne) |
 | generator placeholderów | ocena „na oko” w oknie gry, granie |
 | import i walidacja projektu | edytor Godota |
 | zrzuty ekranu z `--write-movie` (*do sprawdzenia: wymaga renderowania bez ekranu*) | |
