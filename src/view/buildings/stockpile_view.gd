@@ -48,4 +48,4 @@ func setup(state: BuildingState) -> void:
 func update_view() -> void:
 	for slot: int in _stacks.size():
 		var visual := StockpileLayout.visual_for(building.stock, slot)
-		_stacks[slot].show_stack(visual["good"], visual["fill_stage"])
+		_stacks[slot].show_stack(visual["good"], visual["amount"], visual["stack_size"])

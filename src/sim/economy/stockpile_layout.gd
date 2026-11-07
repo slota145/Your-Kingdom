@@ -5,20 +5,22 @@ extends RefCounted
 const FILL_STAGES := 4
 
 
-## Fill stage 0 (empty) .. FILL_STAGES (full stack) for [param amount] of [param stack_size].
-static func fill_stage(amount: int, stack_size: int) -> int:
+## Fill stage 0 (empty) .. [param stages] (full stack) for [param amount] of [param stack_size].
+## G2: a stack sheet with one frame per piece has stages == stack_size, so every piece shows.
+static func fill_stage(amount: int, stack_size: int, stages: int = FILL_STAGES) -> int:
 	if amount <= 0:
 		return 0
-	return clampi(ceili(float(amount) * FILL_STAGES / maxi(stack_size, 1)), 1, FILL_STAGES)
+	return clampi(ceili(float(amount) * stages / maxi(stack_size, 1)), 1, maxi(stages, 1))
 
 
-## {good, amount, fill_stage} of one slot; good is &"" for an empty slot.
+## {good, amount, stack_size, fill_stage} of one slot; good is &"" for an empty slot.
 static func visual_for(stock: Stockpile, slot: int) -> Dictionary:
 	var good := stock.slot_good[slot]
 	var amount := stock.slot_amount[slot]
 	if good == &"" or amount <= 0:
-		return {"good": &"", "amount": 0, "fill_stage": 0}
-	return {"good": good, "amount": amount, "fill_stage": fill_stage(amount, stock.stack_size(good))}
+		return {"good": &"", "amount": 0, "stack_size": 1, "fill_stage": 0}
+	var size := stock.stack_size(good)
+	return {"good": good, "amount": amount, "stack_size": size, "fill_stage": fill_stage(amount, size)}
 
 
 ## Tile offset of a slot inside a building footprint: row by row, skipping the entrance.

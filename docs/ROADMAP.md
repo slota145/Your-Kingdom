@@ -836,6 +836,29 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ---
 
+## G2 — Towary z PixelLab i stosy sztuka po sztuce
+
+**Status: dopisany i zaplanowany 2026-11-07 na prośbę właściciela (ankieta), po G1, przed M7. Zaakceptowany przez właściciela 2026-11-07 (po ułożeniu desek na krzyż) i scalony do `main`. Etap zamknięty.**
+
+**Stan (2026-11-07):** 21 sztuk z Pixena (płótno 24×24, 21 generacji, bez poprawek), stosy układa `tools/compose_pixellab_stacks.py` (ART_SPEC §10.13): jedna klatka na sztukę (12, 16 albo 20). Gra liczy klatki z arkusza, więc działa to w magazynie, na podwórkach, na ziemi, na placu budowy i w porcie bez osobnych zmian; świnie dalej jako stado (4 klatki). Zrzut: `game_shot.tscn -- --map=lakeland --tile=82,64 --zoom=2 --g2`. Zapis bez zmian (v17). Zostało ok. 46 generacji do 27.11.
+
+**Cel:** każdy towar dostaje grafikę jednej sztuki z PixelLab (Pixen), a kod układa sztuki w stosy ręcznie zaprojektowanym układem (piramida kłód, rzędy worków, beczki na sobie). Stos rośnie o jedną sztukę za każdą sztukę w magazynie, zamiast 4 stanów.
+
+**Decyzje (ankieta 2026-11-07):**
+- **Stany stosu:** każda sztuka widoczna (12–20 stanów, tyle ile mieści pole magazynu, `stack_size` towaru).
+- **Beczki:** inna beczka dla piwa, wina, miodu pitnego, miodu i smoły.
+- **Zakres:** wszystkie 21 towarów (świnia zostaje stadem zwierząt jak dotąd). Budżet: ok. 30–40 generacji z 67 do 27.11.
+- Ikony towarów i towary noszone przez ludzi bez zmian (osobny etap, jeśli zechcesz).
+
+**DoD:**
+- [x] Sztuka każdego z 21 towarów z PixelLab, ujednolicona kolorystycznie z budynkami G1.
+- [x] Stosy układane kodem, jeden stan na sztukę, w magazynie, na podwórkach warsztatów, na ziemi, na placu budowy i w porcie.
+- [x] Testy (szybkie i długie), w tym liczba stanów stosu.
+- [x] Przepływ pracy w ART_SPEC.
+- [x] **Twoja ocena wyglądu** (2026-11-07: zaakceptowane; poprawka: deski warstwami na krzyż).
+
+---
+
 ## M7 — Wojsko, mury i oblężenia
 
 **Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu). Start po N1 „Nabrzeża i port”.**

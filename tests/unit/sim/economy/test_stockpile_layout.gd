@@ -11,6 +11,16 @@ func test_fill_stages() -> void:
 	assert_int(StockpileLayout.fill_stage(20, 20)).is_equal(4)
 
 
+## G2: a sheet with one frame per piece (stages == stack_size) shows every piece.
+func test_fill_stage_per_piece() -> void:
+	for amount: int in range(1, 21):
+		assert_int(StockpileLayout.fill_stage(amount, 20, 20)).is_equal(amount)
+	assert_int(StockpileLayout.fill_stage(0, 12, 12)).is_equal(0)
+	assert_int(StockpileLayout.fill_stage(30, 12, 12)).is_equal(12)
+	# A building site holds up to 8 of a good: 4 of 8 fills half of a 20-piece sheet.
+	assert_int(StockpileLayout.fill_stage(4, 8, 20)).is_equal(10)
+
+
 ## The UI list (Stockpile.totals) always equals the sum of the drawn stacks (ARCHITECTURE §6.5).
 func test_ui_totals_equal_sum_of_stacks_for_random_states() -> void:
 	var rng := RandomNumberGenerator.new()
@@ -28,6 +38,7 @@ func test_ui_totals_equal_sum_of_stacks_for_random_states() -> void:
 				assert_int(visual["fill_stage"]).is_equal(0)
 				continue
 			from_stacks[good] = from_stacks.get(good, 0) + int(visual["amount"])
+			assert_int(visual["stack_size"]).is_equal(stock.stack_size(good))
 			assert_int(visual["fill_stage"]).is_equal(
 					StockpileLayout.fill_stage(int(visual["amount"]), stock.stack_size(good)))
 		var ui := stock.totals()

@@ -25,7 +25,7 @@ assets/
 ├── characters/<character_id>/<anim>.anchors.png    # (opcjonalnie) mapa punktów zaczepienia niesionego towaru
 ├── goods/icons/<good_id>.png                       # ikona UI 32×32
 ├── goods/carried/<carry_category>/<good_id>.png    # nakładka niesionego towaru (arkusz kierunków)
-├── goods/stacks/<good_id>.png                      # stosy w magazynie: 4 fazy zapełnienia w poziomie
+├── goods/stacks/<good_id>.png                      # stosy w magazynie: klatki zapełnienia w poziomie (G2: jedna na sztukę)
 ├── buildings/<building_id>/<state>.png             # base, construction_1, construction_2, upgrade_scaffold...
 ├── buildings/<building_id>/<state>.json            # footprint, wejście, pivot (punkt B footprintu w obrazku)
 ├── buildings/<building_id>/fx_<name>.png           # animowane efekty: dym, ogień, śmigło młyna
@@ -280,7 +280,7 @@ Pliki leżą w folderze budynku domu (`buildings/hut/`), a ich nazwy wskazuje `d
 | Drogi | ubita: `road/a`, `road/b`; bruk: `paving/a` (PixelLab, ten sam zestaw `create_tiles_pro` co woda i droga, kafel 14 „cobblestone pavement”, krawędzie wyrównane `pixellab_tile_edges.py`), `paving/b` (lustro `a`); kształt drogi rysuje shader | |
 | Pola | `terrain/field/`: `fallow` (ugór, też po żniwach), `plowed` (zaorane), `sown_1..3` (zasiane, rośnie, prawie dojrzałe), `ripe` (dojrzałe) | chmiel, winorośl, len (`terrain/field_<crop>/…`) |
 | Natura | drzewo liściaste: `growing_1..3`, `grown`, `falling` (anim.), `felled` (ścięte, leży, aż drwal zabierze ostatnią kłodę), `stump`. Krzaki, kamienie dekoracyjne | iglaste, skały ze złożem |
-| Stosy w magazynie | `stacks/<good_id>.png`: arkusz 4 faz (25/50/75/100%), każda faza 64×64 (romb 1 kafla + wysokość) | wszystkie towary |
+| Stosy w magazynie | `stacks/<good_id>.png`: arkusz klatek po 64 px szerokości (romb 1 kafla w dolnych 32 px + wysokość); **G2:** jedna klatka na sztukę (`stack_size` klatek, 64×96), starsze arkusze 4 klatki (25/50/75/100%), gra liczy klatki z szerokości obrazka | wszystkie towary |
 | Ikony towarów | 32×32 | wszystkie |
 
 **Punkt zaczepienia stosów i natury (M2):** romb kafla zajmuje **dolne 32 px** obrazka (lub klatki stosu). Środek rombu, czyli punkt `(szerokość/2, wysokość − 16)`, leży na środku kafla. Placeholdery: stos 64×64 na fazę, drzewo 64×96.
@@ -484,3 +484,9 @@ Przepływ pracy dla kolejnych partii budynków z PixelLab:
 - **Obóz pionierów** jest złożony z osobnych elementów (`tools/compose_pixellab_camp.py`, części w `parts/`), bez własnego gruntu, w rombie 3×3.
 - **Sortowanie:** grafiki są szersze niż z kodu (okap, rekwizyty), więc `test_pixellab_building_art_sorts_correctly` sprawdza każdą z jej prawdziwym pivotem i rozmiarem, także w lustrze.
 - Nie przywracamy tych budynków przez `tools/generate_art.gd`: po nim `git checkout assets/buildings/{pioneer_camp,hut,woodcutter,quarry,fishing_hut}/` albo `python3 tools/build_pixellab_buildings.py`.
+
+### 10.13 Towary z PixelLab i stosy sztuka po sztuce (G2, 2026-11-07)
+
+- **Sztuka towaru:** `create_image_pixen`, płótno **24×24** (sztuka wychodzi 14–23 px), `no_background`, `view: high top-down`, `detail: highly detailed`, `outline: selective outline`, opis „single isometric …, 2:1 isometric view from above, warm colors, no ground, no shadow”. Jedna generacja na towar; 21 towarów (świnia zostaje stadem). Beczki: każdy napój inna (piwo jasna z chmielem, wino ciemna z czerwoną plamą, miód pitny mała z mosiężnymi obręczami, miód okrągła z kapiącym miodem, smoła osmolona). Surowe obrazki: `tools/pixellab_src/goods/<towar>.png` (kłoda drewna to `wood.png`).
+- **Stosy:** `python3 tools/compose_pixellab_stacks.py [<towar>…]` układa sztuki w arkusz `assets/goods/stacks/<towar>.png`: `stack_size` klatek po 64×96, klatka k pokazuje k+1 sztuk. Układy zaprojektowane ręcznie (`LAYOUTS`): warstwy w siatce na kaflu, każda wyżej o część wysokości sztuki i przesunięta o pół kroku (piramida kłód 6-5-4-3-2, deski warstwami na krzyż na całym kaflu (wzdłuż, w poprzek z odbitą deską, znowu wzdłuż; prośba właściciela), worki, kosze i bloki 3×3, 3×3, 2, beczki stojące 3×2, 2×2, 2, bele sukna, snopy stojące). Sztuki dochodzą warstwa po warstwie od tyłu do przodu, więc każda nowa jest widoczna. Kolory: `harmonize_pixellab.py` bez zmiany jasności (biała mąka zostaje biała), kamień rozjaśniony (`GAMMA`).
+- **Gra:** `StackSprite` liczy klatki z szerokości arkusza (`FRAME_W` = 64) i pokazuje `fill_stage(ilość, stack_size, klatki)`, więc stare arkusze 4-klatkowe (świnie) działają dalej. Test: `test_goods_stacks.gd` (liczba klatek = `stack_size`).
