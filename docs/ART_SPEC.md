@@ -441,6 +441,12 @@ Narzędzie: `tools/generate_goods.gd`, wynik w `assets/goods/` i `assets/nature/
 - Port, przystań i stocznia (pas obok pochylni) nie mają już pomostu w grafice (`tools/generate_art.gd`): ich pas nad wodą rysuje `QuayLayer`, więc łączy się z nabrzeżem gracza. Miejsce cumowania to same rekwizyty (pachołki, latarnia, beczki, sieci) na nabrzeżu.
 - Zrzut: `game_shot.tscn -- --map=coast --tile=76,84 --zoom=2 --port --quays`.
 
+### 10.9b Dźwig i magazyn portowy (N1, część 2, 2026-11-07)
+
+- **Dźwig** (`tools/generate_art.gd`, `crane`, 2×2): drewniany maszt 112 px na podeście z desek, z dwiema zastrzałami, okuciami, obrotowym kołnierzem na wysokości 94 px i żelazną czapą; przy wejściu koło deptakowe (dwie obręcze 18 px ze szczeblami, szprychy, kozły po obu stronach). Ramię, liny, hak i ładunek nie są w grafice: rysuje je `CraneLayer` (ramię od kołnierza do punktu 100 px nad placem albo statkiem, hak 66 px nad ziemią w czasie obrotu, przy statku opuszczany do pokładu, 26 px), więc dźwig obraca się w stronę każdego miejsca cumowania. Ładunek to do 3 ikon towaru (`goods/icons`) w siatce z lin. Dźwigowy ma wygląd portowca i „idzie” w kole.
+- **Magazyn portowy:** plac jak zwykły magazyn (`yard`), rysowany przez widok na nabrzeżu.
+- Zrzut: `game_shot.tscn -- --map=coast --tile=73,103 --zoom=2 --port --quays --crane [--lift=<0..1>]`.
+
 ### 10.10 Interfejs „pergamin i drewno” i menu główne (UI-1, 2026-11-07)
 
 - **Skala:** grafiki interfejsu i menu mają piksel rysunku = 2×2 piksele ekranu bazowego 1280×720 (jak obraz menu 640×360 w skali 2). Nic nie jest rysowane w skali 1 ani skalowane nierówno.
