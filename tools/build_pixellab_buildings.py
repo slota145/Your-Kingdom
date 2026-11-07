@@ -2,8 +2,11 @@
 """Builds the game art of the buildings drawn by PixelLab (G1, ART_SPEC §10.12) from the raw
 PixelLab images kept in tools/pixellab_src/buildings/<id>/ (not imported by Godot).
 
-Every image goes through tools/fit_pixellab_building.py: placed on its footprint with the pivot in the front corner, the production yard
-drawn under it. A construction stage or the back of a house is an edit of its finished
+First the colours of the whole set are evened out (tools/harmonize_pixellab.py, owner's
+decision 2026-11-07): each material pulled to the set's common hue and saturation, each
+building's brightness three quarters of the way to the set's average, greys warmed. Then every image goes through
+tools/fit_pixellab_building.py: placed on its footprint with the pivot in the front corner,
+the production yard drawn under it. A construction stage or the back of a house is an edit of its finished
 building on the same canvas, so it takes the finished building's placement (--like).
 
 Run after changing a raw image or a setting below: python3 tools/build_pixellab_buildings.py
@@ -11,6 +14,10 @@ Run after changing a raw image or a setting below: python3 tools/build_pixellab_
 import os
 import subprocess
 import sys
+import tempfile
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from harmonize_pixellab import harmonize  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tools", "pixellab_src", "buildings")
@@ -31,8 +38,8 @@ BUILDINGS = {
         # own, inside the 3x3 tiles); the front corner sits at its PIVOT.
         ["--footprint=3,3", "--entrance=1,2", "--pivot=120,190"],
         [("base", "base", {}),
-         ("construction_1", "construction_1", {}),
-         ("construction_2", "construction_2", {})]),
+         ("construction_1", "construction_1", {"like": "base"}),
+         ("construction_2", "construction_2", {"like": "base"})]),
     "hut": (
         ["--footprint=2,2", "--entrance=1,1"],
         [("base", "base", {}),
@@ -60,17 +67,29 @@ BUILDINGS = {
 
 def main():
     only = sys.argv[1:]
-    if not only or "pioneer_camp" in only:
-        subprocess.run([sys.executable, os.path.join(ROOT, "tools", "compose_pixellab_camp.py")],
-                       check=True)
+    subprocess.run([sys.executable, os.path.join(ROOT, "tools", "compose_pixellab_camp.py")],
+                   check=True)
+    # Colours are evened out over the whole set (all buildings, even when only some are
+    # rebuilt), into a temporary copy of the raw images.
+    tmp = tempfile.mkdtemp(prefix="pixellab_")
+    groups = {}
+    for building, (_opts, images) in BUILDINGS.items():
+        os.makedirs(os.path.join(tmp, building), exist_ok=True)
+        for _name, raw, extra in images:
+            key = "%s/%s" % (building, extra.get("like", raw))
+            pair = (os.path.join(SRC, building, raw + ".png"), os.path.join(tmp, building, raw + ".png"))
+            files = groups.setdefault(key, [])
+            if pair not in files:
+                files.insert(0, pair) if "like" not in extra else files.append(pair)
+    harmonize(groups)
     for building, (opts, images) in BUILDINGS.items():
         if only and building not in only:
             continue
         for name, raw, extra in images:
-            args = [sys.executable, FIT, os.path.join(SRC, building, raw + ".png"),
+            args = [sys.executable, FIT, os.path.join(tmp, building, raw + ".png"),
                     os.path.join(OUT, building, name)] + opts + COMMON
             if "like" in extra:
-                args.append("--like=" + os.path.join(SRC, building, extra["like"] + ".png"))
+                args.append("--like=" + os.path.join(tmp, building, extra["like"] + ".png"))
             subprocess.run(args, check=True)
 
 
