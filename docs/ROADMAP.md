@@ -721,7 +721,12 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Wszystkie okna, panele, pasek i menu budowy mają styl pergaminu i drewna; tekst jest czytelny (kontrast, także w zrzutach w obu językach).
 - [x] Menu główne z obrazkiem z PixelLab, warstwami i animacjami; działa w 1280×720 i 1920×1080.
 - [ ] Testy przechodzą (szybkie i długie).
-- [ ] **Twoja ocena wyglądu.**
+- [x] **Twoja ocena wyglądu:** 5/5 (2026-11-07, ankieta na laptopie). Okna „ładne i czytelne”, pasek u góry wygodny, menu „dobrze, ale drobiazgi”. Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Menu: pasek na niebie** w miejscu, gdzie na obrazie były liny żagla (ślad po cięciu na warstwy), widoczny, gdy tło się przesuwa.
+- [ ] **Menu: brzegi obrazu** przy przesunięciu w dół warstwy wychodzą poza obraz, a krawędzie się rozciągają. Warstwy muszą mieć zapas albo ruch musi być ograniczony.
+- [ ] **Menu: płynniejszy ruch** warstw za myszą (łagodne doganianie zamiast skoków).
 
 ---
 
