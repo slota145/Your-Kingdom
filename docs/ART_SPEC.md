@@ -448,6 +448,14 @@ Narzędzie: `tools/generate_goods.gd`, wynik w `assets/goods/` i `assets/nature/
 - **Magazyn portowy:** plac jak zwykły magazyn (`yard`), rysowany przez widok na nabrzeżu.
 - Zrzut: `game_shot.tscn -- --map=coast --tile=73,103 --zoom=2 --port --quays --crane [--lift=<0..1>]`.
 
+### 10.9c Poprawki z oceny, paczka 2 (2026-11-07)
+
+- **Podwórko warsztatu** (`tools/generate_art.gd`): budynek, którego pracownik odkłada wyroby na stos, zostawia wolny kafel obok drzwi, przy tej samej ścianie (`BuildingDef.yard_at`; 2×2 z wejściem (1, 1): kafel (1, 0)). Generator rysuje tam ubitą ziemię z wiórami i kamyczkami, a chatę stawia na pozostałych kaflach (w 2×2 zwykle `rect` do x = 1,0, ścianą z drzwiami tuż za kaflem wejścia; drzwi dostaje też ściana do 0,15 kafla za kaflem wejścia, `DOOR_REACH`). Na kolumnach ekranu podwórka przed nim nie może stać nic wysokiego (kafel wejścia po stronie podwórka zostaje pusty), bo stos jest rysowany na wierzchu pasów budynku.
+- **Stos na podwórku** (`PileLayer`): dwie połówki po 32 px, każda sortowana zaraz za pasem budynku nad jej kolumnami, więc ściany za podwórkiem nigdy go nie zasłaniają (test `test_yard_stack_sorts_correctly`).
+- **Koła** (`tools/generate_goods.gd`): arkusze `vehicles/handcart`, `wagon`, `trade_wagon` mają 4 kolumny (`WHEEL_FRAMES`), szprychy obrócone o 1/6 obrotu w 4 krokach; widok przełącza je 10 razy na sekundę, gdy postać idzie (wiersze lustrzane w odwrotnej kolejności).
+- **Winorośl** (`tools/generate_goods.gd`): `nature/vines/{pruned,bud,leaf,full,ripe}.png`, 64×56, środek kafla na ziemi w (32, 44); jeden rząd na kafel wzdłuż osi x siatki (pal na obu końcach, linki na 9 i 17 px, dwa krzewy). Ziemia pola: `terrain/field_grapes/<etap>.png` (ziemia winna, ubity pas pod rzędem, trawa między rzędami). Rysuje je `VineLayer` (sortowany jak drzewa).
+- **Wodowanie kogi** (`ShipLayer`): zjazd w ostatnich `LAUNCH_SLIDE` = 8 s etapu, krzywa „smoothstep”; od początku zjazdu kadłub to klatka `idle` kogi (bez klocków), a zwodowana koga przy pochylni (do 1,2 kafla od miejsca cumowania) sortuje się jak kadłub na pochylni.
+
 ### 10.10 Interfejs „pergamin i drewno” i menu główne (UI-1, 2026-11-07)
 
 - **Skala:** grafiki interfejsu i menu mają piksel rysunku = 2×2 piksele ekranu bazowego 1280×720 (jak obraz menu 640×360 w skali 2). Nic nie jest rysowane w skali 1 ani skalowane nierówno.
