@@ -302,7 +302,7 @@ msgid "ui.build.paving"
 msgstr "Bruk"
 
 msgid "ui.build.paving_tip"
-msgstr "Bruk z kamienia: 1 kamień na kafel. Przeciągnij myszą po drodze albo po wolnym terenie. Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej."
+msgstr "Bruk z kamienia: 1 kamień na kafel. Przeciągnij myszą po drodze albo po wolnym terenie. Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej. Zaplanowane kafle mają przerywaną ramkę; prawy przycisk (przeciągnij) albo rozbiórka anuluje plan."
 
 msgid "ui.build.demolish"
 msgstr "Rozbiórka"
@@ -606,6 +606,9 @@ msgstr "Za daleko od farmy."
 
 msgid "ui.command_error.already_road"
 msgstr "Tu już jest droga."
+
+msgid "ui.command_error.not_paving"
+msgstr "Tu nie ma zaplanowanego bruku."
 
 msgid "ui.command_error.carts_full"
 msgstr "Ten magazyn ma już wszystkie wózki."
@@ -2207,6 +2210,9 @@ msgstr "(jest %d)"
 msgid "ui.routes.add_good"
 msgstr "+ dodaj towar"
 
+msgid "ui.routes.demand"
+msgstr "zabierze żądanie osady: %s"
+
 
 msgid "ui.routes.no_target"
 msgstr "Brak drugiej prowincji, do której da się dojechać albo dopłynąć."
@@ -2411,6 +2417,12 @@ msgstr "Czas gry (minuty:sekundy)"
 
 msgid "ui.hud.gold_tip"
 msgstr "Złoto w skarbcu królestwa"
+
+msgid "ui.hud.grace"
+msgstr "Ochrona %d:%02d"
+
+msgid "ui.hud.grace_tip"
+msgstr "Czas ochronny na start: do jego końca mieszkańcy nie tracą zadowolenia i nie odchodzą, nawet gdy czegoś brakuje"
 
 msgid "ui.main.single_provinces"
 msgstr "Pojedyncza prowincja"

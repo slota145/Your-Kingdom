@@ -15,6 +15,11 @@ func _new_game(map_id: StringName = &"riverlands") -> Simulation:
 	var problems := PackedStringArray()
 	var sim := Simulation.from_map(registry, registry.get_map(map_id), 1, problems)
 	assert_array(Array(problems)).is_empty()
+	# The bot's timed plan was tuned without the start protection (review fixes 2026-11-07):
+	# protected houses keep newcomers coming, the bigger early town overloads the bot's porters
+	# and its build queue (Riverlands: 43 residents in minute 30 instead of 68). Measured here
+	# without it; the Coast, harbour and world bots play with it.
+	sim.province.grace_until = 0
 	return sim
 
 

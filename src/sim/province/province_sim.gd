@@ -66,6 +66,9 @@ var route_wagons: Dictionary[int, RouteWagon] = {}
 var first_building: StringName = &""
 ## The province's rare resource (M6 part 3: vines let vineyards be built), from its ProvinceDef.
 var rare_resource: StringName = &""
+## Start protection (review fix 2026-11-07): until this tick residents neither lose happiness
+## nor move out, and a short supply raises no warning (0: no protection; old saves).
+var grace_until: int = 0
 ## Goods made and used per minute (statistics for the player, M4b-2); not saved.
 var ledger: GoodsLedger = GoodsLedger.new()
 ## How fast each building works while viewed: the calibration of the simplified mode (M6).
@@ -100,6 +103,9 @@ const PAVED_COST := 0.55
 const FIELD_COST := 1.2
 ## How often young trees are checked for growing up (1 s).
 const GROW_CHECK_TICKS := 10
+## How long the start protection lasts (owner's survey 2026-11-07: 15 minutes, in a new game
+## and in each newly settled province).
+const GRACE_SECONDS := 900.0
 
 
 func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entity_ids: EntityIds) -> void:
@@ -175,6 +181,20 @@ func is_tile_solid(tile: Vector2i) -> bool:
 	return grid.occupant(tile) != 0
 
 
+## Starts the start protection at [param now] (a new game, a newly settled province).
+func start_grace(now: int) -> void:
+	grace_until = now + SimClock.seconds_to_ticks(GRACE_SECONDS)
+
+
+func in_grace() -> bool:
+	return tick < grace_until
+
+
+## Seconds of start protection left (0 when over).
+func grace_seconds_left() -> float:
+	return maxf(0.0, (grace_until - tick) / float(SimClock.TICKS_PER_SECOND))
+
+
 ## Changes whenever a planned path may have become impossible: a tile turned solid or free
 ## for people or for wagons (Movement checks the rest of its path then).
 func blocking_version() -> int:
@@ -198,7 +218,7 @@ func refresh_tile(tile: Vector2i) -> void:
 			cost = terrain.move_cost
 	# Service reach counts roads, fields and terrain but not trees (M4b-3): cutting and
 	# planting near the town does not make every service measure its reach again.
-	coverage.set_tile(tile, cost, nav.version != version)
+	coverage.set_tile(tile, cost, nav_solid, nav.version != version)
 	if not grid.has_road(tile) and not fields.has_field(tile):
 		# Trees are walkable but slow people down like the forest floor (M4b-2).
 		var node := resources.def_at(tile)
@@ -1241,6 +1261,22 @@ func _withdraw_paving(tile: Vector2i) -> void:
 					paving_site.stone_missing() - request.in_flight)
 
 
+## &"" when cobbles are ordered on [param tile] and not laid yet (review fix 2026-11-07:
+## the player can cancel them).
+func cancel_paving_error(tile: Vector2i) -> StringName:
+	var id := paving_site_at(tile) if not paving.is_empty() else 0
+	if id == 0 or paving[id].is_quay():
+		return &"not_paving"
+	return &""
+
+
+## Cancels the cobbles ordered on [param tile] (checked with cancel_paving_error): the tile
+## stays a dirt road.
+func cancel_paving(tile: Vector2i) -> void:
+	_withdraw_paving(tile)
+	events.emit(&"paving_cancelled", {"tile": tile})
+
+
 ## Removes a paving site; stone left over goes on the ground at [param at] (its last tile).
 func _close_paving(paving_site: PavingSite, at: Vector2i = Agent.NO_TILE) -> void:
 	paving.erase(paving_site.id)
@@ -2155,6 +2191,8 @@ func to_dict() -> Dictionary:
 		d["route_wagons"] = wagons
 	if first_building != &"":
 		d["first_building"] = String(first_building)
+	if grace_until != 0:
+		d["grace_until"] = grace_until
 	if rare_resource != &"":
 		d["rare"] = String(rare_resource)
 	return d
@@ -2216,6 +2254,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 		var wagon := RouteWagon.from_dict(wd, registry)
 		province.route_wagons[wagon.id] = wagon
 	province.first_building = StringName(String(d.get("first_building", "")))
+	province.grace_until = int(d.get("grace_until", 0))
 	province.rare_resource = StringName(String(d.get("rare", "")))
 	province.agents = AgentStore.from_dict(d["agents"])
 	for agent: Agent in province.agents.all():

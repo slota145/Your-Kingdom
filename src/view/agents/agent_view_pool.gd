@@ -29,6 +29,20 @@ func _init() -> void:
 	y_sort_enabled = true
 
 
+## Loads the art of every character the province has or will soon hire (its people and the
+## workers of its buildings) while the game is loading: a character drawn for the first time
+## loaded its sheets then, a visible stutter of ~90 ms each (review fix 2026-11-07).
+func warm_up(source: ProvinceSim) -> void:
+	var kinds: Dictionary[StringName, bool] = {}
+	for agent: Agent in source.agents.all():
+		kinds[agent.kind] = true
+	for building: BuildingState in source.buildings.all():
+		for kind: StringName in building.def.worker_kinds:
+			kinds[kind] = true
+	for kind: StringName in kinds:
+		CharacterVisual.get_visual(_character(kind))
+
+
 func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: float) -> void:
 	var start := Time.get_ticks_usec()
 	var rect := world_rect.grow(VIEW_MARGIN)

@@ -79,7 +79,7 @@ static func update_abstract(province: ProvinceSim, doors: Dictionary[int, Array]
 	if province.tick % (IMMIGRATION_EVERY * UPDATE_TICKS) < UPDATE_TICKS:
 		for building: BuildingState in province.buildings.all():
 			var house := building.house
-			if house != null and accepts_newcomer(building):
+			if house != null and accepts_newcomer(building, province):
 				house.residents += 1
 				break
 
@@ -115,7 +115,10 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 	var speed := HAPPINESS_SPEED
 	if not basic_met and house.residents > 0:
 		speed = SHORTAGE_SPEED
-	house.happiness = move_toward(house.happiness, target, speed)
+	var happiness := move_toward(house.happiness, target, speed)
+	var grace := province.in_grace()
+	# Start protection: happiness only rises, and a shortage is not counted yet.
+	house.happiness = maxf(house.happiness, happiness) if grace else happiness
 	if abstract:
 		# Every few seconds is enough: a pantry holds several units (and saves the searches).
 		if (province.tick / UPDATE_TICKS + building.id) % REFILL_EVERY == 0:
@@ -134,6 +137,9 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 				and house.level < building.def.house_levels.size() \
 				and _next_level_ready(province, building, stored):
 			Construction.open_upgrade_site(province, building, building.def.house_levels[house.level])
+	elif grace:
+		house.met_seconds = 0
+		house.unmet_seconds = 0
 	else:
 		house.met_seconds = 0
 		house.unmet_seconds += 1
@@ -303,15 +309,35 @@ static func core_residents(building: BuildingState) -> int:
 ## Whether a newcomer may move into [param building] now: any free place of a happy house,
 ## up to half of the places of a less happy one (so a town with a shortage still grows its
 ## core and can fix the shortage; decision 2026-11-06).
-static func accepts_newcomer(building: BuildingState) -> bool:
+static func accepts_newcomer(building: BuildingState, province: ProvinceSim = null) -> bool:
 	var house := building.house
 	var capacity := building.capacity()
 	if house.free_places(capacity) <= 0:
 		return false
-	if house.happiness >= IMMIGRATION_MIN_HAPPINESS:
+	# Start protection keeps happiness up, not the pantry: newcomers come as they would to an
+	# unprotected house, which heads for its target happiness (a house short of a basic need
+	# fills only up to half when that target is low).
+	var happiness := house.happiness
+	if province != null and province.in_grace():
+		happiness = minf(happiness, target_happiness(province, building))
+	if happiness >= IMMIGRATION_MIN_HAPPINESS:
 		return true
-	return house.happiness >= IMMIGRATION_HALF_HAPPINESS \
+	return happiness >= IMMIGRATION_HALF_HAPPINESS \
 			and house.residents + house.incoming < core_residents(building)
+
+
+## The happiness [param building]'s house heads for by the needs met at its last update (as in
+## _update_house).
+static func target_happiness(province: ProvinceSim, building: BuildingState) -> float:
+	var house := building.house
+	var level := building.level_def()
+	var target := 0.0
+	for need: NeedDef in level.needs:
+		if house.satisfied.get(need.id, false):
+			target += level.weight_of(need)
+		elif need.is_basic and house.residents > 0:
+			target -= level.weight_of(need)
+	return clampf(target + province.treasury.rate_happiness(), 0.0, 100.0)
 
 
 ## Work speed (1 = normal) of a worker living in [param home]: slower when the home is
@@ -347,7 +373,7 @@ static func _immigrate(province: ProvinceSim) -> void:
 		return
 	for building: BuildingState in province.buildings.all():
 		var house := building.house
-		if house == null or not accepts_newcomer(building):
+		if house == null or not accepts_newcomer(building, province):
 			continue
 		var agent := province.spawn_agent(SETTLER_KIND, province.entry_tile)
 		agent.home_id = building.id

@@ -51,6 +51,12 @@ var _time: float = 0.0
 var _preview_dirty: bool = false
 ## Something in the simulation changed since the preview was drawn (refreshed with a delay).
 var _preview_stale: bool = false
+## The service and coverage version the range layer shows (_show_range).
+var _range_service: StringName = &""
+## Dragging over ordered cobbles to cancel them (review fix 2026-11-07): with the paving tool
+## and the right mouse button, or with the demolish tool started on an ordered tile.
+var _cancelling: bool = false
+var _range_version: int = -1
 var _preview_time: float = 0.0
 var _turn: PlacementTurn = PlacementTurn.new()
 
@@ -223,6 +229,9 @@ func _build_ui() -> void:
 	_world_map.routes_requested.connect(func(from: int) -> void:
 		_routes.open(sim, from)
 		_routes.move_to_front())
+	_world_map.goods_requested.connect(func(to: int) -> void:
+		_routes.open(sim, sim.viewed_id, to)
+		_routes.move_to_front())
 	root.add_child(_world_map)
 	# Over the world map too (opened from its panel).
 	root.add_child(_routes)
@@ -345,6 +354,7 @@ func _set_tool(tool: Dictionary) -> void:
 	_tool = tool
 	_drag_tiles.clear()
 	_dragging = false
+	_cancelling = false
 	_turn.begin()
 	_build.show_rotate_hint(tool.get("kind", &"") == &"building")
 	if not tool.is_empty():
@@ -358,6 +368,8 @@ func _update_preview() -> void:
 	var tiles: Dictionary[Vector2i, String] = {}
 	var kind: StringName = _tool.get("kind", &"")
 	var ghost := ""
+	## The service whose standing reach is shown below (none: &"").
+	var range_service := &""
 	var ghost_origin := Vector2i.ZERO
 	var ghost_ok := false
 	match kind:
@@ -366,11 +378,11 @@ func _update_preview() -> void:
 			var origin := _building_origin(def)
 			var turn := _turn.update(sim.province, def, origin)
 			if def.service_radius > 0:
-				_add_range(tiles, def.id)
-				var preview := PackedByteArray()
-				preview.resize(sim.province.grid.size.x * sim.province.grid.size.y)
-				ServiceCoverage.flood(sim.province, origin + def.entrance_at(turn), def.service_radius, preview)
-				_add_flags(tiles, preview, "range")
+				range_service = def.id
+				var width := sim.province.grid.size.x
+				for i: int in ServiceCoverage.reach_of(sim.province, origin + def.entrance_at(turn),
+						def.service_radius):
+					tiles[Vector2i(i % width, i / width)] = "range"
 			var ok := sim.province.placement_error(def, origin, turn) == &""
 			for t: Vector2i in def.footprint_tiles(origin):
 				tiles[t] = "ok" if ok else "bad"
@@ -385,7 +397,11 @@ func _update_preview() -> void:
 				tiles[t] = "ok" if sim.province.road_error(t) == &"" else "bad"
 		&"paving":
 			for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
-				tiles[t] = "ok" if sim.province.paving_error(t) == &"" else "bad"
+				if _cancelling:
+					if sim.province.cancel_paving_error(t) == &"":
+						tiles[t] = "bad"
+				else:
+					tiles[t] = "ok" if sim.province.paving_error(t) == &"" else "bad"
 		&"pier", &"quay":
 			# The whole line is checked together: reach from the shore, way to the open sea (N1).
 			var line: Array[Vector2i] = _drag_tiles.duplicate() if _dragging else [_hover] as Array[Vector2i]
@@ -416,30 +432,47 @@ func _update_preview() -> void:
 				for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
 					tiles[t] = "ok" if work.has_point(t) else "bad"
 		&"demolish":
-			if _demolish_target(_hover) != null:
+			if _cancelling:
+				for t: Vector2i in _drag_tiles:
+					if sim.province.cancel_paving_error(t) == &"":
+						tiles[t] = "bad"
+			elif _demolish_target(_hover) != null:
 				tiles[_hover] = "bad"
 		_:
 			if _building_panel.visible:
 				var b := sim.province.buildings.get_building(_building_panel.building_id)
 				if b != null and b.def.service_radius > 0:
-					_add_range(tiles, b.def.id)
+					range_service = b.def.id
 				if b != null:
 					for t: Vector2i in b.plant_area:
 						tiles[t] = "ok"
+	_show_range(range_service)
 	view.overlay.show_tiles(tiles)
 	view.buildings.show_ghost(ghost, ghost_origin, ghost_ok)
 
 
-func _add_range(tiles: Dictionary[Vector2i, String], service: StringName) -> void:
+## The reach of the standing [param service] buildings, on its own layer: built again only
+## when the coverage changed (moving the cursor does not rebuild thousands of tiles; review
+## fix 2026-11-07).
+func _show_range(service: StringName) -> void:
+	if service == &"":
+		if _range_service != &"":
+			_range_service = &""
+			view.range_overlay.clear()
+		return
 	sim.province.coverage.update(sim.province)
-	_add_flags(tiles, sim.province.coverage.map_of(service), "range")
-
-
-func _add_flags(tiles: Dictionary[Vector2i, String], flags: PackedByteArray, art: String) -> void:
+	var version := sim.province.coverage.version
+	if service == _range_service and version == _range_version:
+		return
+	_range_service = service
+	_range_version = version
+	var tiles: Dictionary[Vector2i, String] = {}
+	var flags := sim.province.coverage.map_of(service)
 	var width := sim.province.grid.size.x
 	for i: int in flags.size():
 		if flags[i] == 1:
-			tiles[Vector2i(i % width, i / width)] = art
+			tiles[Vector2i(i % width, i / width)] = "range"
+	view.range_overlay.show_tiles(tiles)
 
 
 ## The building's origin so that the cursor tile is its front (entrance) corner.
@@ -451,6 +484,10 @@ func _demolish_target(tile: Vector2i) -> Command:
 	var owner := sim.province.grid.occupant(tile)
 	if owner != 0 and sim.province.buildings.has_building(owner):
 		return DemolishCommand.new(owner)
+	# Ordered cobbles: the order goes, the dirt road stays (review fix 2026-11-07).
+	if sim.province.cancel_paving_error(tile) == &"":
+		var planned: Array[Vector2i] = [tile]
+		return CancelPavingCommand.new(planned)
 	if sim.province.fields.has_field(tile):
 		return RemoveFieldCommand.new(tile)
 	if sim.province.grid.has_road(tile):
@@ -474,8 +511,14 @@ func _execute(command: Command) -> StringName:
 
 func _unhandled_input(event: InputEvent) -> void:
 	var mb := event as InputEventMouseButton
-	if mb != null and mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
-		_set_tool({})
+	if mb != null and mb.button_index == MOUSE_BUTTON_RIGHT:
+		if mb.pressed:
+			if _tool.get("kind", &"") == &"paving" and not _dragging 					and sim.province.cancel_paving_error(_hover) == &"":
+				_start_cancelling()
+			else:
+				_set_tool({})
+		elif _cancelling:
+			_finish_cancelling()
 		return
 	if mb != null and mb.button_index == MOUSE_BUTTON_LEFT:
 		if mb.pressed:
@@ -544,6 +587,9 @@ func _on_left_press() -> void:
 				_turn.placed()
 			_update_preview()
 		&"demolish":
+			if sim.province.cancel_paving_error(_hover) == &"":
+				_start_cancelling()
+				return
 			var command := _demolish_target(_hover)
 			if command != null:
 				_execute(command)
@@ -554,6 +600,10 @@ func _on_left_press() -> void:
 
 
 func _on_left_release() -> void:
+	if _cancelling:
+		if _tool.get("kind", &"") == &"demolish":
+			_finish_cancelling()
+		return
 	if not _dragging:
 		return
 	_dragging = false
@@ -583,6 +633,27 @@ func _on_left_release() -> void:
 			if sim.province.field_error(int(_tool["farm"]), t) == &"":
 				_execute(PlaceFieldCommand.new(int(_tool["farm"]), t))
 	_drag_tiles.clear()
+	_update_preview()
+
+
+func _start_cancelling() -> void:
+	_cancelling = true
+	_dragging = true
+	_drag_tiles = [_hover]
+	_update_preview()
+
+
+## Cancels the ordered cobbles on the dragged tiles.
+func _finish_cancelling() -> void:
+	var tiles: Array[Vector2i] = []
+	for t: Vector2i in _drag_tiles:
+		if sim.province.cancel_paving_error(t) == &"":
+			tiles.append(t)
+	_cancelling = false
+	_dragging = false
+	_drag_tiles.clear()
+	if not tiles.is_empty():
+		_execute(CancelPavingCommand.new(tiles))
 	_update_preview()
 
 

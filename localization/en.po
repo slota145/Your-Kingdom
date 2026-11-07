@@ -297,7 +297,7 @@ msgid "ui.build.paving"
 msgstr "Paving"
 
 msgid "ui.build.paving_tip"
-msgstr "Cobbled road: 1 stone per tile. Drag with the mouse over a road or free ground. Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles."
+msgstr "Cobbled road: 1 stone per tile. Drag with the mouse over a road or free ground. Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles. Ordered tiles have a dashed frame; drag with the right button, or demolish, to cancel the order."
 
 msgid "ui.build.demolish"
 msgstr "Demolish"
@@ -601,6 +601,9 @@ msgstr "Too far from the farm."
 
 msgid "ui.command_error.already_road"
 msgstr "There is a road here already."
+
+msgid "ui.command_error.not_paving"
+msgstr "No paving is ordered here."
 
 msgid "ui.command_error.carts_full"
 msgstr "This storage has all its handcarts already."
@@ -2186,6 +2189,9 @@ msgstr "(has %d)"
 msgid "ui.routes.add_good"
 msgstr "+ add a good"
 
+msgid "ui.routes.demand"
+msgstr "takes the settlement's demand: %s"
+
 
 msgid "ui.routes.no_target"
 msgstr "No other province can be reached by road or by sea."
@@ -2388,6 +2394,12 @@ msgstr "Game time (minutes:seconds)"
 
 msgid "ui.hud.gold_tip"
 msgstr "Gold in the kingdom's treasury"
+
+msgid "ui.hud.grace"
+msgstr "Protection %d:%02d"
+
+msgid "ui.hud.grace_tip"
+msgstr "Start protection: until it ends, residents do not lose happiness or move out, even when something is short"
 
 msgid "ui.main.single_provinces"
 msgstr "Single province"

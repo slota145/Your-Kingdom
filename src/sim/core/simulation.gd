@@ -42,6 +42,7 @@ static func from_map(registry: DataRegistry, map: MapDef, seed_value: int = 1,
 	var sim := Simulation.new(registry, map.size(), seed_value)
 	sim.world = WorldSim.single(map.id)
 	problems.append_array(sim.province.load_map(map))
+	sim.province.start_grace(sim.clock.tick)
 	sim.events.drain()
 	return sim
 
@@ -64,6 +65,7 @@ static func from_world(registry: DataRegistry, def: WorldDef, seed_value: int = 
 	sim.viewed_id = start
 	sim.world.get_province(start).owner = ProvinceDef.OWNER_PLAYER
 	problems.append_array(sim.province.load_map(map, pdef.mirrored, pdef.richness, false, pdef.rare_resource))
+	sim.province.start_grace(sim.clock.tick)
 	problems.append_array(sim._open_neutral_towns())
 	sim.events.drain()
 	return sim
@@ -278,6 +280,7 @@ func _settle(e: Expedition) -> ProvinceSim:
 		settled.landing = Landing.arrive_by_sea(settled, map, mirrored, e.settlers, e.kit, e.id)
 	else:
 		settled.landing = Landing.arrive_by_land(settled, e.settlers, e.kit, e.id)
+	settled.start_grace(clock.tick)
 	place.owner = ProvinceDef.OWNER_PLAYER
 	e.state = Expedition.State.LANDED
 	events.emit(&"province_settled", {"province": e.to, "expedition": e.id})

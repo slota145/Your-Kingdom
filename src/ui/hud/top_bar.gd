@@ -19,6 +19,8 @@ var _residents: Label
 var _workers: Label
 var _time: Label
 var _gold: Label
+## Start protection left (review fix 2026-11-07); hidden when over.
+var _grace: Label
 ## Pause and the three speeds (owner's request 2026-11-07): the active one stays pressed.
 var _pause: Button
 var _speeds: Array[Button] = []
@@ -33,6 +35,10 @@ func _init() -> void:
 	_residents = _stat(row, "people", "ui.hud.residents_tip")
 	_workers = _stat(row, "workers", "ui.hud.workers_tip")
 	_gold = _stat(row, "gold", "ui.hud.gold_tip")
+	_grace = UiKit.label("", false)
+	_grace.tooltip_text = "ui.hud.grace_tip"
+	_grace.mouse_filter = Control.MOUSE_FILTER_STOP
+	row.add_child(_grace)
 	row.add_child(_spacer())
 	# The clock and the time controls in the middle of the board.
 	_time = _stat(row, "time", "ui.hud.time_tip")
@@ -107,6 +113,10 @@ func _process(_delta: float) -> void:
 	_time.text = tr("ui.hud.time") % [seconds / 60, seconds % 60]
 	_gold.text = str(treasury.gold) if treasury != null else ""
 	_gold.add_theme_color_override(&"font_color", UiKit.GOLD)
+	var grace := ceili(province.grace_seconds_left())
+	_grace.visible = grace > 0
+	if grace > 0:
+		_grace.text = tr("ui.hud.grace") % [grace / 60, grace % 60]
 	_pause.set_pressed_no_signal(Game.paused)
 	for i: int in _speeds.size():
 		_speeds[i].set_pressed_no_signal(not Game.paused and Game.speed_index == i)

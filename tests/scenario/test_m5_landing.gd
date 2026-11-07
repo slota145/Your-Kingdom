@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-## M5 part 3 DoD: the start from a ship on the Coast map. A cog comes in over the sea edge,
-## drops anchor off the beach, six settlers wade ashore and the start kit lies on the beach;
+## M5 part 3 DoD: the start from a ship on the Coast map. The cog lies at anchor off the beach
+## from the start (review fix 2026-11-07), six settlers wade ashore, each to his own spot and the start kit lies on the beach;
 ## only the pioneer camp can be placed until it is; the camp takes its builder and porters
 ## from the settlers, the others carry until a hut stands and then move in; the ship sails
 ## away. Saves during the landing play on alike.
@@ -51,21 +51,32 @@ func test_settlers_land_from_the_ship_and_build_the_pioneer_camp() -> void:
 	assert_int(province.buildings.count()).is_equal(0)
 	assert_int(province.agents.count()).is_equal(0)
 	var ship := province.ships[landing.ship_id] as ShipUnit
-	var at := ship.tile()
-	assert_bool(at.x == 0 or at.y == 0 or at.x == 127 or at.y == 127).is_true()
+	assert_vector(ship.tile()).is_equal(landing.anchor)
+	# Start protection for 15 minutes (review fix 2026-11-07).
+	assert_float(province.grace_seconds_left()).is_equal(ProvinceSim.GRACE_SECONDS)
 	# Only the pioneer camp can be placed first.
 	var beach := landing.beach
 	assert_str(String(province.placement_error(sim.data.get_building(&"stockpile"), beach + Vector2i(-8, -4)))) \
 			.is_equal("build_camp_first")
 	# The ship anchors, six settlers wade ashore and the kit lies on the beach.
-	var waded := {"seen": false}
+	var waded := {"seen": false, "ashore": {}}
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
 		for agent: Agent in province.agents.all():
-			if agent.task != null and agent.task.kind == Task.KIND_LAND \
-					and province.sail_depth(agent.tile()) > 0:
-				waded["seen"] = true
+			if agent.task != null and agent.task.kind == Task.KIND_LAND:
+				if province.sail_depth(agent.tile()) > 0:
+					waded["seen"] = true
+				(waded["ashore"] as Dictionary)[agent.id] = SimCodec.to_vec2i(agent.task.bb["to"])
 		return landing.state == Landing.State.LEAVING, 400)).is_true()
 	assert_bool(waded["seen"]).is_true()
+	# Unloading starts at once, and the settlers come ashore spread along the beach.
+	print("landing unloaded by tick ", province.tick)
+	assert_int(province.tick).is_less(SimFixture.ticks(40))
+	var spots := {}
+	for spot: Vector2i in (waded["ashore"] as Dictionary).values():
+		spots[spot] = true
+		assert_int(maxi(absi(spot.x - beach.x), absi(spot.y - beach.y))).is_less_equal(Landing.SHORE_REACH)
+		assert_int(province.sail_depth(spot)).is_equal(0)
+	assert_int(spots.size()).is_greater_equal(4)
 	assert_int(province.agents.count()).is_equal(6)
 	assert_int(province.kingdom_stock(&"wood")).is_equal(90)
 	assert_int(province.kingdom_stock(&"bread")).is_equal(20)
