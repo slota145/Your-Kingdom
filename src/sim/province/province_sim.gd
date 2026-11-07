@@ -464,6 +464,8 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 			return &"no_berth"
 	if def.served_by_port and Harbour.serving_port(self, origin + Vector2i(def.footprint) / 2) == null:
 		return &"no_port_nearby"
+	if def.crane_reach > 0 and Cranes.berth_building(self, def, origin, false) == null:
+		return &"no_berth_nearby"
 	var area := Rect2i(origin, def.footprint)
 	for ship: ShipUnit in ships.values():
 		if area.has_point(ship.tile()):

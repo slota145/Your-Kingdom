@@ -2483,3 +2483,44 @@ msgstr "Unknown kind of quay."
 
 msgid "ui.command_error.too_far_from_sea"
 msgstr "Too far from the sea: a quay comes up onto the land at most 2 tiles."
+
+# N1 part 2: the cargo crane and the port warehouse
+
+msgid "building.crane.name"
+msgstr "Harbour crane"
+
+msgid "building.crane.desc"
+msgstr "A wooden crane with a treadwheel. The crane operator walks in the wheel and lifts 3 goods at a time between the quay yard and the ship at the berth, beside the dockers, so ships load much faster. Build it on a quay at most 2 tiles from where a ship moors (by a port or a mooring)."
+
+msgid "building.port_warehouse.name"
+msgstr "Port warehouse"
+
+msgid "building.port_warehouse.desc"
+msgstr "A storage on the quay, right by the ships: room for 8 kinds of goods and 2 porters. Porters take goods for the ships from it and bring what arrived to it first, as it is the nearest. Build it on a pier or a quay."
+
+msgid "ui.kind.crane_operator"
+msgstr "Crane operator"
+
+msgid "ui.reason.no_berth"
+msgstr "the crane stands by no berth"
+
+msgid "ui.command_error.no_berth_nearby"
+msgstr "A crane must stand at most 2 tiles from where a ship moors (by a port or a mooring)."
+
+msgid "recipe.crane_work.name"
+msgstr "Crane handling"
+
+msgid "recipe.crane_work.desc"
+msgstr "The crane operator walks in the treadwheel and lifts 3 goods at a time between the quay yard and the ship."
+
+msgid "ui.crane.no_berth"
+msgstr "It stands by no berth."
+
+msgid "ui.crane.serves"
+msgstr "Serves: %s"
+
+msgid "ui.crane.no_ship"
+msgstr "Waiting for a ship"
+
+msgid "ui.crane.lifting"
+msgstr "Lifting: %s"

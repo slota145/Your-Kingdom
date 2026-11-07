@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 const FIXTURES: Array[String] = ["v1_woodcutter", "v2_village", "v3_town", "v4_town", "v5_town",
 		"v6_town", "v7_town", "v8_town", "v9_harbour", "v10_port", "v11_voyage", "v12_world", "v13_expedition",
-		"v14_routes", "v15_quays", "big_city"]
+		"v14_routes", "v15_quays", "v16_crane", "big_city"]
 
 
 func _load(name: String) -> Simulation:

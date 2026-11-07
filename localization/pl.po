@@ -2506,3 +2506,44 @@ msgstr "Nieznany rodzaj nabrzeża."
 
 msgid "ui.command_error.too_far_from_sea"
 msgstr "Za daleko od morza: nabrzeże wchodzi na ląd najwyżej na 2 kafle."
+
+# N1 part 2: the cargo crane and the port warehouse
+
+msgid "building.crane.name"
+msgstr "Dźwig portowy"
+
+msgid "building.crane.desc"
+msgstr "Drewniany dźwig z kołem deptakowym. Dźwigowy chodzi w kole i przenosi po 3 sztuki naraz między placem a statkiem przy miejscu cumowania, obok portowców, więc statek ładuje się dużo szybciej. Stawiaj na nabrzeżu, najwyżej 2 kafle od miejsca, gdzie cumuje statek (przy porcie albo miejscu cumowania)."
+
+msgid "building.port_warehouse.name"
+msgstr "Magazyn portowy"
+
+msgid "building.port_warehouse.desc"
+msgstr "Magazyn na nabrzeżu, tuż przy statkach: 8 miejsc na towary i 2 tragarzy. Tragarze biorą z niego towar na statki i odnoszą do niego to, co przypłynęło, bo jest najbliżej. Stawiaj na pomoście albo nabrzeżu."
+
+msgid "ui.kind.crane_operator"
+msgstr "Dźwigowy"
+
+msgid "ui.reason.no_berth"
+msgstr "dźwig nie stoi przy żadnym miejscu cumowania"
+
+msgid "ui.command_error.no_berth_nearby"
+msgstr "Dźwig musi stać najwyżej 2 kafle od miejsca, gdzie cumuje statek (przy porcie albo miejscu cumowania)."
+
+msgid "recipe.crane_work.name"
+msgstr "Przeładunek dźwigiem"
+
+msgid "recipe.crane_work.desc"
+msgstr "Dźwigowy chodzi w kole deptakowym i przenosi po 3 sztuki między placem a statkiem."
+
+msgid "ui.crane.no_berth"
+msgstr "Nie stoi przy żadnym miejscu cumowania."
+
+msgid "ui.crane.serves"
+msgstr "Obsługuje: %s"
+
+msgid "ui.crane.no_ship"
+msgstr "Czeka na statek"
+
+msgid "ui.crane.lifting"
+msgstr "Podnosi: %s"

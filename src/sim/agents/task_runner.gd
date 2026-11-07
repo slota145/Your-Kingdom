@@ -62,7 +62,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"deposit": DepositStep.new(), &"plant": PlantStep.new(), &"serve": ServeStep.new(),
 			&"choose_stall": ChooseStallStep.new(), &"merchant": MerchantStep.new(),
 			&"park": ParkStep.new(), &"sail": SailStep.new(), &"ship_build": ShipBuildStep.new(),
-			&"land": LandStep.new(), &"travel": TravelStep.new(),
+			&"land": LandStep.new(), &"travel": TravelStep.new(), &"crane": CraneStep.new(),
 		}
 	return _executors[kind]
 
@@ -103,6 +103,7 @@ static func fail(province: ProvinceSim, agent: Agent) -> void:
 	if task == null:
 		return
 	Harbour.step_ashore(agent)
+	Cranes.abort(province, agent)
 	province.release_agent(agent)
 	if task.kind == Task.KIND_TRANSPORT:
 		# Goods already picked up leave the request: the stash task takes care of them.

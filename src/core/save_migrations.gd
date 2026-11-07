@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 15
+const CURRENT_VERSION := 16
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -52,6 +52,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 15:
 		result = migrate_v14_to_v15(result)
 		version = 15
+	if version < 16:
+		result = migrate_v15_to_v16(result)
+		version = 16
 	return result
 
 
@@ -225,4 +228,11 @@ static func migrate_v14_to_v15(state: Dictionary) -> Dictionary:
 		var empty := PackedByteArray()
 		empty.resize(size.x * size.y)
 		grid["quays"] = Marshalls.raw_to_base64(empty)
+	return state
+
+
+## v16 (N1 part 2): cargo cranes and port warehouses. Both are new buildings, and a crane
+## operator's lift lives in his task blackboard (Cranes), so older saves need no change; the
+## version guards a game with cranes from an older build that does not know them.
+static func migrate_v15_to_v16(state: Dictionary) -> Dictionary:
 	return state

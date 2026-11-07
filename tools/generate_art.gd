@@ -291,6 +291,12 @@ const BUILDINGS := {
 	"port": [{"min_height": 64.0, "volumes": [],
 		"props": [["gate_posts", 3.55, 1.0], ["port_crane", 0.75, 2.55], ["barrels", 1.4, 2.35],
 			["bollard", 0.5, 3.75], ["bollard", 1.7, 3.75], ["bollard", 3.55, 3.75], ["lantern", 3.7, 2.2]]}],
+	# N1 part 2: the cargo crane on the quay: a treadwheel by the door (the operator walks in
+	# it) and a tall mast. The jib, the rope and the load are drawn by the view (CraneLayer),
+	# which swings them between the quay yard and the ship.
+	"crane": [{"min_height": 96.0, "volumes": [],
+		"props": [["crane_mast", 1.15, 0.85], ["treadwheel", 0.5, 1.5], ["bollard", 1.75, 1.75]]}],
+	"port_warehouse": [{"special": "yard"}],
 	# M5 part 3: the pioneer camp, the first building after a start from a ship: a log hut,
 	# canvas tents, a camp fire and the settlers' tools.
 	"pioneer_camp": [{"volumes": [
@@ -1162,6 +1168,39 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 			_line(img, p - Vector2(0, 54), p + Vector2(-30, -42), C_BEAM, 2)
 			_line(img, p + Vector2(-29, -42), p + Vector2(-29, -20), Color(0.75, 0.65, 0.45), 1)
 			_crate(img, p + Vector2(-29, -12), Color(0.62, 0.46, 0.28))
+		"crane_mast":
+			# N1 part 2: a timber mast on a plank footing with two raking struts and an iron cap
+			# (the jib is drawn by the view from the cap, CraneLayer.MAST_HEIGHT).
+			_box(img, p, Vector2(18, 9), 6.0, C_PLANK, "planks")
+			for side: float in [-1.0, 1.0]:
+				_line(img, p + Vector2(side * 8, -4), p - Vector2(0, 44), C_BEAM.lightened(0.08), 2)
+			_line(img, p - Vector2(0, 5), p - Vector2(0, 86), C_BEAM, 5)
+			_line(img, p - Vector2(1, 5), p - Vector2(1, 86), C_BEAM.lightened(0.3), 1)
+			for k: int in 4:
+				_line(img, p - Vector2(2, 20 + k * 16), p - Vector2(-2, 20 + k * 16), C_IRON, 1)
+			_box(img, p - Vector2(0, 86), Vector2(7, 4), 4.0, C_IRON.lightened(0.2))
+		"treadwheel":
+			# N1 part 2: a big wheel of two rims joined by treads, on an A-frame either side.
+			var c := p - Vector2(0, 21)
+			var depth := Vector2(8, -4)
+			var rim := Color(0.56, 0.38, 0.22)
+			for side: float in [-1.0, 1.0]:
+				_line(img, p + Vector2(side * 14, 1) + depth, c + depth, C_BEAM.darkened(0.15), 2)
+			_circle(img, c + depth, 18.0, rim.darkened(0.35), 2)
+			for k: int in 20:
+				var a := TAU * k / 20.0
+				var q := c + Vector2(cos(a), sin(a)) * 17.0
+				if sin(a) > -0.2:
+					_line(img, q, q + depth, rim.lightened(0.12) if k % 2 == 0 else rim.darkened(0.12), 2)
+			_circle(img, c, 18.0, rim, 2)
+			_circle(img, c, 15.0, rim.darkened(0.25), 1)
+			for k: int in 4:
+				var a := PI * k / 4.0 + PI / 8.0
+				_line(img, c - Vector2(cos(a), sin(a)) * 15.0, c + Vector2(cos(a), sin(a)) * 15.0, rim.darkened(0.2), 1)
+			_box(img, c + Vector2(4, 3), Vector2(9, 4), 4.0, C_IRON.lightened(0.15))
+			for side: float in [-1.0, 1.0]:
+				_line(img, p + Vector2(side * 14, 1), c, C_BEAM, 3)
+			_line(img, p + Vector2(-14, 1), p + Vector2(14, 1), C_BEAM.darkened(0.1), 2)
 		"gate_posts":
 			for k: int in 2:
 				var q := p + Vector2(-12 + k * 22, -6 + k * 11)
@@ -1739,6 +1778,15 @@ func _horse(img: Image, p: Vector2) -> void:
 	_ellipse(img, p + Vector2(13, -20), Vector2(3.5, 2.5), coat.lightened(0.05))
 	_line(img, p + Vector2(7, -15), p + Vector2(10, -21), Color(0.2, 0.14, 0.1), 1)
 	_line(img, p + Vector2(-10, -12), p + Vector2(-13, -5), Color(0.2, 0.14, 0.1), 2)
+
+
+## A circle outline of [param width] px drawn as short lines (a wheel rim).
+func _circle(img: Image, centre: Vector2, radius: float, colour: Color, width: int) -> void:
+	var steps := maxi(ceili(radius * 1.5), 12)
+	for k: int in steps:
+		var a := TAU * k / steps
+		var b := TAU * (k + 1) / steps
+		_line(img, centre + Vector2(cos(a), sin(a)) * radius, centre + Vector2(cos(b), sin(b)) * radius, colour, width)
 
 
 func _ring(img: Image, centre: Vector2, radius: float, colour: Color) -> void:

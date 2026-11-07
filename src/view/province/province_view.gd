@@ -24,6 +24,8 @@ var ships: ShipLayer
 var shoals: ShoalLayer
 ## Quays on the sea and harbour buildings' strips over the water, as one mass (N1).
 var quays: QuayLayer
+## Cargo cranes: the jib, the rope and the load over the world (N1 part 2).
+var cranes: CraneLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 
@@ -72,6 +74,10 @@ func setup(source: ProvinceSim) -> void:
 	cart.texture = ArtPaths.texture("vehicles/merchant_cart.png")
 	cart.visible = false
 	world.add_child(cart)
+	cranes = CraneLayer.new()
+	cranes.z_index = 1
+	add_child(cranes)
+	cranes.setup(province)
 
 
 func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -> void:
@@ -81,6 +87,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 	agents.update_view(province.agents, alpha, visible_rect, time)
 	ships.update_view(alpha, time)
 	shoals.update_view(time)
+	cranes.update_view()
 	piles.update_view(province.piles)
 	piles.update_yards(province.buildings)
 	buildings.update_view()
