@@ -198,7 +198,7 @@ func refresh_tile(tile: Vector2i) -> void:
 			cost = terrain.move_cost
 	# Service reach counts roads, fields and terrain but not trees (M4b-3): cutting and
 	# planting near the town does not make every service measure its reach again.
-	coverage.set_tile(tile, cost, nav.version != version)
+	coverage.set_tile(tile, cost, nav_solid, nav.version != version)
 	if not grid.has_road(tile) and not fields.has_field(tile):
 		# Trees are walkable but slow people down like the forest floor (M4b-2).
 		var node := resources.def_at(tile)

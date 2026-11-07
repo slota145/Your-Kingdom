@@ -60,6 +60,53 @@ func test_incremental_coverage_matches_a_fresh_one() -> void:
 		assert_array(Array(province.coverage.map_of(service))).is_equal(Array(fresh.map_of(service)))
 
 
+## Review fix (2026-11-07): a quarried rock or a new road in the town is patched into the
+## reach instead of flooding every service around it; a closed tile no covered path used is
+## patched too. Random changes, each step compared with a coverage measured from scratch.
+func test_patched_coverage_matches_a_fresh_one() -> void:
+	var sim := SimFixture.make_sim(Vector2i(56, 48))
+	var province := sim.province
+	SimFixture.place(sim, &"well", Vector2i(12, 12))
+	SimFixture.place(sim, &"well", Vector2i(30, 26))
+	SimFixture.place(sim, &"chapel", Vector2i(22, 14))
+	SimFixture.place(sim, &"church", Vector2i(40, 30))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	# Scattered rocks to quarry and walls to knock down later.
+	for i: int in 400:
+		var t := Vector2i(rng.randi_range(2, 53), rng.randi_range(2, 45))
+		if province.grid.occupant(t) == 0:
+			province.grid.set_blocked(t, true)
+			province.refresh_tile(t)
+	province.coverage.update(province)
+	var floods_before := province.coverage.full_floods
+	for round: int in 250:
+		for change: int in rng.randi_range(1, 4):
+			var t := Vector2i(rng.randi_range(2, 53), rng.randi_range(2, 45))
+			if province.grid.occupant(t) != 0:
+				continue
+			match rng.randi_range(0, 2):
+				0:
+					province.grid.set_blocked(t, not province.grid.is_blocked(t))
+				1:
+					province.grid.set_road(t, not province.grid.has_road(t))
+				2:
+					province.grid.set_road(t, true)
+					province.grid.set_paved(t, true)
+			province.refresh_tile(t)
+		province.coverage.update(province)
+		var fresh := ServiceCoverage.new()
+		fresh.setup(province.grid.size)
+		fresh.cost_map = province.coverage.cost_map.duplicate()
+		fresh.update(province)
+		for service: StringName in [&"well", &"chapel", &"church"]:
+			assert_array(Array(province.coverage.map_of(service))) \
+					.override_failure_message("round %d, %s" % [round, service]) \
+					.is_equal(Array(fresh.map_of(service)))
+	# Most changes are patched, not flooded again.
+	assert_int(province.coverage.patched_floods).is_greater(province.coverage.full_floods - floods_before)
+
+
 ## M4b-3: trees slow people down but do not shorten the reach of services, so cutting them
 ## near the town does not make the services measure again.
 func test_trees_do_not_change_reach() -> void:
