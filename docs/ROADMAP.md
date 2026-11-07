@@ -395,7 +395,11 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Brak zakleszczeń przez 2 godziny przy 4×, także przy pełnych magazynach (`test_slice_dod.gd`; czekanie przy pełnym stosie nie jest zakleszczeniem). Kupiec kupił w tym czasie 58 desek i 22 skóry.
 - [x] Zapis z M4b-1.5 wczytuje się po migracji (v6 → v7) bez utraty towaru, nowa fixtura `v7_town.json` (`test_save_round_trip.gd`).
 - [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń (test kluczy; panele chlewu i targu obejrzane na zrzutach w PL).
-- [ ] **Twoja ocena gry.**
+- [x] **Twoja ocena gry:** 5/5 (2026-11-07, ankieta na laptopie). Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Podwórko przy budynkach ze stosem:** stos nie może leżeć na kaflach budynku (teraz wystaje zza ścian chaty drwala i chaty rybaka). Budynek ze stosem dostaje wolne pole przed wejściem i tam rośnie stos. Wymaga zmiany rozmiaru lub rysunku tych budynków i testu sortowania.
+- [ ] **Więcej straganiarzy na targu** (np. 3–4 zamiast 2), żeby kramy w dużym mieście nie stały puste.
 
 **Do sprawdzenia przy ocenie gry (lista na laptop):**
 - Stos przy budynku: czy przy pełnych magazynach drwal przestaje rąbać, stos widać przy chacie, a tragarze go odnoszą, gdy zrobi się miejsce. Czy panel mówi „czeka: stos przy budynku jest pełny”.
@@ -456,11 +460,18 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Nowa mapa 128×128 z jeziorem i kamienistym gruntem: wędkarz i glinianka działają nad jeziorem, na kamienistym gruncie nie da się postawić pola, kamieniołom pracuje przy skałach (`tests/unit/sim/test_lakeland.gd`). Automatyczny gracz dochodzi na niej do 4 kamienic patrycjuszy w **77. minucie** (limit 90, `test_slice_dod.gd`).
 - [x] Duże miasto (400+ postaci, gotowy zapis): brak zakleszczeń przez 2 godziny przy 4× (`tests/long/test_big_city.gd` na fixturze `big_city.json` ze skryptu `tools/build_big_city.gd`: 412 budynków, średnio 436 postaci, 324–580; wszystkie łańcuchy produkują do końca).
 - [x] Wydajność według ARCHITECTURE §9.1: czas ticku ≤ 4 ms przy 500 postaciach (pomiar w chmurze, wynik w §9.3): 3,5–3,8 ms przy 460–480 postaciach, średnio 3,6 ms przez 2 h; przed poprawkami 50 ms.
-- [ ] Pomiar FPS na laptopie na dużym mieście (osobna sesja z właścicielem projektu, wynik w §9.3).
+- [x] Pomiar FPS na laptopie na dużym mieście (2026-11-07, `src/prototype/m4b3/fps_bench.tscn`, wynik w ARCHITECTURE §9.3): średnio 130–215 FPS przy 4×, ale zacięcia ok. 80–95 ms mniej więcej raz na sekundę przy 4× (poprawka niżej).
 - [x] Automatyczny gracz na mapie `riverlands` dalej dochodzi do patrycjuszy w limicie (`test_slice_dod.gd`: 78. minuta po poprawkach wydajności, „Pojezierze” 77.).
 - [x] Zapis z M4b-2 wczytuje się po migracji (v7 → v8) bez utraty towaru, nowa fixtura `v8_town.json` (`test_save_round_trip.gd`). Jeśli część 2 albo 3 zmieni format, fixturę v8 wygenerujemy od nowa (wersja 8 nie trafiła jeszcze do gry na `main`).
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
-- [ ] **Twoja ocena gry.** Zamyka też całe M4b (DoD M4b wyżej).
+- [x] **Twoja ocena gry:** 5/5 (2026-11-07, ankieta na laptopie). Zamyka też całe M4b (DoD M4b wyżej). Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Zacięcia symulacji:** na dużym mieście co kilka sekund gry jeden tick trwa ok. 80 ms (przy 4× zacięcie ok. raz na sekundę, ARCHITECTURE §9.3). Znaleźć i rozłożyć ten koszt.
+- [ ] **Zacięcia przy stawianiu budynku usługowego** (kaplica, studnia): podgląd zasięgu przelicza się przy każdym ruchu myszy. Do sprawdzenia i poprawki (np. liczyć raz na kafel albo rzadziej).
+- [ ] **Znacznik zaplanowanego bruku:** wyraźnie widać, które kafle czekają na bruk, i da się taki plan anulować.
+- [ ] **Animacja obracających się kół** przy wózkach i wozach.
+- [ ] **Tekstury wody i kamienistego gruntu:** warianty kafli losowane na mapie, żeby wzór się nie powtarzał (jezioro, kamienisty grunt); kamienisty grunt bez szwów; łagodne przejścia między wodą rzeki a jeziorem i między wodą rzeki a morzem.
 
 **Ustalone przy realizacji części 1 (2026-11-05, do zmiany na prośbę):**
 - **Grafika bruku z PixelLab:** kafel 14 („cobblestone pavement”) z zestawu kafli terenu właściciela (`Flat isometric ground texture tiles…`), z wyrównanymi krawędziami jak reszta terenu; wariant `b` to lustro `a`.
@@ -553,7 +564,13 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Zapis i odczyt w trakcie załadunku, w trakcie budowy statku i w czasie rejsu nie gubią towarów; zapis z M4b-3 wczytuje się po migracji (v8 → v9), nowa fixtura v9. (Część 2: zapis w trakcie załadunku gra dalej identycznie, migracja v9 → v10 i fixtura `v10_port.json`. Część 3: zapis w trakcie budowy kogi, za horyzontem i w czasie lądowania gra dalej identycznie, migracja v10 → v11, fixtura `v11_voyage.json`.)
 - [ ] Bez spadku wydajności: duże miasto z M4b-3 nadal ≤ 4 ms na tick, automatyczny gracz na „Nadrzeczu” i „Pojezierzu” w limicie.
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
-- [ ] **Twoja ocena gry.**
+- [x] **Twoja ocena gry:** 5/5 (2026-11-07, część 3; części 1 i 2 zaakceptowane wcześniej). Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Start bez czekania na kogę:** koga od razu stoi na kotwicy w zatoce i zaczyna wyładunek (teraz za długo płynie od krawędzi).
+- [ ] **Osadnicy rozproszeni na plaży** zamiast w jednym punkcie.
+- [ ] **Czas ochronny na start** (ankieta 2026-11-07): przez pierwsze ok. 15 minut (albo do postawienia kilku chat) mieszkańcy się nie złoszczą i nie odchodzą; na pasku widać, ile ochrony zostało. Wartości do strojenia.
+- [ ] **Płynne wodowanie kogi:** kadłub zjeżdża z pochylni i wpływa na wodę bez przeskoku (teraz bardzo wolno sunie, a potem nagle jest na wodzie).
 
 **Ustalone przy realizacji części 1 (2026-11-06, do zmiany na prośbę):**
 - **Brzeg biegnie wzdłuż osi siatki.** Na ekranie brzeg „Wybrzeża” jest ukośny (morze wzdłuż dolnych krawędzi mapy), a w siatce prosty, z uskokami co 5–9 kafli. Powód: przystań i stocznia mają prostokątny pomost albo pochylnię, które na ukośnym w siatce brzegu (schodki) nigdzie się nie mieszczą. Zatoka jest prostokątna (13 kafli szerokości, głęboka woda w środku), rzeka wpada do jej końca. Tereny: `sand` (piasek, budować wolno, pól nie), `sea_shallow`, `sea_deep` (oba liczą się jako woda dla wędkarza i glinianki). Ławice to pojedyncze kafle morza w nieco jaśniejszym kolorze na obrazku mapy (13 sztuk, 2 w zatoce). Mapa: `tools/generate_coast_map.py`.
@@ -676,7 +693,11 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Gra z 5 prowincjami gracza działa płynnie: tick ≤ 4 ms przy dużym mieście oglądanym i 4 prowincjach w trybie uproszczonym (2,83 ms w chmurze; pomiar na laptopie u właściciela); automatyczny gracz zasiedla kolejne prowincje i prowadzi szlak.
 - [x] Zapis obejmuje cały świat: prowincje w obu trybach, wyprawy, szlaki, osady neutralne; stare zapisy wczytują się po migracji jako świat z jedną prowincją.
 - [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
-- [ ] **Twoja ocena gry.**
+- [x] **Twoja ocena gry:** 5/5 (2026-11-07, ankieta na laptopie, na gotowym świecie z `src/prototype/m6/review_world.gd`). Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Wykup osady: „Wyślij towar” od razu wybiera to, czego osada żąda** (towary i ilości z jej żądań).
+- [ ] **Wygląd winnicy:** rzędy pali z linkami i krzewy winorośli, które rosną i owocują (teraz pole wina to placeholder).
 
 ---
 
@@ -699,8 +720,13 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **DoD:**
 - [x] Wszystkie okna, panele, pasek i menu budowy mają styl pergaminu i drewna; tekst jest czytelny (kontrast, także w zrzutach w obu językach).
 - [x] Menu główne z obrazkiem z PixelLab, warstwami i animacjami; działa w 1280×720 i 1920×1080.
-- [ ] Testy przechodzą (szybkie i długie).
-- [ ] **Twoja ocena wyglądu.**
+- [x] Testy przechodzą (szybkie i długie; 2026-11-07 na laptopie: 395 szybkich, 10 długich).
+- [x] **Twoja ocena wyglądu:** 5/5 (2026-11-07, ankieta na laptopie). Okna „ładne i czytelne”, pasek u góry wygodny, menu „dobrze, ale drobiazgi”. Wnioski w GDD §11.1.
+
+**Poprawki z oceny (2026-11-07, mają pierwszeństwo przed M7):**
+- [ ] **Menu: pasek na niebie** w miejscu, gdzie na obrazie były liny żagla (ślad po cięciu na warstwy), widoczny, gdy tło się przesuwa.
+- [ ] **Menu: brzegi obrazu** przy przesunięciu w dół warstwy wychodzą poza obraz, a krawędzie się rozciągają. Warstwy muszą mieć zapas albo ruch musi być ograniczony.
+- [ ] **Menu: płynniejszy ruch** warstw za myszą (łagodne doganianie zamiast skoków).
 
 ---
 

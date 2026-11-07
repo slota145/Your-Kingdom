@@ -603,6 +603,19 @@ Pierwszy tick po wczytaniu trwa ok. 0,25 s: wtedy wszystkie budynki usługowe li
 
 **Wniosek:** cel z §9.1 (≤ 4 ms przy 500 postaciach) jest spełniony w chmurze z małym zapasem: 3,5–3,8 ms przy 460–480 postaciach, szacunek dla 500 ok. 3,9 ms. Laptop jest szybszy niż chmura. Rezerwy z §9.2 (pamięć tras, pola przepływu, GDExtension) nie są potrzebne. Największe pozostałe koszty: ludność ok. 1 ms na tick (domy), ruch ok. 0,8 ms, kroki zadań. Pomiar FPS na laptopie (scena 60 s przy 4×, trzy zbliżenia) w osobnej sesji z właścicielem projektu.
 
+**M4b-3, FPS na laptopie (2026-11-07)** (`src/prototype/m4b3/fps_bench.tscn`, okno 1600×900, vsync wyłączony, RTX 5070 Ti Laptop, D3D12; duże miasto, kamera nad centrum, pierwsze 2 s po każdym przeskoku kamery nie liczone):
+
+| Prędkość | Zoom | Postacie | Śr. FPS | 1% najgorszych | Najgorsza klatka | Klatki > 33 ms |
+|---|---|---|---|---|---|---|
+| 4× | 0,5× | 363 | 130 | 17 FPS | 91 ms | 17 w 18 s |
+| 4× | 1× | 334 | 198 | 28 FPS | 83 ms | 13 w 18 s |
+| 4× | 2× | 375 | 215 | 29 FPS | 83 ms | 14 w 18 s |
+| 1× | 0,5× | 386 | 148 | 34 FPS | 97 ms | 3 w 10 s |
+| 1× | 1× | 349 | 233 | 71 FPS | 83 ms | 2 w 10 s |
+| 1× | 2× | 367 | 257 | 114 FPS | 83 ms | 1 w 10 s |
+
+**Wniosek:** średnio cel 60 FPS jest spełniony z 2–4× zapasem. **Problem: zacięcia** (klatki ok. 80–95 ms) mniej więcej raz na 4–5 s czasu gry, przy 4× ok. raz na sekundę, niezależnie od zbliżenia. Liczba rośnie z prędkością gry, więc źródłem jest symulacja (rzadki, drogi tick, ok. 80 ms; w chmurze najdłuższy tick ok. 30 ms), a nie rysowanie. Do znalezienia i poprawki (ROADMAP M4b-3, poprawki z oceny).
+
 
 **M6, część 3, pięć prowincji gracza** (`src/prototype/m6/five_bench.gd`, chmura, 5 minut gry po minucie rozgrzewki): duże miasto oglądane (ok. 340 postaci) i 4 miasteczka po ok. 35 budynków w trybie uproszczonym (oraz 2 czekające osady neutralne): **2,83 ms na tick średnio**, samo duże miasto 2,59 ms. Cel ROADMAP M6 (≤ 4 ms) spełniony; najwolniejsza sekunda 7,8 ms na tick w obu przypadkach (to samo duże miasto, nie prowincje uproszczone). Pomiar na laptopie: osobna sesja z właścicielem.
 ---

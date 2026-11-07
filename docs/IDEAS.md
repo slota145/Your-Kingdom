@@ -6,6 +6,11 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 
 ## Mechaniki
 
+- [gracz, ocena M5 2026-11-07] **Most przez rzekę i mniej kanciaste wybrzeże:** most, po którym chodzą ludzie i jeżdżą wozy (na „Wybrzeżu” rzeka odcina wschód mapy), oraz łagodniejsza linia brzegu, na której budynki nadmorskie mogą leżeć częściowo na wodzie.
+  - Ocena (Claude): mocno poprawi grę na mapach z rzeką. Most zmienia siatkę ruchu (kafel przejezdny dla ludzi, a pod nim woda dla łodzi albo blokada), sortowanie i budowanie; brzeg to zmiana terenu i reguł stawiania. **Decyzja właściciela (ankieta 2026-11-07): osobny mały etap po M7**, jak N1.
+- [gracz, ocena M5 2026-11-07] **Rejsy za horyzont w oknie mapy świata**, obok szlaków handlowych: gracz ustawia rejs, a gra sama wybiera wolną kogę i magazyn.
+  - Ocena (Claude): wygodne przy wielu portach i prowincjach, mało ryzykowne (okno szlaków już istnieje). **Decyzja właściciela (ankieta 2026-11-07): na później, po M7.**
+
 - [gracz] **Grube mury jak w Twierdzy:** dwa lub więcej równoległych rzędów muru zlewa się w jeden gruby, jednolity mur. Do tego wyższy typ muru z **blankami**, później **hurdycje**. Jednostki mogą wchodzić na mury.
   - Ocena (Claude):
     - **Wykonalne bez zmniejszania kratki.** Dla muru kamiennego trzeba przejść z obecnego modelu „linii” (filar + półsegmenty) na model **bryłowy**: każdy kafel muru to pełny blok, a ściany rysujemy tylko tam, gdzie sąsiad nie jest murem. Sąsiednie bloki same zlewają się w jedną masę dowolnej grubości. Sortowanie to po prostu bloki 1×1, które M1 już sprawdził testem.
