@@ -352,6 +352,7 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	sim.province.first_building = &""
 	sim.province.rare_resource = &"horses"   # a stud farm in the shot
 	sim.data.get_building(&"mine").needs_node_near = &""   # the mine anywhere in the shot
+	sim.treasury.gold = 5000   # sites cost gold
 	if _m7 == "army":
 		_place_army(sim, at)
 		return
@@ -360,13 +361,12 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	var plan: Array = []
 	if _m7 == "sites":
 		for k: int in ids.size():
-			plan.append([ids[k], -5 + 2 * (k % 6), -2, 0, 1 + k % 2])
-		plan.append([&"stud_farm", -4, 3, 0, 1])
-		plan.append([&"armoury", -1, 3, 0, 2])
-		plan.append([&"barracks", 2, 3, 0, 1])
-		plan.append([&"barracks", 5, 3, 0, 2])
-		plan.append([&"stud_farm", -4, 8, 0, 2])
-		plan.append([&"armoury", -1, 8, 0, 1])
+			plan.append([ids[k], -5 + 2 * k, -4, 0, 1])
+			plan.append([ids[k], -5 + 2 * k, 0, 0, 2])
+		var big: Array[StringName] = [&"stud_farm", &"armoury", &"barracks"]
+		for k: int in big.size():
+			plan.append([big[k], -4 + 4 * k, 5, 0, 1])
+			plan.append([big[k], -4 + 4 * k, 10, 0, 2])
 	else:
 		for k: int in ids.size():
 			plan.append([ids[k], -5 + 2 * k, -4, 0, 0])
