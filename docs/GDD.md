@@ -52,6 +52,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
 - Na mapie świata poruszają się **armie** (lądem), **floty** (strefami morskimi) i **konwoje handlowe** (wozy lub statki).
 - Ruch odbywa się w czasie rzeczywistym, po krawędziach grafu, a czas przejścia zależy od dystansu i rodzaju jednostki.
 - **M6, część 2 (2026-11-06):** wyprawa osadników wyrusza z prowincji z ratuszem. **Przebieg (decyzja 2026-11-06, ankieta):** w panelu ratusza albo w panelu swojej prowincji na mapie świata gracz wybiera tylko rodzaj, „Wyprawa lądowa” albo „Wyprawa morska”, bez celu. Po zbiórce gotowa wyprawa czeka w mieście: wóz przed ratuszem, koga przy nabrzeżu z osadnikami na pokładzie. Na mapie świata stoi przy swoim mieście. Gracz klika ją, a potem prawym przyciskiem klika pustą prowincję (zielona linia: można tam ruszyć, czerwona: nie). Złoto płaci się dopiero przy wysłaniu. Przed wysłaniem wyprawę można rozwiązać: osadnicy wracają do domów, zestaw do magazynów, a koga na kotwicę. Wyprawa kosztuje 100 zł, zabiera 6 mieszkańców (budowniczego i tragarzy) i zestaw 90 drewna i 20 chleba. Widać zbiórkę (decyzja 2026-11-06): osadnicy wychodzą z domów, tragarze znoszą zestaw na wóz osadników przed ratuszem albo na nabrzeże, a portowcy wnoszą go na twoją kogę (jej ładownia mieści wtedy cały zestaw). Morzem płynie się między wybrzeżami i na wyspy (na wyspę tylko statkiem), lądem tylko do sąsiada. Na mapie świata widać kogi i wozy w drodze. Wyprawa czeka przy granicy, aż gracz wejdzie do nowej prowincji (decyzja 2026-11-06), i dopiero wtedy ląduje: kogą jak start na „Wybrzeżu”, wozem od krawędzi mapy. Nowa osada zaczyna od obozu pionierów, a koga wraca potem do portu (decyzja 2026-11-06). Każda prowincja gra wariant szablonu: odbity lustrzanie albo nie, z mniejszą lub większą ilością drewna, kamienia i ryb według bogactwa. Nowa mapa „Wyspy”: duża wyspa z zatoką na port i dwie wysepki. **Ratusz to siedziba prowincji:** najwyżej jeden na prowincję, tylko z niego wysyła się wyprawy, a mieszczanie i patrycjusze płacą swój podatek tylko tam, gdzie stoi (bez niego płacą jak chłopi).
+- **M6, część 3 (2026-11-06):** osady neutralne Żelazny Gród i Końska Przystań to gotowe miasteczka (ok. 35 budynków, 70–85 mieszkańców), które czekają, nie żyjąc. Każda żąda złota i towarów w 20 minut (300 zł i 40 chleba; 300 zł, 25 chleba i 15 desek). Złoto płaci się w panelu osady na mapie świata, towary dowozi się szlakiem handlowym albo kogą z celem „do mojej prowincji”. Gdy wszystko dotrze na czas, osada przechodzi do gracza z mieszkańcami i budynkami. Gdy czas minie, dane złoto i towary przepadają, a po 10 minutach przychodzi żądanie o 25% droższe. Prowincje z winoroślą (Winne Wzgórza, Mewia Wyspa) mają łaty ziemi winnej. Winnicę stawia się wszędzie w takiej prowincji, a na ziemi winnej krzewy rosną o połowę szybciej (zmiana 2026-11-07).
 - **M6, część 1 (2026-11-06):** pierwszy świat „Królestwo” ma 9 ręcznie ułożonych prowincji (dane w `data/provinces/` i `data/worlds/`): Zatoka Lądowania (start), Bursztynowe Wybrzeże, Wierzbowa Dolina, Lustrzane Jeziora, Winne Wzgórza (winorośl), Mewia Wyspa (winorośl), Solna Wyspa (sól), oraz osady neutralne Żelazny Gród (ruda żelaza) i Końska Przystań (pastwiska koni). Wóz jedzie do sąsiada ok. 2–3 minuty gry, koga między portami 3–6 minut. Mapa świata to osobny ekran (klawisz M albo przycisk „Mapa”): pergamin rysowany kodem, granice, kolor i herb właściciela, miasta, rzadkie surowce; kliknięta prowincja pokazuje panel z właścicielem, mieszkańcami, zapasami i przyciskiem „Wejdź”. W menu „Nowa gra” startuje w świecie, a „Pojedyncza prowincja: …” na starych mapach.
 
 #### Zdobywanie prowincji
@@ -99,7 +100,7 @@ Potrzeby dzielą się na **podstawowe**, bez których dom traci mieszkańców i 
 |---|---|---|
 | Chłopi | żywność (dowolna z: chleb, jabłka, ryby), drewno opałowe, studnia w zasięgu | kaplica w zasięgu |
 | Mieszczanie | chleb **oraz** (mięso lub ryby), piwo, drewno opałowe, studnia w zasięgu | kościół, targowisko w zasięgu |
-| Patrycjusze | jak mieszczanie + ubrania, miód pitny (wino później, M6) | tawerna w zasięgu (+ kościół, targowisko) |
+| Patrycjusze | jak mieszczanie + ubrania, miód pitny | tawerna w zasięgu (+ kościół, targowisko), wino (M6) |
 
 Zasady:
 - **Dostarczanie towarów do domów jest widoczne.** Domownik idzie do najbliższego magazynu lub targowiska po zapasy i niesie je do domu. Dom ma mały zapas, np. na 2–3 cykle konsumpcji. [SLICE]: zaopatrzenie z magazynu. **Od M4b-2** targowisko ma 2 straganiarzy: noszą z magazynów na kramy chleb, ryby, mięso, piwo, miód pitny, ubrania i drewno (do 6 sztuk każdego), a domownik z domu w zasięgu targowiska kupuje na kramach, gdy jest tam towar. Targowisko działa w zasięgu tylko wtedy, gdy kramy mają towar.
@@ -107,6 +108,7 @@ Zasady:
 - **Stan w M4a (2026-11-05):** chłopi jedzą chleb albo ryby (jabłka później). Wagi: chłopi żywność 35, opał 25, studnia 25, kaplica 15. Mieszczanie chleb 20, ryby 15, piwo 15, opał 15, studnia 15, kościół 10, targowisko 10. Mięso dojdzie w M4b. Targowisko w M4a to usługa z zasięgiem, bez straganiarzy.
 - **Stan w M4b-2 (decyzje 2026-11-05):** mieszczanie i patrycjusze jedzą mięso albo ryby (jedna potrzeba „ryby lub mięso”).
 - **Stan w M4b-1 (decyzje 2026-11-05):** tawerna zamiast łaźni. Karczmarz przynosi piwo i miód pitny, a tawerna działa w zasięgu tylko wtedy, gdy niedawno podawała napitki. Wagi patrycjuszy: chleb 15, ubrania 15, ryby 10, piwo 10, miód pitny 10, opał 10, studnia 10, tawerna 10, kościół 5, targowisko 5. Awans do kamienicy kosztuje 6 cegieł i 4 deski.
+- **Stan w M6, część 3 (2026-11-06):** wino to dodatkowa potrzeba patrycjuszy poza 100 punktami poziomu: gdy dom ma wino, dostaje +10 zadowolenia (najwyżej do 100) i płaci o 25% większy podatek; bez wina nic się nie zmienia (stare mapy bez winorośli działają jak dotąd).
 - **Zadowolenie** domu (0–100) wynika ze spełnienia potrzeb (proste punkty: każda spełniona potrzeba daje swoją część, w slice’ie chleb 40, opał 30, studnia 30; zadowolenie dochodzi do celu płynnie, decyzja 2026-11-05) i wpływa na:
   - podatki,
   - napływ nowych mieszkańców (gdy w domu są wolne miejsca),
@@ -197,13 +199,19 @@ pierwsze świnie od kupca wędrownego (30 złota sztuka); ostatnie 2 świnie zaw
 
 [1.0]
 sad ──► jabłka
-winnica★ ──► winogrona ──► winiarnia ──► wino
+winnica★ ──► winogrona ──► winiarnia ──► wino   ← od M6 (tłocznia)
 drewno ──► węglarz ──► węgiel drzewny
 kopalnia★ ──► ruda żelaza + węgiel ──► huta ──► żelazo ──► kowal ──► narzędzia / miecze / włócznie
 drewno ──► łuczarz ──► łuki
 skóry ──► garbarz-płatnerz ──► zbroje skórzane · żelazo ──► płatnerz ──► kolczugi
 stadnina★ ──► konie
 drewno ──► smolarnia ──► smoła (stocznia)   ← od M5
+```
+
+[M6, część 3]
+```
+prowincja z winoroślą★ ──► winnica 3×3 (12 pól; na ziemi winnej krzewy rosną o połowę szybciej) ──► winogrona
+3 kosze winogron ──► tłocznia 2×2 (ok. 40 s) ──► beczka wina (dodatkowa potrzeba patrycjuszy)
 ```
 
 [M5, część 1]
@@ -232,6 +240,8 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 - **Szlak handlowy** łączy dwie prowincje (A→B), określa towar, ilość i próg, np. „wożę chleb, gdy w B jest mniej niż 20”.
 - Wozy kursują lądem, statki morzem. Na mapie świata widać ich ruch.
 - W widoku prowincji tragarze ładują i rozładowują wozy w magazynie, a portowcy statki w porcie.
+- **Stan w M6, część 3 (decyzje 2026-11-06):** okno „Szlaki handlowe” (przycisk „Szlaki” na górze ekranu i w panelu prowincji na mapie świata) zbiera wszystkie szlaki królestwa. Szlak ma kierunek A→B, pojazd z prowincji A wybrany z listy (wolna koga z portu albo wóz ze stajni) i do 3 towarów; przy każdym ilość na kurs i próg („gdy tam mniej niż N”). Gdy w B brakuje towaru, a w A on jest, pojazd rusza: wóz staje przed stajnią i tragarze go ładują, koga cumuje i ładują ją portowcy; potem wóz wyjeżdża za krawędź mapy, a koga odpływa za horyzont. Wóz jedzie tylko do sąsiada (ok. 3 minuty), koga między wybrzeżami (3–6 minut). W B wóz wjeżdża i tragarze go rozładowują, a ładunek kogi pojawia się przy porcie. W prowincji, na którą gracz nie patrzy, załadunek i rozładunek dzieją się od razu. Wóz szlaku wiezie 12 sztuk, koga 4 miejsca po 10. Wóz ze stajni jest pożyczony: stajnia ma o jeden wóz mniej do pracy w mieście. Szlak można wstrzymać i usunąć (w drodze kończy się po powrocie). W panelu portu cel rejsu „do mojej prowincji” wiezie plan sprzedaży do innej prowincji gracza zamiast za horyzont. Na mapie świata szlaki są kropkowane, a pojazdy jadą po nich.
+- **Zmiana 2026-11-07 (ankieta):** szlaki lądowe obsługuje **wóz kupiecki** ze **składu kupieckiego** (nowy budynek 3×3, jeden wóz z płóciennym dachem na 40 sztuk, o 25% wolniejszy od zwykłego wozu, jeździ tylko szlakami). Stajnie zostają przy pracy w mieście. Jeden kurs mieści całe żądanie osady neutralnej.
 
 ### 4.6 Handel zewnętrzny [1.0]
 
@@ -428,7 +438,8 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
   - zadowolenie,
   - siatka.
 - **Powiadomienia**: brak surowca, dom traci mieszkańców, wróg u granic.
-- **Mapa świata**: osobny ekran z przełączaniem prowincji, armiami, flotami i szlakami handlowymi.
+- **Mapa świata**: osobny ekran z przełączaniem prowincji, armiami, flotami i szlakami handlowymi. **M6:** panel prowincji (właściciel, mieszkańcy, zapasy, rzadki surowiec, „Wejdź”, wyprawy, „Szlaki handlowe”), panel osady neutralnej z żądaniami, licznikiem czasu i przyciskiem „Zapłać”.
+- **Okno „Szlaki handlowe” (M6, część 3)**: lista szlaków z kierunkiem, pojazdem, stanem i towarami (ilość na kurs, próg), przyciski „Wstrzymaj” i „Usuń”, a pod spodem nowy szlak: skąd, dokąd, wóz albo koga, pojazd i pierwszy towar.
 - Interfejs mieści dłuższe teksty polskie (+30–40% względem angielskich). Wszystkie kontenery rozciągają się automatycznie.
 
 ---

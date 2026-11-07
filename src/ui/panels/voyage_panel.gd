@@ -4,10 +4,15 @@ extends VBoxContainer
 ## cog is doing, the goods to sell over the horizon and the order from the sea merchant's
 ## offer (steps of Voyage.PLAN_STEP units, each list within the hold), and the buttons to send
 ## it out or to cast off now. Reads the simulation state; changes go out as commands.
+## M6 part 3: where it goes, over the horizon (sell and buy) or to one of the player's coastal
+## provinces (the plan's goods are carried there); a cog on a trade route shows the route
+## instead (the routes window runs it).
 
 signal command_requested(command: Command)
 
 var province: ProvinceSim
+## The whole game (for the voyage to one of the player's provinces); may be null.
+var sim: Simulation
 var ship_id: int = 0
 
 var _status: Label
@@ -17,6 +22,7 @@ var _add_sell: OptionButton
 var _order_title: Label
 var _order_rows: VBoxContainer
 var _start_button: Button
+var _target: OptionButton
 var _now_button: Button
 ## The plan lines shown (to rebuild the rows only when they change).
 var _shown_sell: Array[StringName] = []
@@ -41,10 +47,14 @@ func _init() -> void:
 	add_child(_order_title)
 	_order_rows = VBoxContainer.new()
 	add_child(_order_rows)
+	_target = OptionButton.new()
+	_target.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE + 2)
+	_target.tooltip_text = "ui.voyage.target_hint"
+	add_child(_target)
 	var buttons := HFlowContainer.new()
 	add_child(buttons)
 	_start_button = UiKit.button("ui.voyage.start", func() -> void:
-		command_requested.emit(StartVoyageCommand.new(ship_id)))
+		command_requested.emit(StartVoyageCommand.new(ship_id, false, _target_id())))
 	_start_button.tooltip_text = "ui.voyage.start_hint"
 	buttons.add_child(_start_button)
 	_now_button = UiKit.button("ui.voyage.now", func() -> void:
@@ -67,7 +77,7 @@ func refresh(source: ProvinceSim, port: BuildingState) -> void:
 	var ship := cog_of(source, port)
 	ship_id = ship.id if ship != null else 0
 	for node: Control in [_sell_title, _sell_rows, _add_sell, _order_title, _order_rows,
-			_start_button, _now_button]:
+			_start_button, _now_button, _target]:
 		node.visible = ship != null
 	if ship == null:
 		_status.text = tr("ui.voyage.no_cog")
@@ -75,6 +85,17 @@ func refresh(source: ProvinceSim, port: BuildingState) -> void:
 		return
 	var v := ship.voyage
 	_status.text = _status_text(ship)
+	var on_route := v.route != 0 and sim != null and sim.world.routes.has(v.route) \
+			and not (sim.world.routes[v.route] as TradeRoute).one_off
+	if on_route:
+		var route := sim.world.routes[v.route] as TradeRoute
+		_status.text = tr("ui.voyage.on_route") % _province_name(route.to) + "\n" + _status.text
+		for node: Control in [_sell_title, _sell_rows, _add_sell, _order_title, _order_rows,
+				_start_button, _target]:
+			node.visible = false
+		_now_button.visible = v.state == Voyage.State.LOADING and not v.depart_now
+		return
+	_fill_targets()
 	var sell: Array[StringName] = []
 	sell.assign(v.sell.keys())
 	sell.sort()
@@ -88,8 +109,42 @@ func refresh(source: ProvinceSim, port: BuildingState) -> void:
 	_order_title.text = tr("ui.voyage.order") % [Voyage.slots_needed(v.order, ship.hold),
 			ship.def.hold_slots, v.order_cost(province)]
 	_start_button.visible = v.state == Voyage.State.IDLE
-	_start_button.disabled = v.sell.is_empty() and v.order.is_empty()
+	_target.visible = v.state == Voyage.State.IDLE and _target.item_count > 1
+	var to_province := _target_id() != 0
+	_order_title.visible = not to_province
+	_order_rows.visible = not to_province
+	_start_button.disabled = v.sell.is_empty() and (v.order.is_empty() or to_province)
 	_now_button.visible = v.state == Voyage.State.LOADING and not v.depart_now
+
+
+func _province_name(id: int) -> String:
+	var def := sim.world.def_of(id, sim.data) if sim != null else null
+	return tr(def.name_key()) if def != null else ""
+
+
+## The chosen destination: 0 = over the horizon, else one of the player's provinces.
+func _target_id() -> int:
+	return _target.get_selected_id() if _target.item_count > 0 and _target.selected >= 0 else 0
+
+
+## Over the horizon, and every coastal province of the player a cog can sail to from here.
+func _fill_targets() -> void:
+	var ids: Array[int] = [0]
+	if sim != null and not sim.world.is_single():
+		for id: int in sim.runtime_ids():
+			if CreateTradeRouteCommand.route_error(sim, sim.viewed_id, id, true) == &"":
+				ids.append(id)
+	var shown: Array[int] = []
+	for i: int in _target.item_count:
+		shown.append(_target.get_item_id(i))
+	if shown == ids:
+		return
+	var keep := _target_id()
+	_target.clear()
+	for id: int in ids:
+		_target.add_item(tr("ui.voyage.target_horizon") if id == 0 else tr("ui.voyage.target_province") % _province_name(id), id)
+		if id == keep:
+			_target.select(_target.item_count - 1)
 
 
 func _status_text(ship: ShipUnit) -> String:
@@ -104,6 +159,8 @@ func _status_text(ship: ShipUnit) -> String:
 			lines.append(tr("ui.voyage.state.loading") % UiKit.goods_list(ship.hold.totals()))
 		Voyage.State.OUTBOUND:
 			lines.append(tr("ui.voyage.state.outbound"))
+		Voyage.State.AWAY when v.route != 0 and sim != null and sim.world.routes.has(v.route):
+			lines.append(tr("ui.voyage.state.away_route") % _province_name((sim.world.routes[v.route] as TradeRoute).to))
 		Voyage.State.AWAY:
 			var minutes := ceili(maxi(v.back_at - province.tick, 0) / float(SimClock.TICKS_PER_SECOND) / 60.0)
 			lines.append(tr("ui.voyage.state.away") % maxi(minutes, 1))

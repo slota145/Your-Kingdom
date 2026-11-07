@@ -14,6 +14,10 @@ var world_id: StringName = &""
 var provinces: Dictionary[int, WorldProvince] = {}
 ## Expeditions of settlers on the world map by id (M6 part 2).
 var expeditions: Dictionary[int, Expedition] = {}
+## Trade routes by id (M6 part 3).
+var routes: Dictionary[int, TradeRoute] = {}
+## Demands of the neutral settlements by province id (M6 part 3).
+var settlements: Dictionary[int, NeutralSettlement] = {}
 
 
 ## A single-province game on [param map_id], owned by the player.
@@ -113,6 +117,22 @@ func to_dict() -> Dictionary:
 		for id: int in keys:
 			e.append(expeditions[id].to_dict())
 		d["expeditions"] = e
+	if not routes.is_empty():
+		var r: Array = []
+		var keys: Array[int] = []
+		keys.assign(routes.keys())
+		keys.sort()
+		for id: int in keys:
+			r.append(routes[id].to_dict())
+		d["routes"] = r
+	if not settlements.is_empty():
+		var s: Array = []
+		var keys: Array[int] = []
+		keys.assign(settlements.keys())
+		keys.sort()
+		for id: int in keys:
+			s.append(settlements[id].to_dict())
+		d["settlements"] = s
 	return d
 
 
@@ -125,7 +145,25 @@ static func from_dict(d: Dictionary) -> WorldSim:
 	for ed: Variant in d.get("expeditions", []):
 		var expedition := Expedition.from_dict(ed)
 		world.expeditions[expedition.id] = expedition
+	for rd: Variant in d.get("routes", []):
+		var route := TradeRoute.from_dict(rd)
+		world.routes[route.id] = route
+	for sd: Variant in d.get("settlements", []):
+		var settlement := NeutralSettlement.from_dict(sd)
+		world.settlements[settlement.province] = settlement
 	return world
+
+
+## The routes set out from or going to province [param id], by id.
+func routes_of(id: int) -> Array[TradeRoute]:
+	var result: Array[TradeRoute] = []
+	var keys: Array[int] = []
+	keys.assign(routes.keys())
+	keys.sort()
+	for key: int in keys:
+		if routes[key].from == id or routes[key].to == id:
+			result.append(routes[key])
+	return result
 
 
 ## The expedition headed for province [param id] (on its way, waiting or landing), or null.

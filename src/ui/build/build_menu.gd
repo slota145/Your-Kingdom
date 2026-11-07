@@ -13,9 +13,9 @@ const TABS: Array[Dictionary] = [
 			&"brickworks"]},
 	{"id": &"food", "buildings": [&"farm", &"mill", &"bakery", &"fishing_hut", &"pigsty",
 			&"slaughterhouse"]},
-	{"id": &"drink", "buildings": [&"hop_farm", &"brewery", &"apiary", &"meadery"]},
+	{"id": &"drink", "buildings": [&"hop_farm", &"brewery", &"apiary", &"meadery", &"vineyard", &"wine_press"]},
 	{"id": &"textiles", "buildings": [&"sheep_farm", &"weaver", &"tailor"]},
-	{"id": &"storage", "buildings": [&"pioneer_camp", &"stockpile", &"town_hall", &"stable"]},
+	{"id": &"storage", "buildings": [&"pioneer_camp", &"stockpile", &"town_hall", &"stable", &"trading_post"]},
 	{"id": &"harbour", "buildings": [&"tar_kiln", &"shipyard", &"fishing_wharf", &"port"]},
 ]
 const ICON_SIZE := Vector2(72, 56)

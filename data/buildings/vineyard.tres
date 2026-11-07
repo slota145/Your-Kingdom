@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/building_def.gd" id="1_bld"]
+[ext_resource type="Resource" path="res://data/recipes/viticulture.tres" id="2_recipe"]
+
+[resource]
+script = ExtResource("1_bld")
+category = &"drink"
+footprint = Vector2i(3, 3)
+entrance = Vector2i(2, 1)
+build_cost = Dictionary[StringName, int]({
+&"planks": 4,
+&"wood": 8
+})
+build_time = 24.0
+gold_cost = 20
+worker_kinds = Array[StringName]([&"winegrower"])
+recipe = ExtResource("2_recipe")
+work_radius = 4
+needs_rare = &"vines"
+max_fields = 12
+field_grow_time = 150.0
+field_bonus_terrain = &"vine_soil"
+field_bonus = 1.5
+id = &"vineyard"

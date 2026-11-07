@@ -21,6 +21,7 @@ const C_WOOD := Color(0.55, 0.36, 0.2)
 const C_WOOD_END := Color(0.86, 0.7, 0.46)
 const C_PLANK := Color(0.82, 0.64, 0.4)
 const C_SACK := Color(0.86, 0.8, 0.64)
+const C_CANVAS := Color(0.9, 0.86, 0.74)
 const C_FLOUR := Color(0.96, 0.95, 0.9)
 const C_STONE := Color(0.64, 0.63, 0.6)
 const C_IRON := Color(0.3, 0.3, 0.32)
@@ -40,6 +41,8 @@ const C_MEAT := Color(0.72, 0.3, 0.26)
 const C_FAT := Color(0.95, 0.86, 0.78)
 const C_HIDE := Color(0.55, 0.38, 0.24)
 const C_PIG := Color(0.93, 0.68, 0.64)
+const C_GRAPES := Color(0.42, 0.18, 0.45)
+const C_WINE := Color(0.5, 0.1, 0.16)
 
 ## Good -> look of one unit: item kind and carry category.
 const GOODS := {
@@ -68,6 +71,9 @@ const GOODS := {
 	"pig": {"item": "pig", "carry": "animal"},
 	# M5 (the sea)
 	"tar": {"item": "tar_barrel", "carry": "barrel"},
+	# M6 part 3 (wine)
+	"grapes": {"item": "grape_basket", "carry": "basket"},
+	"wine": {"item": "wine_barrel", "carry": "barrel"},
 }
 
 ## Item -> positions [grid x, grid y, z] in fill order (a quarter of them per stage).
@@ -88,6 +94,7 @@ func _init() -> void:
 	_merchant_cart()
 	_handcart()
 	_wagon()
+	_wagon(true)
 	_reeds()
 	print("Goods and nature written to ", OUT)
 	quit()
@@ -246,7 +253,7 @@ func _item_height(item: String) -> float:
 	return {"flour_sack": 7.0, "sheaf": 12.0, "bread_crate": 7.0, "fish_crate": 7.0, "hop_basket": 8.0,
 			"barrel": 11.0, "block": 7.0, "wool_bale": 8.0, "cloth_bolt": 5.0, "clothes_basket": 8.0,
 			"honey_pot": 9.0, "mead_barrel": 11.0, "tar_barrel": 11.0, "clay_sack": 7.0, "brick_pile": 6.0,
-			"meat_crate": 7.0, "hide_bundle": 4.0}.get(item, 7.0)
+			"meat_crate": 7.0, "hide_bundle": 4.0, "grape_basket": 8.0, "wine_barrel": 11.0}.get(item, 7.0)
 
 
 func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -> void:
@@ -262,8 +269,8 @@ func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -
 				_line(img, foot + Vector2(x, 0), foot + Vector2(x * 1.8, -14.0 * s), C_STRAW.darkened(0.12 * float(i % 2) + v), 1)
 			_ellipse(img, foot - Vector2(0, 15.0) * s, Vector2(4.0, 2.0) * s, C_STRAW.lightened(0.1))
 			_line(img, foot - Vector2(3.5, 6.0) * s, foot - Vector2(-3.5, 6.0) * s, Color(0.55, 0.4, 0.2), 1)
-		"bread_crate", "fish_crate", "hop_basket":
-			var basket := item == "hop_basket"
+		"bread_crate", "fish_crate", "hop_basket", "grape_basket":
+			var basket := item == "hop_basket" or item == "grape_basket"
 			var body := C_BASKET if basket else C_CRATE
 			_box(img, foot, Vector2(14, 7) * s, 6.0 * s, body.darkened(v), "wicker" if basket else "planks")
 			var top := foot - Vector2(0, 6.0 * s + 3.5 * s)
@@ -276,6 +283,12 @@ func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -
 						var a := top + Vector2(-4 + k * 3.5, -1 + k * 0.6) * s
 						_line(img, a, a + Vector2(3.5, 1.5) * s, C_FISH.darkened(0.1 * float(k % 2)), 2)
 						_pixel(img, a + Vector2(4.5, 2.0) * s, C_FISH.darkened(0.3))
+				"grape_basket":
+					# Dark purple bunches heaped in the basket, a vine leaf on top.
+					for k: int in 6:
+						_ellipse(img, top + Vector2(-4.0 + k * 1.6, -0.5 + (k % 2) * 1.0) * s, Vector2(1.5, 1.5) * s,
+								C_GRAPES.darkened(0.15 * float(k % 2)))
+					_ellipse(img, top + Vector2(2.5, -1.8) * s, Vector2(2.0, 1.2) * s, Color(0.35, 0.55, 0.22))
 				"hop_basket":
 					for k: int in 5:
 						_ellipse(img, top + Vector2(-3.5 + k * 1.8, sin(k) * 0.8) * s, Vector2(1.6, 1.6) * s, C_HOPS.darkened(0.12 * float(k % 2)))
@@ -321,6 +334,13 @@ func _draw_item(img: Image, item: String, foot: Vector2, s: float, index: int) -
 			_ellipse(img, foot - Vector2(0, 11.0) * s, Vector2(4.0, 1.6) * s, C_BARREL.lightened(0.18))
 			# Golden honey mark on the side tells mead from beer.
 			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(1.6, 1.3) * s, C_HONEY)
+		"wine_barrel":
+			# A barrel with red hoops of wine-stain and a purple mark: wine, not beer.
+			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(5.0, 6.0) * s, C_BARREL.darkened(0.05 + v))
+			_line(img, foot - Vector2(5, 8) * s, foot - Vector2(-5, 8) * s, C_IRON, 1)
+			_line(img, foot - Vector2(5, 3) * s, foot - Vector2(-5, 3) * s, C_IRON, 1)
+			_ellipse(img, foot - Vector2(0, 11.0) * s, Vector2(4.0, 1.6) * s, C_WINE)
+			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(1.6, 1.3) * s, C_GRAPES)
 		"tar_barrel":
 			# A dark barrel with tar run down from the bung.
 			_ellipse(img, foot - Vector2(0, 5.5) * s, Vector2(5.0, 6.0) * s, Color(0.26, 0.19, 0.14).darkened(v))
@@ -460,7 +480,7 @@ func _reeds() -> void:
 ## horse in front. vehicles/wagon/{empty,loaded}.png, 5 rows (S, SE, E, NE, N) of 112x80;
 ## the local origin (between wagon and horse) on the ground at (56, 52). The carter walks
 ## 0.45 tiles in front of it, at the horse's head.
-func _wagon() -> void:
+func _wagon(trade: bool = false) -> void:
 	_vehicle_origin = WAGON_CENTRE
 	for state: String in ["empty", "loaded"]:
 		var sheet := Image.create_empty(WAGON_FRAME.x, WAGON_FRAME.y * 5, false, Image.FORMAT_RGBA8)
@@ -468,14 +488,20 @@ func _wagon() -> void:
 			var img := Image.create_empty(WAGON_FRAME.x, WAGON_FRAME.y, false, Image.FORMAT_RGBA8)
 			var fwd := ROW_FORWARD[row]
 			var parts: Array = []
-			for f: float in [-0.95, -0.4]:
+			for f: float in ([-1.15, -0.4] if trade else [-0.95, -0.4]):
 				for side: float in [-0.25, 0.25]:
 					var hub := Vector3(f, side, 7.0)
 					parts.append([_cart_depth(fwd, hub), _cart_wheel.bind(img, fwd, hub, 7.0)])
 			parts.append([_cart_depth(fwd, Vector3(-0.68, 0, 0)) + 0.001, func() -> void:
-				_cart_box(img, fwd, Vector3(-1.1, -0.21, 9.0), Vector3(-0.25, 0.21, 17.0),
+				_cart_box(img, fwd, Vector3(-1.35 if trade else -1.1, -0.21, 9.0), Vector3(-0.25, 0.21, 17.0),
 						C_PLANK.darkened(0.12), C_WOOD.darkened(0.3))
-				if state == "loaded":
+				if trade:
+					# The merchant wagon: a tall canvas cover over hoops, tied down at the back.
+					_cart_box(img, fwd, Vector3(-1.32, -0.2, 17.0), Vector3(-0.3, 0.2, 31.0), C_CANVAS, C_CANVAS.lightened(0.08))
+					for hoop: float in [-1.1, -0.8, -0.5]:
+						_line(img, _cart_point(fwd, Vector3(hoop, -0.2, 17.0)), _cart_point(fwd, Vector3(hoop, -0.2, 31.0)),
+								C_CANVAS.darkened(0.2), 1)
+				elif state == "loaded":
 					_cart_box(img, fwd, Vector3(-1.02, -0.16, 17.0), Vector3(-0.72, 0.16, 24.0), C_SACK, C_SACK)
 					_cart_box(img, fwd, Vector3(-0.68, -0.15, 17.0), Vector3(-0.47, 0.13, 23.0), C_CRATE, C_CRATE)
 					_cart_box(img, fwd, Vector3(-0.44, -0.12, 17.0), Vector3(-0.3, 0.12, 21.0), C_BARREL, C_BARREL)
@@ -497,7 +523,7 @@ func _wagon() -> void:
 				(part[1] as Callable).call()
 			_outline(img)
 			sheet.blit_rect(img, Rect2i(Vector2i.ZERO, WAGON_FRAME), Vector2i(0, row * WAGON_FRAME.y))
-		_save(sheet, "vehicles/wagon/%s.png" % state)
+		_save(sheet, "vehicles/%s/%s.png" % ["trade_wagon" if trade else "wagon", state])
 	_vehicle_origin = CART_CENTRE
 
 

@@ -59,9 +59,13 @@ var sea_merchant: SeaMerchant = SeaMerchant.new()
 var landing: Landing = null
 ## An expedition of settlers getting ready to set out from here (M6 part 2); null otherwise.
 var departure: Departure = null
+## Wagons of trade routes being loaded or unloaded here, by route id (M6 part 3).
+var route_wagons: Dictionary[int, RouteWagon] = {}
 ## Until a building of this id is placed, nothing else may be (the pioneer camp on a map that
 ## starts by ship, M5 part 3); empty = anything.
 var first_building: StringName = &""
+## The province's rare resource (M6 part 3: vines let vineyards be built), from its ProvinceDef.
+var rare_resource: StringName = &""
 ## Goods made and used per minute (statistics for the player, M4b-2); not saved.
 var ledger: GoodsLedger = GoodsLedger.new()
 ## How fast each building works while viewed: the calibration of the simplified mode (M6).
@@ -79,6 +83,12 @@ var terrains: Array[TerrainDef] = []
 
 ## The building that makes a province the seat of a town (M6 part 2).
 const SEAT := &"town_hall"
+## Vine soil (M6 part 3): laid in provinces with vines; vines grow faster there.
+const VINES := &"vines"
+const VINE_SOIL := &"vine_soil"
+const VINE_PATCHES := 5
+const VINE_RADIUS := 4
+const VINE_GAP := 18
 var _seat_version: int = -1
 var _seat: int = 0
 
@@ -132,6 +142,8 @@ func step() -> void:
 				landing = null
 		if departure != null:
 			departure.update(self)
+		for wagon: RouteWagon in route_wagons.values():
+			wagon.update(self)
 		Ships.update(self)
 		_breed_herds()
 		_update_markets()
@@ -229,10 +241,15 @@ func refresh_fairways() -> void:
 ## A province of the world (M6 part 2) plays a variant of the map: [param mirrored] swaps x
 ## and y (on screen: left and right), [param richness] (1-3, GDD §2.1) thins out (1) or
 ## enriches (3) its forests, rocks and shoals, and [param settled] leaves the start layout
-## out (settlers bring their own, Expedition).
-func load_map(map: MapDef, mirrored: bool = false, richness: int = 2, settled: bool = false) -> PackedStringArray:
+## out (settlers bring their own, Expedition). A province with vines as its rare resource
+## ([param rare], M6 part 3) gets patches of vine soil (the only ground a vineyard tends).
+func load_map(map: MapDef, mirrored: bool = false, richness: int = 2, settled: bool = false,
+		rare: StringName = &"") -> PackedStringArray:
 	var problems := _load_terrain(map, mirrored)
 	_apply_richness(richness)
+	rare_resource = rare
+	if rare == VINES:
+		_lay_vine_soil()
 	entry_tile = _variant_tile(map.entry_tile, mirrored)
 	rebuild_nav()
 	if settled:
@@ -259,6 +276,58 @@ func load_map(map: MapDef, mirrored: bool = false, richness: int = 2, settled: b
 			for good: StringName in start.goods:
 				store.add(good, start.goods[good])
 	return problems
+
+
+## Patches of vine soil on open grass and meadow (M6 part 3): up to VINE_PATCHES round
+## patches of radius VINE_RADIUS, on the free spots chosen by a fixed hash of the tile (a
+## province always gets the same ones), at least VINE_GAP tiles apart and off the map edge.
+func _lay_vine_soil() -> void:
+	var soil: TerrainDef = data.get_terrain(VINE_SOIL)
+	if soil == null:
+		return
+	var candidates: Array[Vector2i] = []
+	var step := 6
+	for y: int in range(VINE_RADIUS + 4, grid.size.y - VINE_RADIUS - 4, step):
+		for x: int in range(VINE_RADIUS + 4, grid.size.x - VINE_RADIUS - 4, step):
+			if _vine_spot_free(Vector2i(x, y)):
+				candidates.append(Vector2i(x, y))
+	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		var ha := (a.x * 73856093) ^ (a.y * 19349663)
+		var hb := (b.x * 73856093) ^ (b.y * 19349663)
+		return ha < hb if ha != hb else a < b)
+	var chosen: Array[Vector2i] = []
+	for centre: Vector2i in candidates:
+		if chosen.size() >= VINE_PATCHES:
+			break
+		var near := false
+		for other: Vector2i in chosen:
+			if (other - centre).length_squared() < VINE_GAP * VINE_GAP:
+				near = true
+		if near:
+			continue
+		chosen.append(centre)
+		for y: int in range(centre.y - VINE_RADIUS, centre.y + VINE_RADIUS + 1):
+			for x: int in range(centre.x - VINE_RADIUS, centre.x + VINE_RADIUS + 1):
+				var tile := Vector2i(x, y)
+				if (tile - centre).length_squared() <= VINE_RADIUS * VINE_RADIUS + 1 \
+						and _open_ground(tile):
+					grid.set_terrain(tile, soil.index)
+
+
+func _vine_spot_free(centre: Vector2i) -> bool:
+	for y: int in range(centre.y - VINE_RADIUS - 2, centre.y + VINE_RADIUS + 3):
+		for x: int in range(centre.x - VINE_RADIUS - 2, centre.x + VINE_RADIUS + 3):
+			if not _open_ground(Vector2i(x, y)):
+				return false
+	return true
+
+
+## Grass or meadow without a tree, rock or building.
+func _open_ground(tile: Vector2i) -> bool:
+	if not grid.is_inside(tile) or grid.occupant(tile) != 0 or resources.has_node(tile):
+		return false
+	var terrain := terrain_at(tile)
+	return terrain != null and (terrain.id == &"grass" or terrain.id == &"meadow")
 
 
 ## [param tile] of the map in its variant (mirrored: x and y swapped).
@@ -343,6 +412,8 @@ func approach_tile(node: Vector2i, from: Vector2i) -> Vector2i:
 func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -> StringName:
 	if def == null:
 		return &"unknown_building"
+	if def.needs_rare != &"" and rare_resource != def.needs_rare:
+		return StringName("needs_%s" % def.needs_rare)
 	if orientation < 0 or orientation >= def.orientation_count():
 		return &"bad_orientation"
 	if first_building != &"" and def.id != first_building:
@@ -1204,6 +1275,8 @@ func release_agent(agent: Agent) -> void:
 		merchant.wagon.release_owner(agent.id)
 	if departure != null and departure.wagon != null:
 		departure.wagon.release_owner(agent.id)
+	for wagon: RouteWagon in route_wagons.values():
+		wagon.store.release_owner(agent.id)
 	fields.release_owner(agent.id)
 	if agent.claimed_node != Agent.NO_TILE:
 		resources.release(agent.claimed_node, agent.id)
@@ -1262,6 +1335,9 @@ func storage(id: int) -> Stockpile:
 		return ship.hold
 	if departure != null and departure.wagon != null and id == departure.id:
 		return departure.wagon
+	var route_wagon := route_wagons.get(id) as RouteWagon
+	if route_wagon != null:
+		return route_wagon.store
 	return merchant.wagon if id == merchant.wagon_id and merchant.wagon != null else null
 
 
@@ -1288,6 +1364,8 @@ func all_storages() -> Dictionary[int, Stockpile]:
 		result[ship.id] = ship.hold
 	if departure != null and departure.wagon != null:
 		result[departure.id] = departure.wagon
+	for wagon_id: int in route_wagons:
+		result[wagon_id] = route_wagons[wagon_id].store
 	return result
 
 
@@ -1296,6 +1374,8 @@ func accepts_deliveries(id: int) -> bool:
 		return storage(id) != null
 	if departure != null and departure.wagon != null and id == departure.id:
 		return true
+	if route_wagons.has(id):
+		return route_wagons[id].accepts()
 	var building := buildings.get_building(id)
 	if building != null:
 		return building.stock != null or building.supply != null
@@ -1327,6 +1407,8 @@ func access_tile(id: int) -> Vector2i:
 		return port.entrance_tile() if port != null else Agent.NO_TILE
 	if departure != null and departure.wagon != null and id == departure.id:
 		return departure.stand
+	if route_wagons.has(id):
+		return route_wagons[id].stand
 	return merchant.stand if id == merchant.wagon_id and merchant.wagon != null else Agent.NO_TILE
 
 
@@ -1682,8 +1764,18 @@ func to_dict() -> Dictionary:
 		d["landing"] = landing.to_dict()
 	if departure != null:
 		d["departure"] = departure.to_dict()
+	if not route_wagons.is_empty():
+		var wagons: Array = []
+		var keys: Array[int] = []
+		keys.assign(route_wagons.keys())
+		keys.sort()
+		for id: int in keys:
+			wagons.append(route_wagons[id].to_dict())
+		d["route_wagons"] = wagons
 	if first_building != &"":
 		d["first_building"] = String(first_building)
+	if rare_resource != &"":
+		d["rare"] = String(rare_resource)
 	return d
 
 
@@ -1739,7 +1831,11 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 		province.landing = Landing.from_dict(d["landing"])
 	if d.has("departure"):
 		province.departure = Departure.from_dict(d["departure"], registry)
+	for wd: Variant in d.get("route_wagons", []):
+		var wagon := RouteWagon.from_dict(wd, registry)
+		province.route_wagons[wagon.id] = wagon
 	province.first_building = StringName(String(d.get("first_building", "")))
+	province.rare_resource = StringName(String(d.get("rare", "")))
 	province.agents = AgentStore.from_dict(d["agents"])
 	for agent: Agent in province.agents.all():
 		if agent.task != null and not TaskRunner.restore_steps(province, agent.task):

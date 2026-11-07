@@ -2047,7 +2047,7 @@ msgid "ui.world.empty_hint"
 msgstr "Pustą prowincję zasiedlisz wyprawą osadników. Przygotuj ją w ratuszu albo tutaj, w panelu swojej prowincji."
 
 msgid "ui.world.neutral_hint"
-msgstr "Osadę neutralną wykupisz za złoto i dostawy (wkrótce)."
+msgstr "Osada neutralna. Przyłączy się do królestwa za złoto i towary dowiezione na czas."
 
 msgid "ui.note.single_province"
 msgstr "To gra na jednej mapie: nie ma tu mapy świata."
@@ -2172,3 +2172,244 @@ msgstr "Wyprawa jeszcze się zbiera. Wyślesz ją, gdy będzie gotowa."
 
 msgid "ui.note.expedition_ready"
 msgstr "Wyprawa osadników jest gotowa. Wyślij ją z mapy świata (M)."
+
+# --- M6 part 3: trade routes ---
+
+msgid "ui.hud.routes"
+msgstr "Szlaki"
+
+msgid "ui.routes.title"
+msgstr "Szlaki handlowe"
+
+msgid "ui.routes.hint"
+msgstr "Szlak wozi towary z jednej Twojej prowincji do drugiej. Przy każdym towarze ustawiasz, ile zabrać na jeden kurs i przy jakim zapasie w prowincji docelowej trzeba dowieźć („gdy w … mniej niż”). Koga pływa między wybrzeżami, wóz kupiecki ze składu kupieckiego jeździ tylko do sąsiada."
+
+msgid "ui.routes.none"
+msgstr "Nie masz jeszcze żadnego szlaku."
+
+msgid "ui.routes.new"
+msgstr "Nowy szlak:"
+
+msgid "ui.routes.create"
+msgstr "Utwórz szlak"
+
+msgid "ui.routes.route"
+msgstr "%s → %s (%s)"
+
+msgid "ui.routes.by_sea"
+msgstr "koga"
+
+msgid "ui.routes.by_land"
+msgstr "wóz"
+
+msgid "ui.routes.pause"
+msgstr "Wstrzymaj"
+
+msgid "ui.routes.resume"
+msgstr "Wznów"
+
+msgid "ui.routes.remove"
+msgstr "Usuń"
+
+msgid "ui.routes.amount"
+msgstr "kurs:"
+
+msgid "ui.routes.below"
+msgstr "gdy tam mniej niż:"
+
+msgid "ui.routes.has"
+msgstr "(jest %d)"
+
+msgid "ui.routes.add_good"
+msgstr "+ dodaj towar"
+
+
+msgid "ui.routes.no_target"
+msgstr "Brak drugiej prowincji, do której da się dojechać albo dopłynąć."
+
+msgid "ui.routes.no_cog"
+msgstr "Brak wolnej kogi w porcie tej prowincji."
+
+
+msgid "ui.routes.state.waiting"
+msgstr "Czeka w domu, aż zabraknie towaru."
+
+msgid "ui.routes.state.paused"
+msgstr "Wstrzymany."
+
+msgid "ui.routes.state.no_vehicle"
+msgstr "Nie ma pojazdu (koga albo stajnia zniknęła)."
+
+msgid "ui.routes.state.loading"
+msgstr "Załadunek w: %s."
+
+msgid "ui.routes.state.travelling"
+msgstr "Wiezie %s do: %s, dotrze za ok. %d min."
+
+msgid "ui.routes.state.unloading"
+msgstr "Rozładunek w: %s."
+
+msgid "ui.routes.state.returning"
+msgstr "Wraca, będzie za ok. %d min."
+
+msgid "ui.routes.done"
+msgstr "kursy: %d, dowiezione: %d"
+
+msgid "ui.routes.closing"
+msgstr "zakończy się po powrocie"
+
+msgid "ui.world.routes"
+msgstr "Szlaki handlowe"
+
+msgid "ui.world.routes_count"
+msgstr "Szlaki handlowe: %d"
+
+msgid "ui.voyage.target_hint"
+msgstr "Dokąd płynie koga: za horyzont (sprzedaż i zakupy) albo do Twojej prowincji (towary z planu trafiają tam do magazynów)."
+
+msgid "ui.voyage.target_horizon"
+msgstr "Cel: za horyzont"
+
+msgid "ui.voyage.target_province"
+msgstr "Cel: %s"
+
+msgid "ui.voyage.on_route"
+msgstr "Koga pływa na szlaku do: %s (okno „Szlaki”)."
+
+msgid "ui.voyage.state.away_route"
+msgstr "Koga płynie do: %s."
+
+msgid "ui.command_error.no_vehicle"
+msgstr "Ten pojazd nie jest wolny."
+
+msgid "ui.command_error.no_goods"
+msgstr "Wybierz od 1 do 3 towarów."
+
+msgid "ui.command_error.unknown_route"
+msgstr "Nie ma takiego szlaku."
+
+# --- M6 part 3: neutral settlements ---
+
+msgid "ui.world.pay"
+msgstr "Zapłać %d zł"
+
+msgid "ui.world.send_goods"
+msgstr "Wyślij towary (szlak)"
+
+msgid "ui.world.demand_title"
+msgstr "Żądania osady (zostało ok. %d min):"
+
+msgid "ui.world.demand_gold"
+msgstr "Złoto: %d / %d"
+
+msgid "ui.world.demand_good"
+msgstr "%s: %d / %d"
+
+msgid "ui.world.demand_hint"
+msgstr "Towary dowieź szlakiem handlowym albo kogą („Cel” w panelu portu). Gdy wszystko dotrze na czas, osada przyłączy się do królestwa z mieszkańcami i budynkami."
+
+msgid "ui.world.demand_resting"
+msgstr "Osada odrzuciła ofertę. Nowe, droższe żądania za ok. %d min."
+
+msgid "ui.command_error.no_demand"
+msgstr "Ta osada niczego teraz nie żąda."
+
+msgid "ui.command_error.already_paid"
+msgstr "Złoto jest już zapłacone."
+
+msgid "ui.note.settlement_joined"
+msgstr "%s przyłącza się do Twojego królestwa!"
+
+msgid "ui.note.settlement_refused"
+msgstr "%s: czas minął, osada odrzuca ofertę."
+
+msgid "ui.note.settlement_asks"
+msgstr "%s ma nowe żądania."
+
+# --- M6 part 3: wine ---
+
+msgid "good.grapes.name"
+msgstr "Winogrona"
+
+msgid "good.grapes.desc"
+msgstr "Dojrzałe kiście z winnicy. W tłoczni z 3 koszy powstaje beczka wina."
+
+msgid "good.wine.name"
+msgstr "Wino"
+
+msgid "good.wine.desc"
+msgstr "Napój patrycjuszy. Rośnie tylko tam, gdzie jest winorośl, więc wozi się je szlakami."
+
+msgid "building.vineyard.name"
+msgstr "Winnica"
+
+msgid "building.vineyard.desc"
+msgstr "Winogrodnik sadzi krzewy winorośli na polach wokół i zbiera winogrona. Stawia się ją w prowincji z winoroślą; na ziemi winnej krzewy rosną szybciej."
+
+msgid "building.wine_press.name"
+msgstr "Tłocznia"
+
+msgid "building.wine_press.desc"
+msgstr "Winiarz tłoczy 3 kosze winogron i robi z nich beczkę wina (ok. 40 s)."
+
+msgid "ui.kind.winegrower"
+msgstr "Winogrodnik"
+
+msgid "ui.kind.vintner"
+msgstr "Winiarz"
+
+msgid "recipe.viticulture.name"
+msgstr "Uprawa winorośli"
+
+msgid "recipe.viticulture.desc"
+msgstr "Winogrodnik dogląda krzewów i zbiera dojrzałe winogrona."
+
+msgid "recipe.wine_pressing.name"
+msgstr "Tłoczenie wina"
+
+msgid "recipe.wine_pressing.desc"
+msgstr "Z 3 koszy winogron winiarz robi beczkę wina."
+
+msgid "need.wine.name"
+msgstr "Wino"
+
+msgid "need.wine.desc"
+msgstr "Dodatkowa potrzeba patrycjuszy: podnosi zadowolenie i podatek o jedną czwartą, ale dom nie podupada bez niej."
+
+msgid "terrain.vine_soil.name"
+msgstr "Ziemia winna"
+
+msgid "terrain.vine_soil.desc"
+msgstr "Ciepła, kamienista ziemia na zboczach. Winorośl rośnie tu o połowę szybciej."
+
+msgid "ui.activity.press"
+msgstr "tłoczy winogrona"
+
+
+
+msgid "good.grapes.count"
+msgid_plural "good.grapes.count_plural"
+msgstr[0] "%s kosz winogron"
+msgstr[1] "%s kosze winogron"
+msgstr[2] "%s koszy winogron"
+
+msgid "good.wine.count"
+msgid_plural "good.wine.count_plural"
+msgstr[0] "%s beczka wina"
+msgstr[1] "%s beczki wina"
+msgstr[2] "%s beczek wina"
+
+msgid "ui.command_error.needs_vines"
+msgstr "Winnicę stawia się tylko w prowincji z winoroślą."
+
+msgid "ui.routes.merchant_wagon"
+msgstr "Wóz kupiecki"
+
+msgid "ui.routes.no_trading_post"
+msgstr "Brak składu kupieckiego z wolnym wozem w tej prowincji."
+
+msgid "building.trading_post.name"
+msgstr "Skład kupiecki"
+
+msgid "building.trading_post.desc"
+msgstr "Trzyma duży kryty wóz kupiecki na 40 sztuk. Wóz jeździ tylko szlakami handlowymi do sąsiednich prowincji (trochę wolniej niż zwykły wóz). Jeden skład to jeden wóz."

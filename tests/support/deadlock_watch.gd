@@ -19,12 +19,20 @@ func check(sim: Simulation, minute: int) -> void:
 	var alive: Dictionary[int, bool] = {}
 	for agent: Agent in sim.province.agents.all():
 		alive[agent.id] = true
-		if agent.task == null or _waits_for_room(sim, agent):
+		# Waiting by design (M6): a settlers' wagon until its expedition is sent, a route's
+		# carter while his wagon is loaded (it sets off on its own after a while).
+		var waits := agent.task != null and agent.task.kind == Task.KIND_TRAVEL and agent.task.bb.has("wait")
+		if agent.task == null or waits or _waits_for_room(sim, agent):
 			_seen.erase(agent.id)
 			continue
 		var last: Array = _seen.get(agent.id, [])
-		if last.is_empty() or not is_same(last[0], agent.task) or last[1] != agent.task.step_index:
-			_seen[agent.id] = [agent.task, agent.task.step_index, minute]
+		# The travelling merchant's whole visit is one step (coming, trading, leaving): each
+		# stage of the visit counts as a step of its own.
+		var step := agent.task.step_index
+		if agent.task.kind == Task.KIND_MERCHANT and sim.province.merchant.agent_id == agent.id:
+			step = 100 + sim.province.merchant.state
+		if last.is_empty() or not is_same(last[0], agent.task) or last[1] != step:
+			_seen[agent.id] = [agent.task, step, minute]
 		elif minute - int(last[2]) >= STUCK_MINUTES:
 			stuck.append("minute %d: %s %d on %s step %d at %s" % [minute, agent.kind, agent.id,
 					agent.task.kind, agent.task.step_index, agent.tile()])

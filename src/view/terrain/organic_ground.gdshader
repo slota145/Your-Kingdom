@@ -32,6 +32,7 @@ uniform sampler2D lake_tex : filter_nearest;
 uniform sampler2D lake_alt_tex : filter_nearest;
 uniform sampler2D paving_tex : filter_nearest;
 uniform sampler2D paving_alt_tex : filter_nearest;
+uniform sampler2D vine_tex : filter_nearest;
 
 // How far (in tiles) borders wander from the tile edges.
 uniform float border_warp = 0.32;
@@ -54,6 +55,7 @@ const int STONY = 7;
 const int LAKE = 8;
 // Shallow sea (M5): boats sail here, cogs do not. Deep sea is SEA.
 const int SHALLOW = 9;
+const int VINE = 10;
 
 varying vec2 world_pos;
 
@@ -198,6 +200,7 @@ vec3 mixed(sampler2D a, sampler2D b, vec2 grid, vec2 pixel, float seed) {
 
 vec3 ground_colour(int slot, vec2 grid, vec2 pixel) {
 	if (slot == MEADOW) return sample_diamond(meadow_tex, grid).rgb;
+	if (slot == VINE) return sample_diamond(vine_tex, grid).rgb;
 	if (slot == FOREST) return sample_diamond(forest_tex, grid).rgb;
 	if (slot == WATER) return mixed(water_tex, water_alt_tex, grid, pixel, 5.3);
 	if (slot == FORD) return sample_diamond(ford_tex, grid).rgb;

@@ -34,6 +34,7 @@ const MARGIN := 24.0
 const MARK_RADIUS := 22.0
 const ROUTE_OK := Color(0.20, 0.45, 0.18)
 const ROUTE_BAD := Color(0.65, 0.15, 0.10)
+const ROUTE_TRADE := Color(0.50, 0.30, 0.10)
 
 var sim: Simulation
 var selected: int = 0
@@ -138,6 +139,8 @@ func _draw() -> void:
 		_draw_province(id)
 	for id: int in sim.world.ids():
 		_draw_town(id)
+	for route: TradeRoute in sim.world.routes.values():
+		_draw_trade_route(route)
 	for expedition: Expedition in sim.world.expeditions.values():
 		_draw_expedition(expedition)
 	for id: int in sim.runtime_ids():
@@ -281,18 +284,16 @@ func _draw_label(id: int, fit: Transform2D) -> void:
 ## Where an expedition is on its way (parchment pixels): straight to a land neighbour, by
 ## ship in a curve out to sea (west of the coast, where the sea is on this map).
 func route_point(e: Expedition, t: float) -> Vector2:
-	var a := sim.world.def_of(e.from, sim.data).world_pos
-	var b := sim.world.def_of(e.to, sim.data).world_pos
-	if e.state == Expedition.State.RETURNING:
-		var swap := a
-		a = b
-		b = swap
-	if not e.by_sea:
-		return a.lerp(b, t)
-	var from_id := e.to if e.state == Expedition.State.RETURNING else e.from
-	var to_id := e.from if e.state == Expedition.State.RETURNING else e.to
-	a = _offshore(from_id)
-	b = _offshore(to_id)
+	var back := e.state == Expedition.State.RETURNING
+	return way_point(e.to if back else e.from, e.from if back else e.to, e.by_sea, t)
+
+
+## A point [param t] (0..1) of the way from province [param from_id] to [param to_id].
+func way_point(from_id: int, to_id: int, by_sea: bool, t: float) -> Vector2:
+	if not by_sea:
+		return sim.world.def_of(from_id, sim.data).world_pos.lerp(sim.world.def_of(to_id, sim.data).world_pos, t)
+	var a := _offshore(from_id)
+	var b := _offshore(to_id)
 	var control := Vector2(minf(a.x, b.x) - 120.0, (a.y + b.y) / 2.0)
 	return a.lerp(control, t).lerp(control.lerp(b, t), t)
 
@@ -324,6 +325,36 @@ func _draw_expedition(e: Expedition) -> void:
 		_draw_cog(at, flip)
 	else:
 		_draw_wagon(at, flip)
+
+
+## A trade route (M6 part 3): a dotted way between its provinces, a small sack at each end,
+## and its cog or wagon while it is on the way (going loaded, coming back faint).
+func _draw_trade_route(route: TradeRoute) -> void:
+	if sim.world.def_of(route.from, sim.data) == null or sim.world.def_of(route.to, sim.data) == null:
+		return
+	var width := 2.0 / maxf(_fit().get_scale().x, 0.01)
+	var steps := 16
+	var color := Color(ROUTE_TRADE, 0.35 if route.paused else 0.75)
+	for i: int in steps:
+		if i % 2 == 0:
+			draw_line(way_point(route.from, route.to, route.by_sea, i / float(steps)),
+					way_point(route.from, route.to, route.by_sea, (i + 1) / float(steps)), color, width)
+	if not route.is_on_the_way():
+		return
+	var back := route.state == TradeRoute.State.RETURNING
+	var t := route.progress(sim.clock.tick)
+	var a := route.to if back else route.from
+	var b := route.from if back else route.to
+	var at := way_point(a, b, route.by_sea, t)
+	var ahead := way_point(a, b, route.by_sea, minf(t + 0.02, 1.0)) - at
+	var flip := -1.0 if ahead.x < 0.0 else 1.0
+	var alpha := 0.6 if back else 1.0
+	if route.by_sea:
+		_draw_cog(at, flip, alpha)
+	else:
+		_draw_wagon(at, flip, alpha)
+	if not back:
+		draw_circle(at + Vector2(0, -8), 3.5, Color(0.85, 0.65, 0.25))
 
 
 ## The expedition of province [param id] getting ready (faint) or ready (with a flag) by its

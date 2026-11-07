@@ -301,6 +301,7 @@ func _refresh_settings(b: BuildingState) -> void:
 		_expedition.show_for(sim, sim.viewed_id)
 	_voyage.visible = b.def.is_port() and b.is_complete()
 	if _voyage.visible:
+		_voyage.sim = sim
 		_voyage.refresh(province, b)
 	# The pioneer camp has the town hall's tax rate until a town hall stands (M5 part 3).
 	_tax_box.visible = (b.def.id == TOWN_HALL or b.def.id == &"pioneer_camp") and b.is_complete() and treasury != null

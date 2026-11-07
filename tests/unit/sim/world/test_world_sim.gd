@@ -83,7 +83,8 @@ func test_new_game_starts_in_the_world() -> void:
 	assert_int(sim.world.provinces.size()).is_equal(9)
 	var start := sim.world.id_of(&"landing_bay")
 	assert_int(sim.viewed_id).is_equal(start)
-	assert_array(sim.runtime_ids()).is_equal([start])
+	# The start province, and the towns of the two neutral settlements (M6 part 3).
+	assert_array(sim.runtime_ids()).is_equal([start, sim.world.id_of(&"iron_wold"), sim.world.id_of(&"horse_haven")])
 	assert_object(sim.province.landing).is_not_null()
 	assert_str(String(sim.world.owner_of(sim.world.id_of(&"iron_wold")))).is_equal("neutral")
 	assert_str(String(sim.world.owner_of(sim.world.id_of(&"willow_vale")))).is_equal("")
@@ -130,6 +131,34 @@ func test_v13_fixture_loads_and_continues() -> void:
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
 		return sim.world.expedition_to(coast) != null, 600)).is_true()
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## M6 part 3 (v14): a wagon route being loaded in front of the stable and a second route on
+## its way back; loads unchanged, the wagon sets off and delivers.
+func test_v14_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v14_routes.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(14)
+	var state := SaveMigrations.migrate(document["state"], 14)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	assert_int(sim.world.routes.size()).is_equal(2)
+	assert_int(sim.province.route_wagons.size()).is_equal(1)
+	var route: TradeRoute = sim.world.routes[sim.world.routes.keys().min()]
+	assert_int(route.state).is_equal(TradeRoute.State.LOADING)
+	assert_bool(SimFixture.run_until(sim, func() -> bool:
+		return route.runs == 1, 600)).is_true()
+	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## A v13 game migrates to v14 without routes.
+func test_v13_save_migrates_to_v14() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v13_expedition.json"))
+	var state := SaveMigrations.migrate(document["state"], 13)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_bool(sim.world.routes.is_empty()).is_true()
+	assert_bool(sim.province.route_wagons.is_empty()).is_true()
 
 
 func test_v12_save_migrates_to_v13() -> void:

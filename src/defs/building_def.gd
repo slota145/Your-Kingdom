@@ -38,6 +38,11 @@ extends GameDef
 @export var needs_terrain_near: StringName = &""
 ## Field tiles a farm may own (placed separately, 1x1 each).
 @export_range(0, 64) var max_fields: int = 0
+## Built only in a province with this rare resource (a vineyard: vines, M6 part 3).
+@export var needs_rare: StringName = &""
+## Fields on this terrain grow [member field_bonus] times as fast (vines on vine soil).
+@export var field_bonus_terrain: StringName = &""
+@export_range(1.0, 4.0) var field_bonus: float = 1.0
 ## Seconds a sown field tile needs to ripen.
 @export_range(0.0, 3600.0) var field_grow_time: float = 0.0
 ## Path length (cost units) a service reaches from the entrance; 0 = no service.

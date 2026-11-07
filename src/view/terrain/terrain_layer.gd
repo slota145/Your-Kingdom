@@ -14,11 +14,11 @@ const FIELD_ART: Dictionary[int, String] = {
 	FieldStore.Stage.FALLOW: "fallow", FieldStore.Stage.PLOWED: "plowed", FieldStore.Stage.RIPE: "ripe",
 }
 ## Art slots known to the shader (order matches its constants).
-enum Slot { GRASS, MEADOW, FOREST, WATER, FORD, SEA, SAND, STONY, LAKE, SHALLOW }
+enum Slot { GRASS, MEADOW, FOREST, WATER, FORD, SEA, SAND, STONY, LAKE, SHALLOW, VINE }
 const SLOT_BY_TERRAIN: Dictionary[StringName, Slot] = {
 	&"grass": Slot.GRASS, &"meadow": Slot.MEADOW, &"forest": Slot.FOREST, &"water": Slot.WATER,
 	&"ford": Slot.FORD, &"sea": Slot.SEA, &"sand": Slot.SAND, &"stony": Slot.STONY, &"lake": Slot.LAKE,
-	&"sea_deep": Slot.SEA, &"sea_shallow": Slot.SHALLOW,
+	&"sea_deep": Slot.SEA, &"sea_shallow": Slot.SHALLOW, &"vine_soil": Slot.VINE,
 }
 ## Shader texture uniform -> art file.
 const TEXTURES: Dictionary[String, String] = {
@@ -33,6 +33,7 @@ const TEXTURES: Dictionary[String, String] = {
 	"ford_tex": "terrain/ford/a.png", "sea_tex": "terrain/sea/a.png",
 	"shallow_tex": "terrain/sea/shallow.png", "sand_tex": "terrain/sand/a.png",
 	"bank_tex": "terrain/bank/a.png", "road_tex": "terrain/road/a.png",
+	"vine_tex": "terrain/vine_soil/a.png",
 }
 const DECOR_NAMES: PackedStringArray = ["flowers_white", "flowers_yellow", "flowers_purple", "clover"]
 ## Reed tufts in the shallows along lake shores (M4b-3); feet at REED_FOOT of each image.
@@ -147,7 +148,7 @@ func setup_province(source: ProvinceSim) -> void:
 	province = source
 	_slot_by_index = slot_table(province.terrains)
 	_map_image = build_map_image(province.grid, _slot_by_index)
-	for folder: String in ["field", "field_hops"]:
+	for folder: String in ["field", "field_hops", "field_grapes"]:
 		for name: String in ["fallow", "plowed", "sown_1", "sown_2", "sown_3", "ripe"]:
 			_fields["%s/%s" % [folder, name]] = ArtPaths.texture("terrain/%s/%s.png" % [folder, name])
 	_build(province.grid.size)

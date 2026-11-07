@@ -29,6 +29,17 @@ const OWNER_NEUTRAL := &"neutral"
 ## The province border on the world map, in parchment pixels.
 @export var outline: PackedVector2Array = PackedVector2Array()
 
+@export_group("Neutral settlement (M6 part 3)")
+## Buildings of the neutral town (building id -> count), placed by NeutralTown.
+@export var town_buildings: Dictionary[StringName, int] = {}
+## How many of the town's houses are burgher houses (the rest peasant houses).
+@export var town_burghers: int = 0
+## The first demand for joining the kingdom: gold, goods (good -> units) and minutes to give
+## them in (NeutralSettlement).
+@export var demand_gold: int = 0
+@export var demand_goods: Dictionary[StringName, int] = {}
+@export var demand_minutes: float = 20.0
+
 
 func get_kind() -> StringName:
 	return &"province"

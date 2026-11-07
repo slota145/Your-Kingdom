@@ -167,17 +167,34 @@ func _init(simulation: Simulation) -> void:
 ## Runs [param seconds] of game time, carrying out the plan.
 func run(seconds: int, on_minute: Callable = Callable()) -> void:
 	for second: int in seconds:
-		while not _plan.is_empty() and int(_plan[0]["at"]) <= second:
-			_do(_plan.pop_front())
+		act(second)
 		for i: int in SimClock.TICKS_PER_SECOND:
 			sim.step()
 			for e: Dictionary in sim.events.drain():
-				if e["type"] == &"good_produced":
-					produced[e["good"]] = produced.get(e["good"], 0) + int(e["amount"])
-				elif e["type"] == &"goods_sold":
-					sold[e["good"]] = sold.get(e["good"], 0) + int(e["amount"])
+				note(e)
 		if second % 60 == 59 and on_minute.is_valid():
 			on_minute.call(second / 60 + 1)
+
+
+## Carries out the plan's actions due by [param second] (in the viewed province; the world
+## bot of M6 part 3 calls it only while this bot's province is viewed).
+func act(second: int) -> void:
+	while not _plan.is_empty() and int(_plan[0]["at"]) <= second:
+		_do(_plan.pop_front())
+
+
+## Adds an action to the plan (the world bot: a town hall and a stable on the Coast).
+func add(action: Dictionary) -> void:
+	_plan.append(action)
+	_plan.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["at"]) < int(b["at"]))
+
+
+## Counts a simulation event (produced and sold goods).
+func note(e: Dictionary) -> void:
+	if e["type"] == &"good_produced":
+		produced[e["good"]] = produced.get(e["good"], 0) + int(e["amount"])
+	elif e["type"] == &"goods_sold":
+		sold[e["good"]] = sold.get(e["good"], 0) + int(e["amount"])
 
 
 ## Houses of [param level] or above whose basic needs are all met right now.
@@ -333,3 +350,8 @@ func _first(id: StringName) -> BuildingState:
 		if b.def.id == id:
 			return b
 	return null
+
+
+## The town centre the plan's anchors are relative to.
+func town() -> Vector2i:
+	return _town

@@ -47,6 +47,13 @@ var sell: Dictionary[StringName, int] = {}
 ## the world map until the expedition has landed and it is back (Simulation). 0 = none.
 var expedition: int = 0
 var order: Dictionary[StringName, int] = {}
+## The trade route this cog runs (M6 part 3, TradeRoute), 0 = none. On a route it loads the
+## run the route asks for ([member route_run]) instead of the plan, buys nothing and over the
+## horizon hands its cargo to the route ([member shipped]); it is away until the route is back.
+var route: int = 0
+var route_run: Dictionary[StringName, int] = {}
+## Cargo that went over the horizon on a route run, until the Simulation takes it.
+var shipped: Dictionary[StringName, int] = {}
 ## Deep water where it waits; Agent.NO_TILE = not chosen yet.
 var anchor: Vector2i = Agent.NO_TILE
 ## Sea edge of the voyage under way.
@@ -183,7 +190,7 @@ func sail_by_the_clock(province: ProvinceSim, ship: ShipUnit) -> void:
 				return
 			_cast_off(province, ship)
 			_go_over_horizon(province, ship)
-			if expedition == 0:
+			if expedition == 0 and route == 0:
 				back_at += SimClock.seconds_to_ticks(SAIL_BY_CLOCK)
 		State.OUTBOUND:
 			_go_over_horizon(province, ship)
@@ -440,7 +447,7 @@ func _cast_off(province: ProvinceSim, ship: ShipUnit) -> void:
 	province.jobs.cancel_for_entity(ship.id)
 	purse = 0
 	buying = {}
-	for good: StringName in (_sorted(order) if expedition == 0 else ([] as Array[StringName])):
+	for good: StringName in (_sorted(order) if expedition == 0 and route == 0 else ([] as Array[StringName])):
 		var price := maxi(SeaMerchant.sell_price(province, good), 1)
 		# The cargo is sold before the order is loaded, so the whole hold is free for it.
 		var units := mini(order[good], (province.treasury.gold - purse) / price)
@@ -480,6 +487,15 @@ func _go_over_horizon(province: ProvinceSim, ship: ShipUnit) -> void:
 		back_at = AWAY_WITH_EXPEDITION
 		state = State.AWAY
 		province.events.emit(&"expedition_sailed", {"ship": ship.id, "expedition": expedition})
+		return
+	if route != 0:
+		shipped = ship.hold.totals()
+		for good: StringName in shipped:
+			ship.hold.remove(good, shipped[good])
+		route_run = {}
+		back_at = AWAY_WITH_EXPEDITION
+		state = State.AWAY
+		province.events.emit(&"route_sailed", {"ship": ship.id, "route": route})
 		return
 	earned = 0
 	var sold := 0
@@ -581,9 +597,25 @@ func start() -> void:
 		depart_now = false
 
 
-## What it loads: the start kit of its expedition, or the player's plan.
+## What it loads: the start kit of its expedition, a trade route's run, or the player's plan.
 func cargo() -> Dictionary[StringName, int]:
-	return Departure.KIT if expedition != 0 else sell
+	if expedition != 0:
+		return Departure.KIT
+	return route_run if route != 0 else sell
+
+
+## A run of its trade route with [param run] (good -> units): it goes to the berth
+## and loads (M6 part 3).
+func start_route_run(run: Dictionary[StringName, int]) -> void:
+	route_run = run.duplicate()
+	shipped = {}
+	start()
+
+
+## The route of this cog came back (or let it go): it sails in from the horizon.
+func call_home(tick: int) -> void:
+	if state == State.AWAY and back_at == AWAY_WITH_EXPEDITION and expedition == 0:
+		back_at = tick
 
 
 ## The ship (or its home port) is gone: drop its requests.
@@ -597,6 +629,12 @@ func to_dict() -> Dictionary:
 		d["sell"] = _plan_to_dict(sell)
 	if expedition != 0:
 		d["expedition"] = expedition
+	if route != 0:
+		d["route"] = route
+	if not route_run.is_empty():
+		d["route_run"] = _plan_to_dict(route_run)
+	if not shipped.is_empty():
+		d["shipped"] = _plan_to_dict(shipped)
 	if not order.is_empty():
 		d["order"] = _plan_to_dict(order)
 	if state != State.IDLE:
@@ -639,6 +677,9 @@ static func from_dict(d: Dictionary) -> Voyage:
 	v.anchor = SimCodec.to_vec2i(d.get("anchor", [-1, -1]))
 	v.sell = _plan_from(d.get("sell", {}))
 	v.expedition = int(d.get("expedition", 0))
+	v.route = int(d.get("route", 0))
+	v.route_run = _plan_from(d.get("route_run", {}))
+	v.shipped = _plan_from(d.get("shipped", {}))
 	v.order = _plan_from(d.get("order", {}))
 	v.edge = SimCodec.to_vec2i(d.get("edge", [-1, -1]))
 	v.back_at = int(d.get("back_at", 0))

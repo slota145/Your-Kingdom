@@ -71,7 +71,8 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		sprite.show_state(CharacterVisual.get_visual(_character(agent.kind)), anim, agent.facing,
 				time + agent.id * 0.137, category, good if agent.activity == &"walk" else &"",
 				Carriers.WAGON if agent.vehicle == Carriers.SETTLER_WAGON else agent.vehicle,
-				good != &"" or agent.vehicle == Carriers.SETTLER_WAGON)
+				good != &"" or agent.vehicle == Carriers.SETTLER_WAGON \
+						or agent.vehicle == Carriers.TRADE_WAGON)
 	for j: int in range(used, _pool.size()):
 		_pool[j].visible = false
 	visible_count = used

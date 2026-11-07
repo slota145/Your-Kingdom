@@ -107,6 +107,23 @@ const BUILDINGS := {
 		{"kind": "round", "centre": [1.55, 0.75], "r": 0.3, "h": 36.0, "rh": 26.0, "walls": "stone_plaster",
 			"roof": "tile", "sails": false, "cowl": true}],
 		"props": [["hop_poles", 1.8, 1.4], ["baskets", 1.5, 1.85]]}],
+	# M6 part 3 (wine): a vintner's farmstead with a stone press-house; a stone press-house with
+	# a big screw press under a lean-to and casks.
+	"vineyard": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.9, 1.5], "h": 42.0, "rh": 26.0, "ridge": "x",
+			"ends": ["gable", "hip"], "walls": "stone_plaster", "roof": "tile",
+			"shutters": Color(0.5, 0.2, 0.32), "chimney": [0.5, 0.6]},
+		{"kind": "house", "rect": [1.9, 0.3, 2.86, 1.5], "h": 32.0, "rh": 20.0, "ridge": "y",
+			"ends": ["open", "gable"], "walls": "timber", "roof": "tile", "shutters": Color(0.45, 0.3, 0.2)}],
+		"props": [["hop_poles", 0.5, 2.6], ["hop_poles", 1.3, 2.7], ["baskets", 2.3, 2.4], ["barrel", 2.7, 1.8]]}],
+	"wine_press": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.86, 1.2], "h": 44.0, "rh": 24.0, "ridge": "x",
+			"ends": ["gable", "gable"], "walls": "stone_plaster", "roof": "tile",
+			"shutters": Color(0.5, 0.15, 0.22), "chimney": [1.4, 0.55]},
+		{"kind": "lean", "rect": [0.3, 1.2, 1.86, 1.86], "low": "y", "h": 30.0, "hh": 38.0,
+			"roof": "tile", "walls": "stone_plaster", "open": true,
+			"inside": [["mead_vat", 0.8, 1.7], ["cask_rack", 1.45, 1.7]]}],
+		"props": [["barrel", 0.2, 1.98], ["baskets", 1.95, 0.6]]}],
 	"mill": [{"volumes": [
 		{"kind": "round", "centre": [1.0, 1.0], "r": 0.66, "h": 92.0, "rh": 30.0, "walls": "stone_plaster",
 			"roof": "shingle", "sails": true}],
@@ -175,6 +192,15 @@ const BUILDINGS := {
 		"pens": [[1.25, 1.1, 2.9, 2.9, "pigs"], [0.12, 1.6, 1.15, 2.9, "pigs"]],
 		"props": [["trough", 2.2, 1.35], ["bucket", 1.05, 2.98]]}],
 	# M4b-3: a stable with a hay loft, an open wagon shed and a paddock.
+	# M6 part 3 (owner's decision 2026-11-07): the trading post keeps the big covered merchant
+	# wagon that runs trade routes between provinces: a stone warehouse with a loading bay.
+	"trading_post": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.9, 1.7], "h": 52.0, "rh": 26.0, "ridge": "x",
+			"ends": ["gable", "hip"], "walls": "timber_stone", "roof": "tile",
+			"shutters": Color(0.25, 0.35, 0.55), "floors": 2},
+		{"kind": "lean", "rect": [1.9, 0.2, 2.86, 1.7], "low": "x", "h": 28.0, "hh": 40.0,
+			"roof": "tile", "walls": "planks", "open": true, "inside": [["barrels", 2.35, 1.0]]}],
+		"props": [["sacks", 0.4, 2.4], ["barrel", 1.2, 2.6], ["wagon", 2.2, 2.35]]}],
 	"stable": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.75, 1.6], "h": 40.0, "rh": 26.0, "ridge": "x",
 			"ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.45, 0.3, 0.2)},

@@ -346,6 +346,10 @@ static func _finish(province: ProvinceSim, agent: Agent) -> void:
 	if task.kind == Task.KIND_ERRAND or task.kind == Task.KIND_MOVE_IN:
 		province.remove_agent(agent)
 	if task.kind == Task.KIND_TRAVEL and task.bb.has("leave"):
-		if province.departure != null:
+		if task.bb.has("route"):
+			var wagon := province.route_wagons.get(int(task.bb["route"])) as RouteWagon
+			if wagon != null:
+				wagon.on_left(province, agent)
+		elif province.departure != null:
 			province.departure.on_left(province, agent)
 		province.remove_agent(agent)

@@ -2026,7 +2026,7 @@ msgid "ui.world.empty_hint"
 msgstr "You settle an empty province with an expedition of settlers. Prepare one in the town hall or here, in the panel of your province."
 
 msgid "ui.world.neutral_hint"
-msgstr "You buy a neutral town for gold and deliveries (soon)."
+msgstr "A neutral settlement. It joins the kingdom for gold and goods brought in time."
 
 msgid "ui.note.single_province"
 msgstr "This is a game on a single map: there is no world map."
@@ -2151,3 +2151,242 @@ msgstr "The expedition is still gathering. Send it when it is ready."
 
 msgid "ui.note.expedition_ready"
 msgstr "The expedition of settlers is ready. Send it from the world map (M)."
+
+# --- M6 part 3: trade routes ---
+
+msgid "ui.hud.routes"
+msgstr "Routes"
+
+msgid "ui.routes.title"
+msgstr "Trade routes"
+
+msgid "ui.routes.hint"
+msgstr "A route carries goods from one of your provinces to another. For each good you set how much one run takes and below what stock in the destination it is brought (\"while … has less than\"). A cog sails between coasts, a trading post's merchant wagon drives only to a neighbour."
+
+msgid "ui.routes.none"
+msgstr "You have no trade routes yet."
+
+msgid "ui.routes.new"
+msgstr "New route:"
+
+msgid "ui.routes.create"
+msgstr "Create route"
+
+msgid "ui.routes.route"
+msgstr "%s → %s (%s)"
+
+msgid "ui.routes.by_sea"
+msgstr "cog"
+
+msgid "ui.routes.by_land"
+msgstr "wagon"
+
+msgid "ui.routes.pause"
+msgstr "Pause"
+
+msgid "ui.routes.resume"
+msgstr "Resume"
+
+msgid "ui.routes.remove"
+msgstr "Remove"
+
+msgid "ui.routes.amount"
+msgstr "per run:"
+
+msgid "ui.routes.below"
+msgstr "while it has less than:"
+
+msgid "ui.routes.has"
+msgstr "(has %d)"
+
+msgid "ui.routes.add_good"
+msgstr "+ add a good"
+
+
+msgid "ui.routes.no_target"
+msgstr "No other province can be reached by road or by sea."
+
+msgid "ui.routes.no_cog"
+msgstr "No free cog in this province's port."
+
+
+msgid "ui.routes.state.waiting"
+msgstr "Waiting at home until goods run short."
+
+msgid "ui.routes.state.paused"
+msgstr "Paused."
+
+msgid "ui.routes.state.no_vehicle"
+msgstr "No vehicle (the cog or the stable is gone)."
+
+msgid "ui.routes.state.loading"
+msgstr "Loading in %s."
+
+msgid "ui.routes.state.travelling"
+msgstr "Carrying %s to %s, there in about %d min."
+
+msgid "ui.routes.state.unloading"
+msgstr "Unloading in %s."
+
+msgid "ui.routes.state.returning"
+msgstr "Coming back, home in about %d min."
+
+msgid "ui.routes.done"
+msgstr "runs: %d, delivered: %d"
+
+msgid "ui.routes.closing"
+msgstr "ends when it is back"
+
+msgid "ui.world.routes"
+msgstr "Trade routes"
+
+msgid "ui.world.routes_count"
+msgstr "Trade routes: %d"
+
+msgid "ui.voyage.target_hint"
+msgstr "Where the cog sails: over the horizon (sell and buy) or to one of your provinces (the plan's goods go into its storages)."
+
+msgid "ui.voyage.target_horizon"
+msgstr "Destination: over the horizon"
+
+msgid "ui.voyage.target_province"
+msgstr "Destination: %s"
+
+msgid "ui.voyage.on_route"
+msgstr "The cog runs a trade route to %s (\"Routes\" window)."
+
+msgid "ui.voyage.state.away_route"
+msgstr "The cog is sailing to %s."
+
+msgid "ui.command_error.no_vehicle"
+msgstr "This vehicle is not free."
+
+msgid "ui.command_error.no_goods"
+msgstr "Choose 1 to 3 goods."
+
+msgid "ui.command_error.unknown_route"
+msgstr "There is no such route."
+
+# --- M6 part 3: neutral settlements ---
+
+msgid "ui.world.pay"
+msgstr "Pay %d gold"
+
+msgid "ui.world.send_goods"
+msgstr "Send goods (route)"
+
+msgid "ui.world.demand_title"
+msgstr "The settlement asks (about %d min left):"
+
+msgid "ui.world.demand_gold"
+msgstr "Gold: %d / %d"
+
+msgid "ui.world.demand_good"
+msgstr "%s: %d / %d"
+
+msgid "ui.world.demand_hint"
+msgstr "Bring the goods by a trade route or by cog (\"Destination\" in the port panel). When all arrives in time, the settlement joins your kingdom with its people and buildings."
+
+msgid "ui.world.demand_resting"
+msgstr "The settlement turned the offer down. New, dearer demands in about %d min."
+
+msgid "ui.command_error.no_demand"
+msgstr "This settlement asks for nothing now."
+
+msgid "ui.command_error.already_paid"
+msgstr "The gold is paid already."
+
+msgid "ui.note.settlement_joined"
+msgstr "%s joins your kingdom!"
+
+msgid "ui.note.settlement_refused"
+msgstr "%s: time is up, the settlement turns the offer down."
+
+msgid "ui.note.settlement_asks"
+msgstr "%s has new demands."
+
+# --- M6 part 3: wine ---
+
+msgid "good.grapes.name"
+msgstr "Grapes"
+
+msgid "good.grapes.desc"
+msgstr "Ripe bunches from the vineyard. A wine press makes a barrel of wine from 3 baskets."
+
+msgid "good.wine.name"
+msgstr "Wine"
+
+msgid "good.wine.desc"
+msgstr "The patricians' drink. It grows only where there are vines, so it travels by trade routes."
+
+msgid "building.vineyard.name"
+msgstr "Vineyard"
+
+msgid "building.vineyard.desc"
+msgstr "The winegrower plants vines on the fields around and picks the grapes. It is built in a province with vines; on vine soil the vines grow faster."
+
+msgid "building.wine_press.name"
+msgstr "Wine press"
+
+msgid "building.wine_press.desc"
+msgstr "The vintner presses 3 baskets of grapes into a barrel of wine (about 40 s)."
+
+msgid "ui.kind.winegrower"
+msgstr "Winegrower"
+
+msgid "ui.kind.vintner"
+msgstr "Vintner"
+
+msgid "recipe.viticulture.name"
+msgstr "Viticulture"
+
+msgid "recipe.viticulture.desc"
+msgstr "The winegrower tends the vines and picks the ripe grapes."
+
+msgid "recipe.wine_pressing.name"
+msgstr "Wine pressing"
+
+msgid "recipe.wine_pressing.desc"
+msgstr "The vintner makes a barrel of wine from 3 baskets of grapes."
+
+msgid "need.wine.name"
+msgstr "Wine"
+
+msgid "need.wine.desc"
+msgstr "An extra need of patricians: it raises happiness and tax by a quarter, but a house does not decline without it."
+
+msgid "terrain.vine_soil.name"
+msgstr "Vine soil"
+
+msgid "terrain.vine_soil.desc"
+msgstr "Warm, stony soil on the slopes. Vines grow half as fast again here."
+
+msgid "ui.activity.press"
+msgstr "presses grapes"
+
+
+
+msgid "good.grapes.count"
+msgid_plural "good.grapes.count_plural"
+msgstr[0] "%s basket of grapes"
+msgstr[1] "%s baskets of grapes"
+
+msgid "good.wine.count"
+msgid_plural "good.wine.count_plural"
+msgstr[0] "%s barrel of wine"
+msgstr[1] "%s barrels of wine"
+
+msgid "ui.command_error.needs_vines"
+msgstr "A vineyard is built only in a province with vines."
+
+msgid "ui.routes.merchant_wagon"
+msgstr "Merchant wagon"
+
+msgid "ui.routes.no_trading_post"
+msgstr "No trading post with a free wagon in this province."
+
+msgid "building.trading_post.name"
+msgstr "Trading post"
+
+msgid "building.trading_post.desc"
+msgstr "Keeps a big covered merchant wagon for 40 units. It runs only trade routes to neighbouring provinces (a little slower than a plain wagon). One trading post, one wagon."

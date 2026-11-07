@@ -31,8 +31,12 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 				return _done(province, agent, tile)
 		"sow":
 			if _work(agent, &"sow", step.sow_time / speed) == Status.DONE:
-				province.fields.sow(tile, province.tick,
-						SimClock.seconds_to_ticks(farm.def.field_grow_time))
+				var grow := farm.def.field_grow_time
+				var terrain := province.terrain_at(tile)
+				if farm.def.field_bonus_terrain != &"" and terrain != null \
+						and terrain.is_kind(farm.def.field_bonus_terrain):
+					grow /= farm.def.field_bonus   # vines on vine soil (M6 part 3)
+				province.fields.sow(tile, province.tick, SimClock.seconds_to_ticks(grow))
 				return _done(province, agent, tile)
 		"harvest":
 			if _work(agent, &"harvest", step.harvest_time / speed) == Status.DONE:
