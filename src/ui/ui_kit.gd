@@ -111,6 +111,9 @@ static func board_theme() -> Theme:
 		t.set_stylebox(state, &"Button", _texture_box("button_%s.png" % state, BUTTON_MARGIN, 8, 4,
 				2 if state == "pressed" else 0))
 	t.set_stylebox(&"focus", &"Button", StyleBoxEmpty.new())
+	# The active time control (a pressed icon button) shines gold.
+	t.set_color(&"icon_pressed_color", &"Button", GOLD)
+	t.set_color(&"icon_hover_pressed_color", &"Button", GOLD)
 	_board_theme = t
 	return t
 

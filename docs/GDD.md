@@ -420,7 +420,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
   - złoto,
   - ludność według klas,
   - zadowolenie,
-  - data i prędkość gry.
+  - data i prędkość gry (**UI-1, 2026-11-07:** na środku paska zegar i ikony ‖ ▶ ▶▶ ▶▶▶; aktywna świeci złotem).
 - **Menu budowy** pogrupowane w kategorie: mieszkalne, żywność, surowce, rzemiosło, usługi, wojsko, fortyfikacje, port.
 - **Panel budynku**:
   - stan i bieżący etap pracy,

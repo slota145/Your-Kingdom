@@ -267,20 +267,10 @@ msgid "ui.close"
 msgstr "Close"
 
 
-msgid "ui.hud.speed"
-msgstr "Speed: %d×"
 
-msgid "ui.hud.paused"
-msgstr "Paused"
 
-msgid "ui.hud.pause"
-msgstr "Pause"
 
-msgid "ui.hud.slower"
-msgstr "Slower"
 
-msgid "ui.hud.faster"
-msgstr "Faster"
 
 msgid "ui.hud.save"
 msgstr "Save"
@@ -2425,3 +2415,9 @@ msgstr "Build"
 
 msgid "ui.build.show_tip"
 msgstr "Shows the build bar (B key)"
+
+msgid "ui.hud.pause_tip"
+msgstr "Pause (Space)"
+
+msgid "ui.hud.speed_tip"
+msgstr "Game speed: %d×"
