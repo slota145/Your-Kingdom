@@ -798,7 +798,16 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## G1 — Grafika budynków z PixelLab, część 1 (pionierzy)
 
-**Status: dopisany 2026-11-07 na prośbę właściciela projektu, przed M7. Plan do przygotowania i akceptacji (ankieta), ocena po etapie.**
+**Status: plan zaakceptowany 2026-11-07 (ankieta z właścicielem projektu), w toku. Ocena po etapie.**
+
+**Decyzje (ankieta 2026-11-07):**
+- **Obóz pionierów:** nowa generacja na cały romb 3×3 (więcej namiotów, sterty, ognisko), nie obóz z próby.
+- **Drzwi:** w opisie podajemy, gdzie mają być drzwi, i wybieramy pasującego kandydata; gdy żaden nie pasuje, drzwi domalowuje PixelLab (inpaint). Bez lustra obrazka, bo światło musi być jak w całym mieście.
+- **Druga orientacja:** lustro (jak w całej grze), 0 generacji.
+- **Etapy budowy:** oba (`construction_1`, `construction_2`) z PixelLab, przerobione z gotowego budynku, żeby pasowały wyglądem.
+- **Chata:** 3 warianty wyglądu, każdy z tyłem (`*_back`) przerobionym z przodu. Kamienice (poziomy 2–3) bez zmian.
+- **Budżet (195 generacji do 27.11):** najpierw cały zestaw (5 budynków z etapami budowy), warianty chaty na końcu, ile się zmieści; ok. 10 generacji zapasu.
+- **Wzór stylu:** pierwszy gotowy budynek jest „style image” dla następnych. Drwal, kamieniołom i rybak mają podwórko na stos (paczka 2), więc ich chata zajmuje tylko 2 tylne kafle, a podwórko dalej rysuje kod.
 
 **Skąd ten etap:** budynki rysowane kodem są czytelne, ale „płaskie” obok terenu i menu z PixelLab. Próba 2026-11-07 (ART_SPEC §10.11): obóz pionierów i chata wygenerowane od zera w PixelLab dwoma narzędziami i wstawione na próbę do sceny gry. Wybór właściciela: **Pro Flash** (`create_object_pro_flash`, widok „high top-down”, 1 kierunek, ok. 6–9 generacji za budynek), **rozjaśnione średnio** skryptem `tools/brighten_pixellab.py`. „Obiekt na mapę” odpada (obóz wyszedł jako latająca wysepka ze skarpą). Pliki próby: `src/prototype/g1/`.
 
