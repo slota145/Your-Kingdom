@@ -39,6 +39,9 @@ var food: float = 0.0
 ## it lands they sail back there.
 var ships: int = 0
 var fleet_home: int = 0
+## Those warships by ship id (J1 part 3: caravels, carracks and galleons are bigger than the
+## war cog); [member ships] is their number.
+var fleet: Dictionary[StringName, int] = {}
 ## The province it came from: the player's home town, or the bandits' camp.
 var home: int = 0
 ## Where its men came onto the map of [member at] (and leave again when they retreat).
@@ -103,7 +106,24 @@ func goal() -> int:
 
 
 func side() -> BattleSide:
-	return BattleSide.new(units, is_fed(), ships)
+	var s := BattleSide.new(units, is_fed(), ships)
+	s.fleet = fleet.duplicate()
+	return s
+
+
+## Warships sunk in a sea battle (J1 part 3): only [param left] of them stay, the biggest
+## numbers of one kind going first.
+func sink_to(left: int) -> void:
+	while ships > maxi(left, 0) and not fleet.is_empty():
+		var most: StringName = fleet.keys()[0]
+		for id: StringName in fleet:
+			if fleet[id] > fleet[most]:
+				most = id
+		fleet[most] -= 1
+		if fleet[most] <= 0:
+			fleet.erase(most)
+		ships -= 1
+	ships = mini(ships, maxi(left, 0))
 
 
 func to_dict() -> Dictionary:
@@ -119,6 +139,8 @@ func to_dict() -> Dictionary:
 	if ships != 0:
 		d["ships"] = ships
 		d["fleet_home"] = fleet_home
+		if not fleet.is_empty():
+			d["fleet"] = Expedition.goods_to_dict(fleet)
 	if entry.x >= 0:
 		d["entry"] = SimCodec.vec2i(entry)
 	if loot_gold != 0:
@@ -147,6 +169,9 @@ static func from_dict(d: Dictionary) -> Army:
 	a.by_sea = bool(d.get("sea", false))
 	a.ships = int(d.get("ships", 0))
 	a.fleet_home = int(d.get("fleet_home", 0))
+	a.fleet = Expedition.goods_from(d.get("fleet", {}))
+	if a.fleet.is_empty() and a.ships > 0:
+		a.fleet[&"warship"] = a.ships   # saved before J1 part 3: war cogs
 	a.entry = SimCodec.to_vec2i(d.get("entry", [-1, -1]))
 	a.loot_gold = int(d.get("loot_gold", 0))
 	a.warned = bool(d.get("warned", false))

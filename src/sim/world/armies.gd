@@ -312,6 +312,7 @@ static func _board(sim: Simulation, army: Army) -> void:
 		room += ship.def.troops
 		province.ships.erase(ship.id)
 		army.ships += 1
+		army.fleet[ship.def.id] = army.fleet.get(ship.def.id, 0) + 1
 	army.fleet_home = army.at
 	sim.events.emit(&"fleet_sailed", {"army": army.id, "province": army.at, "ships": army.ships})
 
@@ -322,17 +323,26 @@ static func _fleet_home(sim: Simulation, army: Army) -> void:
 	if army.ships == 0:
 		return
 	var home := sim.province_state(army.fleet_home)
-	var def := sim.data.get_ship(&"warship")
-	if home != null and def != null and sim.world.owner_of(army.fleet_home) == ProvinceDef.OWNER_PLAYER:
-		for k: int in army.ships:
-			var ship := ShipUnit.new(sim.ids.take(), def, Vector2.ZERO, sim.data)
-			var at := _sea_spot(home, ship)
-			if at == Agent.NO_TILE:
-				break
-			ship.pos = IsoMath.tile_center(at)
-			ship.prev_pos = ship.pos
-			home.ships[ship.id] = ship
+	if army.fleet.is_empty():
+		army.fleet[&"warship"] = army.ships
+	if home != null and sim.world.owner_of(army.fleet_home) == ProvinceDef.OWNER_PLAYER:
+		var ids: Array[StringName] = []
+		ids.assign(army.fleet.keys())
+		ids.sort()
+		for id: StringName in ids:
+			var def := sim.data.get_ship(id)
+			if def == null:
+				continue
+			for k: int in army.fleet[id]:
+				var ship := ShipUnit.new(sim.ids.take(), def, Vector2.ZERO, sim.data)
+				var at := _sea_spot(home, ship)
+				if at == Agent.NO_TILE:
+					break
+				ship.pos = IsoMath.tile_center(at)
+				ship.prev_pos = ship.pos
+				home.ships[ship.id] = ship
 	army.ships = 0
+	army.fleet.clear()
 
 
 ## Deep water off the province's coast where a returning warship anchors.
@@ -392,6 +402,10 @@ static func _meet(sim: Simulation, army: Army) -> void:
 		var kind := BattleResolver.Kind.NAVAL if army.ships > 0 and other.ships > 0 else BattleResolver.Kind.FIELD
 		var result := battle(sim, army, other.side(), kind, null, army.at, other.owner)
 		other.lose(result.lost_b)
+		if kind == BattleResolver.Kind.NAVAL:
+			# Ships sunk stay sunk (J1 part 3; before, every ship came home).
+			army.sink_to(result.ships_left_a)
+			other.sink_to(result.ships_left_b)
 		if other.is_empty() or result.a_won():
 			if other.owner == Army.BANDITS:
 				_scatter(sim, other)

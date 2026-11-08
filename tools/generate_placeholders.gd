@@ -577,6 +577,9 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.45, 0.35, 0.25), "roof_color": Color(0.3, 0.25, 0.2), "extra": "barrels"},
 	"shipyard": {"footprint": Vector2i(4, 4), "entrance": Vector2i(3, 1), "walls": 30.0, "roof": 22.0,
 			"wall": Color(0.6, 0.45, 0.3), "roof_color": Color(0.45, 0.38, 0.3), "extra": "barrels"},
+	# J1 part 3
+	"large_shipyard": {"footprint": Vector2i(6, 6), "entrance": Vector2i(5, 1), "walls": 40.0, "roof": 26.0,
+			"wall": Color(0.6, 0.45, 0.3), "roof_color": Color(0.45, 0.38, 0.3), "extra": "barrels"},
 	"fishing_wharf": {"footprint": Vector2i(3, 3), "entrance": Vector2i(2, 1), "walls": 26.0, "roof": 20.0,
 			"wall": Color(0.6, 0.48, 0.32), "roof_color": Color(0.78, 0.66, 0.36), "extra": "barrels"},
 	"port": {"footprint": Vector2i(4, 4), "entrance": Vector2i(3, 1), "walls": 18.0, "roof": 10.0,

@@ -32,6 +32,10 @@ extends GameDef
 ## Art folder in assets/ships when it differs from the id (the settlers' ship looks like the
 ## player's cog).
 @export var art: StringName = &""
+## A warship in a sea battle (J1 part 3; BattleResolver): the life of its hull and the damage
+## of its bolts every few seconds. A bigger ship has more of both.
+@export_range(0, 99999) var hp: int = 800
+@export_range(0, 999) var attack: int = 30
 
 
 func art_id() -> StringName:
