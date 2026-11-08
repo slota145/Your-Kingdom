@@ -1019,7 +1019,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## W1 — Nowe wybrzeże na mapie „Wybrzeże”
 
-**Status: plan do akceptacji (2026-11-08).** Prośba właściciela 2026-11-08; ankieta: **teraz, mały etap** (przed oceną M7 i B1), przed J1, bo większe okręty z J1 potrzebują szerszej zatoki.
+**Status: plan zaakceptowany 2026-11-08 (ankieta: zatoka szeroka i zaokrąglona, jak podkowa), w toku.** Prośba właściciela 2026-11-08; ankieta: **teraz, mały etap** (przed oceną M7 i B1), przed J1, bo większe okręty z J1 potrzebują szerszej zatoki.
 
 **Cel:** linia brzegowa „Wybrzeża” jest bardziej naturalna, a zatoka szersza i krótsza, nie prostokątna. Jedna część, ocena po niej.
 
@@ -1055,7 +1055,11 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 2. **Ruchoma balista:** budowa w warsztacie oblężniczym, obsługa, strzał z daleka (ludzie, machiny, mury i bramy), rozstawianie i przetaczanie.
 3. **Duża stocznia i 3 okręty:** budowa etapami jak koga, wersje cywilne (większa ładownia, szlaki i rejsy) i wojenne (więcej żołnierzy, siła w bitwie morskiej rozstrzyganej automatycznie), grafika coraz większych statków, sprawdzenie, że mieszczą się w zatoce i przy nabrzeżach.
 
-**Otwarte decyzje (ankieta przy akceptacji planu):** skąd broń i zbroja (rozszerzenie kowala, płatnerza i łuczarza czy nowe warsztaty), jakie 3 okręty (rodzaje i rozmiary), jak działa balista, wygląd postaci (kodem jak żołnierze M7 czy PixelLab).
+**Decyzje (ankieta 2026-11-08):**
+- **Okręty: karawela, karaka i galeon**, w tej kolejności rozmiaru (wybór kolejności zostawiony Claude): karawela lekka i szybka, trochę większa od kogi; karaka z wysokimi nadbudówkami i kilkoma masztami; galeon największy.
+- **Broń z rozszerzonych warsztatów:** kowal robi też halabardy i morgensterny, łuczarz kusze. **Zbroja jedna dla wszystkich:** dzisiejsza kolczuga zostaje tym samym towarem (id `chainmail` bez zmian), ale dostaje ogólniejszą nazwę „zbroja”, pasującą do miecznika, jeźdźca, halabardnika i ciężkiego zbrojnego.
+
+**Otwarte decyzje (ankieta przy starcie J1):** jak działa balista, wygląd postaci (kodem jak żołnierze M7 czy PixelLab), wartości walki.
 
 **Wartości wyjściowe:** do ustalenia w planie części; punktem wyjścia jest tabela M7 (włócznik, łucznik, miecznik, jeździec).
 
