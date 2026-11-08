@@ -31,11 +31,10 @@ func _init() -> void:
 	for job: Dictionary in JOBS:
 		for stage: int in [0, 1, 2]:
 			_queue.append(_fort.bind(job, stage))
-	for stage: int in [1, 2]:
+	for stage: int in [0, 1, 2]:
 		_queue.append(_fort.bind(JOBS[0], stage, true))
 	for stage: int in [0, 1, 2]:
 		_queue.append(_workshop.bind(stage))
-	_queue.append(_turn_gatehouse)
 	for icon: String in ["stone_wall", "palisade", "stairs"]:
 		_queue.append(_icon.bind(icon))
 
@@ -92,11 +91,16 @@ func _fort(job: Dictionary, stage: int, turned: bool = false) -> void:
 		name = "construction_%d" % stage
 	if gate and stage == 0:
 		# The PixelLab gatehouse body (prototype repaint), battlements of the model on top.
-		var body := Sprite2D.new()
-		body.texture = load(WallSkin.DIR + "gatehouse_body.png") as Texture2D
-		body.centered = false
+		# Turned: the body mirrored with its faces relit, battlements drawn turned (owner's
+		# request 2026-11-08: shade and battlements with the light on the left).
 		var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(WallSkin.DIR + "skin.json"))
-		body.position = front - Vector2(meta["gatehouse_pivot"][0], meta["gatehouse_pivot"][1])
+		var body_pivot := Vector2i(int(meta["gatehouse_pivot"][0]), int(meta["gatehouse_pivot"][1]))
+		var body := Sprite2D.new()
+		body.texture = _turned_body(body_pivot) if turned else load(WallSkin.DIR + "gatehouse_body.png") as Texture2D
+		if turned:
+			body_pivot.x = body.texture.get_width() - body_pivot.x
+		body.centered = false
+		body.position = front - Vector2(body_pivot)
 		body.z_index = -2
 		world.add_child(body)
 		for piece: BlockWallModel.Piece in model.build():
@@ -104,11 +108,11 @@ func _fort(job: Dictionary, stage: int, turned: bool = false) -> void:
 				var node := WallPieceNode.new()
 				node.setup(piece, _skin)
 				world.add_child(node)
-			elif piece.kind == &"gh_side" and piece.tile.x == 2:
+			elif piece.kind == &"gh_side" and (piece.tile.y == 2 if turned else piece.tile.x == 2):
 				# The repaint has a stub of wall on this side: drawn over with the stone.
 				var side := WallPieceNode.new()
 				side.setup(piece, _skin)
-				side.right_faces_only = true
+				side.only_faces = Vector2i(0, 1) if turned else Vector2i(1, 0)
 				side.z_index = -1
 				world.add_child(side)
 	else:
@@ -133,40 +137,26 @@ func _fort(job: Dictionary, stage: int, turned: bool = false) -> void:
 	file.close()
 
 
-## The finished gatehouse turned (passage along grid x) with the light still from the left
-## (owner's request 2026-11-08): the art mirrored, then the face now turned to the light (+y) is
+## The PixelLab gatehouse body turned (passage along grid x) with the light still from the left
+## (owner's request 2026-11-08): mirrored, then the face now turned to the light (+y) is
 ## brightened and the one turned away (+x) darkened, by the ratio of the two faces' brightness
-## in the art as drawn. Details (arch, portcullis, slits) stay as PixelLab drew them.
-func _turn_gatehouse() -> void:
-	var job: Dictionary = JOBS[0]
-	var pivot: Vector2i = job["pivot"]
-	for name: String in ["base"]:
-		var path := OUT + "buildings/gatehouse/%s.png" % name
-		var img := Image.load_from_file(ProjectSettings.globalize_path(path))
-		var scale := 0.3 if name == "construction_1" else (0.62 if name == "construction_2" else 1.0)
-		var drawn := _face_labels(img.get_size(), pivot, Vector2i(0, 1), scale)
-		var lit := _mean(img, drawn, 1)
-		var dark := _mean(img, drawn, 2)
-		var ratio := lit / maxf(dark, 0.01)
-		img.flip_x()
-		var turned := _face_labels(img.get_size(), pivot, Vector2i(1, 0), scale)
-		for y: int in img.get_height():
-			for x: int in img.get_width():
-				var label := turned[y * img.get_width() + x]
-				if label == 0:
-					continue
-				var c := img.get_pixel(x, y)
-				var k := ratio if label == 1 else 1.0 / ratio
-				img.set_pixel(x, y, Color(minf(c.r * k, 1.0), minf(c.g * k, 1.0), minf(c.b * k, 1.0), c.a))
-		img.save_png(ProjectSettings.globalize_path(OUT + "buildings/gatehouse/%s_turned.png" % name))
-		var file := FileAccess.open(OUT + "buildings/gatehouse/%s_turned.json" % name, FileAccess.WRITE)
-		file.store_string(JSON.stringify({"footprint": [3, 3], "entrance": [2, 1],
-				"pivot": [img.get_width() - pivot.x, pivot.y]}, "\t"))
-		file.close()
-		print("saved turned ", name)
-	# Nothing to render: an empty frame so the queue goes on.
-	_world(Vector2i(4, 4), Vector2.ZERO)
-	_save_to = "user://unused.png"
+## as drawn. Details (arch, portcullis, slits) stay as PixelLab drew them.
+func _turned_body(pivot: Vector2i) -> Texture2D:
+	var img := (load(WallSkin.DIR + "gatehouse_body.png") as Texture2D).get_image()
+	img.convert(Image.FORMAT_RGBA8)
+	var drawn := _face_labels(img.get_size(), pivot, Vector2i(0, 1), 1.0)
+	var ratio := _mean(img, drawn, 1) / maxf(_mean(img, drawn, 2), 0.01)
+	img.flip_x()
+	var turned := _face_labels(img.get_size(), Vector2i(img.get_width() - pivot.x, pivot.y), Vector2i(1, 0), 1.0)
+	for y: int in img.get_height():
+		for x: int in img.get_width():
+			var label := turned[y * img.get_width() + x]
+			if label == 0:
+				continue
+			var c := img.get_pixel(x, y)
+			var k := ratio if label == 1 else 1.0 / ratio
+			img.set_pixel(x, y, Color(minf(c.r * k, 1.0), minf(c.g * k, 1.0), minf(c.b * k, 1.0), c.a))
+	return ImageTexture.create_from_image(img)
 
 
 ## Per pixel of an art of [param size] with the footprint's front vertex at [param pivot]:

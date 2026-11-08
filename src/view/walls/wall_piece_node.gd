@@ -19,9 +19,9 @@ var color: Color = STONE
 var skin: WallSkin = null
 ## 0 = whole, 1 = about to fall.
 var damage: float = 0.0
-## Art tool only: draw just the faces turned to grid +x (repainting a side of the PixelLab
-## gatehouse), no crown.
-var right_faces_only: bool = false
+## Art tool only: draw just the faces turned to this grid direction ((1, 0) or (0, 1)),
+## no crown (repainting a side of the PixelLab gatehouse); ZERO = everything.
+var only_faces: Vector2i = Vector2i.ZERO
 
 
 func setup(source: BlockWallModel.Piece, wall_skin: WallSkin) -> void:
@@ -50,7 +50,7 @@ func _draw() -> void:
 			normal = -normal
 		if normal.dot(Vector2(1, 1)) <= 0.001:
 			continue
-		if right_faces_only and normal.x < 0.9:
+		if only_faces != Vector2i.ZERO and normal.dot(Vector2(only_faces)) < 0.9:
 			continue
 		# Faces turned towards grid +y (screen left) are lit, towards +x darker.
 		var shade := color.darkened(0.35 - 0.25 * clampf(normal.y - normal.x + 0.5, 0.0, 1.0))
@@ -72,7 +72,7 @@ func _draw() -> void:
 			draw_line(face[0], face[3], outline)
 		if piece.edges[(i + 1) % n] != BlockWallModel.Edge.JOINED:
 			draw_line(face[1], face[2], outline)
-	if right_faces_only:
+	if only_faces != Vector2i.ZERO:
 		return
 	var top := PackedVector2Array()
 	for p: Vector2 in poly:
