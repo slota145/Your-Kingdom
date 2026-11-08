@@ -1051,7 +1051,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## J1 — Nowe jednostki i okręty
 
-**Status: plan zaakceptowany 2026-11-08 (ankiety); część 1 gotowa i scalona do `main` 2026-11-08 na prośbę właściciela (przed oceną); część 2 gotowa, czeka na ocenę.** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
+**Status: plan zaakceptowany 2026-11-08 (ankiety); część 1 gotowa i scalona do `main` 2026-11-08 na prośbę właściciela (przed oceną); część 2 gotowa i scalona do `main` 2026-11-08 (przed oceną); część 3 w toku.** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
 
 **Cel (prośba właściciela):**
 - jednostki: **halabardnik w zbroi płytowej**, **kusznik**, **ciężki zbrojny z morgensternem**, **lekka jazda**, **ruchoma balista**,
@@ -1068,7 +1068,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Zrzuty: `game_shot.tscn -- --map=lakeland --tile=84,64 --zoom=3 --m7=army2 [--drill]`, panele `--zoom=1 --m7=finished --select=blacksmith|bowyer|barracks`.
 - Uwaga: łuczarz i kowal „na zmianę” robią teraz też nową broń. Kusza potrzebuje żelaza: bez żelaza kolejka na kuszę się nie udaje i łuczarz traci chwilę, a łuki dalej powstają. Kto chce samych łuków, wybiera „Robienie łuków”.
 
-**Część 2, stan (2026-11-08): gotowa, czeka na ocenę właściciela.**
+**Część 2, stan (2026-11-08): gotowa, scalona do `main` przed oceną.**
 - **Balista:** zamawia się ją w warsztacie oblężniczym obok taranu i drabiniarza (16 desek, 4 żelaza, obsługa 2 wolnych mieszkańców, 45 s). Wychodzi jako jedna machina pod rozkazami gracza, jedzie wolno (0,4).
 - **Walka:** strzela jak łucznik, ale z 10 kafli, ciężkim bełtem (60 co 5 s), ×3 przeciw taranom i innym balistom; sama dostaje od strzał połowę obrażeń. Rozkaz „rozbij” na mur albo bramę: balista staje w zasięgu i strzela z daleka, bełt w mur liczy się jako 1/5 (12). Napady bandytów jej nie używają.
 - **Bitwy automatyczne:** balista strzela w salwach jak łucznik, nie liczy się do ucieczki wojska (jak taran), w oblężeniu powoli kruszy mur albo bramę. Tabela bitew: dwie balisty przechylają równą walkę, balisty z ludźmi biorą palisadę.
