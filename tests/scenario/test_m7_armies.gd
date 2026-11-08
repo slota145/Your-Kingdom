@@ -89,7 +89,7 @@ func test_neutral_towns_have_walls_and_guards() -> void:
 		assert_bool(settlement.fortified).is_true()
 		assert_int(town.home_faction).is_equal(CombatState.TOWN)
 		assert_int(town.walls.count()).is_greater(40)
-		var gates := town.buildings.all().filter(func(b: BuildingState) -> bool: return b.def.is_gatehouse())
+		var gates := town.buildings.all().filter(func(b: BuildingState) -> bool: return b.def.is_gate())
 		assert_int(gates.size()).is_equal(1)
 		# The ring is closed: an enemy at the edge cannot walk to the town hall without breaking in.
 		var door := town.door_tile(town.seat())
@@ -99,6 +99,8 @@ func test_neutral_towns_have_walls_and_guards() -> void:
 	assert_int(iron.guards[&"spearman"] + iron.guards[&"archer"]).is_equal(14)
 	assert_int(Armies.fort_of(sim.province_state(sim.world.id_of(&"iron_wold"))).wall).is_equal(Walls.STONE)
 	assert_int(Armies.fort_of(sim.province_state(sim.world.id_of(&"horse_haven"))).wall).is_equal(Walls.PALISADE)
+	var haven := sim.province_state(sim.world.id_of(&"horse_haven"))
+	assert_int(haven.buildings.all().filter(func(b: BuildingState) -> bool: return b.def.id == &"palisade_gate").size()).is_equal(1)
 
 
 func test_soldiers_march_out_and_form_an_army() -> void:

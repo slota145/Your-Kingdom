@@ -193,7 +193,7 @@ static func fortify(sim: Simulation, id: int) -> PackedStringArray:
 		problems.append("neutral town %d: no ring for walls" % id)
 		return problems
 	var hall := town.seat()
-	var gate := _place_gate(sim, town, ring, hall)
+	var gate := _place_gate(sim, town, ring, hall, &"gatehouse" if def.town_wall == Walls.STONE else &"palisade_gate")
 	if gate == null:
 		problems.append("neutral town %d: no place for a gatehouse" % id)
 	_place_towers(sim, town, ring, def.town_towers, gate)
@@ -292,8 +292,9 @@ static func _clear_ground(town: ProvinceSim, tile: Vector2i) -> void:
 
 ## A gatehouse across a straight stretch of the ring, the one nearest the town hall's door
 ## whose outside leads off into the land.
-static func _place_gate(sim: Simulation, town: ProvinceSim, ring: Array[Vector2i], hall: BuildingState) -> BuildingState:
-	var def := sim.data.get_building(&"gatehouse")
+static func _place_gate(sim: Simulation, town: ProvinceSim, ring: Array[Vector2i], hall: BuildingState,
+		gate_id: StringName) -> BuildingState:
+	var def := sim.data.get_building(gate_id)
 	var on_ring: Dictionary[Vector2i, bool] = {}
 	for tile: Vector2i in ring:
 		on_ring[tile] = true
@@ -315,13 +316,17 @@ static func _place_gate(sim: Simulation, town: ProvinceSim, ring: Array[Vector2i
 		return score[a] < score[b] or (score[a] == score[b] and (a.y < b.y or (a.y == b.y and a.x < b.x))))
 	for tile: Vector2i in candidates:
 		for orientation: int in 2:
-			var along := Vector2i(1, 0) if orientation == 0 else Vector2i(0, 1)
+			# The ring runs across the gate's doors.
+			var d := def.door_dir(orientation)
+			var along := Vector2i(d.y, d.x).abs()
 			if not (on_ring.has(tile - along) and on_ring.has(tile + along)):
 				continue
-			var origin := tile - Vector2i(1, 1)
-			for y: int in 3:
-				for x: int in 3:
-					var t := origin + Vector2i(x, y)
+			# The middle of its passage on the ring tile.
+			var passage := def.passage_at(orientation)
+			var origin := tile - passage[passage.size() / 2]
+			for y: int in range(-1, 2):
+				for x: int in range(-1, 2):
+					var t := tile + Vector2i(x, y)
 					if town.grid.occupant(t) == 0:
 						_clear_ground(town, t)
 			if town.placement_error(def, origin, orientation) == &"":

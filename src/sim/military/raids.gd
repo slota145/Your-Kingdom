@@ -192,7 +192,7 @@ static func has_stone_walls(province: ProvinceSim) -> bool:
 
 static func has_gate(province: ProvinceSim) -> bool:
 	for building: BuildingState in province.buildings.all():
-		if building.def.is_gatehouse() and not building.is_broken():
+		if building.def.is_gate() and not building.is_broken():
 			return true
 	return false
 

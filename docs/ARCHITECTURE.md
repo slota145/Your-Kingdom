@@ -660,6 +660,7 @@ Pierwszy tick po wczytaniu trwa ok. 0,25 s: wtedy wszystkie budynki usługowe li
   - **Osady:** `NeutralTown.fortify` (pierścień 4-spójny wokół centrum, brama na prostym odcinku najbliżej ratusza z wolnym polem przed sobą, baszty najdalej od bramy); straż powstaje przy wejściu do osady (`Armies.spawn_guards`, postawa „broń się”).
   - **Bandyci:** `BanditCamp` w świecie; napady jako armie (`Raids.start_army` w oglądanej prowincji, `Armies._raid` z `BattleResolver` w nieoglądanej); harmonogram napadów prowincji (`Raids.update`, `scheduled`) działa już tylko w grze na jednej mapie.
   - **Walka:** `Troops.nearest_enemy` pomija wrogów, do których nie da się dojść (inny obszar siatki, inny poziom bez schodów i drabin dla tej strony), `blocked_id` na 5 s; rozkaz BREAK (`order_break`) z celem końcowym `aim`, miejsca przy budowli rozłożone (`stand_by`, 4 najbliższe według id).
+  - **Brama w palisadzie:** `fort_kind = palisade_gate` (`BuildingDef.is_gate`, przejście jak w wieży bramnej; `has_crown` fałsz: bez masy muru i korony, zastępuje palisadę pod sobą).
   - **Okręt wojenny:** `ShipDef.troops` (30); po wodowaniu kotwiczy (`Ships._anchor_warship`); `Armies.goes_by_sea`, `_board`, `_fleet_home`.
 
 ---

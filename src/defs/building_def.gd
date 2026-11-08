@@ -123,6 +123,8 @@ extends GameDef
 @export_range(0, 99) var soldier_beds: int = 0
 ## Fortification (M7 part 2): &"gatehouse" (a passage through its middle column, along its
 ## doors, open to its owner) or &"tower". Its tiles join stone walls and carry a wall-walk.
+## &"palisade_gate" (M7 part 3, owner's request): a wooden gate in a palisade, a passage like
+## a gatehouse's, without a wall-walk.
 @export var fort_kind: StringName = &""
 ## Life of the building in a fight (M7 part 2): gatehouse, tower, the door of a town hall.
 ## 0 = cannot be attacked.
@@ -139,11 +141,21 @@ func is_gatehouse() -> bool:
 	return fort_kind == &"gatehouse"
 
 
+## A gate of either kind: a gatehouse or a palisade gate (a passage open to its owner).
+func is_gate() -> bool:
+	return fort_kind == &"gatehouse" or fort_kind == &"palisade_gate"
+
+
+## Whether its tiles are stone mass with a wall-walk (gatehouse, tower; not a palisade gate).
+func has_crown() -> bool:
+	return is_fort() and fort_kind != &"palisade_gate"
+
+
 ## Tiles of the gatehouse passage (relative to the origin) turned to [param orientation]: the
 ## line through its entrance along its door.
 func passage_at(orientation: int) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
-	if not is_gatehouse():
+	if not is_gate():
 		return result
 	var e := entrance_at(orientation)
 	var d := door_dir(orientation)

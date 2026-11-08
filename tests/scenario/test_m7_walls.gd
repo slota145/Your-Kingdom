@@ -114,6 +114,29 @@ func test_gatehouse_replaces_the_wall_it_stands_in() -> void:
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"well", Vector2i(14, 20), true)))).is_equal("tile_occupied")
 
 
+## M7 part 3 (owner's request): a wooden gate in a palisade: a one-tile passage, open to the
+## town's people, closed to enemies, breakable, no wall-walk.
+func test_palisade_gate_stands_in_a_palisade() -> void:
+	var sim := _town()
+	var province := sim.province
+	for tile: Vector2i in _row(20, 14, 26):
+		province.lay_wall(tile, Walls.PALISADE)
+	# Turned (orientation 1) its doors face y: the palisade runs along x.
+	var gate_tile := Vector2i(20, 20)
+	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"palisade_gate", gate_tile, true, 1)))).is_empty()
+	var gate := province.buildings.get_building(province.grid.occupant(gate_tile))
+	assert_array(gate.passage_tiles()).contains_exactly([gate_tile])
+	assert_int(province.walls.kind(gate_tile)).is_equal(Walls.NONE)
+	assert_bool(province.walls.is_mass(gate_tile)).is_false()
+	assert_bool(province.walls.is_walkway(gate_tile)).is_false()
+	assert_bool(province.nav.is_walkable(gate_tile)).is_true()
+	assert_bool(province.mil.enemy_nav.is_walkable(gate_tile)).is_false()
+	assert_bool(Troops.structure_standing(province, gate_tile)).is_true()
+	Troops.damage_structure(province, gate_tile, gate.def.max_hp)
+	assert_bool(gate.is_broken()).is_true()
+	assert_bool(province.mil.enemy_nav.is_walkable(gate_tile)).is_true()
+
+
 func test_stairs_lean_against_a_stone_wall() -> void:
 	var sim := _town()
 	var province := sim.province

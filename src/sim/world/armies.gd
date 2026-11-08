@@ -439,18 +439,19 @@ static func fort_of(province: ProvinceSim) -> BattleFort:
 			continue
 		var kind := province.walls.kind(tile)
 		var building := province.buildings.get_building(province.grid.occupant(tile))
-		if building != null and building.def.is_gatehouse():
+		if building != null and building.def.is_gate():
 			fort.gate_hp = building.hp if building.hp > 0 else building.def.max_hp
-			if fort.wall == Walls.NONE:
-				fort.wall = Walls.STONE
-				fort.wall_hp = Walls.STONE_HP
+			var gate_wall := Walls.STONE if building.def.is_gatehouse() else Walls.PALISADE
+			if fort.wall == Walls.NONE or gate_wall < fort.wall:
+				fort.wall = gate_wall
+				fort.wall_hp = Walls.max_hp_of(gate_wall)
 		elif kind == Walls.PALISADE or kind == Walls.STONE:
 			if fort.wall == Walls.NONE or kind < fort.wall:
 				fort.wall = kind
 				fort.wall_hp = province.walls.hp(tile)
 	if fort.wall != Walls.NONE and fort.gate_hp == 0:
 		for building: BuildingState in province.buildings.all():
-			if building.def.is_gatehouse() and not building.is_broken():
+			if building.def.is_gate() and not building.is_broken():
 				fort.gate_hp = building.hp if building.hp > 0 else building.def.max_hp
 	if hall.def.max_hp > 0:
 		fort.door_hp = hall.hp if hall.hp > 0 else hall.def.max_hp
@@ -569,7 +570,7 @@ static func spawn_guards(sim: Simulation, id: int) -> void:
 		return
 	var gate: BuildingState = null
 	for building: BuildingState in province.buildings.all():
-		if building.def.is_gatehouse():
+		if building.def.is_gate():
 			gate = building
 	var kinds: Array[StringName] = []
 	var ids: Array[StringName] = []

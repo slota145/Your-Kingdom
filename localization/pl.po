@@ -3319,3 +3319,9 @@ msgstr "Koga z tarczami wzdłuż burt. Przewozi armię (do 30 żołnierzy) morze
 
 msgid "ui.command_error.needs_warships"
 msgstr "Tam dopłyniesz tylko okrętami wojennymi (miejsca dla wszystkich żołnierzy)."
+
+msgid "building.palisade_gate.name"
+msgstr "Brama w palisadzie"
+
+msgid "building.palisade_gate.desc"
+msgstr "Drewniane wrota między dwoma słupami. Swoi przechodzą (także wozy), wróg musi je rozbić (600 życia, palisada ma 300). Postaw ją w linii palisady (zastąpi jeden kafel). Na bramę się nie wchodzi."

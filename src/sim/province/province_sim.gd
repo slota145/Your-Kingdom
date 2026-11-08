@@ -2073,11 +2073,21 @@ func break_building(building: BuildingState) -> void:
 
 
 func _add_fort(building: BuildingState) -> void:
-	walls.add_fort(building.tiles(), building.id)
+	if building.def.has_crown():
+		walls.add_fort(building.tiles(), building.id)
+	else:
+		_clear_walls_under(building)
 	for tile: Vector2i in building.passage_tiles():
 		passages[tile] = building.id
 	for tile: Vector2i in building.tiles():
 		_refresh_wall_tiles(tile)
+
+
+## A palisade gate takes the place of the palisade it stands in (it is no stone mass).
+func _clear_walls_under(building: BuildingState) -> void:
+	for tile: Vector2i in building.tiles():
+		if walls.kind(tile) != Walls.NONE:
+			walls.set_kind(tile, Walls.NONE)
 
 
 func _remove_fort(building: BuildingState) -> void:
@@ -2692,7 +2702,8 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 		for tile: Vector2i in building.tiles():
 			grid.set_occupant(tile, building.id)
 		if building.def.is_fort():
-			province.walls.add_fort(building.tiles(), building.id)
+			if building.def.has_crown():
+				province.walls.add_fort(building.tiles(), building.id)
 			for tile: Vector2i in building.passage_tiles():
 				province.passages[tile] = building.id
 	province.walls.rebuild_wedges()

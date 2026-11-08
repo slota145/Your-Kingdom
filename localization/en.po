@@ -3286,3 +3286,9 @@ msgstr "A cog with shields along her sides. Carries an army (up to 30 soldiers) 
 
 msgid "ui.command_error.needs_warships"
 msgstr "Only warships can take the army there (room for all its soldiers)."
+
+msgid "building.palisade_gate.name"
+msgstr "Palisade gate"
+
+msgid "building.palisade_gate.desc"
+msgstr "Wooden gates between two posts. Your people pass (carts too), enemies must break them (600 life; a palisade has 300). Place it in a palisade line (it replaces one tile). Nobody climbs it."
