@@ -934,17 +934,19 @@ func _gear(foot: Vector2, pose: Dictionary, hands: Array, lean: float, top: floa
 					nose = lh + fwd * 2.0 + Vector2(0, -2.0)
 				_line(butt, nose, C_WOOD.darkened(0.1), 2)
 				_line(butt, nose, C_WOOD.lightened(0.15), 1)
-				var prod_a := nose + across * 5.0 - fwd * 1.0
-				var prod_b := nose - across * 5.0 - fwd * 1.0
-				_line(prod_a, nose, C_STEEL, 1)
-				_line(nose, prod_b, C_STEEL, 1)
-				var loaded := drill != "aim" or t < 0.5
-				var nut := nose.lerp(butt, 0.55 if loaded else 0.15)
-				_line(prod_a, nut, Color(0.92, 0.9, 0.82), 1)
-				_line(nut, prod_b, Color(0.92, 0.9, 0.82), 1)
-				if drill == "aim" and t < 0.5:
-					# The bolt on the stock, its head at the nose.
-					_line(nut, nose + fwd * 1.5, C_WOOD.lightened(0.3), 1)
+				# The steel bow curved forward across the nose, the string straight between its
+				# tips (owner's request 2026-11-08); the bolt lies on the stock while loaded.
+				var prod_a := nose + across * 5.0 - fwd * 1.5
+				var prod_b := nose - across * 5.0 - fwd * 1.5
+				var prev := prod_a
+				for k: int in 6:
+					var u := float(k + 1) / 6.0
+					var p := prod_a.lerp(prod_b, u) + fwd * (sin(u * PI) * 2.2)
+					_line(prev, p, C_STEEL, 1)
+					prev = p
+				_line(prod_a, prod_b, Color(0.92, 0.9, 0.82), 1)
+				if drill != "aim" or t < 0.5:
+					_line(nose.lerp(butt, 0.45), nose + fwd * 1.5, C_WOOD.lightened(0.3), 1)
 					_pixel(nose + fwd * 2.0, C_STEEL))
 		"morning_star":
 			if drill != "" or _look.get("mounted", false):

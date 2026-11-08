@@ -7,6 +7,7 @@ which tools/compose_pixellab_stacks.py builds the stacks and tools/make_goods_ic
 icons and the goods carried in hands.
 
 Run: python3 tools/draw_weapon_pieces.py  (needs Pillow)"""
+import math
 import os
 
 from PIL import Image
@@ -94,14 +95,30 @@ def crossbow():
     # The stock, thick, from the butt (top right) to the nose (bottom left).
     shaft(px, (20, 3), (8, 15))
     line(px, (21, 3), (9, 15), WOOD)
-    # The steel bow across the nose, bent forward a little.
-    line(px, (2, 11), (6, 15), STEEL)
-    line(px, (6, 15), (12, 21), STEEL)
-    line(px, (3, 10), (6, 14), STEEL_LIGHT)
-    line(px, (7, 14), (12, 19), STEEL_LIGHT)
-    # The string pulled back to the nut.
-    line(px, (2, 11), (11, 12), STRING)
-    line(px, (12, 21), (11, 13), STRING)
+    # The steel bow (the prod) across the nose, curved forward like a bow; the string straight
+    # between its tips (owner's request 2026-11-08).
+    tip_a, tip_b = (2.0, 9.0), (14.0, 21.0)
+    forward = (-0.707, 0.707)   # away from the butt
+    prev = None
+    for k in range(13):
+        t = k / 12.0
+        bulge = math.sin(math.pi * t) * 3.0
+        x = round(tip_a[0] + (tip_b[0] - tip_a[0]) * t + forward[0] * bulge)
+        y = round(tip_a[1] + (tip_b[1] - tip_a[1]) * t + forward[1] * bulge)
+        if prev is not None:
+            line(px, prev, (x, y), STEEL)
+        prev = (x, y)
+    # A bright edge on the outer side of the curve.
+    for k in range(2, 11):
+        t = k / 12.0
+        bulge = math.sin(math.pi * t) * 3.0 + 1.0
+        x = round(tip_a[0] + (tip_b[0] - tip_a[0]) * t + forward[0] * bulge)
+        y = round(tip_a[1] + (tip_b[1] - tip_a[1]) * t + forward[1] * bulge)
+        px[(x, y)] = STEEL_LIGHT
+    # The string: a straight line from tip to tip, behind the curve.
+    line(px, (int(tip_a[0]) + 1, int(tip_a[1])), (int(tip_b[0]), int(tip_b[1]) - 1), STRING)
+    # The stock over the string where they cross.
+    line(px, (11, 12), (8, 15), WOOD)
     # The trigger under the stock.
     px[(16, 10)] = STEEL_DARK
     px[(17, 11)] = STEEL_DARK
