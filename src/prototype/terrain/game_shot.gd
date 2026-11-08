@@ -494,6 +494,9 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	sim.province.rare_resource = &"horses"   # a stud farm in the shot
 	sim.data.get_building(&"mine").needs_node_near = &""   # the mine anywhere in the shot
 	sim.treasury.gold = 5000   # sites cost gold
+	if _m7 == "ballista":
+		_place_ballistas(sim, at)
+		return
 	if _m7 == "army" or _m7 == "army2":
 		_place_army(sim, at)
 		return
@@ -597,6 +600,34 @@ func _place_army(sim: Simulation, at: Vector2i) -> void:
 	sim.run_ticks(12 if _drill else 0)
 	Game.paused = true
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(barracks.entrance_tile() + Vector2i(1, 2))
+
+
+## J1 part 2 (--m7=ballista [--raid_seconds=<s>]): two ballistas of the kingdom shooting at
+## bandits and a ram coming at them; bolts in the air.
+func _place_ballistas(sim: Simulation, at: Vector2i) -> void:
+	var spawn := func(kind: StringName, tile: Vector2i, faction: int) -> Agent:
+		var agent := sim.province.spawn_agent(kind, tile)
+		agent.combat = CombatState.new(sim.data.get_unit(kind).combat.hp)
+		agent.combat.unit = kind
+		agent.combat.faction = faction
+		Troops.take_command(agent)
+		agent.combat.order = CombatState.Order.MOVE
+		agent.combat.post = agent.pos
+		agent.combat.goal = agent.pos
+		agent.combat.stance = CombatState.Stance.HOLD
+		return agent
+	spawn.call(&"ballista", at + Vector2i(0, 0), CombatState.PLAYER)
+	spawn.call(&"ballista", at + Vector2i(2, 1), CombatState.PLAYER)
+	spawn.call(&"crossbowman", at + Vector2i(1, -1), CombatState.PLAYER)
+	spawn.call(&"halberdier", at + Vector2i(3, -1), CombatState.PLAYER)
+	spawn.call(&"ram", at + Vector2i(8, 6), CombatState.BANDITS)
+	for k: int in 4:
+		var bandit: Agent = spawn.call(&"spearman", at + Vector2i(7 + k % 2, 2 + k), CombatState.BANDITS)
+		bandit.kind = &"bandit"
+	Game.paused = false
+	sim.run_ticks(SimClock.seconds_to_ticks(_raid_seconds))
+	Game.paused = true
+	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(at + Vector2i(4, 3))
 
 
 ## M7 part 3 (--map=coast --m7=fleet): two warships at anchor in deep water near --tile.

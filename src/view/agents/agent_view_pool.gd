@@ -60,8 +60,9 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		var screen := IsoMath.grid_to_screen(at)
 		if not rect.has_point(screen):
 			continue
-		if agent.kind == &"ram":
-			heads[agent.id] = screen - Vector2(0, 46.0)   # drawn by the SiegeLayer (M7 part 2)
+		if agent.kind == &"ram" or agent.kind == Troops.BALLISTA:
+			# Drawn by the SiegeLayer (M7 part 2, J1 part 2).
+			heads[agent.id] = screen - Vector2(0, 46.0 if agent.kind == &"ram" else 34.0)
 			continue
 		var spot := _spot_offset(agent)
 		# Going in through a door: the last step fades out (owner's decision 2026-11-05), and

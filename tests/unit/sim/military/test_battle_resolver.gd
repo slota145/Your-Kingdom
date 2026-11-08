@@ -30,6 +30,10 @@ const TABLE := [
 	["men-at-arms beat as many swordsmen", {"man_at_arms": 10}, {"swordsman": 10}, FIELD, "", 0.9, 1.0],
 	["crossbows pierce armour", {"crossbowman": 12, "spearman": 8}, {"swordsman": 10}, FIELD, "", 0.8, 1.0],
 	["riders beat light horse", {"knight": 8}, {"light_cavalry": 8}, FIELD, "", 0.9, 1.0],
+	# J1 part 2: ballistas shoot like heavy archers and chip at walls.
+	["ballistas tip an even fight", {"spearman": 10, "ballista": 2}, {"spearman": 10}, FIELD, "", 0.8, 1.0],
+	["ballistas and men take a palisade", {"spearman": 12, "ballista": 2}, {"spearman": 5, "archer": 3},
+			SIEGE, "palisade", 0.9, 1.0],
 ]
 
 

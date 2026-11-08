@@ -380,6 +380,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Lekka jazda [J1] | koń + włócznia (najszybsza, ×2 przeciw strzelcom) |
 | Osadnicy | ludzie + towary startowe |
 | Taran | oblężnicza |
+| Balista [J1] | oblężnicza: warsztat oblężniczy, 16 desek, 4 żelaza, obsługa 2; strzela na 10 kafli w ludzi i machiny, mury słabo |
 | Drabiny | oblężnicze |
 | Katapulta | oblężnicza [PÓŹNIEJ] |
 

@@ -203,7 +203,7 @@ func test_older_save_migrates_to_v21_without_bridges() -> void:
 	var sim := Simulation.from_dict(state, SimFixture.registry())
 	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
 	assert_int(sim.province.grid.bridge_count()).is_equal(0)
-	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(21)
+	assert_int(SaveMigrations.CURRENT_VERSION).is_greater_equal(21)
 
 
 ## On the "Coast" the river cuts the east of the map off but for its fords: a bridge shortens
