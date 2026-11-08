@@ -31,8 +31,11 @@ func _init() -> void:
 	for job: Dictionary in JOBS:
 		for stage: int in [0, 1, 2]:
 			_queue.append(_fort.bind(job, stage))
+	for stage: int in [1, 2]:
+		_queue.append(_fort.bind(JOBS[0], stage, true))
 	for stage: int in [0, 1, 2]:
 		_queue.append(_workshop.bind(stage))
+	_queue.append(_turn_gatehouse)
 	for icon: String in ["stone_wall", "palisade", "stairs"]:
 		_queue.append(_icon.bind(icon))
 
@@ -68,7 +71,9 @@ func _world(canvas: Vector2i, focus_screen: Vector2) -> Node2D:
 
 
 ## Stage 0 = finished, 1 and 2 = construction phases.
-func _fort(job: Dictionary, stage: int) -> void:
+## [param turned]: the gatehouse's construction stages turned (passage along grid x), drawn
+## by the model so their light stays on the left.
+func _fort(job: Dictionary, stage: int, turned: bool = false) -> void:
 	var size: int = job["size"]
 	var canvas: Vector2i = job["canvas"]
 	var pivot: Vector2i = job["pivot"]
@@ -77,7 +82,7 @@ func _fort(job: Dictionary, stage: int) -> void:
 	var model := BlockWallModel.new()
 	var gate: bool = job["id"] == "gatehouse"
 	if gate:
-		model.add_gatehouse(Vector2i.ZERO, Vector2i(0, 1))
+		model.add_gatehouse(Vector2i.ZERO, Vector2i(1, 0) if turned else Vector2i(0, 1))
 	else:
 		model.add_tower(Vector2i.ZERO, size)
 	var name := "base"
@@ -113,14 +118,115 @@ func _fort(job: Dictionary, stage: int) -> void:
 			world.add_child(node)
 		if stage > 0:
 			world.add_child(_Scaffold.new(size, model.height * (model.fort_scale + 0.35) + (BlockWallModel.GATEHOUSE_EXTRA if gate else BlockWallModel.TOWER_EXTRA) * 0.3))
+	if turned:
+		name += "_turned"
 	_save_to = OUT + "buildings/%s/%s.png" % [job["id"], name]
-	var json := {"footprint": [size, size], "entrance": job["entrance"], "pivot": [pivot.x, pivot.y]}
+	var entrance: Array = job["entrance"]
+	if turned:
+		entrance = [entrance[1], entrance[0]]
+	var json := {"footprint": [size, size], "entrance": entrance, "pivot": [pivot.x, pivot.y]}
 	var file := FileAccess.open(OUT + "buildings/%s/%s.json" % [job["id"], name], FileAccess.WRITE)
 	if file == null:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT + "buildings/" + job["id"]))
 		file = FileAccess.open(OUT + "buildings/%s/%s.json" % [job["id"], name], FileAccess.WRITE)
 	file.store_string(JSON.stringify(json, "\t"))
 	file.close()
+
+
+## The finished gatehouse turned (passage along grid x) with the light still from the left
+## (owner's request 2026-11-08): the art mirrored, then the face now turned to the light (+y) is
+## brightened and the one turned away (+x) darkened, by the ratio of the two faces' brightness
+## in the art as drawn. Details (arch, portcullis, slits) stay as PixelLab drew them.
+func _turn_gatehouse() -> void:
+	var job: Dictionary = JOBS[0]
+	var pivot: Vector2i = job["pivot"]
+	for name: String in ["base"]:
+		var path := OUT + "buildings/gatehouse/%s.png" % name
+		var img := Image.load_from_file(ProjectSettings.globalize_path(path))
+		var scale := 0.3 if name == "construction_1" else (0.62 if name == "construction_2" else 1.0)
+		var drawn := _face_labels(img.get_size(), pivot, Vector2i(0, 1), scale)
+		var lit := _mean(img, drawn, 1)
+		var dark := _mean(img, drawn, 2)
+		var ratio := lit / maxf(dark, 0.01)
+		img.flip_x()
+		var turned := _face_labels(img.get_size(), pivot, Vector2i(1, 0), scale)
+		for y: int in img.get_height():
+			for x: int in img.get_width():
+				var label := turned[y * img.get_width() + x]
+				if label == 0:
+					continue
+				var c := img.get_pixel(x, y)
+				var k := ratio if label == 1 else 1.0 / ratio
+				img.set_pixel(x, y, Color(minf(c.r * k, 1.0), minf(c.g * k, 1.0), minf(c.b * k, 1.0), c.a))
+		img.save_png(ProjectSettings.globalize_path(OUT + "buildings/gatehouse/%s_turned.png" % name))
+		var file := FileAccess.open(OUT + "buildings/gatehouse/%s_turned.json" % name, FileAccess.WRITE)
+		file.store_string(JSON.stringify({"footprint": [3, 3], "entrance": [2, 1],
+				"pivot": [img.get_width() - pivot.x, pivot.y]}, "\t"))
+		file.close()
+		print("saved turned ", name)
+	# Nothing to render: an empty frame so the queue goes on.
+	_world(Vector2i(4, 4), Vector2.ZERO)
+	_save_to = "user://unused.png"
+
+
+## Per pixel of an art of [param size] with the footprint's front vertex at [param pivot]:
+## 0 not a side face, 1 a face turned to grid +y (lit), 2 a face turned to grid +x (shaded),
+## for a gatehouse with its passage along [param along]; nearer faces win.
+func _face_labels(size: Vector2i, pivot: Vector2i, along: Vector2i, scale: float) -> PackedByteArray:
+	var labels := PackedByteArray()
+	labels.resize(size.x * size.y)
+	var model := BlockWallModel.new()
+	model.add_gatehouse(Vector2i.ZERO, along)
+	model.fort_scale = scale
+	model.battlements = scale >= 1.0
+	var pieces := model.build()
+	pieces.sort_custom(func(a: BlockWallModel.Piece, b: BlockWallModel.Piece) -> bool:
+		return a.sort_point.y < b.sort_point.y)
+	var front := IsoMath.grid_to_screen(Vector2(3, 3))
+	for piece: BlockWallModel.Piece in pieces:
+		if piece.kind != &"gh_side" and piece.kind != &"gh_deck":
+			continue   # battlements keep their light
+		var n := piece.poly.size()
+		var centre := piece.centroid()
+		var z0 := piece.z0 - 16.0 if piece.kind == &"gh_deck" else piece.z0
+		for i: int in n:
+			if piece.edges[i] != BlockWallModel.Edge.EXPOSED:
+				continue   # inner faces of the passage are hidden under the deck
+			var a := piece.poly[i]
+			var b := piece.poly[(i + 1) % n]
+			var normal := (b - a).orthogonal().normalized()
+			if normal.dot((a + b) * 0.5 - centre) < 0.0:
+				normal = -normal
+			var label := 1 if normal.y > 0.9 else (2 if normal.x > 0.9 else 0)
+			if label == 0:
+				continue
+			var sa := IsoMath.grid_to_screen(a) - front + Vector2(pivot)
+			var sb := IsoMath.grid_to_screen(b) - front + Vector2(pivot)
+			var face := PackedVector2Array([sa - Vector2(0, z0), sb - Vector2(0, z0),
+					sb - Vector2(0, piece.z1), sa - Vector2(0, piece.z1)])
+			var box := Rect2i(Vector2i(face[0]), Vector2i.ZERO)
+			for p: Vector2 in face:
+				box = box.expand(Vector2i(p))
+			box = box.grow(1).intersection(Rect2i(Vector2i.ZERO, size))
+			for y: int in range(box.position.y, box.end.y):
+				for x: int in range(box.position.x, box.end.x):
+					if Geometry2D.is_point_in_polygon(Vector2(x + 0.5, y + 0.5), face):
+						labels[y * size.x + x] = label
+	return labels
+
+
+static func _mean(img: Image, labels: PackedByteArray, label: int) -> float:
+	var sum := 0.0
+	var count := 0
+	for y: int in img.get_height():
+		for x: int in img.get_width():
+			if labels[y * img.get_width() + x] != label:
+				continue
+			var c := img.get_pixel(x, y)
+			if c.a > 0.5:
+				sum += c.get_luminance()
+				count += 1
+	return sum / count if count > 0 else 1.0
 
 
 func _icon(what: String) -> void:

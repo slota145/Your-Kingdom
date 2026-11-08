@@ -103,10 +103,14 @@ func _art_key(building: BuildingState, rows: Dictionary[int, String]) -> String:
 
 ## Art key of [param art] for a building of [param def] turned to [param orientation]
 ## (M4b-1.5): houses turned with the door to the back (2, 3) use the "_back" art when it
-## exists, and orientations 1 and 3 are drawn mirrored (key suffix "@m").
+## exists, and orientations 1 and 3 are drawn mirrored (key suffix "@m"), unless a "_turned"
+## art exists: drawn already turned, with the light still from the left (M7 part 2, owner's
+## request 2026-11-08: a mirrored gatehouse had its shade on the wrong side).
 static func oriented_art(art: String, def: BuildingDef, orientation: int) -> String:
 	if def.is_house() and orientation >= 2 and _art_exists(art + "_back"):
 		art += "_back"
+	if orientation % 2 == 1 and _art_exists(art + "_turned"):
+		return art + "_turned"
 	return art + (MIRROR_SUFFIX if orientation % 2 == 1 else "")
 
 

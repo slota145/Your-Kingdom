@@ -494,6 +494,8 @@ func _place_walls(sim: Simulation, at: Vector2i) -> void:
 	for t: Vector2i in BuildWallCommand.line(o + Vector2i(17, 10), o + Vector2i(20, 13)):
 		if p.wall_error(t, Walls.PALISADE) == &"":
 			p.lay_wall(t, Walls.PALISADE)
+	# A turned gatehouse in the west wall (its art has its own light, not a mirror).
+	p.execute_place(&"gatehouse", o + Vector2i(-1, 7), 1)
 	p.damage_wall(o + Vector2i(14, 4), 700)
 	sim.execute(BuildWallCommand.new(BuildWallCommand.line(o + Vector2i(2, 16), o + Vector2i(8, 16)), Walls.STONE))
 	for k: int in 6:
