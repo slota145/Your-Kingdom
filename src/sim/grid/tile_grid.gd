@@ -13,6 +13,8 @@ var _road: PackedByteArray = PackedByteArray()
 var _blocked: PackedByteArray = PackedByteArray()
 ## Quay over the sea (N1): 0 = none, 1 = timber pier, 2 = stone quay. Saved.
 var _quay: PackedByteArray = PackedByteArray()
+## Bridge over a river, ford or lake (B1): 0 = none, 1 = timber, 2 = stone. Saved.
+var _bridge: PackedByteArray = PackedByteArray()
 ## Entity id of the building covering the tile, 0 = none. Rebuilt from buildings on load.
 var _occupant: PackedInt32Array = PackedInt32Array()
 
@@ -23,6 +25,7 @@ func _init(grid_size: Vector2i) -> void:
 	_road.resize(size.x * size.y)
 	_blocked.resize(size.x * size.y)
 	_quay.resize(size.x * size.y)
+	_bridge.resize(size.x * size.y)
 	_occupant.resize(size.x * size.y)
 
 
@@ -98,6 +101,28 @@ func quay_count() -> int:
 	return _quay.size() - _quay.count(0)
 
 
+const TIMBER_BRIDGE := 1
+const STONE_BRIDGE := 2
+
+
+## 0 none, TIMBER_BRIDGE or STONE_BRIDGE (B1).
+func bridge(tile: Vector2i) -> int:
+	return _bridge[index(tile)] if is_inside(tile) else 0
+
+
+func has_bridge(tile: Vector2i) -> bool:
+	return is_inside(tile) and _bridge[index(tile)] != 0
+
+
+func set_bridge(tile: Vector2i, kind: int) -> void:
+	if is_inside(tile):
+		_bridge[index(tile)] = kind
+
+
+func bridge_count() -> int:
+	return _bridge.size() - _bridge.count(0)
+
+
 func is_blocked(tile: Vector2i) -> bool:
 	return is_inside(tile) and _blocked[index(tile)] == 1
 
@@ -123,13 +148,14 @@ func to_dict() -> Dictionary:
 		"roads": Marshalls.raw_to_base64(_road),
 		"blocked": Marshalls.raw_to_base64(_blocked),
 		"quays": Marshalls.raw_to_base64(_quay),
+		"bridges": Marshalls.raw_to_base64(_bridge),
 	}
 
 
 static func from_dict(d: Dictionary) -> TileGrid:
 	var grid := TileGrid.new(SimCodec.to_vec2i(d["size"]))
 	var cells := grid.size.x * grid.size.y
-	for key: String in ["terrain", "roads", "blocked", "quays"]:
+	for key: String in ["terrain", "roads", "blocked", "quays", "bridges"]:
 		var raw := Marshalls.base64_to_raw(String(d.get(key, "")))
 		if raw.size() != cells:
 			continue
@@ -138,4 +164,5 @@ static func from_dict(d: Dictionary) -> TileGrid:
 			"roads": grid._road = raw
 			"blocked": grid._blocked = raw
 			"quays": grid._quay = raw
+			"bridges": grid._bridge = raw
 	return grid

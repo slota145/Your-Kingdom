@@ -48,7 +48,7 @@ static func has_free_handcart(province: ProvinceSim, porter: Agent) -> bool:
 
 ## Movement cost multiplier of [param agent]'s vehicle on [param tile] (1 on foot).
 static func speed_penalty(province: ProvinceSim, agent: Agent, tile: Vector2i) -> float:
-	if agent.vehicle == HANDCART and not province.grid.has_road(tile):
+	if agent.vehicle == HANDCART and not province.grid.has_road(tile) and not province.grid.has_bridge(tile):
 		return 1.0 / HANDCART_OFFROAD_SPEED
 	if agent.vehicle == WAGON or agent.vehicle == SETTLER_WAGON or agent.vehicle == TRADE_WAGON:
 		return 1.0 / WAGON_SPEED

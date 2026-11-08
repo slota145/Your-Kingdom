@@ -42,7 +42,9 @@ func setup(registry: DataRegistry) -> void:
 	theme = UiKit.board_theme()   # a wooden board like the top bar (ROADMAP UI-1)
 	var box := VBoxContainer.new()
 	add_child(box)
-	var tabs := HBoxContainer.new()
+	# A flow, not a box (B1): on a narrow screen the tools on the right go on to a second line
+	# instead of running off the edge.
+	var tabs := HFlowContainer.new()
 	box.add_child(tabs)
 	var group := ButtonGroup.new()
 	for i: int in TABS.size():
@@ -74,6 +76,13 @@ func setup(registry: DataRegistry) -> void:
 	var quay := UiKit.button("ui.build.stone_quay", func() -> void: tool_selected.emit({"kind": &"quay"}))
 	quay.tooltip_text = "ui.build.stone_quay_tip"
 	tabs.add_child(quay)
+	# B1: bridges over rivers, fords and lakes, dragged from bank to bank.
+	var bridge := UiKit.button("ui.build.bridge", func() -> void: tool_selected.emit({"kind": &"bridge"}))
+	bridge.tooltip_text = "ui.build.bridge_tip"
+	tabs.add_child(bridge)
+	var stone_bridge := UiKit.button("ui.build.stone_bridge", func() -> void: tool_selected.emit({"kind": &"stone_bridge"}))
+	stone_bridge.tooltip_text = "ui.build.stone_bridge_tip"
+	tabs.add_child(stone_bridge)
 	var demolish := UiKit.button("ui.build.demolish", func() -> void: tool_selected.emit({"kind": &"demolish"}))
 	demolish.tooltip_text = "ui.build.demolish_tip"
 	tabs.add_child(demolish)

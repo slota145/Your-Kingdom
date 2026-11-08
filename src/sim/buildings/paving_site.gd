@@ -11,6 +11,9 @@ extends RefCounted
 ##
 ## M7 part 2: KIND_PALISADE (2 wood), KIND_STONE_WALL (3 stones) and KIND_STAIRS (4 stones,
 ## climbing towards [member stairs_dir]) lay walls; the builder stands next to the tile.
+##
+## B1: KIND_TIMBER_BRIDGE (3 planks) and KIND_STONE_BRIDGE (4 stones) lay a bridge over a
+## river, ford or lake from one bank; the builder stands on the bank or the bridge laid so far.
 
 const KIND_PAVING := 0
 const KIND_PIER := 1
@@ -18,6 +21,8 @@ const KIND_STONE_QUAY := 2
 const KIND_PALISADE := 3
 const KIND_STONE_WALL := 4
 const KIND_STAIRS := 5
+const KIND_TIMBER_BRIDGE := 6
+const KIND_STONE_BRIDGE := 7
 
 ## Kept for older callers: the cobbles' good and amount.
 const GOOD := &"stone"
@@ -28,8 +33,11 @@ const QUAY_TILE_SECONDS := 6.0
 ## Builder work per wall tile (M7 part 2): palisade, stone wall, stairs.
 const WALL_TILE_SECONDS: Array[float] = [4.0, 8.0, 6.0]
 
-const _GOODS: Array[StringName] = [&"stone", &"planks", &"stone", &"wood", &"stone", &"stone"]
-const _PER_TILE: Array[int] = [1, 2, 3, 2, 3, 4]
+const _GOODS: Array[StringName] = [&"stone", &"planks", &"stone", &"wood", &"stone", &"stone",
+		&"planks", &"stone"]
+const _PER_TILE: Array[int] = [1, 2, 3, 2, 3, 4, 3, 4]
+## Builder work per bridge tile (B1).
+const BRIDGE_TILE_SECONDS := 6.0
 
 var id: int
 var kind: int = KIND_PAVING
@@ -78,7 +86,24 @@ func is_quay() -> bool:
 
 
 func is_wall() -> bool:
-	return kind >= KIND_PALISADE
+	return kind >= KIND_PALISADE and kind <= KIND_STAIRS
+
+
+func is_bridge() -> bool:
+	return kind == KIND_TIMBER_BRIDGE or kind == KIND_STONE_BRIDGE
+
+
+## The site kind laying bridges of [param bridge] (TileGrid.TIMBER_BRIDGE or STONE_BRIDGE).
+static func kind_for_bridge(bridge: int) -> int:
+	return KIND_STONE_BRIDGE if bridge == TileGrid.STONE_BRIDGE else KIND_TIMBER_BRIDGE
+
+
+## TileGrid bridge value this site lays (0 for others).
+func bridge_value() -> int:
+	match kind:
+		KIND_TIMBER_BRIDGE: return TileGrid.TIMBER_BRIDGE
+		KIND_STONE_BRIDGE: return TileGrid.STONE_BRIDGE
+	return 0
 
 
 ## The builder stands beside the tile, not on it (a quay or a wall).
@@ -116,6 +141,8 @@ func tile_ticks() -> int:
 	var seconds := TILE_SECONDS
 	if is_quay():
 		seconds = QUAY_TILE_SECONDS
+	elif is_bridge():
+		seconds = BRIDGE_TILE_SECONDS
 	elif is_wall():
 		seconds = WALL_TILE_SECONDS[kind - KIND_PALISADE]
 	return maxi(SimClock.seconds_to_ticks(seconds), 1)

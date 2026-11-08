@@ -85,6 +85,14 @@ var _focus: Vector2i = Vector2i(-1, -1)
 var _drill: bool = false
 ## --siege=<province def id> (--m7=siege).
 var _siege: StringName = &"iron_wold"
+## --bridges (B1): timber, stone and diagonal bridges over the river near --tile, one ordered,
+## people and a wagon on them.
+var _bridges: bool = false
+## --hard_shore (B1 part 2): the shoreline as before the soft shore, to compare.
+var _hard_shore: bool = false
+## --stilts=<id,id,...> (B1 part 2): those buildings placed near --tile with a row over the water
+## on piles.
+var _stilts: PackedStringArray = PackedStringArray()
 
 
 func _ready() -> void:
@@ -139,6 +147,12 @@ func _ready() -> void:
 			_focus = Vector2i(int(xy[0]), int(xy[1]))
 		elif arg.begins_with("--raid_seconds="):
 			_raid_seconds = float(arg.trim_prefix("--raid_seconds="))
+		elif arg.begins_with("--stilts="):
+			_stilts = arg.trim_prefix("--stilts=").split(",")
+		elif arg == "--hard_shore":
+			_hard_shore = true
+		elif arg == "--bridges":
+			_bridges = true
 		elif arg == "--drill":
 			_drill = true
 		elif arg.begins_with("--siege="):
@@ -173,6 +187,8 @@ func _arrange() -> void:
 	var camera: GameCamera = _game.get("camera")
 	var view: ProvinceView = _game.get("view")
 	view.terrain.organic = not _plain
+	if _hard_shore:
+		(view.terrain.get("_material") as ShaderMaterial).set_shader_parameter("soft_shore", false)
 	if _advance > 0:
 		sim.run_ticks(SimClock.seconds_to_ticks(_advance))
 		sim.events.drain()
@@ -237,6 +253,10 @@ func _arrange() -> void:
 		_place_g1(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _m7 != "":
 		_place_m7(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if not _stilts.is_empty():
+		_place_stilts(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _bridges:
+		_place_bridges(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
 		_place_yards(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _focus.x >= 0:
@@ -247,6 +267,108 @@ func _arrange() -> void:
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == _select:
 			(_game.get("_building_panel") as BuildingPanel).show_building(sim.province, b.id)
+
+
+## B1: bridges over the river near [param at]: a timber one, a stone one, a diagonal timber one
+## and one only ordered, scanning rows for the first crossing west to east.
+func _place_bridges(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	province.first_building = &""
+	var crossing := func(y: int) -> Array:
+		for x: int in range(at.x - 14, at.x + 14):
+			var t := Vector2i(x, y)
+			if province.is_bridgeable(t) and not province.is_bridgeable(t - Vector2i(1, 0)):
+				var x1 := x
+				while province.is_bridgeable(Vector2i(x1 + 1, y)):
+					x1 += 1
+				return [Vector2i(x - 1, y), Vector2i(x1 + 1, y)]
+		return []
+	var view_nature := func(tile: Vector2i) -> void:
+		(_game.get("view") as ProvinceView).nature.refresh(tile)
+	var lay := func(from: Vector2i, to: Vector2i, kind: int) -> Array[Vector2i]:
+		var plan := province.bridge_plan(from, to)
+		var tiles: Array[Vector2i] = []
+		tiles.assign(plan["tiles"])
+		print("bridge ", from, "->", to, " ", plan["error"], " ", tiles.size())
+		for tile: Vector2i in tiles:
+			if province.resources.has_node(tile):
+				province.resources.clear(tile)
+				view_nature.call(tile)
+			province.grid.set_bridge(tile, kind)
+			province.refresh_tile(tile)
+		return tiles
+	var timber: Array[Vector2i] = []
+	var stone: Array[Vector2i] = []
+	var a: Array = crossing.call(at.y - 4)
+	if not a.is_empty():
+		timber = lay.call(a[0], a[1], TileGrid.TIMBER_BRIDGE)
+	var b: Array = crossing.call(at.y + 1)
+	if not b.is_empty():
+		stone = lay.call(b[0], b[1], TileGrid.STONE_BRIDGE)
+	# A diagonal bridge further down, from the west bank down to the south-east.
+	var c: Array = crossing.call(at.y + 6)
+	if not c.is_empty():
+		for k: int in range(3, 12):
+			var from: Vector2i = c[0] - Vector2i(1, 1)
+			if province.bridge_plan(from, from + Vector2i(k, k))["error"] == &"":
+				lay.call(from, from + Vector2i(k, k), TileGrid.TIMBER_BRIDGE)
+				break
+	# A diagonal stone bridge further up.
+	var e: Array = crossing.call(at.y - 10)
+	if not e.is_empty():
+		for k: int in range(3, 12):
+			var from: Vector2i = e[0] - Vector2i(1, 1)
+			if province.bridge_plan(from, from + Vector2i(k, k))["error"] == &"":
+				lay.call(from, from + Vector2i(k, k), TileGrid.STONE_BRIDGE)
+				break
+	var d: Array = crossing.call(at.y + 10)
+	if not d.is_empty():
+		print("ordered bridge ", sim.execute(BuildBridgeCommand.new(d[0], d[1], TileGrid.STONE_BRIDGE)))
+	# A road dragged over the river further down (B1, owner's request 2026-11-08): the game
+	# orders a timber bridge over the water and the road on both banks.
+	var road_from := Vector2i(at.x - 8, at.y + 14)
+	var drag: Array[Vector2i] = [road_from]
+	var last := road_from
+	while last != road_from + Vector2i(16, 2):
+		var dd := road_from + Vector2i(16, 2) - last
+		if absi(dd.x) >= absi(dd.y):
+			last.x += signi(dd.x)
+		else:
+			last.y += signi(dd.y)
+		drag.append(last)
+	for road_crossing: Dictionary in province.road_crossings(drag):
+		print("road crossing ", road_crossing["from"], "->", road_crossing["to"], " ", (road_crossing["plan"] as Dictionary)["error"])
+		if (road_crossing["plan"] as Dictionary)["error"] == &"":
+			_game.call("_execute", BuildBridgeCommand.new(road_crossing["from"], road_crossing["to"], TileGrid.TIMBER_BRIDGE))
+			drag.append_array(road_crossing["link"])
+	var road: Array[Vector2i] = []
+	for t: Vector2i in drag:
+		if province.road_error(t) == &"":
+			road.append(t)
+	_game.call("_execute", BuildRoadCommand.new(road))
+	for t: Vector2i in road:
+		(_game.get("view") as ProvinceView).terrain.refresh_tile(t)
+	# People and a wagon on the bridges.
+	var walkers: Array[Vector2i] = []
+	if timber.size() >= 4:
+		walkers.append_array([timber[1], timber[3]])
+	if stone.size() >= 3:
+		walkers.append(stone[2])
+	for i: int in walkers.size():
+		var porter := sim.province.spawn_agent(&"porter", walkers[i])
+		porter.facing = 1 if i % 2 == 0 else 5
+		porter.activity = &"walk"
+		porter.carry_good = &"wood"
+		porter.carry_amount = 1
+	if stone.size() >= 3:
+		var carter := sim.province.spawn_agent(&"porter", stone[stone.size() - 2])
+		carter.kind = Carriers.CARTER_KIND
+		carter.vehicle = Carriers.WAGON
+		carter.facing = 5
+		carter.activity = &"walk"
+	var view: ProvinceView = _game.get("view")
+	view.bridges.refresh()
 
 
 ## A vineyard with 5 rows of 3 fields in front of it: pruned, budding, leafy, green grapes,
@@ -686,6 +808,36 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 
 
 ## Places [param id] at the free spot nearest to [param near] (either turn); returns it or null.
+## B1 part 2: each building of --stilts placed nearest [param at] where it leans one row over
+## the water on piles, finished.
+func _place_stilts(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	province.first_building = &""
+	for id_text: String in _stilts:
+		var id := StringName(id_text)
+		var def := sim.data.get_building(id)
+		var placed := false
+		for r: int in 24:
+			for y: int in range(at.y - r, at.y + r + 1):
+				for x: int in range(at.x - r, at.x + r + 1):
+					if placed or maxi(absi(x - at.x), absi(y - at.y)) != r:
+						continue
+					var origin := Vector2i(x, y)
+					if province.stilt_tiles(def, origin).is_empty():
+						continue
+					for o: int in def.orientation_count():
+						if not placed and province.placement_error(def, origin, o) == &"":
+							placed = sim.execute(PlaceBuildingCommand.new(id, origin, true, o)) == &""
+							if placed:
+								print("stilts ", id, " at ", origin, " turn ", o)
+		if not placed:
+			print("stilts ", id, ": no place")
+	var view: ProvinceView = _game.get("view")
+	view.quays.refresh()
+	view.buildings.refresh_all()
+
+
 func _place_near(sim: Simulation, id: StringName, near: Vector2i) -> BuildingState:
 	var def := sim.data.get_building(id)
 	for r: int in 20:

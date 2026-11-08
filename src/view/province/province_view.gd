@@ -30,6 +30,8 @@ var ships: ShipLayer
 var shoals: ShoalLayer
 ## Quays on the sea and harbour buildings' strips over the water, as one mass (N1).
 var quays: QuayLayer
+## Bridges over rivers, fords and lakes (B1); their railings stand in the y-sorted world.
+var bridges: BridgeLayer
 ## Cargo cranes: the jib, the rope and the load over the world (N1 part 2).
 var cranes: CraneLayer
 ## Palisades, stone walls and stairs (M7 part 2).
@@ -71,9 +73,15 @@ func setup(source: ProvinceSim) -> void:
 	quays.z_index = -1
 	add_child(quays)
 	quays.setup(province)
+	bridges = BridgeLayer.new()
+	bridges.z_index = -1
+	add_child(bridges)
 	world = Node2D.new()
 	world.y_sort_enabled = true
 	add_child(world)
+	bridges.rails.y_sort_enabled = true
+	world.add_child(bridges.rails)
+	bridges.setup(province)
 	nature = NatureLayer.new()
 	world.add_child(nature)
 	nature.setup(province.resources)
@@ -156,6 +164,9 @@ func on_sim_event(event: Dictionary) -> void:
 			quays.refresh()
 		&"quay_changed", &"quay_ordered", &"paving_closed":
 			quays.refresh()
+			bridges.refresh()
+		&"bridge_changed", &"bridge_ordered":
+			bridges.refresh()
 		&"road_changed":
 			terrain.refresh_tile(event["tile"])
 			_buildings_dirty = true   # a road beside houses can make a corner

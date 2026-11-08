@@ -291,13 +291,13 @@ msgid "ui.build.road"
 msgstr "Road"
 
 msgid "ui.build.road_tip"
-msgstr "Dirt road. Drag with the mouse. People walk half again as fast on it."
+msgstr "Dirt road. Drag with the mouse. People walk half again as fast on it. Dragged over a river, it orders a timber bridge."
 
 msgid "ui.build.paving"
 msgstr "Paving"
 
 msgid "ui.build.paving_tip"
-msgstr "Cobbled road: 1 stone per tile. Drag with the mouse over a road or free ground. Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles. Ordered tiles have a dashed frame; drag with the right button, or demolish, to cancel the order."
+msgstr "Cobbled road: 1 stone per tile. Drag with the mouse over a road or free ground. Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles. Dragged over a river, they order a stone bridge. Ordered tiles have a dashed frame; drag with the right button, or demolish, to cancel the order."
 
 msgid "ui.build.demolish"
 msgstr "Demolish"
@@ -3292,3 +3292,52 @@ msgstr "Palisade gate"
 
 msgid "building.palisade_gate.desc"
 msgstr "Wooden gates between two posts. Your people pass (carts too), enemies must break them (600 life; a palisade has 300). Place it in a palisade line (it replaces one tile). Nobody climbs it."
+
+# B1: bridges
+
+msgid "ui.build.bridge"
+msgstr "Bridge"
+
+msgid "ui.build.bridge_tip"
+msgstr "Timber bridge over a river, ford or lake: 3 planks a tile. Drag from one bank to the other (at most 8 tiles of water), straight or slanting in 8 directions (a slant takes more tiles). People walk on it like on a road, and handcarts and wagons drive over it. A builder lays it from the nearer bank."
+
+msgid "ui.build.stone_bridge"
+msgstr "Stone bridge"
+
+msgid "ui.build.stone_bridge_tip"
+msgstr "Stone bridge with arches: 4 stones a tile. Works like the timber one, but people walk on it faster, as on cobbles."
+
+msgid "ui.doing.bridge"
+msgstr "to the bridge"
+
+msgid "ui.command_error.no_water"
+msgstr "A bridge goes over a river, ford or lake."
+
+msgid "ui.command_error.not_water"
+msgstr "No water for a bridge here."
+
+msgid "ui.command_error.bridge_needs_bank"
+msgstr "Start the bridge on the bank, on free land."
+
+msgid "ui.command_error.bridge_needs_far_bank"
+msgstr "The bridge must reach the other bank (free land)."
+
+msgid "ui.command_error.bridge_too_long"
+msgstr "Bridge too long: at most 8 tiles of water."
+
+msgid "ui.command_error.already_bridge"
+msgstr "A bridge stands here already."
+
+msgid "ui.command_error.no_bridge"
+msgstr "No bridge here."
+
+msgid "ui.command_error.bad_bridge"
+msgstr "Unknown kind of bridge."
+
+# B1 part 2: buildings on piles
+
+msgid "ui.command_error.too_much_water"
+msgstr "At most one row of the building may stand over the water (on piles), the rest on land."
+
+msgid "ui.command_error.blocks_water"
+msgstr "The building would dam the water: at least 2 tiles of water must stay beyond its piles."

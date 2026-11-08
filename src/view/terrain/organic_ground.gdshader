@@ -45,6 +45,13 @@ uniform sampler2D vine_tex : filter_nearest;
 uniform float border_warp = 0.32;
 uniform float road_warp = 0.22;
 uniform bool organic = true;
+// Soft shoreline (B1 part 2); off: the shore follows the tiles as before.
+uniform bool soft_shore = true;
+// How far (0-0.5, Chebyshev, in tiles) the middle of a tile keeps its own terrain whatever
+// the soft shoreline says, so a land tile never looks like water under people and buildings.
+uniform float shore_core = 0.14;
+// How far (in tiles) the shoreline wanders from its smooth line (border_warp for the rest).
+uniform float shore_warp = 0.12;
 // Water flows (texture drift in whole pixels, so it stays crisp), glitters and laps the beach.
 uniform bool animated = true;
 uniform vec2 river_flow = vec2(7.0, 3.5);  // px per second
@@ -125,6 +132,50 @@ vec3 texel(vec2 tile) {
 	return texture(map_tex, (tile + 0.5) / map_size).rgb;
 }
 
+bool slot_is_water(float raw) {
+	int s = int(round(raw * 255.0));
+	return s == WATER || s == FORD || s == SEA || s == LAKE || s == SHALLOW;
+}
+
+// Cubic B-spline weights of the 4 tile centres around a point (f = fraction past the second).
+vec4 bspline(float f) {
+	float f2 = f * f;
+	float f3 = f2 * f;
+	return vec4((1.0 - f) * (1.0 - f) * (1.0 - f), 3.0 * f3 - 6.0 * f2 + 4.0,
+			-3.0 * f3 + 3.0 * f2 + 3.0 * f + 1.0, f3) / 6.0;
+}
+
+// How much water there is around a grid point (0-1), the water tiles blurred with a cubic
+// B-spline over the 4x4 nearest tile centres (B1 part 2): its 0.5 line is a smooth shoreline,
+// a staircase of tiles becomes a gentle slant and corners round off.
+float kind_field(vec2 grid, bool deep) {
+	vec2 p = grid - 0.5;
+	vec2 base = floor(p) - 1.0;
+	vec2 f = fract(p);
+	vec4 wx = bspline(f.x);
+	vec4 wy = bspline(f.y);
+	float sum = 0.0;
+	for (int j = 0; j < 4; j++) {
+		for (int i = 0; i < 4; i++) {
+			float raw = texel(base + vec2(float(i), float(j))).r;
+			bool hit = deep ? int(round(raw * 255.0)) == SEA : slot_is_water(raw);
+			if (hit) sum += wx[i] * wy[j];
+		}
+	}
+	return sum;
+}
+
+float water_field(vec2 grid) {
+	return kind_field(grid, false);
+}
+
+// The same blur for deep sea among the shallows, so the line where the water darkens is
+// smooth too.
+float deep_field(vec2 grid) {
+	return kind_field(grid, true);
+}
+
+
 // Terrain at a grid point, smoothed between the 4 nearest tile centres: each slot gets the
 // bilinear weight of the centres holding it and the heaviest wins. A diagonal staircase of
 // tiles becomes a straight edge and square corners become round. .x = slot, .y = road (0/1),
@@ -155,6 +206,48 @@ vec3 smooth_sample(vec2 grid) {
 		if (total > best_weight) {
 			best_weight = total;
 			best_slot = slots[i];
+		}
+	}
+	// Soft shoreline (B1 part 2): where water meets land, the blurred water decides which side
+	// a point is on (outside the middle of each tile), so the shore runs smooth and round.
+	bool mixed = false;
+	bool any_water = false;
+	bool any_land = false;
+	for (int i = 0; i < 4; i++) {
+		if (slot_is_water(slots[i])) any_water = true; else any_land = true;
+	}
+	mixed = any_water && any_land;
+	bool core = max(abs(fract(grid).x - 0.5), abs(fract(grid).y - 0.5)) < shore_core;
+	if (!mixed && soft_shore && !core) {
+		// Deep sea and shallows: the darker water follows a smooth line as well.
+		bool any_deep = false;
+		bool any_shallow = false;
+		for (int i = 0; i < 4; i++) {
+			int k = int(round(slots[i] * 255.0));
+			if (k == SEA) any_deep = true;
+			if (k == SHALLOW) any_shallow = true;
+		}
+		if (any_deep && any_shallow) {
+			float want = deep_field(grid) > 0.5 ? float(SEA) : float(SHALLOW);
+			if (abs(round(best_slot * 255.0) - want) > 0.5) best_slot = want / 255.0;
+		}
+	}
+	if (mixed && soft_shore) {
+		vec2 own = fract(grid) - 0.5;
+		bool water_here;
+		if (max(abs(own.x), abs(own.y)) < shore_core) {
+			water_here = slot_is_water(texel(floor(grid)).r);
+		} else {
+			water_here = water_field(grid) > 0.5;
+		}
+		if (water_here != slot_is_water(best_slot)) {
+			float pick = -1.0;
+			for (int i = 0; i < 4; i++) {
+				if (slot_is_water(slots[i]) == water_here && weights[i] > pick) {
+					pick = weights[i];
+					best_slot = slots[i];
+				}
+			}
 		}
 	}
 	// A paved tile among dirt ones: cobbles where paving outweighs dirt within the road.
@@ -334,13 +427,23 @@ void fragment() {
 	vec2 pixel = floor(world_pos) + 0.5;
 	vec2 grid = screen_to_grid(pixel);
 	vec2 warped = grid;
+	vec2 shore = grid;
 	vec2 road_grid = grid;
 	if (organic) {
 		vec2 warp = vec2(fbm(grid * 0.9 + 3.7), fbm(grid * 0.9 + 21.4)) - 0.5;
 		warped = grid + warp * 2.0 * border_warp;
+		// The shoreline wanders less (B1 part 2): gentle bends instead of a jagged edge.
+		shore = grid + warp * 2.0 * (soft_shore ? shore_warp : border_warp);
 		road_grid = grid + warp * 2.0 * road_warp;
 	}
 	vec3 here = organic ? smooth_sample(warped) : texel(floor(grid)) * vec3(255.0, 1.0, 1.0);
+	if (organic && soft_shore) {
+		// Water or land, and deep or shallow sea, as the gently warped shoreline says.
+		vec3 by_shore = smooth_sample(shore);
+		int a = int(here.x);
+		int b = int(by_shore.x);
+		if (is_water(a) != is_water(b) || (is_water(a) && is_water(b) && a != b)) here.x = by_shore.x;
+	}
 	int slot = int(round(here.x));
 	float t = animated ? TIME : 0.0;
 	// Water textures slide under a fixed shoreline.
@@ -353,27 +456,27 @@ void fragment() {
 				// Shallows along the shore, a dithered step towards deep water, surf on the sand.
 				// Shallow sea tiles (M5) are shallow water whatever is near; deep sea next to
 				// them steps down in a dithered band.
-				if (slot == SHALLOW || land_near(warped, 0.9)) {
+				if (slot == SHALLOW || land_near(shore, 0.9)) {
 					colour = sample_diamond(shallow_tex, moved_grid).rgb;
-				} else if ((land_near(warped, 1.5) || shallow_near(warped, 0.6)) && bayer4(pixel) < 0.5) {
+				} else if ((land_near(shore, 1.5) || shallow_near(shore, 0.6)) && bayer4(pixel) < 0.5) {
 					colour = sample_diamond(shallow_tex, moved_grid).rgb;
 				}
 				// Surf: the foam line runs up the sand and back, out of step along the coast.
 				float wave = 0.5 + 0.5 * sin(t * 1.2 + fbm(grid * 0.6) * 6.283);
-				if (land_near(warped, 0.05 + 0.13 * wave)) colour = mix(colour, vec3(0.92, 0.95, 0.9), 0.55);
-			} else if (land_near(warped, 0.07)) {
+				if (land_near(shore, 0.05 + 0.13 * wave)) colour = mix(colour, vec3(0.92, 0.95, 0.9), 0.55);
+			} else if (land_near(shore, 0.07)) {
 				// Dark line where river water meets the bank, as if the bank threw a shadow.
 				colour *= 0.78;
 			}
 			// Where a river runs into a lake or the sea, the two waters mix in a wide dithered
 			// band instead of meeting on a sharp line (review fixes 2026-11-07).
-			colour = water_meeting(slot, warped, pixel, t, colour);
+			colour = water_meeting(slot, shore, pixel, t, colour);
 			// Glints: single bright pixels that flicker on and off.
 			vec2 cell = floor(pixel / vec2(2.0, 1.0));
 			if (hash_cell(cell + floor(t * 1.5) * vec2(7.0, 3.0)) > 0.9965) {
 				colour = mix(colour, vec3(0.95, 0.98, 1.0), 0.7);
 			}
-		} else if (slot != SAND && water_near(warped, 0.2)) {
+		} else if (slot != SAND && water_near(shore, 0.2)) {
 			// Low earthen bank along rivers and lakes.
 			colour = sample_diamond(bank_tex, grid).rgb;
 		}

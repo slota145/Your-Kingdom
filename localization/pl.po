@@ -296,13 +296,13 @@ msgid "ui.build.road"
 msgstr "Droga"
 
 msgid "ui.build.road_tip"
-msgstr "Ubita droga. Przeciągnij myszą. Ludzie chodzą po niej o połowę szybciej."
+msgstr "Ubita droga. Przeciągnij myszą. Ludzie chodzą po niej o połowę szybciej. Przeciągnięta przez rzekę sama zamawia drewniany most."
 
 msgid "ui.build.paving"
 msgstr "Bruk"
 
 msgid "ui.build.paving_tip"
-msgstr "Bruk z kamienia: 1 kamień na kafel. Przeciągnij myszą po drodze albo po wolnym terenie. Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej. Zaplanowane kafle mają przerywaną ramkę; prawy przycisk (przeciągnij) albo rozbiórka anuluje plan."
+msgstr "Bruk z kamienia: 1 kamień na kafel. Przeciągnij myszą po drodze albo po wolnym terenie. Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej. Przeciągnięty przez rzekę sam zamawia kamienny most. Zaplanowane kafle mają przerywaną ramkę; prawy przycisk (przeciągnij) albo rozbiórka anuluje plan."
 
 msgid "ui.build.demolish"
 msgstr "Rozbiórka"
@@ -3325,3 +3325,52 @@ msgstr "Brama w palisadzie"
 
 msgid "building.palisade_gate.desc"
 msgstr "Drewniane wrota między dwoma słupami. Swoi przechodzą (także wozy), wróg musi je rozbić (600 życia, palisada ma 300). Postaw ją w linii palisady (zastąpi jeden kafel). Na bramę się nie wchodzi."
+
+# B1: bridges
+
+msgid "ui.build.bridge"
+msgstr "Most"
+
+msgid "ui.build.bridge_tip"
+msgstr "Drewniany most przez rzekę, bród albo jezioro: 3 deski na kafel. Przeciągnij myszą z jednego brzegu na drugi (najwyżej 8 kafli wody), prosto albo po skosie, w 8 kierunkach (skos zajmuje więcej kafli). Ludzie chodzą po nim jak po drodze, jeżdżą też wózki i wozy. Budowniczy kładzie go od bliższego brzegu."
+
+msgid "ui.build.stone_bridge"
+msgstr "Most kamienny"
+
+msgid "ui.build.stone_bridge_tip"
+msgstr "Kamienny most z łukami: 4 kamienie na kafel. Działa jak drewniany, ale ludzie chodzą po nim szybciej, jak po bruku."
+
+msgid "ui.doing.bridge"
+msgstr "na most"
+
+msgid "ui.command_error.no_water"
+msgstr "Most stawia się nad rzeką, brodem albo jeziorem."
+
+msgid "ui.command_error.not_water"
+msgstr "Tu nie ma wody pod most."
+
+msgid "ui.command_error.bridge_needs_bank"
+msgstr "Zacznij most na brzegu, na wolnym kawałku lądu."
+
+msgid "ui.command_error.bridge_needs_far_bank"
+msgstr "Most musi sięgać drugiego brzegu (wolny kawałek lądu)."
+
+msgid "ui.command_error.bridge_too_long"
+msgstr "Za długi most: najwyżej 8 kafli wody."
+
+msgid "ui.command_error.already_bridge"
+msgstr "Tu już stoi most."
+
+msgid "ui.command_error.no_bridge"
+msgstr "Tu nie ma mostu."
+
+msgid "ui.command_error.bad_bridge"
+msgstr "Nieznany rodzaj mostu."
+
+# B1 part 2: buildings on piles
+
+msgid "ui.command_error.too_much_water"
+msgstr "Nad wodą może stać najwyżej jeden rząd budynku (na palach), reszta na lądzie."
+
+msgid "ui.command_error.blocks_water"
+msgstr "Budynek zagrodziłby wodę: za palami musi zostać jeszcze co najmniej 2 kafle wody."

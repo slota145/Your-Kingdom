@@ -7,7 +7,7 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 ## Mechaniki
 
 - [gracz, ocena M5 2026-11-07] **Most przez rzekę i mniej kanciaste wybrzeże:** most, po którym chodzą ludzie i jeżdżą wozy (na „Wybrzeżu” rzeka odcina wschód mapy), oraz łagodniejsza linia brzegu, na której budynki nadmorskie mogą leżeć częściowo na wodzie.
-  - Ocena (Claude): mocno poprawi grę na mapach z rzeką. Most zmienia siatkę ruchu (kafel przejezdny dla ludzi, a pod nim woda dla łodzi albo blokada), sortowanie i budowanie; brzeg to zmiana terenu i reguł stawiania. **Decyzja właściciela (ankieta 2026-11-07): osobny mały etap po M7**, jak N1.
+  - Ocena (Claude): mocno poprawi grę na mapach z rzeką. Most zmienia siatkę ruchu (kafel przejezdny dla ludzi, a pod nim woda dla łodzi albo blokada), sortowanie i budowanie; brzeg to zmiana terenu i reguł stawiania. **Decyzja właściciela (ankieta 2026-11-07): osobny mały etap po M7**, jak N1. **Ankieta 2026-11-08: wybrany jako następny etap po M7 (ROADMAP, B1).**
 - [gracz, ocena M5 2026-11-07] **Rejsy za horyzont w oknie mapy świata**, obok szlaków handlowych: gracz ustawia rejs, a gra sama wybiera wolną kogę i magazyn.
   - Ocena (Claude): wygodne przy wielu portach i prowincjach, mało ryzykowne (okno szlaków już istnieje). **Decyzja właściciela (ankieta 2026-11-07): na później, po M7.**
 

@@ -17,3 +17,4 @@ work_radius = 5
 needs_terrain_near = &"water"
 recipe = ExtResource("2_recipe")
 id = &"fishing_hut"
+stilts_row = true
