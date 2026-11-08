@@ -1019,7 +1019,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## W1 — Nowe wybrzeże na mapie „Wybrzeże”
 
-**Status: gotowy 2026-11-08, czeka na ocenę właściciela** (plan zaakceptowany 2026-11-08, ankieta: zatoka szeroka i zaokrąglona, jak podkowa). Prośba właściciela 2026-11-08; ankieta: **teraz, mały etap** (przed oceną M7 i B1), przed J1, bo większe okręty z J1 potrzebują szerszej zatoki.
+**Status: gotowy i scalony do `main` 2026-11-08 na prośbę właściciela, przed oceną** (plan zaakceptowany 2026-11-08, ankieta: zatoka szeroka i zaokrąglona, jak podkowa). Prośba właściciela 2026-11-08; ankieta: **teraz, mały etap** (przed oceną M7 i B1), przed J1, bo większe okręty z J1 potrzebują szerszej zatoki.
 
 **Stan (2026-11-08):**
 - Brzeg morza na południu i wschodzie to łagodne zakola i cyple (szum w dwóch skalach) zamiast prostych odcinków ze schodkami; wschodni brzeg zakręca w południowy łukiem.
