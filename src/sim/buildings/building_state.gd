@@ -69,6 +69,9 @@ var recruits: Array[int] = []
 var garrison: Array[StringName] = []
 ## Barracks: food eaten but not yet taken from the pantry (fractional consumption).
 var mess_hunger: float = 0.0
+## Life in a fight (def.max_hp > 0, M7 part 2): a gatehouse, a tower, a town hall's door.
+## Set on placement; 0 = broken (a gatehouse then stands open to everybody).
+var hp: int = 0
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
@@ -80,6 +83,7 @@ func _init(entity_id: int, building_def: BuildingDef, at: Vector2i, turned: int 
 	def = building_def
 	origin = at
 	orientation = turned
+	hp = def.max_hp if def != null else 0
 
 
 ## Makes a finished building usable: storage, pantry, household.
@@ -228,6 +232,18 @@ func gangway_tile() -> Vector2i:
 	return def.gangway_at(origin, orientation) if def.is_port() else Agent.NO_TILE
 
 
+## Gatehouse passage tiles in grid space (empty for other buildings).
+func passage_tiles() -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for t: Vector2i in def.passage_at(orientation):
+		result.append(origin + t)
+	return result
+
+
+func is_broken() -> bool:
+	return def.max_hp > 0 and hp <= 0
+
+
 func is_entrance(tile: Vector2i) -> bool:
 	return entrance_tiles().has(tile)
 
@@ -315,6 +331,8 @@ func to_dict() -> Dictionary:
 		for unit: StringName in garrison:
 			g.append(String(unit))
 		d["garrison"] = g
+	if def.max_hp > 0 and hp != def.max_hp:
+		d["hp"] = hp
 	if not ship_orders.is_empty():
 		var orders := []
 		for ship: StringName in ship_orders:
@@ -363,5 +381,6 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 		b.garrison.append(StringName(String(unit)))
 	for ship: Variant in d.get("ship_orders", []):
 		b.ship_orders.append(StringName(String(ship)))
+	b.hp = int(d.get("hp", b.def.max_hp))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

@@ -32,6 +32,8 @@ var shoals: ShoalLayer
 var quays: QuayLayer
 ## Cargo cranes: the jib, the rope and the load over the world (N1 part 2).
 var cranes: CraneLayer
+## Palisades, stone walls and stairs (M7 part 2).
+var forts: FortLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 
@@ -78,6 +80,9 @@ func setup(source: ProvinceSim) -> void:
 	buildings.setup(province)
 	piles = PileLayer.new()
 	world.add_child(piles)
+	forts = FortLayer.new()
+	world.add_child(forts)
+	forts.setup(province)
 	agents = AgentViewPool.new()
 	agents.province = province
 	world.add_child(agents)
@@ -108,6 +113,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 	piles.update_view(province.piles)
 	piles.update_yards(province.buildings)
 	buildings.update_view()
+	forts.update_view()
 	var merchant := province.merchant
 	cart.visible = merchant.is_trading()
 	if cart.visible:
@@ -122,6 +128,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 func on_sim_event(event: Dictionary) -> void:
 	nature.on_sim_event(event)
 	paving_plan.on_sim_event(event)
+	forts.on_sim_event(event)
 	match event["type"]:
 		&"building_placed", &"building_removed", &"building_completed", &"site_opened", \
 				&"site_phase_started", &"site_phase_finished", &"house_upgraded", &"building_turned", \

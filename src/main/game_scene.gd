@@ -402,6 +402,14 @@ func _update_preview() -> void:
 						tiles[t] = "bad"
 				else:
 					tiles[t] = "ok" if sim.province.paving_error(t) == &"" else "bad"
+		&"palisade", &"stone_wall", &"stairs":
+			# Walls (M7 part 2): the whole line is checked together (wedges, access).
+			var line: Array[Vector2i] = _drag_tiles.duplicate() if _dragging else [_hover] as Array[Vector2i]
+			var plan := sim.province.wall_plan(line, _wall_kind(kind))
+			for t: Vector2i in line:
+				tiles[t] = "bad"
+			for t: Vector2i in plan["tiles"]:
+				tiles[t] = "ok"
 		&"pier", &"quay":
 			# The whole line is checked together: reach from the shore, way to the open sea (N1).
 			var line: Array[Vector2i] = _drag_tiles.duplicate() if _dragging else [_hover] as Array[Vector2i]
@@ -493,6 +501,9 @@ func _demolish_target(tile: Vector2i) -> Command:
 	if sim.province.grid.has_road(tile):
 		var road: Array[Vector2i] = [tile]
 		return RemoveRoadCommand.new(road)
+	# A wall tile or stairs (M7 part 2).
+	if sim.province.walls.kind(tile) != Walls.NONE:
+		return RemoveWallCommand.new(tile)
 	# A quay tile, laid or only ordered (N1).
 	if sim.province.grid.has_quay(tile) or (not sim.province.paving.is_empty() \
 			and sim.province.paving_site_at(tile) != 0 and not sim.province.grid.has_road(tile)):
@@ -528,7 +539,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseMotion and _dragging:
 		var kind: StringName = _tool.get("kind", &"")
-		if kind == &"pier" or kind == &"quay":
+		if kind == &"palisade" or kind == &"stone_wall" or kind == &"stairs":
+			var wall_line := BuildWallCommand.line(_drag_tiles[0], _hover)
+			if wall_line != _drag_tiles:
+				_drag_tiles = wall_line
+				_update_preview()
+		elif kind == &"pier" or kind == &"quay":
 			# Quays are drawn like walls: a straight line in 8 directions from the first tile (N1).
 			var line := BuildQuayCommand.line(_drag_tiles[0], _hover)
 			if line != _drag_tiles:
@@ -593,7 +609,7 @@ func _on_left_press() -> void:
 			var command := _demolish_target(_hover)
 			if command != null:
 				_execute(command)
-		&"road", &"paving", &"pier", &"quay", &"field", &"plant":
+		&"road", &"paving", &"pier", &"quay", &"field", &"plant", &"palisade", &"stone_wall", &"stairs":
 			_dragging = true
 			_drag_tiles = [_hover]
 			_update_preview()
@@ -625,6 +641,8 @@ func _on_left_release() -> void:
 	elif kind == &"pier" or kind == &"quay":
 		var quay := TileGrid.STONE_QUAY if kind == &"quay" else TileGrid.PIER
 		_execute(BuildQuayCommand.new(_drag_tiles.duplicate(), quay))
+	elif kind == &"palisade" or kind == &"stone_wall" or kind == &"stairs":
+		_execute(BuildWallCommand.new(_drag_tiles.duplicate(), _wall_kind(kind)))
 	elif kind == &"plant":
 		var marked: Array[Vector2i] = _drag_tiles.duplicate()
 		_execute(SetPlantAreaCommand.new(int(_tool["building"]), marked))
@@ -634,6 +652,13 @@ func _on_left_release() -> void:
 				_execute(PlaceFieldCommand.new(int(_tool["farm"]), t))
 	_drag_tiles.clear()
 	_update_preview()
+
+
+static func _wall_kind(tool: StringName) -> int:
+	match tool:
+		&"palisade": return Walls.PALISADE
+		&"stairs": return Walls.STAIRS
+	return Walls.STONE
 
 
 func _start_cancelling() -> void:

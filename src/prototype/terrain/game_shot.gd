@@ -356,6 +356,9 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	if _m7 == "army":
 		_place_army(sim, at)
 		return
+	if _m7 == "walls":
+		_place_walls(sim, at)
+		return
 	var ids: Array[StringName] = [&"charcoal_burner", &"mine", &"smelter", &"blacksmith",
 			&"armourer", &"bowyer"]
 	var plan: Array = []
@@ -435,6 +438,49 @@ func _place_army(sim: Simulation, at: Vector2i) -> void:
 	sim.run_ticks(12 if _drill else 0)
 	Game.paused = true
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(barracks.entrance_tile() + Vector2i(1, 2))
+
+
+## M7 part 2 (--m7=walls): a walled square with a gatehouse, towers, stairs, a thick double
+## row, a diagonal run, a palisade and a wall being laid.
+func _place_walls(sim: Simulation, at: Vector2i) -> void:
+	var p := sim.province
+	var stone := func(tiles: Array[Vector2i]) -> void:
+		for t: Vector2i in tiles:
+			if p.wall_error(t, Walls.STONE) == &"":
+				p.lay_wall(t, Walls.STONE)
+	var o := at + Vector2i(-7, -7)
+	if p.execute_place(&"gatehouse", o + Vector2i(5, 11), 0) == null:
+		print("walls: no gatehouse")
+	p.execute_place(&"tower", o + Vector2i(-1, -1), 0)
+	p.execute_place(&"tower", o + Vector2i(13, -1), 0)
+	p.execute_place(&"tower", o + Vector2i(13, 11), 0)
+	var ring: Array[Vector2i] = []
+	for i: int in range(1, 13):
+		ring.append(o + Vector2i(i, 0))
+		ring.append(o + Vector2i(i, 1))   # a thick double row at the back
+		ring.append(o + Vector2i(0, i))
+		ring.append(o + Vector2i(14, i))
+		ring.append(o + Vector2i(i, 12))
+	stone.call(ring)
+	stone.call(BuildWallCommand.line(o + Vector2i(-1, 12), o + Vector2i(-6, 17)))
+	for t: Vector2i in [o + Vector2i(1, 5), o + Vector2i(13, 7)]:
+		var d := p.stairs_dir_for(t)
+		if d >= 0 and p.wall_error(t, Walls.STAIRS) == &"":
+			p.lay_wall(t, Walls.STAIRS + d)
+	for t: Vector2i in BuildWallCommand.line(o + Vector2i(16, 3), o + Vector2i(16, 10)):
+		if p.wall_error(t, Walls.PALISADE) == &"":
+			p.lay_wall(t, Walls.PALISADE)
+	for t: Vector2i in BuildWallCommand.line(o + Vector2i(17, 10), o + Vector2i(20, 13)):
+		if p.wall_error(t, Walls.PALISADE) == &"":
+			p.lay_wall(t, Walls.PALISADE)
+	p.damage_wall(o + Vector2i(14, 4), 700)
+	sim.execute(BuildWallCommand.new(BuildWallCommand.line(o + Vector2i(2, 16), o + Vector2i(8, 16)), Walls.STONE))
+	for k: int in 6:
+		var a := p.spawn_agent(&"porter", o + Vector2i(6, 13 + k % 3))
+		a.facing = k % 8
+	sim.events.drain()
+	(_game.get("view") as ProvinceView).forts.refresh()
+	(_game.get("view") as ProvinceView).buildings.refresh_all()
 
 
 ## Workshops in a row with full yards (--yards).

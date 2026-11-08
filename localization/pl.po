@@ -2945,3 +2945,56 @@ msgstr "odpoczywa w koszarach"
 
 msgid "ui.doing.soldier_ranks"
 msgstr "stoi w szeregu"
+
+# --- M7 part 2: walls, gatehouses, towers ---
+
+msgid "building.gatehouse.name"
+msgstr "Wieża bramna"
+
+msgid "building.gatehouse.desc"
+msgstr "Brama w murze: swoi przechodzą, wróg musi ją rozbić. Na jej dach wchodzi się z murów albo z przejścia. Postaw ją w linii muru (zastąpi mur)."
+
+msgid "building.tower.name"
+msgstr "Baszta"
+
+msgid "building.tower.desc"
+msgstr "Wysoka kamienna wieża w murze. Łucznicy na niej strzelają dalej. Wchodzi się przez drzwi na dole."
+
+msgid "ui.build.tab.defence"
+msgstr "Obrona"
+
+msgid "ui.build.palisade"
+msgstr "Palisada"
+
+msgid "ui.build.palisade_tip"
+msgstr "Palisada: 2 drewna na kafel. Przeciągnij myszą, żeby postawić linię (8 kierunków). Tania, ale słaba; nie da się po niej chodzić."
+
+msgid "ui.build.stone_wall"
+msgstr "Mur kamienny"
+
+msgid "ui.build.stone_wall_tip"
+msgstr "Mur kamienny: 3 kamienie na kafel. Przeciągnij myszą (8 kierunków); kilka rzędów zlewa się w gruby mur. Żołnierze chodzą po nim, wchodząc po schodach."
+
+msgid "ui.build.stairs"
+msgstr "Schody"
+
+msgid "ui.build.stairs_tip"
+msgstr "Schody na mur: 4 kamienie. Postaw je tuż przy murze kamiennym, wieży bramnej albo baszcie."
+
+msgid "ui.command_error.already_wall"
+msgstr "Tu już stoi mur."
+
+msgid "ui.command_error.needs_stone_wall"
+msgstr "Schody muszą stać tuż przy murze kamiennym."
+
+msgid "ui.command_error.wedge_blocked"
+msgstr "Mur po skosie potrzebuje wolnych kafli obok."
+
+msgid "ui.command_error.no_wall"
+msgstr "Tu nie ma muru."
+
+msgid "ui.command_error.bad_wall"
+msgstr "Nieznany rodzaj muru."
+
+msgid "ui.doing.wall"
+msgstr "stawia mur"

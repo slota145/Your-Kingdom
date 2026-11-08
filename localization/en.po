@@ -2914,3 +2914,56 @@ msgstr "rests in the barracks"
 
 msgid "ui.doing.soldier_ranks"
 msgstr "stands in the ranks"
+
+# --- M7 part 2: walls, gatehouses, towers ---
+
+msgid "building.gatehouse.name"
+msgstr "Gatehouse"
+
+msgid "building.gatehouse.desc"
+msgstr "A gate in the wall: your people pass, enemies must break it. Its roof is reached from the walls or from the passage. Place it in a wall line (it replaces the wall)."
+
+msgid "building.tower.name"
+msgstr "Tower"
+
+msgid "building.tower.desc"
+msgstr "A tall stone tower in the wall. Archers on it shoot farther. You go up through the door at its foot."
+
+msgid "ui.build.tab.defence"
+msgstr "Defence"
+
+msgid "ui.build.palisade"
+msgstr "Palisade"
+
+msgid "ui.build.palisade_tip"
+msgstr "Palisade: 2 wood a tile. Drag to place a line (8 directions). Cheap but weak; nobody walks on it."
+
+msgid "ui.build.stone_wall"
+msgstr "Stone wall"
+
+msgid "ui.build.stone_wall_tip"
+msgstr "Stone wall: 3 stones a tile. Drag to place (8 directions); several rows merge into a thick wall. Soldiers walk on it, going up by the stairs."
+
+msgid "ui.build.stairs"
+msgstr "Stairs"
+
+msgid "ui.build.stairs_tip"
+msgstr "Stairs to the wall: 4 stones. Place them right next to a stone wall, gatehouse or tower."
+
+msgid "ui.command_error.already_wall"
+msgstr "There is a wall here already."
+
+msgid "ui.command_error.needs_stone_wall"
+msgstr "Stairs must stand right next to a stone wall."
+
+msgid "ui.command_error.wedge_blocked"
+msgstr "A slanting wall needs free tiles beside it."
+
+msgid "ui.command_error.no_wall"
+msgstr "There is no wall here."
+
+msgid "ui.command_error.bad_wall"
+msgstr "Unknown kind of wall."
+
+msgid "ui.doing.wall"
+msgstr "builds a wall"
