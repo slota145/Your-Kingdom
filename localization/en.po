@@ -3016,3 +3016,106 @@ msgid "ui.army.title"
 msgid_plural "ui.army.title_plural"
 msgstr[0] "%d soldier"
 msgstr[1] "%d soldiers"
+
+# --- M7 part 2: siege ---
+
+msgid "building.siege_workshop.name"
+msgstr "Siege workshop"
+
+msgid "building.siege_workshop.desc"
+msgstr "Builds rams and ladders on order. Porters bring the planks (for a ram iron too), and free residents man the finished engine."
+
+msgid "unit.ram.name"
+msgstr "Ram"
+
+msgid "unit.ram.desc"
+msgstr "An iron-shod log under a roof of hides: it breaks gates and walls, arrows barely hurt it. Pushed by 4 men. It does not fight people."
+
+msgid "unit.ladderman.name"
+msgstr "Ladderman"
+
+msgid "unit.ladderman.desc"
+msgstr "Carries a ladder and leans it on a stone wall: soldiers climb it onto the wall. Does not fight."
+
+msgid "ui.kind.ram"
+msgstr "Ram"
+
+msgid "ui.kind.ladderman"
+msgstr "Ladderman"
+
+msgid "ui.kind.bandit"
+msgstr "Bandit"
+
+msgid "ui.kind.bandit_archer"
+msgstr "Bandit archer"
+
+msgid "ui.siege.clear"
+msgstr "Clear the list"
+
+msgid "ui.siege.idle"
+msgstr "Nothing in the works. Order a ram or a ladder."
+
+msgid "ui.siege.working"
+msgstr "In the works: %s (%d%%)"
+
+msgid "ui.siege.waiting_materials"
+msgstr "Waiting for: %s"
+
+msgid "ui.siege.waiting_crew"
+msgstr "Waiting for free residents to man it (%d)."
+
+msgid "ui.siege.queued"
+msgstr "Next in the list: %d"
+
+msgid "ui.siege.needs"
+msgstr "Needs: %s; crew: %d residents"
+
+msgid "ui.command_error.built_in_workshop"
+msgstr "This is built in a siege workshop, not in the barracks."
+
+msgid "ui.command_error.not_siege_workshop"
+msgstr "This is not a siege workshop."
+
+msgid "ui.command_error.too_many_orders"
+msgstr "The list of orders is full."
+
+msgid "ui.doing.fighting"
+msgstr "fights"
+
+msgid "ui.doing.marching"
+msgstr "marches"
+
+msgid "ui.doing.on_guard"
+msgstr "stands guard"
+
+# --- M7 part 2: raids ---
+
+msgid "ui.main.early_raid"
+msgstr "Game with an early bandit raid"
+
+msgid "ui.note.raid_warning"
+msgstr "Bandits are coming! In a minute they will be at the border. Lead out your soldiers and man the walls with archers."
+
+msgid "ui.note.raid_started"
+msgstr "Bandits are raiding the province! The townsfolk flee to the town hall."
+
+msgid "ui.note.raid_looted"
+msgstr "The bandits broke the town hall's door and looted the town (%d gold and goods). The townsfolk are downcast."
+
+msgid "ui.note.raid_defeated"
+msgstr "The bandits are beaten! The townsfolk go back to work."
+
+msgid "ui.note.raid_left"
+msgstr "The bandits left with their loot."
+
+msgid "ui.note.building_broken"
+msgstr "The enemy broke: %s!"
+
+msgid "ui.note.siege_engine_built"
+msgstr "The siege workshop finished: %s."
+
+msgid "ui.command_error.raid_under_way"
+msgstr "A raid is under way."
+
+msgid "ui.doing.sheltering"
+msgstr "hides from the bandits"

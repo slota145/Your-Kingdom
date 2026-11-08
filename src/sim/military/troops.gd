@@ -201,6 +201,8 @@ static func update(province: ProvinceSim) -> void:
 			_move(province, agent)
 	for agent: Agent in dead:
 		kill(province, agent)
+	if province.tick % SimClock.TICKS_PER_SECOND == 0 and not province.mil.ladders.is_empty():
+		_push_ladders(province, buckets)
 
 
 ## Fighters (commanded or in the ranks) by 4x4-tile cell, for finding the nearest enemy.
@@ -249,10 +251,14 @@ static func _think(province: ProvinceSim, agent: Agent, buckets: Dictionary[Vect
 			c.goal = c.post
 			c.goal_level = c.post_level
 			c.clear_path()
+	if unit.siege != &"" or unit.combat.attack <= 0:
+		# Siege engines and laddermen never fight people.
+		target = null
+		c.target_id = 0
 	var reach := float(unit.combat.attack_range) + (WALL_RANGE_BONUS if agent.level == MilitaryNav.WALL and unit.combat.attack_range > 1 else 0)
 	var ranged := unit.combat.attack_range > 1
 	# Looking for a fight.
-	if target == null and c.order != CombatState.Order.RETURN and (c.order != CombatState.Order.MOVE or not c.has_path()):
+	if target == null and unit.siege == &"" and unit.combat.attack > 0 and c.order != CombatState.Order.RETURN and (c.order != CombatState.Order.MOVE or not c.has_path()):
 		match c.stance:
 			CombatState.Stance.AGGRESSIVE:
 				target = nearest_enemy(agent, agent.pos, maxf(SIGHT, reach), buckets)
@@ -425,6 +431,9 @@ static func _fly_arrows(province: ProvinceSim, dead: Array[Agent]) -> void:
 		if target.pos.distance_to(arrow.to) > 1.2:
 			continue
 		var damage := arrow.damage
+		var target_unit := unit_of(province, target)
+		if target_unit != null:
+			damage = roundi(damage * target_unit.combat.ranged_taken)
 		if target.level == MilitaryNav.WALL:
 			damage = roundi(damage * WALL_COVER)
 		hurt(province, target, maxi(damage, 1), dead)
@@ -517,6 +526,9 @@ static func _siege(province: ProvinceSim, agent: Agent, unit: UnitDef) -> void:
 	if agent.level == MilitaryNav.GROUND and _next_to(agent.pos, tile):
 		c.clear_path()
 		_face(agent, IsoMath.tile_center(tile))
+		if unit.siege == &"ladder":
+			_place_ladder(province, agent, tile)
+			return
 		agent.activity = &"drill"
 		if c.cooldown == 0:
 			c.cooldown = maxi(SimClock.seconds_to_ticks(unit.combat.attack_cooldown), 1)
@@ -526,6 +538,59 @@ static func _siege(province: ProvinceSim, agent: Agent, unit: UnitDef) -> void:
 		var stand := stand_by(province, tile, agent)
 		if stand != Agent.NO_TILE:
 			_route(province, agent, stand, MilitaryNav.GROUND, IsoMath.tile_center(stand))
+
+
+## A ladderman next to stone wall [param tile] leans his ladder on it (from his own tile,
+## orthogonally): it becomes a way up for everybody (MilitaryNav portals).
+static func _place_ladder(province: ProvinceSim, agent: Agent, tile: Vector2i) -> void:
+	var c := agent.combat
+	var foot := agent.tile()
+	var d := tile - foot
+	if absi(d.x) + absi(d.y) != 1 or not province.walls.is_stone(tile) or province.mil.ladders.has(foot):
+		# Only straight against the wall: step to a tile beside it first.
+		var stand := Agent.NO_TILE
+		for step: Vector2i in Walls.DIRS:
+			var t := tile - step
+			if province.mil.ground_nav(province, c.faction).is_walkable(t) and not province.mil.ladders.has(t):
+				stand = t
+				break
+		if stand == Agent.NO_TILE or stand == foot:
+			c.order = CombatState.Order.NONE
+			return
+		_route(province, agent, stand, MilitaryNav.GROUND, IsoMath.tile_center(stand))
+		return
+	province.mil.ladders[foot] = tile
+	c.order = CombatState.Order.NONE
+	c.target_tile = Vector2i(-1, -1)
+	agent.activity = &"idle"
+	province.events.emit(&"ladder_placed", {"tile": foot, "wall": tile, "agent": agent.id})
+
+
+## A defender standing on the wall where a ladder leans, with no enemy on or at it, pushes
+## it down.
+static func _push_ladders(province: ProvinceSim, buckets: Dictionary[Vector2i, Array]) -> void:
+	for foot: Vector2i in province.mil.ladders.keys():
+		var top: Vector2i = province.mil.ladders[foot]
+		var defender := false
+		var climbing := false
+		var cell := Vector2i(floori(top.x / 4.0), floori(top.y / 4.0))
+		for dy: int in range(-1, 2):
+			for dx: int in range(-1, 2):
+				for other: Agent in buckets.get(cell + Vector2i(dx, dy), []):
+					var near_top := other.pos.distance_to(IsoMath.tile_center(top)) < 1.0 and other.level == MilitaryNav.WALL
+					var near_foot := other.pos.distance_to(IsoMath.tile_center(foot)) < 0.8 and other.level == MilitaryNav.GROUND
+					if other.combat.faction == CombatState.PLAYER and near_top:
+						defender = true
+					elif other.combat.faction != CombatState.PLAYER and (near_top or near_foot):
+						climbing = true
+		if defender and not climbing:
+			remove_ladder(province, foot)
+
+
+## Ladders whose wall fell or that defenders pushed down go (M7 part 2).
+static func remove_ladder(province: ProvinceSim, foot: Vector2i) -> void:
+	if province.mil.ladders.erase(foot):
+		province.events.emit(&"ladder_removed", {"tile": foot})
 
 
 static func _next_to(pos: Vector2, tile: Vector2i) -> bool:
@@ -539,10 +604,12 @@ static func stand_by(province: ProvinceSim, tile: Vector2i, agent: Agent) -> Vec
 	var area := nav.area_of(agent.tile())
 	var best := Agent.NO_TILE
 	var best_d := INF
-	for step: Vector2i in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1),
-			Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]:
+	var steps: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
+	if unit_of(province, agent).siege != &"ladder":
+		steps.append_array([Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)])
+	for step: Vector2i in steps:
 		var t := tile + step
-		if nav.is_walkable(t) and nav.area_of(t) == area:
+		if nav.is_walkable(t) and nav.area_of(t) == area and not province.mil.ladders.has(t):
 			var d := agent.pos.distance_squared_to(IsoMath.tile_center(t))
 			if d < best_d:
 				best_d = d

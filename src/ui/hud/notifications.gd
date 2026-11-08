@@ -23,6 +23,29 @@ func on_sim_event(event: Dictionary) -> void:
 	if type == &"command_rejected":
 		push(tr("ui.command_error.%s" % event["reason"]))
 		return
+	# M7 part 2: bandit raids.
+	match type:
+		&"raid_warning":
+			push(tr("ui.note.raid_warning"))
+			return
+		&"raid_started":
+			push(tr("ui.note.raid_started"))
+			return
+		&"raid_looted":
+			push(tr("ui.note.raid_looted") % int(event.get("gold", 0)))
+			return
+		&"raid_defeated":
+			push(tr("ui.note.raid_defeated"))
+			return
+		&"raid_left":
+			push(tr("ui.note.raid_left"))
+			return
+		&"building_broken":
+			push(tr("ui.note.building_broken") % tr("building.%s.name" % event["def"]))
+			return
+		&"siege_engine_built":
+			push(tr("ui.note.siege_engine_built") % tr("unit.%s.name" % event["unit"]))
+			return
 	if type == &"merchant_arrived":
 		push(tr("ui.note.merchant_arrived"))
 		return

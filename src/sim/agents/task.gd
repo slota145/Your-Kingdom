@@ -31,6 +31,8 @@ const KIND_TRAVEL := &"travel"
 const KIND_ENLIST := &"enlist"
 ## A soldier at his barracks: drilling on the parade ground or resting inside (M7).
 const KIND_SOLDIER := &"soldier"
+## A townsman hiding from bandits in the town hall until the raid is over (M7 part 2).
+const KIND_SHELTER := &"shelter"
 
 var kind: StringName
 ## Recipe id for KIND_RECIPE.

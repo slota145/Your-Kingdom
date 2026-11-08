@@ -199,3 +199,87 @@ func test_troops_under_orders_survive_a_save() -> void:
 	assert_str(SimCodec.canonical(copy.to_dict())).is_equal(SimCodec.canonical(province.to_dict()))
 	var again := copy.agents.get_agent(archer.id)
 	assert_int(again.combat.path.size()).is_equal(archer.combat.path.size())
+
+
+func test_siege_workshop_builds_a_ram_manned_by_residents() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	var v := SimFixture.village(sim, 60)
+	var stock: BuildingState = v["stock"]
+	stock.stock.add(&"planks", 40)
+	stock.stock.add(&"iron", 10)
+	for i: int in 4:
+		SimFixture.house(sim, Vector2i(2 + 3 * i, 14))
+	var workshop := SimFixture.place(sim, &"siege_workshop", Vector2i(20, 6))
+	assert_str(String(sim.execute(OrderSiegeCommand.new(workshop.id, &"ram")))).is_empty()
+	assert_str(String(sim.execute(OrderSiegeCommand.new(workshop.id, &"spearman")))).is_equal("unknown_unit")
+	var residents_before := _residents(sim)
+	var built := [0]
+	assert_bool(SimFixture.run_until(sim, func() -> bool:
+		for agent: Agent in sim.province.agents.all():
+			if agent.kind == &"ram":
+				built[0] = agent.id
+				return true
+		return false, 300)).is_true()
+	var ram := sim.province.agents.get_agent(built[0])
+	assert_bool(Troops.is_soldier(sim.province, ram)).is_true()
+	assert_int(residents_before - _residents(sim)).is_equal(4)
+	assert_int(workshop.siege_orders.size()).is_equal(0)
+	assert_int(sim.province.goods_total(&"iron")).is_equal(6)
+	# The barracks do not recruit siege engines.
+	var barracks := SimFixture.place(sim, &"barracks", Vector2i(28, 20))
+	assert_str(String(Barracks.recruit_error(sim.province, barracks, sim.data.get_unit(&"ram")))).is_equal("built_in_workshop")
+
+
+func _residents(sim: Simulation) -> int:
+	var n := 0
+	for b: BuildingState in sim.province.buildings.all():
+		if b.house != null:
+			n += b.house.residents
+	return n
+
+
+func test_ram_breaks_a_gate_and_arrows_barely_hurt_it() -> void:
+	var sim := SimFixture.make_sim(Vector2i(32, 32))
+	var gate := SimFixture.place(sim, &"gatehouse", Vector2i(9, 15))
+	var ram := _soldier(sim, &"ram", Vector2i(10, 22), CombatState.BANDITS)
+	ram.combat.unit = &"ram"
+	ram.combat.order = CombatState.Order.STRUCTURE
+	ram.combat.target_tile = Vector2i(10, 17)
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return gate.is_broken(), 120)).is_true()
+	var dead: Array[Agent] = []
+	var arrow := Troops.Arrow.new()
+	arrow.target_id = ram.id
+	arrow.to = ram.pos
+	arrow.ticks = 1
+	arrow.damage = 10
+	sim.province.arrows.append(arrow)
+	Troops._fly_arrows(sim.province, dead)
+	assert_int(500 - ram.combat.hp).is_equal(2)
+
+
+func test_ladder_leads_enemies_onto_the_wall_and_defenders_push_it_down() -> void:
+	var sim := SimFixture.make_sim(Vector2i(32, 32))
+	_walled(sim)
+	for x: int in [0, 1, 2, 3, 25, 26, 27, 28, 29, 30, 31]:
+		sim.province.lay_wall(Vector2i(x, 16), Walls.STONE)   # no way round
+	# Enemies come from the north; the stairs are on the south (town) side.
+	var man := _soldier(sim, &"ladderman", Vector2i(18, 8), CombatState.BANDITS)
+	man.combat.unit = &"ladderman"
+	man.combat.order = CombatState.Order.STRUCTURE
+	man.combat.target_tile = Vector2i(18, 16)
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return not sim.province.mil.ladders.is_empty(), 60)).is_true()
+	assert_object(sim.province.mil.ladders.get(Vector2i(18, 15))).is_equal(Vector2i(18, 16))
+	# A bandit climbs it and walks on the wall to the stairs, then into the town.
+	var bandit := _soldier(sim, &"spearman", Vector2i(16, 8), CombatState.BANDITS)
+	var route := sim.province.mil.route(sim.province, Vector2i(16, 8), 0, Vector2i(10, 24), 0, CombatState.BANDITS)
+	assert_array(route).is_not_empty()
+	assert_bool((route[1] as PackedByteArray).has(MilitaryNav.WALL)).is_true()
+	bandit.combat.hp = 0
+	Troops.kill(sim.province, bandit)
+	Troops.kill(sim.province, man)
+	# A defender on the wall above it pushes it down.
+	var guard := _soldier(sim, &"spearman", Vector2i(18, 16))
+	guard.level = MilitaryNav.WALL
+	sim.execute(OrderTroopsCommand.new([guard.id], OrderTroopsCommand.MOVE, Vector2i(18, 16), MilitaryNav.WALL))
+	_run(sim, 2)
+	assert_bool(sim.province.mil.ladders.is_empty()).is_true()

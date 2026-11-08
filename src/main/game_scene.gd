@@ -9,7 +9,8 @@ extends Node2D
 ## (UI text-fit check).
 ## Soldiers (M7 part 2, as in Stronghold): left click or drag a box selects them, right click
 ## sends them (onto a wall when clicked on its crown) or attacks the enemy under the cursor,
-## Ctrl+1..9 remembers the selection as a group, 1..9 selects the group again.
+## Ctrl+1..9 remembers the selection as a group, 1..9 selects the group again. F7 sends a
+## bandit raid now.
 
 const START_MAP := &"riverlands"
 
@@ -76,12 +77,15 @@ func _ready() -> void:
 	var load_path := String(Game.start_request.get("load", ""))
 	_map_id = StringName(String(Game.start_request.get("map", START_MAP)))
 	_world_id = StringName(String(Game.start_request.get("world", "")))
+	var early_raid := bool(Game.start_request.get("early_raid", false))
 	Game.start_request = {}
 	var loaded: Simulation = null
 	if load_path != "":
 		loaded = SaveService.load_simulation(load_path, Data.registry)
 	_build_ui()
 	_start(loaded if loaded != null else _new_game())
+	if early_raid:
+		_execute(StartRaidCommand.new(120.0))
 	EventBus.sim_event_emitted.connect(_on_sim_event)
 
 
@@ -109,6 +113,7 @@ func _new_game() -> Simulation:
 
 func _start(simulation: Simulation) -> void:
 	sim = simulation
+	sim.raids_enabled = true   # bandits come in a game the player plays (M7 part 2)
 	_show_province()
 	_world_map.visible = false
 	_top.clock = sim.clock
@@ -625,6 +630,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_F5: _quick_save()
 			KEY_F9: _quick_load()
 			KEY_F11: _toggle_pseudolocalization()
+			KEY_F7: _execute(StartRaidCommand.new())   # a bandit raid now (M7 part 2, to try the defence)
 
 
 func _on_left_press() -> void:

@@ -22,7 +22,7 @@ const TABS: Array[Dictionary] = [
 		&"crane", &"port_warehouse"]},
 	{"id": &"military", "buildings": [&"charcoal_burner", &"mine", &"smelter", &"blacksmith",
 		&"armourer", &"bowyer", &"stud_farm", &"armoury", &"barracks"]},
-	{"id": &"defence", "buildings": [&"gatehouse", &"tower"],
+	{"id": &"defence", "buildings": [&"gatehouse", &"tower", &"siege_workshop"],
 		"tools": [&"palisade", &"stone_wall", &"stairs"]},
 ]
 ## Wall tools (M7 part 2): tool kind -> its cost, shown in the tooltip.

@@ -3048,3 +3048,106 @@ msgid_plural "ui.army.title_plural"
 msgstr[0] "%d żołnierz"
 msgstr[1] "%d żołnierze"
 msgstr[2] "%d żołnierzy"
+
+# --- M7 part 2: siege ---
+
+msgid "building.siege_workshop.name"
+msgstr "Warsztat oblężniczy"
+
+msgid "building.siege_workshop.desc"
+msgstr "Buduje tarany i drabiny na zamówienie. Tragarze znoszą deski (do taranu też żelazo), a gotową machinę obsadzają wolni mieszkańcy."
+
+msgid "unit.ram.name"
+msgstr "Taran"
+
+msgid "unit.ram.desc"
+msgstr "Kłoda okuta żelazem pod dachem ze skór: rozbija bramy i mury, strzały prawie mu nie szkodzą. Pcha go 4 ludzi. Z ludźmi nie walczy."
+
+msgid "unit.ladderman.name"
+msgstr "Drabiniarz"
+
+msgid "unit.ladderman.desc"
+msgstr "Niesie drabinę i opiera ją o mur kamienny: po niej wchodzi się na mur. Nie walczy."
+
+msgid "ui.kind.ram"
+msgstr "Taran"
+
+msgid "ui.kind.ladderman"
+msgstr "Drabiniarz"
+
+msgid "ui.kind.bandit"
+msgstr "Bandyta"
+
+msgid "ui.kind.bandit_archer"
+msgstr "Bandyta z łukiem"
+
+msgid "ui.siege.clear"
+msgstr "Wyczyść listę"
+
+msgid "ui.siege.idle"
+msgstr "Nic nie budujemy. Zamów taran albo drabinę."
+
+msgid "ui.siege.working"
+msgstr "W budowie: %s (%d%%)"
+
+msgid "ui.siege.waiting_materials"
+msgstr "Czeka na materiał: %s"
+
+msgid "ui.siege.waiting_crew"
+msgstr "Czeka na wolnych mieszkańców do obsługi (%d)."
+
+msgid "ui.siege.queued"
+msgstr "Dalej w kolejce: %d"
+
+msgid "ui.siege.needs"
+msgstr "Potrzeba: %s; obsługa: %d mieszkańców"
+
+msgid "ui.command_error.built_in_workshop"
+msgstr "To buduje warsztat oblężniczy, nie koszary."
+
+msgid "ui.command_error.not_siege_workshop"
+msgstr "To nie jest warsztat oblężniczy."
+
+msgid "ui.command_error.too_many_orders"
+msgstr "Lista zamówień jest pełna."
+
+msgid "ui.doing.fighting"
+msgstr "walczy"
+
+msgid "ui.doing.marching"
+msgstr "maszeruje"
+
+msgid "ui.doing.on_guard"
+msgstr "stoi na straży"
+
+# --- M7 part 2: raids ---
+
+msgid "ui.main.early_raid"
+msgstr "Gra z szybkim napadem bandytów"
+
+msgid "ui.note.raid_warning"
+msgstr "Bandyci nadchodzą! Za minutę będą u granic. Wyprowadź wojsko i przygotuj łuczników na murach."
+
+msgid "ui.note.raid_started"
+msgstr "Bandyci napadają na prowincję! Mieszkańcy uciekają do ratusza."
+
+msgid "ui.note.raid_looted"
+msgstr "Bandyci rozbili drzwi ratusza i złupili miasto (%d zł i towary). Mieszkańcy są przygnębieni."
+
+msgid "ui.note.raid_defeated"
+msgstr "Bandyci zostali pobici! Mieszkańcy wracają do pracy."
+
+msgid "ui.note.raid_left"
+msgstr "Bandyci odeszli z łupem."
+
+msgid "ui.note.building_broken"
+msgstr "Wróg rozbił: %s!"
+
+msgid "ui.note.siege_engine_built"
+msgstr "Warsztat oblężniczy skończył: %s."
+
+msgid "ui.command_error.raid_under_way"
+msgstr "Napad już trwa."
+
+msgid "ui.doing.sheltering"
+msgstr "chowa się przed bandytami"

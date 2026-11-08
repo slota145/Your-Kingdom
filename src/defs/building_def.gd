@@ -127,6 +127,8 @@ extends GameDef
 ## Life of the building in a fight (M7 part 2): gatehouse, tower, the door of a town hall.
 ## 0 = cannot be attacked.
 @export_range(0, 99999) var max_hp: int = 0
+## Siege workshop (M7 part 2): the engines (unit ids) it builds on order.
+@export var siege_engines: Array[StringName] = []
 
 
 func is_fort() -> bool:

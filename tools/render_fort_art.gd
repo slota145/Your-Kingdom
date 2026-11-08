@@ -31,6 +31,8 @@ func _init() -> void:
 	for job: Dictionary in JOBS:
 		for stage: int in [0, 1, 2]:
 			_queue.append(_fort.bind(job, stage))
+	for stage: int in [0, 1, 2]:
+		_queue.append(_workshop.bind(stage))
 	for icon: String in ["stone_wall", "palisade", "stairs"]:
 		_queue.append(_icon.bind(icon))
 
@@ -151,6 +153,113 @@ func _icon(what: String) -> void:
 			stairs.setup(Vector2i(0, 2), Vector2i(0, -1), _skin)
 			world.add_child(stairs)
 	_save_to = OUT + "walls/icons/%s.png" % what
+
+
+## The siege workshop (3x3, door on the +x side): an open timber shed with a shingled roof,
+## a ram frame being put together under it, planks and a ladder by the wall.
+func _workshop(stage: int) -> void:
+	var canvas := Vector2i(212, 200)
+	var pivot := Vector2i(106, 188)
+	var front := IsoMath.grid_to_screen(Vector2(3, 3))
+	var world := _world(canvas, front - Vector2(pivot) + Vector2(canvas) / 2.0)
+	var node := _Workshop.new()
+	node.stage = stage
+	world.add_child(node)
+	var name := "base" if stage == 0 else "construction_%d" % stage
+	_save_to = OUT + "buildings/siege_workshop/%s.png" % name
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT + "buildings/siege_workshop"))
+	var file := FileAccess.open(OUT + "buildings/siege_workshop/%s.json" % name, FileAccess.WRITE)
+	file.store_string(JSON.stringify({"footprint": [3, 3], "entrance": [2, 1], "pivot": [pivot.x, pivot.y]}, "\t"))
+	file.close()
+
+
+class _Workshop:
+	extends Node2D
+	const POST := Color(0.42, 0.29, 0.17)
+	const POST_LIT := Color(0.58, 0.42, 0.26)
+	const ROOF := Color(0.45, 0.33, 0.24)
+	const ROOF_DARK := Color(0.33, 0.23, 0.16)
+	const PLANK := Color(0.7, 0.55, 0.36)
+	const OUTLINE := Color(0.16, 0.11, 0.07)
+	const GROUND := Color(0.48, 0.42, 0.32)
+	var stage: int = 0
+
+	func _p(x: float, y: float, z: float) -> Vector2:
+		return IsoMath.grid_to_screen(Vector2(x, y)) - Vector2(0, z)
+
+	func _quad(a: Vector2, b: Vector2, c: Vector2, d: Vector2, fill: Color) -> void:
+		var poly := PackedVector2Array([a, b, c, d])
+		draw_colored_polygon(poly, fill)
+		draw_polyline(poly + PackedVector2Array([a]), OUTLINE, 1.0)
+
+	func _post(x: float, y: float, h: float) -> void:
+		var a := _p(x, y, 0)
+		draw_line(a, a - Vector2(0, h), OUTLINE, 5.0)
+		draw_line(a, a - Vector2(0, h), POST, 3.0)
+		draw_line(a + Vector2(-1, 0), a - Vector2(1, h), POST_LIT, 1.0)
+
+	func _draw() -> void:
+		# Trodden ground with wood chips.
+		_quad(_p(0.15, 0.15, 0), _p(2.85, 0.15, 0), _p(2.85, 2.85, 0), _p(0.15, 2.85, 0), GROUND)
+		for k: int in 18:
+			var g := Vector2(0.4 + fmod(k * 0.61, 2.2), 0.4 + fmod(k * 0.37, 2.2))
+			draw_rect(Rect2(_p(g.x, g.y, 0), Vector2(2, 1)), PLANK.darkened(0.1))
+		var eave := 38.0
+		var ridge := 62.0
+		# A stack of planks at the back and a ladder leaning on the back posts.
+		for k: int in 4:
+			_quad(_p(0.3, 0.4, 3 * k), _p(1.6, 0.4, 3 * k), _p(1.6, 0.8, 3 * k + 3), _p(0.3, 0.8, 3 * k + 3),
+					PLANK.darkened(0.06 * k))
+		for side: float in [0.0, 0.18]:
+			draw_line(_p(2.3 + side, 0.3, 0), _p(2.5 + side, 0.3, 46), POST, 2.0)
+		for k: int in 6:
+			var t := (k + 0.5) / 6.0
+			draw_line(_p(2.3 + 0.2 * t, 0.3, 46 * t), _p(2.48 + 0.2 * t, 0.3, 46 * t), PLANK, 1.0)
+		# The ram frame under construction: sills, uprights and the log on trestles.
+		var r := [Vector2(0.9, 1.2), Vector2(2.2, 1.2), Vector2(2.2, 1.9), Vector2(0.9, 1.9)]
+		for k: int in 4:
+			var a := _p(r[k].x, r[k].y, 4)
+			var b := _p(r[(k + 1) % 4].x, r[(k + 1) % 4].y, 4)
+			draw_line(a, b, POST, 3.0)
+			draw_line(a, a - Vector2(0, 18), POST, 2.0)
+		draw_line(_p(0.8, 1.55, 12), _p(2.4, 1.55, 12), POST.darkened(0.2), 6.0)
+		draw_line(_p(0.8, 1.55, 12), _p(2.4, 1.55, 12), PLANK.darkened(0.15), 4.0)
+		draw_line(_p(2.35, 1.55, 12), _p(2.5, 1.55, 12), Color(0.35, 0.35, 0.38), 7.0)
+		if stage == 1:
+			for x: float in [0.25, 2.75]:
+				for y: float in [0.25, 2.75]:
+					_post(x, y, eave * 0.6)
+			return
+		# Posts and the roof (half the shingles while it is being built).
+		for x: float in [0.25, 1.5, 2.75]:
+			for y: float in [0.25, 2.75]:
+				_post(x, y, eave)
+		var l0 := _p(0.1, 0.1, eave)
+		var l1 := _p(2.9, 0.1, eave)
+		var r0 := _p(0.1, 2.9, eave)
+		var r1 := _p(2.9, 2.9, eave)
+		var k0 := _p(0.1, 1.5, ridge)
+		var k1 := _p(2.9, 1.5, ridge)
+		var share := 1.0 if stage == 0 else 0.5
+		_quad(l0, l1, k1, k0, ROOF_DARK)
+		var rr1 := r0.lerp(r1, share)
+		var kk1 := k0.lerp(k1, share)
+		_quad(r0, rr1, kk1, k0, ROOF)
+		for k: int in range(1, 6):
+			var t := k / 6.0
+			draw_line(r0.lerp(k0, t), rr1.lerp(kk1, t), ROOF.darkened(0.2), 1.0)
+		for k: int in range(1, 12):
+			var t := k / 12.0 * share
+			draw_line(r0.lerp(r1, t), k0.lerp(k1, t), ROOF.darkened(0.12), 1.0)
+		if stage == 2:
+			for k: int in range(6, 12):
+				var t := k / 12.0
+				draw_line(r0.lerp(r1, t), k0.lerp(k1, t), POST, 2.0)   # bare rafters
+		# Gable end at +x with crossed beams.
+		var g := PackedVector2Array([_p(2.9, 0.1, eave), _p(2.9, 2.9, eave), _p(2.9, 1.5, ridge)])
+		draw_colored_polygon(g, POST_LIT.darkened(0.15))
+		draw_polyline(g + PackedVector2Array([g[0]]), OUTLINE, 1.0)
+		draw_line(_p(2.9, 0.5, eave + 3), _p(2.9, 2.5, eave + 3), POST, 2.0)
 
 
 ## Wooden scaffolding poles around a fort under construction.

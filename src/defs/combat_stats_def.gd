@@ -11,3 +11,5 @@ extends Resource
 @export_range(0.1, 4.0) var speed: float = 1.0
 ## Damage multiplier against other units: unit id -> factor (a spearman x2 against riders).
 @export var bonus_vs: Dictionary[StringName, float] = {}
+## Share of an arrow's damage that hurts (a ram's roof of hides: little).
+@export_range(0.0, 1.0) var ranged_taken: float = 1.0

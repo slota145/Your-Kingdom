@@ -37,6 +37,8 @@ var forts: FortLayer
 ## Life bars, arrows, selection (over the world) and the fallen (in it).
 var troops: TroopsLayer
 var corpses: CorpseLayer
+## Rams and ladders (M7 part 2).
+var siege: SiegeLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 
@@ -91,6 +93,9 @@ func setup(source: ProvinceSim) -> void:
 	world.add_child(agents)
 	agents.warm_up(province)
 	agents.forts = forts
+	siege = SiegeLayer.new()
+	world.add_child(siege)
+	siege.setup(province)
 	corpses = CorpseLayer.new()
 	world.add_child(corpses)
 	corpses.setup(province)
@@ -118,6 +123,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 		buildings.refresh_all()
 	agents.update_view(province.agents, alpha, visible_rect, time)
 	troops.update_view(alpha, delta)
+	siege.update_view(alpha, time)
 	corpses.update_view(delta)
 	ships.update_view(alpha, time)
 	shoals.update_view(time)

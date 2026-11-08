@@ -39,6 +39,8 @@ var walls: Walls
 var passages: Dictionary[Vector2i, int] = {}
 ## Where fighters walk: the wall-walk, the enemy's ground, ways between them (M7 part 2).
 var mil: MilitaryNav
+## Bandit raids on this province (M7 part 2).
+var raids: Raids = Raids.new()
 ## Arrows in flight (M7 part 2).
 var arrows: Array[Troops.Arrow] = []
 var jobs: JobBoard = JobBoard.new()
@@ -183,6 +185,7 @@ func step() -> void:
 		jobs.trim_yard_requests(self)
 	Population.update(self)
 	Barracks.update(self)
+	SiegeWorks.update(self)
 
 
 # --- Map -----------------------------------------------------------------------------------
@@ -2032,6 +2035,9 @@ func remove_wall(tile: Vector2i) -> void:
 func damage_wall(tile: Vector2i, amount: int) -> bool:
 	if not walls.damage(tile, amount):
 		return false
+	for foot: Vector2i in mil.ladders.keys():
+		if mil.ladders[foot] == tile:
+			Troops.remove_ladder(self, foot)
 	_refresh_wall_tiles(tile)
 	for d: int in Walls.DIRS.size():
 		var t: Vector2i = tile - Walls.DIRS[d]
@@ -2641,6 +2647,8 @@ func to_dict() -> Dictionary:
 		d["military"] = mil.to_dict()
 	if not arrows.is_empty():
 		d["arrows"] = Troops.arrows_to_list(self)
+	if raids.next_tick >= 0 or raids.count > 0:
+		d["raids"] = raids.to_dict()
 	return d
 
 
@@ -2683,6 +2691,8 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 				province.passages[tile] = building.id
 	province.walls.rebuild_wedges()
 	province.mil.load_dict(d.get("military", {}))
+	if d.has("raids"):
+		province.raids = Raids.from_dict(d["raids"])
 	for ad: Variant in d.get("arrows", []):
 		province.arrows.append(Troops.Arrow.from_dict(ad))
 	for pd: Variant in d.get("piles", []):

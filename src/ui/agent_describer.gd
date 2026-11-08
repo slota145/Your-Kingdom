@@ -15,6 +15,11 @@ static func kind_name(kind: StringName) -> String:
 
 static func doing(province: ProvinceSim, agent: Agent) -> String:
 	var task := agent.task
+	if agent.combat != null and agent.combat.commanded:
+		# Under orders or raiding (M7 part 2).
+		if agent.activity == &"drill":
+			return _t("ui.doing.fighting")
+		return _t("ui.doing.marching" if agent.activity == &"walk" else "ui.doing.on_guard")
 	if task == null:
 		if agent.cooldown > 0 and agent.last_fail == &"no_source" and agent.last_fail_good != &"":
 			return _f("ui.doing.waiting_for", [_good(agent.last_fail_good)])
@@ -41,6 +46,8 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 				return _f("ui.doing.waiting_for", [_good(good)])
 			return _f("ui.doing.enlist_gear", [_good(good)])
 		return _f("ui.doing.enlist_barracks", [_building_name(province, agent.home_id)])
+	if task.kind == Task.KIND_SHELTER:
+		return _t("ui.doing.sheltering")
 	if task.kind == Task.KIND_SOLDIER:
 		return _t("ui.doing.soldier_resting" if task.bb.has("_inside") else "ui.doing.soldier_ranks")
 	if task.kind == Task.KIND_LAND:

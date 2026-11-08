@@ -401,6 +401,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
   - mury i bramy mają wytrzymałość.
 - Cywile uciekają do ratusza lub twierdzy. Produkcja w zagrożonej strefie staje.
 - **Plan M7 (ankieta 2026-11-07):** sterowanie jak w Twierdzy (klik albo ramka, prawy przycisk: idź albo atakuj, grupy Ctrl+1..9, postawy). Ratusz ma drzwi z wytrzymałością: napastnik najpierw je rozbija, a gdy przy ratuszu nie ma obrońców, zajmuje prowincję. W M7 atakują bandyci, a gracz może zdobyć siłą osadę neutralną (mury i straż).
+- **Stan M7, część 2 (2026-11-08):** bandyci łupią i odchodzą (nie zajmują prowincji), taran i drabiny buduje warsztat oblężniczy, napady rzadkie z ostrzeżeniem (ROADMAP M7, „Część 2, stan”).
 - **Zwycięstwo atakującego** to zajęcie ratusza (twierdzy) i brak obrońców. Prowincja przechodzi wtedy do atakującego, a mieszkańcy zostają, z karą do zadowolenia.
 - Gdy gracz nie ogląda oblężenia, wynik jest rozstrzygany automatycznie. Uwzględnia mury, garnizon i machiny oblężnicze.
 
