@@ -25,7 +25,8 @@ M0 Fundament
                 │                   └─► G1 Grafika budynków z PixelLab, część 1 (pionierzy)
                 │                        └─► M7 Wojsko, mury i oblężenia
                 │                             └─► B1 Most przez rzekę i łagodniejszy brzeg
-                │                                  └─► M8 Przeciwnicy i sandbox ──► M10 Wersja 1.0
+                │                                  └─► W1 Nowe wybrzeże ──► J1 Nowe jednostki i okręty
+                │                                       └─► M8 Przeciwnicy i sandbox ──► M10 Wersja 1.0
                 └─► M9 Produkcja grafik (równolegle od M4, partiami)
 Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 ```
@@ -1012,6 +1013,71 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Brzeg morza, jeziora i rzeki jest miękki, bez schodków po kaflach (zrzuty przed i po).
 - [x] Wędkarz, glinianka, dźwig i magazyn portowy stoją 1 rzędem na palach nad płytką wodą (testy reguły, zrzuty).
 - [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
+- [ ] **Twoja ocena gry** (po każdej części).
+
+---
+
+## W1 — Nowe wybrzeże na mapie „Wybrzeże”
+
+**Status: gotowy i scalony do `main` 2026-11-08 na prośbę właściciela, przed oceną** (plan zaakceptowany 2026-11-08, ankieta: zatoka szeroka i zaokrąglona, jak podkowa). Prośba właściciela 2026-11-08; ankieta: **teraz, mały etap** (przed oceną M7 i B1), przed J1, bo większe okręty z J1 potrzebują szerszej zatoki.
+
+**Stan (2026-11-08):**
+- Brzeg morza na południu i wschodzie to łagodne zakola i cyple (szum w dwóch skalach) zamiast prostych odcinków ze schodkami; wschodni brzeg zakręca w południowy łukiem.
+- Zatoka jak podkowa: ok. 26 kafli szerokości (dotąd 13) i ok. 22 długości (dotąd 32), z płaskim dnem (ok. 16 kafli) i zaokrąglonymi rogami. Płaskie dno jest celowe: przystań rybacka i stocznia nie obracają się na wodzie i potrzebują prostego brzegu (znalazły go dzięki temu przy dnie zatoki). Rzeka wpada w róg dna zatoki.
+- Lądowanie: koga kotwiczy w (75, 86), plaża w (70, 86), tuż pod placem miasta; za plażą jest otwarta łąka (bez lasu) aż do placu.
+- Automatyczny gracz z portem: stocznia na brzegu morza na wschód od wejścia do zatoki (zachodnią stronę zajmuje miasto), ponawia próbę, gdy ktoś stoi w miejscu budowy. Testy znające stare miejsca szukają ich teraz same.
+- Zapis bez zmian (stare gry mają stary teren).
+- Zrzut: `game_shot.tscn -- --map=coast --tile=76,90 --zoom=0 --advance=20`; mapa: `python3 tools/generate_coast_map.py`.
+
+**Cel:** linia brzegowa „Wybrzeża” jest bardziej naturalna, a zatoka szersza i krótsza, nie prostokątna. Jedna część, ocena po niej.
+
+**Zakres:**
+- generator mapy (`tools/generate_coast_map.py`): brzeg morza z łagodnych zakoli i cypli zamiast prostych odcinków ze schodkami; zatoka mniej więcej dwa razy szersza i o jedną trzecią krótsza, zaokrąglona, z ujściem rzeki; płycizna i głębina według odległości od lądu jak dotąd; ławice w morzu,
+- przestawienie wszystkiego, co zależy od kształtu mapy: miejsce kotwiczenia kogi i plaża lądowania (start ze statku), plac miasta, wejście z zachodu, ławice, automatyczny gracz z portem (`harbour_bot`), testy i zrzuty, które używają konkretnych kafli „Wybrzeża”,
+- zrzuty przed i po (mapa w całości i zatoka z bliska).
+
+**Poza zakresem:** zmiana innych map, zmiana zasad stawiania portu i nabrzeży.
+
+**Ryzyka:** automatyczny gracz i testy lądowania znają dzisiejsze miejsca; po zmianie trzeba je przestawić i sprawdzić długimi testami. Stare zapisy nie zmieniają się (zapis pamięta swój teren); nowy kształt widać w nowej grze.
+
+**DoD:**
+- [x] Zatoka szersza i krótsza, zaokrąglona; brzeg morza bez prostych odcinków ze schodkami (zrzuty przed i po).
+- [x] Start ze statku działa: koga kotwiczy w zatoce, osadnicy brodzą na plażę (test lądowania).
+- [x] Automatyczny gracz z portem buduje port, nabrzeża, dźwig i kogę (długi test).
+- [x] `tools/run_tests.sh --all` przechodzi.
+- [ ] **Twoja ocena gry.**
+
+---
+
+## J1 — Nowe jednostki i okręty
+
+**Status: szkic planu do akceptacji (2026-11-08).** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
+
+**Cel (prośba właściciela):**
+- jednostki: **halabardnik w zbroi płytowej**, **kusznik**, **ciężki zbrojny z morgensternem**, **lekka jazda**, **ruchoma balista**,
+- **3 nowe okręty**, każdy w wersji cywilnej (handel, ładownia) i wojennej (żołnierze, walka automatyczna), każdy większy od poprzedniego (w granicach rozsądku; koga zostaje najmniejszym statkiem pełnomorskim),
+- **duża stocznia**, w której powstają nowe okręty.
+
+**Podział (propozycja): 3 części, ocena po każdej.**
+1. **Piechota i jazda:** nowe towary i ich wytwarzanie (halabarda, kusza, morgenstern, zbroja płytowa), rekrutacja w koszarach, wartości walki w widoku prowincji i w rozstrzyganiu automatycznym, postacie z animacjami.
+2. **Ruchoma balista:** budowa w warsztacie oblężniczym, obsługa, strzał z daleka (ludzie, machiny, mury i bramy), rozstawianie i przetaczanie.
+3. **Duża stocznia i 3 okręty:** budowa etapami jak koga, wersje cywilne (większa ładownia, szlaki i rejsy) i wojenne (więcej żołnierzy, siła w bitwie morskiej rozstrzyganej automatycznie), grafika coraz większych statków, sprawdzenie, że mieszczą się w zatoce i przy nabrzeżach.
+
+**Decyzje (ankieta 2026-11-08):**
+- **Okręty: karawela, karaka i galeon**, w tej kolejności rozmiaru (wybór kolejności zostawiony Claude): karawela lekka i szybka, trochę większa od kogi; karaka z wysokimi nadbudówkami i kilkoma masztami; galeon największy.
+- **Broń z rozszerzonych warsztatów:** kowal robi też halabardy i morgensterny, łuczarz kusze. **Zbroja jedna dla wszystkich:** dzisiejsza kolczuga zostaje tym samym towarem (id `chainmail` bez zmian), ale dostaje ogólniejszą nazwę „zbroja”, pasującą do miecznika, jeźdźca, halabardnika i ciężkiego zbrojnego.
+
+**Otwarte decyzje (ankieta przy starcie J1):** jak działa balista, wygląd postaci (kodem jak żołnierze M7 czy PixelLab), wartości walki.
+
+**Wartości wyjściowe:** do ustalenia w planie części; punktem wyjścia jest tabela M7 (włócznik, łucznik, miecznik, jeździec).
+
+**Ryzyka:** dużo grafiki (5 nowych postaci z animacjami walki, 6 wersji okrętów, duża stocznia); balans walki przed oceną M7; większe okręty a szerokość zatoki i torów wodnych (dlatego W1 najpierw); zapis: nowa wersja na każdą część ze zmianą formatu.
+
+**DoD (wstępne):**
+- [ ] 4 nowe jednostki rekrutuje się w koszarach z nowej broni i zbroi; walczą w widoku prowincji i w rozstrzyganiu automatycznym (testy tabeli).
+- [ ] Ruchoma balista powstaje w warsztacie i strzela z daleka do ludzi, machin i murów.
+- [ ] Duża stocznia buduje 3 okręty w wersji cywilnej i wojennej; każdy większy od poprzedniego; cywilne handlują, wojenne wożą wojsko i walczą automatycznie.
+- [ ] Zapisy z migracjami, teksty PL i EN.
 - [ ] **Twoja ocena gry** (po każdej części).
 
 ---

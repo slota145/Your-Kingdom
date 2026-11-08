@@ -75,7 +75,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
 | Typ | Cechy | Zakres |
 |---|---|---|
 | Kontynentalna | Bez morza. Opcjonalnie z rzeką (rybołówstwo, młyn wodny, przeprawa) lub jeziorem. Nie ma portu morskiego. | [SLICE] tylko wariant z rzeką · M4b-3: „Pojezierze” 128×128 (jezioro z trzcinami, rzeka z brodami, kamieniste wzgórze ze skałami); mapę wybiera się w menu przy nowej grze · [1.0] wszystkie |
-| Przybrzeżna | Ląd z linią brzegową: port, stocznia, rybołówstwo morskie. | M5 (plan 2026-11-06): „Wybrzeże” 128×128 (morze płytkie i głębokie, plaża, zatoka, rzeka do morza, ławice ryb; część 1 gotowa), start ze statku (część 3: koga rzuca kotwicę w zatoce, 6 osadników brodzi na plażę, zestaw startowy leży na plaży, najpierw obóz pionierów) · [1.0] wszystkie |
+| Przybrzeżna | Ląd z linią brzegową: port, stocznia, rybołówstwo morskie. | M5 (plan 2026-11-06): „Wybrzeże” 128×128 (morze płytkie i głębokie, plaża, zatoka (W1, 2026-11-08: szeroka podkowa z płaskim dnem, naturalny brzeg z zakolami), rzeka do morza, ławice ryb; część 1 gotowa), start ze statku (część 3: koga rzuca kotwicę w zatoce, 6 osadników brodzi na plażę, zestaw startowy leży na plaży, najpierw obóz pionierów) · [1.0] wszystkie |
 | Wyspowa | Jedna lub kilka wysp. Do wyspy można dotrzeć wyłącznie statkiem. | [1.0] |
 
 ---

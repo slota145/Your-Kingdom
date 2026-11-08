@@ -9,8 +9,8 @@ terrain_image = ExtResource("2_img")
 entry_tile = Vector2i(0, 66)
 start_gold = 100
 start_by_ship = true
-landing_tile = Vector2i(73, 74)
-beach_tile = Vector2i(70, 74)
+landing_tile = Vector2i(75, 86)
+beach_tile = Vector2i(70, 86)
 start_settlers = Array[StringName]([&"builder", &"porter", &"porter", &"porter", &"porter", &"porter"])
 start_pile = Dictionary[StringName, int]({
 &"bread": 20,
