@@ -37,6 +37,10 @@ var fields: FieldStore = FieldStore.new()
 var walls: Walls
 ## Gatehouse passage tiles -> gatehouse id (M7 part 2). Not saved: rebuilt from buildings.
 var passages: Dictionary[Vector2i, int] = {}
+## Where fighters walk: the wall-walk, the enemy's ground, ways between them (M7 part 2).
+var mil: MilitaryNav
+## Arrows in flight (M7 part 2).
+var arrows: Array[Troops.Arrow] = []
 var jobs: JobBoard = JobBoard.new()
 var paths: PathRequestQueue = PathRequestQueue.new()
 ## The kingdom's gold. Owned by the Simulation (it is global), shared here for convenience.
@@ -134,6 +138,7 @@ func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entit
 	cog_nav.set_solid_rect(Rect2i(Vector2i.ZERO, size), true)
 	resources = ResourceField.new(size)
 	walls = Walls.new(size)
+	mil = MilitaryNav.new(size)
 	terrains = registry.terrains_by_index()
 	coverage.setup(size)
 
@@ -146,10 +151,13 @@ func step() -> void:
 		if agent.task != null and (agent.path_state == Agent.PathState.MOVING \
 				or agent.path_state == Agent.PathState.WAITING):
 			continue
+		if agent.combat != null and agent.combat.commanded:
+			continue   # under orders: Troops drives him (M7 part 2)
 		if agents.has_agent(agent.id):
 			TaskRunner.tick_agent(self, agent)
 	Movement.serve_paths(self)
 	Movement.move_all(self)
+	Troops.update(self)
 	Ships.move_all(self)
 	_remove_empty_piles()
 	if tick % GROW_CHECK_TICKS == 0:
@@ -247,6 +255,7 @@ func refresh_tile(tile: Vector2i) -> void:
 			cost = node.move_cost
 	if not is_equal_approx(nav.get_cost(tile), cost):
 		nav.set_cost(tile, cost)
+	mil.refresh_tile(self, tile, nav_solid, cost)
 	var on_road := (grid.has_road(tile) or passage) and not nav_solid
 	road_nav.set_solid(tile, not on_road)
 	if on_road and not is_equal_approx(road_nav.get_cost(tile), cost):
@@ -2043,6 +2052,14 @@ func execute_place(id: StringName, origin: Vector2i, orientation: int) -> Buildi
 	return add_building(def, origin, true, orientation)
 
 
+## A building's life ran out in a fight (M7 part 2): a gatehouse stands open to everybody.
+func break_building(building: BuildingState) -> void:
+	building.hp = 0
+	for tile: Vector2i in building.passage_tiles():
+		refresh_tile(tile)
+	events.emit(&"building_broken", {"building": building.id, "def": building.def.id})
+
+
 func _add_fort(building: BuildingState) -> void:
 	walls.add_fort(building.tiles(), building.id)
 	for tile: Vector2i in building.passage_tiles():
@@ -2620,6 +2637,10 @@ func to_dict() -> Dictionary:
 		d["rare"] = String(rare_resource)
 	if walls.count() > 0:
 		d["walls"] = walls.to_dict()
+	if not mil.ladders.is_empty():
+		d["military"] = mil.to_dict()
+	if not arrows.is_empty():
+		d["arrows"] = Troops.arrows_to_list(self)
 	return d
 
 
@@ -2661,6 +2682,9 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 			for tile: Vector2i in building.passage_tiles():
 				province.passages[tile] = building.id
 	province.walls.rebuild_wedges()
+	province.mil.load_dict(d.get("military", {}))
+	for ad: Variant in d.get("arrows", []):
+		province.arrows.append(Troops.Arrow.from_dict(ad))
 	for pd: Variant in d.get("piles", []):
 		var pile := GroundPile.from_dict(pd, registry)
 		province.piles[pile.id] = pile

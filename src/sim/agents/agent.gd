@@ -31,6 +31,8 @@ var last_fail: StringName = &""
 var last_fail_good: StringName = &""
 ## A soldier's fighting state (M7); null for civilians and recruits on their way.
 var combat: CombatState = null
+## 0 on the ground, 1 on a wall-walk (a soldier on the walls, M7 part 2).
+var level: int = 0
 ## Resource node tile claimed by this agent, NO_TILE if none.
 var claimed_node: Vector2i = NO_TILE
 
@@ -81,6 +83,8 @@ func to_dict() -> Dictionary:
 		d["vehicle"] = String(vehicle)
 	if combat != null:
 		d["combat"] = combat.to_dict()
+	if level != 0:
+		d["level"] = level
 	return d
 
 
@@ -105,4 +109,5 @@ static func from_dict(d: Dictionary) -> Agent:
 		a.task = Task.from_dict(d["task"])
 	if d.has("combat"):
 		a.combat = CombatState.from_dict(d["combat"])
+	a.level = int(d.get("level", 0))
 	return a

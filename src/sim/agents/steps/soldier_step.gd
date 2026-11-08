@@ -9,6 +9,8 @@ extends TaskStep
 
 
 func run(province: ProvinceSim, agent: Agent, _def: StepDef) -> Status:
+	if agent.combat != null and agent.combat.commanded:
+		return Status.RUNNING   # under the player's orders (Troops, M7 part 2)
 	var bb := agent.task.bb
 	var barracks := province.buildings.get_building(agent.home_id)
 	if barracks == null or barracks.def.soldier_beds <= 0:

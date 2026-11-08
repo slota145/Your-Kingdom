@@ -19,6 +19,9 @@ var size: Vector2i
 var solid_map: PackedByteArray = PackedByteArray()
 
 var _astar: AStarGrid2D = AStarGrid2D.new()
+## Connected areas (components), cached for solid_version (M7 part 2).
+var _labels: PackedInt32Array = PackedInt32Array()
+var _labels_version: int = -1
 
 
 func _init(grid_size: Vector2i) -> void:
@@ -107,3 +110,40 @@ func reachable(start: Vector2i, targets: Dictionary[Vector2i, bool],
 			visited[index] = 1
 			queue.append(next)
 	return found
+
+
+## Label of the connected walkable area of [param tile] (4 neighbours, like [method
+## reachable]); -1 when solid. Labels are worked out again only after a tile turned solid or
+## free (M7 part 2: the troops' routes over walls and ladders).
+func area_of(tile: Vector2i) -> int:
+	if not is_inside(tile):
+		return -1
+	if _labels_version != solid_version:
+		_label_areas()
+	return _labels[tile.y * size.x + tile.x]
+
+
+func _label_areas() -> void:
+	_labels_version = solid_version
+	_labels = PackedInt32Array()
+	_labels.resize(size.x * size.y)
+	_labels.fill(-1)
+	var next := 0
+	var queue := PackedInt32Array()
+	for start: int in solid_map.size():
+		if solid_map[start] == 1 or _labels[start] != -1:
+			continue
+		_labels[start] = next
+		queue.resize(0)
+		queue.append(start)
+		var head := 0
+		while head < queue.size():
+			var i := queue[head]
+			head += 1
+			var x := i % size.x
+			for j: int in [i - 1 if x > 0 else -1, i + 1 if x < size.x - 1 else -1, i - size.x, i + size.x]:
+				if j < 0 or j >= solid_map.size() or solid_map[j] == 1 or _labels[j] != -1:
+					continue
+				_labels[j] = next
+				queue.append(j)
+		next += 1
