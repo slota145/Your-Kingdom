@@ -301,6 +301,14 @@ func _place_bridges(sim: Simulation, at: Vector2i) -> void:
 			if province.bridge_plan(from, from + Vector2i(k, k))["error"] == &"":
 				lay.call(from, from + Vector2i(k, k), TileGrid.TIMBER_BRIDGE)
 				break
+	# A diagonal stone bridge further up.
+	var e: Array = crossing.call(at.y - 10)
+	if not e.is_empty():
+		for k: int in range(3, 12):
+			var from: Vector2i = e[0] - Vector2i(1, 1)
+			if province.bridge_plan(from, from + Vector2i(k, k))["error"] == &"":
+				lay.call(from, from + Vector2i(k, k), TileGrid.STONE_BRIDGE)
+				break
 	var d: Array = crossing.call(at.y + 10)
 	if not d.is_empty():
 		print("ordered bridge ", sim.execute(BuildBridgeCommand.new(d[0], d[1], TileGrid.STONE_BRIDGE)))

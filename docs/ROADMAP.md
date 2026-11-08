@@ -964,12 +964,13 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Część 1, stan (2026-11-08): gotowa, czeka na ocenę właściciela.**
 - Most drewniany i kamienny przeciąga się od brzegu do brzegu (przyciski „Most” i „Most kamienny” obok „Drogi”), w 8 kierunkach, najwyżej 8 kafli wody, z rampą na każdym brzegu; podgląd całej linii na zielono albo czerwono, całość albo nic. Budowniczy kładzie kafel po kaflu od bliższego brzegu (6 s), tragarze noszą deski albo kamień. Ludzie chodzą po moście jak po drodze albo bruku, wózki bez kary za jazdę poza drogą, wozy jeżdżą (most to droga). Rozbiórka zabiera cały most (nie, gdy ktoś na nim stoi) albo zamówienie.
+- Most po skosie (na ekranie pionowy) ma wyraźne poręcze: słupki wychylone nad wodę z żerdzią na górze, a kamienny murek z jasnym zwieńczeniem (prośba właściciela 2026-11-08).
 - Droga przez rzekę zamawia most drewniany, bruk most kamienny (`ProvinceSim.road_crossings`).
 - Pasek budowy zawija narzędzia do drugiego wiersza, gdy ekran jest za wąski (przy 1280 px „Rozbiórka” i „Schowaj” wypadały poza ekran).
 - Grafika kodem (`BridgeLayer`, ART_SPEC): łuki kamiennego mostu, pale drewnianego, poręcze i murki w świecie, rampy.
 - Zapis v21 (ARCHITECTURE §8). Testy: `tests/scenario/test_b1_bridges.gd`.
 - Zrzut: `game_shot.tscn -- --map=coast --tile=58,34 --zoom=2 --bridges [--focus=58,41]`.
-- Uproszczenia: w trybie uproszczonym budowa mostu czeka jak bruk; poręcze na moście po skosie biegną na ekranie pionowo i są słabo widoczne; burzenie mostu nie zwraca materiału; ruchome wozy na moście nie blokują rozbiórki.
+- Uproszczenia: w trybie uproszczonym budowa mostu czeka jak bruk; burzenie mostu nie zwraca materiału; ruchome wozy na moście nie blokują rozbiórki.
 
 
 **Podział: 2 części, ocena po każdej.**

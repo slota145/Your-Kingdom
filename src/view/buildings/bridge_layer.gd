@@ -154,6 +154,8 @@ func _build_rails() -> void:
 		piece.from = p - piece.position
 		piece.to = q - piece.position
 		piece.stone = _tiles[side[0]] == TileGrid.STONE_QUAY
+		var out := IsoMath.grid_to_screen(Vector2(side[3])) - IsoMath.grid_to_screen(Vector2.ZERO)
+		piece.out_x = signf(out.x)
 		piece.rise_from = side[4]
 		piece.rise_to = side[5]
 		var normal: Vector2i = side[3]
@@ -226,9 +228,15 @@ class RailPiece:
 	## Height of the railing at each end, 0-1 (lower down a ramp).
 	var rise_from: float = 1.0
 	var rise_to: float = 1.0
+	## Which way the side looks on screen (-1 left, 1 right), for a side running straight up the
+	## screen (a diagonal bridge).
+	var out_x: float = 1.0
 
 	func _draw() -> void:
 		var shade := Color(light + 0.1, light + 0.1, light + 0.1)
+		if absf(to.x - from.x) < 2.0:
+			_draw_upright(shade)
+			return
 		if stone:
 			var up_a := Vector2(0, -BridgeLayer.PARAPET_HEIGHT * rise_from)
 			var up_b := Vector2(0, -BridgeLayer.PARAPET_HEIGHT * rise_to)
@@ -262,3 +270,52 @@ class RailPiece:
 			draw_line(foot, foot + up_a.lerp(up_b, t) - Vector2(0, 1), wood.darkened(0.1), 2.0)
 		draw_line(from + up_a, to + up_b, wood.lightened(0.15), 2.0)
 		draw_line(from + up_a * 0.45, to + up_b * 0.45, wood, 1.0)
+
+	## A side running straight up the screen (a diagonal bridge): the railing would be seen
+	## edge-on as a bare line, so it is drawn a little from above (owner's request 2026-11-08):
+	## a timber railing leans its posts out over the water with the top rail along them, a
+	## parapet is a band of stone with a light coping; a strip of shade on the deck inside.
+	func _draw_upright(shade: Color) -> void:
+		var top := minf(from.y, to.y)
+		var bottom := maxf(from.y, to.y)
+		var x := from.x
+		var shadow := Color(0, 0, 0, 0.22)
+		# Shade on the deck inside the railing.
+		draw_rect(Rect2(minf(x, x - out_x * 3.0), top, 3.0, bottom - top), shadow)
+		if stone:
+			var height := BridgeLayer.PARAPET_HEIGHT
+			var wall := QuayLayer.STONE_DARK * shade
+			var lean := out_x * 6.0
+			var band := PackedVector2Array([Vector2(x, bottom), Vector2(x, top),
+					Vector2(x + lean, top - height * rise_from), Vector2(x + lean, bottom - height * rise_to)])
+			draw_colored_polygon(band, wall)
+			# The outer face going down to the deck edge, the coping on top.
+			var y := top + 4.0
+			while y < bottom:
+				var t := (y - top) / maxf(bottom - top, 1.0)
+				var h := lerpf(height * rise_from, height * rise_to, t)
+				draw_line(Vector2(x, y), Vector2(x + lean, y - h), wall.darkened(0.25), 1.0)
+				y += 7.0
+			var coping_a := Vector2(x + lean, top - height * rise_from)
+			var coping_b := Vector2(x + lean, bottom - height * rise_to)
+			draw_line(coping_a + Vector2(-out_x, 0), coping_b + Vector2(-out_x, 0), QuayLayer.STONE_EDGE * shade, 3.0)
+			draw_line(coping_a + Vector2(out_x * 2.0, 0), coping_b + Vector2(out_x * 2.0, 0), wall.darkened(0.35), 1.0)
+			return
+		var wood := QuayLayer.BEAM * shade
+		var height := BridgeLayer.RAIL_HEIGHT
+		var lean := out_x * 6.0
+		# Posts every 8 px, leaning out a little so they read as posts and not as one line.
+		var y := top
+		while y <= bottom + 0.5:
+			var t := (y - top) / maxf(bottom - top, 1.0)
+			var h := lerpf(height * rise_from, height * rise_to, t)
+			draw_line(Vector2(x, y), Vector2(x + lean, y - h), wood.darkened(0.2), 2.0)
+			draw_rect(Rect2(Vector2(x + lean - 1.0, y - h - 1.0), Vector2(2, 2)), wood.lightened(0.35))
+			y += 8.0
+		# The top rail along the post heads and a lower rail halfway.
+		var head_a := Vector2(x + lean, top - height * rise_from)
+		var head_b := Vector2(x + lean, bottom - height * rise_to)
+		draw_line(head_a + Vector2(out_x, 0), head_b + Vector2(out_x, 0), wood.darkened(0.3), 1.0)
+		draw_line(head_a, head_b, wood.lightened(0.25), 2.0)
+		draw_line(Vector2(x + lean * 0.5, top - height * rise_from * 0.5),
+				Vector2(x + lean * 0.5, bottom - height * rise_to * 0.5), wood, 1.0)
