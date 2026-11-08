@@ -437,6 +437,13 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Duże miasto do testów to gotowy zapis.** Skrypt buduje na nowej mapie duże miasto (wszystkie łańcuchy, wozy, bruk, 400+ postaci) i zapisuje je jako fixturę. Na nim robimy test 2 godzin przy 4× i pomiar. Automatyczny gracz dalej sprawdza drogę od startu do patrycjuszy, ale nie musi dochodzić do 400 postaci.
 - **Pomiar wydajności na razie tylko w chmurze:** czas ticku symulacji na dużym mieście (cel z ARCHITECTURE §9.1: ≤ 4 ms przy 500 postaciach). **Pomiar FPS na laptopie zrobimy w osobnej sesji**, gdy właściciel projektu będzie przy laptopie: scena pomiaru (60 s przy 4×, trzy poziomy zbliżenia, wynik w konsoli) i wpis do ARCHITECTURE §9.3. Do tego czasu ten punkt DoD zostaje otwarty.
 
+**Część 2, decyzje (ankieta 2026-11-08, start części):**
+- **Kolejność:** (A) mury, bramy, baszty i schody w rozgrywce; (B) chodzenie po murach i sterowanie jak w Twierdzy; (C) walka, łucznicy na murach, taran i drabiny; (D) bandyci, ucieczka cywilów, przejęcie przez drzwi ratusza, zapis. Ocena po całej części. Zdobywanie osady neutralnej siłą (marsz armii) w części 3.
+- **Grafika:** mur i wieża bramna z prototypu (kamień z PixelLab z początku projektu, `src/prototype/walls/pixellab/`), reszta (baszta, schody, palisada, taran, drabina, warsztat oblężniczy) rysowana kodem.
+- **Bandyci po rozbiciu drzwi ratusza bez obrońców: łupią i odchodzą** (część złota i towarów z magazynu, zadowolenie −30 przez 10 minut). Prowincja zostaje graczowi. Pełne przejęcie prowincji jest w kodzie i testach na część 3 i M8.
+- **Taran i drabiny: nowy warsztat oblężniczy** (budynek w kategorii „Wojsko”, grafika kodem). Bandyci przynoszą własne drabiny, taran tylko przy rzadkim większym napadzie.
+- **Napady rzadkie, z ochroną:** pierwszy po ok. 40 minutach gry, potem co 25–40 minut, 4–8 bandytów, ostrzeżenie 60 s wcześniej; przycisk „napad teraz” w menu narzędzi.
+
 **Wartości wyjściowe (do strojenia przy realizacji):**
 - wózek: 3 sztuki, 3 deski za wózek, najwyżej 2 wózki na magazyn (po jednym na tragarza), poza drogą 0,7× szybkości pieszego, na drodze 1×,
 - wóz: 6 sztuk, 1,3× szybkości pieszego na tej samej drodze, stajnia 3×3 z 2 wozami i 2 woźnicami, koszt np. 12 drewna, 8 desek, 40 złota,
