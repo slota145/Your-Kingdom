@@ -952,7 +952,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## B1 — Most przez rzekę i łagodniejszy brzeg
 
-**Status: plan zaakceptowany 2026-11-08; część 1 (most) i część 2 (brzeg) gotowe, czekają na ocenę.** Wybór etapu: ankieta z właścicielem projektu 2026-11-08 (zamiast M8 i rejsów w oknie mapy świata). Mały etap jak N1, po M7, niezależny od oceny wojska. Pomysł gracza z oceny M5 (IDEAS: „Most przez rzekę i mniej kanciaste wybrzeże”). Poprawki z oceny M7 (i pomiar 300 walczących) mają pierwszeństwo przed dalszą pracą.
+**Status: plan zaakceptowany 2026-11-08; część 1 (most) i część 2 (brzeg) gotowe i scalone do `main` 2026-11-08 na prośbę właściciela, przed oceną.** Wybór etapu: ankieta z właścicielem projektu 2026-11-08 (zamiast M8 i rejsów w oknie mapy świata). Mały etap jak N1, po M7, niezależny od oceny wojska. Pomysł gracza z oceny M5 (IDEAS: „Most przez rzekę i mniej kanciaste wybrzeże”). Poprawki z oceny M7 (i pomiar 300 walczących) mają pierwszeństwo przed dalszą pracą.
 
 **Decyzje (ankieta 2026-11-08):**
 - **Dwa rodzaje mostu:** drewniany (tani, jak droga ubita) i kamienny (droższy, jak bruk, z łukami).
