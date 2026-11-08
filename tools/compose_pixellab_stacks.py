@@ -49,6 +49,9 @@ LOGS = ([(6, 1), (5, 1), (4, 1), (3, 1), (2, 1)], 0.13, 0.3)   # 20: a pyramid o
 # again. A layer here is (columns, rows, step along x, step along y, mirrored).
 PLANKS = ([(2, 4, 0.5, 0.2, False), (4, 2, 0.2, 0.5, True), (2, 2, 0.5, 0.2, False)], 0.0, 0.3)
 
+# 20 bows in neat rows, all the same way (crosswise they tangle).
+BOWS = ([(2, 4, 0.5, 0.2, False), (2, 4, 0.5, 0.2, False), (2, 2, 0.5, 0.2, False)], 0.0, 0.35)
+
 # Pieces drawn darker than the old stacks: brightened by this gamma (lower = brighter).
 GAMMA = {"stone": 0.6}
 
@@ -59,6 +62,12 @@ LAYOUTS = {
     "hops": PILE, "beer": BARRELS, "wine": BARRELS, "mead": BARRELS, "honey": BARRELS,
     "tar": BARRELS,
 }
+G2_SET = list(LAYOUTS.keys())
+# M7 part 1: metals and weapons (ART_SPEC §10.14); long weapons crosswise like boards.
+LAYOUTS.update({
+    "charcoal": PILE, "iron_ore": PILE, "iron": PILE_LOW, "chainmail": PILE_LOW,
+    "spear": PLANKS, "sword": PLANKS, "bow": BOWS,
+})
 
 
 def stack_size(good):
@@ -108,7 +117,8 @@ def main():
     only = sys.argv[1:]
     tmp = tempfile.mkdtemp(prefix="goods_")
     groups = {g: [(os.path.join(SRC, g + ".png"), os.path.join(tmp, g + ".png"))] for g in LAYOUTS}
-    harmonize(groups, value_strength=0.0)
+    # The common colours are those of the accepted G2 set (M7: new goods join it).
+    harmonize(groups, value_strength=0.0, reference=lambda name: name in G2_SET)
     for good, layout in LAYOUTS.items():
         if only and good not in only:
             continue

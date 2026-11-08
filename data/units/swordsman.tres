@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/unit_def.gd" id="1_unit"]
+[ext_resource type="Script" path="res://src/defs/combat_stats_def.gd" id="2_combat"]
+
+[sub_resource type="Resource" id="combat"]
+script = ExtResource("2_combat")
+hp = 160
+attack = 16
+attack_cooldown = 1.5
+attack_range = 1
+speed = 0.9
+
+
+[resource]
+script = ExtResource("1_unit")
+gear = Dictionary[StringName, int]({
+&"sword": 1,
+&"chainmail": 1
+})
+gold_cost = 60
+combat = SubResource("combat")
+order = 2
+id = &"swordsman"

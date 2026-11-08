@@ -31,6 +31,18 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 	var walking := agent.path_state == Agent.PathState.MOVING or agent.path_state == Agent.PathState.WAITING
 	if not walking and agent.activity != &"idle" and agent.activity != &"walk":
 		return _with_progress(_t("ui.activity.%s" % agent.activity), task, step)
+	if task.kind == Task.KIND_ENLIST:
+		# M7: a recruit on his way to his gear, then to the barracks.
+		var unit := province.data.get_unit(StringName(String(task.bb.get("unit", ""))))
+		var pick := int(task.bb.get("pick", 0))
+		if unit != null and pick < unit.gear.size():
+			var good := Barracks.gear_goods(unit)[pick]
+			if agent.last_fail == &"no_gear":
+				return _f("ui.doing.waiting_for", [_good(good)])
+			return _f("ui.doing.enlist_gear", [_good(good)])
+		return _f("ui.doing.enlist_barracks", [_building_name(province, agent.home_id)])
+	if task.kind == Task.KIND_SOLDIER:
+		return _t("ui.doing.soldier_resting" if task.bb.has("_inside") else "ui.doing.soldier_ranks")
 	if task.kind == Task.KIND_LAND:
 		return _t("ui.doing.wade_ashore")
 	if task.kind == Task.KIND_MOVE_IN:

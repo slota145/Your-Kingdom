@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ResourceNodeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/resource_node_def.gd" id="1_node"]
+
+[resource]
+script = ExtResource("1_node")
+good = &"iron_ore"
+amount = 40
+per_gather = 1
+solid = true
+leaves_terrain = &"stony"
+id = &"ore_vein"

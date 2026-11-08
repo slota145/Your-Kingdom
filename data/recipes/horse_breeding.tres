@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+
+[sub_resource type="Resource" id="goto_0"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="work_1"]
+script = ExtResource("4_work")
+activity = &"feed"
+duration = 8.0
+spot = &"trough"
+
+[sub_resource type="Resource" id="work_2"]
+script = ExtResource("4_work")
+activity = &"groom"
+duration = 8.0
+spot = &"paddock"
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("goto_0"), SubResource("work_1"), SubResource("work_2")])
+id = &"horse_breeding"

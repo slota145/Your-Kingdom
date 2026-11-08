@@ -32,6 +32,10 @@ extends Node
 ## building sites in both stages.
 ## --g2 (G2) puts stockpiles around --tile with every good drawn by PixelLab, each slot
 ## holding a different number of pieces (1 up to a full stack), so the stacks grow in sight.
+## --m7=finished|sites|army (M7 part 1): the new buildings drawn by PixelLab around --tile
+## (finished both ways with full yards and a herd of horses, or their sites in both stages),
+## or a barracks with an armoury and 16 soldiers (4 of each kind) in the ranks; --drill shows
+## the ranks while they drill.
 ## --paved cobbles the square and the east part of the long road at once (M4b-3 art check).
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
@@ -70,6 +74,9 @@ var _yards: PackedStringArray = PackedStringArray()
 ## --g1=finished|sites (G1): which half of the pioneer set to lay out; "" = none.
 var _g1: String = ""
 var _g2: bool = false
+## --m7=finished|sites|army (M7 part 1); "" = none.
+var _m7: String = ""
+var _drill: bool = false
 
 
 func _ready() -> void:
@@ -117,6 +124,10 @@ func _ready() -> void:
 			_yards = arg.trim_prefix("--yards=").split(",")
 		elif arg == "--g2":
 			_g2 = true
+		elif arg.begins_with("--m7="):
+			_m7 = arg.trim_prefix("--m7=")
+		elif arg == "--drill":
+			_drill = true
 		elif arg.begins_with("--g1"):
 			_g1 = arg.trim_prefix("--g1=") if arg.begins_with("--g1=") else "finished"
 		elif arg.begins_with("--select="):
@@ -207,6 +218,8 @@ func _arrange() -> void:
 		_place_g2(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _g1 != "":
 		_place_g1(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _m7 != "":
+		_place_m7(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
 		_place_yards(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _build_tool != &"":
@@ -331,6 +344,97 @@ func _place_g1(sim: Simulation, at: Vector2i) -> void:
 					b.yard.add(good, 999)
 	var view: ProvinceView = _game.get("view")
 	view.piles.update_yards(sim.province.buildings)
+
+
+## M7 part 1 (--m7): the new buildings, their sites, or the army at its barracks.
+func _place_m7(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	sim.province.first_building = &""
+	sim.province.rare_resource = &"horses"   # a stud farm in the shot
+	sim.data.get_building(&"mine").needs_node_near = &""   # the mine anywhere in the shot
+	sim.treasury.gold = 5000   # sites cost gold
+	if _m7 == "army":
+		_place_army(sim, at)
+		return
+	var ids: Array[StringName] = [&"charcoal_burner", &"mine", &"smelter", &"blacksmith",
+			&"armourer", &"bowyer"]
+	var plan: Array = []
+	if _m7 == "sites":
+		for k: int in ids.size():
+			plan.append([ids[k], -5 + 2 * k, -4, 0, 1])
+			plan.append([ids[k], -5 + 2 * k, 0, 0, 2])
+		var big: Array[StringName] = [&"stud_farm", &"armoury", &"barracks"]
+		for k: int in big.size():
+			plan.append([big[k], -4 + 4 * k, 5, 0, 1])
+			plan.append([big[k], -4 + 4 * k, 10, 0, 2])
+	else:
+		for k: int in ids.size():
+			plan.append([ids[k], -5 + 2 * k, -4, 0, 0])
+			plan.append([ids[k], -5 + 2 * k, 0, 1, 0])
+		plan.append([&"stud_farm", -4, 5, 0, 0])
+		plan.append([&"armoury", -1, 5, 0, 0])
+		plan.append([&"barracks", 2, 5, 0, 0])
+		plan.append([&"barracks", 5, 5, 1, 0])
+	for item: Array in plan:
+		var def := sim.data.get_building(item[0])
+		var c: int = item[1]
+		var r: int = item[2]
+		var origin := at + Vector2i((3 * c + 2 * r) / 2, (2 * r - 3 * c) / 2)
+		var phase: int = item[4]
+		var b: BuildingState = null
+		for dy: int in range(0, 3):
+			var o := origin + Vector2i(dy, dy)
+			if sim.province.placement_error(def, o, item[3]) == &"" and sim.execute(
+					PlaceBuildingCommand.new(def.id, o, phase == 0, item[3])) == &"":
+				for placed: BuildingState in sim.province.buildings.all():
+					if placed.origin == o and placed.def == def:
+						b = placed
+				break
+		if b == null:
+			print("m7: could not place ", item)
+			continue
+		if phase > 0:
+			var site := sim.province.sites.get(b.site_id) as ConstructionSite
+			if site != null:
+				site.phase = mini(phase, site.phase_count())
+			continue
+		b.ensure_yard(sim.data)
+		if b.yard != null:
+			if def.herd_good != &"":
+				b.yard.add(def.herd_good, 999)
+			for good: StringName in BuildingState.yard_goods(def, sim.data):
+				b.yard.add(good, 999)
+		if b.stock != null:
+			for good: StringName in [&"spear", &"bow", &"sword", &"chainmail"]:
+				b.stock.add(good, 10)
+	var view: ProvinceView = _game.get("view")
+	view.piles.update_yards(sim.province.buildings)
+
+
+## A barracks with 16 soldiers in the ranks and an armoury beside it (--m7=army).
+func _place_army(sim: Simulation, at: Vector2i) -> void:
+	var barracks := _place_near(sim, &"barracks", at)
+	var armoury := _place_near(sim, &"armoury", at + Vector2i(-5, 0))
+	if barracks == null:
+		return
+	if armoury != null:
+		for good: StringName in [&"spear", &"bow", &"sword", &"chainmail"]:
+			armoury.stock.add(good, 8)
+	for k: int in 16:
+		var unit_id: StringName = [&"spearman", &"archer", &"swordsman", &"knight"][k / 4]
+		var unit := sim.data.get_unit(unit_id)
+		var agent := sim.province.spawn_agent(unit_id, barracks.entrance_tile())
+		agent.home_id = barracks.id
+		agent.combat = CombatState.new(unit.combat.hp)
+		barracks.soldiers.append(agent.id)
+	# Into the ranks (and up to the drill if asked); the game reads the events afterwards.
+	Game.paused = false
+	sim.run_ticks(400)
+	while Barracks.drilling(sim.clock.tick) != _drill:
+		sim.run_ticks(1)
+	sim.run_ticks(12 if _drill else 0)
+	Game.paused = true
+	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(barracks.entrance_tile() + Vector2i(1, 2))
 
 
 ## Workshops in a row with full yards (--yards).

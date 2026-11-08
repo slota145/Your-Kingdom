@@ -61,6 +61,15 @@ const CARRIED_GOODS := {
 	"meat": ["basket", Color(0.6, 0.44, 0.26), Color(0.72, 0.3, 0.26)],
 	"hides": ["bundle", Color(0.55, 0.38, 0.24), Color(0.8, 0.65, 0.45)],
 	"pig": ["animal", Color(0.93, 0.68, 0.64), Color(0.75, 0.45, 0.45)],
+	# M7 (metals and weapons)
+	"charcoal": ["sack", Color(0.18, 0.17, 0.16), Color(0.35, 0.33, 0.3)],
+	"iron_ore": ["stone", Color(0.52, 0.32, 0.24), Color(0.68, 0.42, 0.3)],
+	"iron": ["bundle", Color(0.45, 0.47, 0.5), Color(0.7, 0.72, 0.75)],
+	"spear": ["bundle", Color(0.6, 0.45, 0.28), Color(0.75, 0.77, 0.8)],
+	"bow": ["bundle", Color(0.55, 0.35, 0.18), Color(0.85, 0.8, 0.65)],
+	"sword": ["bundle", Color(0.75, 0.77, 0.8), Color(0.55, 0.38, 0.2)],
+	"chainmail": ["crate", Color(0.6, 0.62, 0.65), Color(0.4, 0.42, 0.45)],
+	"horse": ["animal", Color(0.5, 0.33, 0.2), Color(0.25, 0.18, 0.12)],
 }
 
 ## Stacks and nature sprites keep the tile diamond in their bottom 32 px (ART_SPEC §2).
@@ -580,6 +589,25 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.62, 0.46, 0.3), "roof_color": Color(0.42, 0.36, 0.3), "extra": "kiln"},
 	"tavern": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 44.0, "roof": 26.0,
 			"wall": Color(0.86, 0.78, 0.62), "roof_color": Color(0.66, 0.28, 0.2), "extra": "sign"},
+	# M7 (metals, weapons, barracks)
+	"charcoal_burner": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 24.0, "roof": 16.0,
+			"wall": Color(0.45, 0.35, 0.25), "roof_color": Color(0.78, 0.66, 0.36), "extra": "mounds"},
+	"mine": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 24.0, "roof": 18.0,
+			"wall": Color(0.55, 0.42, 0.28), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
+	"smelter": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 28.0, "roof": 18.0,
+			"wall": Color(0.6, 0.6, 0.62), "roof_color": Color(0.35, 0.36, 0.42), "extra": "kiln"},
+	"blacksmith": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 28.0, "roof": 20.0,
+			"wall": Color(0.62, 0.6, 0.58), "roof_color": Color(0.35, 0.36, 0.42), "extra": "kiln"},
+	"armourer": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
+			"wall": Color(0.88, 0.84, 0.78), "roof_color": Color(0.66, 0.28, 0.2), "extra": "barrels"},
+	"bowyer": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 20.0,
+			"wall": Color(0.55, 0.38, 0.22), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
+	"stud_farm": {"footprint": Vector2i(3, 3), "entrance": Vector2i(2, 1), "walls": 22.0, "roof": 18.0,
+			"wall": Color(0.58, 0.44, 0.3), "roof_color": Color(0.8, 0.68, 0.36), "extra": "sheep"},
+	"armoury": {"footprint": Vector2i(3, 3), "entrance": Vector2i(2, 1), "walls": 34.0, "roof": 26.0,
+			"wall": Color(0.62, 0.62, 0.64), "roof_color": Color(0.35, 0.36, 0.42), "extra": "barrels"},
+	"barracks": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 40.0, "roof": 26.0,
+			"wall": Color(0.86, 0.8, 0.68), "roof_color": Color(0.66, 0.28, 0.2), "extra": "barrels"},
 }
 
 

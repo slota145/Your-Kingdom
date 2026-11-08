@@ -108,9 +108,34 @@ extends GameDef
 ## At most one per province (the pioneer camp, M5 part 3; owner's decision 2026-11-06).
 @export var unique: bool = false
 
+## M7: other work cycles the player may switch to (a blacksmith: spears or swords). The
+## first is usually [member recipe]; empty = only [member recipe].
+@export var recipe_choices: Array[RecipeDef] = []
+## Animals a finished building's herd starts with (a stud farm's pair of horses, M7).
+@export_range(0, 99) var herd_start: int = 0
+## Resource node that must lie within [member work_radius] of the footprint (a mine needs
+## an ore vein, M7); empty = none.
+@export var needs_node_near: StringName = &""
+## Storage only: good categories it takes (an armoury: weapons, M7). Empty = every category
+## but those some storage of the data lists (weapons go only to an armoury).
+@export var storage_accepts: Array[StringName] = []
+## Barracks (M7): beds for soldiers; > 0 makes the building a barracks.
+@export_range(0, 99) var soldier_beds: int = 0
+
 
 func get_kind() -> StringName:
 	return &"building"
+
+
+## The recipe and its choices, each once.
+func all_recipes() -> Array[RecipeDef]:
+	var result: Array[RecipeDef] = []
+	if recipe != null:
+		result.append(recipe)
+	for choice: RecipeDef in recipe_choices:
+		if choice != null and not result.has(choice):
+			result.append(choice)
+	return result
 
 
 func worker_count() -> int:

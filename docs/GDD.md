@@ -360,7 +360,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 
 - Jednostkę rekrutuje się w **koszarach**. Potrzebny jest wolny mieszkaniec z puli siły roboczej, broń i pancerz ze zbrojowni oraz złoto.
 - Rekrut fizycznie przychodzi do koszar, odbiera broń i zmienia wygląd.
-- **Plan M7 (ankieta 2026-11-07):** rekrut wyprowadza się z domu i mieszka w koszarach (dom przyjmuje przybysza), je z magazynu i dostaje żołd. Ruda żelaza ma małe żyły na każdej mapie, a dużo w prowincji z rudą; konie tylko ze stadniny w prowincji z pastwiskami. Wartości: ROADMAP, M7.
+- **Plan M7 (ankieta 2026-11-07):** rekrut wyprowadza się z domu i mieszka w koszarach (dom przyjmuje przybysza), je z magazynu. Żołdu nie ma (zmiana 2026-11-08, jak w Twierdzy i Anno), za to rekrutacja jest droższa. Ruda żelaza ma małe żyły na każdej mapie, a dużo w prowincji z rudą; konie tylko ze stadniny w prowincji z pastwiskami. Wartości: ROADMAP, M7.
 
 ### 6.2 Typy jednostek
 

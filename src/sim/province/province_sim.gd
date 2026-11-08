@@ -92,6 +92,14 @@ const VINE_SOIL := &"vine_soil"
 const VINE_PATCHES := 5
 const VINE_RADIUS := 4
 const VINE_GAP := 18
+## Ore veins (M7): how many rock tiles become veins, and how far apart (Chebyshev).
+const ORE_VEIN := &"ore_vein"
+const ROCK := &"rock"
+const IRON_ORE := &"iron_ore"
+const ORE_VEINS := 6
+const ORE_GAP := 4
+const ORE_VEINS_RICH := 24
+const ORE_GAP_RICH := 3
 var _seat_version: int = -1
 var _seat: int = 0
 
@@ -161,6 +169,7 @@ func step() -> void:
 		Harbour.update(self)
 		jobs.trim_yard_requests(self)
 	Population.update(self)
+	Barracks.update(self)
 
 
 # --- Map -----------------------------------------------------------------------------------
@@ -276,6 +285,7 @@ func load_map(map: MapDef, mirrored: bool = false, richness: int = 2, settled: b
 	var problems := _load_terrain(map, mirrored)
 	_apply_richness(richness)
 	rare_resource = rare
+	lay_ore_veins()
 	if rare == VINES:
 		_lay_vine_soil()
 	entry_tile = _variant_tile(map.entry_tile, mirrored)
@@ -304,6 +314,51 @@ func load_map(map: MapDef, mirrored: bool = false, richness: int = 2, settled: b
 			for good: StringName in start.goods:
 				store.add(good, start.goods[good])
 	return problems
+
+
+## Iron ore veins in the rocks (M7, owner's decision 2026-11-07: small veins on every map,
+## many in the province with iron ore): rock tiles chosen by a fixed hash of the tile (a
+## province always gets the same ones), at least ORE_GAP tiles apart, turn into ore veins.
+func lay_ore_veins() -> void:
+	var vein := data.get_resource_node(ORE_VEIN)
+	if vein == null:
+		return
+	var rocks: Array[Vector2i] = []
+	for tile: Vector2i in resources.tiles_with_nodes():
+		var def := resources.def_at(tile)
+		if def != null and def.id == ROCK:
+			rocks.append(tile)
+	for tile: Vector2i in choose_ore_veins(rocks, rare_resource == IRON_ORE):
+		resources.place(tile, vein)
+
+
+## The rock tiles of [param rocks] that become ore veins (also used by the save migration to
+## v18, so an older game gets the same veins as a new one).
+static func choose_ore_veins(rocks: Array[Vector2i], rich: bool) -> Array[Vector2i]:
+	# At most a third of the rocks: the quarry keeps its stone.
+	var wanted := mini(ORE_VEINS_RICH if rich else ORE_VEINS, maxi(rocks.size() / 3, 1))
+	var gap := ORE_GAP_RICH if rich else ORE_GAP
+	var sorted := rocks.duplicate()
+	sorted.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		var ha := _vein_hash(a)
+		var hb := _vein_hash(b)
+		return ha < hb or (ha == hb and (a.y < b.y or (a.y == b.y and a.x < b.x))))
+	var chosen: Array[Vector2i] = []
+	for tile: Vector2i in sorted:
+		if chosen.size() >= wanted:
+			break
+		var near := false
+		for other: Vector2i in chosen:
+			if maxi(absi(other.x - tile.x), absi(other.y - tile.y)) < gap:
+				near = true
+				break
+		if not near:
+			chosen.append(tile)
+	return chosen
+
+
+static func _vein_hash(tile: Vector2i) -> int:
+	return ((tile.x * 73856093) ^ (tile.y * 19349663)) & 0x7fffffff
 
 
 ## Patches of vine soil on open grass and meadow (M6 part 3): up to VINE_PATCHES round
@@ -474,6 +529,8 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 			return &"tile_occupied"
 	if def.needs_terrain_near != &"" and not has_terrain_near(def, origin):
 		return StringName("no_%s_nearby" % def.needs_terrain_near)
+	if def.needs_node_near != &"" and not has_node_near(def, origin):
+		return StringName("no_%s_nearby" % def.needs_node_near)
 	if def.has_berth():
 		var berth := def.berth_at(origin, orientation)
 		if not grid.is_inside(berth) or sail_depth(berth) == 0 or grid.occupant(berth) != 0:
@@ -818,6 +875,18 @@ func has_terrain_near(def: BuildingDef, origin: Vector2i) -> bool:
 		for x: int in range(area.position.x, area.end.x):
 			var terrain := terrain_at(Vector2i(x, y))
 			if terrain != null and terrain.is_kind(def.needs_terrain_near):
+				return true
+	return false
+
+
+## Whether a node of def.needs_node_near (an ore vein for a mine, M7) lies within the work
+## radius of a building of [param def] at [param origin].
+func has_node_near(def: BuildingDef, origin: Vector2i) -> bool:
+	var area := Rect2i(origin, def.footprint).grow(def.work_radius).intersection(Rect2i(Vector2i.ZERO, grid.size))
+	for y: int in range(area.position.y, area.end.y):
+		for x: int in range(area.position.x, area.end.x):
+			var tile := Vector2i(x, y)
+			if resources.has_node(tile, def.needs_node_near) and resources.amount(tile) > 0:
 				return true
 	return false
 

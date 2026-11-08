@@ -120,9 +120,11 @@ def apply(img, shifts, gamma):
     return img
 
 
-def harmonize(groups, value_strength=None):
+def harmonize(groups, value_strength=None, reference=None):
     """groups: {name: [(path_in, path_out), ...]}, the finished building first.
-    [value_strength] overrides VALUE_STRENGTH (goods: 0, white flour stays white)."""
+    [value_strength] overrides VALUE_STRENGTH (goods: 0, white flour stays white).
+    [reference]: a test on the group name; only those groups set the common means (M7: the
+    accepted G1 set stays as it was when new buildings join)."""
     measured = {}
     total = {}
     vsum = 0.0
@@ -130,6 +132,8 @@ def harmonize(groups, value_strength=None):
     for name, files in groups.items():
         stats, gv, gn = measure(Image.open(files[0][0]).convert("RGBA"))
         measured[name] = (stats, gv / max(1, gn))
+        if reference is not None and not reference(name):
+            continue
         _add(total, stats)
         vsum += gv
         n += gn

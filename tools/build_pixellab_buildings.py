@@ -63,6 +63,18 @@ BUILDINGS = {
                                ("construction_1", "construction_1", {"like": "base"}),
                                ("construction_2", "construction_2", {"like": "base"})]),
 }
+G1_SET = list(BUILDINGS.keys())
+# M7 part 1 (ART_SPEC §10.14): the workshops of metals and weapons, the stud farm, the armoury
+# and the barracks, each with its 2 construction stages edited from the finished building.
+STAGES = [("base", "base", {}),
+          ("construction_1", "construction_1", {"like": "base"}),
+          ("construction_2", "construction_2", {"like": "base"})]
+for _workshop in ("charcoal_burner", "mine", "smelter", "blacksmith", "armourer", "bowyer"):
+    BUILDINGS[_workshop] = (WORKSHOP, STAGES)
+BUILDINGS["stud_farm"] = (["--footprint=3,3", "--entrance=2,1"], STAGES)
+BUILDINGS["armoury"] = (["--footprint=3,3", "--entrance=2,1"], STAGES)
+# The drawn door is right of the middle of its wall: nudged towards the entrance tile.
+BUILDINGS["barracks"] = (["--footprint=3,3", "--entrance=1,2", "--dx=-22", "--dy=-11"], STAGES)
 
 
 def main():
@@ -81,7 +93,8 @@ def main():
             files = groups.setdefault(key, [])
             if pair not in files:
                 files.insert(0, pair) if "like" not in extra else files.append(pair)
-    harmonize(groups)
+    # The common colours are those of the accepted G1 set (M7: new buildings join it).
+    harmonize(groups, reference=lambda name: name.split("/")[0] in G1_SET)
     for building, (opts, images) in BUILDINGS.items():
         if only and building not in only:
             continue

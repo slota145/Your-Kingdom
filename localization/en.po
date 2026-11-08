@@ -2542,3 +2542,375 @@ msgstr "no ship at the berth"
 
 msgid "ui.reason.no_cargo"
 msgstr "nothing to lift"
+
+# --- M7 part 1: metals, weapons, barracks ---
+
+msgid "good.charcoal.name"
+msgstr "Charcoal"
+
+msgid "good.charcoal.desc"
+msgstr "Light black lumps of burnt wood. It gives the heat a smelter needs."
+
+msgid "good.iron_ore.name"
+msgstr "Iron ore"
+
+msgid "good.iron_ore.desc"
+msgstr "Rusty lumps of rock hewn from an ore vein. A smelter turns them into iron."
+
+msgid "good.iron.name"
+msgstr "Iron"
+
+msgid "good.iron.desc"
+msgstr "Iron bars from the smelter. The blacksmith forges weapons from them, the armourer mail shirts."
+
+msgid "good.spear.name"
+msgstr "Spear"
+
+msgid "good.spear.desc"
+msgstr "A long shaft with an iron head. The spearman's weapon, deadly to riders."
+
+msgid "good.bow.name"
+msgstr "Bow"
+
+msgid "good.bow.desc"
+msgstr "A bow of supple wood, strung. The archer's weapon."
+
+msgid "good.sword.name"
+msgstr "Sword"
+
+msgid "good.sword.desc"
+msgstr "A straight iron sword. The weapon of swordsmen and riders."
+
+msgid "good.chainmail.name"
+msgstr "Mail shirt"
+
+msgid "good.chainmail.desc"
+msgstr "A shirt of thousands of iron rings. It protects swordsmen and riders."
+
+msgid "good.horse.name"
+msgstr "Horse"
+
+msgid "good.horse.desc"
+msgstr "A riding horse from a stud farm. No rider without one."
+
+msgid "building.charcoal_burner.name"
+msgstr "Charcoal burner"
+
+msgid "building.charcoal_burner.desc"
+msgstr "The charcoal burner stacks wood into a kiln, covers it with turf and burns it slowly. 2 wood make a sack of charcoal."
+
+msgid "building.mine.name"
+msgstr "Iron mine"
+
+msgid "building.mine.desc"
+msgstr "The miner hews iron ore out of a nearby vein and carries it to storage. Build it by an ore vein in the rocks."
+
+msgid "building.smelter.name"
+msgstr "Smelter"
+
+msgid "building.smelter.desc"
+msgstr "The smelter fills the furnace with ore and charcoal, works the bellows and taps a bar of iron."
+
+msgid "building.blacksmith.name"
+msgstr "Blacksmith"
+
+msgid "building.blacksmith.desc"
+msgstr "The blacksmith heats iron in the forge and hammers it on the anvil: iron and a plank make 2 spears, iron alone a sword. Choose in the panel what he makes."
+
+msgid "building.armourer.name"
+msgstr "Armourer"
+
+msgid "building.armourer.desc"
+msgstr "The armourer links ring after ring into a mail shirt from 2 iron bars."
+
+msgid "building.bowyer.name"
+msgstr "Bowyer"
+
+msgid "building.bowyer.desc"
+msgstr "The bowyer carves a bow stave from 2 planks, bends it and strings it."
+
+msgid "building.stud_farm.name"
+msgstr "Stud farm"
+
+msgid "building.stud_farm.desc"
+msgstr "The groom feeds and brushes the horses, and the herd grows by itself. It starts with a pair. Only in a province with horse pastures."
+
+msgid "building.armoury.name"
+msgstr "Armoury"
+
+msgid "building.armoury.desc"
+msgstr "All weapons and armour are kept here. Recruits come here for their gear."
+
+msgid "building.barracks.name"
+msgstr "Barracks"
+
+msgid "building.barracks.desc"
+msgstr "Home of soldiers: 24 beds. Recruit your army here. Soldiers eat from storage and drill in front of the barracks."
+
+msgid "recipe.charcoal_making.name"
+msgstr "Charcoal burning"
+
+msgid "recipe.charcoal_making.desc"
+msgstr "2 wood → 1 charcoal (about 40 s)."
+
+msgid "recipe.mining.name"
+msgstr "Mining"
+
+msgid "recipe.mining.desc"
+msgstr "The miner hews 1 ore from the vein (about 45 s with the walk)."
+
+msgid "recipe.smelting.name"
+msgstr "Smelting"
+
+msgid "recipe.smelting.desc"
+msgstr "1 ore + 1 charcoal → 1 iron (about 40 s)."
+
+msgid "recipe.forging_spears.name"
+msgstr "Forging spears"
+
+msgid "recipe.forging_spears.desc"
+msgstr "1 iron + 1 plank → 2 spears (about 45 s)."
+
+msgid "recipe.forging_swords.name"
+msgstr "Forging swords"
+
+msgid "recipe.forging_swords.desc"
+msgstr "1 iron → 1 sword (about 45 s)."
+
+msgid "recipe.armouring.name"
+msgstr "Making mail"
+
+msgid "recipe.armouring.desc"
+msgstr "2 iron → 1 mail shirt (about 60 s)."
+
+msgid "recipe.bow_making.name"
+msgstr "Bow making"
+
+msgid "recipe.bow_making.desc"
+msgstr "2 planks → 1 bow (about 30 s)."
+
+msgid "recipe.horse_breeding.name"
+msgstr "Horse breeding"
+
+msgid "recipe.horse_breeding.desc"
+msgstr "The herd grows while the groom looks after it: a foal about every 2 minutes with a pair."
+
+msgid "resource_node.ore_vein.name"
+msgstr "Iron ore vein"
+
+msgid "resource_node.ore_vein.desc"
+msgstr "Rock streaked with rusty ore. A mine beside it digs iron ore out of it."
+
+msgid "unit.spearman.name"
+msgstr "Spearman"
+
+msgid "unit.spearman.desc"
+msgstr "A spear. 20 gold. Cheap and many, twice as deadly to riders."
+
+msgid "unit.archer.name"
+msgstr "Archer"
+
+msgid "unit.archer.desc"
+msgstr "A bow. 30 gold. Shoots from afar (7 tiles), from a wall even further."
+
+msgid "unit.swordsman.name"
+msgstr "Swordsman"
+
+msgid "unit.swordsman.desc"
+msgstr "A sword and a mail shirt. 60 gold. Strong and tough."
+
+msgid "unit.knight.name"
+msgstr "Rider"
+
+msgid "unit.knight.desc"
+msgstr "A horse, a sword and a mail shirt. 100 gold. The strongest and twice as fast."
+
+msgid "ui.kind.charcoal_burner"
+msgstr "Charcoal burner"
+
+msgid "ui.kind.miner"
+msgstr "Miner"
+
+msgid "ui.kind.smelter"
+msgstr "Smelter"
+
+msgid "ui.kind.blacksmith"
+msgstr "Blacksmith"
+
+msgid "ui.kind.armourer"
+msgstr "Armourer"
+
+msgid "ui.kind.bowyer"
+msgstr "Bowyer"
+
+msgid "ui.kind.groom"
+msgstr "Groom"
+
+msgid "ui.kind.recruit"
+msgstr "Recruit"
+
+msgid "ui.kind.spearman"
+msgstr "Spearman"
+
+msgid "ui.kind.archer"
+msgstr "Archer"
+
+msgid "ui.kind.swordsman"
+msgstr "Swordsman"
+
+msgid "ui.kind.knight"
+msgstr "Rider"
+
+msgid "ui.activity.rake"
+msgstr "rakes the kiln"
+
+msgid "ui.activity.pick"
+msgstr "hews ore"
+
+msgid "ui.activity.bellows"
+msgstr "works the bellows"
+
+msgid "ui.activity.heat"
+msgstr "heats the iron"
+
+msgid "ui.activity.forge"
+msgstr "hammers on the anvil"
+
+msgid "ui.activity.quench"
+msgstr "quenches in water"
+
+msgid "ui.activity.rivet"
+msgstr "links rings"
+
+msgid "ui.activity.polish"
+msgstr "polishes"
+
+msgid "ui.activity.carve"
+msgstr "carves the stave"
+
+msgid "ui.activity.bend"
+msgstr "bends the bow"
+
+msgid "ui.activity.string"
+msgstr "strings the bow"
+
+msgid "ui.activity.groom"
+msgstr "brushes the horses"
+
+msgid "ui.activity.drill"
+msgstr "drills"
+
+msgid "ui.command_error.no_ore_vein_nearby"
+msgstr "No ore vein nearby."
+
+msgid "ui.command_error.needs_horses"
+msgstr "Only in a province with horse pastures."
+
+msgid "ui.command_error.barracks_has_soldiers"
+msgstr "Soldiers live in the barracks."
+
+msgid "ui.command_error.not_barracks"
+msgstr "This is not a barracks."
+
+msgid "ui.command_error.unknown_unit"
+msgstr "Unknown kind of soldier."
+
+msgid "ui.command_error.not_finished"
+msgstr "The building is not finished yet."
+
+msgid "ui.command_error.barracks_full"
+msgstr "The barracks is full."
+
+msgid "ui.command_error.no_gear"
+msgstr "No gear in the armoury."
+
+msgid "ui.command_error.no_free_resident"
+msgstr "No free resident: everybody able to work has a job."
+
+msgid "ui.command_error.bad_choice"
+msgstr "No such choice."
+
+msgid "ui.reason.no_gear"
+msgstr "waits for gear in the armoury"
+
+msgid "ui.build.tab.military"
+msgstr "Military"
+
+msgid "good.charcoal.count"
+msgid_plural "good.charcoal.count_plural"
+msgstr[0] "%s sack of charcoal"
+msgstr[1] "%s sacks of charcoal"
+
+msgid "good.iron_ore.count"
+msgid_plural "good.iron_ore.count_plural"
+msgstr[0] "%s lump of ore"
+msgstr[1] "%s lumps of ore"
+
+msgid "good.iron.count"
+msgid_plural "good.iron.count_plural"
+msgstr[0] "%s iron bar"
+msgstr[1] "%s iron bars"
+
+msgid "good.spear.count"
+msgid_plural "good.spear.count_plural"
+msgstr[0] "%s spear"
+msgstr[1] "%s spears"
+
+msgid "good.bow.count"
+msgid_plural "good.bow.count_plural"
+msgstr[0] "%s bow"
+msgstr[1] "%s bows"
+
+msgid "good.sword.count"
+msgid_plural "good.sword.count_plural"
+msgstr[0] "%s sword"
+msgstr[1] "%s swords"
+
+msgid "good.chainmail.count"
+msgid_plural "good.chainmail.count_plural"
+msgstr[0] "%s mail shirt"
+msgstr[1] "%s mail shirts"
+
+msgid "good.horse.count"
+msgid_plural "good.horse.count_plural"
+msgstr[0] "%s horse"
+msgstr[1] "%s horses"
+
+msgid "ui.barracks.recruit"
+msgstr "Recruit:"
+
+msgid "ui.barracks.beds"
+msgstr "Soldiers: %d of %d beds"
+
+msgid "ui.barracks.on_the_way"
+msgstr "Recruits on their way: %d"
+
+msgid "ui.barracks.pantry"
+msgstr "Pantry: %s"
+
+msgid "ui.barracks.needs"
+msgstr "Needs: %s and %d gold"
+
+msgid "ui.barracks.in_stock"
+msgstr "Ready to hand out: %s"
+
+msgid "ui.workshop.makes"
+msgstr "Makes:"
+
+msgid "ui.workshop.take_turns"
+msgstr "Take turns"
+
+msgid "ui.workshop.take_turns_hint"
+msgstr "One, then the other."
+
+msgid "ui.doing.enlist_gear"
+msgstr "goes for: %s"
+
+msgid "ui.doing.enlist_barracks"
+msgstr "walks to: %s"
+
+msgid "ui.doing.soldier_resting"
+msgstr "rests in the barracks"
+
+msgid "ui.doing.soldier_ranks"
+msgstr "stands in the ranks"

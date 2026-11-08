@@ -57,6 +57,18 @@ var carts: int = 0
 var lent: int = 0
 ## Shipyard: ship kinds ordered by the player, the first one on the slipway (M5).
 var ship_orders: Array[StringName] = []
+## Workshop with def.recipe_choices (a blacksmith, M7): -1 = take turns, else the index of
+## the chosen recipe. [member next_choice] is the recipe of the next cycle when taking turns.
+var recipe_mode: int = -1
+var next_choice: int = 0
+## Barracks (M7): ids of the soldiers living here, and recruits on their way here.
+var soldiers: Array[int] = []
+var recruits: Array[int] = []
+## Barracks in the simplified mode (M7): kinds of its soldiers while nobody walks the map
+## (ProvinceAbstract); they come back as people when the province is seen again.
+var garrison: Array[StringName] = []
+## Barracks: food eaten but not yet taken from the pantry (fractional consumption).
+var mess_hunger: float = 0.0
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
@@ -76,6 +88,7 @@ func finish(data: DataRegistry) -> void:
 	if def.storage_slots > 0 and stock == null:
 		stock = Stockpile.new(def.storage_slots, data)
 		reserves = def.default_reserves.duplicate()
+	apply_storage_filter(data)
 	if def.quay_slots > 0 and stock == null:
 		stock = Stockpile.new(def.quay_slots, data)
 	if not def.input_goods.is_empty() and supply == null:
@@ -83,11 +96,38 @@ func finish(data: DataRegistry) -> void:
 		supply.stack_limit = INPUT_UNITS
 	ensure_stalls(data)
 	ensure_yard(data)
+	if def.soldier_beds > 0 and supply == null:
+		supply = Stockpile.new(Barracks.FOOD.size(), data)
+		supply.stack_limit = Barracks.PANTRY_UNITS
+		supply.one_slot_per_good = true
 	if def.is_house() and house == null:
 		house = HouseState.new()
 		var goods := house_goods()
 		supply = Stockpile.new(maxi(goods.size(), 1), data)
 		supply.stack_limit = level_def().supply_units
+
+
+## The recipe of the next work cycle (M7): the chosen one of def.recipe_choices, or each in
+## turn; def.recipe for a workshop without choices.
+func take_recipe() -> RecipeDef:
+	var choices := def.recipe_choices
+	if choices.is_empty():
+		return def.recipe
+	if recipe_mode >= 0 and recipe_mode < choices.size():
+		return choices[recipe_mode]
+	var recipe := choices[next_choice % choices.size()]
+	next_choice = (next_choice + 1) % choices.size()
+	return recipe
+
+
+## Which goods the storage takes (M7): an armoury only weapons, other storages no weapons.
+func apply_storage_filter(data: DataRegistry) -> void:
+	if stock == null or def.storage_slots <= 0:
+		return
+	stock.only = def.storage_accepts.duplicate()
+	stock.never.clear()
+	if def.storage_accepts.is_empty():
+		stock.never = data.special_storage_categories()
 
 
 ## Gives a finished market its stalls (also for saves from before M4b-2): a slot per stall
@@ -108,6 +148,9 @@ func ensure_yard(data: DataRegistry) -> void:
 		# A herd is a yard of one slot holding up to herd_capacity animals.
 		yard = Stockpile.new(1, data)
 		yard.stack_limit = def.herd_capacity
+		# A stud farm starts with a pair of horses (M7); a pigsty with none (bought pigs).
+		if def.herd_start > 0:
+			yard.add(def.herd_good, def.herd_start)
 		return
 	var goods := yard_goods(def, data)
 	if goods.is_empty():
@@ -123,7 +166,10 @@ static func yard_goods(building_def: BuildingDef, data: DataRegistry) -> Array[S
 	if building_def.recipe == null or building_def.storage_slots > 0 or building_def.is_house():
 		return goods
 	var delivers := false
-	for step: StepDef in building_def.recipe.steps:
+	var steps: Array[StepDef] = []
+	for recipe: RecipeDef in building_def.all_recipes():
+		steps.append_array(recipe.steps)
+	for step: StepDef in steps:
 		var good: StringName = &""
 		if step is DeliverStepDef:
 			delivers = true
@@ -254,6 +300,21 @@ func to_dict() -> Dictionary:
 		d["carts"] = carts
 	if lent != 0:
 		d["lent"] = lent
+	if recipe_mode != -1:
+		d["recipe_mode"] = recipe_mode
+	if next_choice != 0:
+		d["next_choice"] = next_choice
+	if not soldiers.is_empty():
+		d["soldiers"] = soldiers.duplicate()
+	if not recruits.is_empty():
+		d["recruits"] = recruits.duplicate()
+	if mess_hunger != 0.0:
+		d["mess_hunger"] = mess_hunger
+	if not garrison.is_empty():
+		var g := []
+		for unit: StringName in garrison:
+			g.append(String(unit))
+		d["garrison"] = g
 	if not ship_orders.is_empty():
 		var orders := []
 		for ship: StringName in ship_orders:
@@ -270,6 +331,7 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	b.site_id = int(d.get("site", 0))
 	if d.has("stock"):
 		b.stock = Stockpile.from_dict(d["stock"], data)
+		b.apply_storage_filter(data)
 	if d.has("supply"):
 		b.supply = Stockpile.from_dict(d["supply"], data)
 	if d.has("yard"):
@@ -292,6 +354,13 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	b.breed_ticks = int(d.get("breed", 0))
 	b.carts = int(d.get("carts", 0))
 	b.lent = int(d.get("lent", 0))
+	b.recipe_mode = int(d.get("recipe_mode", -1))
+	b.next_choice = int(d.get("next_choice", 0))
+	b.soldiers = SimCodec.int_array(d.get("soldiers", []))
+	b.recruits = SimCodec.int_array(d.get("recruits", []))
+	b.mess_hunger = float(d.get("mess_hunger", 0.0))
+	for unit: Variant in d.get("garrison", []):
+		b.garrison.append(StringName(String(unit)))
 	for ship: Variant in d.get("ship_orders", []):
 		b.ship_orders.append(StringName(String(ship)))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
