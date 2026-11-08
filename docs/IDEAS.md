@@ -151,3 +151,6 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 - [Claude] **Życie przy bramie:** strażnik obsługuje kołowrót przy podnoszeniu brony, a wozy zatrzymują się czasem do kontroli. Właściciel projektu jest na tak (2026-11-04). Kiedy: razem z wieżą bramną w M7.
 
 ## Animacje i detale
+
+- [właściciel, 2026-11-08] **Nowe jednostki i okręty:** halabardnik w zbroi płytowej, kusznik, ciężki zbrojny z morgensternem, lekka jazda, ruchoma balista; 3 nowe okręty (każdy w wersji cywilnej i wojennej, każdy większy od poprzedniego) i duża stocznia; bardziej naturalne „Wybrzeże” z szerszą i krótszą zatoką.
+  - Ocena (Claude): jednostki i okręty najlepiej po ocenie M7 (zasady walki), ale przed M8 (AI od razu z pełnym wojskiem); wybrzeże jest małe i niezależne. **Decyzja właściciela (ankieta 2026-11-08): oba teraz** — najpierw W1 (wybrzeże), potem J1 (jednostki i okręty), przed oceną M7 (ROADMAP, W1 i J1).
