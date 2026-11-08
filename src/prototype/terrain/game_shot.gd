@@ -88,6 +88,10 @@ var _siege: StringName = &"iron_wold"
 ## --bridges (B1): timber, stone and diagonal bridges over the river near --tile, one ordered,
 ## people and a wagon on them.
 var _bridges: bool = false
+## --j1ships [--j1stage=<0..2>] (J1 part 3): the large shipyard with a galleon on the slipway
+## and the six new ships at anchor near --tile.
+var _j1ships: bool = false
+var _j1stage: int = 2
 ## --hard_shore (B1 part 2): the shoreline as before the soft shore, to compare.
 var _hard_shore: bool = false
 ## --stilts=<id,id,...> (B1 part 2): those buildings placed near --tile with a row over the water
@@ -151,6 +155,10 @@ func _ready() -> void:
 			_stilts = arg.trim_prefix("--stilts=").split(",")
 		elif arg == "--hard_shore":
 			_hard_shore = true
+		elif arg == "--j1ships":
+			_j1ships = true
+		elif arg.begins_with("--j1stage="):
+			_j1stage = int(arg.trim_prefix("--j1stage="))
 		elif arg == "--bridges":
 			_bridges = true
 		elif arg == "--drill":
@@ -255,6 +263,8 @@ func _arrange() -> void:
 		_place_m7(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _stilts.is_empty():
 		_place_stilts(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _j1ships:
+		_place_j1ships(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _bridges:
 		_place_bridges(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
@@ -267,6 +277,39 @@ func _arrange() -> void:
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == _select:
 			(_game.get("_building_panel") as BuildingPanel).show_building(sim.province, b.id)
+
+
+## J1 part 3: the large shipyard nearest [param at] with a galleon on the slipway, and the six
+## new ships at anchor around.
+func _place_j1ships(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	province.first_building = &""
+	sim.treasury.gold = 5000
+	var yard := _place_near(sim, &"large_shipyard", at)
+	print("large shipyard ", yard.origin if yard != null else null)
+	if yard != null:
+		sim.execute(OrderShipCommand.new(yard.id, &"galleon"))
+		var build := Ships.open_build(province, yard)
+		build.stage = _j1stage
+		build.stage_started = true
+		build.work_left = build.stage_ticks
+	var spot := yard.berth_tile() if yard != null else at
+	var k := 0
+	for id: StringName in [&"caravel", &"carrack", &"galleon", &"caravel_war", &"carrack_war", &"galleon_war"]:
+		var def := sim.data.get_ship(id)
+		var ship := ShipUnit.new(sim.ids.take(), def, IsoMath.tile_center(spot), sim.data)
+		var near := spot + Vector2i(-14 + 7 * (k % 3), 6 + 7 * (k / 3))
+		var anchor := Voyage.anchorage(province, ship, near)
+		if anchor == Agent.NO_TILE:
+			continue
+		ship.pos = IsoMath.tile_center(anchor)
+		ship.prev_pos = ship.pos
+		ship.facing = [1, 2, 3, 5, 6, 7][k]
+		if ship.voyage != null:
+			ship.voyage.anchor = anchor
+		province.ships[ship.id] = ship
+		k += 1
 
 
 ## B1: bridges over the river near [param at]: a timber one, a stone one, a diagonal timber one
