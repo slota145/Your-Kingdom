@@ -38,7 +38,9 @@ func _init(simulation: Simulation, start: int = 2700) -> void:
 		{"at": start, "build": &"port", "near": b + Vector2i(-1, 10)},
 		{"at": start + 60, "build": &"tar_kiln", "near": b + Vector2i(-8, 12)},
 		# South of the pier: the cog's home is the nearest berth, the mooring with the crane.
-		{"at": start + 120, "build": &"shipyard", "near": b + Vector2i(0, 26)},
+		# W1: on the sea shore east of the bay mouth (the town fills the west side), lower down
+		# than the pier, so the mooring is still the nearest berth.
+		{"at": start + 120, "build": &"shipyard", "near": b + Vector2i(30, 17)},
 		{"at": start + 180, "pier": true},
 		{"at": start + 300, "build": &"mooring", "on_pier": Vector2i(2, 0)},
 		{"at": start + 300, "build": &"crane", "on_pier": Vector2i(2, 2)},
@@ -148,6 +150,11 @@ func _do(action: Dictionary) -> void:
 		spot = found[0]
 		turn = found[1]
 		if spot == Agent.NO_TILE:
+			# Somebody may be standing on the only spot (W1: fewer straight shores); try again.
+			if int(action.get("tries", 0)) < 20:
+				action["tries"] = int(action.get("tries", 0)) + 1
+				_retry(action)
+				return
 			log.append("no spot for %s near %s" % [id, action["near"]])
 			return
 	var error := sim.execute(PlaceBuildingCommand.new(id, spot, false, turn))

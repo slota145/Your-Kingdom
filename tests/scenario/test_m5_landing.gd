@@ -95,7 +95,7 @@ func test_settlers_land_from_the_ship_and_build_the_pioneer_camp() -> void:
 	_place(sim, &"stockpile", camp.origin + Vector2i(5, 0))
 	var huts: Array[BuildingState] = []
 	for i: int in 3:
-		huts.append(_place(sim, &"hut", camp.origin + Vector2i(-1 + 3 * i, 5)))
+		huts.append(_place(sim, &"hut", camp.origin + Vector2i(-1 + 3 * i, -5)))
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return province.landing == null, 900)).is_true()
 	var residents := 0
 	for hut: BuildingState in huts:

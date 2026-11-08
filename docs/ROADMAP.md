@@ -1019,7 +1019,15 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## W1 — Nowe wybrzeże na mapie „Wybrzeże”
 
-**Status: plan zaakceptowany 2026-11-08 (ankieta: zatoka szeroka i zaokrąglona, jak podkowa), w toku.** Prośba właściciela 2026-11-08; ankieta: **teraz, mały etap** (przed oceną M7 i B1), przed J1, bo większe okręty z J1 potrzebują szerszej zatoki.
+**Status: gotowy 2026-11-08, czeka na ocenę właściciela** (plan zaakceptowany 2026-11-08, ankieta: zatoka szeroka i zaokrąglona, jak podkowa). Prośba właściciela 2026-11-08; ankieta: **teraz, mały etap** (przed oceną M7 i B1), przed J1, bo większe okręty z J1 potrzebują szerszej zatoki.
+
+**Stan (2026-11-08):**
+- Brzeg morza na południu i wschodzie to łagodne zakola i cyple (szum w dwóch skalach) zamiast prostych odcinków ze schodkami; wschodni brzeg zakręca w południowy łukiem.
+- Zatoka jak podkowa: ok. 26 kafli szerokości (dotąd 13) i ok. 22 długości (dotąd 32), z płaskim dnem (ok. 16 kafli) i zaokrąglonymi rogami. Płaskie dno jest celowe: przystań rybacka i stocznia nie obracają się na wodzie i potrzebują prostego brzegu (znalazły go dzięki temu przy dnie zatoki). Rzeka wpada w róg dna zatoki.
+- Lądowanie: koga kotwiczy w (75, 86), plaża w (70, 86), tuż pod placem miasta; za plażą jest otwarta łąka (bez lasu) aż do placu.
+- Automatyczny gracz z portem: stocznia na brzegu morza na wschód od wejścia do zatoki (zachodnią stronę zajmuje miasto), ponawia próbę, gdy ktoś stoi w miejscu budowy. Testy znające stare miejsca szukają ich teraz same.
+- Zapis bez zmian (stare gry mają stary teren).
+- Zrzut: `game_shot.tscn -- --map=coast --tile=76,90 --zoom=0 --advance=20`; mapa: `python3 tools/generate_coast_map.py`.
 
 **Cel:** linia brzegowa „Wybrzeża” jest bardziej naturalna, a zatoka szersza i krótsza, nie prostokątna. Jedna część, ocena po niej.
 
@@ -1033,10 +1041,10 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Ryzyka:** automatyczny gracz i testy lądowania znają dzisiejsze miejsca; po zmianie trzeba je przestawić i sprawdzić długimi testami. Stare zapisy nie zmieniają się (zapis pamięta swój teren); nowy kształt widać w nowej grze.
 
 **DoD:**
-- [ ] Zatoka szersza i krótsza, zaokrąglona; brzeg morza bez prostych odcinków ze schodkami (zrzuty przed i po).
-- [ ] Start ze statku działa: koga kotwiczy w zatoce, osadnicy brodzą na plażę (test lądowania).
-- [ ] Automatyczny gracz z portem buduje port, nabrzeża, dźwig i kogę (długi test).
-- [ ] `tools/run_tests.sh --all` przechodzi.
+- [x] Zatoka szersza i krótsza, zaokrąglona; brzeg morza bez prostych odcinków ze schodkami (zrzuty przed i po).
+- [x] Start ze statku działa: koga kotwiczy w zatoce, osadnicy brodzą na plażę (test lądowania).
+- [x] Automatyczny gracz z portem buduje port, nabrzeża, dźwig i kogę (długi test).
+- [x] `tools/run_tests.sh --all` przechodzi.
 - [ ] **Twoja ocena gry.**
 
 ---

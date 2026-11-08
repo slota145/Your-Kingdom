@@ -36,16 +36,22 @@ DEEP_SHOAL = (30, 70, 130)
 # Kept open: the town site (start buildings in data/maps/coast.tres) and the way in from the
 # west edge.
 TOWN = (42, 54, 68, 80)          # x0, y0, x1, y1
+# W1: open ground between the town site and the landing beach on the bay (no forest there).
+BEACH_GROUND = (56, 78, 72, 94)
 ENTRY_ROAD_Y = 66
-# Coastlines run along the grid axes (diagonal on screen), with steps every few tiles, so a
-# pier or a slipway (a straight row of tiles) finds a straight stretch of shore. The sea lies
-# beyond y = SEA_Y along the bottom-left edge and beyond x = EAST_X along the bottom-right
-# edge (south of EAST_FROM_Y); the bay reaches north from the sea towards the town.
+# W1 (owner's request 2026-11-08): natural coastlines of gentle bays and headlands instead of
+# straight runs with steps (quays now go in 8 directions, so a pier no longer needs a straight
+# shore). The sea lies beyond about y = SEA_Y along the bottom-left edge and beyond about
+# x = EAST_X along the bottom-right edge (south of EAST_FROM_Y). The bay is a wide, round
+# horseshoe opening to the south: centre BAY_CX, half-width BAY_HALF, its round head at
+# BAY_HEAD_Y (about twice as wide and a third shorter than before, owner's survey).
 SEA_Y = 104
 EAST_X = 114
 EAST_FROM_Y = 58
-BAY_X = (71, 84)                 # west and east shore
-BAY_HEAD_Y = 72
+BAY_CX = 81
+BAY_HALF = 13
+BAY_HEAD_Y = 82
+BAY_ROUND = 10                   # how far down from the head the round end reaches
 
 
 def value_noise(seed: int, scale: float):
@@ -97,30 +103,35 @@ def main() -> None:
     shore = value_noise(53, 6.0)
     img = [[GRASS for _ in range(SIZE)] for _ in range(SIZE)]
 
-    # The sea and the bay (decided first: everything else stays on land). Shores step by a
-    # tile now and then (segments of 5-9 tiles) instead of wobbling every tile.
-    steps = random.Random(61)
+    # The sea and the bay (decided first: everything else stays on land). Shores wander in
+    # long gentle curves (two scales of noise), with a headland or a cove now and then.
+    big = value_noise(61, 22.0)
+    small = value_noise(67, 7.0)
 
-    def stepped(length: int) -> list:
-        offsets, value = [], 0
-        while len(offsets) < length:
-            run = steps.randint(5, 9)
-            value = max(-2, min(2, value + steps.choice((-1, 0, 1))))
-            offsets.extend([value] * run)
-        return offsets[:length]
+    def wander(t: float, other: float) -> float:
+        return 12.0 * (big(t, other) - 0.5) + 3.0 * (small(t, other) - 0.5)
 
-    south = stepped(SIZE)        # by x
-    east = stepped(SIZE)         # by y
-    bay_west = stepped(SIZE)     # by y
-    bay_head = stepped(SIZE)     # by x
     sea = [[False] * SIZE for _ in range(SIZE)]
     for y in range(SIZE):
         for x in range(SIZE):
-            if y > SEA_Y + south[x]:
+            if y > SEA_Y + wander(x, 3.0):
                 sea[y][x] = True
-            if y >= EAST_FROM_Y + abs(east[0]) and x > EAST_X + east[y]:
+            # The east coast bends round into the south coast instead of meeting it at a corner.
+            east_from = EAST_FROM_Y + 3.0 * wander(y, 40.0) / 7.0
+            if y >= east_from and x > EAST_X + wander(y, 80.0) + max(0.0, 6.0 - (y - east_from)) ** 2 / 6.0:
                 sea[y][x] = True
-            if BAY_X[0] + bay_west[y] <= x <= BAY_X[1] and y >= BAY_HEAD_Y + bay_head[x]:
+            # The bay: a round head, then sides opening slightly towards the sea.
+            # A horseshoe with a flat head and round corners (a superellipse): harbour buildings
+            # that cannot turn on the water (fishing wharf, shipyard) need a straight shore
+            # facing the bay, and find it along the head.
+            half = BAY_HALF + 1.6 * (small(x + 30.0, y + 30.0) - 0.5) * 2.0
+            centre_y = BAY_HEAD_Y + BAY_ROUND
+            if y >= centre_y:
+                half *= 1.0 + 0.012 * (y - centre_y)
+                inside = abs(x - BAY_CX) <= half
+            else:
+                inside = abs((x - BAY_CX) / half) ** 2.8 + abs((y - centre_y) / BAY_ROUND) ** 2.8 <= 1.0
+            if inside and y >= BAY_HEAD_Y - 1:
                 sea[y][x] = True
 
     # Meadows and forests (along the edges away from the sea, and a grove west of the town).
@@ -161,8 +172,8 @@ def main() -> None:
     points = []
     for i in range(0, 101):
         t = i / 100.0
-        x = 52 + 5 * math.sin(t * 7.0) + 22 * t ** 1.3
-        y = t * 74
+        x = 52 + 5 * math.sin(t * 7.0) + (BAY_CX - 52) * t ** 1.3
+        y = t * (BAY_HEAD_Y + 2)
         points.append((x, y))
     river = [[False] * SIZE for _ in range(SIZE)]
     for (x, y) in points:
@@ -200,11 +211,18 @@ def main() -> None:
                 img[y][x] = RIVER
 
     # Fish shoals: single tiles, 2 in the bay and more along the coast, never next to land.
-    shoals = [(77, 86), (79, 97), (30, 114), (50, 118), (70, 113), (92, 116),
+    shoals = [(75, 92), (87, 96), (30, 114), (50, 118), (70, 113), (92, 116),
               (108, 121), (18, 122), (121, 70), (122, 86), (119, 100), (100, 110)]
-    for (x, y) in shoals:
-        if not sea[y][x] or to_land[y][x] < 2:
-            raise SystemExit("shoal %s is not out at sea" % ((x, y),))
+    for (wx, wy) in shoals:
+        # The nearest tile out at sea (2-6 tiles from land) to where it is wanted.
+        best = None
+        for y in range(SIZE):
+            for x in range(SIZE):
+                if sea[y][x] and 2 <= to_land[y][x] <= 6:
+                    d = (x - wx) ** 2 + (y - wy) ** 2
+                    if best is None or d < best[0]:
+                        best = (d, x, y)
+        _, x, y = best
         img[y][x] = SHALLOW_SHOAL if img[y][x] == SHALLOW else DEEP_SHOAL
 
     # Keep the way in from the west edge and the town site open.
@@ -216,6 +234,22 @@ def main() -> None:
         for x in range(TOWN[0], TOWN[2]):
             if not sea[y][x] and not river[y][x]:
                 img[y][x] = GRASS if img[y][x] != SAND else SAND
+    for y in range(BEACH_GROUND[1], BEACH_GROUND[3]):
+        for x in range(BEACH_GROUND[0], BEACH_GROUND[2]):
+            if img[y][x] == FOREST:
+                img[y][x] = GRASS
+
+    # Where the settlers' cog anchors and the beach they wade to (data/maps/coast.tres): on the
+    # bay's west shore, the first deep water east of the beach.
+    for row in (86, 87, 88, 85, 89):
+        xs = [x for x in range(60, BAY_CX) if sea[row][x]]
+        if not xs:
+            continue
+        beach = (xs[0] - 1, row)
+        deep = [x for x in range(xs[0], BAY_CX + 4) if img[row][x] in (DEEP, DEEP_SHOAL)]
+        if img[row][beach[0]] == SAND and deep:
+            print("landing_tile", (deep[0], row), "beach_tile", beach)
+            break
 
     out = Image.new("RGB", (SIZE, SIZE))
     for y in range(SIZE):

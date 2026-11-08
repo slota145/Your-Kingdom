@@ -114,17 +114,23 @@ func test_coast_map_loads_with_sea_beach_bay_and_shoals() -> void:
 	# A shipyard and a fishing wharf fit on the bay shore not far from the beach, and a cog
 	# can sail from the shipyard out to the open sea.
 	province.first_building = &""
-	for id: StringName in [&"shipyard", &"fishing_wharf"]:
+	for id: StringName in [&"fishing_wharf", &"shipyard"]:
 		var def := registry.get_def(&"building", id) as BuildingDef
 		var spot := Agent.NO_TILE
-		for y: int in range(48, 90):
-			for x: int in range(60, 100):
-				if spot == Agent.NO_TILE and (Vector2i(x, y) - beach).length() < 30 \
-						and province.placement_error(def, Vector2i(x, y)) == &"":
-					spot = Vector2i(x, y)
+		var turn := 0
+		for y: int in range(48, 106):
+			for x: int in range(56, 104):
+				# Any way round (W1: the shores are curved, not straight runs facing one way).
+				for o: int in def.orientation_count():
+					if spot == Agent.NO_TILE and (Vector2i(x, y) - beach).length() < 30 \
+							and province.placement_error(def, Vector2i(x, y), o) == &"":
+						spot = Vector2i(x, y)
+						turn = o
 		assert_vector(spot).override_failure_message("no place for %s" % id).is_not_equal(Agent.NO_TILE)
+		if id == &"fishing_wharf":
+			province.add_building(def, spot, true, turn)
 		if id == &"shipyard":
-			var yard := province.add_building(def, spot, true)
+			var yard := province.add_building(def, spot, true, turn)
 			assert_array(province.cog_nav.find_path(yard.berth_tile(), Vector2i(120, 120))).is_not_empty()
 
 

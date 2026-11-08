@@ -213,13 +213,22 @@ func test_bridge_shortens_the_way_east_on_the_coast() -> void:
 	var problems := PackedStringArray()
 	var sim := Simulation.from_map(registry, registry.get_map(&"coast"), 1, problems)
 	var province := sim.province
-	var from := Vector2i(54, 35)
-	var to := Vector2i(66, 35)
+	# The river on row 35: the land on both sides of it (W1 may move it a few tiles).
+	var west := -1
+	var east := -1
+	for x: int in range(30, 100):
+		if west < 0 and province.is_bridgeable(Vector2i(x + 1, 35)):
+			west = x
+		if west >= 0 and east < 0 and x > west + 1 and not province.is_bridgeable(Vector2i(x, 35)):
+			east = x
+	assert_int(west).is_greater(0)
+	var from := Vector2i(west - 4, 35)
+	var to := Vector2i(east + 4, 35)
 	var before := province.find_path(from, to)
 	assert_array(before).is_not_empty()
-	var plan := province.bridge_plan(Vector2i(57, 35), Vector2i(62, 35))
+	var plan := province.bridge_plan(Vector2i(west - 1, 35), Vector2i(east + 1, 35))
 	assert_str(String(plan["error"])).is_empty()
-	_lay(sim, Vector2i(57, 35), Vector2i(62, 35))
+	_lay(sim, Vector2i(west - 1, 35), Vector2i(east + 1, 35))
 	var after := province.find_path(from, to)
 	assert_int(after.size()).is_less(before.size() - 5)
 
