@@ -88,6 +88,11 @@ var _siege: StringName = &"iron_wold"
 ## --bridges (B1): timber, stone and diagonal bridges over the river near --tile, one ordered,
 ## people and a wagon on them.
 var _bridges: bool = false
+## --hard_shore (B1 part 2): the shoreline as before the soft shore, to compare.
+var _hard_shore: bool = false
+## --stilts=<id,id,...> (B1 part 2): those buildings placed near --tile with a row over the water
+## on piles.
+var _stilts: PackedStringArray = PackedStringArray()
 
 
 func _ready() -> void:
@@ -142,6 +147,10 @@ func _ready() -> void:
 			_focus = Vector2i(int(xy[0]), int(xy[1]))
 		elif arg.begins_with("--raid_seconds="):
 			_raid_seconds = float(arg.trim_prefix("--raid_seconds="))
+		elif arg.begins_with("--stilts="):
+			_stilts = arg.trim_prefix("--stilts=").split(",")
+		elif arg == "--hard_shore":
+			_hard_shore = true
 		elif arg == "--bridges":
 			_bridges = true
 		elif arg == "--drill":
@@ -178,6 +187,8 @@ func _arrange() -> void:
 	var camera: GameCamera = _game.get("camera")
 	var view: ProvinceView = _game.get("view")
 	view.terrain.organic = not _plain
+	if _hard_shore:
+		(view.terrain.get("_material") as ShaderMaterial).set_shader_parameter("soft_shore", false)
 	if _advance > 0:
 		sim.run_ticks(SimClock.seconds_to_ticks(_advance))
 		sim.events.drain()
@@ -242,6 +253,8 @@ func _arrange() -> void:
 		_place_g1(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _m7 != "":
 		_place_m7(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if not _stilts.is_empty():
+		_place_stilts(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _bridges:
 		_place_bridges(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
@@ -795,6 +808,36 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 
 
 ## Places [param id] at the free spot nearest to [param near] (either turn); returns it or null.
+## B1 part 2: each building of --stilts placed nearest [param at] where it leans one row over
+## the water on piles, finished.
+func _place_stilts(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	province.first_building = &""
+	for id_text: String in _stilts:
+		var id := StringName(id_text)
+		var def := sim.data.get_building(id)
+		var placed := false
+		for r: int in 24:
+			for y: int in range(at.y - r, at.y + r + 1):
+				for x: int in range(at.x - r, at.x + r + 1):
+					if placed or maxi(absi(x - at.x), absi(y - at.y)) != r:
+						continue
+					var origin := Vector2i(x, y)
+					if province.stilt_tiles(def, origin).is_empty():
+						continue
+					for o: int in def.orientation_count():
+						if not placed and province.placement_error(def, origin, o) == &"":
+							placed = sim.execute(PlaceBuildingCommand.new(id, origin, true, o)) == &""
+							if placed:
+								print("stilts ", id, " at ", origin, " turn ", o)
+		if not placed:
+			print("stilts ", id, ": no place")
+	var view: ProvinceView = _game.get("view")
+	view.quays.refresh()
+	view.buildings.refresh_all()
+
+
 func _place_near(sim: Simulation, id: StringName, near: Vector2i) -> BuildingState:
 	var def := sim.data.get_building(id)
 	for r: int in 20:

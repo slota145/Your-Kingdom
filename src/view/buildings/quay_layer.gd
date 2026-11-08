@@ -74,15 +74,18 @@ static func quay_tiles(source: ProvinceSim) -> Dictionary[Vector2i, int]:
 				if kind != 0:
 					tiles[Vector2i(x, y)] = kind
 	for building: BuildingState in source.buildings.all():
-		for tile: Vector2i in building_strip(building):
+		for tile: Vector2i in building_strip(building, source):
 			if not tiles.has(tile):
 				tiles[tile] = TileGrid.PIER
 	return tiles
 
 
-## The over-water tiles of [param building] drawn as quay (BuildingVisualDef.quay_tiles).
-static func building_strip(building: BuildingState) -> Array[Vector2i]:
+## The over-water tiles of [param building] drawn as quay (BuildingVisualDef.quay_tiles), and
+## the row a building on piles leans over the water (B1 part 2): a timber deck on piles.
+static func building_strip(building: BuildingState, source: ProvinceSim) -> Array[Vector2i]:
 	var def := building.def
+	if def.stilts_row:
+		return source.stilt_tiles(def, building.origin)
 	if not def.on_quay or def.water_tiles.is_empty():
 		return []
 	var drawn: Array[Vector2i] = def.water_tiles

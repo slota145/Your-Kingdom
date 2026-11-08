@@ -21,3 +21,4 @@ on_quay = true
 quay_only = true
 crane_reach = 2
 id = &"crane"
+stilts_row = true

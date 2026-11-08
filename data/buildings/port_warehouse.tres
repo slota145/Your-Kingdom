@@ -18,3 +18,4 @@ staffing_priority = 6
 on_quay = true
 quay_only = true
 id = &"port_warehouse"
+stilts_row = true

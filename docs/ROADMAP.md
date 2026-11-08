@@ -952,7 +952,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## B1 — Most przez rzekę i łagodniejszy brzeg
 
-**Status: plan zaakceptowany 2026-11-08; część 1 (most) gotowa, czeka na ocenę.** Wybór etapu: ankieta z właścicielem projektu 2026-11-08 (zamiast M8 i rejsów w oknie mapy świata). Mały etap jak N1, po M7, niezależny od oceny wojska. Pomysł gracza z oceny M5 (IDEAS: „Most przez rzekę i mniej kanciaste wybrzeże”). Poprawki z oceny M7 (i pomiar 300 walczących) mają pierwszeństwo przed dalszą pracą.
+**Status: plan zaakceptowany 2026-11-08; część 1 (most) i część 2 (brzeg) gotowe, czekają na ocenę.** Wybór etapu: ankieta z właścicielem projektu 2026-11-08 (zamiast M8 i rejsów w oknie mapy świata). Mały etap jak N1, po M7, niezależny od oceny wojska. Pomysł gracza z oceny M5 (IDEAS: „Most przez rzekę i mniej kanciaste wybrzeże”). Poprawki z oceny M7 (i pomiar 300 walczących) mają pierwszeństwo przed dalszą pracą.
 
 **Decyzje (ankieta 2026-11-08):**
 - **Dwa rodzaje mostu:** drewniany (tani, jak droga ubita) i kamienny (droższy, jak bruk, z łukami).
@@ -972,6 +972,14 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Zrzut: `game_shot.tscn -- --map=coast --tile=58,34 --zoom=2 --bridges [--focus=58,41]`.
 - Uproszczenia: w trybie uproszczonym budowa mostu czeka jak bruk; burzenie mostu nie zwraca materiału; ruchome wozy na moście nie blokują rozbiórki.
 
+
+**Część 2, stan (2026-11-08): gotowa, czeka na ocenę właściciela** (start na prośbę właściciela przed oceną części 1).
+- **Miękki brzeg (tylko wygląd, mapy bez zmian):** granica wody i lądu oraz płycizny i głębiny morza jest liczona z wygładzonej „mapy wody” z 4×4 sąsiednich kafli, więc schodki po kaflach stają się łagodnym skosem, a narożniki się zaokrąglają. Linia brzegu marszczy się słabiej niż inne granice terenu (łagodne zakola zamiast ząbków). Środek każdego kafla (pas 0,14 kafla od środka) zostaje taki, jaki jest naprawdę, więc ląd pod ludźmi i budynkami nie wygląda jak woda. Piana, płycizna i skarpa idą za nową linią.
+- **Budynki na palach:** chata wędkarza, glinianka, dźwig i magazyn portowy mogą stać jednym skrajnym rzędem nad płytką wodą (płytkie morze, jezioro, rzeka, bród; nie głębokie morze), resztą na lądzie (dźwig i magazyn portowy dalej na nabrzeżu). Za palami muszą zostać jeszcze 2 kafle wody (rzeka nie zostaje zagrodzona, także przez budynek po drugiej stronie), nie mogą zająć toru wodnego, miejsca cumowania ani odciąć łodzi od morza. Pod rzędem nad wodą jest pomost na palach, rysowany tym samym kodem co pomosty.
+- Zapis bez zmian (v21): to tylko wygląd i reguła stawiania.
+- Testy: `tests/scenario/test_b1_shore.gd`.
+- Zrzuty: brzeg przed i po `game_shot.tscn -- --map=coast --tile=66,60 --zoom=2 [--hard_shore]` (też `--map=lakeland --tile=82,36 --zoom=1`, `--map=islands --tile=70,84 --zoom=1`); budynki na palach `--map=coast --tile=62,58 --zoom=2 --stilts=fishing_hut,clay_pit,fishing_hut`.
+- Do sprawdzenia na laptopie: płynność (shader liczy więcej przy brzegu).
 
 **Podział: 2 części, ocena po każdej.**
 - **Część 1: most.** Most przez rzekę (i bród, i wąskie miejsce jeziora), po którym chodzą ludzie i jeżdżą wózki i wozy. Stawiany jak droga: przeciągnięcie od brzegu do brzegu, budowniczy kładzie kafel po kaflu, tragarze noszą materiał. Zapis v21.
@@ -1001,9 +1009,9 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Most stawia się przeciągnięciem od brzegu do brzegu, budowa idzie przez budowniczego i tragarzy; ludzie i wozy chodzą po moście (testy ścieżek).
 - [x] Na „Wybrzeżu” most skraca drogę na wschód mapy (zrzut i test ścieżki: z 23 do 13 kroków przy moście w rzędzie 35).
 - [x] Zapis v21 z migracją; stare zapisy wczytują się bez mostów (test na zapisie v16; osobna fixtura v21 niepotrzebna, bo zapis mostu sprawdza test zapisu i odczytu).
-- [ ] Brzeg morza, jeziora i rzeki jest miękki, bez schodków po kaflach (zrzuty przed i po).
-- [ ] Wędkarz, glinianka, dźwig i magazyn portowy stoją 1 rzędem na palach nad płytką wodą (testy reguły, zrzuty).
-- [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
+- [x] Brzeg morza, jeziora i rzeki jest miękki, bez schodków po kaflach (zrzuty przed i po).
+- [x] Wędkarz, glinianka, dźwig i magazyn portowy stoją 1 rzędem na palach nad płytką wodą (testy reguły, zrzuty).
+- [x] UI w PL i EN, nowe teksty przez klucze tłumaczeń.
 - [ ] **Twoja ocena gry** (po każdej części).
 
 ---

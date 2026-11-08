@@ -3366,3 +3366,11 @@ msgstr "Tu nie ma mostu."
 
 msgid "ui.command_error.bad_bridge"
 msgstr "Nieznany rodzaj mostu."
+
+# B1 part 2: buildings on piles
+
+msgid "ui.command_error.too_much_water"
+msgstr "Nad wodą może stać najwyżej jeden rząd budynku (na palach), reszta na lądzie."
+
+msgid "ui.command_error.blocks_water"
+msgstr "Budynek zagrodziłby wodę: za palami musi zostać jeszcze co najmniej 2 kafle wody."

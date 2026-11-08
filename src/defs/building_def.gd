@@ -96,6 +96,10 @@ extends GameDef
 @export var on_quay: bool = false
 ## Stands only on a quay, every tile (a mooring, N1).
 @export var quay_only: bool = false
+## May stand with one edge row of its tiles over shallow water, on piles (B1 part 2, owner's
+## survey 2026-11-08: the angler's hut, the clay pit, the crane and the port warehouse):
+## shallow sea, a lake or a river, never deep sea; the door on the land side.
+@export var stilts_row: bool = false
 ## Has no dockers of its own: those of the nearest port within Harbour.SERVE_RADIUS carry
 ## its cargo (a mooring, N1). Needs such a port to be placed.
 @export var served_by_port: bool = false

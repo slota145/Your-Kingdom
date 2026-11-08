@@ -3333,3 +3333,11 @@ msgstr "No bridge here."
 
 msgid "ui.command_error.bad_bridge"
 msgstr "Unknown kind of bridge."
+
+# B1 part 2: buildings on piles
+
+msgid "ui.command_error.too_much_water"
+msgstr "At most one row of the building may stand over the water (on piles), the rest on land."
+
+msgid "ui.command_error.blocks_water"
+msgstr "The building would dam the water: at least 2 tiles of water must stay beyond its piles."

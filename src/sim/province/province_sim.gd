@@ -539,6 +539,11 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 			if other.def == def:
 				return &"only_one"
 	var on_water := def.water_tiles_at(origin, orientation)
+	var stilts := stilt_tiles(def, origin)
+	if def.stilts_row:
+		var error := _stilts_error(def, origin, stilts)
+		if error != &"":
+			return error
 	for tile: Vector2i in def.footprint_tiles(origin):
 		if not grid.is_inside(tile):
 			return &"outside_map"
@@ -547,6 +552,8 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 		if grid.has_quay(tile):
 			if not def.on_quay:
 				return &"not_on_quay"
+		elif stilts.has(tile):
+			pass   # one row on piles over the water (B1 part 2)
 		elif def.quay_only:
 			return &"needs_quay"
 		elif on_water.has(tile):
@@ -591,6 +598,83 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 		if not entrances.has(t) and t.x >= origin.x and t.y >= origin.y 				and t.x < origin.x + def.footprint.x and t.y < origin.y + def.footprint.y:
 			return &"tile_has_people"
 	return _access_error(def, origin, orientation)
+
+
+## The tiles of a building at [param origin] that would stand over water on piles (B1 part 2):
+## water a building with BuildingDef.stilts_row may lean over (shallow sea, lake, river, ford),
+## not under a quay. Empty for other buildings.
+func stilt_tiles(def: BuildingDef, origin: Vector2i) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	if not def.stilts_row:
+		return tiles
+	for tile: Vector2i in def.footprint_tiles(origin):
+		if grid.is_inside(tile) and not grid.has_quay(tile) and _stilt_water(tile):
+			tiles.append(tile)
+	return tiles
+
+
+## Water a building may stand over on piles: shallow sea, or a river, ford or lake.
+func _stilt_water(tile: Vector2i) -> bool:
+	var terrain := terrain_at(tile)
+	if terrain == null:
+		return false
+	if terrain.sail_depth > 0:
+		return terrain.sail_depth == 1
+	return terrain.is_kind(&"water") or terrain.id == &"ford"
+
+
+## &"" when the tiles of [param stilts] (over the water) are one edge row of the building, the
+## water goes on beyond them (no river dammed), and boats keep their way to the open sea.
+func _stilts_error(def: BuildingDef, origin: Vector2i, stilts: Array[Vector2i]) -> StringName:
+	if stilts.is_empty():
+		return &""
+	var last := origin + def.footprint - Vector2i.ONE
+	var outward := Vector2i.ZERO
+	for side: Array in [[Vector2i(-1, 0), origin.x], [Vector2i(1, 0), last.x], [Vector2i(0, -1), origin.y],
+			[Vector2i(0, 1), last.y]]:
+		var d: Vector2i = side[0]
+		var line: int = side[1]
+		var all_on := true
+		for tile: Vector2i in stilts:
+			if (tile.x if d.x != 0 else tile.y) != line:
+				all_on = false
+				break
+		if all_on and (def.footprint.x if d.x != 0 else def.footprint.y) >= 2:
+			outward = d
+			break
+	if outward == Vector2i.ZERO:
+		return &"too_much_water"
+	var sea := false
+	for tile: Vector2i in stilts:
+		for k: int in [1, 2]:
+			var beyond := tile + outward * k
+			if not grid.is_inside(beyond):
+				continue
+			if not _stilt_water(beyond) and sail_depth(beyond) == 0:
+				return &"blocks_water"
+			if grid.occupant(beyond) != 0 or grid.has_quay(beyond) or grid.has_bridge(beyond):
+				return &"blocks_water"
+		if fairway.has(tile):
+			return &"keeps_fairway"
+		for building: BuildingState in buildings.all():
+			if building.def.has_berth() and building.berth_tile() == tile:
+				return &"keeps_berth"
+		if sail_depth(tile) > 0:
+			sea = true
+	if sea:
+		var blocked: Dictionary[Vector2i, bool] = {}
+		for paving_site: PavingSite in paving.values():
+			if paving_site.is_quay():
+				for t: Vector2i in paving_site.tiles:
+					blocked[t] = true
+		var before := _sea_reach(blocked)
+		for tile: Vector2i in stilts:
+			blocked[tile] = true
+		var after := _sea_reach(blocked)
+		for target: Vector2i in before:
+			if not after.has(target):
+				return &"blocks_sea"
+	return &""
 
 
 ## People must be able to walk to a door of the new building (one free door is enough), and
