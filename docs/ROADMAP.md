@@ -963,7 +963,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Rampy na lądzie (prośba właściciela 2026-11-08, w trakcie części 1):** most zaczyna się i kończy na lądzie, po kaflu na każdym brzegu; boki i poręcze schodzą tam do ziemi, żeby most nie urywał się nad wodą. Rampa liczy się jako kafel mostu (materiał, rozbiórka), drzewo w jej miejscu jest ścinane, droga może pod nią zostać.
 - **Most z drogi (prośba właściciela 2026-11-08, w trakcie części 1):** droga przeciągnięta przez rzekę sama zamawia nad wodą most drewniany, a bruk most kamienny (z rampami); podgląd pokazuje cały most. Gdy przeciągnięcie biegnie po skosie, most idzie prosto, a krótki kawałek drogi łączy jego koniec z resztą drogi. Nad wodą, gdzie most już stoi albo jest zamówiony, nic nowego się nie zamawia.
 
-**Część 1, stan (2026-11-08): gotowa, czeka na ocenę właściciela.**
+**Część 1, stan (2026-11-08): gotowa, scalona do `main` przed oceną** (po prośbie właściciela: kusza z wygiętym łęczyskiem i prostą cięciwą).
 - Most drewniany i kamienny przeciąga się od brzegu do brzegu (przyciski „Most” i „Most kamienny” obok „Drogi”), w 8 kierunkach, najwyżej 8 kafli wody, z rampą na każdym brzegu; podgląd całej linii na zielono albo czerwono, całość albo nic. Budowniczy kładzie kafel po kaflu od bliższego brzegu (6 s), tragarze noszą deski albo kamień. Ludzie chodzą po moście jak po drodze albo bruku, wózki bez kary za jazdę poza drogą, wozy jeżdżą (most to droga). Rozbiórka zabiera cały most (nie, gdy ktoś na nim stoi) albo zamówienie.
 - Most po skosie (na ekranie pionowy) ma wyraźne poręcze: słupki wychylone nad wodę z żerdzią na górze, a kamienny murek z jasnym zwieńczeniem (prośba właściciela 2026-11-08).
 - Droga przez rzekę zamawia most drewniany, bruk most kamienny (`ProvinceSim.road_crossings`).
@@ -1051,7 +1051,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## J1 — Nowe jednostki i okręty
 
-**Status: plan zaakceptowany 2026-11-08 (ankiety); część 1 gotowa, czeka na ocenę.** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
+**Status: plan zaakceptowany 2026-11-08 (ankiety); część 1 gotowa i scalona do `main` 2026-11-08 na prośbę właściciela (przed oceną); część 2 w toku.** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
 
 **Cel (prośba właściciela):**
 - jednostki: **halabardnik w zbroi płytowej**, **kusznik**, **ciężki zbrojny z morgensternem**, **lekka jazda**, **ruchoma balista**,
