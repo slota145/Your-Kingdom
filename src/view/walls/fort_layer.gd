@@ -57,7 +57,14 @@ func refresh() -> void:
 		if walls.is_stone(piece.tile):
 			node.damage = 1.0 - walls.hp(piece.tile) / float(Walls.STONE_HP)
 		add_child(node)
-	var is_fence := func(t: Vector2i) -> bool: return walls.kind(t) == Walls.PALISADE or walls.is_mass(t)
+	# A palisade joins a palisade gate too (M7 part 3); it ends at the gate's post.
+	var gates: Dictionary[Vector2i, bool] = {}
+	for building: BuildingState in province.buildings.all():
+		if building.def.is_gate() and not building.def.is_gatehouse():
+			for t: Vector2i in building.tiles():
+				gates[t] = true
+	var is_fence := func(t: Vector2i) -> bool:
+		return walls.kind(t) == Walls.PALISADE or walls.is_mass(t) or gates.has(t)
 	for tile: Vector2i in walls.tiles():
 		match walls.kind(tile):
 			Walls.PALISADE:

@@ -83,6 +83,8 @@ var _raid_seconds: float = 25.0
 ## --tile).
 var _focus: Vector2i = Vector2i(-1, -1)
 var _drill: bool = false
+## --siege=<province def id> (--m7=siege).
+var _siege: StringName = &"iron_wold"
 
 
 func _ready() -> void:
@@ -139,6 +141,8 @@ func _ready() -> void:
 			_raid_seconds = float(arg.trim_prefix("--raid_seconds="))
 		elif arg == "--drill":
 			_drill = true
+		elif arg.begins_with("--siege="):
+			_siege = StringName(arg.trim_prefix("--siege="))
 		elif arg.begins_with("--g1"):
 			_g1 = arg.trim_prefix("--g1=") if arg.begins_with("--g1=") else "finished"
 		elif arg.begins_with("--select="):
@@ -146,6 +150,8 @@ func _ready() -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--map="):
 			Game.start_request = {"map": arg.trim_prefix("--map=")}
+		elif arg == "--world":
+			Game.start_request = {"world": "kingdom"}
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D
 	add_child(_game)
 
@@ -369,6 +375,12 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	if _m7 == "army":
 		_place_army(sim, at)
 		return
+	if _m7 == "siege":
+		_place_siege(sim)
+		return
+	if _m7 == "fleet":
+		_place_fleet(sim, at)
+		return
 	if _m7 == "walls":
 		_place_walls(sim, at)
 		return
@@ -461,6 +473,65 @@ func _place_army(sim: Simulation, at: Vector2i) -> void:
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(barracks.entrance_tile() + Vector2i(1, 2))
 
 
+## M7 part 3 (--map=coast --m7=fleet): two warships at anchor in deep water near --tile.
+func _place_fleet(sim: Simulation, at: Vector2i) -> void:
+	var def := sim.data.get_ship(&"warship")
+	for k: int in 2:
+		var ship := ShipUnit.new(sim.ids.take(), def, IsoMath.tile_center(at), sim.data)
+		var spot := Voyage.anchorage(sim.province, ship, at + Vector2i(k * 6, k * 3))
+		if spot == Agent.NO_TILE:
+			continue
+		ship.pos = IsoMath.tile_center(spot)
+		ship.prev_pos = ship.pos
+		ship.facing = 3 + k * 2
+		sim.province.ships[ship.id] = ship
+
+
+## M7 part 3 (--world --m7=siege [--siege=<id>] [--raid_seconds=<s>]): the player's army waits at
+## a neutral settlement (Iron Wold, or Horse Haven with --siege=horse_haven) and goes in to
+## fight; its men break what stands in the way to the town hall for a few seconds; the camera
+## looks at the gate (or at --focus).
+func _place_siege(sim: Simulation) -> void:
+	var target := sim.world.id_of(_siege)
+	var army := Army.new()
+	army.id = sim.ids.take()
+	army.at = target
+	army.home = sim.viewed_id
+	army.state = Army.State.WAITING
+	army.units = {&"swordsman": 16, &"spearman": 8, &"archer": 8, &"ram": 1, &"ladderman": 2}
+	army.food = army.food_cap()
+	sim.world.armies[army.id] = army
+	sim.execute(ArmySiegeCommand.new(army.id, ArmySiegeCommand.ENTER))
+	_game.call("_show_province")
+	var p := sim.province
+	var gate: BuildingState = null
+	for b: BuildingState in p.buildings.all():
+		if b.def.is_gatehouse():
+			gate = b
+	var mine: Array[int] = []
+	for agent: Agent in p.agents.all():
+		if agent.combat != null and agent.combat.army == army.id:
+			mine.append(agent.id)
+	sim.execute(OrderTroopsCommand.new(mine, OrderTroopsCommand.BREAK, p.seat().entrance_tile()))
+	Game.paused = false
+	sim.run_ticks(SimClock.seconds_to_ticks(_raid_seconds))
+	Game.paused = true
+	var camera: GameCamera = _game.get("camera")
+	var look := gate.entrance_tile() if gate != null else p.seat().entrance_tile()
+	var sum := Vector2.ZERO
+	var count := 0
+	for id: int in mine:
+		var agent := p.agents.get_agent(id)
+		if agent != null:
+			sum += agent.pos
+			count += 1
+	if count > 0:
+		look = Vector2i((sum / count).floor())
+	camera.position = IsoMath.tile_center_screen(look)
+	(_game.get("view") as ProvinceView).forts.refresh()
+	(_game.get("view") as ProvinceView).buildings.refresh_all()
+
+
 ## M7 part 2 (--m7=walls): a walled square with a gatehouse, towers, stairs, a thick double
 ## row, a diagonal run, a palisade and a wall being laid.
 func _place_walls(sim: Simulation, at: Vector2i) -> void:
@@ -496,6 +567,8 @@ func _place_walls(sim: Simulation, at: Vector2i) -> void:
 			p.lay_wall(t, Walls.PALISADE)
 	# A turned gatehouse in the west wall (its art has its own light, not a mirror).
 	p.execute_place(&"gatehouse", o + Vector2i(-1, 7), 1)
+	# A palisade gate in the straight palisade (M7 part 3).
+	p.execute_place(&"palisade_gate", o + Vector2i(16, 6), 0)
 	p.damage_wall(o + Vector2i(14, 4), 700)
 	sim.execute(BuildWallCommand.new(BuildWallCommand.line(o + Vector2i(2, 16), o + Vector2i(8, 16)), Walls.STONE))
 	for k: int in 6:

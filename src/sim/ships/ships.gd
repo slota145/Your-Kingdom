@@ -290,6 +290,9 @@ static func update(province: ProvinceSim) -> void:
 	for ship: ShipUnit in province.ships.values():
 		if ship.def.id == SeaMerchant.SHIP or ship.voyage != null or ship.def.id == Landing.SHIP:
 			continue   # cogs go their own way (SeaMerchant, Voyage)
+		if ship.def.troops > 0:
+			_anchor_warship(province, ship)
+			continue
 		if ship.home_id == 0:
 			_find_home(province, ship)
 		if ship.crew == 0 and ship.dock_id == 0 and ship.path_state != ShipUnit.PathState.MOVING:
@@ -300,6 +303,20 @@ static func update(province: ProvinceSim) -> void:
 				dock(ship, home)
 			elif not sail_to(province, ship, home.berth_tile()):
 				dock(ship, home)   # no way back by water: it is towed home
+
+
+## A warship (M7 part 3) leaves the shipyard's berth for an anchorage in deep water and waits
+## there for an army to carry (Armies).
+static func _anchor_warship(province: ProvinceSim, ship: ShipUnit) -> void:
+	if ship.dock_id == 0 or ship.path_state == ShipUnit.PathState.MOVING:
+		return
+	var anchor := Voyage.anchorage(province, ship, ship.tile())
+	if anchor == Agent.NO_TILE:
+		return
+	ship.dock_id = 0
+	if not sail_to(province, ship, anchor):
+		ship.pos = IsoMath.tile_center(anchor)
+		ship.prev_pos = ship.pos
 
 
 ## Gives [param ship] the nearest finished building using its kind that has no ship yet

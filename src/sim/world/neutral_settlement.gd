@@ -28,6 +28,10 @@ var gold_paid: int = 0
 var delivered: Dictionary[StringName, int] = {}
 ## ASKING: tick the time runs out; RESTING: tick the new demand comes.
 var until: int = 0
+## The guards left (unit id -> men; M7 part 3) and whether the town got its walls
+## (NeutralTown.fortify).
+var guards: Dictionary[StringName, int] = {}
+var fortified: bool = false
 
 
 ## The first demand of province [param id] of [param def], from tick [param now].
@@ -82,9 +86,14 @@ func take(good: StringName, amount: int) -> int:
 
 
 func to_dict() -> Dictionary:
-	return {"province": province, "state": state, "round": round, "gold": gold,
+	var d := {"province": province, "state": state, "round": round, "gold": gold,
 			"goods": Expedition.goods_to_dict(goods), "gold_paid": gold_paid,
 			"delivered": Expedition.goods_to_dict(delivered), "until": until}
+	if not guards.is_empty():
+		d["guards"] = Expedition.goods_to_dict(guards)
+	if fortified:
+		d["fortified"] = true
+	return d
 
 
 static func from_dict(d: Dictionary) -> NeutralSettlement:
@@ -97,4 +106,6 @@ static func from_dict(d: Dictionary) -> NeutralSettlement:
 	s.gold_paid = int(d.get("gold_paid", 0))
 	s.delivered = Expedition.goods_from(d.get("delivered", {}))
 	s.until = int(d.get("until", 0))
+	s.guards = Expedition.goods_from(d.get("guards", {}))
+	s.fortified = bool(d.get("fortified", false))
 	return s

@@ -81,7 +81,7 @@ func refresh_tile(province: ProvinceSim, tile: Vector2i, nav_solid: bool, cost: 
 
 ## The ground grid of [param faction]: the town's own (gates open) or an enemy's.
 func ground_nav(province: ProvinceSim, faction: int) -> NavGrid:
-	return province.nav if faction == CombatState.PLAYER else enemy_nav
+	return province.nav if faction == province.home_faction else enemy_nav
 
 
 func nav_of(province: ProvinceSim, level: int, faction: int) -> NavGrid:
@@ -105,7 +105,7 @@ func portals(province: ProvinceSim, faction: int) -> Array[Portal]:
 	for ground: Vector2i in ladders:
 		if walls.is_walkway(ladders[ground]):
 			result.append(Portal.new(ground, ladders[ground], RAMP, false))
-	if faction != CombatState.PLAYER:
+	if faction != province.home_faction:
 		return result
 	for building: BuildingState in province.buildings.all():
 		if not building.def.is_fort() or not building.is_complete():

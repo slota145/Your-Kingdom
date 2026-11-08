@@ -39,6 +39,11 @@ const OWNER_NEUTRAL := &"neutral"
 @export var demand_gold: int = 0
 @export var demand_goods: Dictionary[StringName, int] = {}
 @export var demand_minutes: float = 20.0
+## Defences (M7 part 3): the ring around the town centre (Walls.NONE, PALISADE or STONE, with a
+## gatehouse), towers on it, and the guards (unit id -> men).
+@export_range(0, 2) var town_wall: int = 0
+@export_range(0, 4) var town_towers: int = 0
+@export var town_guards: Dictionary[StringName, int] = {}
 
 
 func get_kind() -> StringName:

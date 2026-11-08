@@ -43,6 +43,12 @@ var mil: MilitaryNav
 var raids: Raids = Raids.new()
 ## Arrows in flight (M7 part 2).
 var arrows: Array[Troops.Arrow] = []
+## The side whose walls and gates these are (CombatState.PLAYER, or TOWN in a neutral
+## settlement); set by Simulation from the province's owner, not saved (M7 part 3).
+var home_faction: int = CombatState.PLAYER
+## Soldiers who marched off the map since the last tick: {army, unit, hp} (Simulation adds
+## them to their army at once, so this is never saved).
+var marched: Array[Dictionary] = []
 var jobs: JobBoard = JobBoard.new()
 var paths: PathRequestQueue = PathRequestQueue.new()
 ## The kingdom's gold. Owned by the Simulation (it is global), shared here for convenience.
@@ -2067,11 +2073,21 @@ func break_building(building: BuildingState) -> void:
 
 
 func _add_fort(building: BuildingState) -> void:
-	walls.add_fort(building.tiles(), building.id)
+	if building.def.has_crown():
+		walls.add_fort(building.tiles(), building.id)
+	else:
+		_clear_walls_under(building)
 	for tile: Vector2i in building.passage_tiles():
 		passages[tile] = building.id
 	for tile: Vector2i in building.tiles():
 		_refresh_wall_tiles(tile)
+
+
+## A palisade gate takes the place of the palisade it stands in (it is no stone mass).
+func _clear_walls_under(building: BuildingState) -> void:
+	for tile: Vector2i in building.tiles():
+		if walls.kind(tile) != Walls.NONE:
+			walls.set_kind(tile, Walls.NONE)
 
 
 func _remove_fort(building: BuildingState) -> void:
@@ -2686,7 +2702,8 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 		for tile: Vector2i in building.tiles():
 			grid.set_occupant(tile, building.id)
 		if building.def.is_fort():
-			province.walls.add_fort(building.tiles(), building.id)
+			if building.def.has_crown():
+				province.walls.add_fort(building.tiles(), building.id)
 			for tile: Vector2i in building.passage_tiles():
 				province.passages[tile] = building.id
 	province.walls.rebuild_wedges()

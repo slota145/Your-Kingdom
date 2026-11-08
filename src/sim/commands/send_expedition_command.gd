@@ -31,6 +31,8 @@ static func error_for(sim: Simulation, from: int, to: int) -> StringName:
 		return &"unknown_province"
 	if world.owner_of(to) != ProvinceDef.OWNER_NONE or sim.runtimes.has(to) or world.expedition_to(to) != null:
 		return &"province_taken"
+	if world.camp != null and world.camp.province == to:
+		return &"bandit_camp"
 	for id: int in sim.runtimes:
 		var other := sim.province_state(id)
 		if other.departure != null and other.departure.target == to:

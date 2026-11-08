@@ -5,12 +5,17 @@ extends Control
 ## towns, names and rare resources. Reads the simulation only; a click selects a province.
 ## An expedition of settlers getting ready stands by its town (M6 part 2): a click on a ready
 ## one selects it, and a right click on a province then asks to send it there.
+## Armies (M7 part 3) stand by towns or walk along the roads under their banners (the player's
+## red, the bandits' black), with the number of men; the bandits' camp is a ring of tents.
 
 signal province_clicked(id: int)
 ## A ready expedition (of province [param from]) was clicked.
 signal expedition_clicked(from: int)
 ## Right click on province [param to] with the expedition of [param from] selected.
 signal send_requested(from: int, to: int)
+## An army (M7 part 3) was clicked; a right click on a province with it selected sends it.
+signal army_clicked(id: int)
+signal army_send_requested(army: int, to: int)
 
 const PARCHMENT := Color(0.88, 0.80, 0.63)
 const PARCHMENT_DARK := Color(0.62, 0.50, 0.33)
@@ -35,11 +40,14 @@ const MARK_RADIUS := 22.0
 const ROUTE_OK := Color(0.20, 0.45, 0.18)
 const ROUTE_BAD := Color(0.65, 0.15, 0.10)
 const ROUTE_TRADE := Color(0.50, 0.30, 0.10)
+const BANDITS := Color(0.16, 0.15, 0.14)
 
 var sim: Simulation
 var selected: int = 0
 ## The province whose ready expedition is selected, 0 = none.
 var expedition_from: int = 0
+## The selected army, 0 = none.
+var army_selected: int = 0
 var _hover: int = 0
 
 
@@ -104,19 +112,28 @@ func _gui_input(event: InputEvent) -> void:
 	var button := event as InputEventMouseButton
 	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 		var from := expedition_at(button.position)
-		if from != 0:
+		var army := army_at(button.position)
+		if army != 0:
+			army_selected = army
+			expedition_from = 0
+			army_clicked.emit(army)
+		elif from != 0:
+			army_selected = 0
 			expedition_from = from
 			selected = from
 			expedition_clicked.emit(from)
 		else:
 			var id := province_at(button.position)
 			if id != 0:
+				army_selected = 0
 				selected = id
 				province_clicked.emit(id)
 		accept_event()
 	elif button != null and button.pressed and button.button_index == MOUSE_BUTTON_RIGHT:
 		var to := province_at(button.position)
-		if expedition_from != 0 and to != 0 and to != expedition_from:
+		if army_selected != 0 and to != 0:
+			army_send_requested.emit(army_selected, to)
+		elif expedition_from != 0 and to != 0 and to != expedition_from:
 			send_requested.emit(expedition_from, to)
 		else:
 			expedition_from = 0   # right click elsewhere lets go of the expedition
@@ -145,7 +162,14 @@ func _draw() -> void:
 		_draw_expedition(expedition)
 	for id: int in sim.runtime_ids():
 		_draw_departure(id)
+	_draw_camp()
+	var keys: Array[int] = []
+	keys.assign(sim.world.armies.keys())
+	keys.sort()
+	for id: int in keys:
+		_draw_army(sim.world.armies[id])
 	_draw_planned_route()
+	_draw_army_route()
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 	for id: int in sim.world.ids():
 		_draw_label(id, fit)
@@ -246,6 +270,9 @@ func _draw_town(id: int) -> void:
 		return
 	var at := def.world_pos
 	var owner := sim.world.owner_of(id)
+	var camp := sim.world.camp
+	if camp != null and camp.province == id:
+		return   # the camp's tents stand there (_draw_camp)
 	if not sim.runtimes.has(id) and owner == ProvinceDef.OWNER_NONE:
 		draw_line(at + Vector2(-5, -5), at + Vector2(5, 5), Color(INK, 0.5), 2.0)
 		draw_line(at + Vector2(-5, 5), at + Vector2(5, -5), Color(INK, 0.5), 2.0)
@@ -466,3 +493,112 @@ func _draw_compass(frame: Rect2) -> void:
 	draw_arc(c, r * 0.55, 0.0, TAU, 32, INK, 1.5)
 	var font := get_theme_default_font()
 	draw_string(font, c + Vector2(-5, -r - 6), tr("ui.world.north"), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, INK)
+
+
+# --- Armies (M7 part 3) -----------------------------------------------------------------------
+
+## Where [param army] is drawn (parchment pixels): beside its town (bandits below it), at the
+## border of a settlement it waits at, or on its way.
+func army_point(army: Army) -> Vector2:
+	if army.state == Army.State.MOVING:
+		return way_point(army.at, army.next, army.by_sea, army.progress(sim.clock.tick))
+	var def := sim.world.def_of(army.at, sim.data)
+	if def == null:
+		return Vector2.ZERO
+	if army.owner == Army.BANDITS:
+		return def.world_pos + Vector2(-30, 40)
+	if army.state == Army.State.WAITING:
+		var from := sim.world.def_of(army.home, sim.data)
+		var dir := (from.world_pos - def.world_pos).normalized() if from != null and from != def else Vector2.LEFT
+		return def.world_pos + dir * 70.0
+	return def.world_pos + Vector2(-50, 16)
+
+
+## The army whose banner is under [param at] (control pixels), 0 if none; the player's only.
+func army_at(at: Vector2) -> int:
+	var local := _fit().affine_inverse() * at
+	for army: Army in sim.world.armies.values():
+		if army.owner == ProvinceDef.OWNER_PLAYER and army.state != Army.State.INSIDE \
+				and local.distance_to(army_point(army) + Vector2(0, -15)) <= MARK_RADIUS * 1.3:
+			return army.id
+	return 0
+
+
+## A banner on a pole over three little men, the number of men beside it.
+func _draw_army(army: Army) -> void:
+	if army.state == Army.State.INSIDE or army.men() == 0:
+		return
+	# Drawn 1.5 times larger around its point, then back to the map's transform.
+	draw_set_transform_matrix(_fit() * Transform2D(0.0, Vector2(1.5, 1.5), 0.0, army_point(army)))
+	var at := Vector2.ZERO
+	var color: Color = OWNER_ARMS[ProvinceDef.OWNER_PLAYER] if army.owner == ProvinceDef.OWNER_PLAYER else BANDITS
+	if army.id == army_selected:
+		var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 200.0)
+		draw_circle(at + Vector2(0, -8), 22.0 + pulse * 4.0, Color(SELECTED, 0.35 + 0.3 * pulse))
+	elif army.state == Army.State.WAITING:
+		draw_arc(at + Vector2(0, -8), 21.0, 0.0, TAU, 24, Color(SELECTED, 0.8), 2.0)
+	for k: int in 3:
+		var man := at + Vector2(-9 + k * 9, 2 - (k % 2) * 3)
+		draw_circle(man + Vector2(0, -9), 3.0, Color(0.85, 0.70, 0.55))
+		draw_rect(Rect2(man + Vector2(-3, -6), Vector2(6, 8)), color)
+		draw_line(man + Vector2(4, -14), man + Vector2(4, 3), INK, 1.2)   # a spear
+	draw_line(at + Vector2(-14, 2), at + Vector2(-14, -30), INK, 1.8)
+	var flag := PackedVector2Array([at + Vector2(-14, -30), at + Vector2(4, -26), at + Vector2(-2, -22),
+			at + Vector2(4, -18), at + Vector2(-14, -16)])
+	draw_colored_polygon(flag, color)
+	if army.owner == Army.BANDITS:
+		draw_circle(at + Vector2(-7, -23), 2.5, Color(0.92, 0.88, 0.80))   # a skull
+	var font := get_theme_default_font()
+	draw_string_outline(font, at + Vector2(9, -14), str(army.men()), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, 4, PARCHMENT)
+	draw_string(font, at + Vector2(9, -14), str(army.men()), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, INK)
+	draw_set_transform_matrix(_fit())
+
+
+## The bandits' camp: a ring of dark tents round a fire.
+func _draw_camp() -> void:
+	var camp := sim.world.camp
+	if camp == null or not camp.is_up():
+		return
+	var def := sim.world.def_of(camp.province, sim.data)
+	if def == null:
+		return
+	var at := def.world_pos
+	for k: int in 4:
+		var c := at + Vector2(cos(k * TAU / 4.0 + 0.4), sin(k * TAU / 4.0 + 0.4) * 0.6) * 16.0
+		draw_colored_polygon(PackedVector2Array([c + Vector2(-8, 5), c + Vector2(0, -9), c + Vector2(8, 5)]),
+				BANDITS.lightened(0.15 * (k % 2)))
+		draw_line(c + Vector2(0, -9), c + Vector2(0, 5), Color(0.6, 0.5, 0.4), 1.0)
+	draw_circle(at + Vector2(0, 2), 3.5, Color(0.95, 0.55, 0.15))
+	draw_circle(at + Vector2(0, 0), 2.0, Color(1.0, 0.85, 0.3))
+
+
+## With an army selected: a dashed line along its way to the province under the mouse (through
+## the neighbours it walks), green where it can go, red where it cannot.
+func _draw_army_route() -> void:
+	var army := sim.world.armies.get(army_selected) as Army
+	if army == null:
+		army_selected = 0
+		return
+	var width := 3.0 / maxf(_fit().get_scale().x, 0.01)
+	if army.state == Army.State.MOVING:
+		var stops: Array[int] = [army.next]
+		stops.append_array(army.route)
+		var from := army_point(army)
+		for stop: int in stops:
+			var to := sim.world.def_of(stop, sim.data).world_pos
+			draw_dashed_line(from, to, Color(ROUTE_OK, 0.6), width, width * 4.0)
+			from = to
+		return
+	if _hover == 0 or _hover == army.at:
+		return
+	var ok := Armies.send_error(sim, army, _hover) == &""
+	var stops: Array[int] = [_hover]
+	if ok and not Armies.goes_by_sea(sim, army, _hover):
+		stops = sim.world.land_route(army.at, _hover, sim.data)
+	var from := army_point(army)
+	for stop: int in stops:
+		var def := sim.world.def_of(stop, sim.data)
+		if def == null:
+			continue
+		draw_dashed_line(from, def.world_pos, ROUTE_OK if ok else ROUTE_BAD, width, width * 4.0)
+		from = def.world_pos

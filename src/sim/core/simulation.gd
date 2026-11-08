@@ -100,9 +100,11 @@ func step() -> void:
 		execute(command)
 	province.tick = clock.tick
 	province.step()
+	if not province.marched.is_empty():
+		Armies.absorb(self)
 	if raids_enabled and clock.tick % SimClock.TICKS_PER_SECOND == 0 \
 			and world.owner_of(viewed_id) == ProvinceDef.OWNER_PLAYER:
-		Raids.update(province, rng.stream(&"raids"))
+		Raids.update(province, rng.stream(&"raids"), world.is_single())
 	# Each simplified province updates once a second, in the tick of its id within the second
 	# (provinces do not all update in the same tick).
 	var slot := clock.tick % ProvinceAbstract.STEP_TICKS
@@ -191,6 +193,7 @@ func _update_world() -> void:
 					world.expeditions.erase(id)
 	TradeRoutes.update(self)
 	_update_settlements()
+	Armies.update(self)
 
 
 ## Every neutral province without a town gets one, and its first demand (a new game; a save
@@ -205,6 +208,22 @@ func _open_neutral_towns() -> PackedStringArray:
 			continue
 		problems.append_array(NeutralTown.build(self, id))
 		world.settlements[id] = NeutralSettlement.first(id, def, clock.tick)
+	problems.append_array(_fortify_towns())
+	return problems
+
+
+## Neutral towns get their walls and guards (M7 part 3; a save from before it too).
+func _fortify_towns() -> PackedStringArray:
+	var problems := PackedStringArray()
+	var keys: Array[int] = []
+	keys.assign(world.settlements.keys())
+	keys.sort()
+	for id: int in keys:
+		if not world.settlements[id].fortified and runtimes.has(id):
+			problems.append_array(NeutralTown.fortify(self, id))
+			var town := province_state(id)
+			if town != null:
+				town.home_faction = CombatState.TOWN
 	return problems
 
 
@@ -301,6 +320,7 @@ func view_province(id: int) -> void:
 	var waiting := world.expedition_to(id)
 	if not runtimes.has(id) and (waiting == null or waiting.state != Expedition.State.WAITING):
 		return
+	Armies.fold(self)
 	runtimes[viewed_id] = ProvinceAbstract.freeze(province, clock.tick)
 	if runtimes.has(id):
 		province = (runtimes[id] as ProvinceAbstract).thaw(clock.tick, events)
@@ -308,7 +328,15 @@ func view_province(id: int) -> void:
 		province = _settle(waiting)
 	runtimes[id] = province
 	viewed_id = id
+	province.home_faction = faction_of(id)
+	if world.owner_of(id) == ProvinceDef.OWNER_NEUTRAL:
+		Armies.spawn_guards(self, id)
 	events.emit(&"province_entered", {"province": id})
+
+
+## The side whose walls the province's are (M7 part 3): the player's, or a neutral town's.
+func faction_of(id: int) -> int:
+	return CombatState.TOWN if world.owner_of(id) == ProvinceDef.OWNER_NEUTRAL else CombatState.PLAYER
 
 
 func to_dict() -> Dictionary:
@@ -352,4 +380,8 @@ static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 		else:
 			sim.runtimes[id] = ProvinceAbstract.from_dict(e["state"], registry, sim.ids, sim.treasury)
 	sim.province = sim.runtimes.get(sim.viewed_id) as ProvinceSim
+	for id: int in sim.runtimes:
+		var state := sim.province_state(id)
+		if state != null:
+			state.home_faction = sim.faction_of(id)
 	return sim

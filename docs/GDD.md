@@ -379,12 +379,14 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 
 - Oddziały z koszar łączą się w armię, która wychodzi na mapę świata przez krawędź prowincji.
 - Armia zużywa żywność: nosi zapas, a w prowincjach gracza uzupełnia go z magazynu.
+- **M7, część 3 (2026-11-08):** „Wymarsz” w panelu wojska: zaznaczeni żołnierze wychodzą krawędzią mapy i tworzą armię przy mieście; na mapie świata klik na armię, prawy przycisk na prowincję (idzie przez sąsiadów, morzem tylko okrętami wojennymi). 1 chleb na 10 żołnierzy na minutę, zapas na 10 minut; głodna walczy słabiej. U siebie wraca do koszar. Szczegóły i wartości: ROADMAP M7, „Część 3, stan”.
 
 ---
 
 ## 7. Ruch na mapie świata
 
 - **Bitwy polowe** (dwie armie spotykają się poza oblężeniem): rozstrzygane automatycznie. Wynik zależy od siły, typów jednostek (przewagi), terenu i zaopatrzenia. Gracz dostaje raport z przebiegiem bitwy. [1.0]
+- **M7, część 3:** bitwę polową (armia gracza z bandytami, rozbicie obozu bandytów) rozstrzyga `BattleResolver`; raport (etapy i straty) jest w panelu prowincji na mapie świata.
 - **Bitwy morskie**:
   - rozstrzygane automatycznie, tak jak polowe [1.0],
   - **interaktywne bitwy morskie [PÓŹNIEJ, zaplanowane]**: walka okrętów w czasie rzeczywistym na wodach prowincji przybrzeżnej lub wyspowej, np. atak na port, blokada albo desant. Architektura jednostek i walki od początku uwzględnia okręty jako jednostki bojowe (ARCHITECTURE §10), aby ten etap nie wymagał przebudowy.
@@ -402,6 +404,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 - Cywile uciekają do ratusza lub twierdzy. Produkcja w zagrożonej strefie staje.
 - **Plan M7 (ankieta 2026-11-07):** sterowanie jak w Twierdzy (klik albo ramka, prawy przycisk: idź albo atakuj, grupy Ctrl+1..9, postawy). Ratusz ma drzwi z wytrzymałością: napastnik najpierw je rozbija, a gdy przy ratuszu nie ma obrońców, zajmuje prowincję. W M7 atakują bandyci, a gracz może zdobyć siłą osadę neutralną (mury i straż).
 - **Stan M7, część 2 (2026-11-08):** bandyci łupią i odchodzą (nie zajmują prowincji), taran i drabiny buduje warsztat oblężniczy, napady rzadkie z ostrzeżeniem (ROADMAP M7, „Część 2, stan”).
+- **Stan M7, część 3 (2026-11-08):** osady neutralne mają mury (Żelazny Gród kamienny z basztami, Końska Przystań palisadę), bramę i straż. Armia czeka u granic, gracz wybiera walkę na żywo albo rozstrzygnięcie automatyczne (z szansami). Napady bandytów wychodzą z obozu na mapie świata (ROADMAP M7, „Część 3, stan”).
 - **Zwycięstwo atakującego** to zajęcie ratusza (twierdzy) i brak obrońców. Prowincja przechodzi wtedy do atakującego, a mieszkańcy zostają, z karą do zadowolenia.
 - Gdy gracz nie ogląda oblężenia, wynik jest rozstrzygany automatycznie. Uwzględnia mury, garnizon i machiny oblężnicze.
 
@@ -413,7 +416,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
   - prowadzą gospodarkę w modelu uproszczonym, tym samym co nieoglądane prowincje gracza,
   - podejmują decyzje strategiczne: zasiedlanie, budowa armii, ataki na słabsze prowincje, handel,
   - mają poziomy trudności.
-- **Bandyci** [1.0]: okresowe najazdy na prowincje gracza, które grają rolę zagrożenia przed spotkaniem z AI.
+- **Bandyci** [1.0]: okresowe najazdy na prowincje gracza, które grają rolę zagrożenia przed spotkaniem z AI. **M7, część 3:** obóz bandytów stoi w pustej prowincji na mapie świata, napady idą z niego widocznie po mapie, armia gracza może go rozbić (odzyskuje łup; obóz wraca po 30 minutach gdzie indziej).
 - **Osady neutralne**: można je wykupić. Nie atakują.
 - **Sandbox** [1.0]: wybór mapy lub ziarna generatora, liczby i trudności AI oraz warunku zwycięstwa. Warunki zwycięstwa:
   - podbój,
