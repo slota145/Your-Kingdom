@@ -156,6 +156,20 @@ const SOLDIERS := {
 			"mounted": true, "drill": "slash", "tool": ""},
 }
 
+## M7 part 2: bandits (drab hoods, no colours of the kingdom) and the ladderman.
+const BANDITS := {
+	"bandit": {"shirt": Color(0.36, 0.3, 0.24), "legs": Color(0.22, 0.2, 0.18), "hair": Color(0.12, 0.1, 0.08),
+			"hat": "archer_hood", "hat_colour": Color(0.24, 0.21, 0.19), "armour": "gambeson", "weapon": "spear",
+			"shield": "round", "beard": true, "drill": "thrust", "tool": "",
+			"royal": Color(0.3, 0.24, 0.18), "gold": Color(0.55, 0.46, 0.32)},
+	"bandit_archer": {"shirt": Color(0.3, 0.28, 0.22), "legs": Color(0.24, 0.2, 0.17), "hair": Color(0.2, 0.14, 0.1),
+			"hat": "archer_hood", "hat_colour": Color(0.2, 0.24, 0.18), "armour": "leather", "weapon": "bow",
+			"quiver": true, "drill": "draw", "tool": "", "royal": Color(0.3, 0.26, 0.2), "gold": Color(0.6, 0.52, 0.36)},
+	"ladderman": {"shirt": Color(0.62, 0.54, 0.4), "legs": Color(0.38, 0.32, 0.26), "hair": Color(0.42, 0.28, 0.14),
+			"hat": "cap", "hat_colour": Color(0.55, 0.16, 0.12), "armour": "", "weapon": "ladder", "drill": "",
+			"tool": ""},
+}
+
 ## Horse colours (the knight's mount and the stud farm's herd).
 const HORSE := {"coat": Color(0.48, 0.3, 0.17), "mane": Color(0.18, 0.12, 0.09), "hoof": Color(0.22, 0.18, 0.15),
 		"blaze": Color(0.92, 0.9, 0.84)}
@@ -214,6 +228,9 @@ const CARRY := {
 }
 
 var _look: Dictionary
+## Livery of the soldier being drawn: the kingdom's red and gold, a bandit's drab ones.
+var _royal: Color = ROYAL
+var _gold: Color = GOLD
 ## Parts of the frame being drawn: [depth, callable].
 var _parts: Array = []
 var _forward: Vector2
@@ -245,10 +262,14 @@ func _init() -> void:
 				tool = ""
 			_save(_sheet(8, func(_f: int, t: float) -> Dictionary: return {"work": w[0], "t": t, "tool": tool}),
 					kind, "work_" + activity)
-	for kind: String in SOLDIERS:
+	var fighters := SOLDIERS.duplicate()
+	fighters.merge(BANDITS)
+	for kind: String in fighters:
 		if not only.is_empty() and kind != only:
 			continue
-		_look = SOLDIERS[kind]
+		_look = fighters[kind]
+		_royal = _look.get("royal", ROYAL)
+		_gold = _look.get("gold", GOLD)
 		_save(_sheet(4, func(_f: int, t: float) -> Dictionary: return {"breath": sin(t * TAU)}), kind, "idle")
 		_save(_sheet(8, func(_f: int, t: float) -> Dictionary: return {"swing": sin(t * TAU)}), kind, "walk")
 		var drill := String(_look["drill"])
@@ -551,12 +572,12 @@ func _draw_head(foot: Vector2, head: Vector3, hair: Color, hat: String, hat_colo
 			if _forward.y > -0.3:
 				var face := c + _ground(0, 3.4)
 				_line(face + Vector2(-2.6, -1.4), face + Vector2(2.6, -1.4), Color(0.08, 0.07, 0.08), 1)
-				_line(face + Vector2(0, -0.4), face + Vector2(0, 3.2), GOLD, 1)
-				_line(face + Vector2(-1.2, 1.2), face + Vector2(1.2, 1.2), GOLD, 1)
+				_line(face + Vector2(0, -0.4), face + Vector2(0, 3.2), _gold, 1)
+				_line(face + Vector2(-1.2, 1.2), face + Vector2(1.2, 1.2), _gold, 1)
 			_pixel(c - Vector2(2.0, 4.0), Color(1, 1, 1))
 			for k: int in 5:
 				var plume := c - Vector2(0, 7.0 + k * 0.9) + _ground(0, -k * 0.9)
-				_ellipse(plume, Vector2(1.4, 1.2), ROYAL.lightened(0.05 * k))
+				_ellipse(plume, Vector2(1.4, 1.2), _royal.lightened(0.05 * k))
 		"archer_hood":
 			# A hood with its point hanging down the back; the face shows.
 			_ellipse(c - Vector2(0, 1.0) + _ground(0, -0.8), Vector2(5.4, 5.6), hat_colour)
@@ -755,7 +776,7 @@ func _armour(foot: Vector2, body: Vector3, lean: float, top: float) -> void:
 			# A brown jerkin with bright studs over the green shirt.
 			_ellipse(c + Vector2(0, 1.5), Vector2(w * 0.8, 6.0), C_LEATHER)
 			for k: int in 6:
-				_pixel(c + Vector2(-w * 0.55 + (k % 3) * w * 0.55, -1.0 + (k / 3) * 4.0), GOLD.lightened(0.2))
+				_pixel(c + Vector2(-w * 0.55 + (k % 3) * w * 0.55, -1.0 + (k / 3) * 4.0), _gold.lightened(0.2))
 		elif armour == "mail":
 			# Rings: a dither of darker and brighter pixels over the grey.
 			for y: int in range(int(c.y - 7.5), int(c.y + 9.0)):
@@ -774,11 +795,11 @@ func _armour(foot: Vector2, body: Vector3, lean: float, top: float) -> void:
 			var neck := foot + _ground(0, lean + 2.6) - Vector2(0, 26.0 + top)
 			var hem := foot + _ground(0, lean * 0.4 + 2.2) - Vector2(0, (8.0 if not _look.get("mounted", false) else 10.0) + top)
 			_polygon(PackedVector2Array([neck - Vector2(w, 0), neck + Vector2(w, 0),
-					hem + Vector2(w * 1.15, 0), hem - Vector2(w * 1.15, 0)]), ROYAL)
-			_line(hem - Vector2(w * 1.1, 0), hem + Vector2(w * 1.1, 0), GOLD, 1)
+					hem + Vector2(w * 1.15, 0), hem - Vector2(w * 1.15, 0)]), _royal)
+			_line(hem - Vector2(w * 1.1, 0), hem + Vector2(w * 1.1, 0), _gold, 1)
 			var mid := neck.lerp(hem, 0.42)
-			_line(mid - Vector2(0, 5.0), mid + Vector2(0, 5.0), GOLD, 1)
-			_line(mid - Vector2(w * 0.7, 1.0), mid + Vector2(w * 0.7, -1.0), GOLD, 1))
+			_line(mid - Vector2(0, 5.0), mid + Vector2(0, 5.0), _gold, 1)
+			_line(mid - Vector2(w * 0.7, 1.0), mid + Vector2(w * 0.7, -1.0), _gold, 1))
 
 
 ## The soldier's weapon, shield, quiver and scabbard.
@@ -809,7 +830,7 @@ func _gear(foot: Vector2, pose: Dictionary, hands: Array, lean: float, top: floa
 				# A small pennon in the kingdom's colour below the head.
 				if drill != "thrust":
 					var flap := sin(TAU * t) * 0.8
-					_polygon(PackedVector2Array([b - dir * 1.0, b - dir * 4.0, b - dir * 2.0 + Vector2(5.0, 1.0 + flap)]), ROYAL)
+					_polygon(PackedVector2Array([b - dir * 1.0, b - dir * 4.0, b - dir * 2.0 + Vector2(5.0, 1.0 + flap)]), _royal)
 				_pixel(a, C_IRON.darkened(0.3)))
 		"bow":
 			_part(_depth(left.x, left.y) + 0.35, func() -> void:
@@ -833,6 +854,19 @@ func _gear(foot: Vector2, pose: Dictionary, hands: Array, lean: float, top: floa
 					_line(nock, head, C_WOOD.lightened(0.3), 1)
 					_pixel(head + fwd * 0.8, C_STEEL)
 					_pixel(nock - fwd * 0.6 + Vector2(0, -1), Color(0.95, 0.95, 0.95)))
+		"ladder":
+			# A ladder on the right shoulder, sloping forward (M7 part 2, a ladderman).
+			_part(_depth(right.x, right.y) + 0.4, func() -> void:
+				var shoulder := foot + _ground(3.0, lean) - Vector2(0, 30.0 + top)
+				var fwd := _ground(0, 1.0)
+				var a := shoulder - fwd * 11.0 + Vector2(0, -3.0)
+				var b := shoulder + fwd * 13.0 + Vector2(0, 4.0)
+				var side := Vector2(0, -2.5)
+				_line(a, b, C_WOOD.darkened(0.15), 1)
+				_line(a + side, b + side, C_WOOD.lightened(0.1), 1)
+				for k: int in 6:
+					var p := a.lerp(b, (k + 0.5) / 6.0)
+					_line(p, p + side, C_WOOD.lightened(0.2), 1))
 		"sword":
 			if drill != "" or _look.get("mounted", false):
 				_part(_depth(right.x, right.y) + 0.35, func() -> void:
@@ -849,10 +883,10 @@ func _gear(foot: Vector2, pose: Dictionary, hands: Array, lean: float, top: floa
 			var hip := foot + _ground(-3.6, lean + 0.6) - Vector2(0, 17.0 + top)
 			var end := hip + _ground(-0.6, -3.0) + Vector2(0, 8.0)
 			_line(hip, end, C_LEATHER.darkened(0.25), 2)
-			_pixel(end, GOLD)
+			_pixel(end, _gold)
 			if drill == "" and not _look.get("mounted", false):
 				_line(hip - Vector2(0, 3.0), hip, C_LEATHER.lightened(0.1), 1)
-				_line(hip - Vector2(1.5, 1.5), hip + Vector2(1.5, -1.5), GOLD, 1))
+				_line(hip - Vector2(1.5, 1.5), hip + Vector2(1.5, -1.5), _gold, 1))
 	if _look.get("quiver", false):
 		# A quiver on the back, its arrows fletched white and red.
 		_part(_depth(2.0, lean - 3.0) - 0.05, func() -> void:
@@ -861,7 +895,7 @@ func _gear(foot: Vector2, pose: Dictionary, hands: Array, lean: float, top: floa
 			_thick(low, high, 2.6, C_LEATHER)
 			for k: int in 3:
 				var f := high + Vector2(k - 1.0, -1.5 - (k % 2))
-				_pixel(f, Color(0.95, 0.94, 0.9) if k != 1 else ROYAL)
+				_pixel(f, Color(0.95, 0.94, 0.9) if k != 1 else _royal)
 				_pixel(f - Vector2(0, 1), Color(0.95, 0.94, 0.9)))
 	if _look.has("shield"):
 		_shield(foot, left, String(_look["shield"]), drill)
@@ -872,9 +906,9 @@ func _sword(h: Vector2, dir: Vector2) -> void:
 	var tip := h + dir * 12.0
 	_line(h + dir * 1.5, tip, C_STEEL, 2)
 	_line(h + dir * 2.0 + side * 0.5, tip - dir, C_STEEL.lightened(0.3), 1)
-	_line(h + dir * 1.5 - side * 2.5, h + dir * 1.5 + side * 2.5, GOLD.darkened(0.15), 1)
+	_line(h + dir * 1.5 - side * 2.5, h + dir * 1.5 + side * 2.5, _gold.darkened(0.15), 1)
 	_line(h - dir * 1.0, h + dir * 1.0, C_LEATHER, 1)
-	_pixel(h - dir * 2.0, GOLD)
+	_pixel(h - dir * 2.0, _gold)
 
 
 ## A shield on the left arm: round (wood with a boss, the kingdom's colours) or kite (with the
@@ -900,7 +934,7 @@ func _shield(foot: Vector2, hand: Vector3, kind: String, drill: String) -> void:
 				var p := centre + u * q.x + v * q.y
 				poly.append(foot + _ground(p.x, p.y) - Vector2(0, p.z))
 		var front := facing > -0.15
-		var fill := ROYAL if front else C_WOOD
+		var fill := _royal if front else C_WOOD
 		_polygon(poly, fill)
 		for k: int in poly.size():
 			_line(poly[k], poly[(k + 1) % poly.size()], C_IRON.darkened(0.15) if front else C_WOOD.darkened(0.3), 1)
@@ -911,13 +945,13 @@ func _shield(foot: Vector2, hand: Vector3, kind: String, drill: String) -> void:
 		var across := (foot + _ground(centre.x + u.x * 4.0, centre.y + u.y * 4.0) - Vector2(0, centre.z)) - mid
 		if kind == "round":
 			# Gold quarters and a steel boss.
-			_line(mid - up, mid + up, GOLD, 1)
-			_line(mid - across, mid + across, GOLD, 1)
+			_line(mid - up, mid + up, _gold, 1)
+			_line(mid - across, mid + across, _gold, 1)
 			_ellipse(mid, Vector2(1.4, 1.4), C_STEEL)
 			_pixel(mid - Vector2(0.5, 0.5), Color(1, 1, 1))
 		else:
-			_line(mid - up * 1.2, mid + up * 1.0, GOLD, 1)
-			_line(mid - across * 0.8 + up * 0.35, mid + across * 0.8 + up * 0.35, GOLD, 1))
+			_line(mid - up * 1.2, mid + up * 1.0, _gold, 1)
+			_line(mid - across * 0.8 + up * 0.35, mid + across * 0.8 + up * 0.35, _gold, 1))
 
 
 # --- Horses --------------------------------------------------------------------------------
@@ -963,11 +997,11 @@ func _horse(foot: Vector2, swing: float, t: float, breath: float, barded: bool) 
 	_limb(foot, Vector3(swish * 0.3, -8.5, 16.0 + lift), Vector3(swish, -10.5, 8.0 + lift), 2.2, mane)
 	if barded:
 		# The kingdom's cloth over the body with a gold hem, and a saddle on it.
-		_limb(foot, Vector3(0, -6.5, 12.6 + lift), Vector3(0, 5.0, 13.2 + lift), 9.6, ROYAL)
+		_limb(foot, Vector3(0, -6.5, 12.6 + lift), Vector3(0, 5.0, 13.2 + lift), 9.6, _royal)
 		_part(_depth(0, 5.0) + 0.02, func() -> void:
 			var a := foot + _ground(0, -6.5) - Vector2(0, 8.0 + lift)
 			var b := foot + _ground(0, 5.0) - Vector2(0, 8.6 + lift)
-			_line(a, b, GOLD, 1))
+			_line(a, b, _gold, 1))
 		_limb(foot, Vector3(0, -2.5, 18.6 + lift), Vector3(0, 1.5, 18.8 + lift), 4.0, C_LEATHER)
 		# Reins from the bit to the rider's hands.
 		_part(_depth(0, 10.0), func() -> void:
@@ -1151,7 +1185,7 @@ func _save(pair: Array, kind: String, anim: String) -> void:
 
 ## Points every profession's visual definition at its own character, untinted.
 func _write_visuals() -> void:
-	for kind: String in PEOPLE.keys() + SOLDIERS.keys():
+	for kind: String in PEOPLE.keys() + SOLDIERS.keys() + BANDITS.keys():
 		var path := "res://data/visuals/agents/%s.tres" % kind
 		var text := "[gd_resource type=\"Resource\" script_class=\"AgentVisualDef\" format=3]\n\n" \
 				+ "[ext_resource type=\"Script\" path=\"res://src/defs/visuals/agent_visual_def.gd\" id=\"1_vis\"]\n\n" \

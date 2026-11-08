@@ -359,6 +359,10 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	if _m7 == "walls":
 		_place_walls(sim, at)
 		return
+	if _m7 == "battle":
+		_place_walls(sim, at)
+		_place_battle(sim, at)
+		return
 	var ids: Array[StringName] = [&"charcoal_burner", &"mine", &"smelter", &"blacksmith",
 			&"armourer", &"bowyer"]
 	var plan: Array = []
@@ -481,6 +485,52 @@ func _place_walls(sim: Simulation, at: Vector2i) -> void:
 	sim.events.drain()
 	(_game.get("view") as ProvinceView).forts.refresh()
 	(_game.get("view") as ProvinceView).buildings.refresh_all()
+
+
+## M7 part 2 (--m7=battle): archers on the walls, spearmen behind the gate, enemies coming
+## at them; a few seconds of fighting, the archers selected.
+func _place_battle(sim: Simulation, at: Vector2i) -> void:
+	var p := sim.province
+	var o := at + Vector2i(-7, -7)
+	var spawn := func(kind: StringName, tile: Vector2i, faction: int) -> Agent:
+		var a := p.spawn_agent(kind, tile)
+		a.combat = CombatState.new(sim.data.get_unit(kind).combat.hp)
+		a.combat.faction = faction
+		Troops.take_command(a)
+		a.combat.order = CombatState.Order.MOVE
+		a.combat.post = a.pos
+		a.combat.goal = a.pos
+		return a
+	var archers: Array[Agent] = []
+	for k: int in 6:
+		archers.append(spawn.call(&"archer", o + Vector2i(6, 6), CombatState.PLAYER))
+	Troops.order_move(p, archers, o + Vector2i(4, 12), MilitaryNav.WALL)
+	var archers2: Array[Agent] = []
+	for k: int in 4:
+		archers2.append(spawn.call(&"archer", o + Vector2i(8, 6), CombatState.PLAYER))
+	Troops.order_move(p, archers2, o + Vector2i(14, 8), MilitaryNav.WALL)
+	var guards: Array[Agent] = []
+	for k: int in 6:
+		guards.append(spawn.call(&"spearman", o + Vector2i(6, 8), CombatState.PLAYER))
+	Troops.order_move(p, guards, o + Vector2i(6, 9), MilitaryNav.GROUND)
+	for k: int in 8:
+		var e: Agent = spawn.call(&"spearman" if k % 3 != 0 else &"archer", o + Vector2i(2 + k, 20 + k % 3), CombatState.BANDITS)
+		e.combat.stance = CombatState.Stance.AGGRESSIVE
+	Game.paused = false
+	for i: int in 220:
+		sim.step()
+	Game.paused = true
+	var view: ProvinceView = _game.get("view")
+	for event: Dictionary in sim.events.drain():
+		view.on_sim_event(event)
+	for a: Agent in guards + archers:
+		if p.agents.has_agent(a.id):
+			print("battle: %s %s level %d hp %d order %d" % [a.kind, a.pos, a.level, a.combat.hp, a.combat.order])
+	var ids: Array[int] = []
+	for a: Agent in archers:
+		if p.agents.has_agent(a.id):
+			ids.append(a.id)
+	_game.call("_select_soldiers", ids)
 
 
 ## Workshops in a row with full yards (--yards).

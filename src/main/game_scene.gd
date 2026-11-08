@@ -7,6 +7,9 @@ extends Node2D
 ## tool. Keys: WASD/arrows pan, wheel or 1-4 zoom, Space pause, +/- speed, F grid,
 ## R turns the building being placed, B shows or hides the build bar, T changes its look, M world map, F5 quick save, F9 quick load, F11 pseudolocalization
 ## (UI text-fit check).
+## Soldiers (M7 part 2, as in Stronghold): left click or drag a box selects them, right click
+## sends them (onto a wall when clicked on its crown) or attacks the enemy under the cursor,
+## Ctrl+1..9 remembers the selection as a group, 1..9 selects the group again.
 
 const START_MAP := &"riverlands"
 
@@ -59,6 +62,13 @@ var _cancelling: bool = false
 var _range_version: int = -1
 var _preview_time: float = 0.0
 var _turn: PlacementTurn = PlacementTurn.new()
+var _army_panel: ArmyPanel
+## Selected soldiers (M7 part 2) and the groups under the digit keys.
+var _selected: Array[int] = []
+var _groups: Dictionary[int, Array] = {}
+## Where a left drag started (world space); a drag farther than BOX_MIN selects by box.
+var _box_from: Vector2 = Vector2.INF
+const BOX_MIN := 6.0
 
 
 func _ready() -> void:
@@ -214,6 +224,18 @@ func _build_ui() -> void:
 	_agent_panel.follow_toggled.connect(func(on: bool) -> void:
 		_follow_id = _agent_panel.agent_id if on else 0)
 	root.add_child(_agent_panel)
+	_army_panel = ArmyPanel.new()
+	_army_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_army_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_army_panel.position.y = 64
+	_army_panel.visible = false
+	_army_panel.closed.connect(func() -> void: _select_soldiers([]))
+	_army_panel.stance_requested.connect(func(stance: int) -> void:
+		_execute(SetStanceCommand.new(_selected.duplicate(), stance)))
+	_army_panel.return_requested.connect(func() -> void:
+		_execute(OrderTroopsCommand.new(_selected.duplicate(), OrderTroopsCommand.RETURN))
+		_select_soldiers([]))
+	root.add_child(_army_panel)
 	_ship_panel = ShipPanel.new()
 	_ship_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_ship_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
@@ -311,6 +333,10 @@ func _close_panels() -> void:
 	_building_panel.visible = false
 	_agent_panel.visible = false
 	_ship_panel.visible = false
+	_army_panel.visible = false
+	_selected.clear()
+	if view != null:
+		view.troops.selected = _selected
 	_agent_panel.set_following(false)
 	_follow_id = 0
 	_preview_dirty = true
@@ -523,6 +549,9 @@ func _execute(command: Command) -> StringName:
 func _unhandled_input(event: InputEvent) -> void:
 	var mb := event as InputEventMouseButton
 	if mb != null and mb.button_index == MOUSE_BUTTON_RIGHT:
+		if mb.pressed and _tool.is_empty() and not _selected.is_empty():
+			_order_at(get_global_mouse_position())
+			return
 		if mb.pressed:
 			if _tool.get("kind", &"") == &"paving" and not _dragging 					and sim.province.cancel_paving_error(_hover) == &"":
 				_start_cancelling()
@@ -536,6 +565,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_left_press()
 		else:
 			_on_left_release()
+		return
+	if event is InputEventMouseMotion and _box_from != Vector2.INF:
+		var at := get_global_mouse_position()
+		view.troops.box = Rect2(_box_from, at - _box_from) \
+				if _box_from.distance_to(at) * camera.zoom.x > BOX_MIN else Rect2()
 		return
 	if event is InputEventMouseMotion and _dragging:
 		var kind: StringName = _tool.get("kind", &"")
@@ -583,6 +617,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			_update_preview()
 	elif event.is_action_pressed(&"toggle_grid"):
 		view.terrain.show_grid = not view.terrain.show_grid
+	elif event is InputEventKey and event.pressed and not event.echo \
+			and _group_key(event as InputEventKey):
+		pass
 	elif event is InputEventKey and event.pressed and not event.echo:
 		match (event as InputEventKey).physical_keycode:
 			KEY_F5: _quick_save()
@@ -594,7 +631,8 @@ func _on_left_press() -> void:
 	var kind: StringName = _tool.get("kind", &"")
 	match kind:
 		&"":
-			_select_at(get_global_mouse_position())
+			# Click, or the start of a box around soldiers (decided on release).
+			_box_from = get_global_mouse_position()
 		&"building":
 			var def := sim.data.get_building(_tool["def"])
 			var origin := _building_origin(def)
@@ -616,6 +654,16 @@ func _on_left_press() -> void:
 
 
 func _on_left_release() -> void:
+	if _box_from != Vector2.INF:
+		var at := get_global_mouse_position()
+		var from := _box_from
+		_box_from = Vector2.INF
+		view.troops.box = Rect2()
+		if from.distance_to(at) * camera.zoom.x > BOX_MIN:
+			_select_soldiers(_soldiers_in(Rect2(from, at - from).abs()))
+		else:
+			_select_at(at)
+		return
 	if _cancelling:
 		if _tool.get("kind", &"") == &"demolish":
 			_finish_cancelling()
@@ -707,6 +755,9 @@ func _select_at(world_pos: Vector2) -> void:
 			best_d = d
 			best = agent
 	_close_panels()
+	if best != null and Troops.is_soldier(sim.province, best):
+		_select_soldiers([best.id])
+		return
 	if best != null:
 		_agent_panel.show_agent(sim.province, best.id)
 		return
@@ -721,6 +772,107 @@ func _select_at(world_pos: Vector2) -> void:
 	if owner != 0:
 		_building_panel.show_building(sim.province, owner)
 	_update_preview()
+
+
+# --- Soldiers (M7 part 2) -------------------------------------------------------------------
+
+func _select_soldiers(ids: Array[int]) -> void:
+	_close_panels()
+	_selected.assign(ids)
+	view.troops.selected = _selected
+	if not _selected.is_empty():
+		_army_panel.show_army(sim.province, _selected.duplicate())
+
+
+## The player's soldiers whose feet or head lie in [param box] (world space).
+func _soldiers_in(box: Rect2) -> Array[int]:
+	var ids: Array[int] = []
+	for agent: Agent in sim.province.agents.all():
+		if not Troops.is_soldier(sim.province, agent):
+			continue
+		var feet := IsoMath.grid_to_screen(agent.prev_pos.lerp(agent.pos, Game.alpha()))
+		var head: Vector2 = view.agents.heads.get(agent.id, feet)
+		if box.has_point(feet) or box.has_point(head + Vector2(0, 20)):
+			ids.append(agent.id)
+	return ids
+
+
+## Right click with soldiers selected: attack the enemy under the cursor, or go there (onto
+## the wall-walk when the cursor is over a crown).
+func _order_at(world_pos: Vector2) -> void:
+	var enemy := _enemy_at(world_pos)
+	if enemy != null:
+		_execute(OrderTroopsCommand.new(_selected.duplicate(), OrderTroopsCommand.ATTACK,
+				Vector2i(-1, -1), 0, enemy.id))
+		view.troops.show_order(world_pos)
+		return
+	var target := _ground_or_wall(world_pos)
+	if _execute(OrderTroopsCommand.new(_selected.duplicate(), OrderTroopsCommand.MOVE,
+			target[0], target[1])) == &"":
+		view.troops.show_order(world_pos)
+
+
+## The tile under the cursor and its level: a crown (walls, gatehouse, tower tops) drawn under
+## the cursor wins over the ground behind it.
+func _ground_or_wall(world_pos: Vector2) -> Array:
+	var walls := sim.province.walls
+	if not walls.is_empty():
+		for h: float in [BlockWallModel.HEIGHT + BlockWallModel.TOWER_EXTRA,
+				BlockWallModel.HEIGHT + BlockWallModel.GATEHOUSE_EXTRA, BlockWallModel.HEIGHT]:
+			var tile := ProvinceView.tile_at(world_pos + Vector2(0, h))
+			if walls.is_walkway(tile) and is_equal_approx(
+					FortLayer.height_at(sim.province, IsoMath.tile_center(tile), MilitaryNav.WALL), h):
+				return [tile, MilitaryNav.WALL]
+	return [ProvinceView.tile_at(world_pos), MilitaryNav.GROUND]
+
+
+func _enemy_at(world_pos: Vector2) -> Agent:
+	var best: Agent = null
+	var best_d := PICK_RADIUS * 1.5 / camera.zoom.x
+	for id: int in view.agents.heads:
+		var agent := sim.province.agents.get_agent(id)
+		if agent == null or agent.combat == null or agent.combat.faction == CombatState.PLAYER:
+			continue
+		var head: Vector2 = view.agents.heads[id]
+		var body := Vector2(head.x, clampf(world_pos.y, head.y, head.y + 44.0))
+		var d := body.distance_to(world_pos)
+		if d < best_d:
+			best_d = d
+			best = agent
+	return best
+
+
+## Ctrl+digit remembers the selected soldiers as a group, the digit selects it again.
+func _group_key(key: InputEventKey) -> bool:
+	var digit := key.physical_keycode - KEY_0
+	if digit < 1 or digit > 9:
+		return false
+	if key.ctrl_pressed:
+		if _selected.is_empty():
+			_groups.erase(digit)
+		else:
+			_groups[digit] = _selected.duplicate()
+		_update_taken_digits()
+		return true
+	if not _groups.has(digit):
+		return false
+	var alive: Array[int] = []
+	for id: int in _groups[digit]:
+		if Troops.is_soldier(sim.province, sim.province.agents.get_agent(id)):
+			alive.append(id)
+	_groups[digit] = alive
+	if alive.is_empty():
+		_groups.erase(digit)
+		_update_taken_digits()
+		return false
+	_select_soldiers(alive)
+	return true
+
+
+func _update_taken_digits() -> void:
+	camera.taken_digits.clear()
+	for digit: int in _groups:
+		camera.taken_digits[digit] = true
 
 
 ## The ship whose hull is under [param world_pos] (M5 part 2), 0 if none.

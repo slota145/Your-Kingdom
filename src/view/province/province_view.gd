@@ -34,6 +34,9 @@ var quays: QuayLayer
 var cranes: CraneLayer
 ## Palisades, stone walls and stairs (M7 part 2).
 var forts: FortLayer
+## Life bars, arrows, selection (over the world) and the fallen (in it).
+var troops: TroopsLayer
+var corpses: CorpseLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 
@@ -87,6 +90,13 @@ func setup(source: ProvinceSim) -> void:
 	agents.province = province
 	world.add_child(agents)
 	agents.warm_up(province)
+	agents.forts = forts
+	corpses = CorpseLayer.new()
+	world.add_child(corpses)
+	corpses.setup(province)
+	troops = TroopsLayer.new()
+	add_child(troops)
+	troops.setup(province, agents)
 	ships = ShipLayer.new()
 	world.add_child(ships)
 	ships.setup(province)
@@ -107,6 +117,8 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 		_buildings_dirty = false
 		buildings.refresh_all()
 	agents.update_view(province.agents, alpha, visible_rect, time)
+	troops.update_view(alpha, delta)
+	corpses.update_view(delta)
 	ships.update_view(alpha, time)
 	shoals.update_view(time)
 	cranes.update_view()
@@ -129,6 +141,7 @@ func on_sim_event(event: Dictionary) -> void:
 	nature.on_sim_event(event)
 	paving_plan.on_sim_event(event)
 	forts.on_sim_event(event)
+	corpses.on_sim_event(event)
 	match event["type"]:
 		&"building_placed", &"building_removed", &"building_completed", &"site_opened", \
 				&"site_phase_started", &"site_phase_finished", &"house_upgraded", &"building_turned", \

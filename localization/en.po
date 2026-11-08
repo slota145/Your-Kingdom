@@ -2967,3 +2967,52 @@ msgstr "Unknown kind of wall."
 
 msgid "ui.doing.wall"
 msgstr "builds a wall"
+
+# --- M7 part 2: troops ---
+
+msgid "ui.army.aggressive"
+msgstr "Attack on sight"
+
+msgid "ui.army.aggressive_tip"
+msgstr "The soldiers go for every enemy they see."
+
+msgid "ui.army.defensive"
+msgstr "Defend"
+
+msgid "ui.army.defensive_tip"
+msgstr "The soldiers fight enemies near their place, then come back to it."
+
+msgid "ui.army.hold"
+msgstr "Hold"
+
+msgid "ui.army.hold_tip"
+msgstr "The soldiers do not move; they only strike what comes close (archers shoot what they can reach)."
+
+msgid "ui.army.return"
+msgstr "Back to the barracks"
+
+msgid "ui.army.life"
+msgstr "Life: %d%%"
+
+msgid "ui.army.hint"
+msgstr "Right click: go there (onto a wall: click its crown) or attack an enemy. Ctrl+1..9 remembers the group, 1..9 selects it."
+
+msgid "ui.command_error.no_soldiers"
+msgstr "No soldiers selected."
+
+msgid "ui.command_error.cannot_go_there"
+msgstr "Nobody can get there."
+
+msgid "ui.command_error.not_an_enemy"
+msgstr "That is not an enemy."
+
+msgid "ui.command_error.bad_order"
+msgstr "Unknown order."
+
+msgid "ui.command_error.bad_stance"
+msgstr "Unknown stance."
+
+msgid "ui.army.title"
+msgid_plural "ui.army.title_plural"
+msgstr[0] "%d soldier"
+msgstr[1] "%d soldiers"

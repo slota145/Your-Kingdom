@@ -84,6 +84,35 @@ func _add_palisade(tile: Vector2i, mask: int) -> void:
 		add_child(post)
 
 
-## Sort key (screen y) for a person standing on the crown at grid point [param p].
+## Sort key (screen y) for a person standing on the crown at grid point [param p]: after the
+## crown under him; on a gatehouse or tower, after its whole art (sorted at its front corner).
 func crown_sort_key(p: Vector2) -> float:
+	var tile := Vector2i(p.floor())
+	var fort := province.buildings.get_building(province.walls.fort_tiles.get(tile, 0))
+	if fort != null:
+		return IsoMath.grid_to_screen(Vector2(fort.origin + fort.def.footprint)).y + 2.0
 	return model.crown_sort_key(p)
+
+
+## How high above the ground a fighter at [param p] on [param level] stands (screen px): on
+## the wall-walk the crown (higher on a gatehouse or a tower), on stairs or a ladder part of
+## the way up (M7 part 2).
+static func height_at(province: ProvinceSim, p: Vector2, level: int) -> float:
+	var tile := Vector2i(p.floor())
+	var walls := province.walls
+	if level == MilitaryNav.WALL:
+		var fort := province.buildings.get_building(walls.fort_tiles.get(tile, 0))
+		if fort != null:
+			return BlockWallModel.HEIGHT + (BlockWallModel.GATEHOUSE_EXTRA if fort.def.is_gatehouse() \
+					else BlockWallModel.TOWER_EXTRA)
+		return BlockWallModel.HEIGHT
+	var up := Vector2i.ZERO
+	var d := walls.stairs_dir(tile)
+	if d >= 0:
+		up = Walls.DIRS[d]
+	elif province.mil.ladders.has(tile):
+		up = province.mil.ladders[tile] - tile
+	if up == Vector2i.ZERO:
+		return 0.0
+	var t := clampf((p - IsoMath.tile_center(tile)).dot(Vector2(up)) + 0.5, 0.0, 1.0)
+	return t * BlockWallModel.HEIGHT

@@ -23,6 +23,11 @@ var _tints: Dictionary[StringName, Color] = {}
 var _building_visuals: Dictionary[StringName, BuildingVisualDef] = {}
 ## The province the agents live in (work spots); optional.
 var province: ProvinceSim
+## The walls (M7 part 2): soldiers on the wall-walk sort with the crown; optional.
+var forts: FortLayer
+## Screen positions of the fighters' heads drawn last update (agent id -> point), for the
+## life bars over them (TroopsLayer).
+var heads: Dictionary[int, Vector2] = {}
 
 
 func _init() -> void:
@@ -47,6 +52,7 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 	var start := Time.get_ticks_usec()
 	var rect := world_rect.grow(VIEW_MARGIN)
 	var used := 0
+	heads.clear()
 	for agent: Agent in agents.all():
 		if agent.vehicle == Ships.ABOARD:
 			continue   # drawn in his boat by the ShipLayer (M5)
@@ -58,14 +64,31 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 		# Going in through a door: the last step fades out (owner's decision 2026-11-05), and
 		# people resting inside are not drawn. Workers at a work spot stay visible.
 		var open := _on_open_ground(at)
-		var fade := _doorway_fade(at) if spot == Vector2.ZERO and not open else 1.0
+		var raised := agent.level != 0
+		var fade := _doorway_fade(at) if spot == Vector2.ZERO and not open and not raised else 1.0
 		if fade <= 0.0:
 			continue
 		var sprite := _sprite(used)
 		used += 1
 		# Small stable offset so people sharing a tile do not overlap exactly (ARCHITECTURE §5.3).
 		var jitter := Vector2(float((agent.id * 7) % 9) - 4.0, float((agent.id * 5) % 5) - 2.0)
+		var lift := 0.0
+		if agent.combat != null:
+			jitter = Vector2.ZERO   # fighters keep their places in the formation
+			if province != null and forts != null and not province.walls.is_empty():
+				lift = FortLayer.height_at(province, at, agent.level)
+				if agent.level != 0:
+					# On the wall-walk: sorted after the crown he stands on, drawn up there.
+					var key := forts.crown_sort_key(at)
+					lift += key - screen.y
+					screen.y = key
+				elif lift > 0.0:
+					lift += 1.0
+					screen.y += 1.0
 		sprite.position = screen + jitter + spot
+		sprite.set_lift(lift)
+		if agent.combat != null:
+			heads[agent.id] = sprite.position - Vector2(0, lift + 44.0)
 		# A docker who went up the gangway onto a moored ship stands on its deck: drawn over
 		# the hull and the sail (M5 part 2, owner's wish 2026-11-06).
 		# On open ground inside a footprint (a pen): over the flat art of the building.

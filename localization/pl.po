@@ -2998,3 +2998,53 @@ msgstr "Nieznany rodzaj muru."
 
 msgid "ui.doing.wall"
 msgstr "stawia mur"
+
+# --- M7 part 2: troops ---
+
+msgid "ui.army.aggressive"
+msgstr "Atakuj sam"
+
+msgid "ui.army.aggressive_tip"
+msgstr "Żołnierze sami ruszają na każdego wroga, którego zobaczą."
+
+msgid "ui.army.defensive"
+msgstr "Broń się"
+
+msgid "ui.army.defensive_tip"
+msgstr "Żołnierze walczą z wrogiem blisko swojego miejsca, a potem do niego wracają."
+
+msgid "ui.army.hold"
+msgstr "Stój w miejscu"
+
+msgid "ui.army.hold_tip"
+msgstr "Żołnierze nie ruszają się z miejsca; biją tylko to, co podejdzie (łucznicy strzelają, jak sięgną)."
+
+msgid "ui.army.return"
+msgstr "Wróć do koszar"
+
+msgid "ui.army.life"
+msgstr "Życie: %d%%"
+
+msgid "ui.army.hint"
+msgstr "Prawy przycisk: idź (na mur: kliknij jego koronę) albo atakuj wroga. Ctrl+1..9 zapamiętuje grupę, 1..9 ją wybiera."
+
+msgid "ui.command_error.no_soldiers"
+msgstr "Nie wybrano żołnierzy."
+
+msgid "ui.command_error.cannot_go_there"
+msgstr "Tam nie da się dojść."
+
+msgid "ui.command_error.not_an_enemy"
+msgstr "To nie jest wróg."
+
+msgid "ui.command_error.bad_order"
+msgstr "Nieznany rozkaz."
+
+msgid "ui.command_error.bad_stance"
+msgstr "Nieznana postawa."
+
+msgid "ui.army.title"
+msgid_plural "ui.army.title_plural"
+msgstr[0] "%d żołnierz"
+msgstr[1] "%d żołnierze"
+msgstr[2] "%d żołnierzy"
