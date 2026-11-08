@@ -543,7 +543,11 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 	if def.stilts_row:
 		var error := _stilts_error(def, origin, stilts)
 		if error != &"":
-			return error
+			if not def.quay_only:
+				return error
+			# A harbour building that does not fit on piles asks for a quay, as before (a
+			# builder may still be laying it under the building).
+			stilts.clear()
 	for tile: Vector2i in def.footprint_tiles(origin):
 		if not grid.is_inside(tile):
 			return &"outside_map"

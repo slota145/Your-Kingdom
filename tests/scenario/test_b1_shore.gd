@@ -94,5 +94,6 @@ func test_port_warehouse_leans_one_row_off_the_quay() -> void:
 	var def := sim.data.get_building(&"port_warehouse")
 	assert_str(String(_place_error(sim, &"port_warehouse", Vector2i(10, 30)))).is_empty()
 	assert_array(province.stilt_tiles(def, Vector2i(10, 30))).has_size(3)
-	# Two rows over the water: no.
-	assert_str(String(_place_error(sim, &"port_warehouse", Vector2i(10, 31)))).is_equal("too_much_water")
+	# Two rows over the water: no; it asks for a quay there, as before (B1 part 2 keeps the
+	# answer the harbour bot waits on while its quay is being laid).
+	assert_str(String(_place_error(sim, &"port_warehouse", Vector2i(10, 31)))).is_equal("needs_quay")
