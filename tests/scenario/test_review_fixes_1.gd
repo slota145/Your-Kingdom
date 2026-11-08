@@ -55,9 +55,9 @@ func test_new_game_is_protected_and_the_protection_is_saved() -> void:
 func test_v16_save_migrates_to_v17_unchanged() -> void:
 	var document: Dictionary = JSON.parse_string(
 			FileAccess.get_file_as_string("res://tests/fixtures/saves/v16_crane.json"))
-	var state := SaveMigrations.migrate(document["state"], 16)
+	var state := SaveMigrations.migrate_v16_to_v17((document["state"] as Dictionary).duplicate(true))
 	assert_str(SimCodec.canonical(state)).is_equal(SimCodec.canonical(document["state"]))
-	var sim := Simulation.from_dict(state, SimFixture.registry())
+	var sim := Simulation.from_dict(SaveMigrations.migrate(document["state"], 16), SimFixture.registry())
 	assert_bool(sim.province.in_grace()).is_false()
 
 

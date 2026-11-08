@@ -952,13 +952,23 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## B1 — Most przez rzekę i łagodniejszy brzeg
 
-**Status: plan do akceptacji (2026-11-08).** Wybór etapu: ankieta z właścicielem projektu 2026-11-08 (zamiast M8 i rejsów w oknie mapy świata). Mały etap jak N1, po M7, niezależny od oceny wojska. Pomysł gracza z oceny M5 (IDEAS: „Most przez rzekę i mniej kanciaste wybrzeże”). Poprawki z oceny M7 (i pomiar 300 walczących) mają pierwszeństwo przed dalszą pracą.
+**Status: plan zaakceptowany 2026-11-08; część 1 (most) gotowa, czeka na ocenę.** Wybór etapu: ankieta z właścicielem projektu 2026-11-08 (zamiast M8 i rejsów w oknie mapy świata). Mały etap jak N1, po M7, niezależny od oceny wojska. Pomysł gracza z oceny M5 (IDEAS: „Most przez rzekę i mniej kanciaste wybrzeże”). Poprawki z oceny M7 (i pomiar 300 walczących) mają pierwszeństwo przed dalszą pracą.
 
 **Decyzje (ankieta 2026-11-08):**
 - **Dwa rodzaje mostu:** drewniany (tani, jak droga ubita) i kamienny (droższy, jak bruk, z łukami).
 - **8 kierunków** (wbrew rekomendacji „tylko prosto”, decyzja właściciela): most stawia się jak nabrzeże i mur, także po skosie; skos ma kliny po bokach każdego kroku (jak skos nabrzeża, ARCHITECTURE §6.3), więc ludzie i wozy po nim przejdą, a boki biegną prosto.
 - **Nad wodą tylko budynki przy wodzie:** port, stocznia i przystań jak dotąd, a do tego wędkarz, glinianka, dźwig i magazyn portowy mogą mieć najwyżej 1 rząd kafli nad płytką wodą (morze, jezioro, brzeg rzeki) na palach, wejście na lądzie; nie mogą zagrodzić rzeki ani odciąć statków. Inne budynki bez zmian.
 - **Mapy bez zmian:** miękki brzeg robi tylko rysowanie terenu; stare zapisy, automatyczny gracz i testy zostają.
+- **Rampy na lądzie (prośba właściciela 2026-11-08, w trakcie części 1):** most zaczyna się i kończy na lądzie, po kaflu na każdym brzegu; boki i poręcze schodzą tam do ziemi, żeby most nie urywał się nad wodą. Rampa liczy się jako kafel mostu (materiał, rozbiórka), drzewo w jej miejscu jest ścinane, droga może pod nią zostać.
+
+**Część 1, stan (2026-11-08): gotowa, czeka na ocenę właściciela.**
+- Most drewniany i kamienny przeciąga się od brzegu do brzegu (przyciski „Most” i „Most kamienny” obok „Drogi”), w 8 kierunkach, najwyżej 8 kafli wody, z rampą na każdym brzegu; podgląd całej linii na zielono albo czerwono, całość albo nic. Budowniczy kładzie kafel po kaflu od bliższego brzegu (6 s), tragarze noszą deski albo kamień. Ludzie chodzą po moście jak po drodze albo bruku, wózki bez kary za jazdę poza drogą, wozy jeżdżą (most to droga). Rozbiórka zabiera cały most (nie, gdy ktoś na nim stoi) albo zamówienie.
+- Pasek budowy zawija narzędzia do drugiego wiersza, gdy ekran jest za wąski (przy 1280 px „Rozbiórka” i „Schowaj” wypadały poza ekran).
+- Grafika kodem (`BridgeLayer`, ART_SPEC): łuki kamiennego mostu, pale drewnianego, poręcze i murki w świecie, rampy.
+- Zapis v21 (ARCHITECTURE §8). Testy: `tests/scenario/test_b1_bridges.gd`.
+- Zrzut: `game_shot.tscn -- --map=coast --tile=58,34 --zoom=2 --bridges [--focus=58,41]`.
+- Uproszczenia: w trybie uproszczonym budowa mostu czeka jak bruk; poręcze na moście po skosie biegną na ekranie pionowo i są słabo widoczne; burzenie mostu nie zwraca materiału; ruchome wozy na moście nie blokują rozbiórki.
+
 
 **Podział: 2 części, ocena po każdej.**
 - **Część 1: most.** Most przez rzekę (i bród, i wąskie miejsce jeziora), po którym chodzą ludzie i jeżdżą wózki i wozy. Stawiany jak droga: przeciągnięcie od brzegu do brzegu, budowniczy kładzie kafel po kaflu, tragarze noszą materiał. Zapis v21.
@@ -985,9 +995,9 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - wydajność shadera terenu na laptopie (więcej próbek przy brzegu). Ochrona: tani test „czy blisko brzegu” przed dokładnym liczeniem, jak przy ujściach rzek.
 
 **DoD:**
-- [ ] Most stawia się przeciągnięciem od brzegu do brzegu, budowa idzie przez budowniczego i tragarzy; ludzie i wozy chodzą po moście (testy ścieżek).
-- [ ] Na „Wybrzeżu” most skraca drogę na wschód mapy (zrzut i test ścieżki).
-- [ ] Zapis v21 z migracją i fixturą; stare zapisy wczytują się bez mostów.
+- [x] Most stawia się przeciągnięciem od brzegu do brzegu, budowa idzie przez budowniczego i tragarzy; ludzie i wozy chodzą po moście (testy ścieżek).
+- [x] Na „Wybrzeżu” most skraca drogę na wschód mapy (zrzut i test ścieżki: z 23 do 13 kroków przy moście w rzędzie 35).
+- [x] Zapis v21 z migracją; stare zapisy wczytują się bez mostów (test na zapisie v16; osobna fixtura v21 niepotrzebna, bo zapis mostu sprawdza test zapisu i odczytu).
 - [ ] Brzeg morza, jeziora i rzeki jest miękki, bez schodków po kaflach (zrzuty przed i po).
 - [ ] Wędkarz, glinianka, dźwig i magazyn portowy stoją 1 rzędem na palach nad płytką wodą (testy reguły, zrzuty).
 - [ ] UI w PL i EN, nowe teksty przez klucze tłumaczeń.

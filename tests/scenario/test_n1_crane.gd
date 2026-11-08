@@ -201,5 +201,5 @@ func test_v16_fixture_loads_and_continues() -> void:
 func test_v15_save_migrates_to_v16_unchanged() -> void:
 	var document: Dictionary = JSON.parse_string(
 			FileAccess.get_file_as_string("res://tests/fixtures/saves/v15_quays.json"))
-	var state := SaveMigrations.migrate(document["state"], 15)
+	var state := SaveMigrations.migrate_v15_to_v16((document["state"] as Dictionary).duplicate(true))
 	assert_str(SimCodec.canonical(state)).is_equal(SimCodec.canonical(document["state"]))

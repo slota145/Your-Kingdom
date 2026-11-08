@@ -114,6 +114,8 @@ static func _storage_name(province: ProvinceSim, id: int) -> String:
 		var paving_site := province.paving[id] as PavingSite
 		if paving_site.is_wall():
 			return _t("ui.doing.wall")
+		if paving_site.is_bridge():
+			return _t("ui.doing.bridge")
 		return _t("ui.doing.quay" if paving_site.is_quay() else "ui.doing.paving")
 	if province.piles.has(id):
 		return _t("ui.doing.ground")

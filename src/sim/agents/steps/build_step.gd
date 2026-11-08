@@ -67,7 +67,7 @@ func _pave(province: ProvinceSim, agent: Agent, paving_site: PavingSite) -> Stat
 			or not province.can_lay(paving_site):
 		agent.activity = &"idle"
 		return Status.DONE
-	if paving_site.is_quay() and not bb.has("_faced"):
+	if (paving_site.is_quay() or paving_site.is_bridge()) and not bb.has("_faced"):
 		bb["_faced"] = 1
 		var dir := IsoMath.screen_dir(Vector2(tile) - Vector2(stand))
 		if dir >= 0:

@@ -178,4 +178,4 @@ func test_v18_save_loads_and_gets_its_first_raid_later() -> void:
 	assert_int(sim.province.raids.next_tick).is_equal(-1)
 	assert_object(sim.world.camp).is_not_null()
 	assert_int(sim.world.camp.next_raid).is_greater(sim.clock.tick + SimClock.seconds_to_ticks(BanditCamp.FIRST_SECONDS) - 20)
-	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(20)
+	assert_int(SaveMigrations.CURRENT_VERSION).is_greater_equal(20)

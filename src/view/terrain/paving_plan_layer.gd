@@ -35,7 +35,7 @@ func refresh() -> void:
 	_next.clear()
 	_walls.clear()
 	for paving_site: PavingSite in province.paving.values():
-		if paving_site.is_quay() or paving_site.tiles.is_empty():
+		if paving_site.is_quay() or paving_site.is_bridge() or paving_site.tiles.is_empty():
 			continue
 		if paving_site.is_wall():
 			for tile: Vector2i in paving_site.tiles:

@@ -209,7 +209,7 @@ func is_tile_solid(tile: Vector2i) -> bool:
 	if not passages.is_empty() and passages.has(tile):
 		return false   # the way through a gatehouse (M7 part 2)
 	var terrain := terrain_at(tile)
-	if terrain != null and not terrain.walkable and not grid.has_quay(tile):
+	if terrain != null and not terrain.walkable and not grid.has_quay(tile) and not grid.has_bridge(tile):
 		return true
 	# A whole building is solid, its entrances too: people step onto an entrance only from
 	# the tile in front of its door (find_path), never across a corner of the building.
@@ -248,6 +248,8 @@ func refresh_tile(tile: Vector2i) -> void:
 		cost = PAVED_COST if grid.is_paved(tile) else ROAD_COST
 	elif grid.has_quay(tile):
 		cost = PAVED_COST if grid.quay(tile) == TileGrid.STONE_QUAY else ROAD_COST
+	elif grid.has_bridge(tile):
+		cost = PAVED_COST if grid.bridge(tile) == TileGrid.STONE_BRIDGE else ROAD_COST
 	elif fields.has_field(tile):
 		cost = FIELD_COST
 	else:
@@ -257,7 +259,7 @@ func refresh_tile(tile: Vector2i) -> void:
 	# Service reach counts roads, fields and terrain but not trees (M4b-3): cutting and
 	# planting near the town does not make every service measure its reach again.
 	coverage.set_tile(tile, cost, nav_solid, nav.version != version)
-	if not grid.has_road(tile) and not fields.has_field(tile):
+	if not grid.has_road(tile) and not fields.has_field(tile) and not grid.has_bridge(tile):
 		# Trees are walkable but slow people down like the forest floor (M4b-2).
 		var node := resources.def_at(tile)
 		if node != null and node.move_cost > cost and not resources.is_depleted(tile):
@@ -265,7 +267,8 @@ func refresh_tile(tile: Vector2i) -> void:
 	if not is_equal_approx(nav.get_cost(tile), cost):
 		nav.set_cost(tile, cost)
 	mil.refresh_tile(self, tile, nav_solid, cost)
-	var on_road := (grid.has_road(tile) or passage) and not nav_solid
+	# A bridge is a road for wagons too (B1).
+	var on_road := (grid.has_road(tile) or passage or grid.has_bridge(tile)) and not nav_solid
 	road_nav.set_solid(tile, not on_road)
 	if on_road and not is_equal_approx(road_nav.get_cost(tile), cost):
 		road_nav.set_cost(tile, cost)
@@ -555,7 +558,7 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 			return &"tile_occupied"
 		if grid.is_blocked(tile) or grid.occupant(tile) != 0 or resources.has_node(tile):
 			return &"tile_occupied"
-		if _pile_at(tile) != 0 or fields.has_field(tile) or grid.has_road(tile):
+		if _pile_at(tile) != 0 or fields.has_field(tile) or grid.has_road(tile) or grid.has_bridge(tile):
 			return &"tile_occupied"
 		# A gatehouse or a tower may stand in a wall line (it takes the wall's place, M7 part 2).
 		if not walls.is_empty() and (walls.is_stairs(tile) or (walls.blocks_ground(tile) and not def.is_fort())):
@@ -1010,7 +1013,7 @@ func can_plant(tile: Vector2i, node_id: StringName = &"tree") -> bool:
 			return false
 	elif _free_ground_error(tile) != &"":
 		return false
-	if grid.is_blocked(tile) or fields.has_field(tile) or grid.has_road(tile):
+	if grid.is_blocked(tile) or fields.has_field(tile) or grid.has_road(tile) or grid.has_bridge(tile):
 		return false
 	for dy: int in range(-1, 2):
 		for dx: int in range(-1, 2):
@@ -1320,6 +1323,15 @@ func pave_next(paving_site: PavingSite) -> void:
 	paving_site.work_left = paving_site.tile_ticks()
 	if paving_site.is_wall():
 		lay_wall(tile, paving_site.wall_value())
+	elif paving_site.is_bridge():
+		if resources.has_node(tile):
+			# A tree (or sapling) on the bank goes for the ramp.
+			resources.clear(tile)
+			events.emit(&"resource_depleted", {"tile": tile})
+		grid.set_bridge(tile, paving_site.bridge_value())
+		refresh_tile(tile)
+		var laid: Array[Vector2i] = [tile]
+		events.emit(&"bridge_changed", {"tiles": laid, "bridge": paving_site.bridge_value()})
 	elif paving_site.is_quay():
 		grid.set_quay(tile, paving_site.quay_value())
 		refresh_tile(tile)
@@ -1375,7 +1387,7 @@ func _withdraw_paving(tile: Vector2i) -> void:
 ## the player can cancel them).
 func cancel_paving_error(tile: Vector2i) -> StringName:
 	var id := paving_site_at(tile) if not paving.is_empty() else 0
-	if id == 0 or paving[id].is_quay():
+	if id == 0 or paving[id].is_quay() or paving[id].is_bridge():
 		return &"not_paving"
 	return &""
 
@@ -1421,6 +1433,12 @@ func paving_stand(paving_site: PavingSite) -> Vector2i:
 	var tile := paving_site.next_tile()
 	if tile == Agent.NO_TILE or not paving_site.stands_beside():
 		return tile
+	if paving_site.is_bridge():
+		# On the bridge laid so far (B1): the far bank may not be reachable yet.
+		for step: Vector2i in _STEPS4:
+			var t := tile + step
+			if grid.has_bridge(t) and nav.is_walkable(t):
+				return t
 	for step: Vector2i in _STEPS4:
 		var t := tile + step
 		if nav.is_walkable(t):
@@ -1432,6 +1450,9 @@ func paving_stand(paving_site: PavingSite) -> Vector2i:
 func can_lay(paving_site: PavingSite) -> bool:
 	if paving_site.is_wall():
 		return wall_can_lay(paving_site)
+	if paving_site.is_bridge():
+		# A woodcutter felling a tree where the ramp goes finishes first.
+		return resources.claimant(paving_site.next_tile()) == 0
 	if not paving_site.is_quay():
 		return true
 	var tile := paving_site.next_tile()
@@ -1735,6 +1756,237 @@ func remove_quay(tile: Vector2i) -> void:
 	refresh_tile(tile)
 
 
+# --- Bridges (B1) ---------------------------------------------------------------------------
+
+## How many tiles of water a bridge may span (ROADMAP B1; a diagonal step counts as one).
+const BRIDGE_REACH := 8
+
+
+## Whether a bridge may stand on [param tile] by its terrain: river water, a ford or a lake
+## (no sea: quays are for the sea, N1).
+func is_bridgeable(tile: Vector2i) -> bool:
+	if not grid.is_inside(tile):
+		return false
+	var terrain := terrain_at(tile)
+	if terrain == null or terrain.sail_depth > 0:
+		return false
+	return terrain.is_kind(&"water") or terrain.id == &"ford"
+
+
+## Whether [param tile] is a bank a bridge can rest on: walkable land (or a bridge already
+## there) people can step on.
+func _bridge_bank(tile: Vector2i) -> bool:
+	if not grid.is_inside(tile):
+		return false
+	if grid.has_bridge(tile):
+		return true
+	return not is_bridgeable(tile) and _is_land(tile) and nav.is_walkable(tile)
+
+
+## The main line of a bridge dragged from [param from] to [param to]: snapped to one of 8
+## directions, like quays and walls (decision 2026-11-08), without the wedges.
+static func bridge_line(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
+	var d := to - from
+	var ax := absi(d.x)
+	var ay := absi(d.y)
+	var dir := Vector2i(signi(d.x), signi(d.y))
+	var n := 0
+	if ax >= 2 * ay:
+		dir.y = 0
+		n = ax
+	elif ay >= 2 * ax:
+		dir.x = 0
+		n = ay
+	else:
+		n = roundi((ax + ay) / 2.0)
+	var tiles: Array[Vector2i] = []
+	for i: int in n + 1:
+		tiles.append(from + dir * i)
+	return tiles
+
+
+## A bridge dragged from [param from] to [param to] (B1): {"tiles": the tiles to lay in the
+## order a builder lays them (from the near bank, each diagonal step's wedges before the step),
+## "line": every tile of the drag (main line and wedges), "error": &"" or why it cannot be
+## built}. It starts on the last land tile before the water and must reach land again within
+## BRIDGE_REACH tiles of water; all of it or nothing.
+func bridge_plan(from: Vector2i, to: Vector2i) -> Dictionary:
+	var main := bridge_line(from, to)
+	var line: Array[Vector2i] = main.duplicate()
+	var result := {"tiles": [] as Array[Vector2i], "line": line, "error": &""}
+	var first := -1
+	for i: int in main.size():
+		if is_bridgeable(main[i]) and not grid.has_bridge(main[i]):
+			first = i
+			break
+	if first < 0:
+		result["error"] = &"no_water"
+		return result
+	if first == 0 or not _bridge_bank(main[first - 1]):
+		result["error"] = &"bridge_needs_bank"
+		return result
+	var last := first
+	while last + 1 < main.size() and is_bridgeable(main[last + 1]) and not grid.has_bridge(main[last + 1]):
+		last += 1
+	if last + 1 >= main.size():
+		result["error"] = &"bridge_needs_far_bank"
+		return result
+	if not _bridge_bank(main[last + 1]):
+		result["error"] = &"bridge_needs_far_bank"
+		return result
+	if last - first + 1 > BRIDGE_REACH:
+		result["error"] = &"bridge_too_long"
+		return result
+	# The bridge starts and ends on the land (owner's request 2026-11-08): a ramp tile on each
+	# bank, and on a diagonal bridge the wedges beside its steps whether over water or land.
+	var tiles: Array[Vector2i] = []
+	var dir := main[1] - main[0] if main.size() > 1 else Vector2i.ZERO
+	var add := func(t: Vector2i) -> void:
+		if not line.has(t):
+			line.append(t)
+		if not grid.has_bridge(t) and not tiles.has(t):
+			tiles.append(t)
+	add.call(main[first - 1])
+	for i: int in range(first - 1, last + 1):
+		if dir.x != 0 and dir.y != 0:
+			add.call(main[i] + Vector2i(dir.x, 0))
+			add.call(main[i] + Vector2i(0, dir.y))
+		add.call(main[i + 1])
+	for tile: Vector2i in tiles:
+		var error := bridge_tile_error(tile) if is_bridgeable(tile) else ramp_error(tile)
+		if error != &"":
+			result["error"] = error
+	if result["error"] == &"":
+		result["tiles"] = tiles
+	return result
+
+
+## &"" when a bridge tile can be ordered on [param tile] on its own (water, nothing there).
+func bridge_tile_error(tile: Vector2i) -> StringName:
+	if not grid.is_inside(tile):
+		return &"outside_map"
+	if grid.has_bridge(tile):
+		return &"already_bridge"
+	if not paving.is_empty() and paving_site_at(tile) != 0:
+		return &"already_ordered"
+	if not is_bridgeable(tile):
+		return &"not_water"
+	if grid.occupant(tile) != 0 or grid.is_blocked(tile) or resources.has_node(tile):
+		return &"tile_occupied"
+	return &""
+
+
+## &"" when a bridge may come on to the land at [param tile] (a ramp, B1): walkable land with
+## no building, field, pile, wall, quay or rock; a road may lie there (it stays), and a tree
+## is cut down when the ramp is laid.
+func ramp_error(tile: Vector2i) -> StringName:
+	if not grid.is_inside(tile):
+		return &"outside_map"
+	if grid.has_bridge(tile):
+		return &"already_bridge"
+	if not paving.is_empty() and paving_site_at(tile) != 0:
+		return &"already_ordered"
+	var terrain := terrain_at(tile)
+	if terrain == null or not terrain.walkable or terrain.sail_depth > 0:
+		return &"bridge_needs_bank"
+	if grid.occupant(tile) != 0 or grid.is_blocked(tile) or grid.has_quay(tile) or fields.has_field(tile) \
+			or _pile_at(tile) != 0 or resources.blocks_movement(tile):
+		return &"tile_occupied"
+	if not walls.is_empty() and (walls.kind(tile) != Walls.NONE or walls.wedges.has(tile) \
+			or walls.fort_tiles.has(tile)):
+		return &"tile_occupied"
+	return &""
+
+
+## Orders a bridge of [param bridge] (TileGrid.TIMBER_BRIDGE or STONE_BRIDGE) on [param tiles]
+## (from bridge_plan, in its order): porters bring planks or stone, a builder lays it tile by
+## tile from the bank. Returns the site id.
+func order_bridge(tiles: Array[Vector2i], bridge: int) -> int:
+	if tiles.is_empty():
+		return 0
+	var paving_site := PavingSite.new(ids.take(), tiles.duplicate(), data, PavingSite.kind_for_bridge(bridge))
+	paving[paving_site.id] = paving_site
+	jobs.add(paving_site.good(), tiles.size() * paving_site.per_tile(), 0, paving_site.id)
+	events.emit(&"bridge_ordered", {"site": paving_site.id, "tiles": tiles.size(), "bridge": bridge})
+	return paving_site.id
+
+
+## The laid bridge tiles joined to [param tile] (8 neighbours: diagonal bridges).
+func bridge_tiles_at(tile: Vector2i) -> Array[Vector2i]:
+	var found: Array[Vector2i] = []
+	if not grid.has_bridge(tile):
+		return found
+	var seen: Dictionary[Vector2i, bool] = {tile: true}
+	found.append(tile)
+	var head := 0
+	while head < found.size():
+		var t := found[head]
+		head += 1
+		for step: Vector2i in _STEPS8:
+			var next := t + step
+			if not seen.has(next) and grid.has_bridge(next):
+				seen[next] = true
+				found.append(next)
+	return found
+
+
+## The bridge site ordered on [param tile], or 0.
+func bridge_site_at(tile: Vector2i) -> int:
+	var id := paving_site_at(tile) if not paving.is_empty() else 0
+	return id if id != 0 and (paving[id] as PavingSite).is_bridge() else 0
+
+
+## &"" when the bridge on [param tile] (the whole bridge) or the order for it can be taken
+## away: nobody stands on it and nothing lies on it.
+func remove_bridge_error(tile: Vector2i) -> StringName:
+	if not grid.is_inside(tile):
+		return &"outside_map"
+	if bridge_site_at(tile) != 0:
+		return &""
+	if not grid.has_bridge(tile):
+		return &"no_bridge"
+	var tiles := bridge_tiles_at(tile)
+	for t: Vector2i in tiles:
+		if _pile_at(t) != 0:
+			return &"tile_occupied"
+	for agent: Agent in agents.all():
+		if tiles.has(agent.tile()):
+			return &"tile_has_people"
+	return &""
+
+
+## Takes the whole bridge on [param tile] away, with any order still going on beside it, or
+## only the order when [param tile] is ordered; checked with remove_bridge_error.
+func remove_bridge(tile: Vector2i) -> void:
+	var id := bridge_site_at(tile)
+	if id != 0:
+		_close_bridge_site(paving[id])
+		return
+	var tiles := bridge_tiles_at(tile)
+	for paving_site: PavingSite in paving.values():
+		if not paving_site.is_bridge():
+			continue
+		for t: Vector2i in paving_site.tiles:
+			var beside := false
+			for step: Vector2i in _STEPS8:
+				if tiles.has(t + step):
+					beside = true
+			if beside:
+				_close_bridge_site(paving_site)
+				break
+	for t: Vector2i in tiles:
+		grid.set_bridge(t, 0)
+		refresh_tile(t)
+	events.emit(&"bridge_changed", {"tiles": tiles, "bridge": 0})
+
+
+## Closes a bridge order; material already brought goes on the ground where the builder
+## stands (on the bank).
+func _close_bridge_site(paving_site: PavingSite) -> void:
+	var stand := paving_stand(paving_site)
+	_close_paving(paving_site, stand)
+
+
 func _free_ground_error(tile: Vector2i) -> StringName:
 	var terrain := terrain_at(tile)
 	if terrain != null and not terrain.buildable:
@@ -1743,7 +1995,7 @@ func _free_ground_error(tile: Vector2i) -> StringName:
 		return &"tile_occupied"
 	if fields.has_field(tile) or grid.has_road(tile) or _pile_at(tile) != 0:
 		return &"tile_occupied"
-	if grid.has_quay(tile) or (not paving.is_empty() and paving_site_at(tile) != 0):
+	if grid.has_quay(tile) or grid.has_bridge(tile) or (not paving.is_empty() and paving_site_at(tile) != 0):
 		return &"tile_occupied"
 	if not walls.is_empty() and (walls.kind(tile) != Walls.NONE or walls.wedges.has(tile) \
 			or walls.fort_tiles.has(tile)):

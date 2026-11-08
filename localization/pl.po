@@ -3325,3 +3325,44 @@ msgstr "Brama w palisadzie"
 
 msgid "building.palisade_gate.desc"
 msgstr "Drewniane wrota między dwoma słupami. Swoi przechodzą (także wozy), wróg musi je rozbić (600 życia, palisada ma 300). Postaw ją w linii palisady (zastąpi jeden kafel). Na bramę się nie wchodzi."
+
+# B1: bridges
+
+msgid "ui.build.bridge"
+msgstr "Most"
+
+msgid "ui.build.bridge_tip"
+msgstr "Drewniany most przez rzekę, bród albo jezioro: 3 deski na kafel. Przeciągnij myszą z jednego brzegu na drugi (najwyżej 8 kafli wody), prosto albo po skosie, w 8 kierunkach (skos zajmuje więcej kafli). Ludzie chodzą po nim jak po drodze, jeżdżą też wózki i wozy. Budowniczy kładzie go od bliższego brzegu."
+
+msgid "ui.build.stone_bridge"
+msgstr "Most kamienny"
+
+msgid "ui.build.stone_bridge_tip"
+msgstr "Kamienny most z łukami: 4 kamienie na kafel. Działa jak drewniany, ale ludzie chodzą po nim szybciej, jak po bruku."
+
+msgid "ui.doing.bridge"
+msgstr "na most"
+
+msgid "ui.command_error.no_water"
+msgstr "Most stawia się nad rzeką, brodem albo jeziorem."
+
+msgid "ui.command_error.not_water"
+msgstr "Tu nie ma wody pod most."
+
+msgid "ui.command_error.bridge_needs_bank"
+msgstr "Zacznij most na brzegu, na wolnym kawałku lądu."
+
+msgid "ui.command_error.bridge_needs_far_bank"
+msgstr "Most musi sięgać drugiego brzegu (wolny kawałek lądu)."
+
+msgid "ui.command_error.bridge_too_long"
+msgstr "Za długi most: najwyżej 8 kafli wody."
+
+msgid "ui.command_error.already_bridge"
+msgstr "Tu już stoi most."
+
+msgid "ui.command_error.no_bridge"
+msgstr "Tu nie ma mostu."
+
+msgid "ui.command_error.bad_bridge"
+msgstr "Nieznany rodzaj mostu."

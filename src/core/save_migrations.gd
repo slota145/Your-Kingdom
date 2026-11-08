@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 20
+const CURRENT_VERSION := 21
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -67,6 +67,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 20:
 		result = migrate_v19_to_v20(result)
 		version = 20
+	if version < 21:
+		result = migrate_v20_to_v21(result)
+		version = 21
 	return result
 
 
@@ -285,6 +288,24 @@ static func migrate_v18_to_v19(state: Dictionary) -> Dictionary:
 ## guards and walls of neutral settlements. All optional: no armies; the camp comes up and the
 ## settlements get their walls and guards on the first second of play (Simulation).
 static func migrate_v19_to_v20(state: Dictionary) -> Dictionary:
+	return state
+
+
+## v21 (B1 part 1): bridges over rivers, fords and lakes, a new layer of the grid
+## ("bridges"), and paving sites of the kinds 6 and 7 (timber and stone bridge). Older games
+## have no bridges: an empty layer.
+static func migrate_v20_to_v21(state: Dictionary) -> Dictionary:
+	for entry: Variant in state.get("provinces", []):
+		var province: Dictionary = (entry as Dictionary)["state"]
+		if province.has("province"):
+			province = province["province"]   # the simplified mode keeps its detail inside
+		var grid: Dictionary = province["grid"]
+		if grid.has("bridges"):
+			continue
+		var size := SimCodec.to_vec2i(grid["size"])
+		var empty := PackedByteArray()
+		empty.resize(size.x * size.y)
+		grid["bridges"] = Marshalls.raw_to_base64(empty)
 	return state
 
 

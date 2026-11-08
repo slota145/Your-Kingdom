@@ -85,6 +85,9 @@ var _focus: Vector2i = Vector2i(-1, -1)
 var _drill: bool = false
 ## --siege=<province def id> (--m7=siege).
 var _siege: StringName = &"iron_wold"
+## --bridges (B1): timber, stone and diagonal bridges over the river near --tile, one ordered,
+## people and a wagon on them.
+var _bridges: bool = false
 
 
 func _ready() -> void:
@@ -139,6 +142,8 @@ func _ready() -> void:
 			_focus = Vector2i(int(xy[0]), int(xy[1]))
 		elif arg.begins_with("--raid_seconds="):
 			_raid_seconds = float(arg.trim_prefix("--raid_seconds="))
+		elif arg == "--bridges":
+			_bridges = true
 		elif arg == "--drill":
 			_drill = true
 		elif arg.begins_with("--siege="):
@@ -237,6 +242,8 @@ func _arrange() -> void:
 		_place_g1(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _m7 != "":
 		_place_m7(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _bridges:
+		_place_bridges(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
 		_place_yards(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _focus.x >= 0:
@@ -247,6 +254,76 @@ func _arrange() -> void:
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == _select:
 			(_game.get("_building_panel") as BuildingPanel).show_building(sim.province, b.id)
+
+
+## B1: bridges over the river near [param at]: a timber one, a stone one, a diagonal timber one
+## and one only ordered, scanning rows for the first crossing west to east.
+func _place_bridges(sim: Simulation, at: Vector2i) -> void:
+	Game.paused = true
+	var province := sim.province
+	province.first_building = &""
+	var crossing := func(y: int) -> Array:
+		for x: int in range(at.x - 14, at.x + 14):
+			var t := Vector2i(x, y)
+			if province.is_bridgeable(t) and not province.is_bridgeable(t - Vector2i(1, 0)):
+				var x1 := x
+				while province.is_bridgeable(Vector2i(x1 + 1, y)):
+					x1 += 1
+				return [Vector2i(x - 1, y), Vector2i(x1 + 1, y)]
+		return []
+	var view_nature := func(tile: Vector2i) -> void:
+		(_game.get("view") as ProvinceView).nature.refresh(tile)
+	var lay := func(from: Vector2i, to: Vector2i, kind: int) -> Array[Vector2i]:
+		var plan := province.bridge_plan(from, to)
+		var tiles: Array[Vector2i] = []
+		tiles.assign(plan["tiles"])
+		print("bridge ", from, "->", to, " ", plan["error"], " ", tiles.size())
+		for tile: Vector2i in tiles:
+			if province.resources.has_node(tile):
+				province.resources.clear(tile)
+				view_nature.call(tile)
+			province.grid.set_bridge(tile, kind)
+			province.refresh_tile(tile)
+		return tiles
+	var timber: Array[Vector2i] = []
+	var stone: Array[Vector2i] = []
+	var a: Array = crossing.call(at.y - 4)
+	if not a.is_empty():
+		timber = lay.call(a[0], a[1], TileGrid.TIMBER_BRIDGE)
+	var b: Array = crossing.call(at.y + 1)
+	if not b.is_empty():
+		stone = lay.call(b[0], b[1], TileGrid.STONE_BRIDGE)
+	# A diagonal bridge further down, from the west bank down to the south-east.
+	var c: Array = crossing.call(at.y + 6)
+	if not c.is_empty():
+		for k: int in range(3, 12):
+			var from: Vector2i = c[0] - Vector2i(1, 1)
+			if province.bridge_plan(from, from + Vector2i(k, k))["error"] == &"":
+				lay.call(from, from + Vector2i(k, k), TileGrid.TIMBER_BRIDGE)
+				break
+	var d: Array = crossing.call(at.y + 10)
+	if not d.is_empty():
+		print("ordered bridge ", sim.execute(BuildBridgeCommand.new(d[0], d[1], TileGrid.STONE_BRIDGE)))
+	# People and a wagon on the bridges.
+	var walkers: Array[Vector2i] = []
+	if timber.size() >= 4:
+		walkers.append_array([timber[1], timber[3]])
+	if stone.size() >= 3:
+		walkers.append(stone[2])
+	for i: int in walkers.size():
+		var porter := sim.province.spawn_agent(&"porter", walkers[i])
+		porter.facing = 1 if i % 2 == 0 else 5
+		porter.activity = &"walk"
+		porter.carry_good = &"wood"
+		porter.carry_amount = 1
+	if stone.size() >= 3:
+		var carter := sim.province.spawn_agent(&"porter", stone[stone.size() - 2])
+		carter.kind = Carriers.CARTER_KIND
+		carter.vehicle = Carriers.WAGON
+		carter.facing = 5
+		carter.activity = &"walk"
+	var view: ProvinceView = _game.get("view")
+	view.bridges.refresh()
 
 
 ## A vineyard with 5 rows of 3 fields in front of it: pruned, budding, leafy, green grapes,

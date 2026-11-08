@@ -475,6 +475,15 @@ func _update_preview() -> void:
 				tiles[t] = "bad"
 			for t: Vector2i in plan["tiles"]:
 				tiles[t] = "ok"
+		&"bridge", &"stone_bridge":
+			# A bridge (B1) is checked whole, from bank to bank: all of it or nothing.
+			if _dragging:
+				var plan := sim.province.bridge_plan(_drag_tiles[0], _hover)
+				var ok: bool = plan["error"] == &""
+				for t: Vector2i in plan["line"]:
+					tiles[t] = "ok" if ok else "bad"
+			else:
+				tiles[_hover] = "ok"
 		&"pier", &"quay":
 			# The whole line is checked together: reach from the shore, way to the open sea (N1).
 			var line: Array[Vector2i] = _drag_tiles.duplicate() if _dragging else [_hover] as Array[Vector2i]
@@ -569,6 +578,9 @@ func _demolish_target(tile: Vector2i) -> Command:
 	# A wall tile or stairs (M7 part 2).
 	if sim.province.walls.kind(tile) != Walls.NONE:
 		return RemoveWallCommand.new(tile)
+	# A bridge, laid or only ordered (B1): the whole bridge goes.
+	if sim.province.grid.has_bridge(tile) or sim.province.bridge_site_at(tile) != 0:
+		return RemoveBridgeCommand.new(tile)
 	# A quay tile, laid or only ordered (N1).
 	if sim.province.grid.has_quay(tile) or (not sim.province.paving.is_empty() \
 			and sim.province.paving_site_at(tile) != 0 and not sim.province.grid.has_road(tile)):
@@ -616,6 +628,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			var wall_line := BuildWallCommand.line(_drag_tiles[0], _hover)
 			if wall_line != _drag_tiles:
 				_drag_tiles = wall_line
+				_update_preview()
+		elif kind == &"bridge" or kind == &"stone_bridge":
+			# Bridges are drawn like quays: a line in 8 directions from the first tile (B1).
+			var line: Array[Vector2i] = sim.province.bridge_plan(_drag_tiles[0], _hover)["line"]
+			if line != _drag_tiles:
+				_drag_tiles = line
 				_update_preview()
 		elif kind == &"pier" or kind == &"quay":
 			# Quays are drawn like walls: a straight line in 8 directions from the first tile (N1).
@@ -687,7 +705,7 @@ func _on_left_press() -> void:
 			var command := _demolish_target(_hover)
 			if command != null:
 				_execute(command)
-		&"road", &"paving", &"pier", &"quay", &"field", &"plant", &"palisade", &"stone_wall", &"stairs":
+		&"road", &"paving", &"pier", &"quay", &"bridge", &"stone_bridge", &"field", &"plant", &"palisade", &"stone_wall", &"stairs":
 			_dragging = true
 			_drag_tiles = [_hover]
 			_update_preview()
@@ -726,6 +744,9 @@ func _on_left_release() -> void:
 				to_pave.append(t)
 		if not to_pave.is_empty():
 			_execute(BuildPavingCommand.new(to_pave))
+	elif kind == &"bridge" or kind == &"stone_bridge":
+		var bridge := TileGrid.STONE_BRIDGE if kind == &"stone_bridge" else TileGrid.TIMBER_BRIDGE
+		_execute(BuildBridgeCommand.new(_drag_tiles[0], _hover, bridge))
 	elif kind == &"pier" or kind == &"quay":
 		var quay := TileGrid.STONE_QUAY if kind == &"quay" else TileGrid.PIER
 		_execute(BuildQuayCommand.new(_drag_tiles.duplicate(), quay))
