@@ -165,7 +165,7 @@ func test_recruit_leaves_home_takes_gear_and_moves_into_barracks() -> void:
 	var residents := _residents(houses)
 	var gold := sim.treasury.gold
 	assert_str(String(sim.execute(RecruitCommand.new(barracks.id, &"spearman")))).is_equal("")
-	assert_int(sim.treasury.gold).is_equal(gold - 10)
+	assert_int(sim.treasury.gold).is_equal(gold - 20)
 	assert_int(_residents(houses)).is_equal(residents - 1)
 	assert_int(armoury.stock.available(&"spear")).is_equal(5)
 	assert_int(barracks.recruits.size()).is_equal(1)
@@ -208,7 +208,7 @@ func test_recruit_errors() -> void:
 	assert_str(String(sim.execute(DemolishCommand.new(barracks.id)))).is_equal("barracks_has_soldiers")
 
 
-func test_soldiers_drill_in_ranks_eat_and_are_paid() -> void:
+func test_soldiers_drill_in_ranks_and_eat_without_wages() -> void:
 	var sim := SimFixture.make_sim(Vector2i(36, 30))
 	var town := _barracks_town(sim)
 	var barracks: BuildingState = town["barracks"]
@@ -237,12 +237,12 @@ func test_soldiers_drill_in_ranks_eat_and_are_paid() -> void:
 	assert_bool(seen_drill).is_true()
 	# Porters bring bread to the pantry; 4 soldiers eat about 0.24 a minute.
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return barracks.supply.total(&"bread") > 0, 60)).is_true()
-	# Wages: 1 gold a minute per soldier (taxes off for the count).
+	# No wages (owner's decision 2026-11-08): the gold never goes down (newcomers may pay taxes).
 	for house: BuildingState in town["houses"]:
 		house.house.residents = 0
 	var gold := sim.treasury.gold
 	sim.run_ticks(SimFixture.ticks(120))
-	assert_int(gold - sim.treasury.gold).is_between(7, 9)
+	assert_int(sim.treasury.gold).is_greater_equal(gold)
 
 
 func test_soldiers_survive_save_and_load_mid_walk() -> void:

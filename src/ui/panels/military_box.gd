@@ -3,7 +3,7 @@ extends VBoxContainer
 ## Part of the building panel for M7 part 1:
 ## - a workshop with several work cycles (the blacksmith): what it makes, one toggle per
 ##   choice and "take turns" (owner's decision 2026-11-07),
-## - a barracks: its soldiers by kind, recruits on their way, the pantry and wages, and a
+## - a barracks: its soldiers by kind, recruits on their way and the pantry, and a
 ##   recruit button per kind of soldier (cost and gear in the tooltip; disabled with the
 ##   reason while it cannot be done).
 
@@ -83,7 +83,6 @@ func _refresh_barracks(province: ProvinceSim, b: BuildingState) -> void:
 	var food := b.supply.totals() if b.supply != null else {}
 	lines.append(tr("ui.barracks.pantry") % (UiKit.goods_list(food) if not food.is_empty() \
 			else tr("ui.stockpile.empty")))
-	lines.append(tr("ui.barracks.wages") % roundi(Barracks.strength(b) * Barracks.WAGE_PER_MINUTE))
 	_barracks_label.text = "\n".join(lines)
 	for unit: UnitDef in province.data.units():
 		var button: Button = _recruit_buttons.get(unit.id)

@@ -5,8 +5,9 @@ extends RefCounted
 ##   his house (the house takes a newcomer later), fetches his gear from the armoury (and a
 ##   horse from a stud farm), changes his looks and moves into the barracks,
 ## - soldiers live in the barracks: they eat from its pantry (porters bring bread, fish or
-##   meat) and are paid a wage every second while there is gold; a shortage of either has no
-##   effect yet (owner's decision 2026-11-07, back at balancing),
+##   meat); a shortage has no effect yet (owner's decision 2026-11-07, back at balancing).
+##   No wages (owner's decision 2026-11-08, as in Stronghold and Anno): a recruit costs more
+##   once instead,
 ## - at home they stand in ranks on the parade ground in front of the door and drill together
 ##   now and then; those without a place in the ranks rest inside.
 ## Each barracks updates once per second of game time, in the tick of its id (like houses).
@@ -18,8 +19,6 @@ const FOOD: Array[StringName] = [&"bread", &"fish", &"meat"]
 const PANTRY_UNITS := 6
 ## Food a soldier eats per minute (like a resident's bread, data/needs/bread.tres).
 const FOOD_PER_MINUTE := 0.06
-## Gold a soldier is paid per minute (ROADMAP M7).
-const WAGE_PER_MINUTE := 1.0
 ## Soldiers drilling in the ranks in front of a barracks; the rest rest inside.
 const PARADE_SLOTS := 16
 ## Soldiers per parade tile (side by side in a rank).
@@ -46,8 +45,8 @@ static func update(province: ProvinceSim) -> void:
 			_update_barracks(province, building, false)
 
 
-## One second of the barracks of a province in the simplified mode (ARCHITECTURE §7.1): wages
-## and food by numbers, the pantry topped up straight from the storages.
+## One second of the barracks of a province in the simplified mode (ARCHITECTURE §7.1): food
+## by numbers, the pantry topped up straight from the storages.
 static func update_abstract(province: ProvinceSim) -> void:
 	for building: BuildingState in province.buildings.all():
 		if building.def.soldier_beds > 0 and building.is_complete():
@@ -71,9 +70,6 @@ static func _update_barracks(province: ProvinceSim, barracks: BuildingState, abs
 			for good: StringName in FOOD:
 				province.jobs.set_amount(good, 0, barracks.id, 0)
 		return
-	# Wages, while there is gold (no penalty without it yet).
-	if province.treasury.gold > 0:
-		province.treasury.add(-count * WAGE_PER_MINUTE / 60.0)
 	# Meals from the pantry; without food nothing happens yet (the hunger does not pile up).
 	barracks.mess_hunger = SimCodec.savable(barracks.mess_hunger + count * FOOD_PER_MINUTE / 60.0)
 	while barracks.mess_hunger >= 1.0:

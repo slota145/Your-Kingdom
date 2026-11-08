@@ -2645,7 +2645,7 @@ msgid "building.barracks.name"
 msgstr "Barracks"
 
 msgid "building.barracks.desc"
-msgstr "Home of soldiers: 24 beds. Recruit your army here. Soldiers eat from storage, get wages and drill in front of the barracks."
+msgstr "Home of soldiers: 24 beds. Recruit your army here. Soldiers eat from storage and drill in front of the barracks."
 
 msgid "recipe.charcoal_making.name"
 msgstr "Charcoal burning"
@@ -2705,25 +2705,25 @@ msgid "unit.spearman.name"
 msgstr "Spearman"
 
 msgid "unit.spearman.desc"
-msgstr "A spear. 10 gold. Cheap and many, twice as deadly to riders."
+msgstr "A spear. 20 gold. Cheap and many, twice as deadly to riders."
 
 msgid "unit.archer.name"
 msgstr "Archer"
 
 msgid "unit.archer.desc"
-msgstr "A bow. 15 gold. Shoots from afar (7 tiles), from a wall even further."
+msgstr "A bow. 30 gold. Shoots from afar (7 tiles), from a wall even further."
 
 msgid "unit.swordsman.name"
 msgstr "Swordsman"
 
 msgid "unit.swordsman.desc"
-msgstr "A sword and a mail shirt. 30 gold. Strong and tough."
+msgstr "A sword and a mail shirt. 60 gold. Strong and tough."
 
 msgid "unit.knight.name"
 msgstr "Rider"
 
 msgid "unit.knight.desc"
-msgstr "A horse, a sword and a mail shirt. 50 gold. The strongest and twice as fast."
+msgstr "A horse, a sword and a mail shirt. 100 gold. The strongest and twice as fast."
 
 msgid "ui.kind.charcoal_burner"
 msgstr "Charcoal burner"
@@ -2887,9 +2887,6 @@ msgstr "Recruits on their way: %d"
 
 msgid "ui.barracks.pantry"
 msgstr "Pantry: %s"
-
-msgid "ui.barracks.wages"
-msgstr "Wages: %d gold a minute"
 
 msgid "ui.barracks.needs"
 msgstr "Needs: %s and %d gold"

@@ -2668,7 +2668,7 @@ msgid "building.barracks.name"
 msgstr "Koszary"
 
 msgid "building.barracks.desc"
-msgstr "Dom żołnierzy: 24 łóżka. Tu rekrutujesz wojsko. Żołnierze jedzą z magazynu, dostają żołd i ćwiczą na placu przed koszarami."
+msgstr "Dom żołnierzy: 24 łóżka. Tu rekrutujesz wojsko. Żołnierze jedzą z magazynu i ćwiczą na placu przed koszarami."
 
 msgid "recipe.charcoal_making.name"
 msgstr "Wypalanie węgla"
@@ -2728,25 +2728,25 @@ msgid "unit.spearman.name"
 msgstr "Włócznik"
 
 msgid "unit.spearman.desc"
-msgstr "Włócznia. 10 zł. Tani i liczny, podwójnie groźny dla jeźdźców."
+msgstr "Włócznia. 20 zł. Tani i liczny, podwójnie groźny dla jeźdźców."
 
 msgid "unit.archer.name"
 msgstr "Łucznik"
 
 msgid "unit.archer.desc"
-msgstr "Łuk. 15 zł. Strzela z daleka (7 kafli), z muru jeszcze dalej."
+msgstr "Łuk. 30 zł. Strzela z daleka (7 kafli), z muru jeszcze dalej."
 
 msgid "unit.swordsman.name"
 msgstr "Miecznik"
 
 msgid "unit.swordsman.desc"
-msgstr "Miecz i kolczuga. 30 zł. Silny i wytrzymały."
+msgstr "Miecz i kolczuga. 60 zł. Silny i wytrzymały."
 
 msgid "unit.knight.name"
 msgstr "Jeździec"
 
 msgid "unit.knight.desc"
-msgstr "Koń, miecz i kolczuga. 50 zł. Najsilniejszy i dwa razy szybszy."
+msgstr "Koń, miecz i kolczuga. 100 zł. Najsilniejszy i dwa razy szybszy."
 
 msgid "ui.kind.charcoal_burner"
 msgstr "Węglarz"
@@ -2918,9 +2918,6 @@ msgstr "Rekruci w drodze: %d"
 
 msgid "ui.barracks.pantry"
 msgstr "Spiżarnia: %s"
-
-msgid "ui.barracks.wages"
-msgstr "Żołd: %d zł na minutę"
 
 msgid "ui.barracks.needs"
 msgstr "Potrzeba: %s i %d zł"

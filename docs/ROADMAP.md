@@ -869,26 +869,26 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Sterowanie jak w Twierdzy:** klik albo ramka zaznacza żołnierzy, prawy przycisk na ziemi to „idź”, na wrogu „atakuj”, Ctrl+1..9 zapamiętuje grupę, przyciski postawy: atakuj sam, broń się, stój w miejscu.
 - **Przejęcie: rozbić drzwi ratusza** (albo obozu pionierów). Ratusz ma wytrzymałość jak brama; gdy drzwi padną, a przy ratuszu nie ma obrońców, napastnik zajmuje prowincję. Mieszkańcy i budynki zostają, zadowolenie spada (wartość niżej).
 - **Ruda żelaza: małe złoża wszędzie.** Każda mapa ma kilka żył rudy w skałach, a prowincja z rudą (Żelazny Gród) ma ich dużo. Konie zostają rzadkie (stadnina tylko w prowincji z pastwiskami).
-- **Żołnierz mieszka w koszarach:** rekrut wyprowadza się z domu (dom przyjmuje przybysza), śpi w koszarach i je z magazynu, a do tego dostaje żołd.
+- **Żołnierz mieszka w koszarach:** rekrut wyprowadza się z domu (dom przyjmuje przybysza), śpi w koszarach i je z magazynu. ~~Do tego dostaje żołd.~~ **Zmiana 2026-11-08 (właściciel): bez żołdu, jak w Twierdzy i Anno; za to rekrutacja kosztuje 2 razy więcej (ankieta).** Rekrut zwalnia miejsce w domu, żołnierze nie zajmują miejsc mieszkańców.
 
 **Część 1, decyzje (ankieta 2026-11-07, start części):**
 - **Grafika:** nowe budynki i towary z PixelLab (przepływ ART_SPEC §10.12–10.13), postacie i żołnierze rysowane kodem, jak najstaranniej i najbardziej szczegółowo.
 - **Kowal:** przełącznik w panelu: włócznie, miecze albo na zmianę (domyślnie na zmianę).
-- **Brak żołdu albo jedzenia:** na razie bez kary (wrócimy przy balansie). Żołd pobierany, póki jest złoto.
+- **Brak jedzenia:** na razie bez kary (wrócimy przy balansie). Żołdu nie ma (zmiana 2026-11-08).
 - **Żołnierze w części 1:** stoją w szeregu na placu przed koszarami i co jakiś czas ćwiczą. Sterowanie w części 2.
 
 **Część 1, stan (2026-11-07): gotowa, czeka na ocenę właściciela.**
 - Towary: węgiel drzewny, ruda żelaza, żelazo, włócznia, łuk, miecz, kolczuga, koń. Broń trafia tylko do zbrojowni (zwykły magazyn jej nie przyjmuje).
 - Żyły rudy: część skał na każdej mapie (6, najwyżej 1/3 skał; w Żelaznym Grodzie 24), też w starych zapisach (migracja). Kopalnię stawia się tylko w zasięgu 6 kafli od żyły; żyła ma 40 rudy.
 - Budynki (kategoria „Wojsko”): węglarz, kopalnia, huta, kowal (przełącznik: włócznie, miecze, na zmianę), płatnerz, łuczarz, stadnina (tylko z pastwiskami, start z parą koni, stado do 6), zbrojownia 3×3 (8 pól), koszary 3×3 (24 łóżka). Koszty budowy wyjściowe: w `data/buildings/`.
-- Rekrutacja w panelu koszar: przycisk na każdy rodzaj wojska z wymaganiami w podpowiedzi. Rekrut to wolny mieszkaniec (bez pracy), wychodzi z domu, idzie po broń (i konia), przebiera się i wchodzi do koszar. Żołd 1 zł na minutę na żołnierza, póki jest złoto; tragarze noszą do koszar chleb, ryby albo mięso. Brak żołdu lub jedzenia: bez kary (decyzja).
+- Rekrutacja w panelu koszar: przycisk na każdy rodzaj wojska z wymaganiami w podpowiedzi. Rekrut to wolny mieszkaniec (bez pracy), wychodzi z domu, idzie po broń (i konia), przebiera się i wchodzi do koszar. Cena jednorazowa: włócznik 20 zł, łucznik 30, miecznik 60, jeździec 100; żołdu nie ma (2026-11-08). Tragarze noszą do koszar chleb, ryby albo mięso; brak jedzenia: bez kary (decyzja).
 - Szeregi: do 16 żołnierzy na placu przed drzwiami (2 na kafel), reszta w środku; co 14 s wszyscy razem ćwiczą przez 8 s. Koszar z żołnierzami nie da się rozebrać.
 - Grafika: 9 budynków z etapami budowy i 7 towarów z PixelLab (ART_SPEC §10.14, zostało 9 generacji do 27.11), postacie, żołnierze i koń kodem.
 - Zapis v18 (ARCHITECTURE §8). Testy: `tests/scenario/test_m7_military.gd`.
 - Zrzuty: `game_shot.tscn -- --map=lakeland --tile=84,64 --zoom=1 --m7=finished|sites`, wojsko: `--zoom=2 --m7=army [--drill]`.
 
 **Wartości wyjściowe (do strojenia przy realizacji):**
-- jednostki: włócznik (włócznia, 10 zł, życie 100, cios 10, ×2 przeciw jeźdźcom), łucznik (łuk, 15 zł, życie 70, strzała 8, zasięg 7 kafli; na murze +2 kafle i połowa obrażeń), miecznik (miecz i kolczuga, 30 zł, życie 160, cios 16), jeździec (koń, miecz i kolczuga, 50 zł, życie 200, cios 18, 2× szybszy); taran (20 desek, 4 żelaza, pcha go 4 żołnierzy), drabina (4 deski, niesie 1 żołnierz); żołd 1 zł na minutę,
+- jednostki: włócznik (włócznia, ~~10~~ 20 zł, życie 100, cios 10, ×2 przeciw jeźdźcom), łucznik (łuk, ~~15~~ 30 zł, życie 70, strzała 8, zasięg 7 kafli; na murze +2 kafle i połowa obrażeń), miecznik (miecz i kolczuga, ~~30~~ 60 zł, życie 160, cios 16), jeździec (koń, miecz i kolczuga, ~~50~~ 100 zł, życie 200, cios 18, 2× szybszy); taran (20 desek, 4 żelaza, pcha go 4 żołnierzy), drabina (4 deski, niesie 1 żołnierz); ~~żołd 1 zł na minutę~~ bez żołdu (2026-11-08),
 - łańcuchy: węglarz (2 drewna → 1 węgiel drzewny, 40 s), kopalnia przy żyle rudy (ruda co 45 s), huta (ruda + węgiel → żelazo, 40 s), kowal (żelazo + deska → 2 włócznie albo żelazo → miecz, 45 s), płatnerz (2 żelaza → kolczuga, 60 s), łuczarz (2 deski → łuk, 30 s), stadnina (koń co 120 s, tylko pastwiska), zbrojownia 3×3 (magazyn broni), koszary 3×3 (60 zł, 24 łóżka),
 - mury: palisada (2 drewna na kafel, wytrzymałość 300), mur kamienny (3 kamienie, 1000), wieża bramna 3×3 (30 kamieni, 10 desek, 1500), baszta 2×2 (20 kamieni, 1500), schody (4 kamienie); drzwi ratusza 1500; po przejęciu zadowolenie −30 przez 10 minut,
 - świat: armia nosi zapas jedzenia (1 chleb na 10 żołnierzy na minutę), w prowincjach gracza uzupełnia go z magazynu; okręt wojenny wiezie 30 żołnierzy i powstaje w stoczni etapami jak koga,

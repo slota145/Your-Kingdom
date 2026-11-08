@@ -19,7 +19,7 @@ script = ExtResource("1_unit")
 gear = Dictionary[StringName, int]({
 &"spear": 1
 })
-gold_cost = 10
+gold_cost = 20
 combat = SubResource("combat")
 order = 0
 id = &"spearman"

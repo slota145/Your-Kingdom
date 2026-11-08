@@ -18,7 +18,7 @@ gear = Dictionary[StringName, int]({
 &"sword": 1,
 &"chainmail": 1
 })
-gold_cost = 30
+gold_cost = 60
 combat = SubResource("combat")
 order = 2
 id = &"swordsman"
