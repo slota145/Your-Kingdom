@@ -162,7 +162,9 @@ func test_raid_survives_a_save() -> void:
 	assert_int(copy.raids.members.size()).is_equal(province.raids.members.size())
 
 
-## v18 saves load as v19: no walls, the first raid 40 minutes after the game goes on.
+## v18 saves load as v19 (and on): no walls, the first raid 40 minutes after the game goes on;
+## in a world game (M7 part 3) raids come from the bandits' camp instead of the province's own
+## schedule.
 func test_v18_save_loads_and_gets_its_first_raid_later() -> void:
 	var document: Dictionary = JSON.parse_string(
 			FileAccess.get_file_as_string("res://tests/fixtures/saves/v14_routes.json"))
@@ -172,5 +174,8 @@ func test_v18_save_loads_and_gets_its_first_raid_later() -> void:
 	assert_int(sim.province.walls.count()).is_equal(0)
 	sim.raids_enabled = true
 	sim.run_ticks(SimClock.TICKS_PER_SECOND + 1)
-	assert_int(sim.province.raids.next_tick).is_greater(sim.clock.tick + SimClock.seconds_to_ticks(Raids.FIRST_SECONDS) - 20)
-	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(19)
+	assert_bool(sim.world.is_single()).is_false()
+	assert_int(sim.province.raids.next_tick).is_equal(-1)
+	assert_object(sim.world.camp).is_not_null()
+	assert_int(sim.world.camp.next_raid).is_greater(sim.clock.tick + SimClock.seconds_to_ticks(BanditCamp.FIRST_SECONDS) - 20)
+	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(20)

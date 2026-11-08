@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 19
+const CURRENT_VERSION := 20
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -64,6 +64,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 19:
 		result = migrate_v18_to_v19(result)
 		version = 19
+	if version < 20:
+		result = migrate_v19_to_v20(result)
+		version = 20
 	return result
 
 
@@ -275,6 +278,13 @@ static func migrate_v17_to_v18(state: Dictionary) -> Dictionary:
 ## bandit raids. Everything new is optional with a default: no walls, whole buildings, nobody
 ## under orders, the first raid 40 minutes after the game is next played. Nothing to change.
 static func migrate_v18_to_v19(state: Dictionary) -> Dictionary:
+	return state
+
+
+## M7 part 3: armies, the bandits' camp and battle reports in the world, soldiers' armies,
+## guards and walls of neutral settlements. All optional: no armies; the camp comes up and the
+## settlements get their walls and guards on the first second of play (Simulation).
+static func migrate_v19_to_v20(state: Dictionary) -> Dictionary:
 	return state
 
 

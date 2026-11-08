@@ -75,7 +75,8 @@ static func resolve(data: DataRegistry, a: BattleSide, b: BattleSide, kind: Kind
 	var breach_progress := 0.0
 	if kind == Kind.SIEGE:
 		breach_left = _breach_rounds(pools_a, fort)
-		result.breached = breach_left == 0
+		# Nobody to stop them: the walls only take time.
+		result.breached = breach_left == 0 or start_b == 0
 		phase = Phase.BREACH if breach_left > 0 else Phase.VOLLEY
 	var volley_rounds := APPROACH_ROUNDS + (1 if kind == Kind.NAVAL else 0)
 	var round := 0

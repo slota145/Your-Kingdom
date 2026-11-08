@@ -162,3 +162,198 @@ static func _near_its_work(town: ProvinceSim, def: BuildingDef, near: Vector2i) 
 				best_d = d
 				best = t
 	return best
+
+
+# --- Defences (M7 part 3) -----------------------------------------------------------------------
+
+## Buildings this close to the town hall (tiles) are inside the ring of walls; farther ones
+## (woodcutters at the forest, fishermen by the water) stay outside unless the ring meets them.
+const CORE_RADIUS := 11
+## Free ground kept between a building inside and the wall.
+const RING_MARGIN := 2
+
+
+## Gives the neutral town of province [param id] its walls (ProvinceDef.town_wall: a ring of
+## palisade or stone around the town centre, with a gatehouse and town_towers towers) and its
+## guards. Deterministic from the town as built, so a save from before M7 part 3 gets the same
+## walls on its first second. Returns problems.
+static func fortify(sim: Simulation, id: int) -> PackedStringArray:
+	var problems := PackedStringArray()
+	var settlement := sim.world.settlements.get(id) as NeutralSettlement
+	var def := sim.world.def_of(id, sim.data)
+	var town := sim.province_state(id)
+	if settlement == null or def == null or town == null:
+		return problems
+	settlement.fortified = true
+	settlement.guards = def.town_guards.duplicate()
+	if def.town_wall == Walls.NONE:
+		return problems
+	var ring := wall_ring(town)
+	if ring.is_empty():
+		problems.append("neutral town %d: no ring for walls" % id)
+		return problems
+	var hall := town.seat()
+	var gate := _place_gate(sim, town, ring, hall)
+	if gate == null:
+		problems.append("neutral town %d: no place for a gatehouse" % id)
+	_place_towers(sim, town, ring, def.town_towers, gate)
+	for tile: Vector2i in ring:
+		if town.walls.fort_tiles.has(tile) or town.walls.kind(tile) != Walls.NONE:
+			continue
+		var terrain := town.terrain_at(tile)
+		if terrain == null or not terrain.walkable or town.grid.occupant(tile) != 0:
+			continue
+		_clear_ground(town, tile)
+		town.lay_wall(tile, def.town_wall)
+	town.events.drain()
+	return problems
+
+
+## The ring of tiles around the town centre: the outer edge of the town's core (buildings near
+## the hall, each with RING_MARGIN tiles around it), grown over any building it would cut.
+## 4-connected, so nobody slips through diagonally.
+static func wall_ring(town: ProvinceSim) -> Array[Vector2i]:
+	var hall := town.seat()
+	if hall == null:
+		return []
+	var centre := hall.entrance_tile()
+	var core: Dictionary[int, bool] = {}
+	for building: BuildingState in town.buildings.all():
+		if (building.entrance_tile() - centre).length() <= CORE_RADIUS:
+			core[building.id] = true
+	var size := town.grid.size
+	for attempt: int in 12:
+		var inside := PackedByteArray()
+		inside.resize(size.x * size.y)
+		for building_id: int in core:
+			for tile: Vector2i in town.buildings.get_building(building_id).tiles():
+				for y: int in range(tile.y - RING_MARGIN, tile.y + RING_MARGIN + 1):
+					for x: int in range(tile.x - RING_MARGIN, tile.x + RING_MARGIN + 1):
+						if x >= 3 and y >= 3 and x < size.x - 3 and y < size.y - 3:
+							inside[y * size.x + x] = 1
+		var ring := _outer_edge(inside, size)
+		var grown := false
+		for tile: Vector2i in ring:
+			var occupant := town.grid.occupant(tile)
+			if occupant != 0 and not core.has(occupant):
+				core[occupant] = true
+				grown = true
+		if not grown:
+			return ring
+	return []
+
+
+## Tiles outside [param inside] (reached from the map's edge) that touch it, also diagonally.
+static func _outer_edge(inside: PackedByteArray, size: Vector2i) -> Array[Vector2i]:
+	var outside := PackedByteArray()
+	outside.resize(size.x * size.y)
+	var queue: Array[Vector2i] = [Vector2i.ZERO]
+	outside[0] = 1
+	var head := 0
+	while head < queue.size():
+		var t := queue[head]
+		head += 1
+		for d: Vector2i in Walls.DIRS:
+			var n := t + d
+			if n.x < 0 or n.y < 0 or n.x >= size.x or n.y >= size.y:
+				continue
+			var k := n.y * size.x + n.x
+			if outside[k] == 1 or inside[k] == 1:
+				continue
+			outside[k] = 1
+			queue.append(n)
+	var ring: Array[Vector2i] = []
+	for y: int in size.y:
+		for x: int in size.x:
+			if outside[y * size.x + x] == 0:
+				continue
+			var touches := false
+			for dy: int in range(-1, 2):
+				for dx: int in range(-1, 2):
+					var nx := x + dx
+					var ny := y + dy
+					if nx >= 0 and ny >= 0 and nx < size.x and ny < size.y and inside[ny * size.x + nx] == 1:
+						touches = true
+			if touches:
+				ring.append(Vector2i(x, y))
+	return ring
+
+
+## Trees, roads and fields make way for a wall or a gatehouse.
+static func _clear_ground(town: ProvinceSim, tile: Vector2i) -> void:
+	if town.resources.has_node(tile):
+		town.resources.clear(tile)
+		town.refresh_tile(tile)
+	if town.grid.has_road(tile):
+		town.set_road(tile, false)
+	if town.fields.has_field(tile):
+		town.remove_field(tile)
+
+
+## A gatehouse across a straight stretch of the ring, the one nearest the town hall's door
+## whose outside leads off into the land.
+static func _place_gate(sim: Simulation, town: ProvinceSim, ring: Array[Vector2i], hall: BuildingState) -> BuildingState:
+	var def := sim.data.get_building(&"gatehouse")
+	var on_ring: Dictionary[Vector2i, bool] = {}
+	for tile: Vector2i in ring:
+		on_ring[tile] = true
+	var centre := hall.entrance_tile() if hall != null else town.grid.size / 2
+	var candidates: Array[Vector2i] = ring.duplicate()
+	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		var da := (a - centre).length_squared()
+		var db := (b - centre).length_squared()
+		return da < db or (da == db and (a.y < b.y or (a.y == b.y and a.x < b.x))))
+	for tile: Vector2i in candidates:
+		for orientation: int in 2:
+			var along := Vector2i(1, 0) if orientation == 0 else Vector2i(0, 1)
+			if not (on_ring.has(tile - along) and on_ring.has(tile + along)):
+				continue
+			var origin := tile - Vector2i(1, 1)
+			for y: int in 3:
+				for x: int in 3:
+					var t := origin + Vector2i(x, y)
+					if town.grid.occupant(t) == 0:
+						_clear_ground(town, t)
+			if town.placement_error(def, origin, orientation) == &"":
+				return town.add_building(def, origin, true, orientation)
+	return null
+
+
+## [param count] towers on the ring, as far from the gate and from each other as can be.
+static func _place_towers(sim: Simulation, town: ProvinceSim, ring: Array[Vector2i], count: int,
+		gate: BuildingState) -> void:
+	var def := sim.data.get_building(&"tower")
+	var placed: Array[Vector2i] = []
+	if gate != null:
+		placed.append(gate.entrance_tile())
+	for k: int in count:
+		var best := Agent.NO_TILE
+		var best_d := -1.0
+		for tile: Vector2i in ring:
+			var d := INF
+			for other: Vector2i in placed:
+				d = minf(d, (tile - other).length())
+			if placed.is_empty():
+				d = 0.0
+			if d > best_d:
+				for origin: Vector2i in [tile, tile - Vector2i(1, 0), tile - Vector2i(0, 1), tile - Vector2i(1, 1)]:
+					var free := true
+					for y: int in 2:
+						for x: int in 2:
+							if town.grid.occupant(origin + Vector2i(x, y)) != 0:
+								free = false
+					if free:
+						best = tile
+						best_d = d
+						break
+		if best == Agent.NO_TILE:
+			return
+		for origin: Vector2i in [best, best - Vector2i(1, 0), best - Vector2i(0, 1), best - Vector2i(1, 1)]:
+			for y: int in 2:
+				for x: int in 2:
+					if town.grid.occupant(origin + Vector2i(x, y)) == 0:
+						_clear_ground(town, origin + Vector2i(x, y))
+			if town.placement_error(def, origin, 0) == &"":
+				town.add_building(def, origin, true, 0)
+				break
+		placed.append(best)

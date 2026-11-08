@@ -43,6 +43,12 @@ var mil: MilitaryNav
 var raids: Raids = Raids.new()
 ## Arrows in flight (M7 part 2).
 var arrows: Array[Troops.Arrow] = []
+## The side whose walls and gates these are (CombatState.PLAYER, or TOWN in a neutral
+## settlement); set by Simulation from the province's owner, not saved (M7 part 3).
+var home_faction: int = CombatState.PLAYER
+## Soldiers who marched off the map since the last tick: {army, unit, hp} (Simulation adds
+## them to their army at once, so this is never saved).
+var marched: Array[Dictionary] = []
 var jobs: JobBoard = JobBoard.new()
 var paths: PathRequestQueue = PathRequestQueue.new()
 ## The kingdom's gold. Owned by the Simulation (it is global), shared here for convenience.

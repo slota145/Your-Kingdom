@@ -1,11 +1,14 @@
 class_name OrderTroopsCommand
 extends Command
 ## The player's order to his soldiers (M7 part 2, GDD §8): go to a place (on the ground or on
-## the wall-walk) in formation, attack an enemy, or go back to the ranks of their barracks.
+## the wall-walk) in formation, attack an enemy, or go back to the ranks of their barracks;
+## M7 part 3: break an enemy's wall, gate or town hall door (BREAK; what stands in the way
+## first).
 
 const MOVE := &"move"
 const ATTACK := &"attack"
 const RETURN := &"return"
+const BREAK := &"break"
 
 var ids: Array[int]
 var order: StringName
@@ -46,6 +49,11 @@ func validate(sim: Simulation) -> StringName:
 				return &"not_an_enemy"
 		RETURN:
 			pass
+		BREAK:
+			if sim.province.home_faction == CombatState.PLAYER:
+				return &"not_an_enemy"
+			if not Troops.structure_standing(sim.province, tile):
+				return &"nothing_to_break"
 		_:
 			return &"bad_order"
 	return &""
@@ -60,6 +68,8 @@ func apply(sim: Simulation) -> void:
 			Troops.order_attack(soldiers, sim.province.agents.get_agent(target_id))
 		RETURN:
 			Troops.order_return(sim.province, soldiers)
+		BREAK:
+			Troops.order_break(sim.province, soldiers, tile)
 
 
 func get_name() -> StringName:

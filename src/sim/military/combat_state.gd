@@ -5,19 +5,24 @@ extends RefCounted
 ## until the player gives them an order ([member commanded]); bandits are always commanded
 ## (by their raid).
 
-enum Order { NONE, MOVE, ATTACK, STRUCTURE, RETURN }
+## MARCH (M7 part 3): to the edge of the map, where he joins his army ([member army]).
+enum Order { NONE, MOVE, ATTACK, STRUCTURE, RETURN, MARCH }
 enum Stance { AGGRESSIVE, DEFENSIVE, HOLD }
 
 const PLAYER := 0
 const BANDITS := 1
+## The guards of a neutral settlement (M7 part 3).
+const TOWN := 2
 
 var hp: int = 0
 ## Agent id of the target, 0 = none.
 var target_id: int = 0
 ## Ticks before the next attack.
 var cooldown: int = 0
-## Side: PLAYER or BANDITS.
+## Side: PLAYER, BANDITS or TOWN.
 var faction: int = PLAYER
+## Army (world map, M7 part 3) he belongs to while away from his barracks; 0 = none.
+var army: int = 0
 ## UnitDef id of his fighting values (a bandit fights like a spearman or an archer).
 var unit: StringName = &""
 ## Under orders (Troops moves him); false: a soldier in the ranks of his barracks.
@@ -36,6 +41,10 @@ var levels: PackedByteArray = PackedByteArray()
 var path_index: int = 0
 ## Tick of the last route search (a chase searches again now and then).
 var path_tick: int = -1000
+## An enemy he found no way to, left alone until [member blocked_until] (not saved: a
+## search again after loading costs nothing).
+var blocked_id: int = 0
+var blocked_until: int = 0
 ## Where the walk ends (sub-tile) and its level.
 var goal: Vector2 = Vector2(-1, -1)
 var goal_level: int = 0
@@ -65,6 +74,8 @@ func to_dict() -> Dictionary:
 		d["faction"] = faction
 	if unit != &"":
 		d["unit"] = String(unit)
+	if army != 0:
+		d["army"] = army
 	if commanded:
 		d["commanded"] = true
 		d["stance"] = stance
@@ -89,6 +100,7 @@ static func from_dict(d: Dictionary) -> CombatState:
 	state.cooldown = int(d.get("cooldown", 0))
 	state.faction = int(d.get("faction", PLAYER))
 	state.unit = StringName(String(d.get("unit", "")))
+	state.army = int(d.get("army", 0))
 	state.commanded = bool(d.get("commanded", false))
 	if state.commanded:
 		state.stance = int(d.get("stance", 0)) as Stance

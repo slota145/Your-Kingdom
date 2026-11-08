@@ -9,4 +9,5 @@ start_province = &"landing_bay"
 size = Vector2(1200, 800)
 ship_speed = 1.3
 wagon_speed = 1.4
+bandit_camp = &"mirror_lakes"
 id = &"kingdom"

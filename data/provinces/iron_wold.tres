@@ -16,4 +16,7 @@ town_burghers = 6
 demand_gold = 300
 demand_goods = Dictionary[StringName, int]({&"bread": 40})
 demand_minutes = 20.0
+town_wall = 2
+town_towers = 2
+town_guards = Dictionary[StringName, int]({&"archer": 6, &"spearman": 8})
 id = &"iron_wold"

@@ -45,6 +45,10 @@ var entry: Vector2i = Vector2i(-1, -1)
 var members: Array[int] = []
 ## Until this tick happiness is lower after a looting.
 var mood_until: int = 0
+## The bandits' army on the world map this raid came from (M7 part 3; 0 = a raid of a
+## single-province game) and the gold it took, handed to the army when the raid is over.
+var army: int = 0
+var loot_gold: int = 0
 
 
 func is_active() -> bool:
@@ -53,8 +57,12 @@ func is_active() -> bool:
 
 # --- Every second ---------------------------------------------------------------------------
 
-static func update(province: ProvinceSim, rng: RandomNumberGenerator) -> void:
+## [param scheduled]: raids come on their own schedule (a single-province game); in a world
+## they come as armies from the bandits' camp (Armies).
+static func update(province: ProvinceSim, rng: RandomNumberGenerator, scheduled: bool = true) -> void:
 	var raids := province.raids
+	if not scheduled and raids.state == State.WAITING:
+		return
 	if raids.next_tick < 0:
 		raids.next_tick = province.tick + SimClock.seconds_to_ticks(FIRST_SECONDS)
 	match raids.state:
@@ -84,17 +92,44 @@ static func start(province: ProvinceSim, rng: RandomNumberGenerator) -> void:
 		if raids.entry == Agent.NO_TILE:
 			return
 	raids.count += 1
-	raids.state = State.ACTIVE
-	raids.members.clear()
 	var size := rng.randi_range(SIZE_MIN, SIZE_MAX)
 	var kinds: Array[StringName] = []
 	for k: int in size:
 		kinds.append(&"bandit_archer" if k % 3 == 2 else &"bandit")
-	if _has_stone_walls(province):
+	if has_stone_walls(province):
 		kinds.append(&"ladderman")
 		kinds.append(&"ladderman")
-	if raids.count % RAM_EVERY == 0 and _has_gate(province):
+	if raids.count % RAM_EVERY == 0 and has_gate(province):
 		kinds.append(&"ram")
+	_spawn(province, kinds, 0)
+
+
+## The bandits of army [param army_id] (unit id -> men) come in at the edge (M7 part 3).
+static func start_army(province: ProvinceSim, rng: RandomNumberGenerator, units: Dictionary[StringName, int],
+		army_id: int) -> Vector2i:
+	var raids := province.raids
+	if raids.entry == Agent.NO_TILE or raids.entry.x < 0:
+		raids.entry = choose_entry(province, rng)
+		if raids.entry == Agent.NO_TILE:
+			return Agent.NO_TILE
+	raids.count += 1
+	var kinds: Array[StringName] = []
+	var ids: Array[StringName] = []
+	ids.assign(units.keys())
+	ids.sort()
+	for unit: StringName in ids:
+		for k: int in units[unit]:
+			kinds.append({&"spearman": &"bandit", &"archer": &"bandit_archer"}.get(unit, unit))
+	_spawn(province, kinds, army_id)
+	return raids.entry
+
+
+static func _spawn(province: ProvinceSim, kinds: Array[StringName], army_id: int) -> void:
+	var raids := province.raids
+	raids.state = State.ACTIVE
+	raids.members.clear()
+	raids.army = army_id
+	raids.loot_gold = 0
 	var spots := Troops.formation(province, raids.entry, MilitaryNav.GROUND, kinds.size(), CombatState.BANDITS)
 	for k: int in kinds.size():
 		var at: Vector2 = spots[k % spots.size()] if not spots.is_empty() else IsoMath.tile_center(raids.entry)
@@ -105,6 +140,7 @@ static func start(province: ProvinceSim, rng: RandomNumberGenerator) -> void:
 		agent.combat = CombatState.new(province.data.get_unit(unit_id).combat.hp)
 		agent.combat.unit = unit_id
 		agent.combat.faction = CombatState.BANDITS
+		agent.combat.army = army_id
 		Troops.take_command(agent)
 		agent.combat.order = CombatState.Order.NONE
 		raids.members.append(agent.id)
@@ -147,14 +183,14 @@ static func choose_entry(province: ProvinceSim, rng: RandomNumberGenerator) -> V
 	return good[rng.randi_range(0, good.size() - 1)]
 
 
-static func _has_stone_walls(province: ProvinceSim) -> bool:
+static func has_stone_walls(province: ProvinceSim) -> bool:
 	for tile: Vector2i in province.walls.tiles():
 		if province.walls.is_stone(tile):
 			return true
 	return false
 
 
-static func _has_gate(province: ProvinceSim) -> bool:
+static func has_gate(province: ProvinceSim) -> bool:
 	for building: BuildingState in province.buildings.all():
 		if building.def.is_gatehouse() and not building.is_broken():
 			return true
@@ -179,7 +215,10 @@ static func _drive(province: ProvinceSim, rng: RandomNumberGenerator) -> void:
 	if raids.state == State.LEAVING:
 		for agent: Agent in alive:
 			if agent.tile().distance_to(raids.entry) <= 2.0:
-				province.remove_agent(agent)
+				if agent.combat.army != 0:
+					Troops.march_off(province, agent)
+				else:
+					province.remove_agent(agent)
 		if raids.members.all(func(id: int) -> bool: return not province.agents.has_agent(id)):
 			_end(province, rng, &"raid_left")
 		return
@@ -188,7 +227,7 @@ static func _drive(province: ProvinceSim, rng: RandomNumberGenerator) -> void:
 		_leave(province)
 		return
 	if hall.is_broken() and not defended(province, hall):
-		_loot(province, hall)
+		loot(province, hall)
 		_leave(province)
 		return
 	for agent: Agent in alive:
@@ -209,7 +248,7 @@ static func _command(province: ProvinceSim, agent: Agent, hall: BuildingState) -
 	var stand := Troops.stand_by(province, door, agent)
 	if unit.siege == &"ladder" or stand == Agent.NO_TILE \
 			or province.mil.route(province, agent.tile(), agent.level, stand, 0, CombatState.BANDITS).is_empty():
-		aim = _obstacle(province, agent, door, unit.siege)
+		aim = obstacle(province, agent, door, unit.siege)
 	if unit.siege == &"ladder" and not province.walls.is_stone(aim):
 		# Nothing to lean a ladder on: he stays out of the way.
 		c.order = CombatState.Order.NONE
@@ -224,7 +263,7 @@ static func _command(province: ProvinceSim, agent: Agent, hall: BuildingState) -
 
 ## The first wall, palisade or closed gate on the way an enemy would break through to
 ## [param door]; a ram goes for gates and walls only, a ladderman for stone walls.
-static func _obstacle(province: ProvinceSim, agent: Agent, door: Vector2i, siege: StringName) -> Vector2i:
+static func obstacle(province: ProvinceSim, agent: Agent, door: Vector2i, siege: StringName) -> Vector2i:
 	var from := agent.tile()
 	if agent.level != MilitaryNav.GROUND:
 		return door
@@ -255,14 +294,15 @@ static func _obstacle(province: ProvinceSim, agent: Agent, door: Vector2i, siege
 static func defended(province: ProvinceSim, hall: BuildingState) -> bool:
 	var door := IsoMath.tile_center(hall.entrance_tile())
 	for agent: Agent in province.agents.all():
-		if agent.combat != null and agent.combat.faction == CombatState.PLAYER and agent.combat.hp > 0 \
+		if agent.combat != null and agent.combat.faction == province.home_faction and agent.combat.hp > 0 \
 				and agent.kind != Barracks.RECRUIT_KIND and agent.pos.distance_to(door) <= DEFEND_RADIUS:
 			return true
 	return false
 
 
 ## The bandits take a share of the gold and of the goods most in store; the town loses heart.
-static func _loot(province: ProvinceSim, hall: BuildingState) -> void:
+## Returns the gold taken.
+static func loot(province: ProvinceSim, hall: BuildingState) -> int:
 	var gold := mini(floori(province.treasury.gold * LOOT_GOLD_SHARE), LOOT_GOLD_MAX)
 	if gold > 0:
 		province.treasury.pay(gold)
@@ -280,7 +320,9 @@ static func _loot(province: ProvinceSim, hall: BuildingState) -> void:
 		if amount > 0:
 			taken[String(good)] = amount
 	province.raids.mood_until = province.tick + SimClock.seconds_to_ticks(MOOD_SECONDS)
+	province.raids.loot_gold += gold
 	province.events.emit(&"raid_looted", {"gold": gold, "goods": taken})
+	return gold
 
 
 static func _leave(province: ProvinceSim) -> void:
@@ -308,12 +350,19 @@ static func _leave(province: ProvinceSim) -> void:
 ## The raid is over (beaten or gone): broken doors and gates are mended, ladders go, the
 ## next raid is set.
 static func _end(province: ProvinceSim, rng: RandomNumberGenerator, event: StringName) -> void:
+	call_off(province)
+	province.raids.next_tick = province.tick + SimClock.seconds_to_ticks(
+			rng.randf_range(GAP_MIN_SECONDS, GAP_MAX_SECONDS))
+	province.events.emit(event, {})
+
+
+## Ends the raid now (its bandits are gone from the map): ladders go, broken doors and gates
+## are mended. The army it came from (if any) is kept in [member army].
+static func call_off(province: ProvinceSim) -> void:
 	var raids := province.raids
 	raids.state = State.WAITING
 	raids.members.clear()
 	raids.entry = Vector2i(-1, -1)
-	raids.next_tick = province.tick + SimClock.seconds_to_ticks(
-			rng.randf_range(GAP_MIN_SECONDS, GAP_MAX_SECONDS))
 	for foot: Vector2i in province.mil.ladders.keys():
 		Troops.remove_ladder(province, foot)
 	for building: BuildingState in province.buildings.all():
@@ -321,7 +370,6 @@ static func _end(province: ProvinceSim, rng: RandomNumberGenerator, event: Strin
 			building.hp = building.def.max_hp
 			for tile: Vector2i in building.passage_tiles():
 				province.refresh_tile(tile)
-	province.events.emit(event, {})
 
 
 # --- Townsfolk --------------------------------------------------------------------------------
@@ -337,7 +385,13 @@ static func _shelter_townsfolk(province: ProvinceSim) -> void:
 		var agent := province.agents.get_agent(id)
 		if agent != null:
 			bandits.append(agent.pos)
-	if bandits.is_empty():
+	shelter_near(province, bandits)
+
+
+## Townsfolk within DANGER_RADIUS of [param enemies] (positions) run for the town hall.
+static func shelter_near(province: ProvinceSim, enemies: Array[Vector2]) -> void:
+	var bandits := enemies
+	if bandits.is_empty() or province.seat() == null:
 		return
 	for agent: Agent in province.agents.all():
 		if agent.combat != null or agent.kind == Barracks.RECRUIT_KIND or agent.kind == Merchant.AGENT_KIND:
@@ -391,7 +445,7 @@ static func capture(sim: Simulation, province_id: int, owner: StringName) -> voi
 	if world_province == null:
 		return
 	world_province.owner = owner
-	var runtime := sim.runtimes.get(province_id) as ProvinceSim
+	var runtime := sim.province_state(province_id)
 	if runtime != null:
 		runtime.raids.mood_until = runtime.tick + SimClock.seconds_to_ticks(MOOD_SECONDS)
 	sim.events.emit(&"province_captured", {"province": province_id, "owner": owner})
@@ -405,6 +459,10 @@ func to_dict() -> Dictionary:
 		d["members"] = members.duplicate()
 	if mood_until != 0:
 		d["mood_until"] = mood_until
+	if army != 0:
+		d["army"] = army
+	if loot_gold != 0:
+		d["loot_gold"] = loot_gold
 	return d
 
 
@@ -416,4 +474,6 @@ static func from_dict(d: Dictionary) -> Raids:
 	raids.entry = SimCodec.to_vec2i(d.get("entry", [-1, -1]))
 	raids.members = SimCodec.int_array(d.get("members", []))
 	raids.mood_until = int(d.get("mood_until", 0))
+	raids.army = int(d.get("army", 0))
+	raids.loot_gold = int(d.get("loot_gold", 0))
 	return raids

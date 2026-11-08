@@ -18,6 +18,15 @@ var expeditions: Dictionary[int, Expedition] = {}
 var routes: Dictionary[int, TradeRoute] = {}
 ## Demands of the neutral settlements by province id (M6 part 3).
 var settlements: Dictionary[int, NeutralSettlement] = {}
+## Armies of the player and of the bandits by id (M7 part 3).
+var armies: Dictionary[int, Army] = {}
+## The bandits' camp (null in a world without bandits and in a single-province game).
+var camp: BanditCamp = null
+## Reports of the last battles, newest last: {tick, province, kind, attacker, defender,
+## result (BattleResult.to_dict)}.
+var reports: Array[Dictionary] = []
+
+const REPORTS_KEPT := 8
 
 
 ## A single-province game on [param map_id], owned by the player.
@@ -133,6 +142,18 @@ func to_dict() -> Dictionary:
 		for id: int in keys:
 			s.append(settlements[id].to_dict())
 		d["settlements"] = s
+	if not armies.is_empty():
+		var a: Array = []
+		var keys: Array[int] = []
+		keys.assign(armies.keys())
+		keys.sort()
+		for id: int in keys:
+			a.append(armies[id].to_dict())
+		d["armies"] = a
+	if camp != null:
+		d["camp"] = camp.to_dict()
+	if not reports.is_empty():
+		d["reports"] = reports.duplicate(true)
 	return d
 
 
@@ -151,7 +172,82 @@ static func from_dict(d: Dictionary) -> WorldSim:
 	for sd: Variant in d.get("settlements", []):
 		var settlement := NeutralSettlement.from_dict(sd)
 		world.settlements[settlement.province] = settlement
+	for ad: Variant in d.get("armies", []):
+		var army := Army.from_dict(ad)
+		world.armies[army.id] = army
+	if d.has("camp"):
+		world.camp = BanditCamp.from_dict(d["camp"])
+	for rd: Variant in d.get("reports", []):
+		world.reports.append(rd)
 	return world
+
+
+## Adds a battle report (keeps the last REPORTS_KEPT).
+func report(entry: Dictionary) -> void:
+	reports.append(entry)
+	while reports.size() > REPORTS_KEPT:
+		reports.remove_at(0)
+
+
+## The provinces an army walks through from [param a] to [param b] by land (neighbours one
+## after another, the shortest walk; [param b] last), [] when there is no way by land.
+func land_route(a: int, b: int, data: DataRegistry) -> Array[int]:
+	if a == b:
+		return []
+	var came: Dictionary[int, int] = {a: a}
+	var cost: Dictionary[int, float] = {a: 0.0}
+	var open: Array[int] = [a]
+	while not open.is_empty():
+		var best := 0
+		for k: int in open.size():
+			if cost[open[k]] < cost[open[best]]:
+				best = k
+		var here := open[best]
+		open.remove_at(best)
+		if here == b:
+			break
+		for other: int in ids():
+			if other == here or not are_neighbours(here, other, data):
+				continue
+			var c := cost[here] + def_of(here, data).world_pos.distance_to(def_of(other, data).world_pos)
+			if not cost.has(other) or c < cost[other]:
+				cost[other] = c
+				came[other] = here
+				if not open.has(other):
+					open.append(other)
+	if not came.has(b):
+		return []
+	var route: Array[int] = []
+	var at := b
+	while at != a:
+		route.push_front(at)
+		at = came[at]
+	return route
+
+
+## Seconds an army takes from [param a] to the neighbour (or, by sea, any coast) [param b].
+func army_seconds(a: int, b: int, by_sea: bool, data: DataRegistry) -> float:
+	var world := data.get_world(world_id)
+	if world == null:
+		return -1.0
+	if by_sea:
+		return travel_seconds(a, b, true, data)
+	if not are_neighbours(a, b, data):
+		return -1.0
+	return def_of(a, data).world_pos.distance_to(def_of(b, data).world_pos) / world.army_speed
+
+
+## Armies standing or fighting in province [param id] (not those passing through).
+func armies_at(id: int) -> Array[Army]:
+	var result: Array[Army] = []
+	var keys: Array[int] = []
+	keys.assign(armies.keys())
+	keys.sort()
+	for key: int in keys:
+		var army := armies[key]
+		if army.at == id and army.state != Army.State.MOVING:
+			result.append(army)
+	return result
 
 
 ## The routes set out from or going to province [param id], by id.
