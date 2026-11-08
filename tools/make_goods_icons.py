@@ -17,7 +17,9 @@ from harmonize_pixellab import harmonize  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GOODS = {"charcoal": "sack", "iron_ore": "stone", "iron": "bundle", "spear": "bundle",
-         "bow": "bundle", "sword": "bundle", "chainmail": "crate"}
+         "bow": "bundle", "sword": "bundle", "chainmail": "crate",
+         # J1 part 1 (pieces drawn by tools/draw_weapon_pieces.py)
+         "halberd": "bundle", "crossbow": "bundle", "morning_star": "bundle"}
 CARRIED_MAX = 16
 ROWS = 5
 

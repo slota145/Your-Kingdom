@@ -119,7 +119,7 @@ func test_blacksmith_follows_the_players_choice() -> void:
 	SimFixture.place(sim, &"armoury", Vector2i(20, 10))
 	assert_str(String(sim.execute(SetRecipeModeCommand.new(smith.id, 1)))).is_equal("")
 	assert_str(String(sim.execute(SetRecipeModeCommand.new(hall.id, 1)))).is_equal("no_production")
-	assert_str(String(sim.execute(SetRecipeModeCommand.new(smith.id, 2)))).is_equal("bad_choice")
+	assert_str(String(sim.execute(SetRecipeModeCommand.new(smith.id, 4)))).is_equal("bad_choice")
 	var made: Dictionary[StringName, int] = {}
 	for i: int in SimFixture.ticks(4 * 60):
 		sim.step()

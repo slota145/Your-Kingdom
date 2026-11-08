@@ -2561,7 +2561,7 @@ msgid "good.iron.name"
 msgstr "Iron"
 
 msgid "good.iron.desc"
-msgstr "Iron bars from the smelter. The blacksmith forges weapons from them, the armourer mail shirts."
+msgstr "Iron bars from the smelter. The blacksmith forges weapons from them, the armourer armour."
 
 msgid "good.spear.name"
 msgstr "Spear"
@@ -2582,10 +2582,10 @@ msgid "good.sword.desc"
 msgstr "A straight iron sword. The weapon of swordsmen and riders."
 
 msgid "good.chainmail.name"
-msgstr "Mail shirt"
+msgstr "Armour"
 
 msgid "good.chainmail.desc"
-msgstr "A shirt of thousands of iron rings. It protects swordsmen and riders."
+msgstr "Iron armour: mail with plates on the chest and shoulders. It protects swordsmen, riders, halberdiers and heavy men-at-arms."
 
 msgid "good.horse.name"
 msgstr "Horse"
@@ -2621,7 +2621,7 @@ msgid "building.armourer.name"
 msgstr "Armourer"
 
 msgid "building.armourer.desc"
-msgstr "The armourer links ring after ring into a mail shirt from 2 iron bars."
+msgstr "The armourer makes armour from 2 iron bars: linked rings and riveted plates."
 
 msgid "building.bowyer.name"
 msgstr "Bowyer"
@@ -2678,10 +2678,10 @@ msgid "recipe.forging_swords.desc"
 msgstr "1 iron → 1 sword (about 45 s)."
 
 msgid "recipe.armouring.name"
-msgstr "Making mail"
+msgstr "Making armour"
 
 msgid "recipe.armouring.desc"
-msgstr "2 iron → 1 mail shirt (about 60 s)."
+msgstr "2 iron → 1 armour (about 60 s)."
 
 msgid "recipe.bow_making.name"
 msgstr "Bow making"
@@ -2717,13 +2717,13 @@ msgid "unit.swordsman.name"
 msgstr "Swordsman"
 
 msgid "unit.swordsman.desc"
-msgstr "A sword and a mail shirt. 60 gold. Strong and tough."
+msgstr "A sword and armour. 60 gold. Strong and tough."
 
 msgid "unit.knight.name"
 msgstr "Rider"
 
 msgid "unit.knight.desc"
-msgstr "A horse, a sword and a mail shirt. 100 gold. The strongest and twice as fast."
+msgstr "A horse, a sword and armour. 100 gold. The strongest and twice as fast."
 
 msgid "ui.kind.charcoal_burner"
 msgstr "Charcoal burner"
@@ -2868,8 +2868,8 @@ msgstr[1] "%s swords"
 
 msgid "good.chainmail.count"
 msgid_plural "good.chainmail.count_plural"
-msgstr[0] "%s mail shirt"
-msgstr[1] "%s mail shirts"
+msgstr[0] "%s armour"
+msgstr[1] "%s armours"
 
 msgid "good.horse.count"
 msgid_plural "good.horse.count_plural"
@@ -3341,3 +3341,92 @@ msgstr "At most one row of the building may stand over the water (on piles), the
 
 msgid "ui.command_error.blocks_water"
 msgstr "The building would dam the water: at least 2 tiles of water must stay beyond its piles."
+
+# J1 part 1: new weapons and units
+
+msgid "good.halberd.name"
+msgstr "Halberd"
+
+msgid "good.halberd.desc"
+msgstr "A long shaft with an axe blade, a hook and a spike. The halberdier's weapon, the bane of riders."
+
+msgid "good.crossbow.name"
+msgstr "Crossbow"
+
+msgid "good.crossbow.desc"
+msgstr "A steel bow on a wooden stock. It shoots less often than a bow, but its bolt pierces armour."
+
+msgid "good.morning_star.name"
+msgstr "Morning star"
+
+msgid "good.morning_star.desc"
+msgstr "An oak club with a spiked iron ball. The heavy man-at-arms' weapon."
+
+msgid "good.halberd.count"
+msgid_plural "good.halberd.count_plural"
+msgstr[0] "%s halberd"
+msgstr[1] "%s halberds"
+
+msgid "good.crossbow.count"
+msgid_plural "good.crossbow.count_plural"
+msgstr[0] "%s crossbow"
+msgstr[1] "%s crossbows"
+
+msgid "good.morning_star.count"
+msgid_plural "good.morning_star.count_plural"
+msgstr[0] "%s morning star"
+msgstr[1] "%s morning stars"
+
+msgid "recipe.forging_halberds.name"
+msgstr "Forging halberds"
+
+msgid "recipe.forging_halberds.desc"
+msgstr "1 iron + 1 plank → 1 halberd (about 47 s)."
+
+msgid "recipe.forging_morning_stars.name"
+msgstr "Forging morning stars"
+
+msgid "recipe.forging_morning_stars.desc"
+msgstr "1 iron → 1 morning star (about 45 s)."
+
+msgid "recipe.crossbow_making.name"
+msgstr "Making crossbows"
+
+msgid "recipe.crossbow_making.desc"
+msgstr "2 planks + 1 iron → 1 crossbow (about 34 s)."
+
+msgid "unit.halberdier.name"
+msgstr "Halberdier"
+
+msgid "unit.halberdier.desc"
+msgstr "A halberd and armour. 80 gold. Tough, two and a half times as deadly to riders."
+
+msgid "unit.crossbowman.name"
+msgstr "Crossbowman"
+
+msgid "unit.crossbowman.desc"
+msgstr "A crossbow. 50 gold. Shoots from 6 tiles, seldom but very hard; the bolt pierces armour."
+
+msgid "unit.man_at_arms.name"
+msgstr "Man-at-arms"
+
+msgid "unit.man_at_arms.desc"
+msgstr "A morning star and armour. 90 gold. The hardest blow and the most life, but slow."
+
+msgid "unit.light_cavalry.name"
+msgstr "Light cavalry"
+
+msgid "unit.light_cavalry.desc"
+msgstr "A horse and a spear. 60 gold. The fastest, cheaper and weaker than a rider; twice as deadly to archers and crossbowmen."
+
+msgid "ui.kind.halberdier"
+msgstr "Halberdier"
+
+msgid "ui.kind.crossbowman"
+msgstr "Crossbowman"
+
+msgid "ui.kind.man_at_arms"
+msgstr "Man-at-arms"
+
+msgid "ui.kind.light_cavalry"
+msgstr "Light horseman"

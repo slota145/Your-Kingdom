@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/unit_def.gd" id="1_unit"]
+[ext_resource type="Script" path="res://src/defs/combat_stats_def.gd" id="2_combat"]
+
+[sub_resource type="Resource" id="combat"]
+script = ExtResource("2_combat")
+hp = 80
+attack = 22
+attack_cooldown = 3.5
+attack_range = 6
+speed = 0.95
+bonus_vs = Dictionary[StringName, float]({
+&"swordsman": 1.5,
+&"knight": 1.5,
+&"halberdier": 1.5,
+&"man_at_arms": 1.5
+})
+
+
+[resource]
+script = ExtResource("1_unit")
+gear = Dictionary[StringName, int]({
+&"crossbow": 1
+})
+gold_cost = 50
+combat = SubResource("combat")
+order = 5
+id = &"crossbowman"

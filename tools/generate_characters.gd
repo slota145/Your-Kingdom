@@ -154,6 +154,20 @@ const SOLDIERS := {
 	"knight": {"shirt": C_MAIL, "legs": C_MAIL, "hair": Color(0.3, 0.2, 0.1),
 			"hat": "great_helm", "armour": "mail", "tabard": true, "weapon": "sword", "shield": "kite",
 			"mounted": true, "drill": "slash", "tool": ""},
+	# J1 part 1 (owner's survey 2026-11-08: drawn by code like the M7 soldiers): plate armour
+	# over mail for the halberdier and the man-at-arms (the same armour good as the swordsman's).
+	"halberdier": {"shirt": C_MAIL, "legs": Color(0.476, 0.493, 0.527), "hair": Color(0.36, 0.24, 0.12),
+			"hat": "kettle", "armour": "plate", "tabard": true, "weapon": "halberd", "drill": "thrust",
+			"tool": ""},
+	"crossbowman": {"shirt": Color(0.66, 0.58, 0.44), "legs": Color(0.34, 0.3, 0.26), "hair": Color(0.28, 0.18, 0.1),
+			"hat": "kettle", "armour": "gambeson", "weapon": "crossbow", "quiver": true, "drill": "aim",
+			"beard": true, "tool": ""},
+	"man_at_arms": {"shirt": C_MAIL, "legs": Color(0.504, 0.522, 0.558), "hair": Color(0.22, 0.14, 0.08),
+			"hat": "great_helm", "armour": "plate", "tabard": true, "weapon": "morning_star", "shield": "kite",
+			"drill": "slash", "tool": ""},
+	"light_cavalry": {"shirt": Color(0.72, 0.62, 0.46), "legs": Color(0.38, 0.3, 0.22), "hair": Color(0.4, 0.26, 0.12),
+			"hat": "nasal", "armour": "gambeson", "weapon": "spear", "shield": "round", "mounted": true,
+			"drill": "thrust", "tool": ""},
 }
 
 ## M7 part 2: bandits (drab hoods, no colours of the kingdom) and the ladderman.
@@ -727,8 +741,12 @@ func _soldier_hands(pose: Dictionary, top: float) -> Array:
 	var right := Vector3(5.5, -swing * 3.0, 16.0 + top)
 	var left := Vector3(-5.5, swing * 3.0, 16.0 + top)
 	match weapon:
-		"spear":
+		"spear", "halberd":
 			right = Vector3(6.2, 1.5 - swing * 1.0, 18.0 + top)
+		"crossbow":
+			# Carried at the hip, the bow forward.
+			right = Vector3(4.5, 0.5 - swing * 1.0, 17.0 + top)
+			left = Vector3(-1.0, 6.0, 18.0 + top)
 		"bow":
 			left = Vector3(-5.0, 1.5 + swing * 2.0, 17.0 + top)
 	if _look.has("shield"):
@@ -748,6 +766,15 @@ func _soldier_hands(pose: Dictionary, top: float) -> Array:
 			var k := 0.5 - 0.5 * cos(c) if t < 0.8 else 0.0
 			left = Vector3(-1.5, 11.0, 28.0 + top)
 			right = Vector3(-0.5, 9.5 - 8.5 * k, 28.5 + top)
+		"aim":
+			# Crossbow at the shoulder, aimed, loosed at 0.5; then lowered and spanned again.
+			if t < 0.55:
+				right = Vector3(1.2, 5.0, 28.0 + top)
+				left = Vector3(-0.8, 12.0, 27.5 + top)
+			else:
+				var k := sin((t - 0.55) / 0.45 * PI)
+				right = Vector3(3.0, 3.0 - 2.0 * k, 22.0 + top - 4.0 * k)
+				left = Vector3(-0.5, 9.0, 20.0 + top - 2.0 * k)
 		"slash":
 			# Up behind the head, a cut down across the front; the shield held forward.
 			var k := 0.5 - 0.5 * cos(c)
@@ -777,6 +804,20 @@ func _armour(foot: Vector2, body: Vector3, lean: float, top: float) -> void:
 			_ellipse(c + Vector2(0, 1.5), Vector2(w * 0.8, 6.0), C_LEATHER)
 			for k: int in 6:
 				_pixel(c + Vector2(-w * 0.55 + (k % 3) * w * 0.55, -1.0 + (k / 3) * 4.0), _gold.lightened(0.2))
+		elif armour == "plate":
+			# Mail under a steel breastplate with a ridge and a bright edge, and pauldrons.
+			for y: int in range(int(c.y - 7.5), int(c.y + 9.0)):
+				for x: int in range(int(c.x - w), int(c.x + w) + 1):
+					var d := Vector2((x + 0.5 - c.x) / w, (y + 0.5 - c.y - 1.0) / 8.0)
+					if d.length() <= 1.0 and (x + y) % 2 == 0:
+						_pixel(Vector2(x, y), C_MAIL.darkened(0.22))
+			_ellipse(c + Vector2(0, -0.5), Vector2(w * 0.78, 5.6), C_STEEL.darkened(0.08))
+			_ellipse(c + Vector2(-w * 0.18, -2.0), Vector2(w * 0.35, 2.6), C_STEEL.lightened(0.22))
+			_line(c + Vector2(0, -5.5), c + Vector2(0, 4.5), C_STEEL.darkened(0.25), 1)
+			_line(c + Vector2(-w * 0.8, 4.8), c + Vector2(w * 0.8, 4.8), C_IRON.darkened(0.2), 1)
+			for side: float in [-1.0, 1.0]:
+				_ellipse(c + Vector2(side * w * 0.95, -6.0), Vector2(2.2, 1.6), C_STEEL)
+				_pixel(c + Vector2(side * w * 0.95 - 0.5, -6.8), Color(1, 1, 1))
 		elif armour == "mail":
 			# Rings: a dither of darker and brighter pixels over the grey.
 			for y: int in range(int(c.y - 7.5), int(c.y + 9.0)):
@@ -854,6 +895,67 @@ func _gear(foot: Vector2, pose: Dictionary, hands: Array, lean: float, top: floa
 					_line(nock, head, C_WOOD.lightened(0.3), 1)
 					_pixel(head + fwd * 0.8, C_STEEL)
 					_pixel(nock - fwd * 0.6 + Vector2(0, -1), Color(0.95, 0.95, 0.95)))
+		"halberd":
+			# Like the spear, but with an axe blade, a back hook and a spike at the head.
+			var along := Vector3(0, 0, 1)
+			if drill == "thrust":
+				along = Vector3(0, 1, 0.12)
+			var butt := right - along * (12.0 if drill == "thrust" else 16.5)
+			var tip := right + along * (20.0 if drill == "thrust" else 31.0)
+			_part(_depth(right.x, right.y) + 0.35, func() -> void:
+				var a := foot + _ground(butt.x, butt.y) - Vector2(0, butt.z)
+				var b := foot + _ground(tip.x, tip.y) - Vector2(0, tip.z)
+				_line(a, b, C_WOOD.darkened(0.15), 2)
+				_line(a, b, C_WOOD.lightened(0.1), 1)
+				var dir := (b - a).normalized()
+				var side := dir.orthogonal()
+				if side.x < 0:
+					side = -side
+				var neck := b - dir * 5.0
+				# The spike.
+				_line(b - dir * 1.0, b + dir * 3.5, C_STEEL, 1)
+				_pixel(b + dir * 3.0, Color(1, 1, 1))
+				# The axe blade: a curved edge on one side of the neck.
+				_polygon(PackedVector2Array([neck + dir * 3.0, neck + side * 1.0 + dir * 3.5,
+						neck + side * 4.8 + dir * 2.5, neck + side * 5.2 - dir * 0.5,
+						neck + side * 4.4 - dir * 3.0, neck + side * 1.0 - dir * 2.5, neck - dir * 2.0]), C_STEEL)
+				_line(neck + side * 4.8 + dir * 2.5, neck + side * 4.4 - dir * 3.0, C_STEEL.lightened(0.35), 1)
+				# The hook behind.
+				_line(neck - side * 0.5 + dir * 1.0, neck - side * 3.0 + dir * 0.0, C_STEEL.darkened(0.2), 1)
+				_pixel(a, C_IRON.darkened(0.3)))
+		"crossbow":
+			# A crossbow: the stock along the aim, the steel bow across its nose, the string.
+			_part(_depth(left.x, left.y) + 0.36, func() -> void:
+				var fwd := _ground(0, 1.0).normalized()
+				var across := _ground(1.0, 0).normalized()
+				var butt := rh - fwd * 3.0
+				var nose := lh + fwd * 3.0
+				if drill != "aim":
+					nose = lh + fwd * 2.0 + Vector2(0, -2.0)
+				_line(butt, nose, C_WOOD.darkened(0.1), 2)
+				_line(butt, nose, C_WOOD.lightened(0.15), 1)
+				# The steel bow curved forward across the nose, the string straight between its
+				# tips (owner's request 2026-11-08); the bolt lies on the stock while loaded.
+				var prod_a := nose + across * 5.0 - fwd * 1.5
+				var prod_b := nose - across * 5.0 - fwd * 1.5
+				var prev := prod_a
+				for k: int in 6:
+					var u := float(k + 1) / 6.0
+					var p := prod_a.lerp(prod_b, u) + fwd * (sin(u * PI) * 2.2)
+					_line(prev, p, C_STEEL, 1)
+					prev = p
+				_line(prod_a, prod_b, Color(0.92, 0.9, 0.82), 1)
+				if drill != "aim" or t < 0.5:
+					_line(nose.lerp(butt, 0.45), nose + fwd * 1.5, C_WOOD.lightened(0.3), 1)
+					_pixel(nose + fwd * 2.0, C_STEEL))
+		"morning_star":
+			if drill != "" or _look.get("mounted", false):
+				_part(_depth(right.x, right.y) + 0.35, func() -> void:
+					var dir := Vector2(0, -1)
+					if drill == "slash":
+						var k := 0.5 - 0.5 * cos(TAU * t)
+						dir = (_ground(0, -1.0) * 0.5 + Vector2(0, -1)).lerp(_ground(0, 1.0) * 1.2 + Vector2(0, 0.7), k).normalized()
+					_morning_star(rh, dir))
 		"ladder":
 			# A ladder on the right shoulder, sloping forward (M7 part 2, a ladderman).
 			_part(_depth(right.x, right.y) + 0.4, func() -> void:
@@ -877,6 +979,11 @@ func _gear(foot: Vector2, pose: Dictionary, hands: Array, lean: float, top: floa
 					elif _look.get("mounted", false):
 						dir = (Vector2(0, -1) + _ground(0, 0.6)).normalized()
 					_sword(rh, dir))
+	# Not drilling, the morning star hangs from the belt at the right hip.
+	if weapon == "morning_star" and drill == "" and not _look.get("mounted", false):
+		_part(_depth(3.8, lean + 0.6) + 0.03, func() -> void:
+			var hip := foot + _ground(3.8, lean + 0.6) - Vector2(0, 17.0 + top)
+			_morning_star(hip, Vector2(0.15, 1.0).normalized()))
 	# The scabbard at the left hip (empty while the sword is out).
 	if weapon == "sword":
 		_part(_depth(-3.5, lean + 0.5) + 0.03, func() -> void:
@@ -909,6 +1016,18 @@ func _sword(h: Vector2, dir: Vector2) -> void:
 	_line(h + dir * 1.5 - side * 2.5, h + dir * 1.5 + side * 2.5, _gold.darkened(0.15), 1)
 	_line(h - dir * 1.0, h + dir * 1.0, C_LEATHER, 1)
 	_pixel(h - dir * 2.0, _gold)
+
+
+## A morning star held at [param h]: an oak haft along [param dir] with a spiked steel ball.
+func _morning_star(h: Vector2, dir: Vector2) -> void:
+	var head := h + dir * 9.0
+	_line(h - dir * 1.5, head, C_WOOD.darkened(0.1), 2)
+	_line(h - dir * 1.0, h + dir * 1.0, C_LEATHER, 1)
+	_ellipse(head + dir * 1.5, Vector2(2.6, 2.6), C_STEEL.darkened(0.1))
+	_pixel(head + dir * 1.5 - Vector2(1.0, 1.0), C_STEEL.lightened(0.4))
+	for a: int in 6:
+		var spike := Vector2.RIGHT.rotated(a * TAU / 6.0 + 0.3)
+		_pixel(head + dir * 1.5 + spike * 3.6, C_STEEL.lightened(0.15))
 
 
 ## A shield on the left arm: round (wood with a boss, the kingdom's colours) or kite (with the

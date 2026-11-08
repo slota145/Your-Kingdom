@@ -372,8 +372,12 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 |---|---|
 | Włócznik | włócznia |
 | Łucznik | łuk |
-| Miecznik | miecz + kolczuga |
-| Jeździec | koń + miecz + kolczuga |
+| Miecznik | miecz + zbroja |
+| Jeździec | koń + miecz + zbroja |
+| Halabardnik [J1] | halabarda + zbroja (wytrzymały, ×2,5 przeciw jeździe) |
+| Kusznik [J1] | kusza (6 kafli, rzadko i mocno, przebija zbroje) |
+| Ciężki zbrojny [J1] | morgenstern + zbroja (najmocniejszy cios, wolny) |
+| Lekka jazda [J1] | koń + włócznia (najszybsza, ×2 przeciw strzelcom) |
 | Osadnicy | ludzie + towary startowe |
 | Taran | oblężnicza |
 | Drabiny | oblężnicze |
