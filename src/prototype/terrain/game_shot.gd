@@ -32,6 +32,7 @@ extends Node
 ## building sites in both stages.
 ## --g2 (G2) puts stockpiles around --tile with every good drawn by PixelLab, each slot
 ## holding a different number of pieces (1 up to a full stack), so the stacks grow in sight.
+## --m7=walls|battle|raid [--raid_seconds=<s>] (M7 part 2): walls, a fight, a bandit raid.
 ## --m7=finished|sites|army (M7 part 1): the new buildings drawn by PixelLab around --tile
 ## (finished both ways with full yards and a herd of horses, or their sites in both stages),
 ## or a barracks with an armoury and 16 soldiers (4 of each kind) in the ranks; --drill shows
@@ -76,6 +77,11 @@ var _g1: String = ""
 var _g2: bool = false
 ## --m7=finished|sites|army (M7 part 1); "" = none.
 var _m7: String = ""
+## --raid_seconds=<s>: how long the raid runs before the shot (--m7=raid).
+var _raid_seconds: float = 25.0
+## --focus=x,y: the camera looks at this tile after everything is placed (the layout stays at
+## --tile).
+var _focus: Vector2i = Vector2i(-1, -1)
 var _drill: bool = false
 
 
@@ -126,6 +132,11 @@ func _ready() -> void:
 			_g2 = true
 		elif arg.begins_with("--m7="):
 			_m7 = arg.trim_prefix("--m7=")
+		elif arg.begins_with("--focus="):
+			var xy := arg.trim_prefix("--focus=").split(",")
+			_focus = Vector2i(int(xy[0]), int(xy[1]))
+		elif arg.begins_with("--raid_seconds="):
+			_raid_seconds = float(arg.trim_prefix("--raid_seconds="))
 		elif arg == "--drill":
 			_drill = true
 		elif arg.begins_with("--g1"):
@@ -222,6 +233,8 @@ func _arrange() -> void:
 		_place_m7(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
 		_place_yards(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _focus.x >= 0:
+		camera.position = IsoMath.tile_center_screen(_focus)
 	if _build_tool != &"":
 		_game.call("_set_tool", {"kind": &"building", "def": _build_tool})
 		get_viewport().warp_mouse(get_viewport().get_visible_rect().size / 2.0)
@@ -356,6 +369,17 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	if _m7 == "army":
 		_place_army(sim, at)
 		return
+	if _m7 == "walls":
+		_place_walls(sim, at)
+		return
+	if _m7 == "battle":
+		_place_walls(sim, at)
+		_place_battle(sim, at)
+		return
+	if _m7 == "raid":
+		_place_walls(sim, at)
+		_place_raid(sim, at)
+		return
 	var ids: Array[StringName] = [&"charcoal_burner", &"mine", &"smelter", &"blacksmith",
 			&"armourer", &"bowyer"]
 	var plan: Array = []
@@ -435,6 +459,132 @@ func _place_army(sim: Simulation, at: Vector2i) -> void:
 	sim.run_ticks(12 if _drill else 0)
 	Game.paused = true
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(barracks.entrance_tile() + Vector2i(1, 2))
+
+
+## M7 part 2 (--m7=walls): a walled square with a gatehouse, towers, stairs, a thick double
+## row, a diagonal run, a palisade and a wall being laid.
+func _place_walls(sim: Simulation, at: Vector2i) -> void:
+	var p := sim.province
+	var stone := func(tiles: Array[Vector2i]) -> void:
+		for t: Vector2i in tiles:
+			if p.wall_error(t, Walls.STONE) == &"":
+				p.lay_wall(t, Walls.STONE)
+	var o := at + Vector2i(-7, -7)
+	if p.execute_place(&"gatehouse", o + Vector2i(5, 11), 0) == null:
+		print("walls: no gatehouse")
+	p.execute_place(&"tower", o + Vector2i(-1, -1), 0)
+	p.execute_place(&"tower", o + Vector2i(13, -1), 0)
+	p.execute_place(&"tower", o + Vector2i(13, 11), 0)
+	var ring: Array[Vector2i] = []
+	for i: int in range(1, 13):
+		ring.append(o + Vector2i(i, 0))
+		ring.append(o + Vector2i(i, 1))   # a thick double row at the back
+		ring.append(o + Vector2i(0, i))
+		ring.append(o + Vector2i(14, i))
+		ring.append(o + Vector2i(i, 12))
+	stone.call(ring)
+	stone.call(BuildWallCommand.line(o + Vector2i(-1, 12), o + Vector2i(-6, 17)))
+	for t: Vector2i in [o + Vector2i(1, 5), o + Vector2i(13, 7)]:
+		var d := p.stairs_dir_for(t)
+		if d >= 0 and p.wall_error(t, Walls.STAIRS) == &"":
+			p.lay_wall(t, Walls.STAIRS + d)
+	for t: Vector2i in BuildWallCommand.line(o + Vector2i(16, 3), o + Vector2i(16, 10)):
+		if p.wall_error(t, Walls.PALISADE) == &"":
+			p.lay_wall(t, Walls.PALISADE)
+	for t: Vector2i in BuildWallCommand.line(o + Vector2i(17, 10), o + Vector2i(20, 13)):
+		if p.wall_error(t, Walls.PALISADE) == &"":
+			p.lay_wall(t, Walls.PALISADE)
+	# A turned gatehouse in the west wall (its art has its own light, not a mirror).
+	p.execute_place(&"gatehouse", o + Vector2i(-1, 7), 1)
+	p.damage_wall(o + Vector2i(14, 4), 700)
+	sim.execute(BuildWallCommand.new(BuildWallCommand.line(o + Vector2i(2, 16), o + Vector2i(8, 16)), Walls.STONE))
+	for k: int in 6:
+		var a := p.spawn_agent(&"porter", o + Vector2i(6, 13 + k % 3))
+		a.facing = k % 8
+	sim.events.drain()
+	(_game.get("view") as ProvinceView).forts.refresh()
+	(_game.get("view") as ProvinceView).buildings.refresh_all()
+
+
+## M7 part 2 (--m7=battle): archers on the walls, spearmen behind the gate, enemies coming
+## at them; a few seconds of fighting, the archers selected.
+func _place_battle(sim: Simulation, at: Vector2i) -> void:
+	var p := sim.province
+	var o := at + Vector2i(-7, -7)
+	var spawn := func(kind: StringName, tile: Vector2i, faction: int) -> Agent:
+		var a := p.spawn_agent(kind, tile)
+		a.combat = CombatState.new(sim.data.get_unit(kind).combat.hp)
+		a.combat.faction = faction
+		Troops.take_command(a)
+		a.combat.order = CombatState.Order.MOVE
+		a.combat.post = a.pos
+		a.combat.goal = a.pos
+		return a
+	var archers: Array[Agent] = []
+	for k: int in 6:
+		archers.append(spawn.call(&"archer", o + Vector2i(6, 6), CombatState.PLAYER))
+	Troops.order_move(p, archers, o + Vector2i(4, 12), MilitaryNav.WALL)
+	var archers2: Array[Agent] = []
+	for k: int in 4:
+		archers2.append(spawn.call(&"archer", o + Vector2i(8, 6), CombatState.PLAYER))
+	Troops.order_move(p, archers2, o + Vector2i(14, 8), MilitaryNav.WALL)
+	var guards: Array[Agent] = []
+	for k: int in 6:
+		guards.append(spawn.call(&"spearman", o + Vector2i(6, 8), CombatState.PLAYER))
+	Troops.order_move(p, guards, o + Vector2i(6, 9), MilitaryNav.GROUND)
+	for k: int in 8:
+		var e: Agent = spawn.call(&"spearman" if k % 3 != 0 else &"archer", o + Vector2i(2 + k, 20 + k % 3), CombatState.BANDITS)
+		e.combat.stance = CombatState.Stance.AGGRESSIVE
+	Game.paused = false
+	for i: int in 220:
+		sim.step()
+	Game.paused = true
+	var view: ProvinceView = _game.get("view")
+	for event: Dictionary in sim.events.drain():
+		view.on_sim_event(event)
+	for a: Agent in guards + archers:
+		if p.agents.has_agent(a.id):
+			print("battle: %s %s level %d hp %d order %d" % [a.kind, a.pos, a.level, a.combat.hp, a.combat.order])
+	var ids: Array[int] = []
+	for a: Agent in archers:
+		if p.agents.has_agent(a.id):
+			ids.append(a.id)
+	_game.call("_select_soldiers", ids)
+
+
+## M7 part 2 (--m7=raid): a bandit raid with a ram and laddermen on the walled square, the
+## archers on the walls; --advance-like run of [_raid_seconds] seconds (default 25).
+func _place_raid(sim: Simulation, at: Vector2i) -> void:
+	var p := sim.province
+	var o := at + Vector2i(-7, -7)
+	for b: BuildingState in p.buildings.all().duplicate():
+		if b.def.id == &"town_hall" or b.def.id == &"pioneer_camp":
+			p.remove_building(b.id)   # the hall of this shot stands inside the walls
+	p.first_building = &""
+	var hall := p.execute_place(&"town_hall", o + Vector2i(5, 3), 0)
+	if hall == null:
+		print("raid: no town hall")
+	var archers: Array[Agent] = []
+	for k: int in 8:
+		var a := p.spawn_agent(&"archer", o + Vector2i(6, 8))
+		a.combat = CombatState.new(sim.data.get_unit(&"archer").combat.hp)
+		archers.append(a)
+	Troops.order_move(p, archers, o + Vector2i(9, 12), MilitaryNav.WALL)
+	for k: int in 30:
+		sim.step()
+	p.raids.entry = o + Vector2i(6, 24)
+	p.raids.count = Raids.RAM_EVERY - 1   # the big one, with a ram
+	Raids.start(p, sim.rng.stream(&"raids"))
+	sim.raids_enabled = true
+	Game.paused = false
+	for i: int in roundi(_raid_seconds * SimClock.TICKS_PER_SECOND):
+		sim.step()
+	Game.paused = true
+	var view: ProvinceView = _game.get("view")
+	for event: Dictionary in sim.events.drain():
+		view.on_sim_event(event)
+	view.forts.refresh()
+	view.buildings.refresh_all()
 
 
 ## Workshops in a row with full yards (--yards).

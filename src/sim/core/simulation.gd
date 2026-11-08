@@ -24,6 +24,9 @@ var viewed_id: int = WorldSim.FIRST_ID
 var province: ProvinceSim
 
 var _commands: Array[Command] = []
+## Bandit raids on the viewed province (M7 part 2): on in a game the player plays (the game
+## scene turns them on), off in tests and benchmarks. Not saved.
+var raids_enabled: bool = false
 
 
 func _init(registry: DataRegistry, map_size: Vector2i = Vector2i(64, 64), seed_value: int = 1) -> void:
@@ -97,6 +100,9 @@ func step() -> void:
 		execute(command)
 	province.tick = clock.tick
 	province.step()
+	if raids_enabled and clock.tick % SimClock.TICKS_PER_SECOND == 0 \
+			and world.owner_of(viewed_id) == ProvinceDef.OWNER_PLAYER:
+		Raids.update(province, rng.stream(&"raids"))
 	# Each simplified province updates once a second, in the tick of its id within the second
 	# (provinces do not all update in the same tick).
 	var slot := clock.tick % ProvinceAbstract.STEP_TICKS

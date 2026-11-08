@@ -121,6 +121,38 @@ extends GameDef
 @export var storage_accepts: Array[StringName] = []
 ## Barracks (M7): beds for soldiers; > 0 makes the building a barracks.
 @export_range(0, 99) var soldier_beds: int = 0
+## Fortification (M7 part 2): &"gatehouse" (a passage through its middle column, along its
+## doors, open to its owner) or &"tower". Its tiles join stone walls and carry a wall-walk.
+@export var fort_kind: StringName = &""
+## Life of the building in a fight (M7 part 2): gatehouse, tower, the door of a town hall.
+## 0 = cannot be attacked.
+@export_range(0, 99999) var max_hp: int = 0
+## Siege workshop (M7 part 2): the engines (unit ids) it builds on order.
+@export var siege_engines: Array[StringName] = []
+
+
+func is_fort() -> bool:
+	return fort_kind != &""
+
+
+func is_gatehouse() -> bool:
+	return fort_kind == &"gatehouse"
+
+
+## Tiles of the gatehouse passage (relative to the origin) turned to [param orientation]: the
+## line through its entrance along its door.
+func passage_at(orientation: int) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	if not is_gatehouse():
+		return result
+	var e := entrance_at(orientation)
+	var d := door_dir(orientation)
+	for y: int in footprint.y:
+		for x: int in footprint.x:
+			var t := Vector2i(x, y)
+			if (d.x != 0 and t.y == e.y) or (d.y != 0 and t.x == e.x):
+				result.append(t)
+	return result
 
 
 func get_kind() -> StringName:

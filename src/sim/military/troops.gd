@@ -1,0 +1,648 @@
+class_name Troops
+extends RefCounted
+## Fighters under orders (M7 part 2, GDD §8, ARCHITECTURE §10): soldiers the player commands
+## and bandits. Every tick each fighter picks a target by his stance, walks (on the ground
+## and on the wall-walk, MilitaryNav.route), strikes or shoots; arrows fly for a while before
+## they hit. Fighters that die leave the map. Soldiers in the ranks of their barracks
+## (not commanded) are left to their task (SoldierStep).
+##
+## Orders: move in formation (two to a tile), attack a fighter, break a structure (a wall
+## tile, a gate, a town hall's door). Stances: attack on sight, defend the post (chase only
+## near it, then come back), hold the place (only strike what comes in reach).
+
+## How far a fighter sees an enemy (tiles), how far a defender leaves his post for one.
+const SIGHT := 9.0
+const DEFEND_REACH := 5.0
+## A sword's reach (tiles from foot to foot).
+const MELEE_REACH := 1.15
+## Ticks between route searches while chasing.
+const REPATH_TICKS := 10
+## Arrows: tiles per second; a fighter on the wall-walk shoots 2 tiles farther and takes half
+## the damage from arrows (ROADMAP M7).
+const ARROW_SPEED := 14.0
+const WALL_RANGE_BONUS := 2
+const WALL_COVER := 0.5
+## Formation places on one tile.
+const PER_TILE := 2
+const _SLOT_OFFSETS: Array[Vector2] = [Vector2(-0.2, 0.2), Vector2(0.2, -0.2)]
+
+## Arrows in flight: shooter faction, target agent id, from and to (grid), ticks left, damage.
+class Arrow:
+	extends RefCounted
+	var target_id: int
+	var from: Vector2
+	var from_level: int
+	var to: Vector2
+	var to_level: int
+	var ticks: int
+	var total: int
+	var damage: int
+
+	func to_dict() -> Dictionary:
+		return {"t": target_id, "f": SimCodec.vec2(from), "fl": from_level, "to": SimCodec.vec2(to),
+				"tl": to_level, "n": ticks, "of": total, "d": damage}
+
+	static func from_dict(d: Dictionary) -> Arrow:
+		var a := Arrow.new()
+		a.target_id = int(d["t"])
+		a.from = SimCodec.to_vec2(d["f"])
+		a.from_level = int(d["fl"])
+		a.to = SimCodec.to_vec2(d["to"])
+		a.to_level = int(d["tl"])
+		a.ticks = int(d["n"])
+		a.total = int(d["of"])
+		a.damage = int(d["d"])
+		return a
+
+
+# --- Orders (commands call these) -----------------------------------------------------------
+
+## Whether the player may command [param agent]: one of his soldiers, out of the barracks.
+static func is_soldier(province: ProvinceSim, agent: Agent) -> bool:
+	return agent != null and agent.combat != null and agent.combat.faction == CombatState.PLAYER \
+			and agent.kind != Barracks.RECRUIT_KIND and province.data.get_unit(agent.kind) != null
+
+
+static func unit_of(province: ProvinceSim, agent: Agent) -> UnitDef:
+	var id := agent.combat.unit if agent.combat.unit != &"" else agent.kind
+	return province.data.get_unit(id)
+
+
+## Takes [param agent] out of the ranks (or out of an earlier order): Troops drives him now.
+static func take_command(agent: Agent) -> void:
+	var c := agent.combat
+	if not c.commanded:
+		c.commanded = true
+		agent.clear_path()
+		agent.path_state = Agent.PathState.NONE
+		if agent.task != null:
+			agent.task.bb.erase("_placed")
+	c.target_id = 0
+	c.target_tile = Vector2i(-1, -1)
+	c.clear_path()
+	c.path_tick = -1000
+
+
+## Sends [param agents] to [param tile] on [param level] in formation. Returns how many got
+## a place (0: the place cannot be reached on that level).
+static func order_move(province: ProvinceSim, agents: Array[Agent], tile: Vector2i, level: int) -> int:
+	var slots := formation(province, tile, level, agents.size(), CombatState.PLAYER)
+	if slots.is_empty():
+		return 0
+	var free: Array[Agent] = agents.duplicate()
+	var placed := 0
+	for slot: Vector2 in slots:
+		var best: Agent = null
+		for agent: Agent in free:
+			if best == null or agent.pos.distance_squared_to(slot) < best.pos.distance_squared_to(slot):
+				best = agent
+		if best == null:
+			break
+		free.erase(best)
+		take_command(best)
+		best.combat.order = CombatState.Order.MOVE
+		best.combat.post = slot
+		best.combat.post_level = level
+		best.combat.goal = slot
+		best.combat.goal_level = level
+		placed += 1
+	return placed
+
+
+static func order_attack(agents: Array[Agent], target: Agent) -> void:
+	for agent: Agent in agents:
+		take_command(agent)
+		agent.combat.order = CombatState.Order.ATTACK
+		agent.combat.target_id = target.id
+
+
+## Sends [param agents] back to the ranks of their barracks.
+static func order_return(province: ProvinceSim, agents: Array[Agent]) -> void:
+	for agent: Agent in agents:
+		var barracks := province.buildings.get_building(agent.home_id)
+		take_command(agent)
+		agent.combat.order = CombatState.Order.RETURN
+		var door := province.door_tile(barracks) if barracks != null else Agent.NO_TILE
+		if door == Agent.NO_TILE:
+			_release(agent)
+			continue
+		agent.combat.goal = IsoMath.tile_center(door)
+		agent.combat.goal_level = MilitaryNav.GROUND
+
+
+static func set_stance(agents: Array[Agent], stance: CombatState.Stance) -> void:
+	for agent: Agent in agents:
+		agent.combat.stance = stance
+
+
+static func _release(agent: Agent) -> void:
+	var c := agent.combat
+	c.commanded = false
+	c.order = CombatState.Order.NONE
+	c.target_id = 0
+	c.clear_path()
+	agent.level = MilitaryNav.GROUND
+	agent.activity = &"idle"
+
+
+## Places for [param count] fighters around [param tile] on [param level]: the nearest
+## walkable tiles first, two to a tile. Empty when the tile (or a tile near it) is not
+## walkable on that level.
+static func formation(province: ProvinceSim, tile: Vector2i, level: int, count: int, faction: int) -> Array[Vector2]:
+	var nav := province.mil.nav_of(province, level, faction)
+	var start := tile
+	if not nav.is_walkable(start):
+		start = Agent.NO_TILE
+		for r: int in range(1, 3):
+			for dy: int in range(-r, r + 1):
+				for dx: int in range(-r, r + 1):
+					var t := tile + Vector2i(dx, dy)
+					if start == Agent.NO_TILE and nav.is_walkable(t):
+						start = t
+		if start == Agent.NO_TILE:
+			return []
+	var slots: Array[Vector2] = []
+	var seen: Dictionary[Vector2i, bool] = {start: true}
+	var queue: Array[Vector2i] = [start]
+	var head := 0
+	var area := nav.area_of(start)
+	while head < queue.size() and slots.size() < count:
+		var t := queue[head]
+		head += 1
+		for k: int in PER_TILE:
+			if slots.size() < count:
+				slots.append(IsoMath.tile_center(t) + (_SLOT_OFFSETS[k] if count > 1 else Vector2.ZERO))
+		for step: Vector2i in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1),
+				Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]:
+			var n := t + step
+			if not seen.has(n) and nav.is_walkable(n) and nav.area_of(n) == area:
+				seen[n] = true
+				queue.append(n)
+	return slots
+
+
+# --- Every tick -----------------------------------------------------------------------------
+
+static func update(province: ProvinceSim) -> void:
+	var fighters: Array[Agent] = []
+	for agent: Agent in province.agents.all():
+		if agent.combat != null and agent.combat.commanded:
+			fighters.append(agent)
+	if fighters.is_empty() and province.arrows.is_empty():
+		return
+	var buckets := _buckets(province)
+	var dead: Array[Agent] = []
+	for agent: Agent in fighters:
+		if agent.combat.hp > 0:
+			_think(province, agent, buckets, dead)
+	_fly_arrows(province, dead)
+	for agent: Agent in fighters:
+		if agent.combat.hp > 0:
+			_move(province, agent)
+	for agent: Agent in dead:
+		kill(province, agent)
+	if province.tick % SimClock.TICKS_PER_SECOND == 0 and not province.mil.ladders.is_empty():
+		_push_ladders(province, buckets)
+
+
+## Fighters (commanded or in the ranks) by 4x4-tile cell, for finding the nearest enemy.
+static func _buckets(province: ProvinceSim) -> Dictionary[Vector2i, Array]:
+	var result: Dictionary[Vector2i, Array] = {}
+	for agent: Agent in province.agents.all():
+		if agent.combat == null or agent.combat.hp <= 0 or agent.kind == Barracks.RECRUIT_KIND:
+			continue
+		var cell := Vector2i(floori(agent.pos.x / 4.0), floori(agent.pos.y / 4.0))
+		if not result.has(cell):
+			result[cell] = []
+		result[cell].append(agent)
+	return result
+
+
+## The nearest enemy of [param agent] within [param reach] tiles of [param around].
+static func nearest_enemy(agent: Agent, around: Vector2, reach: float, buckets: Dictionary[Vector2i, Array]) -> Agent:
+	var best: Agent = null
+	var best_d := reach
+	var r := ceili(reach / 4.0)
+	var cell := Vector2i(floori(around.x / 4.0), floori(around.y / 4.0))
+	for dy: int in range(-r, r + 1):
+		for dx: int in range(-r, r + 1):
+			for other: Agent in buckets.get(cell + Vector2i(dx, dy), []):
+				if other.combat.faction == agent.combat.faction or other.combat.hp <= 0:
+					continue
+				var d := other.pos.distance_to(around)
+				if d < best_d:
+					best_d = d
+					best = other
+	return best
+
+
+static func _think(province: ProvinceSim, agent: Agent, buckets: Dictionary[Vector2i, Array], dead: Array[Agent]) -> void:
+	var c := agent.combat
+	var unit := unit_of(province, agent)
+	if c.cooldown > 0:
+		c.cooldown -= 1
+	var target := province.agents.get_agent(c.target_id) if c.target_id != 0 else null
+	if target != null and (target.combat == null or target.combat.hp <= 0 or target.combat.faction == c.faction):
+		target = null
+	if target == null:
+		c.target_id = 0
+		if c.order == CombatState.Order.ATTACK:
+			c.order = CombatState.Order.MOVE
+			c.goal = c.post
+			c.goal_level = c.post_level
+			c.clear_path()
+	if unit.siege != &"" or unit.combat.attack <= 0:
+		# Siege engines and laddermen never fight people.
+		target = null
+		c.target_id = 0
+	var reach := float(unit.combat.attack_range) + (WALL_RANGE_BONUS if agent.level == MilitaryNav.WALL and unit.combat.attack_range > 1 else 0)
+	var ranged := unit.combat.attack_range > 1
+	# Looking for a fight.
+	if target == null and unit.siege == &"" and unit.combat.attack > 0 and c.order != CombatState.Order.RETURN and (c.order != CombatState.Order.MOVE or not c.has_path()):
+		match c.stance:
+			CombatState.Stance.AGGRESSIVE:
+				target = nearest_enemy(agent, agent.pos, maxf(SIGHT, reach), buckets)
+			CombatState.Stance.DEFENSIVE:
+				var home := c.post if c.post.x >= 0.0 else agent.pos
+				target = nearest_enemy(agent, home, DEFEND_REACH + (reach if ranged else 0.0), buckets)
+			CombatState.Stance.HOLD:
+				target = nearest_enemy(agent, agent.pos, reach if ranged else MELEE_REACH, buckets)
+		if target != null:
+			c.target_id = target.id
+	if target != null:
+		var d := agent.pos.distance_to(target.pos)
+		var in_reach := d <= reach if ranged else (d <= MELEE_REACH and agent.level == target.level)
+		if in_reach:
+			c.clear_path()
+			_face(agent, target.pos)
+			agent.activity = &"drill" if c.cooldown > SimClock.seconds_to_ticks(unit.combat.attack_cooldown) - 6 else &"idle"
+			if c.cooldown == 0:
+				_strike(province, agent, unit, target, ranged, dead)
+			return
+		var leash := c.stance == CombatState.Stance.DEFENSIVE and c.post.x >= 0.0 \
+				and target.pos.distance_to(c.post) > DEFEND_REACH + (reach if ranged else 0.0) + 1.0
+		if c.stance == CombatState.Stance.HOLD or leash:
+			c.target_id = 0
+			if c.order == CombatState.Order.ATTACK:
+				c.order = CombatState.Order.MOVE
+			c.goal = c.post
+			c.goal_level = c.post_level
+			c.clear_path()
+			return
+		# Chase: a new route now and then, towards where the target is.
+		if not c.has_path() or province.tick - c.path_tick >= REPATH_TICKS:
+			var to := Vector2i(target.pos.floor())
+			_route(province, agent, to, target.level, target.pos)
+		return
+	# No enemy: carry out the order.
+	if c.order == CombatState.Order.STRUCTURE:
+		_siege(province, agent, unit)
+		return
+	if c.goal.x < 0.0:
+		agent.activity = &"idle"
+		return
+	var at_goal := agent.pos.distance_to(c.goal) < 0.05 and agent.level == c.goal_level
+	if at_goal:
+		agent.activity = &"idle"
+		if c.order == CombatState.Order.RETURN:
+			_release(agent)
+		return
+	if not c.has_path() and province.tick - c.path_tick >= REPATH_TICKS:
+		_route(province, agent, Vector2i(c.goal.floor()), c.goal_level, c.goal)
+
+
+## Looks for a walk to [param tile] on [param level], ending at [param exact].
+static func _route(province: ProvinceSim, agent: Agent, tile: Vector2i, level: int, exact: Vector2) -> bool:
+	var c := agent.combat
+	c.path_tick = province.tick
+	var here := agent.tile()
+	if here == tile and agent.level == level:
+		c.clear_path()
+		c.path = [tile]
+		c.levels = PackedByteArray([level])
+		c.goal = exact
+		return true
+	# Standing in a doorway or where a wall has just been laid: out by the nearest free tile.
+	var lead: Array[Vector2i] = []
+	var nav := province.mil.nav_of(province, agent.level, c.faction)
+	if not nav.is_walkable(here):
+		var out := _way_out(province, agent, nav)
+		if out == Agent.NO_TILE:
+			c.clear_path()
+			return false
+		lead = [here]
+		here = out
+	var found := province.mil.route(province, here, agent.level, tile, level, c.faction)
+	if not found.is_empty() and not lead.is_empty():
+		(found[0] as Array).push_front(lead[0])
+		var levels: PackedByteArray = found[1]
+		levels.insert(0, agent.level)
+		found[1] = levels
+	if found.is_empty():
+		c.clear_path()
+		return false
+	c.path = found[0]
+	c.levels = found[1]
+	c.path_index = 1 if c.path.size() > 1 else 0
+	if c.order != CombatState.Order.ATTACK and c.target_id == 0:
+		c.goal = exact
+		c.goal_level = level
+	return true
+
+
+## A walkable tile next to where [param agent] stands (the front of a door first).
+static func _way_out(province: ProvinceSim, agent: Agent, nav: NavGrid) -> Vector2i:
+	var building := province.building_entered_at(agent.tile())
+	if building != null:
+		for door: Vector2i in province.door_tiles(building):
+			if nav.is_walkable(door):
+				return door
+	var best := Agent.NO_TILE
+	for step: Vector2i in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1),
+			Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]:
+		var t := agent.tile() + step
+		if nav.is_walkable(t) and (best == Agent.NO_TILE or agent.pos.distance_squared_to(IsoMath.tile_center(t)) \
+				< agent.pos.distance_squared_to(IsoMath.tile_center(best))):
+			best = t
+	return best
+
+
+static func _face(agent: Agent, at: Vector2) -> void:
+	var dir := IsoMath.screen_dir(at - agent.pos)
+	if dir >= 0:
+		agent.facing = dir
+
+
+## A blow or a shot at [param target].
+static func _strike(province: ProvinceSim, agent: Agent, unit: UnitDef, target: Agent, ranged: bool,
+		dead: Array[Agent]) -> void:
+	var c := agent.combat
+	c.cooldown = maxi(SimClock.seconds_to_ticks(unit.combat.attack_cooldown), 1)
+	var damage := float(unit.combat.attack)
+	var target_unit := unit_of(province, target)
+	if target_unit != null:
+		damage *= float(unit.combat.bonus_vs.get(target_unit.id, 1.0))
+	if ranged:
+		var arrow := Arrow.new()
+		arrow.target_id = target.id
+		arrow.from = agent.pos
+		arrow.from_level = agent.level
+		arrow.to = target.pos
+		arrow.to_level = target.level
+		arrow.total = maxi(roundi(agent.pos.distance_to(target.pos) / ARROW_SPEED * SimClock.TICKS_PER_SECOND), 2)
+		arrow.ticks = arrow.total
+		arrow.damage = roundi(damage)
+		province.arrows.append(arrow)
+		province.events.emit(&"arrow_shot", {"agent": agent.id})
+		return
+	hurt(province, target, roundi(damage), dead)
+	province.events.emit(&"unit_struck", {"agent": agent.id, "target": target.id})
+
+
+## Takes life off [param target]; he joins [param dead] when it runs out.
+static func hurt(province: ProvinceSim, target: Agent, damage: int, dead: Array[Agent]) -> void:
+	if target.combat == null or target.combat.hp <= 0:
+		return
+	target.combat.hp -= damage
+	if target.combat.hp <= 0:
+		target.combat.hp = 0
+		dead.append(target)
+	elif target.combat.faction == CombatState.PLAYER and not target.combat.commanded:
+		# A soldier in the ranks who is attacked fights back.
+		take_command(target)
+		target.combat.order = CombatState.Order.MOVE
+		target.combat.post = target.pos
+		target.combat.goal = target.pos
+
+
+static func _fly_arrows(province: ProvinceSim, dead: Array[Agent]) -> void:
+	if province.arrows.is_empty():
+		return
+	var left: Array[Arrow] = []
+	for arrow: Arrow in province.arrows:
+		arrow.ticks -= 1
+		if arrow.ticks > 0:
+			left.append(arrow)
+			continue
+		var target := province.agents.get_agent(arrow.target_id)
+		if target == null or target.combat == null:
+			continue
+		# A target that ran far from where it was aimed at is missed.
+		if target.pos.distance_to(arrow.to) > 1.2:
+			continue
+		var damage := arrow.damage
+		var target_unit := unit_of(province, target)
+		if target_unit != null:
+			damage = roundi(damage * target_unit.combat.ranged_taken)
+		if target.level == MilitaryNav.WALL:
+			damage = roundi(damage * WALL_COVER)
+		hurt(province, target, maxi(damage, 1), dead)
+	province.arrows = left
+
+
+## A fighter dies: he falls where he stands and leaves the map (the view shows him lying).
+static func kill(province: ProvinceSim, agent: Agent) -> void:
+	if not province.agents.has_agent(agent.id):
+		return
+	var barracks := province.buildings.get_building(agent.home_id)
+	if barracks != null:
+		barracks.soldiers.erase(agent.id)
+		barracks.recruits.erase(agent.id)
+	province.events.emit(&"unit_died", {"agent": agent.id, "kind": agent.kind, "pos": agent.pos,
+			"level": agent.level, "facing": agent.facing, "faction": agent.combat.faction})
+	province.remove_agent(agent)
+
+
+# --- Walking ----------------------------------------------------------------------------------
+
+static func _move(province: ProvinceSim, agent: Agent) -> void:
+	var c := agent.combat
+	if not c.has_path():
+		# Last steps to the exact place in the formation.
+		if c.goal.x >= 0.0 and agent.level == c.goal_level and agent.tile() == Vector2i(c.goal.floor()) \
+				and c.target_id == 0:
+			var delta := c.goal - agent.pos
+			var reach := Movement.BASE_SPEED * SimClock.TICK * 0.8
+			if delta.length() > 0.01:
+				agent.pos += delta if delta.length() <= reach else delta.normalized() * reach
+				_face(agent, c.goal)
+				agent.activity = &"walk"
+			elif agent.activity == &"walk":
+				agent.activity = &"idle"
+		return
+	var unit := unit_of(province, agent)
+	var budget := Movement.BASE_SPEED * unit.combat.speed * SimClock.TICK
+	while budget > 0.0 and c.has_path():
+		var tile := c.path[c.path_index]
+		var level := int(c.levels[c.path_index])
+		if level != agent.level and agent.tile() != tile:
+			# A step between levels: inner stairs are taken out of sight at once.
+			var portal := province.mil.portal_between(province, agent.tile(), tile, c.faction)
+			if portal == null:
+				c.clear_path()   # the stairs or the ladder are gone: look again
+				return
+			if portal.kind == MilitaryNav.INSIDE:
+				agent.pos = IsoMath.tile_center(tile)
+				agent.level = level
+				c.path_index += 1
+				continue
+		var nav := province.mil.nav_of(province, level, c.faction)
+		if not nav.is_walkable(tile):
+			c.clear_path()   # blocked meanwhile (a gate shut, a wall laid)
+			return
+		var target := IsoMath.tile_center(tile)
+		if c.path_index == c.path.size() - 1 and c.target_id == 0 and c.goal.x >= 0.0 \
+				and Vector2i(c.goal.floor()) == tile:
+			target = c.goal
+		var delta := target - agent.pos
+		var length := delta.length()
+		var cost := nav.get_cost(tile) if level == MilitaryNav.GROUND else 1.0
+		var step := budget / cost
+		if length <= step:
+			agent.pos = target
+			budget -= length * cost
+			agent.level = level
+			c.path_index += 1
+		else:
+			agent.pos += delta / length * step
+			budget = 0.0
+			if agent.tile() == tile:
+				agent.level = level
+		_face(agent, target)
+	agent.activity = &"walk"
+
+
+# --- Breaking structures (bandits, and in part 3 the player's army) ---------------------------
+
+## Order STRUCTURE: walks next to [param c.target_tile] and strikes it.
+static func _siege(province: ProvinceSim, agent: Agent, unit: UnitDef) -> void:
+	var c := agent.combat
+	var tile := c.target_tile
+	if not structure_standing(province, tile):
+		c.order = CombatState.Order.NONE
+		c.target_tile = Vector2i(-1, -1)
+		agent.activity = &"idle"
+		return
+	if agent.level == MilitaryNav.GROUND and _next_to(agent.pos, tile):
+		c.clear_path()
+		_face(agent, IsoMath.tile_center(tile))
+		if unit.siege == &"ladder":
+			_place_ladder(province, agent, tile)
+			return
+		agent.activity = &"drill"
+		if c.cooldown == 0:
+			c.cooldown = maxi(SimClock.seconds_to_ticks(unit.combat.attack_cooldown), 1)
+			damage_structure(province, tile, unit.combat.attack)
+		return
+	if not c.has_path() and province.tick - c.path_tick >= REPATH_TICKS:
+		var stand := stand_by(province, tile, agent)
+		if stand != Agent.NO_TILE:
+			_route(province, agent, stand, MilitaryNav.GROUND, IsoMath.tile_center(stand))
+
+
+## A ladderman next to stone wall [param tile] leans his ladder on it (from his own tile,
+## orthogonally): it becomes a way up for everybody (MilitaryNav portals).
+static func _place_ladder(province: ProvinceSim, agent: Agent, tile: Vector2i) -> void:
+	var c := agent.combat
+	var foot := agent.tile()
+	var d := tile - foot
+	if absi(d.x) + absi(d.y) != 1 or not province.walls.is_stone(tile) or province.mil.ladders.has(foot):
+		# Only straight against the wall: step to a tile beside it first.
+		var stand := Agent.NO_TILE
+		for step: Vector2i in Walls.DIRS:
+			var t := tile - step
+			if province.mil.ground_nav(province, c.faction).is_walkable(t) and not province.mil.ladders.has(t):
+				stand = t
+				break
+		if stand == Agent.NO_TILE or stand == foot:
+			c.order = CombatState.Order.NONE
+			return
+		_route(province, agent, stand, MilitaryNav.GROUND, IsoMath.tile_center(stand))
+		return
+	province.mil.ladders[foot] = tile
+	c.order = CombatState.Order.NONE
+	c.target_tile = Vector2i(-1, -1)
+	agent.activity = &"idle"
+	province.events.emit(&"ladder_placed", {"tile": foot, "wall": tile, "agent": agent.id})
+
+
+## A defender standing on the wall where a ladder leans, with no enemy on or at it, pushes
+## it down.
+static func _push_ladders(province: ProvinceSim, buckets: Dictionary[Vector2i, Array]) -> void:
+	for foot: Vector2i in province.mil.ladders.keys():
+		var top: Vector2i = province.mil.ladders[foot]
+		var defender := false
+		var climbing := false
+		var cell := Vector2i(floori(top.x / 4.0), floori(top.y / 4.0))
+		for dy: int in range(-1, 2):
+			for dx: int in range(-1, 2):
+				for other: Agent in buckets.get(cell + Vector2i(dx, dy), []):
+					var near_top := other.pos.distance_to(IsoMath.tile_center(top)) < 1.0 and other.level == MilitaryNav.WALL
+					var near_foot := other.pos.distance_to(IsoMath.tile_center(foot)) < 0.8 and other.level == MilitaryNav.GROUND
+					if other.combat.faction == CombatState.PLAYER and near_top:
+						defender = true
+					elif other.combat.faction != CombatState.PLAYER and (near_top or near_foot):
+						climbing = true
+		if defender and not climbing:
+			remove_ladder(province, foot)
+
+
+## Ladders whose wall fell or that defenders pushed down go (M7 part 2).
+static func remove_ladder(province: ProvinceSim, foot: Vector2i) -> void:
+	if province.mil.ladders.erase(foot):
+		province.events.emit(&"ladder_removed", {"tile": foot})
+
+
+static func _next_to(pos: Vector2, tile: Vector2i) -> bool:
+	var d := pos - IsoMath.tile_center(tile)
+	return absf(d.x) <= 1.05 and absf(d.y) <= 1.05
+
+
+## A ground tile next to [param tile] [param agent] can walk to (the nearest), or NO_TILE.
+static func stand_by(province: ProvinceSim, tile: Vector2i, agent: Agent) -> Vector2i:
+	var nav := province.mil.ground_nav(province, agent.combat.faction)
+	var area := nav.area_of(agent.tile())
+	var best := Agent.NO_TILE
+	var best_d := INF
+	var steps: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
+	if unit_of(province, agent).siege != &"ladder":
+		steps.append_array([Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)])
+	for step: Vector2i in steps:
+		var t := tile + step
+		if nav.is_walkable(t) and nav.area_of(t) == area and not province.mil.ladders.has(t):
+			var d := agent.pos.distance_squared_to(IsoMath.tile_center(t))
+			if d < best_d:
+				best_d = d
+				best = t
+	return best
+
+
+## Whether something breakable stands at [param tile]: a wall tile or stairs, or a building
+## with life (a gatehouse, a tower, a town hall's door) that is not broken.
+static func structure_standing(province: ProvinceSim, tile: Vector2i) -> bool:
+	if province.walls.kind(tile) != Walls.NONE:
+		return true
+	var building := province.buildings.get_building(province.grid.occupant(tile))
+	return building != null and building.def.max_hp > 0 and building.hp > 0
+
+
+## Strikes the structure at [param tile].
+static func damage_structure(province: ProvinceSim, tile: Vector2i, amount: int) -> void:
+	if province.walls.kind(tile) != Walls.NONE:
+		province.damage_wall(tile, amount)
+		province.events.emit(&"wall_damaged", {"tile": tile})
+		return
+	var building := province.buildings.get_building(province.grid.occupant(tile))
+	if building == null or building.def.max_hp <= 0 or building.hp <= 0:
+		return
+	building.hp = maxi(building.hp - amount, 0)
+	province.events.emit(&"building_damaged", {"building": building.id, "hp": building.hp})
+	if building.hp == 0:
+		province.break_building(building)
+
+
+static func arrows_to_list(province: ProvinceSim) -> Array:
+	var list := []
+	for arrow: Arrow in province.arrows:
+		list.append(arrow.to_dict())
+	return list

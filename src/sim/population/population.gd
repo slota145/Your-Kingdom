@@ -111,6 +111,8 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 			# A missing basic need counts against the house: the more is short, the lower.
 			if house.residents > 0:
 				target -= level.weight_of(need)
+	if province.raids.mood_until > province.tick:
+		target -= Raids.MOOD_PENALTY   # looted by bandits (M7 part 2)
 	target = clampf(target + province.treasury.rate_happiness(), 0.0, 100.0)
 	var speed := HAPPINESS_SPEED
 	if not basic_met and house.residents > 0:

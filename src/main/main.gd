@@ -83,6 +83,11 @@ func _ready() -> void:
 	_tools = VBoxContainer.new()
 	_tools.visible = false
 	box.add_child(_tools)
+	# M7 part 2: a new game whose first bandit raid comes after 2 minutes (to try the defence).
+	_menu_button(_tools, "ui.main.early_raid", func() -> void:
+		if not worlds.is_empty():
+			Game.start_request = {"world": worlds[0].id, "early_raid": true}
+			_open(GAME_SCENE))
 	_menu_button(_tools, "ui.main.open_sandbox", _open.bind(SANDBOX_SCENE))
 	_menu_button(_tools, "ui.main.open_benchmark", _open.bind(BENCHMARK_SCENE))
 	var glyphs := UiKit.label("ui.main.glyph_test")

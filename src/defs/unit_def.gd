@@ -12,6 +12,14 @@ extends GameDef
 @export var combat: CombatStatsDef
 ## Order in the barracks panel and in a drill rank (lower first).
 @export_range(0, 9) var order: int = 0
+## Siege engine (M7 part 2): &"ram" (breaks walls and gates, never fights people) or
+## &"ladder" (a ladderman: leans his ladder on a stone wall). Built in a siege workshop, not
+## recruited in the barracks.
+@export var siege: StringName = &""
+## Siege engines: materials the workshop needs, residents who man it, work time (s).
+@export var build_cost: Dictionary[StringName, int] = {}
+@export_range(0, 9) var crew: int = 0
+@export_range(0.0, 600.0) var build_time: float = 0.0
 
 
 func get_kind() -> StringName:

@@ -8,10 +8,16 @@ extends RefCounted
 ## tile; until then it is dirt road). KIND_PIER and KIND_STONE_QUAY (N1): a quay over the sea
 ## (2 planks or 3 stones per tile); the builder stands on land or quay next to the tile, so
 ## the tiles are laid from the shore outwards.
+##
+## M7 part 2: KIND_PALISADE (2 wood), KIND_STONE_WALL (3 stones) and KIND_STAIRS (4 stones,
+## climbing towards [member stairs_dir]) lay walls; the builder stands next to the tile.
 
 const KIND_PAVING := 0
 const KIND_PIER := 1
 const KIND_STONE_QUAY := 2
+const KIND_PALISADE := 3
+const KIND_STONE_WALL := 4
+const KIND_STAIRS := 5
 
 ## Kept for older callers: the cobbles' good and amount.
 const GOOD := &"stone"
@@ -19,9 +25,11 @@ const STONE_PER_TILE := 1
 ## Builder work per tile (3 s; a quay tile 6 s).
 const TILE_SECONDS := 3.0
 const QUAY_TILE_SECONDS := 6.0
+## Builder work per wall tile (M7 part 2): palisade, stone wall, stairs.
+const WALL_TILE_SECONDS: Array[float] = [4.0, 8.0, 6.0]
 
-const _GOODS: Array[StringName] = [&"stone", &"planks", &"stone"]
-const _PER_TILE: Array[int] = [1, 2, 3]
+const _GOODS: Array[StringName] = [&"stone", &"planks", &"stone", &"wood", &"stone", &"stone"]
+const _PER_TILE: Array[int] = [1, 2, 3, 2, 3, 4]
 
 var id: int
 var kind: int = KIND_PAVING
@@ -31,6 +39,8 @@ var tiles: Array[Vector2i] = []
 var work_left: int = 0
 ## Material delivered and not laid yet.
 var stock: Stockpile
+## Stairs only: direction index (Walls.DIRS) of the step up to the wall.
+var stairs_dir: int = 0
 
 
 func _init(entity_id: int, tile_list: Array[Vector2i], data: DataRegistry, site_kind: int = KIND_PAVING) -> void:
@@ -48,11 +58,11 @@ static func kind_for_quay(quay: int) -> int:
 
 
 static func good_of(site_kind: int) -> StringName:
-	return _GOODS[clampi(site_kind, 0, 2)]
+	return _GOODS[clampi(site_kind, 0, _GOODS.size() - 1)]
 
 
 static func per_tile_of(site_kind: int) -> int:
-	return _PER_TILE[clampi(site_kind, 0, 2)]
+	return _PER_TILE[clampi(site_kind, 0, _PER_TILE.size() - 1)]
 
 
 func good() -> StringName:
@@ -64,7 +74,34 @@ func per_tile() -> int:
 
 
 func is_quay() -> bool:
+	return kind == KIND_PIER or kind == KIND_STONE_QUAY
+
+
+func is_wall() -> bool:
+	return kind >= KIND_PALISADE
+
+
+## The builder stands beside the tile, not on it (a quay or a wall).
+func stands_beside() -> bool:
 	return kind != KIND_PAVING
+
+
+## Walls value (Walls.PALISADE, STONE or STAIRS + direction) this site lays; 0 for others.
+func wall_value() -> int:
+	match kind:
+		KIND_PALISADE: return Walls.PALISADE
+		KIND_STONE_WALL: return Walls.STONE
+		KIND_STAIRS: return Walls.STAIRS + stairs_dir
+	return Walls.NONE
+
+
+## The site kind laying walls of [param wall_kind] (Walls.PALISADE, STONE, STAIRS), -1 if none.
+static func kind_for_wall(wall_kind: int) -> int:
+	match wall_kind:
+		Walls.PALISADE: return KIND_PALISADE
+		Walls.STONE: return KIND_STONE_WALL
+		Walls.STAIRS: return KIND_STAIRS
+	return -1
 
 
 ## TileGrid quay value this site lays (0 for paving).
@@ -76,7 +113,12 @@ func quay_value() -> int:
 
 
 func tile_ticks() -> int:
-	return maxi(SimClock.seconds_to_ticks(QUAY_TILE_SECONDS if is_quay() else TILE_SECONDS), 1)
+	var seconds := TILE_SECONDS
+	if is_quay():
+		seconds = QUAY_TILE_SECONDS
+	elif is_wall():
+		seconds = WALL_TILE_SECONDS[kind - KIND_PALISADE]
+	return maxi(SimClock.seconds_to_ticks(seconds), 1)
 
 
 ## The tile being laid next, or Agent.NO_TILE when done.
@@ -100,11 +142,14 @@ func to_dict() -> Dictionary:
 			"stock": stock.to_dict()}
 	if kind != KIND_PAVING:
 		d["kind"] = kind
+	if kind == KIND_STAIRS:
+		d["stairs"] = stairs_dir
 	return d
 
 
 static func from_dict(d: Dictionary, data: DataRegistry) -> PavingSite:
 	var site := PavingSite.new(int(d["id"]), SimCodec.to_tiles(d["tiles"]), data, int(d.get("kind", KIND_PAVING)))
+	site.stairs_dir = int(d.get("stairs", 0))
 	site.work_left = int(d["work_left"])
 	site.stock = Stockpile.from_dict(d["stock"], data)
 	return site

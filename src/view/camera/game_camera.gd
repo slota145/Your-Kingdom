@@ -10,6 +10,8 @@ const EDGE_MARGIN := 6.0
 
 @export var edge_pan: bool = false
 @export var zoom_index: int = 1
+## Digit keys that select a group of soldiers now (the game scene keeps it up to date).
+var taken_digits: Dictionary[int, bool] = {}
 
 var bounds: Rect2 = Rect2(-1e6, -1e6, 2e6, 2e6)
 
@@ -67,7 +69,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_clamp()
 		return
 	for i: int in ZOOM_STEPS.size():
-		if event.is_action_pressed(StringName("camera_zoom_%d" % (i + 1))):
+		# A digit with a group of soldiers on it selects the group instead (M7 part 2).
+		if event.is_action_pressed(StringName("camera_zoom_%d" % (i + 1))) and not taken_digits.has(i + 1) \
+				and not (event is InputEventWithModifiers and (event as InputEventWithModifiers).ctrl_pressed):
 			set_zoom_index(i)
 
 

@@ -69,6 +69,13 @@ var recruits: Array[int] = []
 var garrison: Array[StringName] = []
 ## Barracks: food eaten but not yet taken from the pantry (fractional consumption).
 var mess_hunger: float = 0.0
+## Siege workshop (M7 part 2): engines ordered (unit ids, the first one in the works) and
+## ticks of work done on it.
+var siege_orders: Array[StringName] = []
+var siege_work: int = 0
+## Life in a fight (def.max_hp > 0, M7 part 2): a gatehouse, a tower, a town hall's door.
+## Set on placement; 0 = broken (a gatehouse then stands open to everybody).
+var hp: int = 0
 ## Present on finished houses.
 var house: HouseState
 ## Agent ids of assigned workers, in assignment order.
@@ -80,6 +87,7 @@ func _init(entity_id: int, building_def: BuildingDef, at: Vector2i, turned: int 
 	def = building_def
 	origin = at
 	orientation = turned
+	hp = def.max_hp if def != null else 0
 
 
 ## Makes a finished building usable: storage, pantry, household.
@@ -96,6 +104,10 @@ func finish(data: DataRegistry) -> void:
 		supply.stack_limit = INPUT_UNITS
 	ensure_stalls(data)
 	ensure_yard(data)
+	if not def.siege_engines.is_empty() and supply == null:
+		supply = Stockpile.new(SiegeWorks.MATERIALS.size(), data)
+		supply.stack_limit = SiegeWorks.STORE_UNITS
+		supply.one_slot_per_good = true
 	if def.soldier_beds > 0 and supply == null:
 		supply = Stockpile.new(Barracks.FOOD.size(), data)
 		supply.stack_limit = Barracks.PANTRY_UNITS
@@ -228,6 +240,18 @@ func gangway_tile() -> Vector2i:
 	return def.gangway_at(origin, orientation) if def.is_port() else Agent.NO_TILE
 
 
+## Gatehouse passage tiles in grid space (empty for other buildings).
+func passage_tiles() -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for t: Vector2i in def.passage_at(orientation):
+		result.append(origin + t)
+	return result
+
+
+func is_broken() -> bool:
+	return def.max_hp > 0 and hp <= 0
+
+
 func is_entrance(tile: Vector2i) -> bool:
 	return entrance_tiles().has(tile)
 
@@ -315,6 +339,15 @@ func to_dict() -> Dictionary:
 		for unit: StringName in garrison:
 			g.append(String(unit))
 		d["garrison"] = g
+	if not siege_orders.is_empty():
+		var orders := []
+		for unit: StringName in siege_orders:
+			orders.append(String(unit))
+		d["siege_orders"] = orders
+	if siege_work != 0:
+		d["siege_work"] = siege_work
+	if def.max_hp > 0 and hp != def.max_hp:
+		d["hp"] = hp
 	if not ship_orders.is_empty():
 		var orders := []
 		for ship: StringName in ship_orders:
@@ -363,5 +396,9 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 		b.garrison.append(StringName(String(unit)))
 	for ship: Variant in d.get("ship_orders", []):
 		b.ship_orders.append(StringName(String(ship)))
+	b.hp = int(d.get("hp", b.def.max_hp))
+	for unit: Variant in d.get("siege_orders", []):
+		b.siege_orders.append(StringName(String(unit)))
+	b.siege_work = int(d.get("siege_work", 0))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
 	return b

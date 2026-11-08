@@ -44,6 +44,12 @@ func _init() -> void:
 	add_child(_vehicle)
 
 
+## Draws the person [param h] px above its node (a soldier on a wall, M7 part 2): the node
+## stays at the sort point.
+func set_lift(h: float) -> void:
+	offset = -Vector2(CharacterSheet.FOOT) - Vector2(0, h)
+
+
 ## [param carry_category] and [param good] select the carried overlay; empty = hands free.
 func show_state(visual: CharacterVisual, anim: StringName, dir: int, time: float,
 		carry_category: String, good: StringName, vehicle: StringName = &"", loaded: bool = false) -> void:

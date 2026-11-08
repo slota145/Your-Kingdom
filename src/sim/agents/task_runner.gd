@@ -63,7 +63,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"choose_stall": ChooseStallStep.new(), &"merchant": MerchantStep.new(),
 			&"park": ParkStep.new(), &"sail": SailStep.new(), &"ship_build": ShipBuildStep.new(),
 			&"land": LandStep.new(), &"travel": TravelStep.new(), &"crane": CraneStep.new(),
-			&"enlist": EnlistStep.new(), &"soldier": SoldierStep.new(),
+			&"enlist": EnlistStep.new(), &"soldier": SoldierStep.new(), &"shelter": ShelterStep.new(),
 		}
 	return _executors[kind]
 
@@ -156,6 +156,8 @@ static func restore_steps(province: ProvinceSim, task: Task) -> bool:
 			task.steps = Barracks.enlist_steps()
 		Task.KIND_SOLDIER:
 			task.steps = Barracks.soldier_steps()
+		Task.KIND_SHELTER:
+			task.steps = Raids.shelter_steps()
 		Task.KIND_RECIPE:
 			var recipe := province.data.get_recipe(task.recipe_id)
 			if recipe == null:

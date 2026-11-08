@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 18
+const CURRENT_VERSION := 19
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -61,6 +61,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 18:
 		result = migrate_v17_to_v18(result)
 		version = 18
+	if version < 19:
+		result = migrate_v18_to_v19(result)
+		version = 19
 	return result
 
 
@@ -265,6 +268,13 @@ static func migrate_v17_to_v18(state: Dictionary) -> Dictionary:
 		if province.has("province"):
 			province = province["province"]   # the simplified mode keeps its detail inside
 		_lay_ore_veins(province, vein_amount)
+	return state
+
+
+## M7 part 2: walls, gatehouses, towers and stairs, fighters under orders, arrows, ladders and
+## bandit raids. Everything new is optional with a default: no walls, whole buildings, nobody
+## under orders, the first raid 40 minutes after the game is next played. Nothing to change.
+static func migrate_v18_to_v19(state: Dictionary) -> Dictionary:
 	return state
 
 

@@ -22,7 +22,11 @@ const TABS: Array[Dictionary] = [
 		&"crane", &"port_warehouse"]},
 	{"id": &"military", "buildings": [&"charcoal_burner", &"mine", &"smelter", &"blacksmith",
 		&"armourer", &"bowyer", &"stud_farm", &"armoury", &"barracks"]},
+	{"id": &"defence", "buildings": [&"gatehouse", &"tower", &"siege_workshop"],
+		"tools": [&"palisade", &"stone_wall", &"stairs"]},
 ]
+## Wall tools (M7 part 2): tool kind -> its cost, shown in the tooltip.
+const WALL_COSTS: Dictionary[StringName, String] = {&"palisade": "wood", &"stone_wall": "stone", &"stairs": "stone"}
 const ICON_SIZE := Vector2(72, 56)
 
 var _tab_buttons: Array[Button] = []
@@ -80,6 +84,8 @@ func setup(registry: DataRegistry) -> void:
 		var row := HFlowContainer.new()
 		box.add_child(row)
 		_rows.append(row)
+		for tool: StringName in tab.get("tools", []):
+			row.add_child(_wall_button(tool))
 		for id: StringName in tab["buildings"]:
 			var def := registry.get_building(id)
 			if def != null:
@@ -145,6 +151,34 @@ func _building_button(def: BuildingDef) -> Button:
 		if def.gold_cost > 0:
 			lines.append(tr("ui.build.gold_cost") % def.gold_cost)
 		b.tooltip_text = "\n".join(lines))
+	return b
+
+
+## A wall tool (M7 part 2): drag a line of palisade, stone wall or stairs.
+func _wall_button(tool: StringName) -> Button:
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(96, ICON_SIZE.y + 30)
+	b.pressed.connect(func() -> void: tool_selected.emit({"kind": tool}))
+	var content := VBoxContainer.new()
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.set_anchors_preset(Control.PRESET_FULL_RECT)
+	content.alignment = BoxContainer.ALIGNMENT_CENTER
+	b.add_child(content)
+	var icon := TextureRect.new()
+	icon.texture = load("res://assets/walls/icons/%s.png" % tool) as Texture2D
+	icon.custom_minimum_size = ICON_SIZE
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(icon)
+	var name := Label.new()
+	var key := "ui.build." + String(tool)
+	name.text = key
+	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
+	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(name)
+	b.tooltip_text = key + "_tip"
 	return b
 
 

@@ -2945,3 +2945,209 @@ msgstr "odpoczywa w koszarach"
 
 msgid "ui.doing.soldier_ranks"
 msgstr "stoi w szeregu"
+
+# --- M7 part 2: walls, gatehouses, towers ---
+
+msgid "building.gatehouse.name"
+msgstr "Wieża bramna"
+
+msgid "building.gatehouse.desc"
+msgstr "Brama w murze: swoi przechodzą, wróg musi ją rozbić. Na jej dach wchodzi się z murów albo z przejścia. Postaw ją w linii muru (zastąpi mur)."
+
+msgid "building.tower.name"
+msgstr "Baszta"
+
+msgid "building.tower.desc"
+msgstr "Wysoka kamienna wieża w murze. Łucznicy na niej strzelają dalej. Wchodzi się przez drzwi na dole."
+
+msgid "ui.build.tab.defence"
+msgstr "Obrona"
+
+msgid "ui.build.palisade"
+msgstr "Palisada"
+
+msgid "ui.build.palisade_tip"
+msgstr "Palisada: 2 drewna na kafel. Przeciągnij myszą, żeby postawić linię (8 kierunków). Tania, ale słaba; nie da się po niej chodzić."
+
+msgid "ui.build.stone_wall"
+msgstr "Mur kamienny"
+
+msgid "ui.build.stone_wall_tip"
+msgstr "Mur kamienny: 3 kamienie na kafel. Przeciągnij myszą (8 kierunków); kilka rzędów zlewa się w gruby mur. Żołnierze chodzą po nim, wchodząc po schodach."
+
+msgid "ui.build.stairs"
+msgstr "Schody"
+
+msgid "ui.build.stairs_tip"
+msgstr "Schody na mur: 4 kamienie. Postaw je tuż przy murze kamiennym, wieży bramnej albo baszcie."
+
+msgid "ui.command_error.already_wall"
+msgstr "Tu już stoi mur."
+
+msgid "ui.command_error.needs_stone_wall"
+msgstr "Schody muszą stać tuż przy murze kamiennym."
+
+msgid "ui.command_error.wedge_blocked"
+msgstr "Mur po skosie potrzebuje wolnych kafli obok."
+
+msgid "ui.command_error.no_wall"
+msgstr "Tu nie ma muru."
+
+msgid "ui.command_error.bad_wall"
+msgstr "Nieznany rodzaj muru."
+
+msgid "ui.doing.wall"
+msgstr "stawia mur"
+
+# --- M7 part 2: troops ---
+
+msgid "ui.army.aggressive"
+msgstr "Atakuj sam"
+
+msgid "ui.army.aggressive_tip"
+msgstr "Żołnierze sami ruszają na każdego wroga, którego zobaczą."
+
+msgid "ui.army.defensive"
+msgstr "Broń się"
+
+msgid "ui.army.defensive_tip"
+msgstr "Żołnierze walczą z wrogiem blisko swojego miejsca, a potem do niego wracają."
+
+msgid "ui.army.hold"
+msgstr "Stój w miejscu"
+
+msgid "ui.army.hold_tip"
+msgstr "Żołnierze nie ruszają się z miejsca; biją tylko to, co podejdzie (łucznicy strzelają, jak sięgną)."
+
+msgid "ui.army.return"
+msgstr "Wróć do koszar"
+
+msgid "ui.army.life"
+msgstr "Życie: %d%%"
+
+msgid "ui.army.hint"
+msgstr "Prawy przycisk: idź (na mur: kliknij jego koronę) albo atakuj wroga. Ctrl+1..9 zapamiętuje grupę, 1..9 ją wybiera."
+
+msgid "ui.command_error.no_soldiers"
+msgstr "Nie wybrano żołnierzy."
+
+msgid "ui.command_error.cannot_go_there"
+msgstr "Tam nie da się dojść."
+
+msgid "ui.command_error.not_an_enemy"
+msgstr "To nie jest wróg."
+
+msgid "ui.command_error.bad_order"
+msgstr "Nieznany rozkaz."
+
+msgid "ui.command_error.bad_stance"
+msgstr "Nieznana postawa."
+
+msgid "ui.army.title"
+msgid_plural "ui.army.title_plural"
+msgstr[0] "%d żołnierz"
+msgstr[1] "%d żołnierze"
+msgstr[2] "%d żołnierzy"
+
+# --- M7 part 2: siege ---
+
+msgid "building.siege_workshop.name"
+msgstr "Warsztat oblężniczy"
+
+msgid "building.siege_workshop.desc"
+msgstr "Buduje tarany i drabiny na zamówienie. Tragarze znoszą deski (do taranu też żelazo), a gotową machinę obsadzają wolni mieszkańcy."
+
+msgid "unit.ram.name"
+msgstr "Taran"
+
+msgid "unit.ram.desc"
+msgstr "Kłoda okuta żelazem pod dachem ze skór: rozbija bramy i mury, strzały prawie mu nie szkodzą. Pcha go 4 ludzi. Z ludźmi nie walczy."
+
+msgid "unit.ladderman.name"
+msgstr "Drabiniarz"
+
+msgid "unit.ladderman.desc"
+msgstr "Niesie drabinę i opiera ją o mur kamienny: po niej wchodzi się na mur. Nie walczy."
+
+msgid "ui.kind.ram"
+msgstr "Taran"
+
+msgid "ui.kind.ladderman"
+msgstr "Drabiniarz"
+
+msgid "ui.kind.bandit"
+msgstr "Bandyta"
+
+msgid "ui.kind.bandit_archer"
+msgstr "Bandyta z łukiem"
+
+msgid "ui.siege.clear"
+msgstr "Wyczyść listę"
+
+msgid "ui.siege.idle"
+msgstr "Nic nie budujemy. Zamów taran albo drabinę."
+
+msgid "ui.siege.working"
+msgstr "W budowie: %s (%d%%)"
+
+msgid "ui.siege.waiting_materials"
+msgstr "Czeka na materiał: %s"
+
+msgid "ui.siege.waiting_crew"
+msgstr "Czeka na wolnych mieszkańców do obsługi (%d)."
+
+msgid "ui.siege.queued"
+msgstr "Dalej w kolejce: %d"
+
+msgid "ui.siege.needs"
+msgstr "Potrzeba: %s; obsługa: %d mieszkańców"
+
+msgid "ui.command_error.built_in_workshop"
+msgstr "To buduje warsztat oblężniczy, nie koszary."
+
+msgid "ui.command_error.not_siege_workshop"
+msgstr "To nie jest warsztat oblężniczy."
+
+msgid "ui.command_error.too_many_orders"
+msgstr "Lista zamówień jest pełna."
+
+msgid "ui.doing.fighting"
+msgstr "walczy"
+
+msgid "ui.doing.marching"
+msgstr "maszeruje"
+
+msgid "ui.doing.on_guard"
+msgstr "stoi na straży"
+
+# --- M7 part 2: raids ---
+
+msgid "ui.main.early_raid"
+msgstr "Gra z szybkim napadem bandytów"
+
+msgid "ui.note.raid_warning"
+msgstr "Bandyci nadchodzą! Za minutę będą u granic. Wyprowadź wojsko i przygotuj łuczników na murach."
+
+msgid "ui.note.raid_started"
+msgstr "Bandyci napadają na prowincję! Mieszkańcy uciekają do ratusza."
+
+msgid "ui.note.raid_looted"
+msgstr "Bandyci rozbili drzwi ratusza i złupili miasto (%d zł i towary). Mieszkańcy są przygnębieni."
+
+msgid "ui.note.raid_defeated"
+msgstr "Bandyci zostali pobici! Mieszkańcy wracają do pracy."
+
+msgid "ui.note.raid_left"
+msgstr "Bandyci odeszli z łupem."
+
+msgid "ui.note.building_broken"
+msgstr "Wróg rozbił: %s!"
+
+msgid "ui.note.siege_engine_built"
+msgstr "Warsztat oblężniczy skończył: %s."
+
+msgid "ui.command_error.raid_under_way"
+msgstr "Napad już trwa."
+
+msgid "ui.doing.sheltering"
+msgstr "chowa się przed bandytami"

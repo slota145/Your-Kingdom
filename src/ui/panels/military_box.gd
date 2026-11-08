@@ -17,6 +17,11 @@ var _barracks_label: Label
 var _recruit_row: HFlowContainer
 var _recruit_buttons: Dictionary[StringName, Button] = {}
 var _building_id: int = 0
+## Siege workshop (M7 part 2): what is in the works and the order buttons.
+var _siege_box: VBoxContainer
+var _siege_label: Label
+var _siege_row: HFlowContainer
+var _siege_buttons: Dictionary[StringName, Button] = {}
 
 
 func _init() -> void:
@@ -29,6 +34,14 @@ func _init() -> void:
 	_barracks_box.add_child(UiKit.label("ui.barracks.recruit", false))
 	_recruit_row = HFlowContainer.new()
 	_barracks_box.add_child(_recruit_row)
+	_siege_box = VBoxContainer.new()
+	add_child(_siege_box)
+	_siege_label = UiKit.label()
+	_siege_box.add_child(_siege_label)
+	_siege_row = HFlowContainer.new()
+	_siege_box.add_child(_siege_row)
+	_siege_row.add_child(UiKit.button("ui.siege.clear", func() -> void:
+		command_requested.emit(OrderSiegeCommand.new(_building_id, &""))))
 
 
 func refresh(province: ProvinceSim, b: BuildingState) -> void:
@@ -37,6 +50,40 @@ func refresh(province: ProvinceSim, b: BuildingState) -> void:
 	_barracks_box.visible = b.def.soldier_beds > 0 and b.is_complete()
 	if _barracks_box.visible:
 		_refresh_barracks(province, b)
+	_siege_box.visible = not b.def.siege_engines.is_empty() and b.is_complete()
+	if _siege_box.visible:
+		_refresh_siege(province, b)
+
+
+func _refresh_siege(province: ProvinceSim, b: BuildingState) -> void:
+	var lines := PackedStringArray()
+	if b.siege_orders.is_empty():
+		lines.append(tr("ui.siege.idle"))
+	else:
+		var unit := province.data.get_unit(b.siege_orders[0])
+		lines.append(tr("ui.siege.working") % [tr(unit.name_key()), roundi(100.0 * SiegeWorks.progress(b, province))])
+		if not SiegeWorks.has_materials(b, unit):
+			lines.append(tr("ui.siege.waiting_materials") % UiKit.goods_list(unit.build_cost))
+		elif SiegeWorks.crew_short(province, b, unit) > 0:
+			lines.append(tr("ui.siege.waiting_crew") % unit.crew)
+		if b.siege_orders.size() > 1:
+			lines.append(tr("ui.siege.queued") % (b.siege_orders.size() - 1))
+	_siege_label.text = "\n".join(lines)
+	for id: StringName in b.def.siege_engines:
+		var unit := province.data.get_unit(id)
+		if unit == null:
+			continue
+		var button: Button = _siege_buttons.get(id)
+		if button == null:
+			var unit_id := id
+			button = UiKit.button(unit.name_key(), func() -> void:
+				command_requested.emit(OrderSiegeCommand.new(_building_id, unit_id)))
+			_siege_row.add_child(button)
+			_siege_row.move_child(button, _siege_row.get_child_count() - 2)
+			_siege_buttons[id] = button
+		button.disabled = SiegeWorks.order_error(province, b, unit) != &""
+		button.tooltip_text = "\n".join([tr(unit.desc_key()),
+				tr("ui.siege.needs") % [UiKit.goods_list(unit.build_cost), unit.crew]])
 
 
 func _refresh_choices(province: ProvinceSim, b: BuildingState) -> void:
@@ -85,6 +132,8 @@ func _refresh_barracks(province: ProvinceSim, b: BuildingState) -> void:
 			else tr("ui.stockpile.empty")))
 	_barracks_label.text = "\n".join(lines)
 	for unit: UnitDef in province.data.units():
+		if unit.siege != &"":
+			continue   # built in a siege workshop (M7 part 2)
 		var button: Button = _recruit_buttons.get(unit.id)
 		if button == null:
 			var unit_id := unit.id

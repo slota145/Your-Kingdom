@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/unit_def.gd" id="1_unit"]
+[ext_resource type="Script" path="res://src/defs/combat_stats_def.gd" id="2_combat"]
+
+[sub_resource type="Resource" id="combat"]
+script = ExtResource("2_combat")
+hp = 40
+attack = 0
+attack_cooldown = 2.0
+attack_range = 1
+speed = 1.1
+
+[resource]
+script = ExtResource("1_unit")
+gold_cost = 0
+combat = SubResource("combat")
+order = 9
+siege = &"ladder"
+build_cost = Dictionary[StringName, int]({
+&"planks": 4
+})
+crew = 1
+build_time = 15.0
+id = &"ladderman"

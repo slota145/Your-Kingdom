@@ -33,6 +33,16 @@ var sites: Dictionary[int, ConstructionSite] = {}
 ## Road tiles waiting for cobbles, by entity id (M4b-3).
 var paving: Dictionary[int, PavingSite] = {}
 var fields: FieldStore = FieldStore.new()
+## Palisades, stone walls and stairs; gatehouse and tower tiles (M7 part 2).
+var walls: Walls
+## Gatehouse passage tiles -> gatehouse id (M7 part 2). Not saved: rebuilt from buildings.
+var passages: Dictionary[Vector2i, int] = {}
+## Where fighters walk: the wall-walk, the enemy's ground, ways between them (M7 part 2).
+var mil: MilitaryNav
+## Bandit raids on this province (M7 part 2).
+var raids: Raids = Raids.new()
+## Arrows in flight (M7 part 2).
+var arrows: Array[Troops.Arrow] = []
 var jobs: JobBoard = JobBoard.new()
 var paths: PathRequestQueue = PathRequestQueue.new()
 ## The kingdom's gold. Owned by the Simulation (it is global), shared here for convenience.
@@ -129,6 +139,8 @@ func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entit
 	cog_nav = NavGrid.new(size)
 	cog_nav.set_solid_rect(Rect2i(Vector2i.ZERO, size), true)
 	resources = ResourceField.new(size)
+	walls = Walls.new(size)
+	mil = MilitaryNav.new(size)
 	terrains = registry.terrains_by_index()
 	coverage.setup(size)
 
@@ -141,10 +153,13 @@ func step() -> void:
 		if agent.task != null and (agent.path_state == Agent.PathState.MOVING \
 				or agent.path_state == Agent.PathState.WAITING):
 			continue
+		if agent.combat != null and agent.combat.commanded:
+			continue   # under orders: Troops drives him (M7 part 2)
 		if agents.has_agent(agent.id):
 			TaskRunner.tick_agent(self, agent)
 	Movement.serve_paths(self)
 	Movement.move_all(self)
+	Troops.update(self)
 	Ships.move_all(self)
 	_remove_empty_piles()
 	if tick % GROW_CHECK_TICKS == 0:
@@ -170,6 +185,7 @@ func step() -> void:
 		jobs.trim_yard_requests(self)
 	Population.update(self)
 	Barracks.update(self)
+	SiegeWorks.update(self)
 
 
 # --- Map -----------------------------------------------------------------------------------
@@ -182,6 +198,10 @@ func terrain_at(tile: Vector2i) -> TerrainDef:
 func is_tile_solid(tile: Vector2i) -> bool:
 	if grid.is_blocked(tile) or resources.blocks_movement(tile):
 		return true
+	if not walls.is_empty() and walls.blocks_ground(tile):
+		return true
+	if not passages.is_empty() and passages.has(tile):
+		return false   # the way through a gatehouse (M7 part 2)
 	var terrain := terrain_at(tile)
 	if terrain != null and not terrain.walkable and not grid.has_quay(tile):
 		return true
@@ -215,7 +235,10 @@ func refresh_tile(tile: Vector2i) -> void:
 	var version := nav.version
 	nav.set_solid(tile, nav_solid)
 	var cost := 1.0
-	if grid.has_road(tile):
+	var passage := not passages.is_empty() and passages.has(tile)
+	if passage:
+		cost = PAVED_COST
+	elif grid.has_road(tile):
 		cost = PAVED_COST if grid.is_paved(tile) else ROAD_COST
 	elif grid.has_quay(tile):
 		cost = PAVED_COST if grid.quay(tile) == TileGrid.STONE_QUAY else ROAD_COST
@@ -235,7 +258,8 @@ func refresh_tile(tile: Vector2i) -> void:
 			cost = node.move_cost
 	if not is_equal_approx(nav.get_cost(tile), cost):
 		nav.set_cost(tile, cost)
-	var on_road := grid.has_road(tile) and not nav_solid
+	mil.refresh_tile(self, tile, nav_solid, cost)
+	var on_road := (grid.has_road(tile) or passage) and not nav_solid
 	road_nav.set_solid(tile, not on_road)
 	if on_road and not is_equal_approx(road_nav.get_cost(tile), cost):
 		road_nav.set_cost(tile, cost)
@@ -527,6 +551,9 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 			return &"tile_occupied"
 		if _pile_at(tile) != 0 or fields.has_field(tile) or grid.has_road(tile):
 			return &"tile_occupied"
+		# A gatehouse or a tower may stand in a wall line (it takes the wall's place, M7 part 2).
+		if not walls.is_empty() and (walls.is_stairs(tile) or (walls.blocks_ground(tile) and not def.is_fort())):
+			return &"tile_occupied"
 	if def.needs_terrain_near != &"" and not has_terrain_near(def, origin):
 		return StringName("no_%s_nearby" % def.needs_terrain_near)
 	if def.needs_node_near != &"" and not has_node_near(def, origin):
@@ -573,8 +600,10 @@ func _access_error(def: BuildingDef, origin: Vector2i, orientation: int) -> Stri
 	if fronts.is_empty():
 		return &"entrance_faces_water" if water else &"no_access"
 	var blocked: Dictionary[Vector2i, bool] = {}
+	var passage := def.passage_at(orientation)
 	for tile: Vector2i in def.footprint_tiles(origin):
-		blocked[tile] = true
+		if not passage.has(tile - origin):
+			blocked[tile] = true
 	var door_owner: Dictionary[Vector2i, int] = {}
 	for building: BuildingState in buildings.all():
 		for door: Vector2i in door_tiles(building):
@@ -1097,6 +1126,8 @@ func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false,
 	if not instant:
 		treasury.pay(def.gold_cost)
 	buildings.add(building)
+	if def.is_fort():
+		_add_fort(building)
 	for tile: Vector2i in building.tiles():
 		grid.set_occupant(tile, building.id)
 		resources.clear(tile)
@@ -1140,6 +1171,8 @@ func remove_building(id: int) -> void:
 			TaskRunner.fail(self, agent)
 	Ships.on_building_removed(self, id)
 	var tiles := building.tiles()
+	if building.def.is_fort():
+		_remove_fort(building)
 	for tile: Vector2i in tiles:
 		grid.set_occupant(tile, 0)
 		refresh_tile(tile)
@@ -1279,7 +1312,9 @@ func pave_next(paving_site: PavingSite) -> void:
 	paving_site.stock.remove(paving_site.good(), paving_site.per_tile())
 	ledger.used(paving_site.good(), paving_site.per_tile(), tick)
 	paving_site.work_left = paving_site.tile_ticks()
-	if paving_site.is_quay():
+	if paving_site.is_wall():
+		lay_wall(tile, paving_site.wall_value())
+	elif paving_site.is_quay():
 		grid.set_quay(tile, paving_site.quay_value())
 		refresh_tile(tile)
 		refresh_fairways()
@@ -1378,7 +1413,7 @@ const _STEPS8: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0
 ## Agent.NO_TILE when none can be reached now.
 func paving_stand(paving_site: PavingSite) -> Vector2i:
 	var tile := paving_site.next_tile()
-	if tile == Agent.NO_TILE or not paving_site.is_quay():
+	if tile == Agent.NO_TILE or not paving_site.stands_beside():
 		return tile
 	for step: Vector2i in _STEPS4:
 		var t := tile + step
@@ -1389,6 +1424,8 @@ func paving_stand(paving_site: PavingSite) -> Vector2i:
 
 ## Whether the next tile of [param paving_site] can be laid now (no ship lies on a quay tile).
 func can_lay(paving_site: PavingSite) -> bool:
+	if paving_site.is_wall():
+		return wall_can_lay(paving_site)
 	if not paving_site.is_quay():
 		return true
 	var tile := paving_site.next_tile()
@@ -1702,7 +1739,347 @@ func _free_ground_error(tile: Vector2i) -> StringName:
 		return &"tile_occupied"
 	if grid.has_quay(tile) or (not paving.is_empty() and paving_site_at(tile) != 0):
 		return &"tile_occupied"
+	if not walls.is_empty() and (walls.kind(tile) != Walls.NONE or walls.wedges.has(tile) \
+			or walls.fort_tiles.has(tile)):
+		return &"tile_occupied"
 	return &""
+
+
+# --- Walls (M7 part 2) ----------------------------------------------------------------------
+
+## &"" when a wall of [param wall_kind] (Walls.PALISADE, STONE or STAIRS) can be ordered on
+## [param tile] on its own: free buildable ground. Stairs must lean against a stone wall or
+## a gatehouse or tower (or one ordered in [param planned]).
+func wall_error(tile: Vector2i, wall_kind: int, planned: Dictionary[Vector2i, bool] = {}) -> StringName:
+	if not grid.is_inside(tile):
+		return &"outside_map"
+	if walls.kind(tile) != Walls.NONE or walls.fort_tiles.has(tile):
+		return &"already_wall"
+	# A wedge only fills the corner of a slanting wall: a wall may take its place.
+	if walls.wedges.has(tile) and wall_kind != Walls.STAIRS:
+		return &""
+	var error := _free_ground_error(tile)
+	if error != &"":
+		return error
+	var terrain := terrain_at(tile)
+	if terrain != null and not terrain.walkable:
+		return &"terrain_not_buildable"
+	if wall_kind == Walls.STAIRS and stairs_dir_for(tile, planned) < 0:
+		return &"needs_stone_wall"
+	return &""
+
+
+## Direction index (Walls.DIRS) of stairs on [param tile]: towards a neighbouring stone wall,
+## gatehouse or tower (laid, or planned in [param planned]); -1 when none.
+func stairs_dir_for(tile: Vector2i, planned: Dictionary[Vector2i, bool] = {}) -> int:
+	for d: int in Walls.DIRS.size():
+		var t: Vector2i = tile + Walls.DIRS[d]
+		if walls.is_mass(t) or planned.has(t) or _ordered_wall(t) == Walls.STONE:
+			return d
+	return -1
+
+
+## Walls value of the wall ordered (not laid yet) on [param tile], Walls.NONE if none.
+func _ordered_wall(tile: Vector2i) -> int:
+	if paving.is_empty():
+		return Walls.NONE
+	var id := paving_site_at(tile)
+	return (paving[id] as PavingSite).wall_value() if id != 0 else Walls.NONE
+
+
+## Which of [param tiles] can be ordered as walls of [param wall_kind] together:
+## {"tiles": accepted tiles in drag order, "errors": tile -> reason for the rest}. Stone walls
+## make wedges between diagonal blocks (Walls.wedges_of): a wedge must fall on free ground.
+## Nothing is accepted (&"blocks_access") when the walls, once laid, would cut a building,
+## a ground pile or a person off from the rest of the town: leave a gap or a gatehouse.
+func wall_plan(tiles: Array[Vector2i], wall_kind: int) -> Dictionary:
+	var errors: Dictionary[Vector2i, StringName] = {}
+	var accepted: Array[Vector2i] = []
+	var planned: Dictionary[Vector2i, bool] = {}
+	if wall_kind == Walls.STONE:
+		for tile: Vector2i in tiles:
+			planned[tile] = true
+	for tile: Vector2i in tiles:
+		if accepted.has(tile) or errors.has(tile):
+			continue
+		var error := wall_error(tile, wall_kind, planned)
+		if error == &"":
+			accepted.append(tile)
+		else:
+			errors[tile] = error
+	# Every stone tile, laid or ordered, and the wedges they will make.
+	var future := _future_mass()
+	if wall_kind == Walls.STONE and not accepted.is_empty():
+		for tile: Vector2i in accepted:
+			future[tile] = true
+		var around: Array[Vector2i] = []
+		for tile: Vector2i in accepted:
+			for dy: int in range(-1, 2):
+				for dx: int in range(-1, 2):
+					around.append(tile + Vector2i(dx, dy))
+		var wedges := Walls.wedges_of(func(t: Vector2i) -> bool: return future.has(t), around)
+		for wedge: Vector2i in wedges:
+			if walls.wedges.has(wedge) or _free_ground_error(wedge) == &"":
+				continue
+			# The blocks that make this wedge are refused.
+			for tile: Vector2i in accepted.duplicate():
+				if absi(tile.x - wedge.x) <= 1 and absi(tile.y - wedge.y) <= 1 and tile != wedge:
+					accepted.erase(tile)
+					errors[tile] = &"wedge_blocked"
+	if not accepted.is_empty() and wall_kind != Walls.STAIRS:
+		var blocked := _future_wall_blocks(accepted, wall_kind)
+		if _walls_cut_off(blocked):
+			for tile: Vector2i in accepted:
+				errors[tile] = &"blocks_access"
+			accepted.clear()
+	return {"tiles": accepted, "errors": errors}
+
+
+## Stone mass, laid and ordered: tile -> true.
+func _future_mass() -> Dictionary[Vector2i, bool]:
+	var mass: Dictionary[Vector2i, bool] = {}
+	for tile: Vector2i in walls.tiles():
+		if walls.is_stone(tile):
+			mass[tile] = true
+	for tile: Vector2i in walls.fort_tiles:
+		mass[tile] = true
+	for paving_site: PavingSite in paving.values():
+		if paving_site.kind == PavingSite.KIND_STONE_WALL:
+			for tile: Vector2i in paving_site.tiles:
+				mass[tile] = true
+	return mass
+
+
+## Tiles not solid yet that will be once the ordered walls and [param tiles] are laid.
+func _future_wall_blocks(tiles: Array[Vector2i], wall_kind: int) -> Dictionary[Vector2i, bool]:
+	var blocked: Dictionary[Vector2i, bool] = {}
+	for tile: Vector2i in tiles:
+		blocked[tile] = true
+	var mass := _future_mass()
+	if wall_kind == Walls.STONE:
+		for tile: Vector2i in tiles:
+			mass[tile] = true
+	for paving_site: PavingSite in paving.values():
+		if paving_site.kind == PavingSite.KIND_PALISADE or paving_site.kind == PavingSite.KIND_STONE_WALL:
+			for tile: Vector2i in paving_site.tiles:
+				blocked[tile] = true
+	var around: Array[Vector2i] = []
+	around.assign(mass.keys())
+	for wedge: Vector2i in Walls.wedges_of(func(t: Vector2i) -> bool: return mass.has(t), around):
+		if not walls.wedges.has(wedge):
+			blocked[wedge] = true
+	return blocked
+
+
+## Whether making [param blocked] solid cuts some door, ground pile or person off from where
+## the seat (or the first building) is reached now.
+func _walls_cut_off(blocked: Dictionary[Vector2i, bool]) -> bool:
+	var targets: Dictionary[Vector2i, bool] = {}
+	for building: BuildingState in buildings.all():
+		for door: Vector2i in door_tiles(building):
+			targets[door] = true
+	if targets.is_empty():
+		return false
+	for pile: GroundPile in piles.values():
+		targets[pile.tile] = true
+	for agent: Agent in agents.all():
+		if nav.is_walkable(agent.tile()):
+			targets[agent.tile()] = true
+	var start := Agent.NO_TILE
+	var hall := seat()
+	if hall != null:
+		start = door_tile(hall)
+	if start == Agent.NO_TILE or blocked.has(start):
+		for door: Vector2i in targets:
+			if not blocked.has(door):
+				start = door
+				break
+	if start == Agent.NO_TILE:
+		return false
+	var before := nav.reachable(start, targets)
+	var after := nav.reachable(start, before, blocked)
+	for tile: Vector2i in before:
+		if not after.has(tile) and not blocked.has(tile):
+			return true
+	return false
+
+
+## Orders [param tiles] (checked with wall_plan) as walls of [param wall_kind]: porters bring
+## the wood or stone, a builder lays one tile after another. Stairs get one site per tile
+## (each has its own direction). Returns the (last) site id.
+func order_walls(tiles: Array[Vector2i], wall_kind: int) -> int:
+	if tiles.is_empty():
+		return 0
+	var site_kind := PavingSite.kind_for_wall(wall_kind)
+	var groups: Array[Array] = []
+	if wall_kind == Walls.STAIRS:
+		for tile: Vector2i in tiles:
+			groups.append([tile])
+	else:
+		groups.append(tiles)
+	var id := 0
+	for group: Array in groups:
+		var list: Array[Vector2i] = []
+		list.assign(group)
+		var paving_site := PavingSite.new(ids.take(), list, data, site_kind)
+		if wall_kind == Walls.STAIRS:
+			paving_site.stairs_dir = maxi(stairs_dir_for(list[0]), 0)
+		paving[paving_site.id] = paving_site
+		jobs.add(paving_site.good(), list.size() * paving_site.per_tile(), 0, paving_site.id)
+		for tile: Vector2i in list:
+			refresh_tile(tile)
+		id = paving_site.id
+		events.emit(&"wall_ordered", {"site": id, "tiles": list.size(), "wall": wall_kind})
+	return id
+
+
+## Whether the next wall tile of [param paving_site] can be laid: no ground pile on it or on
+## a wedge it makes. People standing there step aside when it is laid.
+func wall_can_lay(paving_site: PavingSite) -> bool:
+	var tile := paving_site.next_tile()
+	if tile == Agent.NO_TILE or _pile_at(tile) != 0:
+		return false
+	for wedge: Vector2i in _wedges_if_laid(tile, paving_site.wall_value()):
+		if _pile_at(wedge) != 0 or grid.occupant(wedge) != 0 or grid.has_road(wedge):
+			return false
+	return true
+
+
+func _wedges_if_laid(tile: Vector2i, wall_value: int) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	if wall_value != Walls.STONE:
+		return result
+	var around: Array[Vector2i] = []
+	for dy: int in range(-1, 2):
+		for dx: int in range(-1, 2):
+			around.append(tile + Vector2i(dx, dy))
+	var mass := func(t: Vector2i) -> bool: return t == tile or walls.is_mass(t)
+	for wedge: Vector2i in Walls.wedges_of(mass, around):
+		if not walls.wedges.has(wedge):
+			result.append(wedge)
+	return result
+
+
+## Lays a wall tile (a builder finished it): people on it or on its new wedges step aside.
+func lay_wall(tile: Vector2i, wall_value: int) -> void:
+	var newly: Array[Vector2i] = [tile]
+	newly.append_array(_wedges_if_laid(tile, wall_value))
+	walls.set_kind(tile, wall_value)
+	_refresh_wall_tiles(tile)
+	for t: Vector2i in newly:
+		if walls.blocks_ground(t):
+			_step_aside(t)
+	events.emit(&"wall_changed", {"tile": tile, "wall": wall_value})
+
+
+## Refreshes the navigation around a changed wall tile (its wedges reach 2 tiles).
+func _refresh_wall_tiles(tile: Vector2i) -> void:
+	for dy: int in range(-2, 3):
+		for dx: int in range(-2, 3):
+			var t := tile + Vector2i(dx, dy)
+			if grid.is_inside(t):
+				refresh_tile(t)
+
+
+## Moves everybody standing on [param tile] (now solid) to the nearest walkable tile.
+func _step_aside(tile: Vector2i) -> void:
+	for agent: Agent in agents.all():
+		if agent.tile() != tile:
+			continue
+		var best := Agent.NO_TILE
+		var best_d := INF
+		for step: Vector2i in _STEPS8:
+			var t := tile + step
+			if nav.is_walkable(t) and (agent.pos - IsoMath.tile_center(t)).length() < best_d:
+				best_d = (agent.pos - IsoMath.tile_center(t)).length()
+				best = t
+		if best == Agent.NO_TILE:
+			continue
+		agent.pos = IsoMath.tile_center(best)
+		agent.prev_pos = agent.pos
+		if agent.path_state == Agent.PathState.MOVING:
+			var goal := agent.path_goal
+			agent.clear_path()
+			agent.path_goal = goal
+			agent.path_state = Agent.PathState.WAITING
+			paths.push(agent.id)
+
+
+## &"" when the wall tile (or stairs) at [param tile] can be pulled down.
+func remove_wall_error(tile: Vector2i) -> StringName:
+	if walls.kind(tile) == Walls.NONE:
+		return &"no_wall"
+	return &""
+
+
+## Pulls down a wall tile: part of its material goes on the ground beside it.
+func remove_wall(tile: Vector2i) -> void:
+	var wall_value := walls.kind(tile)
+	if wall_value == Walls.NONE:
+		return
+	walls.set_kind(tile, Walls.NONE)
+	_refresh_wall_tiles(tile)
+	var site_kind := PavingSite.kind_for_wall(mini(wall_value, Walls.STAIRS))
+	var amount := floori(PavingSite.per_tile_of(site_kind) * Construction.REFUND_SHARE)
+	if amount > 0:
+		drop_goods(tile, PavingSite.good_of(site_kind), amount)
+	# Stairs leaning on a wall that is gone go too.
+	for d: int in Walls.DIRS.size():
+		var t: Vector2i = tile - Walls.DIRS[d]
+		if walls.stairs_dir(t) == d and not walls.is_mass(tile):
+			remove_wall(t)
+	events.emit(&"wall_changed", {"tile": tile, "wall": Walls.NONE})
+
+
+## Damage to a wall tile in a fight (M7 part 2); true when it falls (it leaves no material).
+func damage_wall(tile: Vector2i, amount: int) -> bool:
+	if not walls.damage(tile, amount):
+		return false
+	for foot: Vector2i in mil.ladders.keys():
+		if mil.ladders[foot] == tile:
+			Troops.remove_ladder(self, foot)
+	_refresh_wall_tiles(tile)
+	for d: int in Walls.DIRS.size():
+		var t: Vector2i = tile - Walls.DIRS[d]
+		if walls.stairs_dir(t) == d:
+			walls.set_kind(t, Walls.NONE)
+			refresh_tile(t)
+	events.emit(&"wall_changed", {"tile": tile, "wall": Walls.NONE, "destroyed": true})
+	return true
+
+
+## Places a finished building at once when it fits (setup code and screenshots); null if not.
+func execute_place(id: StringName, origin: Vector2i, orientation: int) -> BuildingState:
+	var def := data.get_building(id)
+	var error := placement_error(def, origin, orientation)
+	if error != &"":
+		push_warning("cannot place %s at %s: %s" % [id, origin, error])
+		return null
+	return add_building(def, origin, true, orientation)
+
+
+## A building's life ran out in a fight (M7 part 2): a gatehouse stands open to everybody.
+func break_building(building: BuildingState) -> void:
+	building.hp = 0
+	for tile: Vector2i in building.passage_tiles():
+		refresh_tile(tile)
+	events.emit(&"building_broken", {"building": building.id, "def": building.def.id})
+
+
+func _add_fort(building: BuildingState) -> void:
+	walls.add_fort(building.tiles(), building.id)
+	for tile: Vector2i in building.passage_tiles():
+		passages[tile] = building.id
+	for tile: Vector2i in building.tiles():
+		_refresh_wall_tiles(tile)
+
+
+func _remove_fort(building: BuildingState) -> void:
+	walls.remove_fort(building.id)
+	for tile: Vector2i in building.passage_tiles():
+		passages.erase(tile)
+	for tile: Vector2i in building.tiles():
+		_refresh_wall_tiles(tile)
 
 
 # --- Agents --------------------------------------------------------------------------------
@@ -2264,6 +2641,14 @@ func to_dict() -> Dictionary:
 		d["grace_until"] = grace_until
 	if rare_resource != &"":
 		d["rare"] = String(rare_resource)
+	if walls.count() > 0:
+		d["walls"] = walls.to_dict()
+	if not mil.ladders.is_empty():
+		d["military"] = mil.to_dict()
+	if not arrows.is_empty():
+		d["arrows"] = Troops.arrows_to_list(self)
+	if raids.next_tick >= 0 or raids.count > 0:
+		d["raids"] = raids.to_dict()
 	return d
 
 
@@ -2295,9 +2680,21 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 	province.grid = grid
 	province.resources = ResourceField.from_dict(d["resources"], grid.size, registry)
 	province.buildings = BuildingStore.from_dict(d["buildings"], registry)
+	if d.has("walls"):
+		province.walls = Walls.from_dict(d["walls"], grid.size)
 	for building: BuildingState in province.buildings.all():
 		for tile: Vector2i in building.tiles():
 			grid.set_occupant(tile, building.id)
+		if building.def.is_fort():
+			province.walls.add_fort(building.tiles(), building.id)
+			for tile: Vector2i in building.passage_tiles():
+				province.passages[tile] = building.id
+	province.walls.rebuild_wedges()
+	province.mil.load_dict(d.get("military", {}))
+	if d.has("raids"):
+		province.raids = Raids.from_dict(d["raids"])
+	for ad: Variant in d.get("arrows", []):
+		province.arrows.append(Troops.Arrow.from_dict(ad))
 	for pd: Variant in d.get("piles", []):
 		var pile := GroundPile.from_dict(pd, registry)
 		province.piles[pile.id] = pile
