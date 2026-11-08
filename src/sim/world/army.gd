@@ -35,8 +35,10 @@ var arrive_at: int = 0
 var units: Dictionary[StringName, int] = {}
 ## Units of bread it carries (fractions eaten on the way).
 var food: float = 0.0
-## Warships carrying it (M7 part 3, E): ship entity ids of province [member home].
-var ships: Array[int] = []
+## Warships carrying it by sea (M7 part 3), taken from province [member fleet_home]; when
+## it lands they sail back there.
+var ships: int = 0
+var fleet_home: int = 0
 ## The province it came from: the player's home town, or the bandits' camp.
 var home: int = 0
 ## Where its men came onto the map of [member at] (and leave again when they retreat).
@@ -45,6 +47,8 @@ var entry: Vector2i = Vector2i(-1, -1)
 var loot_gold: int = 0
 ## Bandits: warned the viewed province they are about to arrive at.
 var warned: bool = false
+## It came by sea: its men land on the beach (not at the edge of the map).
+var landed_by_sea: bool = false
 
 
 func men() -> int:
@@ -99,7 +103,7 @@ func goal() -> int:
 
 
 func side() -> BattleSide:
-	return BattleSide.new(units, is_fed(), ships.size())
+	return BattleSide.new(units, is_fed(), ships)
 
 
 func to_dict() -> Dictionary:
@@ -112,14 +116,17 @@ func to_dict() -> Dictionary:
 		d["arrive"] = arrive_at
 		if by_sea:
 			d["sea"] = true
-	if not ships.is_empty():
-		d["ships"] = ships.duplicate()
+	if ships != 0:
+		d["ships"] = ships
+		d["fleet_home"] = fleet_home
 	if entry.x >= 0:
 		d["entry"] = SimCodec.vec2i(entry)
 	if loot_gold != 0:
 		d["loot_gold"] = loot_gold
 	if warned:
 		d["warned"] = true
+	if landed_by_sea:
+		d["landed_by_sea"] = true
 	return d
 
 
@@ -138,9 +145,10 @@ static func from_dict(d: Dictionary) -> Army:
 	a.depart_at = int(d.get("depart", 0))
 	a.arrive_at = int(d.get("arrive", 0))
 	a.by_sea = bool(d.get("sea", false))
-	for s: Variant in d.get("ships", []):
-		a.ships.append(int(s))
+	a.ships = int(d.get("ships", 0))
+	a.fleet_home = int(d.get("fleet_home", 0))
 	a.entry = SimCodec.to_vec2i(d.get("entry", [-1, -1]))
 	a.loot_gold = int(d.get("loot_gold", 0))
 	a.warned = bool(d.get("warned", false))
+	a.landed_by_sea = bool(d.get("landed_by_sea", false))
 	return a

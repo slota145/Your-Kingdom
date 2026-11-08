@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ShipDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/ship_def.gd" id="1_ship"]
+
+[resource]
+script = ExtResource("1_ship")
+deep_only = true
+speed = 1.1
+hold_slots = 2
+hold_stack = 10
+build_cost = Dictionary[StringName, int]({
+&"cloth": 6,
+&"planks": 32,
+&"tar": 10
+})
+build_time = 360.0
+stages = 4
+stage_goods = Array[Dictionary]([{
+&"planks": 12
+}, {
+&"planks": 16,
+&"tar": 6
+}, {
+&"cloth": 6,
+&"planks": 4
+}, {
+&"tar": 4
+}])
+troops = 30
+id = &"warship"

@@ -378,6 +378,9 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	if _m7 == "siege":
 		_place_siege(sim)
 		return
+	if _m7 == "fleet":
+		_place_fleet(sim, at)
+		return
 	if _m7 == "walls":
 		_place_walls(sim, at)
 		return
@@ -468,6 +471,20 @@ func _place_army(sim: Simulation, at: Vector2i) -> void:
 	sim.run_ticks(12 if _drill else 0)
 	Game.paused = true
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(barracks.entrance_tile() + Vector2i(1, 2))
+
+
+## M7 part 3 (--map=coast --m7=fleet): two warships at anchor in deep water near --tile.
+func _place_fleet(sim: Simulation, at: Vector2i) -> void:
+	var def := sim.data.get_ship(&"warship")
+	for k: int in 2:
+		var ship := ShipUnit.new(sim.ids.take(), def, IsoMath.tile_center(at), sim.data)
+		var spot := Voyage.anchorage(sim.province, ship, at + Vector2i(k * 6, k * 3))
+		if spot == Agent.NO_TILE:
+			continue
+		ship.pos = IsoMath.tile_center(spot)
+		ship.prev_pos = ship.pos
+		ship.facing = 3 + k * 2
+		sim.province.ships[ship.id] = ship
 
 
 ## M7 part 3 (--world --m7=siege [--siege=<id>] [--raid_seconds=<s>]): the player's army waits at

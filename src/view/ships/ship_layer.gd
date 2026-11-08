@@ -11,7 +11,8 @@ const FRAMES := {&"idle": 1, &"row": 4, &"cast_net": 4, &"wait_net": 4, &"haul_n
 ## Ships with bigger frames (M5 part 2): frame size and the centre at the waterline. Their
 ## sheets have 8 rows (directions) and as many frames per row as fit (tools/render_cog.py).
 const BIG_FRAMES := {&"foreign_cog": [Vector2i(220, 220), Vector2(110, 168)],
-		&"cog": [Vector2i(220, 220), Vector2(110, 168)]}
+		&"cog": [Vector2i(220, 220), Vector2(110, 168)],
+		&"warship": [Vector2i(220, 220), Vector2(110, 168)]}
 ## A big ship on the slipway (M5 part 3): build_<n>.png of the same frame size, one frame per
 ## direction; the hull stands on keel blocks, this far (px) above the slipway centre.
 const SLIP_LIFT := 6.0

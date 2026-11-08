@@ -3277,3 +3277,12 @@ msgid "ui.world.army_title"
 msgid_plural "ui.world.army_title_plural"
 msgstr[0] "Army: %d soldier"
 msgstr[1] "Army: %d soldiers"
+
+msgid "ship.warship.name"
+msgstr "Warship"
+
+msgid "ship.warship.desc"
+msgstr "A cog with shields along her sides. Carries an army (up to 30 soldiers) by sea between coasts and to the islands; after landing it, she sails back to port. Deep water only. Cost: 32 planks, 10 barrels of tar, 6 bolts of cloth; 4 building stages."
+
+msgid "ui.command_error.needs_warships"
+msgstr "Only warships can take the army there (room for all its soldiers)."

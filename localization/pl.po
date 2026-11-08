@@ -3310,3 +3310,12 @@ msgid_plural "ui.world.army_title_plural"
 msgstr[0] "Armia: %d żołnierz"
 msgstr[1] "Armia: %d żołnierze"
 msgstr[2] "Armia: %d żołnierzy"
+
+msgid "ship.warship.name"
+msgstr "Okręt wojenny"
+
+msgid "ship.warship.desc"
+msgstr "Koga z tarczami wzdłuż burt. Przewozi armię (do 30 żołnierzy) morzem między wybrzeżami i na wyspy; po wysadzeniu wojska wraca do portu. Pływa tylko po głębokiej wodzie. Koszt: 32 deski, 10 beczek smoły, 6 bel sukna; 4 etapy budowy."
+
+msgid "ui.command_error.needs_warships"
+msgstr "Tam dopłyniesz tylko okrętami wojennymi (miejsca dla wszystkich żołnierzy)."

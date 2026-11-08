@@ -301,3 +301,30 @@ func test_armies_and_the_camp_survive_a_save() -> void:
 	assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(SimCodec.canonical(saved))
 	assert_int((loaded.world.armies[army.id] as Army).state).is_equal(Army.State.MOVING)
 	assert_object(loaded.world.camp).is_not_null()
+
+
+func test_an_army_sails_on_warships_and_they_come_back() -> void:
+	var sim := _sim()
+	var home := sim.world.id_of(&"landing_bay")
+	var isle := sim.world.id_of(&"gull_isle")
+	var army := _army(sim, home, {"spearman": 20})
+	assert_str(String(Armies.send_error(sim, army, isle))).is_equal("needs_warships")
+	var def := sim.data.get_ship(&"warship")
+	var ship := ShipUnit.new(sim.ids.take(), def, Vector2.ZERO, sim.data)
+	var at := Armies._sea_spot(sim.province, ship)
+	assert_vector(Vector2(at)).is_not_equal(Vector2(Agent.NO_TILE))
+	ship.pos = IsoMath.tile_center(at)
+	sim.province.ships[ship.id] = ship
+	assert_bool(Armies.goes_by_sea(sim, army, isle)).is_true()
+	assert_str(String(sim.execute(SendArmyCommand.new(army.id, isle)))).is_empty()
+	assert_int(army.ships).is_equal(1)
+	assert_bool(army.by_sea).is_true()
+	assert_bool(sim.province.ships.has(ship.id)).is_false()
+	var there := _until(sim, 900, func() -> bool: return army.state == Army.State.IDLE and army.at == isle)
+	assert_bool(there).is_true()
+	assert_int(army.ships).is_equal(0)
+	assert_int(Armies.warships_at(sim, home).size()).is_equal(1)
+	# Two fleets meeting at sea fight a sea battle.
+	var r := BattleResolver.resolve(sim.data, BattleSide.new(_units({"spearman": 30}), true, 1),
+			BattleSide.new(_units({"spearman": 10}), true, 1), BattleResolver.Kind.NAVAL, sim.rng.stream(&"t"))
+	assert_bool(r.a_won()).is_true()

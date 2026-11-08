@@ -60,8 +60,8 @@ func show_for(simulation: Simulation, id: int) -> void:
 		lines.append(tr("ui.world.army_hungry"))
 	elif per_minute > 0.0:
 		lines.append(tr("ui.world.army_food") % [floori(army.food), ceili(army.food / per_minute)])
-	if not army.ships.is_empty():
-		lines.append(tr("ui.world.army_ships") % army.ships.size())
+	if army.ships > 0:
+		lines.append(tr("ui.world.army_ships") % army.ships)
 	_body.text = "\n".join(lines)
 	var at_siege := Armies.siege_error(sim, army) == &""
 	_enter.visible = at_siege

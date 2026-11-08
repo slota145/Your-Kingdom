@@ -6,6 +6,7 @@ Run: python3 tools/render_cog.py <ship id> <faction colour as r,g,b> [--stages]
      e.g. python3 tools/render_cog.py foreign_cog 40,118,72
           python3 tools/render_cog.py cog 46,84,168            (the player's cog, M5 part 3)
           python3 tools/render_cog.py cog 46,84,168 --stages   (build_0..2 on the slipway)
+          python3 tools/render_cog.py warship 168,40,36 --war [--stages]   (the warship, M7 part 3)
 Output: assets/ships/<ship id>/idle.png: 8 rows (directions in ART_SPEC order S, SE, E, NE, N,
 NW, W, SW) of BOB_FRAMES frames of 220x220 in which the ship rocks gently on the waves; the
 ship centre at the waterline is at (110, 168) in every frame (ShipLayer.BIG_FRAMES). The
@@ -28,6 +29,8 @@ from PIL import Image
 SHIP_ID = sys.argv[1] if len(sys.argv) > 1 else "foreign_cog"
 FACTION = tuple(int(v) for v in (sys.argv[2] if len(sys.argv) > 2 else "40,118,72").split(","))
 STAGES = "--stages" in sys.argv
+# The warship (M7 part 3): the same cog with a row of shields along both sides of the waist.
+WAR = "--war" in sys.argv
 # Height of the water (idle) or of the slipway floor (stages) where rays stop.
 WATER = 0.0
 # Hull cut at the waterline (False on the slipway: the whole hull shows).
@@ -138,6 +141,8 @@ def f_crenels(p):
 
 
 SHIELD_X = (-54.0, -43.5, -33.0)
+# The warship's shields along the waist, hung on the rail.
+WAIST_X = (-22.0, -12.0, -2.0, 8.0, 18.0, 28.0) if WAR else ()
 
 
 def f_shields(p):
@@ -146,6 +151,11 @@ def f_shields(p):
     for xc in SHIELD_X:
         ys = side_y(np.array(xc)) + 0.4
         d = np.maximum(np.hypot(x - xc, z - (ZD + 7.0)) - 4.4, np.abs(np.abs(y) - ys - 0.4) - 0.9)
+        out = np.minimum(out, d)
+    for xc in WAIST_X:
+        ys = side_y(np.array(xc)) + 0.4
+        zc = deck_z(np.array(xc)) + 1.5
+        d = np.maximum(np.hypot(x - xc, z - zc) - 4.0, np.abs(np.abs(y) - ys - 0.4) - 0.9)
         out = np.minimum(out, d)
     return out
 

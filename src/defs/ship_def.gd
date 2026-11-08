@@ -25,6 +25,10 @@ extends GameDef
 @export var trades: bool = false
 
 
+## Soldiers it carries (the warship, M7 part 3); 0 = not a warship.
+@export_range(0, 99) var troops: int = 0
+
+
 ## Art folder in assets/ships when it differs from the id (the settlers' ship looks like the
 ## player's cog).
 @export var art: StringName = &""

@@ -20,6 +20,6 @@ door_sides = &"one"
 water_tiles = Array[Vector2i]([Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2), Vector2i(0, 3), Vector2i(1, 3), Vector2i(2, 3), Vector2i(3, 3)])
 berth = Vector2i(1, 4)
 berth_fairway = true
-ship_kinds = Array[StringName]([&"fishing_boat", &"cog"])
+ship_kinds = Array[StringName]([&"fishing_boat", &"cog", &"warship"])
 on_quay = true
 id = &"shipyard"

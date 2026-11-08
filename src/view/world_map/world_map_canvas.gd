@@ -593,7 +593,7 @@ func _draw_army_route() -> void:
 		return
 	var ok := Armies.send_error(sim, army, _hover) == &""
 	var stops: Array[int] = [_hover]
-	if ok and not (not army.ships.is_empty() and sim.world.sea_route(army.at, _hover, sim.data)):
+	if ok and not Armies.goes_by_sea(sim, army, _hover):
 		stops = sim.world.land_route(army.at, _hover, sim.data)
 	var from := army_point(army)
 	for stop: int in stops:
