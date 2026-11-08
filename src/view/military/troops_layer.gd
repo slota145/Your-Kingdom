@@ -78,11 +78,18 @@ func _draw_arrow(arrow: Troops.Arrow) -> void:
 	t = clampf(t, 0.0, 1.0)
 	var a := _screen(arrow.from, arrow.from_level) - Vector2(0, 26)
 	var b := _screen(arrow.to, arrow.to_level) - Vector2(0, 18)
-	var arc := a.distance_to(b) * 0.25
+	var arc := a.distance_to(b) * (0.08 if arrow.bolt else 0.25)
 	var p := a.lerp(b, t) - Vector2(0, arc * 4.0 * t * (1.0 - t))
 	var t2 := minf(t + 0.04, 1.0)
 	var q := a.lerp(b, t2) - Vector2(0, arc * 4.0 * t2 * (1.0 - t2))
 	var dir := (q - p).normalized() if q != p else (b - a).normalized()
+	if arrow.bolt:
+		# A ballista's bolt (J1 part 2): long, thick, a flat flight, an iron head, wooden vanes.
+		draw_line(p - dir * 12.0, p, SHAFT.darkened(0.2), 3.0)
+		draw_line(p - dir * 12.0, p - dir * 15.0 + dir.orthogonal() * 3.0, SHAFT.lightened(0.2), 1.5)
+		draw_line(p - dir * 12.0, p - dir * 15.0 - dir.orthogonal() * 3.0, SHAFT.lightened(0.2), 1.5)
+		draw_line(p, p + dir * 4.0, HEAD, 3.0)
+		return
 	draw_line(p - dir * 7.0, p, SHAFT, 1.5)
 	draw_line(p - dir * 7.0, p - dir * 9.0 + dir.orthogonal() * 2.0, Color.WHITE, 1.0)
 	draw_line(p, p + dir * 2.0, HEAD, 1.5)

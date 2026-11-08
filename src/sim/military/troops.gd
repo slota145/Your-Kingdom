@@ -28,10 +28,19 @@ const WALL_COVER := 0.5
 const PER_TILE := 2
 const _SLOT_OFFSETS: Array[Vector2] = [Vector2(-0.2, 0.2), Vector2(0.2, -0.2)]
 
+## The ballista (J1 part 2): a siege engine that fights like an archer from far away, and
+## hurts walls and gates only by this share of its bolt.
+const BALLISTA := &"ballista"
+const BALLISTA_WALL_SHARE := 0.2
+
 ## Arrows in flight: shooter faction, target agent id, from and to (grid), ticks left, damage.
+## A ballista's bolt (J1 part 2) is drawn heavier; one shot at a wall or a gate lands on
+## [member wall] instead of a man.
 class Arrow:
 	extends RefCounted
 	var target_id: int
+	var bolt: bool = false
+	var wall: Vector2i = Vector2i(-1, -1)
 	var from: Vector2
 	var from_level: int
 	var to: Vector2
@@ -41,8 +50,13 @@ class Arrow:
 	var damage: int
 
 	func to_dict() -> Dictionary:
-		return {"t": target_id, "f": SimCodec.vec2(from), "fl": from_level, "to": SimCodec.vec2(to),
+		var d := {"t": target_id, "f": SimCodec.vec2(from), "fl": from_level, "to": SimCodec.vec2(to),
 				"tl": to_level, "n": ticks, "of": total, "d": damage}
+		if bolt:
+			d["b"] = 1
+		if wall.x >= 0:
+			d["w"] = SimCodec.vec2i(wall)
+		return d
 
 	static func from_dict(d: Dictionary) -> Arrow:
 		var a := Arrow.new()
@@ -54,6 +68,8 @@ class Arrow:
 		a.ticks = int(d["n"])
 		a.total = int(d["of"])
 		a.damage = int(d["d"])
+		a.bolt = int(d.get("b", 0)) == 1
+		a.wall = SimCodec.to_vec2i(d["w"]) if d.has("w") else Vector2i(-1, -1)
 		return a
 
 
@@ -63,6 +79,11 @@ class Arrow:
 static func is_soldier(province: ProvinceSim, agent: Agent) -> bool:
 	return agent != null and agent.combat != null and agent.combat.faction == CombatState.PLAYER \
 			and agent.kind != Barracks.RECRUIT_KIND and province.data.get_unit(agent.kind) != null
+
+
+## Whether [param unit] fights people: soldiers, and of the siege engines only the ballista.
+static func fights_people(unit: UnitDef) -> bool:
+	return unit != null and unit.combat.attack > 0 and (unit.siege == &"" or unit.siege == BALLISTA)
 
 
 static func unit_of(province: ProvinceSim, agent: Agent) -> UnitDef:
@@ -301,14 +322,14 @@ static func _think(province: ProvinceSim, agent: Agent, buckets: Dictionary[Vect
 			c.goal = c.post
 			c.goal_level = c.post_level
 			c.clear_path()
-	if unit.siege != &"" or unit.combat.attack <= 0:
-		# Siege engines and laddermen never fight people.
+	if not fights_people(unit):
+		# Rams and laddermen never fight people (a ballista does, J1 part 2).
 		target = null
 		c.target_id = 0
 	var reach := float(unit.combat.attack_range) + (WALL_RANGE_BONUS if agent.level == MilitaryNav.WALL and unit.combat.attack_range > 1 else 0)
 	var ranged := unit.combat.attack_range > 1
 	# Looking for a fight.
-	if target == null and unit.siege == &"" and unit.combat.attack > 0 and c.order != CombatState.Order.RETURN and c.order != CombatState.Order.MARCH and (c.order != CombatState.Order.MOVE or not c.has_path()):
+	if target == null and fights_people(unit) and c.order != CombatState.Order.RETURN and c.order != CombatState.Order.MARCH and (c.order != CombatState.Order.MOVE or not c.has_path()):
 		var climb := _can_climb(province, c.faction)
 		var skip := c.blocked_id if province.tick < c.blocked_until else 0
 		var walk := province.mil.nav_of(province, agent.level, c.faction)
@@ -453,6 +474,7 @@ static func _strike(province: ProvinceSim, agent: Agent, unit: UnitDef, target: 
 		arrow.total = maxi(roundi(agent.pos.distance_to(target.pos) / ARROW_SPEED * SimClock.TICKS_PER_SECOND), 2)
 		arrow.ticks = arrow.total
 		arrow.damage = roundi(damage)
+		arrow.bolt = unit.siege == BALLISTA
 		province.arrows.append(arrow)
 		province.events.emit(&"arrow_shot", {"agent": agent.id})
 		return
@@ -484,6 +506,11 @@ static func _fly_arrows(province: ProvinceSim, dead: Array[Agent]) -> void:
 		arrow.ticks -= 1
 		if arrow.ticks > 0:
 			left.append(arrow)
+			continue
+		if arrow.wall.x >= 0:
+			# A ballista's bolt at a wall or a gate.
+			if structure_standing(province, arrow.wall):
+				damage_structure(province, arrow.wall, arrow.damage)
 			continue
 		var target := province.agents.get_agent(arrow.target_id)
 		if target == null or target.combat == null:
@@ -621,6 +648,28 @@ static func _siege(province: ProvinceSim, agent: Agent, unit: UnitDef) -> void:
 		c.target_tile = Vector2i(-1, -1)
 		c.aim = Vector2i(-1, -1)
 		agent.activity = &"idle"
+		return
+	if unit.siege == BALLISTA and agent.level == MilitaryNav.GROUND \
+			and agent.pos.distance_to(IsoMath.tile_center(tile)) <= float(unit.combat.attack_range):
+		# A ballista shoots at the wall or the gate from where it stands (J1 part 2).
+		c.clear_path()
+		_face(agent, IsoMath.tile_center(tile))
+		agent.activity = &"drill" if c.cooldown > SimClock.seconds_to_ticks(unit.combat.attack_cooldown) - 6 else &"idle"
+		if c.cooldown == 0:
+			c.cooldown = maxi(SimClock.seconds_to_ticks(unit.combat.attack_cooldown), 1)
+			var bolt := Arrow.new()
+			bolt.target_id = 0
+			bolt.wall = tile
+			bolt.bolt = true
+			bolt.from = agent.pos
+			bolt.from_level = agent.level
+			bolt.to = IsoMath.tile_center(tile)
+			bolt.to_level = MilitaryNav.GROUND
+			bolt.total = maxi(roundi(agent.pos.distance_to(bolt.to) / ARROW_SPEED * SimClock.TICKS_PER_SECOND), 2)
+			bolt.ticks = bolt.total
+			bolt.damage = maxi(roundi(unit.combat.attack * BALLISTA_WALL_SHARE), 1)
+			province.arrows.append(bolt)
+			province.events.emit(&"arrow_shot", {"agent": agent.id})
 		return
 	if agent.level == MilitaryNav.GROUND and _at_structure(province, agent.pos, tile):
 		c.clear_path()

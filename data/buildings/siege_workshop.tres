@@ -14,5 +14,5 @@ build_cost = Dictionary[StringName, int]({
 build_time = 45.0
 gold_cost = 40
 door_sides = &"one"
-siege_engines = Array[StringName]([&"ram", &"ladderman"])
+siege_engines = Array[StringName]([&"ram", &"ladderman", &"ballista"])
 id = &"siege_workshop"

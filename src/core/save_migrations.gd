@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 21
+const CURRENT_VERSION := 22
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -70,6 +70,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 21:
 		result = migrate_v20_to_v21(result)
 		version = 21
+	if version < 22:
+		result = migrate_v21_to_v22(result)
+		version = 22
 	return result
 
 
@@ -306,6 +309,14 @@ static func migrate_v20_to_v21(state: Dictionary) -> Dictionary:
 		var empty := PackedByteArray()
 		empty.resize(size.x * size.y)
 		grid["bridges"] = Marshalls.raw_to_base64(empty)
+	return state
+
+
+## v22 (J1 part 2): ballistas (a new siege engine, saved like a ram) and their bolts in
+## flight (arrows with "b": 1, and "w": the wall tile a bolt was shot at). All optional: an
+## older game has none. The version guards a game with ballistas from a build that does not
+## know them.
+static func migrate_v21_to_v22(state: Dictionary) -> Dictionary:
 	return state
 
 

@@ -6,6 +6,7 @@ extends Node2D
 
 var province: ProvinceSim
 var _rams: Dictionary[int, _Ram] = {}
+var _ballistas: Dictionary[int, _Ballista] = {}
 var _ladders: Dictionary[Vector2i, _Ladder] = {}
 
 
@@ -20,6 +21,21 @@ func setup(source: ProvinceSim) -> void:
 func update_view(alpha: float, time: float) -> void:
 	var seen: Dictionary[int, bool] = {}
 	for agent: Agent in province.agents.all():
+		if agent.kind == Troops.BALLISTA:
+			seen[agent.id] = true
+			var ballista: _Ballista = _ballistas.get(agent.id)
+			if ballista == null:
+				ballista = _Ballista.new()
+				_ballistas[agent.id] = ballista
+				add_child(ballista)
+			ballista.position = IsoMath.grid_to_screen(agent.prev_pos.lerp(agent.pos, alpha))
+			ballista.facing = agent.facing
+			ballista.walking = agent.activity == &"walk"
+			ballista.loaded = agent.combat == null or agent.combat.cooldown <= SimClock.seconds_to_ticks(2.0)
+			ballista.time = time + agent.id * 0.37
+			ballista.hostile = agent.combat != null and agent.combat.faction != CombatState.PLAYER
+			ballista.queue_redraw()
+			continue
 		if agent.kind != &"ram":
 			continue
 		seen[agent.id] = true
@@ -40,6 +56,10 @@ func update_view(alpha: float, time: float) -> void:
 		if not seen.has(id):
 			_rams[id].queue_free()
 			_rams.erase(id)
+	for id: int in _ballistas.keys():
+		if not seen.has(id):
+			_ballistas[id].queue_free()
+			_ballistas.erase(id)
 	var ladders := province.mil.ladders
 	for foot: Vector2i in _ladders.keys():
 		if not ladders.has(foot):
@@ -133,6 +153,114 @@ class _Ram:
 		draw_line(pole, pole - Vector2(0, 10), WOOD_DARK, 1.0)
 		draw_colored_polygon(PackedVector2Array([pole - Vector2(0, 10), pole - Vector2(-7, 8),
 				pole - Vector2(0, 6)]), Color(0.15, 0.13, 0.12) if hostile else Color(0.7, 0.12, 0.1))
+
+
+## A ballista (J1 part 2, drawn in code like the ram): a great crossbow on a wheeled frame,
+## its arms of wood bound with iron, the string drawn back to the winch while loaded and
+## straight after the shot, a bolt in the groove; two crewmen at the winch behind it, pushing
+## while it moves.
+class _Ballista:
+	extends Node2D
+	const WOOD := Color(0.5, 0.36, 0.22)
+	const WOOD_DARK := Color(0.3, 0.21, 0.13)
+	const IRON := Color(0.36, 0.36, 0.4)
+	const ROPE := Color(0.88, 0.84, 0.72)
+	const SHIRT := Color(0.66, 0.58, 0.44)
+	const LEG := Color(0.33, 0.27, 0.22)
+	const SKIN := Color(0.86, 0.66, 0.5)
+	const OUTLINE := Color(0.14, 0.1, 0.07)
+	var facing: int = 0
+	var walking: bool = false
+	var loaded: bool = true
+	var hostile: bool = false
+	var time: float = 0.0
+
+	func _draw() -> void:
+		var step := Vector2(IsoMath.DIR_GRID_STEP[facing])
+		var along := step.normalized()
+		var across := Vector2(-along.y, along.x)
+		var p := func(u: float, v: float, z: float) -> Vector2:
+			return IsoMath.grid_to_screen(along * u + across * v) - Vector2(0, z)
+		# The crew behind, drawn first when the engine faces the camera.
+		var crew_behind := along.y + along.x > 0.0
+		if not crew_behind:
+			_crew(p)
+		# Two big wheels and the frame on them.
+		for v: float in [-0.34, 0.34]:
+			var c: Vector2 = p.call(-0.2, v, 7.5)
+			draw_circle(c, 7.5, WOOD_DARK)
+			draw_circle(c, 6.0, WOOD)
+			for k: int in 4:
+				var a := k * PI / 4.0 + time * (2.0 if walking else 0.0)
+				draw_line(c - Vector2(cos(a), sin(a)) * 5.5, c + Vector2(cos(a), sin(a)) * 5.5, WOOD_DARK, 1.0)
+			draw_circle(c, 1.6, IRON)
+		var tail: Vector2 = p.call(-0.7, 0.0, 13.0)
+		var nose: Vector2 = p.call(0.7, 0.0, 21.0)
+		# The trestle under the nose and the axle beam.
+		draw_line(p.call(0.42, -0.12, 0.0), p.call(0.42, 0.0, 19.0), WOOD_DARK, 2.5)
+		draw_line(p.call(0.42, 0.12, 0.0), p.call(0.42, 0.0, 19.0), WOOD_DARK, 2.5)
+		draw_line(p.call(-0.2, -0.34, 7.5), p.call(-0.2, 0.34, 7.5), WOOD_DARK, 3.0)
+		draw_line(p.call(-0.2, 0.0, 7.5), p.call(-0.2, 0.0, 15.0), WOOD_DARK, 3.0)
+		# The stock: a long beam with a groove, sloping up to the nose.
+		draw_line(tail, nose, WOOD_DARK, 6.0)
+		draw_line(tail, nose, WOOD, 4.0)
+		draw_line(tail, nose, WOOD.darkened(0.25), 1.0)
+		# The arms: bent back from the nose, bound with iron, the string between their tips.
+		var tip_a: Vector2 = p.call(0.45, -0.62, 23.0)
+		var tip_b: Vector2 = p.call(0.45, 0.62, 23.0)
+		var root_a: Vector2 = p.call(0.66, -0.14, 21.5)
+		var root_b: Vector2 = p.call(0.66, 0.14, 21.5)
+		draw_line(root_a, root_b, IRON, 4.0)
+		for pair: Array in [[root_a, tip_a], [root_b, tip_b]]:
+			draw_line(pair[0], pair[1], WOOD_DARK, 4.0)
+			draw_line(pair[0], pair[1], WOOD.lightened(0.12), 2.0)
+			draw_circle(pair[0].lerp(pair[1], 0.5), 1.6, IRON)
+		var nut: Vector2 = p.call(-0.35, 0.0, 15.0) if loaded else p.call(0.44, 0.0, 20.5)
+		draw_line(tip_a, nut, ROPE, 1.0)
+		draw_line(nut, tip_b, ROPE, 1.0)
+		if loaded:
+			# The bolt in the groove, its iron head at the nose.
+			var dir := (nose - tail).normalized()
+			draw_line(nut, nose + dir * 4.0, WOOD.lightened(0.3), 2.0)
+			draw_line(nose + dir * 2.0, nose + dir * 6.0, IRON, 3.0)
+		# The winch at the back.
+		draw_circle(tail, 2.5, IRON)
+		if crew_behind:
+			_crew(p)
+		# A small pennon on the nose post: red for the kingdom, black for enemies.
+		var pole: Vector2 = p.call(0.42, 0.0, 19.0)
+		draw_line(pole, pole - Vector2(0, 12), WOOD_DARK, 1.0)
+		draw_colored_polygon(PackedVector2Array([pole - Vector2(0, 12), pole - Vector2(-6, 10),
+				pole - Vector2(0, 8)]), Color(0.15, 0.13, 0.12) if hostile else Color(0.7, 0.12, 0.1))
+
+	## Two crewmen at the winch, as tall as the people of the town (pushing while it rolls,
+	## winding the winch after a shot): legs, a quilted coat, arms to the winch, a kettle hat.
+	func _crew(p: Callable) -> void:
+		for v: float in [-0.24, 0.24]:
+			var swing := sin(time * 8.0 + v * 10.0) if walking else 0.0
+			var foot: Vector2 = p.call(-1.0, v, 0.0)
+			var hip := foot - Vector2(0, 14)
+			var shoulder := hip - Vector2(0, 13)
+			for side: float in [-1.0, 1.0]:
+				var f := foot + Vector2(side * 2.0 + swing * side * 1.5, 0)
+				draw_line(f, hip + Vector2(side * 1.5, 0), LEG, 3.0)
+				draw_line(f, f + Vector2(2.0, 0), OUTLINE, 2.0)
+			var body := PackedVector2Array([hip + Vector2(-4.5, 1), hip + Vector2(4.5, 1),
+					shoulder + Vector2(4.0, 0), shoulder + Vector2(-4.0, 0)])
+			draw_colored_polygon(body, SHIRT)
+			draw_line(hip + Vector2(-4.5, -4), hip + Vector2(4.5, -4), SHIRT.darkened(0.2), 1.0)
+			var crank := sin(time * 6.0 + v) * 2.0 if not loaded else 0.0
+			var hand: Vector2 = p.call(-0.72, v * 0.5, 14.0 + crank)
+			draw_line(shoulder + Vector2(-3, 1), hand, SHIRT.darkened(0.12), 2.5)
+			draw_line(shoulder + Vector2(3, 1), hand, SHIRT.darkened(0.12), 2.5)
+			draw_circle(hand, 1.4, SKIN)
+			var head := shoulder - Vector2(0, 4.5)
+			draw_circle(head, 4.0, SKIN)
+			draw_colored_polygon(PackedVector2Array([head + Vector2(-5.5, -0.5), head + Vector2(5.5, -0.5),
+					head + Vector2(3.5, -4.5), head + Vector2(-3.5, -4.5)]), IRON.lightened(0.25))
+			draw_line(head + Vector2(-6, 0), head + Vector2(6, 0), IRON, 1.0)
+			draw_polyline(PackedVector2Array([hip + Vector2(-4.5, 1), shoulder + Vector2(-4.0, 0),
+					shoulder + Vector2(4.0, 0), hip + Vector2(4.5, 1)]), OUTLINE, 1.0)
 
 
 ## A ladder leaning from a ground tile onto the wall.

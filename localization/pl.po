@@ -3466,3 +3466,14 @@ msgstr "Ciężki zbrojny"
 
 msgid "ui.kind.light_cavalry"
 msgstr "Lekki jeździec"
+
+# J1 part 2: ballista
+
+msgid "unit.ballista.name"
+msgstr "Balista"
+
+msgid "unit.ballista.desc"
+msgstr "Wielka kusza na kołach: strzela ciężkim bełtem na 10 kafli. Zabija ludzi i mocno rani tarany i inne balisty; mury i bramy tylko trochę. Obsługa 2 ludzi, jedzie wolno."
+
+msgid "ui.kind.ballista"
+msgstr "Balista"

@@ -220,7 +220,8 @@ static func _damage(from: Array[_Pool], to: Array[_Pool], melee: bool, archers: 
 		return 0.0
 	var total := 0.0
 	for pool: _Pool in from:
-		if pool.siege != &"" or pool.stats.attack <= 0:
+		# Of the siege engines only the ballista fights men (J1 part 2): like an archer.
+		if (pool.siege != &"" and pool.siege != Troops.BALLISTA) or pool.stats.attack <= 0:
 			continue
 		var ranged := pool.stats.attack_range > 1
 		if not melee and not ranged:
@@ -248,7 +249,7 @@ static func _take(pools: Array[_Pool], amount: float) -> void:
 	for pool: _Pool in pools:
 		var share := amount * pool.alive() / men
 		pool.life = maxf(pool.life - share * pool.stats.ranged_taken, 0.0) if pool.siege == &"ram" \
-				else maxf(pool.life - share, 0.0)
+				or pool.siege == Troops.BALLISTA else maxf(pool.life - share, 0.0)
 
 
 static func _ship_damage(life: float) -> float:
@@ -279,6 +280,11 @@ static func _breach_rounds(pools: Array[_Pool], fort: BattleFort) -> int:
 			&"ladder":
 				if fort.wall == Walls.STONE:
 					best = minf(best, LADDER_ROUNDS)
+			&"ballista":
+				# Bolts chip at the wall or the gate from far away (J1 part 2): slowly.
+				var per_bolt := pool.stats.attack * Troops.BALLISTA_WALL_SHARE * ROUND_SECONDS / pool.stats.attack_cooldown
+				var weakest: float = fort.wall_hp if fort.gate_hp <= 0 else minf(fort.wall_hp, fort.gate_hp)
+				best = minf(best, ceilf(weakest / (per_bolt * pool.alive())))
 			&"":
 				if pool.stats.attack_range == 1:
 					var take := mini(pool.alive(), BREACH_WIDTH - hackers)

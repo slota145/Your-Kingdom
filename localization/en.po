@@ -3430,3 +3430,14 @@ msgstr "Man-at-arms"
 
 msgid "ui.kind.light_cavalry"
 msgstr "Light horseman"
+
+# J1 part 2: ballista
+
+msgid "unit.ballista.name"
+msgstr "Ballista"
+
+msgid "unit.ballista.desc"
+msgstr "A great crossbow on wheels: it shoots a heavy bolt 10 tiles. It kills men and badly hurts rams and other ballistas; walls and gates only a little. A crew of 2, slow."
+
+msgid "ui.kind.ballista"
+msgstr "Ballista"
