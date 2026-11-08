@@ -1051,7 +1051,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## J1 — Nowe jednostki i okręty
 
-**Status: szkic planu do akceptacji (2026-11-08).** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
+**Status: plan zaakceptowany 2026-11-08 (ankiety), część 1 w toku.** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
 
 **Cel (prośba właściciela):**
 - jednostki: **halabardnik w zbroi płytowej**, **kusznik**, **ciężki zbrojny z morgensternem**, **lekka jazda**, **ruchoma balista**,
@@ -1067,9 +1067,19 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Okręty: karawela, karaka i galeon**, w tej kolejności rozmiaru (wybór kolejności zostawiony Claude): karawela lekka i szybka, trochę większa od kogi; karaka z wysokimi nadbudówkami i kilkoma masztami; galeon największy.
 - **Broń z rozszerzonych warsztatów:** kowal robi też halabardy i morgensterny, łuczarz kusze. **Zbroja jedna dla wszystkich:** dzisiejsza kolczuga zostaje tym samym towarem (id `chainmail` bez zmian), ale dostaje ogólniejszą nazwę „zbroja”, pasującą do miecznika, jeźdźca, halabardnika i ciężkiego zbrojnego.
 
-**Otwarte decyzje (ankieta przy starcie J1):** jak działa balista, wygląd postaci (kodem jak żołnierze M7 czy PixelLab), wartości walki.
+- **Balista (ankieta 2026-11-08):** buduje ją warsztat oblężniczy, obsługa 2 ludzi, pchana wolno; strzela daleko (ok. 10 kafli) ciężkim bełtem: zabija ludzi, mocno rani taran i inną balistę, mury i bramy uszkadza słabo.
+- **Role jednostek (ankieta):** halabardnik dużo życia i ×2,5 przeciw jeździe, wolniejszy; kusznik strzela trochę bliżej niż łucznik, rzadziej, ale bardzo mocno i przebija zbroje; ciężki zbrojny z morgensternem najmocniejszy cios i dużo życia, wolny; lekka jazda najszybsza, tańsza, słabsza, ×2 przeciw łucznikom i kusznikom.
+- **Okręty (ankieta):** liczby jak w tabeli niżej; koga zostaje w zwykłej stoczni, nowe okręty tylko w dużej.
+- **Grafika (ankieta):** żołnierze, balista i okręty rysowane kodem, w stylu M7 (te same animacje).
 
-**Wartości wyjściowe:** do ustalenia w planie części; punktem wyjścia jest tabela M7 (włócznik, łucznik, miecznik, jeździec).
+**Wartości wyjściowe (do strojenia przy realizacji):**
+- halabardnik: halabarda i zbroja, 80 zł, życie 180, cios 14 co 1,6 s, prędkość 0,9, ×2,5 przeciw jeźdźcowi i lekkiej jeździe,
+- kusznik: kusza, 50 zł, życie 80, bełt 22 co 3,5 s, zasięg 6 kafli, prędkość 0,95, ×1,5 przeciw jednostkom w zbroi (miecznik, jeździec, halabardnik, ciężki zbrojny),
+- ciężki zbrojny: morgenstern i zbroja, 90 zł, życie 220, cios 26 co 2 s, prędkość 0,8,
+- lekka jazda: koń i włócznia, 60 zł, życie 120, cios 12 co 1,3 s, prędkość 2,4, ×2 przeciw łucznikowi i kusznikowi,
+- broń: kowal robi też halabardy (żelazo i deska) i morgensterny (żelazo), łuczarz kusze (2 deski i żelazo); zbroja: dzisiejsza kolczuga pod nazwą „zbroja”,
+- balista: 16 desek, 4 żelaza, obsługa 2, budowa 45 s, życie 300, bełt 60 co 5 s, zasięg 10 kafli, ×3 przeciw machinom, w mury ×0,2, prędkość 0,4,
+- okręty (cywilny / wojenny): karawela ładownia 6 pól, szybkość 1,5 / 40 żołnierzy; karaka 9 pól, 1,1 / 60 żołnierzy; galeon 12 pól, 1,2 / 90 żołnierzy; siła w bitwie morskiej rośnie z rozmiarem; duża stocznia z głęboką wodą przy pochylni.
 
 **Ryzyka:** dużo grafiki (5 nowych postaci z animacjami walki, 6 wersji okrętów, duża stocznia); balans walki przed oceną M7; większe okręty a szerokość zatoki i torów wodnych (dlatego W1 najpierw); zapis: nowa wersja na każdą część ze zmianą formatu.
 
