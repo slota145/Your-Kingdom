@@ -33,8 +33,10 @@ var order: Order = Order.NONE
 ## comes back here after a fight unless he attacks freely.
 var post: Vector2 = Vector2(-1, -1)
 var post_level: int = 0
-## Order STRUCTURE: the wall tile, gate or door he breaks.
+## Order STRUCTURE: the wall tile, gate or door he breaks, and (the player's order, M7 part 3)
+## what he was sent to break in the end: he goes on to it when the obstacle falls.
 var target_tile: Vector2i = Vector2i(-1, -1)
+var aim: Vector2i = Vector2i(-1, -1)
 ## The walk: tiles and their levels, and the next index.
 var path: Array[Vector2i] = []
 var levels: PackedByteArray = PackedByteArray()
@@ -87,6 +89,8 @@ func to_dict() -> Dictionary:
 		d["path_tick"] = path_tick
 		if target_tile != Vector2i(-1, -1):
 			d["target_tile"] = SimCodec.vec2i(target_tile)
+		if aim != Vector2i(-1, -1):
+			d["aim"] = SimCodec.vec2i(aim)
 		if has_path():
 			d["path"] = SimCodec.tiles(path)
 			d["levels"] = Array(levels)
@@ -111,6 +115,7 @@ static func from_dict(d: Dictionary) -> CombatState:
 		state.goal_level = int(d.get("goal_level", 0))
 		state.path_tick = int(d.get("path_tick", -1000))
 		state.target_tile = SimCodec.to_vec2i(d.get("target_tile", [-1, -1]))
+		state.aim = SimCodec.to_vec2i(d.get("aim", [-1, -1]))
 		state.path = SimCodec.to_tiles(d.get("path", []))
 		for level: Variant in d.get("levels", []):
 			state.levels.append(int(level))

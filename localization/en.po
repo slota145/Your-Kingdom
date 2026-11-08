@@ -3119,3 +3119,161 @@ msgstr "A raid is under way."
 
 msgid "ui.doing.sheltering"
 msgstr "hides from the bandits"
+
+
+# --- M7 part 3: armies on the world map ---
+
+msgid "ui.army.march"
+msgstr "March out"
+
+msgid "ui.army.march_tip"
+msgstr "The soldiers walk to the edge of the map and leave for the world map as an army. On the world map click the army, then right-click the province it should go to."
+
+msgid "ui.army.retreat"
+msgstr "Retreat"
+
+msgid "ui.note.army_marching"
+msgstr "The soldiers march out. Once they leave the map, the army stands by the town on the world map."
+
+msgid "ui.note.army_entered"
+msgstr "The army marches in! Right-click an enemy wall, gate or town hall to break it."
+
+msgid "ui.world.army_enter"
+msgstr "Enter and fight"
+
+msgid "ui.world.army_enter_tip"
+msgstr "You watch the siege and command it yourself: the army comes in at the edge of the map, the guards defend the walls and the town hall."
+
+msgid "ui.world.army_auto"
+msgstr "Decide automatically (chances: %d%%)"
+
+msgid "ui.world.army_auto_tip"
+msgstr "The battle is decided at once, unwatched. Soldiers, walls, the ram, ladders and food count."
+
+msgid "ui.world.army_disband"
+msgstr "Into the barracks"
+
+msgid "ui.world.army_hint"
+msgstr "Right-click a province: send the army there (green line: it can go, red: it cannot)."
+
+msgid "ui.world.army_hungry"
+msgstr "No bread! A hungry army fights worse."
+
+msgid "ui.world.army_food"
+msgstr "Bread: %d (for %d min)"
+
+msgid "ui.world.army_ships"
+msgstr "Warships: %d"
+
+msgid "ui.world.army_moving"
+msgstr "Marching to: %s (about %d min)"
+
+msgid "ui.world.army_waiting"
+msgstr "Waiting at the border of: %s"
+
+msgid "ui.world.army_inside"
+msgstr "In the province: %s"
+
+msgid "ui.world.army_idle"
+msgstr "Standing in: %s"
+
+msgid "ui.world.army_selected"
+msgstr "Army selected. Right-click a province to send it there."
+
+msgid "ui.world.report_0"
+msgstr "Battle in the field"
+
+msgid "ui.world.report_1"
+msgstr "Siege"
+
+msgid "ui.world.report_2"
+msgstr "Battle at sea"
+
+msgid "ui.world.report_won"
+msgstr "won"
+
+msgid "ui.world.report_lost"
+msgstr "lost"
+
+msgid "ui.world.report_phase_0"
+msgstr "Volleys: %d of yours left, %d enemies"
+
+msgid "ui.world.report_phase_1"
+msgstr "At the walls: %d of yours left, %d enemies"
+
+msgid "ui.world.report_phase_2"
+msgstr "Hand to hand: %d of yours left, %d enemies"
+
+msgid "ui.world.report_losses"
+msgstr "Losses: yours %d, the enemy's %d"
+
+msgid "ui.world.camp_hint"
+msgstr "The bandits' camp. Raids come from here. Break it with an army to win back the loot (%d gold). No expedition can go here."
+
+msgid "ui.note.battle_won"
+msgstr "Battle won: %s! The report is on the world map."
+
+msgid "ui.note.battle_lost"
+msgstr "Battle lost: %s. The report is on the world map."
+
+msgid "ui.note.bandits_set_out"
+msgstr "Bandits have left their camp for: %s! They will be there in about %d min."
+
+msgid "ui.note.province_raided"
+msgstr "Bandits looted: %s (%d gold)!"
+
+msgid "ui.note.bandit_camp_broken"
+msgstr "The bandits' camp is broken! Loot won back: %d gold."
+
+msgid "ui.note.army_at_settlement"
+msgstr "The army stands at the border of: %s. Choose on the world map how to fight."
+
+msgid "ui.note.army_home"
+msgstr "The army is back in the barracks: %s."
+
+msgid "ui.note.army_lost"
+msgstr "The army is lost: %s."
+
+msgid "ui.note.raid_beaten_off"
+msgstr "The garrison beat off the bandits: %s."
+
+msgid "ui.note.province_captured"
+msgstr "Taken: %s! The people are downcast, but they stay."
+
+msgid "ui.note.bandit_camp_raised"
+msgstr "Bandits have pitched their camp: %s."
+
+msgid "ui.command_error.no_world"
+msgstr "This game has no world map."
+
+msgid "ui.command_error.no_way_out"
+msgstr "There is no way off the map from here."
+
+msgid "ui.command_error.army_busy"
+msgstr "The army is still in the province."
+
+msgid "ui.command_error.army_on_the_way"
+msgstr "The army is on its way."
+
+msgid "ui.command_error.no_way"
+msgstr "There is no way there by land."
+
+msgid "ui.command_error.no_army"
+msgstr "No army selected."
+
+msgid "ui.command_error.not_at_home"
+msgstr "The army is not standing in your province."
+
+msgid "ui.command_error.not_at_settlement"
+msgstr "The army is not waiting at a settlement."
+
+msgid "ui.command_error.nothing_to_break"
+msgstr "There is nothing to break here."
+
+msgid "ui.command_error.bandit_camp"
+msgstr "The bandits' camp stands there. Break it with an army first."
+
+msgid "ui.world.army_title"
+msgid_plural "ui.world.army_title_plural"
+msgstr[0] "Army: %d soldier"
+msgstr[1] "Army: %d soldiers"

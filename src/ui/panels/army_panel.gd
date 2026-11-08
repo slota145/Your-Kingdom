@@ -6,6 +6,8 @@ extends PanelContainer
 
 signal stance_requested(stance: int)
 signal return_requested
+## March out to the world map (M7 part 3), or back to the army at the border in a siege.
+signal march_requested
 signal closed
 
 var province: ProvinceSim
@@ -14,6 +16,8 @@ var ids: Array[int] = []
 var _title: Label
 var _body: Label
 var _stances: Array[Button] = []
+var _return: Button
+var _march: Button
 
 
 func _init() -> void:
@@ -37,7 +41,11 @@ func _init() -> void:
 		_stances.append(b)
 	var buttons := HFlowContainer.new()
 	box.add_child(buttons)
-	buttons.add_child(UiKit.button("ui.army.return", func() -> void: return_requested.emit()))
+	_return = UiKit.button("ui.army.return", func() -> void: return_requested.emit())
+	buttons.add_child(_return)
+	_march = UiKit.button("ui.army.march", func() -> void: march_requested.emit())
+	_march.tooltip_text = "ui.army.march_tip"
+	buttons.add_child(_march)
 	buttons.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
 	var hint := UiKit.label("ui.army.hint")
 	hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
@@ -85,3 +93,7 @@ func _refresh() -> void:
 	_body.text = "\n".join(lines)
 	for i: int in _stances.size():
 		_stances[i].set_pressed_no_signal(i == stance)
+	# In an enemy's province the army's men go back to the border; at home they march out.
+	var abroad := province.home_faction != CombatState.PLAYER
+	_return.visible = not abroad
+	_march.text = tr("ui.army.retreat") if abroad else tr("ui.army.march")

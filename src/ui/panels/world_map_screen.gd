@@ -19,6 +19,8 @@ signal closed
 signal routes_requested(from: int)
 ## "Send goods" to the neutral settlement [param to]: the routes window with its demand.
 signal goods_requested(to: int)
+## "Enter and fight" with army [param army] at its settlement (M7 part 3).
+signal army_enter_requested(army: int)
 
 const STOCK_LINES := 6
 
@@ -35,6 +37,8 @@ var _routes: Button
 var _demand: Label
 var _pay: Button
 var _send_goods: Button
+var _army: WorldArmyBox
+var _report: Label
 ## The answer to the last right click (why it cannot go there), shown until another click.
 var _send_note: String = ""
 var _selected: int = 0
@@ -56,6 +60,8 @@ func _init() -> void:
 	_canvas.province_clicked.connect(select)
 	_canvas.expedition_clicked.connect(_expedition_clicked)
 	_canvas.send_requested.connect(_send)
+	_canvas.army_clicked.connect(_army_clicked)
+	_canvas.army_send_requested.connect(_send_army)
 	row.add_child(_canvas)
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size.x = UiKit.PANEL_WIDTH
@@ -72,6 +78,15 @@ func _init() -> void:
 	box.add_child(_title)
 	box.add_child(UiKit.label("ui.world.hint"))
 	box.add_child(HSeparator.new())
+	_army = WorldArmyBox.new()
+	_army.command_requested.connect(func(command: Command) -> void:
+		command_requested.emit(command)
+		_refresh())
+	_army.enter_requested.connect(func(army: int) -> void: army_enter_requested.emit(army))
+	box.add_child(_army)
+	_report = UiKit.label()
+	_report.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
+	box.add_child(_report)
 	_name = UiKit.title()
 	box.add_child(_name)
 	_lines = UiKit.label()
@@ -110,6 +125,10 @@ func open(simulation: Simulation) -> void:
 func select(id: int) -> void:
 	_selected = id
 	_canvas.selected = id
+	if _canvas.army_selected != 0:
+		var army := sim.world.armies.get(_canvas.army_selected) as Army if sim != null else null
+		if army == null or army.at != id:
+			_canvas.army_selected = 0
 	_send_note = ""
 	_refresh()
 
@@ -119,6 +138,30 @@ func select(id: int) -> void:
 func _expedition_clicked(from: int) -> void:
 	select(from)
 	_send_note = tr("ui.world.expedition_selected")
+	_refresh()
+
+
+## The player's army [param id] is selected: the panel of its province shows it.
+func _army_clicked(id: int) -> void:
+	var army := sim.world.armies.get(id) as Army
+	if army == null:
+		return
+	_selected = army.at
+	_canvas.selected = army.at
+	_send_note = tr("ui.world.army_selected")
+	_refresh()
+
+
+## Right click on [param to] with army [param id] selected.
+func _send_army(id: int, to: int) -> void:
+	var army := sim.world.armies.get(id) as Army
+	var error := Armies.send_error(sim, army, to)
+	if error != &"":
+		_send_note = tr("ui.command_error.%s" % error)
+		_refresh()
+		return
+	command_requested.emit(SendArmyCommand.new(id, to))
+	_send_note = ""
 	_refresh()
 
 
@@ -146,6 +189,9 @@ func _refresh() -> void:
 	_title.text = tr(world_def.name_key()) if world_def != null else ""
 	var def := sim.world.def_of(_selected, sim.data)
 	_expedition.show_for(sim, _selected)
+	_army.show_for(sim, _canvas.army_selected)
+	_report.text = WorldArmyBox.report_text(sim, _selected)
+	_report.visible = not _report.text.is_empty()
 	_routes.visible = sim.world.owner_of(_selected) == ProvinceDef.OWNER_PLAYER and sim.runtimes.has(_selected)
 	_refresh_demand()
 	if def == null:
@@ -186,6 +232,8 @@ func _refresh() -> void:
 		_hint.text = tr("ui.world.expedition_coming") % maxi(minutes, 1)
 	elif can_enter:
 		_hint.text = ""
+	elif sim.world.camp != null and sim.world.camp.province == _selected:
+		_hint.text = tr("ui.world.camp_hint") % sim.world.camp.gold
 	elif owner == ProvinceDef.OWNER_NEUTRAL:
 		_hint.text = tr("ui.world.neutral_hint")
 	else:

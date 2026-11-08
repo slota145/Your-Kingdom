@@ -298,11 +298,21 @@ static func _place_gate(sim: Simulation, town: ProvinceSim, ring: Array[Vector2i
 	for tile: Vector2i in ring:
 		on_ring[tile] = true
 	var centre := hall.entrance_tile() if hall != null else town.grid.size / 2
+	# Near the hall, and opening onto free land (no trees, water or buildings before it).
+	var score: Dictionary[Vector2i, float] = {}
+	for tile: Vector2i in ring:
+		var blocked := 0
+		for y: int in range(-3, 4):
+			for x: int in range(-3, 4):
+				var t := tile + Vector2i(x, y)
+				if on_ring.has(t) or not town.grid.is_inside(t):
+					continue
+				if town.resources.has_node(t) or not town.nav.is_walkable(t):
+					blocked += 1
+		score[tile] = (tile - centre).length() + blocked * 2.0
 	var candidates: Array[Vector2i] = ring.duplicate()
 	candidates.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
-		var da := (a - centre).length_squared()
-		var db := (b - centre).length_squared()
-		return da < db or (da == db and (a.y < b.y or (a.y == b.y and a.x < b.x))))
+		return score[a] < score[b] or (score[a] == score[b] and (a.y < b.y or (a.y == b.y and a.x < b.x))))
 	for tile: Vector2i in candidates:
 		for orientation: int in 2:
 			var along := Vector2i(1, 0) if orientation == 0 else Vector2i(0, 1)

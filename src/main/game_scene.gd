@@ -240,6 +240,10 @@ func _build_ui() -> void:
 	_army_panel.return_requested.connect(func() -> void:
 		_execute(OrderTroopsCommand.new(_selected.duplicate(), OrderTroopsCommand.RETURN))
 		_select_soldiers([]))
+	_army_panel.march_requested.connect(func() -> void:
+		if _execute(MarchOutCommand.new(_selected.duplicate())) == &"":
+			_notes.push(tr("ui.note.army_marching"))
+			_select_soldiers([]))
 	root.add_child(_army_panel)
 	_ship_panel = ShipPanel.new()
 	_ship_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
@@ -253,6 +257,11 @@ func _build_ui() -> void:
 	_world_map.closed.connect(_toggle_world_map)
 	_world_map.enter_requested.connect(_enter_province)
 	_world_map.command_requested.connect(func(command: Command) -> void: _execute(command))
+	_world_map.army_enter_requested.connect(func(army: int) -> void:
+		if _execute(ArmySiegeCommand.new(army, ArmySiegeCommand.ENTER)) == &"":
+			_world_map.visible = false
+			_show_province()
+			_notes.push(tr("ui.note.army_entered")))
 	_world_map.routes_requested.connect(func(from: int) -> void:
 		_routes.open(sim, from)
 		_routes.move_to_front())
@@ -274,6 +283,26 @@ func _note_world_event(event: Dictionary) -> void:
 	if type == &"expedition_ready":
 		_notes.push(tr("ui.note.expedition_ready"))
 		return
+	if type == &"battle_resolved":
+		var name_b := _province_name(int(event["province"]))
+		var mine := StringName(event["attacker"]) == ProvinceDef.OWNER_PLAYER
+		var won := bool(event["won"]) == mine
+		_notes.push(tr("ui.note.battle_won" if won else "ui.note.battle_lost") % name_b)
+		return
+	if type == &"bandits_set_out":
+		_notes.push(tr("ui.note.bandits_set_out") % [_province_name(int(event["province"])),
+				maxi(ceili(float(event["seconds"]) / 60.0), 1)])
+		return
+	if type == &"province_raided":
+		_notes.push(tr("ui.note.province_raided") % [_province_name(int(event["province"])), int(event["gold"])])
+		return
+	if type == &"bandit_camp_broken":
+		_notes.push(tr("ui.note.bandit_camp_broken") % int(event["gold"]))
+		return
+	if type in [&"army_at_settlement", &"army_home", &"army_lost", &"raid_beaten_off", &"province_captured",
+			&"bandit_camp_raised"]:
+		_notes.push(tr("ui.note.%s" % type) % _province_name(int(event["province"])))
+		return
 	if type != &"expedition_departed" and type != &"expedition_arrived" \
 			and type != &"settlement_joined" and type != &"settlement_refused" \
 			and type != &"settlement_asks":
@@ -281,6 +310,11 @@ func _note_world_event(event: Dictionary) -> void:
 	var def := sim.world.def_of(int(event["province"]), sim.data)
 	var name := tr(def.name_key()) if def != null else ""
 	_notes.push(tr("ui.note.%s" % type) % name)
+
+
+func _province_name(id: int) -> String:
+	var def := sim.world.def_of(id, sim.data)
+	return tr(def.name_key()) if def != null else ""
 
 
 ## Opens or closes the world map (M6). A single-province game has none.
@@ -813,6 +847,15 @@ func _order_at(world_pos: Vector2) -> void:
 		view.troops.show_order(world_pos)
 		return
 	var target := _ground_or_wall(world_pos)
+	# In an enemy's province (M7 part 3): a click on his wall, gate or town hall breaks it.
+	if sim.province.home_faction != CombatState.PLAYER:
+		var at: Vector2i = target[0]
+		if target[1] == MilitaryNav.GROUND and not Troops.structure_standing(sim.province, at):
+			at = ProvinceView.tile_at(world_pos + Vector2(0, BlockWallModel.HEIGHT / 2.0))
+		if Troops.structure_standing(sim.province, at):
+			if _execute(OrderTroopsCommand.new(_selected.duplicate(), OrderTroopsCommand.BREAK, at)) == &"":
+				view.troops.show_order(world_pos)
+			return
 	if _execute(OrderTroopsCommand.new(_selected.duplicate(), OrderTroopsCommand.MOVE,
 			target[0], target[1])) == &"":
 		view.troops.show_order(world_pos)
@@ -837,7 +880,8 @@ func _enemy_at(world_pos: Vector2) -> Agent:
 	var best_d := PICK_RADIUS * 1.5 / camera.zoom.x
 	for id: int in view.agents.heads:
 		var agent := sim.province.agents.get_agent(id)
-		if agent == null or agent.combat == null or agent.combat.faction == CombatState.PLAYER:
+		if agent == null or agent.combat == null or agent.combat.faction == CombatState.PLAYER \
+				or agent.combat.hp <= 0:
 			continue
 		var head: Vector2 = view.agents.heads[id]
 		var body := Vector2(head.x, clampf(world_pos.y, head.y, head.y + 44.0))

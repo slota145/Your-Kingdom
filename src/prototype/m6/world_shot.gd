@@ -7,7 +7,9 @@ extends Node
 ##   Amber Coast, all made up for the picture) [--ready] (a ready land expedition by the start
 ##   town, selected, the mouse over Willow Vale) [--routes] (Willow Vale and Amber Coast settled,
 ##   a wagon route and a cog route on their way, made up for the picture; with --window the
-##   routes window is open over the map)
+##   routes window is open over the map) [--armies] (M7 part 3: the bandits' camp, a bandit raid
+##   and an army of the player on their way, the player's army waiting at Iron Wold, selected,
+##   with the report of a battle; made up for the picture)
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
 const SETTLE_FRAMES := 10
@@ -22,6 +24,7 @@ var _expeditions: bool = false
 var _ready_one: bool = false
 var _routes: bool = false
 var _window: bool = false
+var _armies: bool = false
 
 
 func _ready() -> void:
@@ -40,6 +43,8 @@ func _ready() -> void:
 			_routes = true
 		elif arg == "--window":
 			_window = true
+		elif arg == "--armies":
+			_armies = true
 	Game.start_request = {"world": "kingdom"}
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D
 	add_child(_game)
@@ -73,6 +78,8 @@ func _process(_delta: float) -> void:
 			sim.province.departure = departure
 		if _routes:
 			_make_routes(sim)
+		if _armies:
+			_make_armies(sim)
 		_game.call("_toggle_world_map")
 		if _window:
 			(_game.get("_world_map") as WorldMapScreen).routes_requested.emit(sim.viewed_id)
@@ -83,6 +90,10 @@ func _process(_delta: float) -> void:
 			screen._canvas._hover = sim.world.id_of(&"willow_vale")
 		if _select != &"":
 			(_game.get("_world_map") as WorldMapScreen).select(sim.world.id_of(_select))
+		if _armies:
+			var screen := _game.get("_world_map") as WorldMapScreen
+			screen._canvas.army_selected = 960
+			screen._army_clicked(960)
 	elif _frames == SHOT_FRAMES and not _out.is_empty():
 		get_viewport().get_texture().get_image().save_png(_out)
 		get_tree().quit()
@@ -111,3 +122,41 @@ func _make_routes(sim: Simulation) -> void:
 		r.runs = 3
 		r.delivered = 18
 		sim.world.routes[r.id] = r
+
+
+func _make_armies(sim: Simulation) -> void:
+	var home := sim.viewed_id
+	sim.raids_enabled = true
+	Armies.update(sim)
+	var iron := sim.world.id_of(&"iron_wold")
+	var make := func(id: int, owner: StringName, at: int, units: Dictionary) -> Army:
+		var army := Army.new()
+		army.id = id
+		army.owner = owner
+		army.at = at
+		army.home = home
+		army.state = Army.State.IDLE
+		for unit: Variant in units:
+			army.units[StringName(unit)] = int(units[unit])
+		army.food = army.food_cap() * 0.7
+		sim.world.armies[id] = army
+		return army
+	var waiting: Army = make.call(960, ProvinceDef.OWNER_PLAYER, iron,
+			{"swordsman": 18, "archer": 10, "ram": 1, "ladderman": 2})
+	waiting.state = Army.State.WAITING
+	waiting.home = sim.world.id_of(&"willow_vale")
+	var marching: Army = make.call(961, ProvinceDef.OWNER_PLAYER, home, {"spearman": 12, "archer": 4})
+	Armies.send(sim, marching, sim.world.id_of(&"horse_haven"))
+	marching.depart_at -= 900
+	marching.arrive_at -= 900
+	var camp := sim.world.camp
+	var bandits: Army = make.call(962, Army.BANDITS, camp.province, {"spearman": 5, "archer": 2})
+	Armies.send_bandits(sim, bandits, home)
+	bandits.depart_at -= 1200
+	bandits.arrive_at -= 1200
+	# A battle fought earlier at Iron Wold, for its report.
+	var scouts: Army = make.call(963, ProvinceDef.OWNER_PLAYER, iron, {"spearman": 10, "archer": 4})
+	Armies.battle(sim, scouts, BattleSide.new(sim.world.settlements[iron].guards), BattleResolver.Kind.SIEGE,
+			Armies.fort_of(sim.province_state(iron)), iron, ProvinceDef.OWNER_NEUTRAL)
+	sim.world.armies.erase(963)
+	sim.events.drain()

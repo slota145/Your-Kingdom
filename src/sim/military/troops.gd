@@ -81,6 +81,7 @@ static func take_command(agent: Agent) -> void:
 			agent.task.bb.erase("_placed")
 	c.target_id = 0
 	c.target_tile = Vector2i(-1, -1)
+	c.aim = Vector2i(-1, -1)
 	c.clear_path()
 	c.path_tick = -1000
 
@@ -150,6 +151,7 @@ static func order_break(province: ProvinceSim, agents: Array[Agent], tile: Vecto
 			continue
 		agent.combat.order = CombatState.Order.STRUCTURE
 		agent.combat.target_tile = aim
+		agent.combat.aim = tile
 
 
 static func set_stance(agents: Array[Agent], stance: CombatState.Stance) -> void:
@@ -609,11 +611,18 @@ static func _siege(province: ProvinceSim, agent: Agent, unit: UnitDef) -> void:
 	var c := agent.combat
 	var tile := c.target_tile
 	if not structure_standing(province, tile):
+		# The obstacle fell: on to what he was sent to break.
+		if c.aim != tile and c.aim.x >= 0 and structure_standing(province, c.aim) and c.faction != CombatState.BANDITS:
+			var aim := c.aim
+			order_break(province, [agent], aim)
+			if c.order == CombatState.Order.STRUCTURE:
+				return
 		c.order = CombatState.Order.NONE
 		c.target_tile = Vector2i(-1, -1)
+		c.aim = Vector2i(-1, -1)
 		agent.activity = &"idle"
 		return
-	if agent.level == MilitaryNav.GROUND and _next_to(agent.pos, tile):
+	if agent.level == MilitaryNav.GROUND and _at_structure(province, agent.pos, tile):
 		c.clear_path()
 		_face(agent, IsoMath.tile_center(tile))
 		if unit.siege == &"ladder":
@@ -626,8 +635,10 @@ static func _siege(province: ProvinceSim, agent: Agent, unit: UnitDef) -> void:
 		return
 	if not c.has_path() and province.tick - c.path_tick >= REPATH_TICKS:
 		var stand := stand_by(province, tile, agent)
-		if stand != Agent.NO_TILE and _route(province, agent, stand, MilitaryNav.GROUND, IsoMath.tile_center(stand)) \
-				and c.path[c.path.size() - 1] == stand:
+		# Not all on one spot: a little towards the structure, a little aside, by his id.
+		var jitter := Vector2(float((agent.id * 37) % 7 - 3), float((agent.id * 53) % 7 - 3)) * 0.08
+		if stand != Agent.NO_TILE and _route(province, agent, stand, MilitaryNav.GROUND,
+				IsoMath.tile_center(stand) + jitter) and c.path[c.path.size() - 1] == stand:
 			return
 		if c.faction == CombatState.BANDITS:
 			return   # their raid aims them anew (Raids)
@@ -699,23 +710,53 @@ static func _next_to(pos: Vector2, tile: Vector2i) -> bool:
 	return absf(d.x) <= 1.05 and absf(d.y) <= 1.05
 
 
-## A ground tile next to [param tile] [param agent] can walk to (the nearest), or NO_TILE.
+## Men breaking one structure spread over this many of the nearest places around it.
+const STAND_SPREAD := 4
+
+
+## The tiles a blow at [param tile] can land on: the whole building (a gatehouse, a tower, a
+## town hall) or the one wall tile.
+static func strike_tiles(province: ProvinceSim, tile: Vector2i) -> Array[Vector2i]:
+	var building := province.buildings.get_building(province.grid.occupant(tile))
+	if building != null and building.def.max_hp > 0 and province.walls.kind(tile) == Walls.NONE:
+		return building.tiles()
+	return [tile]
+
+
+## A ground tile next to [param tile] (to any tile of its building) [param agent] can walk to:
+## one of the STAND_SPREAD nearest (by his id, so a crowd spreads round it), or NO_TILE.
 static func stand_by(province: ProvinceSim, tile: Vector2i, agent: Agent) -> Vector2i:
 	var nav := province.mil.ground_nav(province, agent.combat.faction)
 	var area := nav.area_of(agent.tile())
-	var best := Agent.NO_TILE
-	var best_d := INF
 	var steps: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
 	if unit_of(province, agent).siege != &"ladder":
 		steps.append_array([Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)])
-	for step: Vector2i in steps:
-		var t := tile + step
-		if nav.is_walkable(t) and nav.area_of(t) == area and not province.mil.ladders.has(t):
-			var d := agent.pos.distance_squared_to(IsoMath.tile_center(t))
-			if d < best_d:
-				best_d = d
-				best = t
-	return best
+	var targets := strike_tiles(province, tile)
+	var seen: Dictionary[Vector2i, bool] = {}
+	var places: Array[Vector2i] = []
+	for target: Vector2i in targets:
+		for step: Vector2i in steps:
+			var t := target + step
+			if seen.has(t) or targets.has(t):
+				continue
+			seen[t] = true
+			if nav.is_walkable(t) and nav.area_of(t) == area and not province.mil.ladders.has(t):
+				places.append(t)
+	if places.is_empty():
+		return Agent.NO_TILE
+	places.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		var da := agent.pos.distance_squared_to(IsoMath.tile_center(a))
+		var db := agent.pos.distance_squared_to(IsoMath.tile_center(b))
+		return da < db or (da == db and (a.y < b.y or (a.y == b.y and a.x < b.x))))
+	return places[agent.id % mini(places.size(), STAND_SPREAD)]
+
+
+## Whether [param pos] is next to (any tile of) the structure at [param tile].
+static func _at_structure(province: ProvinceSim, pos: Vector2, tile: Vector2i) -> bool:
+	for t: Vector2i in strike_tiles(province, tile):
+		if _next_to(pos, t):
+			return true
+	return false
 
 
 ## Whether something breakable stands at [param tile]: a wall tile or stairs, or a building

@@ -3151,3 +3151,162 @@ msgstr "Napad już trwa."
 
 msgid "ui.doing.sheltering"
 msgstr "chowa się przed bandytami"
+
+
+# --- M7 part 3: armies on the world map ---
+
+msgid "ui.army.march"
+msgstr "Wymarsz"
+
+msgid "ui.army.march_tip"
+msgstr "Żołnierze idą do krawędzi mapy i wychodzą na mapę świata jako armia. Na mapie świata kliknij armię, a potem prawym przyciskiem prowincję, do której ma iść."
+
+msgid "ui.army.retreat"
+msgstr "Odwrót"
+
+msgid "ui.note.army_marching"
+msgstr "Żołnierze wymaszerowują. Gdy wyjdą z mapy, armia stanie przy mieście na mapie świata."
+
+msgid "ui.note.army_entered"
+msgstr "Armia wkracza do prowincji! Kliknij wrogi mur, bramę albo ratusz prawym przyciskiem, żeby go rozbić."
+
+msgid "ui.world.army_enter"
+msgstr "Wejdź i walcz"
+
+msgid "ui.world.army_enter_tip"
+msgstr "Oglądasz oblężenie i sam dowodzisz: armia wchodzi od krawędzi mapy, straż broni murów i ratusza."
+
+msgid "ui.world.army_auto"
+msgstr "Rozstrzygnij automatycznie (szanse: %d%%)"
+
+msgid "ui.world.army_auto_tip"
+msgstr "Bitwa rozstrzyga się od razu, bez oglądania. Liczą się żołnierze, mury, taran, drabiny i jedzenie."
+
+msgid "ui.world.army_disband"
+msgstr "Do koszar"
+
+msgid "ui.world.army_hint"
+msgstr "Prawy przycisk na prowincji: wyślij armię (zielona linia: można, czerwona: nie)."
+
+msgid "ui.world.army_hungry"
+msgstr "Brak chleba! Głodna armia walczy słabiej."
+
+msgid "ui.world.army_food"
+msgstr "Chleb: %d (na %d min)"
+
+msgid "ui.world.army_ships"
+msgstr "Okręty wojenne: %d"
+
+msgid "ui.world.army_moving"
+msgstr "Idzie do: %s (ok. %d min)"
+
+msgid "ui.world.army_waiting"
+msgstr "Czeka u granic: %s"
+
+msgid "ui.world.army_inside"
+msgstr "W prowincji: %s"
+
+msgid "ui.world.army_idle"
+msgstr "Stoi w prowincji: %s"
+
+msgid "ui.world.army_selected"
+msgstr "Armia wybrana. Prawy przycisk na prowincji: wyślij ją tam."
+
+msgid "ui.world.report_0"
+msgstr "Bitwa w polu"
+
+msgid "ui.world.report_1"
+msgstr "Oblężenie"
+
+msgid "ui.world.report_2"
+msgstr "Bitwa na morzu"
+
+msgid "ui.world.report_won"
+msgstr "wygrana"
+
+msgid "ui.world.report_lost"
+msgstr "przegrana"
+
+msgid "ui.world.report_phase_0"
+msgstr "Ostrzał: zostało twoich %d, wrogów %d"
+
+msgid "ui.world.report_phase_1"
+msgstr "Pod murami: zostało twoich %d, wrogów %d"
+
+msgid "ui.world.report_phase_2"
+msgstr "Walka wręcz: zostało twoich %d, wrogów %d"
+
+msgid "ui.world.report_losses"
+msgstr "Straty: twoje %d, wroga %d"
+
+msgid "ui.world.camp_hint"
+msgstr "Obóz bandytów. Stąd wychodzą napady. Rozbij go armią, a odzyskasz łup (%d zł). Nie można tu wysłać wyprawy."
+
+msgid "ui.note.battle_won"
+msgstr "Bitwa wygrana: %s! Raport na mapie świata."
+
+msgid "ui.note.battle_lost"
+msgstr "Bitwa przegrana: %s. Raport na mapie świata."
+
+msgid "ui.note.bandits_set_out"
+msgstr "Bandyci wyruszyli z obozu na: %s! Będą tam za ok. %d min."
+
+msgid "ui.note.province_raided"
+msgstr "Bandyci złupili: %s (%d zł)!"
+
+msgid "ui.note.bandit_camp_broken"
+msgstr "Obóz bandytów rozbity! Odzyskany łup: %d zł."
+
+msgid "ui.note.army_at_settlement"
+msgstr "Armia stoi u granic: %s. Wybierz na mapie świata, jak walczyć."
+
+msgid "ui.note.army_home"
+msgstr "Armia wróciła do koszar: %s."
+
+msgid "ui.note.army_lost"
+msgstr "Armia przepadła: %s."
+
+msgid "ui.note.raid_beaten_off"
+msgstr "Załoga odparła bandytów: %s."
+
+msgid "ui.note.province_captured"
+msgstr "Zdobyto: %s! Mieszkańcy są przygnębieni, ale zostają."
+
+msgid "ui.note.bandit_camp_raised"
+msgstr "Bandyci rozbili obóz: %s."
+
+msgid "ui.command_error.no_world"
+msgstr "Ta gra nie ma mapy świata."
+
+msgid "ui.command_error.no_way_out"
+msgstr "Stąd nie da się wyjść z mapy."
+
+msgid "ui.command_error.army_busy"
+msgstr "Armia jest jeszcze w prowincji."
+
+msgid "ui.command_error.army_on_the_way"
+msgstr "Armia jest w drodze."
+
+msgid "ui.command_error.no_way"
+msgstr "Tam nie da się dojść lądem."
+
+msgid "ui.command_error.no_army"
+msgstr "Nie wybrano armii."
+
+msgid "ui.command_error.not_at_home"
+msgstr "Armia nie stoi w twojej prowincji."
+
+msgid "ui.command_error.not_at_settlement"
+msgstr "Armia nie czeka u granic osady."
+
+msgid "ui.command_error.nothing_to_break"
+msgstr "Tu nie ma czego rozbić."
+
+msgid "ui.command_error.bandit_camp"
+msgstr "Tam stoi obóz bandytów. Najpierw rozbij go armią."
+
+msgid "ui.world.army_title"
+msgid_plural "ui.world.army_title_plural"
+msgstr[0] "Armia: %d żołnierz"
+msgstr[1] "Armia: %d żołnierze"
+msgstr[2] "Armia: %d żołnierzy"
