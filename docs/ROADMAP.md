@@ -877,7 +877,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Brak jedzenia:** na razie bez kary (wrócimy przy balansie). Żołdu nie ma (zmiana 2026-11-08).
 - **Żołnierze w części 1:** stoją w szeregu na placu przed koszarami i co jakiś czas ćwiczą. Sterowanie w części 2.
 
-**Część 1, stan (2026-11-07): gotowa, czeka na ocenę właściciela.**
+**Część 1, stan (2026-11-07): gotowa, scalona do `main` 2026-11-08 przed oceną (decyzja właściciela: przetestuje hurtem później).**
 - Towary: węgiel drzewny, ruda żelaza, żelazo, włócznia, łuk, miecz, kolczuga, koń. Broń trafia tylko do zbrojowni (zwykły magazyn jej nie przyjmuje).
 - Żyły rudy: część skał na każdej mapie (6, najwyżej 1/3 skał; w Żelaznym Grodzie 24), też w starych zapisach (migracja). Kopalnię stawia się tylko w zasięgu 6 kafli od żyły; żyła ma 40 rudy.
 - Budynki (kategoria „Wojsko”): węglarz, kopalnia, huta, kowal (przełącznik: włócznie, miecze, na zmianę), płatnerz, łuczarz, stadnina (tylko z pastwiskami, start z parą koni, stado do 6), zbrojownia 3×3 (8 pól), koszary 3×3 (24 łóżka). Koszty budowy wyjściowe: w `data/buildings/`.
