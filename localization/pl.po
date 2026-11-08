@@ -296,13 +296,13 @@ msgid "ui.build.road"
 msgstr "Droga"
 
 msgid "ui.build.road_tip"
-msgstr "Ubita droga. Przeciągnij myszą. Ludzie chodzą po niej o połowę szybciej."
+msgstr "Ubita droga. Przeciągnij myszą. Ludzie chodzą po niej o połowę szybciej. Przeciągnięta przez rzekę sama zamawia drewniany most."
 
 msgid "ui.build.paving"
 msgstr "Bruk"
 
 msgid "ui.build.paving_tip"
-msgstr "Bruk z kamienia: 1 kamień na kafel. Przeciągnij myszą po drodze albo po wolnym terenie. Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej. Zaplanowane kafle mają przerywaną ramkę; prawy przycisk (przeciągnij) albo rozbiórka anuluje plan."
+msgstr "Bruk z kamienia: 1 kamień na kafel. Przeciągnij myszą po drodze albo po wolnym terenie. Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej. Przeciągnięty przez rzekę sam zamawia kamienny most. Zaplanowane kafle mają przerywaną ramkę; prawy przycisk (przeciągnij) albo rozbiórka anuluje plan."
 
 msgid "ui.build.demolish"
 msgstr "Rozbiórka"

@@ -1834,6 +1834,7 @@ func bridge_plan(from: Vector2i, to: Vector2i) -> Dictionary:
 	if not _bridge_bank(main[last + 1]):
 		result["error"] = &"bridge_needs_far_bank"
 		return result
+	result["ends"] = [main[first - 1], main[last + 1]] as Array[Vector2i]
 	if last - first + 1 > BRIDGE_REACH:
 		result["error"] = &"bridge_too_long"
 		return result
@@ -1859,6 +1860,48 @@ func bridge_plan(from: Vector2i, to: Vector2i) -> Dictionary:
 	if result["error"] == &"":
 		result["tiles"] = tiles
 	return result
+
+
+## The river crossings of a road or cobbles dragged along [param tiles] (owner's request
+## 2026-11-08: a road over a river brings a timber bridge, cobbles a stone one). Each is
+## {"from": land before the water, "to": land after it, "plan": bridge_plan(from, to),
+## "link": land tiles leading from the bridge's far ramp back to the dragged road when the
+## bridge, straightened, ends beside it}. Water a bridge stands on (or is ordered on) already
+## is passed by.
+func road_crossings(tiles: Array[Vector2i]) -> Array[Dictionary]:
+	var crossings: Array[Dictionary] = []
+	var i := 1
+	while i < tiles.size():
+		if not is_bridgeable(tiles[i]) or is_bridgeable(tiles[i - 1]):
+			i += 1
+			continue
+		var j := i
+		var taken := false
+		while j < tiles.size() and is_bridgeable(tiles[j]):
+			if grid.has_bridge(tiles[j]) or bridge_site_at(tiles[j]) != 0:
+				taken = true
+			j += 1
+		if j >= tiles.size() or taken:
+			i = j
+			continue
+		var from := tiles[i - 1]
+		var to := tiles[j]
+		var plan := bridge_plan(from, to)
+		var link: Array[Vector2i] = []
+		var ends: Array = plan.get("ends", [])
+		if not ends.is_empty():
+			var at: Vector2i = ends[1]
+			while at != to:
+				var d := to - at
+				if absi(d.x) >= absi(d.y):
+					at.x += signi(d.x)
+				else:
+					at.y += signi(d.y)
+				if at != to:
+					link.append(at)
+		crossings.append({"from": from, "to": to, "plan": plan, "link": link})
+		i = j
+	return crossings
 
 
 ## &"" when a bridge tile can be ordered on [param tile] on its own (water, nothing there).

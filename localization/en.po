@@ -291,13 +291,13 @@ msgid "ui.build.road"
 msgstr "Road"
 
 msgid "ui.build.road_tip"
-msgstr "Dirt road. Drag with the mouse. People walk half again as fast on it."
+msgstr "Dirt road. Drag with the mouse. People walk half again as fast on it. Dragged over a river, it orders a timber bridge."
 
 msgid "ui.build.paving"
 msgstr "Paving"
 
 msgid "ui.build.paving_tip"
-msgstr "Cobbled road: 1 stone per tile. Drag with the mouse over a road or free ground. Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles. Ordered tiles have a dashed frame; drag with the right button, or demolish, to cancel the order."
+msgstr "Cobbled road: 1 stone per tile. Drag with the mouse over a road or free ground. Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles. Dragged over a river, they order a stone bridge. Ordered tiles have a dashed frame; drag with the right button, or demolish, to cancel the order."
 
 msgid "ui.build.demolish"
 msgstr "Demolish"

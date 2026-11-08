@@ -304,6 +304,30 @@ func _place_bridges(sim: Simulation, at: Vector2i) -> void:
 	var d: Array = crossing.call(at.y + 10)
 	if not d.is_empty():
 		print("ordered bridge ", sim.execute(BuildBridgeCommand.new(d[0], d[1], TileGrid.STONE_BRIDGE)))
+	# A road dragged over the river further down (B1, owner's request 2026-11-08): the game
+	# orders a timber bridge over the water and the road on both banks.
+	var road_from := Vector2i(at.x - 8, at.y + 14)
+	var drag: Array[Vector2i] = [road_from]
+	var last := road_from
+	while last != road_from + Vector2i(16, 2):
+		var dd := road_from + Vector2i(16, 2) - last
+		if absi(dd.x) >= absi(dd.y):
+			last.x += signi(dd.x)
+		else:
+			last.y += signi(dd.y)
+		drag.append(last)
+	for road_crossing: Dictionary in province.road_crossings(drag):
+		print("road crossing ", road_crossing["from"], "->", road_crossing["to"], " ", (road_crossing["plan"] as Dictionary)["error"])
+		if (road_crossing["plan"] as Dictionary)["error"] == &"":
+			_game.call("_execute", BuildBridgeCommand.new(road_crossing["from"], road_crossing["to"], TileGrid.TIMBER_BRIDGE))
+			drag.append_array(road_crossing["link"])
+	var road: Array[Vector2i] = []
+	for t: Vector2i in drag:
+		if province.road_error(t) == &"":
+			road.append(t)
+	_game.call("_execute", BuildRoadCommand.new(road))
+	for t: Vector2i in road:
+		(_game.get("view") as ProvinceView).terrain.refresh_tile(t)
 	# People and a wagon on the bridges.
 	var walkers: Array[Vector2i] = []
 	if timber.size() >= 4:

@@ -222,3 +222,62 @@ func test_bridge_shortens_the_way_east_on_the_coast() -> void:
 	_lay(sim, Vector2i(57, 35), Vector2i(62, 35))
 	var after := province.find_path(from, to)
 	assert_int(after.size()).is_less(before.size() - 5)
+
+
+## What the game does when a road or cobbles are dragged over a river (B1, owner's request
+## 2026-11-08): a bridge over each crossing, then the road on the land around it.
+func _drag_road(sim: Simulation, path: Array[Vector2i], paving: bool) -> void:
+	var tiles := path.duplicate()
+	var bridge := TileGrid.STONE_BRIDGE if paving else TileGrid.TIMBER_BRIDGE
+	for crossing: Dictionary in sim.province.road_crossings(tiles):
+		if (crossing["plan"] as Dictionary)["error"] == &"":
+			assert_str(String(sim.execute(BuildBridgeCommand.new(crossing["from"], crossing["to"], bridge)))).is_empty()
+			tiles.append_array(crossing["link"])
+	var road: Array[Vector2i] = []
+	for t: Vector2i in tiles:
+		if (sim.province.paving_error(t) if paving else sim.province.road_error(t)) == &"":
+			road.append(t)
+	if paving:
+		sim.execute(BuildPavingCommand.new(road))
+	else:
+		sim.execute(BuildRoadCommand.new(road))
+
+
+## A 4-step path like the road tool's drag.
+func _drag_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = [from]
+	var last := from
+	while last != to:
+		var d := to - last
+		if absi(d.x) >= absi(d.y):
+			last.x += signi(d.x)
+		else:
+			last.y += signi(d.y)
+		tiles.append(last)
+	return tiles
+
+
+func test_road_over_a_river_brings_a_timber_bridge_and_cobbles_a_stone_one() -> void:
+	var sim := _river_sim()
+	var province := sim.province
+	_drag_road(sim, _drag_path(Vector2i(14, 26), Vector2i(29, 26)), false)
+	assert_int(province.bridge_site_at(Vector2i(21, 26))).is_not_equal(0)
+	_drag_road(sim, _drag_path(Vector2i(14, 30), Vector2i(29, 30)), true)
+	var stone_site := province.paving[province.bridge_site_at(Vector2i(21, 30))] as PavingSite
+	assert_int(stone_site.bridge_value()).is_equal(TileGrid.STONE_BRIDGE)
+	# A slanting drag: the bridge goes straight and a short road leads back to the drag.
+	_drag_road(sim, _drag_path(Vector2i(14, 36), Vector2i(29, 39)), false)
+	# Lay the ordered bridges and cobbles at once (the building itself is tested above).
+	for site: PavingSite in province.paving.values():
+		for tile: Vector2i in site.tiles:
+			if site.is_bridge():
+				province.grid.set_bridge(tile, site.bridge_value())
+			else:
+				province.grid.set_paved(tile, true)
+			province.refresh_tile(tile)
+	for row: int in [26, 30]:
+		assert_int(province.grid.bridge(Vector2i(19, row))).is_not_equal(0)
+		assert_array(province.find_road_path(Vector2i(14, row), Vector2i(29, row))).is_not_empty()
+	assert_array(province.find_road_path(Vector2i(14, 36), Vector2i(29, 39))).is_not_empty()
+	# Dragging the road again over a bridge brings no second one.
+	assert_array(province.road_crossings(_drag_path(Vector2i(14, 26), Vector2i(29, 26)))).is_empty()

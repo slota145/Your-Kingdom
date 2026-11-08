@@ -460,6 +460,7 @@ func _update_preview() -> void:
 		&"road":
 			for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
 				tiles[t] = "ok" if sim.province.road_error(t) == &"" else "bad"
+			_preview_crossings(tiles)
 		&"paving":
 			for t: Vector2i in _drag_tiles + ([_hover] as Array[Vector2i]):
 				if _cancelling:
@@ -467,6 +468,8 @@ func _update_preview() -> void:
 						tiles[t] = "bad"
 				else:
 					tiles[t] = "ok" if sim.province.paving_error(t) == &"" else "bad"
+			if not _cancelling:
+				_preview_crossings(tiles)
 		&"palisade", &"stone_wall", &"stairs":
 			# Walls (M7 part 2): the whole line is checked together (wedges, access).
 			var line: Array[Vector2i] = _drag_tiles.duplicate() if _dragging else [_hover] as Array[Vector2i]
@@ -730,6 +733,14 @@ func _on_left_release() -> void:
 		return
 	_dragging = false
 	var kind: StringName = _tool.get("kind", &"")
+	if kind == &"road" or kind == &"paving":
+		# A road over a river brings a timber bridge, cobbles a stone one (B1, owner's request
+		# 2026-11-08); the road goes on from the bridge's far ramp.
+		var bridge := TileGrid.STONE_BRIDGE if kind == &"paving" else TileGrid.TIMBER_BRIDGE
+		for crossing: Dictionary in sim.province.road_crossings(_drag_tiles):
+			if (crossing["plan"] as Dictionary)["error"] == &"":
+				_execute(BuildBridgeCommand.new(crossing["from"], crossing["to"], bridge))
+				_drag_tiles.append_array(crossing["link"])
 	if kind == &"road":
 		var tiles: Array[Vector2i] = []
 		for t: Vector2i in _drag_tiles:
@@ -761,6 +772,21 @@ func _on_left_release() -> void:
 				_execute(PlaceFieldCommand.new(int(_tool["farm"]), t))
 	_drag_tiles.clear()
 	_update_preview()
+
+
+## Marks the bridges a dragged road or cobbles would bring over a river (B1): the whole bridge
+## green, or red with its reason when it cannot be built.
+func _preview_crossings(tiles: Dictionary) -> void:
+	if not _dragging:
+		return
+	for crossing: Dictionary in sim.province.road_crossings(_drag_tiles):
+		var plan: Dictionary = crossing["plan"]
+		var ok: bool = plan["error"] == &""
+		for t: Vector2i in plan["line"]:
+			tiles[t] = "ok" if ok else "bad"
+		if ok:
+			for t: Vector2i in crossing["link"]:
+				tiles[t] = "ok"
 
 
 static func _wall_kind(tool: StringName) -> int:
