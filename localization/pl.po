@@ -2584,7 +2584,7 @@ msgid "good.iron.name"
 msgstr "Żelazo"
 
 msgid "good.iron.desc"
-msgstr "Sztaby żelaza z huty. Z nich kowal kuje broń, a płatnerz kolczugi."
+msgstr "Sztaby żelaza z huty. Z nich kowal kuje broń, a płatnerz zbroje."
 
 msgid "good.spear.name"
 msgstr "Włócznia"
@@ -2605,10 +2605,10 @@ msgid "good.sword.desc"
 msgstr "Prosty miecz z żelaza. Broń miecznika i jeźdźca."
 
 msgid "good.chainmail.name"
-msgstr "Kolczuga"
+msgstr "Zbroja"
 
 msgid "good.chainmail.desc"
-msgstr "Koszula z tysięcy żelaznych kółek. Chroni miecznika i jeźdźca."
+msgstr "Zbroja z żelaza: kolczuga z płytami na piersi i ramionach. Chroni miecznika, jeźdźca, halabardnika i ciężkiego zbrojnego."
 
 msgid "good.horse.name"
 msgstr "Koń"
@@ -2644,7 +2644,7 @@ msgid "building.armourer.name"
 msgstr "Płatnerz"
 
 msgid "building.armourer.desc"
-msgstr "Płatnerz splata kółko po kółku kolczugę z 2 sztab żelaza."
+msgstr "Płatnerz kuje zbroję z 2 sztab żelaza: splata kółka i nitowane płyty."
 
 msgid "building.bowyer.name"
 msgstr "Łuczarz"
@@ -2701,10 +2701,10 @@ msgid "recipe.forging_swords.desc"
 msgstr "1 żelazo → 1 miecz (ok. 45 s)."
 
 msgid "recipe.armouring.name"
-msgstr "Plecenie kolczug"
+msgstr "Kucie zbroi"
 
 msgid "recipe.armouring.desc"
-msgstr "2 żelaza → 1 kolczuga (ok. 60 s)."
+msgstr "2 żelaza → 1 zbroja (ok. 60 s)."
 
 msgid "recipe.bow_making.name"
 msgstr "Robienie łuków"
@@ -2740,13 +2740,13 @@ msgid "unit.swordsman.name"
 msgstr "Miecznik"
 
 msgid "unit.swordsman.desc"
-msgstr "Miecz i kolczuga. 60 zł. Silny i wytrzymały."
+msgstr "Miecz i zbroja. 60 zł. Silny i wytrzymały."
 
 msgid "unit.knight.name"
 msgstr "Jeździec"
 
 msgid "unit.knight.desc"
-msgstr "Koń, miecz i kolczuga. 100 zł. Najsilniejszy i dwa razy szybszy."
+msgstr "Koń, miecz i zbroja. 100 zł. Najsilniejszy i dwa razy szybszy."
 
 msgid "ui.kind.charcoal_burner"
 msgstr "Węglarz"
@@ -2897,9 +2897,9 @@ msgstr[2] "%s mieczy"
 
 msgid "good.chainmail.count"
 msgid_plural "good.chainmail.count_plural"
-msgstr[0] "%s kolczuga"
-msgstr[1] "%s kolczugi"
-msgstr[2] "%s kolczug"
+msgstr[0] "%s zbroja"
+msgstr[1] "%s zbroje"
+msgstr[2] "%s zbroi"
 
 msgid "good.horse.count"
 msgid_plural "good.horse.count_plural"
@@ -3374,3 +3374,95 @@ msgstr "Nad wodą może stać najwyżej jeden rząd budynku (na palach), reszta 
 
 msgid "ui.command_error.blocks_water"
 msgstr "Budynek zagrodziłby wodę: za palami musi zostać jeszcze co najmniej 2 kafle wody."
+
+# J1 part 1: new weapons and units
+
+msgid "good.halberd.name"
+msgstr "Halabarda"
+
+msgid "good.halberd.desc"
+msgstr "Długie drzewce z toporem, hakiem i szpicem. Broń halabardnika, zguba jeźdźców."
+
+msgid "good.crossbow.name"
+msgstr "Kusza"
+
+msgid "good.crossbow.desc"
+msgstr "Łuk ze stali na drewnianym łożu. Strzela rzadziej niż łuk, ale bełt przebija zbroje."
+
+msgid "good.morning_star.name"
+msgstr "Morgenstern"
+
+msgid "good.morning_star.desc"
+msgstr "Dębowa pałka z kolczastą kulą z żelaza. Broń ciężkiego zbrojnego."
+
+msgid "good.halberd.count"
+msgid_plural "good.halberd.count_plural"
+msgstr[0] "%s halabarda"
+msgstr[1] "%s halabardy"
+msgstr[2] "%s halabard"
+
+msgid "good.crossbow.count"
+msgid_plural "good.crossbow.count_plural"
+msgstr[0] "%s kusza"
+msgstr[1] "%s kusze"
+msgstr[2] "%s kusz"
+
+msgid "good.morning_star.count"
+msgid_plural "good.morning_star.count_plural"
+msgstr[0] "%s morgenstern"
+msgstr[1] "%s morgensterny"
+msgstr[2] "%s morgensternów"
+
+msgid "recipe.forging_halberds.name"
+msgstr "Kucie halabard"
+
+msgid "recipe.forging_halberds.desc"
+msgstr "1 żelazo + 1 deska → 1 halabarda (ok. 47 s)."
+
+msgid "recipe.forging_morning_stars.name"
+msgstr "Kucie morgensternów"
+
+msgid "recipe.forging_morning_stars.desc"
+msgstr "1 żelazo → 1 morgenstern (ok. 45 s)."
+
+msgid "recipe.crossbow_making.name"
+msgstr "Robienie kusz"
+
+msgid "recipe.crossbow_making.desc"
+msgstr "2 deski + 1 żelazo → 1 kusza (ok. 34 s)."
+
+msgid "unit.halberdier.name"
+msgstr "Halabardnik"
+
+msgid "unit.halberdier.desc"
+msgstr "Halabarda i zbroja. 80 zł. Wytrzymały, dwa i pół raza groźniejszy dla jeźdźców."
+
+msgid "unit.crossbowman.name"
+msgstr "Kusznik"
+
+msgid "unit.crossbowman.desc"
+msgstr "Kusza. 50 zł. Strzela z 6 kafli, rzadko, ale bardzo mocno; bełt przebija zbroje."
+
+msgid "unit.man_at_arms.name"
+msgstr "Ciężki zbrojny"
+
+msgid "unit.man_at_arms.desc"
+msgstr "Morgenstern i zbroja. 90 zł. Najmocniejszy cios i najwięcej życia, ale wolny."
+
+msgid "unit.light_cavalry.name"
+msgstr "Lekka jazda"
+
+msgid "unit.light_cavalry.desc"
+msgstr "Koń i włócznia. 60 zł. Najszybsza, tańsza i słabsza od jeźdźca; dwa razy groźniejsza dla łuczników i kuszników."
+
+msgid "ui.kind.halberdier"
+msgstr "Halabardnik"
+
+msgid "ui.kind.crossbowman"
+msgstr "Kusznik"
+
+msgid "ui.kind.man_at_arms"
+msgstr "Ciężki zbrojny"
+
+msgid "ui.kind.light_cavalry"
+msgstr "Lekki jeździec"

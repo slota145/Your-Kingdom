@@ -24,6 +24,12 @@ const TABLE := [
 			SIEGE, "stone", 0.0, 0.1],
 	["an open town falls to bandits", {"spearman": 6, "archer": 2}, {"spearman": 2}, SIEGE, "", 0.9, 1.0],
 	["hungry men lose an even fight", {"spearman": 11}, {"spearman": 10}, FIELD, "hungry", 0.0, 0.3],
+	# J1 part 1: the new units keep to their roles.
+	["halberdiers stop riders", {"knight": 10}, {"halberdier": 8}, FIELD, "", 0.0, 0.1],
+	["light horse rides down crossbowmen", {"light_cavalry": 8}, {"crossbowman": 10}, FIELD, "", 0.9, 1.0],
+	["men-at-arms beat as many swordsmen", {"man_at_arms": 10}, {"swordsman": 10}, FIELD, "", 0.9, 1.0],
+	["crossbows pierce armour", {"crossbowman": 12, "spearman": 8}, {"swordsman": 10}, FIELD, "", 0.8, 1.0],
+	["riders beat light horse", {"knight": 8}, {"light_cavalry": 8}, FIELD, "", 0.9, 1.0],
 ]
 
 

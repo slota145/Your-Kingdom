@@ -68,6 +68,8 @@ LAYOUTS.update({
     "charcoal": PILE, "iron_ore": PILE, "iron": PILE_LOW, "chainmail": PILE_LOW,
     "spear": PLANKS, "sword": PLANKS, "bow": BOWS,
 })
+# J1 part 1: the new weapons, their pieces drawn by code (tools/draw_weapon_pieces.py).
+LAYOUTS.update({"halberd": PLANKS, "crossbow": BOWS, "morning_star": PILE})
 
 
 def stack_size(good):

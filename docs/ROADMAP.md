@@ -1051,12 +1051,22 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## J1 — Nowe jednostki i okręty
 
-**Status: plan zaakceptowany 2026-11-08 (ankiety), część 1 w toku.** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
+**Status: plan zaakceptowany 2026-11-08 (ankiety); część 1 gotowa, czeka na ocenę.** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
 
 **Cel (prośba właściciela):**
 - jednostki: **halabardnik w zbroi płytowej**, **kusznik**, **ciężki zbrojny z morgensternem**, **lekka jazda**, **ruchoma balista**,
 - **3 nowe okręty**, każdy w wersji cywilnej (handel, ładownia) i wojennej (żołnierze, walka automatyczna), każdy większy od poprzedniego (w granicach rozsądku; koga zostaje najmniejszym statkiem pełnomorskim),
 - **duża stocznia**, w której powstają nowe okręty.
+
+**Część 1, stan (2026-11-08): gotowa, czeka na ocenę właściciela.**
+- Jednostki: halabardnik, kusznik, ciężki zbrojny, lekka jazda (wartości jak w tabeli wyżej); rekrutuje się je w koszarach jak dotąd (przyciski pojawiają się same, szare, gdy brak broni). Lekka jazda bierze konia ze stadniny i włócznię.
+- Broń: kowal ma 4 wyroby (włócznie, miecze, halabardy, morgensterny) albo „na zmianę”; łuczarz łuki albo kusze (albo na zmianę); kusznik zanosi najpierw deski do warsztatu, potem idzie po żelazo (jak kowal przy włóczniach). Zbroja: kolczuga ma teraz nazwę „zbroja”.
+- Grafika kodem: postacie i ruchy walki (ART_SPEC §10.17), kawałki broni, stosy, ikony i broń w rękach.
+- Tabela bitew uzupełniona: halabardnicy zatrzymują jeźdźców, lekka jazda rozbija kuszników, ciężcy zbrojni biją tylu samo mieczników, kusze przebijają zbroje, jeźdźcy biją lekką jazdę.
+- Zapis bez zmian (nowe dane, ten sam format).
+- Testy: `tests/scenario/test_j1_units.gd`, `tests/unit/sim/military/test_battle_resolver.gd`.
+- Zrzuty: `game_shot.tscn -- --map=lakeland --tile=84,64 --zoom=3 --m7=army2 [--drill]`, panele `--zoom=1 --m7=finished --select=blacksmith|bowyer|barracks`.
+- Uwaga: łuczarz i kowal „na zmianę” robią teraz też nową broń. Kusza potrzebuje żelaza: bez żelaza kolejka na kuszę się nie udaje i łuczarz traci chwilę, a łuki dalej powstają. Kto chce samych łuków, wybiera „Robienie łuków”.
 
 **Podział (propozycja): 3 części, ocena po każdej.**
 1. **Piechota i jazda:** nowe towary i ich wytwarzanie (halabarda, kusza, morgenstern, zbroja płytowa), rekrutacja w koszarach, wartości walki w widoku prowincji i w rozstrzyganiu automatycznym, postacie z animacjami.

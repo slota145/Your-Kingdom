@@ -70,6 +70,10 @@ const CARRIED_GOODS := {
 	"sword": ["bundle", Color(0.75, 0.77, 0.8), Color(0.55, 0.38, 0.2)],
 	"chainmail": ["crate", Color(0.6, 0.62, 0.65), Color(0.4, 0.42, 0.45)],
 	"horse": ["animal", Color(0.5, 0.33, 0.2), Color(0.25, 0.18, 0.12)],
+	# J1 part 1 (new weapons)
+	"halberd": ["bundle", Color(0.6, 0.45, 0.28), Color(0.78, 0.8, 0.84)],
+	"crossbow": ["bundle", Color(0.55, 0.35, 0.18), Color(0.7, 0.72, 0.76)],
+	"morning_star": ["bundle", Color(0.72, 0.74, 0.78), Color(0.5, 0.34, 0.18)],
 }
 
 ## Stacks and nature sprites keep the tile diamond in their bottom 32 px (ART_SPEC §2).

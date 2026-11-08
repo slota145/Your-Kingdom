@@ -494,7 +494,7 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	sim.province.rare_resource = &"horses"   # a stud farm in the shot
 	sim.data.get_building(&"mine").needs_node_near = &""   # the mine anywhere in the shot
 	sim.treasury.gold = 5000   # sites cost gold
-	if _m7 == "army":
+	if _m7 == "army" or _m7 == "army2":
 		_place_army(sim, at)
 		return
 	if _m7 == "siege":
@@ -578,8 +578,12 @@ func _place_army(sim: Simulation, at: Vector2i) -> void:
 	if armoury != null:
 		for good: StringName in [&"spear", &"bow", &"sword", &"chainmail"]:
 			armoury.stock.add(good, 8)
+	# --m7=army2 (J1 part 1): the new units instead.
+	var kinds: Array[StringName] = [&"spearman", &"archer", &"swordsman", &"knight"]
+	if _m7 == "army2":
+		kinds = [&"halberdier", &"crossbowman", &"man_at_arms", &"light_cavalry"]
 	for k: int in 16:
-		var unit_id: StringName = [&"spearman", &"archer", &"swordsman", &"knight"][k / 4]
+		var unit_id: StringName = kinds[k / 4]
 		var unit := sim.data.get_unit(unit_id)
 		var agent := sim.province.spawn_agent(unit_id, barracks.entrance_tile())
 		agent.home_id = barracks.id

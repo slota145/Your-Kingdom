@@ -1,0 +1,66 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+[ext_resource type="Script" path="res://src/defs/steps/fetch_step_def.gd" id="2_fetch"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/deposit_step_def.gd" id="9_deposit"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/produce_step_def.gd" id="5_produce"]
+[ext_resource type="Script" path="res://src/defs/steps/deliver_step_def.gd" id="6_deliver"]
+
+[sub_resource type="Resource" id="fetch_0"]
+script = ExtResource("2_fetch")
+good = &"planks"
+amount = 2
+skip_if_stocked = true
+
+[sub_resource type="Resource" id="goto_1"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="deposit_2"]
+script = ExtResource("9_deposit")
+
+[sub_resource type="Resource" id="fetch_3"]
+script = ExtResource("2_fetch")
+good = &"iron"
+amount = 1
+
+[sub_resource type="Resource" id="goto_4"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="work_5"]
+script = ExtResource("4_work")
+activity = &"carve"
+duration = 22.0
+spot = &"bench"
+
+[sub_resource type="Resource" id="work_6"]
+script = ExtResource("4_work")
+activity = &"bend"
+duration = 8.0
+spot = &"bench"
+
+[sub_resource type="Resource" id="work_7"]
+script = ExtResource("4_work")
+activity = &"string"
+duration = 4.0
+spot = &"bench"
+
+[sub_resource type="Resource" id="produce_8"]
+script = ExtResource("5_produce")
+output = &"crossbow"
+amount = 1
+consume = Dictionary[StringName, int]({
+&"planks": 2
+})
+
+[sub_resource type="Resource" id="deliver_9"]
+script = ExtResource("6_deliver")
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("fetch_0"), SubResource("goto_1"), SubResource("deposit_2"), SubResource("fetch_3"), SubResource("goto_4"), SubResource("work_5"), SubResource("work_6"), SubResource("work_7"), SubResource("produce_8"), SubResource("deliver_9")])
+id = &"crossbow_making"
