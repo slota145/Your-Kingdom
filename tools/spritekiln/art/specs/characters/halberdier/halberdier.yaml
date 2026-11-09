@@ -1,0 +1,88 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+name: halberdier
+camera: {pitch: 30, scale: 0.05176}   # pitch 30: matches the game's 2:1 isometric ground (sin 30 = 0.5)
+palette: ../../palettes/kingdom.yaml
+extends: humanoid
+remove: [use.sword, animations.attack]
+
+brief:
+  summary: "Your Kingdom halberdier: steel kettle hat (kapalin), red kingdom tabard with a gold cross over plate, steel arms and pauldrons, halberd (spike, axe blade, back hook)"
+  head: "short brown hair mostly under a steel kettle hat with a wide drooping brim, clean-shaven, eyes only"
+  must_keep: ["gold cross on the red tabard reads at 1x", "halberd axe blade readable in every direction", "kettle hat brim breaks the head outline"]
+  simplify: ["no rivets, no straps"]
+
+use:
+  - {kit: spear, as: spear, at: wrist_R, with: {length: 1.12, butt: 0.36, head: 0.2, width: 0.05, pitch: spear_pitch, cheat: spear_cheat, splay: spear_splay}}
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+  - {kit: hair, at: head, with: {fringe: 0.3, part: 0.2, locks: 0.4, length: 0.15, volume: 0.85}}
+  - {kit: hat, as: kapalin, at: head, with: {size: 0.9, brim: 0.25, crown: 0.13, droop: 0.04, tilt: -0.5, seat: 0.24, band: false},
+     materials: {cloth: steel, leather: steel}}
+
+materials:
+  cloth: {ramp: tunic}
+  trousers: {ramp: trousers}
+  wood: {ramp: wood}
+  hair: {ramp: hair}
+  ink: {ramp: hair, band: 0}
+  plate: {ramp: steel, finish: metal}
+  gold: {ramp: gold}
+
+channels:
+  spear_cheat: 0.3   # the kit's per-direction cheats (off in the attack: the halberd points where the body faces)
+  spear_splay: 0.12  # lean away from the body (0 in the attack)
+  spear_pitch: 0   # extra lean of the halberd at the wrist (attack: down to level, then the thrust)
+
+parts:
+  leg_L: {material: trousers}
+  arm_L: {material: plate}
+  pauldron_L:      # a steel shoulder plate
+    material: plate
+    space: pelvis
+    prims:
+      - ellipsoid: {c: [0.27, 0.57, 0.0], r: [0.11, 0.08, 0.11]}
+  torso:           # the red tabard over the plate, a gold cross on the chest and the back
+    paint:
+      - material: gold
+        prims:
+          - box: {c: [0, 0.28, 0], half: [0.05, 0.20, 0.4]}
+          - box: {c: [0, 0.36, 0], half: [0.15, 0.05, 0.4]}
+  coat:            # tabard skirt to mid-thigh, straight
+    prims:
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.22, -0.02], r: [0.20, 0.205]}
+    cut:
+      - box: {c: [0, -0.22, 0], half: [0.03, 0.16, 0.4]}   # split at the front and back for walking
+  halberd_blade:   # the axe blade under the spike, on the shaft's +z side, and the hook on -z
+    material: steel
+    space: spear_shaft
+    priority: 2
+    prims:
+      - extrude: {c: [0, 0.86, 0], rot: [0, -1.5708, 0], depth: 0.055, round: 0.008,
+                  profile: {polygon: [[0.02, 0.08], [0.13, 0.11], [0.19, 0.02], [0.16, -0.10], [0.02, -0.07]]}}
+      - extrude: {c: [0, 0.88, 0], rot: [0, -1.5708, 0], depth: 0.055, round: 0.008,
+                  profile: {polygon: [[-0.02, 0.03], [-0.13, -0.01], [-0.11, -0.05], [-0.02, -0.02]]}}
+
+animations:
+  idle:
+    channels:
+      hand_R: "[0.30, 0.12 + 0.01*sin(p - 0.6), 0.16]"
+  walk:
+    channels:
+      hand_R: "[0.30, 0.13, 0.16 + 0.03*cos(p)]"   # the halberd hand stays steady on the march
+  attack:          # lower the halberd to level, draw back, thrust with the spike, recover
+    loop: false
+    keys:
+      - {ms: 120, set: {hand_R: [0.30, 0.13, 0.16]}}
+      - {ms: 130, set: {spear_pitch: 1.2, spear_cheat: 0, spear_splay: 0, hand_R: [0.22, 0.28, 0.10], hand_L: [0.10, 0.30, 0.35], twist: -0.15,
+                        foot_L: [0.14, 0, 0.14], foot_R: [0.14, 0, -0.08]}}
+      - {ms: 200, event: windup,
+         set: {spear_pitch: "2.0 - 0.55*pulse(yaw, 0, 60) - 0.55*pulse(yaw, 180, 60)", spear_cheat: 0, spear_splay: 0, hand_R: [0.20, 0.30, -0.08], hand_L: [0.08, 0.32, 0.18], twist: -0.30, lean: -0.06,
+               squash: 0.97, foot_L: [0.14, 0, 0.16], foot_R: [0.14, 0, -0.10]}}
+      - {ms: 60, set: {spear_pitch: "2.0 - 0.55*pulse(yaw, 0, 60) - 0.55*pulse(yaw, 180, 60)", spear_cheat: 0, spear_splay: 0, root: [0, 0, 0.05], hand_R: [0.14, 0.30, 0.30], hand_L: [0.06, 0.32, 0.55],
+                       twist: 0.10, lean: 0.20, squash: 1.03, foot_L: [0.14, 0, 0.26], foot_R: [0.14, 0, -0.12]}}
+      - {ms: 140, event: hit,
+         set: {spear_pitch: "2.0 - 0.55*pulse(yaw, 0, 60) - 0.55*pulse(yaw, 180, 60)", spear_cheat: 0, spear_splay: 0, root: [0, 0, 0.07], hand_R: [0.12, 0.30, 0.34], hand_L: [0.05, 0.32, 0.58],
+               twist: 0.15, lean: 0.25, foot_L: [0.14, 0, 0.28], foot_R: [0.14, 0, -0.12]}}
+      - {ms: 130, set: {spear_pitch: 1.3, spear_cheat: 0, spear_splay: 0, root: [0, 0, 0.06], hand_R: [0.20, 0.28, 0.18], hand_L: [0.10, 0.30, 0.40],
+                        twist: 0.0, lean: 0.10, foot_L: [0.14, 0, 0.16], foot_R: [0.14, 0, -0.06]}}
+      - {ms: 140, set: {spear_pitch: 0.4, hand_R: [0.28, 0.16, 0.16], foot_L: [0.13, 0, 0.06]}}
