@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 27
+const CURRENT_VERSION := 28
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -88,6 +88,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 27:
 		result = migrate_v26_to_v27(result)
 		version = 27
+	if version < 28:
+		result = migrate_v27_to_v28(result)
+		version = 28
 	return result
 
 
@@ -361,6 +364,21 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v27 (M8 part 1): a sandbox game keeps its settings in the world ("settings": scenario,
 ## world number, rulers, difficulty, victory) and how it ended ("result"); a generated world is
 ## made again from its number on loading. Optional: an older game has neither.
+## v28 (M8 part 2): armies have a place on the world map and a way of points instead of a
+## route of provinces; an army on its way keeps its goal (the town of its last province) and
+## finds its way again on the next second (Armies._place_old).
+static func migrate_v27_to_v28(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	for army: Variant in world.get("armies", []):
+		var a := army as Dictionary
+		if a.has("next"):
+			var route: Array = a.get("route", [])
+			a["target"] = int(route[route.size() - 1]) if not route.is_empty() else int(a["next"])
+		for key: String in ["next", "route", "depart", "arrive"]:
+			a.erase(key)
+	return state
+
+
 static func migrate_v26_to_v27(state: Dictionary) -> Dictionary:
 	return state
 

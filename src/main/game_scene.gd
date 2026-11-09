@@ -45,6 +45,10 @@ var _building_panel: BuildingPanel
 var _agent_panel: AgentPanel
 var _ship_panel: ShipPanel
 var _result: ResultWindow
+## A battle in the field (M8 part 2): how to fight it, its report, and the bar on the battlefield.
+var _battle_window: FieldBattleWindow
+var _report_window: BattleReportWindow
+var _field_bar: PanelContainer
 var _stocks: KingdomStockWindow
 var _routes: RoutesWindow
 var _world_map: WorldMapScreen
@@ -131,6 +135,12 @@ func _start(simulation: Simulation) -> void:
 	_building_panel.treasury = sim.treasury
 	_building_panel.sim = sim
 	Game.start(sim)
+	# A battle in the field still waiting for the player's choice (a loaded game, M8 part 2).
+	for battle: FieldBattle in sim.world.battles.values():
+		if battle.state == FieldBattle.State.PENDING:
+			Game.paused = true
+			_battle_window.show_battle(sim, battle.id)
+			break
 
 
 ## Builds the view of the viewed province (a new game, a loaded one, or another province
@@ -157,6 +167,14 @@ func _show_province() -> void:
 	_routes.visible = false
 	_close_panels()
 	_set_tool({})
+	# On the battlefield (M8 part 2) nothing is built; the bar offers the retreat.
+	var on_field := sim.viewed_id == Simulation.BATTLEFIELD
+	_field_bar.visible = on_field
+	if on_field:
+		_build.visible = false
+		_build_show.visible = false
+	elif not _build.visible and not _build_show.visible:
+		_build.visible = true
 
 
 func _start_tile() -> Vector2i:
@@ -165,6 +183,10 @@ func _start_tile() -> Vector2i:
 	for b: BuildingState in sim.province.buildings.all():
 		if b.def.id == &"town_hall":
 			return b.origin + b.def.footprint
+	if sim.viewed_id == Simulation.BATTLEFIELD:
+		for agent: Agent in sim.province.agents.all():
+			if agent.combat != null and agent.combat.faction == CombatState.PLAYER:
+				return agent.tile() + Vector2i(6, 0)
 	return sim.province.grid.size / 2
 
 
@@ -281,6 +303,36 @@ func _build_ui() -> void:
 	top_root.theme = root.theme
 	top_layer.add_child(top_root)
 	top_root.add_child(_result)
+	_battle_window = FieldBattleWindow.new()
+	_battle_window.set_anchors_preset(Control.PRESET_CENTER)
+	_battle_window.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_battle_window.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_battle_window.visible = false
+	_battle_window.chosen.connect(func(command: Command) -> void:
+		_battle_window.visible = false
+		Game.paused = false
+		_execute(command))
+	top_root.add_child(_battle_window)
+	_report_window = BattleReportWindow.new()
+	_report_window.set_anchors_preset(Control.PRESET_CENTER)
+	_report_window.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_report_window.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_report_window.visible = false
+	top_root.add_child(_report_window)
+	_field_bar = PanelContainer.new()
+	_field_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_field_bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_field_bar.position.y = 64
+	_field_bar.visible = false
+	var field_row := HBoxContainer.new()
+	field_row.add_theme_constant_override(&"separation", 12)
+	_field_bar.add_child(field_row)
+	field_row.add_child(UiKit.title("ui.battle.on_field"))
+	field_row.add_child(UiKit.button("ui.army.retreat", func() -> void:
+		var battle := FieldBattles.live(sim)
+		if battle != null:
+			_execute(FieldBattleCommand.new(battle.id, FieldBattleCommand.RETREAT))))
+	root.add_child(_field_bar)
 	root.add_child(_ship_panel)
 	_world_map = WorldMapScreen.new()
 	_world_map.visible = false
@@ -305,6 +357,31 @@ func _build_ui() -> void:
 	_notes.position = Vector2(12, 64)
 	_notes.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_notes)
+
+
+## Battles of the player's armies and fleets on the world map (M8 part 2): the choice how to
+## fight (the game pauses), the battlefield, the reports.
+func _on_battle_event(event: Dictionary) -> void:
+	match event["type"]:
+		&"field_battle_pending":
+			Game.paused = true
+			_battle_window.show_battle(sim, int(event["battle"]))
+		&"battlefield_entered":
+			_battle_window.visible = false
+			Game.paused = false
+			_world_map.visible = false
+			_show_province()
+			_notes.push(tr("ui.note.battlefield_entered"))
+		&"field_battle_over":
+			_battle_window.visible = false
+			if bool(event["live"]):
+				_show_province()
+			_report_window.show_last(sim)
+		&"sea_battle":
+			var player := ProvinceDef.OWNER_PLAYER
+			if StringName(event["attacker"]) == player or StringName(event["defender"]) == player:
+				_world_map.show_sea_fight(event["pos"])
+				_report_window.show_last(sim)
 
 
 ## Notes about expeditions and neutral settlements on the world map (M6 parts 2 and 3).
@@ -440,6 +517,7 @@ func _on_sim_event(event: Dictionary) -> void:
 	if event["type"] == &"game_won" or event["type"] == &"game_lost":
 		Game.paused = true
 		_result.show_result(event["type"] == &"game_won", StringName(String(event.get("victory", ""))))
+	_on_battle_event(event)
 	_note_world_event(event)
 	view.on_sim_event(event)
 	_notes.on_sim_event(event)

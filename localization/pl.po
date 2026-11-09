@@ -3186,7 +3186,7 @@ msgid "ui.world.army_disband"
 msgstr "Do koszar"
 
 msgid "ui.world.army_hint"
-msgstr "Prawy przycisk na prowincji: wyślij armię (zielona linia: można, czerwona: nie)."
+msgstr "Prawy przycisk: w dowolne miejsce lądu (armia idzie tam i staje), na miasto (idzie do niego, osadę oblega) albo na wrogą armię (ściga ją). Zielona linia: można, czerwona: nie."
 
 msgid "ui.world.army_hungry"
 msgstr "Brak chleba! Głodna armia walczy słabiej."
@@ -3210,7 +3210,7 @@ msgid "ui.world.army_idle"
 msgstr "Stoi w prowincji: %s"
 
 msgid "ui.world.army_selected"
-msgstr "Armia wybrana. Prawy przycisk na prowincji: wyślij ją tam."
+msgstr "Wybrane. Prawy przycisk w dowolne miejsce mapy: wyślij tam."
 
 msgid "ui.world.report_0"
 msgstr "Bitwa w polu"
@@ -3893,3 +3893,111 @@ msgstr "Start: %s (%s)"
 
 msgid "ui.new_game.island"
 msgstr "wyspa"
+
+
+# --- M8 part 2: armies and fleets on the world map ---
+
+msgid "ui.world.fleet_title"
+msgid_plural "ui.world.fleet_title_plural"
+msgstr[0] "Flota: %d okręt"
+msgstr[1] "Flota: %d okręty"
+msgstr[2] "Flota: %d okrętów"
+
+msgid "ui.world.fleet_hint"
+msgstr "Prawy przycisk: na morze płynie tam; na ląd wysadza wojsko; na Twoje miasto nad morzem wpływa do portu; na wrogą flotę ściga ją."
+
+msgid "ui.world.fleet_idle"
+msgstr "Stoi na morzu"
+
+msgid "ui.world.fleet_landing"
+msgstr "Płynie wysadzić wojsko (ok. %d min)"
+
+msgid "ui.world.fleet_out"
+msgstr "Wyprowadź flotę (%d)"
+
+msgid "ui.world.fleet_out_tip"
+msgstr "Wszystkie wolne okręty wojenne tej prowincji wypływają od razu na mapę świata, razem z wojskiem na pokładzie, i stają przy brzegu jako flota."
+
+msgid "ui.world.army_moving_spot"
+msgstr "Idzie we wskazane miejsce (ok. %d min)"
+
+msgid "ui.world.army_chasing"
+msgstr "Ściga wroga (ok. %d min)"
+
+msgid "ui.world.army_engaged"
+msgstr "W bitwie!"
+
+msgid "ui.world.army_idle_field"
+msgstr "Stoi w polu"
+
+msgid "ui.world.report_ships"
+msgstr "Okręty po bitwie: twoje %d, wroga %d"
+
+msgid "ui.ship.sail_out"
+msgstr "Wypłyń na mapę świata"
+
+msgid "ui.ship.sail_out_tip"
+msgstr "Okręt płynie do brzegu mapy i dołącza do floty tej prowincji na mapie świata, razem z wojskiem na pokładzie."
+
+msgid "ui.battle.title"
+msgstr "Spotkanie w polu!"
+
+msgid "ui.battle.met"
+msgstr "Twoja armia spotkała wroga (%s) w prowincji %s."
+
+msgid "ui.battle.sides"
+msgstr "Twoi: %s\nWrogowie: %s"
+
+msgid "ui.battle.bandits"
+msgstr "bandyci"
+
+msgid "ui.battle.enemy"
+msgstr "wróg"
+
+msgid "ui.battle.live"
+msgstr "Walcz na polu"
+
+msgid "ui.battle.live_tip"
+msgstr "Bitwa na żywo: teren tej prowincji bez miasta, wojska stają naprzeciw siebie, a Ty dowodzisz jak w prowincji."
+
+msgid "ui.battle.auto"
+msgstr "Rozstrzygnij automatycznie (szanse: %d%%)"
+
+msgid "ui.battle.auto_tip"
+msgstr "Bitwa rozstrzyga się od razu, bez oglądania. Liczą się żołnierze, łucznicy i jedzenie."
+
+msgid "ui.battle.on_field"
+msgstr "Bitwa w polu"
+
+msgid "ui.note.battlefield_entered"
+msgstr "Bitwa w polu! Zaznacz żołnierzy i wskaż wroga prawym przyciskiem. „Odwrót” wyprowadza ich z pola."
+
+msgid "ui.command_error.army_not_at_sea"
+msgstr "Armia nie pójdzie po morzu. Potrzebna jest flota."
+
+msgid "ui.command_error.fleet_cannot_land"
+msgstr "Flota bez wojska nie wyjdzie na ląd. Może wpłynąć do portu Twojego miasta nad morzem."
+
+msgid "ui.command_error.no_coast"
+msgstr "Ta prowincja nie leży nad morzem."
+
+msgid "ui.command_error.no_warships"
+msgstr "W tej prowincji nie ma wolnych okrętów wojennych."
+
+msgid "ui.command_error.not_a_warship"
+msgstr "To nie jest okręt wojenny."
+
+msgid "ui.command_error.ship_busy"
+msgstr "Okręt jest teraz zajęty."
+
+msgid "ui.command_error.army_in_battle"
+msgstr "Najpierw trzeba skończyć bitwę."
+
+msgid "ui.command_error.cannot_reach"
+msgstr "Armia nie dosięgnie floty na morzu (i odwrotnie)."
+
+msgid "ui.command_error.no_battle"
+msgstr "Tej bitwy już nie ma."
+
+msgid "ui.command_error.no_battlefield"
+msgstr "Tu nie da się stoczyć bitwy na żywo."

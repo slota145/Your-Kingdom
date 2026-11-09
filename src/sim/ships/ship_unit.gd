@@ -36,6 +36,9 @@ var landed: Array[int] = []
 var troop_order: StringName = &""
 ## The dock the soldiers going aboard were sent to (0 = not yet).
 var troops_called: int = 0
+## A warship sailing to the edge of the map to join this fleet on the world map (M8 part 2);
+## 0 = none.
+var sail_out: int = 0
 
 var path_state: PathState = PathState.NONE
 var path_goal: Vector2i = Agent.NO_TILE
@@ -89,6 +92,8 @@ func to_dict() -> Dictionary:
 	if not troops.is_empty() or not boarding.is_empty() or not landed.is_empty() or troop_order != &"":
 		d["troops"] = {"aboard": troops.duplicate(), "boarding": boarding.duplicate(),
 				"landed": landed.duplicate(), "order": String(troop_order), "called": troops_called}
+	if sail_out != 0:
+		d["sail_out"] = sail_out
 	return d
 
 
@@ -119,4 +124,5 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> ShipUnit:
 				list.append(int(id))
 		ship.troop_order = StringName(String(t.get("order", "")))
 		ship.troops_called = int(t.get("called", 0))
+	ship.sail_out = int(d.get("sail_out", 0))
 	return ship

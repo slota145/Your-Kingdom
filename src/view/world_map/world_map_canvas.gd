@@ -7,6 +7,9 @@ extends Control
 ## one selects it, and a right click on a province then asks to send it there.
 ## Armies (M7 part 3) stand by towns or walk along the roads under their banners (the player's
 ## red, the bandits' black), with the number of men; the bandits' camp is a ring of tents.
+## M8 part 2: armies and fleets stand anywhere and go anywhere (a right click on the land, the
+## sea, a town or an enemy army), their ways drawn; a battle in the field is marked with
+## crossed swords; a sea battle plays out for a few seconds (smoke, flashes, splashes).
 
 signal province_clicked(id: int)
 ## A ready expedition (of province [param from]) was clicked.
@@ -16,6 +19,9 @@ signal send_requested(from: int, to: int)
 ## An army (M7 part 3) was clicked; a right click on a province with it selected sends it.
 signal army_clicked(id: int)
 signal army_send_requested(army: int, to: int)
+## Right click on a spot of the map (parchment pixels) / on an enemy army (M8 part 2).
+signal army_spot_requested(army: int, spot: Vector2)
+signal army_chase_requested(army: int, enemy: int)
 
 const PARCHMENT := Color(0.88, 0.80, 0.63)
 const PARCHMENT_DARK := Color(0.62, 0.50, 0.33)
@@ -67,6 +73,14 @@ const ZOOM_STEP := 1.15
 const DRAG_MIN := 6.0
 var _press_at: Vector2 = Vector2.INF
 var _dragging: bool = false
+## The mouse over the map (parchment pixels) and the way the selected army would go there.
+var _mouse: Vector2 = Vector2.INF
+var _preview_cell: Vector2i = Vector2i(-1, -1)
+var _preview_army: int = 0
+var _preview: Dictionary = {}
+## Sea battles playing out: {pos, start (msec)}.
+var _sea_fights: Array[Dictionary] = []
+const SEA_FIGHT_MSEC := 6000.0
 
 
 func _ready() -> void:
@@ -149,6 +163,7 @@ func _gui_input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion != null:
 		_hover = province_at(motion.position)
+		_mouse = _fit().affine_inverse() * motion.position
 		if _press_at != Vector2.INF and (_dragging or motion.position.distance_to(_press_at) > DRAG_MIN):
 			_dragging = true
 			pan += motion.relative
@@ -195,8 +210,16 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 	elif button != null and button.pressed and button.button_index == MOUSE_BUTTON_RIGHT:
 		var to := province_at(button.position)
-		if army_selected != 0 and to != 0:
-			army_send_requested.emit(army_selected, to)
+		if army_selected != 0:
+			var local := _fit().affine_inverse() * button.position
+			var enemy := enemy_at(button.position)
+			var town := ArmyOrders.town_at(sim, local)
+			if enemy != 0:
+				army_chase_requested.emit(army_selected, enemy)
+			elif town != 0:
+				army_send_requested.emit(army_selected, town)
+			else:
+				army_spot_requested.emit(army_selected, local)
 		elif expedition_from != 0 and to != 0 and to != expedition_from:
 			send_requested.emit(expedition_from, to)
 		else:
@@ -232,8 +255,11 @@ func _draw() -> void:
 	keys.sort()
 	for id: int in keys:
 		_draw_army(sim.world.armies[id])
+	for battle: FieldBattle in sim.world.battles.values():
+		_draw_swords(battle.pos + Vector2(0, -50))
 	_draw_planned_route()
 	_draw_army_route()
+	_draw_sea_fights()
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 	for id: int in sim.world.ids():
 		_draw_label(id, fit)
@@ -561,61 +587,144 @@ func _draw_compass(frame: Rect2) -> void:
 
 # --- Armies (M7 part 3) -----------------------------------------------------------------------
 
-## Where [param army] is drawn (parchment pixels): beside its town (bandits below it), at the
-## border of a settlement it waits at, or on its way.
+## Where [param army] is drawn (parchment pixels): where it is on the world map.
 func army_point(army: Army) -> Vector2:
-	if army.state == Army.State.MOVING:
-		return way_point(army.at, army.next, army.by_sea, army.progress(sim.clock.tick))
+	var battle := FieldBattles.of(sim, army)
+	if army.state == Army.State.ENGAGED and battle != null:
+		# Facing each other on both sides of the crossed swords.
+		return battle.pos + Vector2(-26.0 if army.id == battle.a else 26.0, 0.0)
+	if army.pos != Vector2.INF:
+		return army.pos
 	var def := sim.world.def_of(army.at, sim.data)
-	if def == null:
-		return Vector2.ZERO
-	if army.owner == Army.BANDITS:
-		return def.world_pos + Vector2(-30, 40)
-	if army.state == Army.State.WAITING:
-		var from := sim.world.def_of(army.home, sim.data)
-		var dir := (from.world_pos - def.world_pos).normalized() if from != null and from != def else Vector2.LEFT
-		return def.world_pos + dir * 70.0
-	return def.world_pos + Vector2(-50, 16)
+	return def.world_pos + Vector2(-50, 16) if def != null else Vector2.ZERO
 
 
-## The army whose banner is under [param at] (control pixels), 0 if none; the player's only.
-func army_at(at: Vector2) -> int:
+## The army (or fleet) whose banner is under [param at] (control pixels), 0 if none; of the
+## player ([param mine]) or of his enemies.
+func army_at(at: Vector2, mine: bool = true) -> int:
 	var local := _fit().affine_inverse() * at
-	for army: Army in sim.world.armies.values():
-		if army.owner == ProvinceDef.OWNER_PLAYER and army.state != Army.State.INSIDE \
-				and local.distance_to(army_point(army) + Vector2(0, -15)) <= MARK_RADIUS * 1.3:
-			return army.id
-	return 0
+	var best := 0
+	var best_d := MARK_RADIUS * 1.3
+	var keys: Array[int] = []
+	keys.assign(sim.world.armies.keys())
+	keys.sort()
+	for key: int in keys:
+		var army := sim.world.armies[key]
+		if (army.owner == ProvinceDef.OWNER_PLAYER) != mine or army.state == Army.State.INSIDE:
+			continue
+		var d := local.distance_to(army_point(army) + Vector2(0, -15))
+		if d <= best_d:
+			best_d = d
+			best = army.id
+	return best
 
 
-## A banner on a pole over three little men, the number of men beside it.
+func enemy_at(at: Vector2) -> int:
+	return army_at(at, false)
+
+
+func _color_of(owner: StringName) -> Color:
+	if owner == Army.BANDITS:
+		return BANDITS
+	return OWNER_ARMS.get(owner, INK)
+
+
+## A banner on a pole over three little men (an army) or a ship under the owner's flag (a
+## fleet), with the number of men and ships beside it.
 func _draw_army(army: Army) -> void:
-	if army.state == Army.State.INSIDE or army.men() == 0:
+	if army.state == Army.State.INSIDE or (army.men() == 0 and army.ships == 0):
 		return
 	# Drawn 1.5 times larger around its point, then back to the map's transform.
 	draw_set_transform_matrix(_fit() * Transform2D(0.0, Vector2(1.5, 1.5), 0.0, army_point(army)))
 	var at := Vector2.ZERO
-	var color: Color = OWNER_ARMS[ProvinceDef.OWNER_PLAYER] if army.owner == ProvinceDef.OWNER_PLAYER else BANDITS
+	var color := _color_of(army.owner)
 	if army.id == army_selected:
 		var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 200.0)
 		draw_circle(at + Vector2(0, -8), 22.0 + pulse * 4.0, Color(SELECTED, 0.35 + 0.3 * pulse))
 	elif army.state == Army.State.WAITING:
 		draw_arc(at + Vector2(0, -8), 21.0, 0.0, TAU, 24, Color(SELECTED, 0.8), 2.0)
-	for k: int in 3:
-		var man := at + Vector2(-9 + k * 9, 2 - (k % 2) * 3)
-		draw_circle(man + Vector2(0, -9), 3.0, Color(0.85, 0.70, 0.55))
-		draw_rect(Rect2(man + Vector2(-3, -6), Vector2(6, 8)), color)
-		draw_line(man + Vector2(4, -14), man + Vector2(4, 3), INK, 1.2)   # a spear
-	draw_line(at + Vector2(-14, 2), at + Vector2(-14, -30), INK, 1.8)
-	var flag := PackedVector2Array([at + Vector2(-14, -30), at + Vector2(4, -26), at + Vector2(-2, -22),
-			at + Vector2(4, -18), at + Vector2(-14, -16)])
-	draw_colored_polygon(flag, color)
-	if army.owner == Army.BANDITS:
-		draw_circle(at + Vector2(-7, -23), 2.5, Color(0.92, 0.88, 0.80))   # a skull
 	var font := get_theme_default_font()
-	draw_string_outline(font, at + Vector2(9, -14), str(army.men()), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, 4, PARCHMENT)
-	draw_string(font, at + Vector2(9, -14), str(army.men()), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, INK)
+	if army.is_fleet():
+		var flip := 1.0
+		if army.state == Army.State.MOVING and not army.path.is_empty() and army.path[0].x < army.pos.x:
+			flip = -1.0
+		if army.ships > 1:
+			_draw_war_cog(at + Vector2(-9, -5), flip, color, 0.7)
+		_draw_war_cog(at, flip, color, 1.0)
+		var label := "%d" % army.ships + ("·%d" % army.men() if army.men() > 0 else "")
+		draw_string_outline(font, at + Vector2(14, -14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 4, PARCHMENT)
+		draw_string(font, at + Vector2(14, -14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, INK)
+	else:
+		for k: int in 3:
+			var man := at + Vector2(-9 + k * 9, 2 - (k % 2) * 3)
+			draw_circle(man + Vector2(0, -9), 3.0, Color(0.85, 0.70, 0.55))
+			draw_rect(Rect2(man + Vector2(-3, -6), Vector2(6, 8)), color)
+			draw_line(man + Vector2(4, -14), man + Vector2(4, 3), INK, 1.2)   # a spear
+		draw_line(at + Vector2(-14, 2), at + Vector2(-14, -30), INK, 1.8)
+		var flag := PackedVector2Array([at + Vector2(-14, -30), at + Vector2(4, -26), at + Vector2(-2, -22),
+				at + Vector2(4, -18), at + Vector2(-14, -16)])
+		draw_colored_polygon(flag, color)
+		if army.owner == Army.BANDITS:
+			draw_circle(at + Vector2(-7, -23), 2.5, Color(0.92, 0.88, 0.80))   # a skull
+		draw_string_outline(font, at + Vector2(9, -14), str(army.men()), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, 4, PARCHMENT)
+		draw_string(font, at + Vector2(9, -14), str(army.men()), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, INK)
 	draw_set_transform_matrix(_fit())
+
+
+## A warship: a dark hull with a castle, a mast and a sail with the owner's colour.
+func _draw_war_cog(at: Vector2, flip: float, color: Color, alpha: float) -> void:
+	var hull := PackedVector2Array([at + Vector2(-13 * flip, -4), at + Vector2(13 * flip, -4),
+			at + Vector2(9 * flip, 5), at + Vector2(-10 * flip, 5)])
+	draw_colored_polygon(hull, Color(0.32, 0.20, 0.10, alpha))
+	draw_rect(Rect2(at + Vector2(-13 if flip > 0 else 7, -8), Vector2(6, 4)), Color(0.40, 0.26, 0.13, alpha))
+	draw_line(at + Vector2(0, -4), at + Vector2(0, -24), Color(INK, alpha), 1.6)
+	draw_colored_polygon(PackedVector2Array([at + Vector2(-7, -22), at + Vector2(7, -22), at + Vector2(8, -8),
+			at + Vector2(-8, -8)]), Color(0.95, 0.92, 0.85, alpha))
+	draw_rect(Rect2(at + Vector2(-7, -17), Vector2(15, 4)), Color(color, alpha))
+	draw_colored_polygon(PackedVector2Array([at + Vector2(0, -24), at + Vector2(8 * flip, -27),
+			at + Vector2(0, -30)]), Color(color, alpha))
+
+
+## Crossed swords over a battle in the field (pulsing while the player chooses).
+func _draw_swords(at: Vector2) -> void:
+	var pulse := 0.6 + 0.4 * sin(Time.get_ticks_msec() / 180.0)
+	draw_circle(at, 11.0, Color(0.95, 0.85, 0.55, 0.85 * pulse))
+	for dir: float in [-1.0, 1.0]:
+		var hilt := at + Vector2(-6 * dir, 6)
+		draw_line(hilt, at + Vector2(7 * dir, -7), Color(0.78, 0.80, 0.84), 2.4)
+		draw_line(hilt + Vector2(-3, -3 * dir), hilt + Vector2(3, 3 * dir), INK, 2.0)
+		draw_line(hilt, hilt + Vector2(-3 * dir, 3), INK, 2.6)
+
+
+## A sea battle on the map (Fleets.sea_battle) plays out at [param at] for a few seconds.
+func show_sea_fight(at: Vector2) -> void:
+	_sea_fights.append({"pos": at, "start": Time.get_ticks_msec()})
+
+
+func _draw_sea_fights() -> void:
+	var now := Time.get_ticks_msec()
+	for k: int in range(_sea_fights.size() - 1, -1, -1):
+		var t := (now - int(_sea_fights[k]["start"])) / SEA_FIGHT_MSEC
+		if t >= 1.0:
+			_sea_fights.remove_at(k)
+			continue
+		draw_set_transform_matrix(_fit() * Transform2D(0.0, Vector2(1.6, 1.6), 0.0, _sea_fights[k]["pos"]))
+		var at := Vector2.ZERO
+		var rock := sin(t * 40.0) * 2.0
+		var sink := clampf((t - 0.6) / 0.4, 0.0, 1.0)
+		_draw_war_cog(at + Vector2(-20, rock + sink * 8.0), 1.0, OWNER_ARMS[ProvinceDef.OWNER_PLAYER], 1.0 - sink * 0.8)
+		_draw_war_cog(at + Vector2(20, -rock), -1.0, Color(0.2, 0.2, 0.2), 1.0)
+		for i: int in 6:
+			var phase := fmod(t * 5.0 + i * 0.37, 1.0)
+			var puff := at + Vector2(-30.0 + i * 12.0, -14.0 - phase * 18.0)
+			draw_circle(puff, 3.0 + phase * 7.0, Color(0.92, 0.90, 0.86, 0.7 * (1.0 - phase)))
+			if phase < 0.15:
+				draw_circle(at + Vector2(-12.0 + i * 5.0, -6.0), 3.0, Color(1.0, 0.75, 0.25, 0.9))
+		for i: int in 3:
+			var splash := fmod(t * 3.0 + i * 0.5, 1.0)
+			draw_arc(at + Vector2(-8.0 + i * 9.0, 10.0), 3.0 + splash * 10.0, PI, TAU, 10,
+					Color(0.95, 0.97, 1.0, 1.0 - splash), 1.5)
+		draw_set_transform_matrix(_fit())
 
 
 ## The bandits' camp: a ring of dark tents round a fire.
@@ -636,8 +745,8 @@ func _draw_camp() -> void:
 	draw_circle(at + Vector2(0, 0), 2.0, Color(1.0, 0.85, 0.3))
 
 
-## With an army selected: a dashed line along its way to the province under the mouse (through
-## the neighbours it walks), green where it can go, red where it cannot.
+## With an army selected: a dashed line along its way, and to where the mouse is (green where
+## it can go, red where it cannot).
 func _draw_army_route() -> void:
 	var army := sim.world.armies.get(army_selected) as Army
 	if army == null:
@@ -645,24 +754,33 @@ func _draw_army_route() -> void:
 		return
 	var width := 3.0 / maxf(_fit().get_scale().x, 0.01)
 	if army.state == Army.State.MOVING:
-		var stops: Array[int] = [army.next]
-		stops.append_array(army.route)
-		var from := army_point(army)
-		for stop: int in stops:
-			var to := sim.world.def_of(stop, sim.data).world_pos
-			draw_dashed_line(from, to, Color(ROUTE_OK, 0.6), width, width * 4.0)
-			from = to
+		_dashed_way(army_point(army), army.path, Color(ROUTE_OK, 0.6), width)
+	if _mouse == Vector2.INF or army.state == Army.State.INSIDE or army.state == Army.State.ENGAGED:
 		return
-	if _hover == 0 or _hover == army.at:
+	var cell := Vector2i((_mouse / WorldNav.CELL).floor())
+	if cell != _preview_cell or army.id != _preview_army:
+		_preview_cell = cell
+		_preview_army = army.id
+		var town := ArmyOrders.town_at(sim, _mouse)
+		_preview = ArmyOrders.plan(sim, army, town, _mouse if town == 0 else Vector2.INF)
+		_preview["to"] = sim.world.def_of(town, sim.data).world_pos if town != 0 else _mouse
+	if _preview.is_empty():
 		return
-	var ok := Armies.send_error(sim, army, _hover) == &""
-	var stops: Array[int] = [_hover]
-	if ok and not Armies.goes_by_sea(sim, army, _hover):
-		stops = sim.world.land_route(army.at, _hover, sim.data)
-	var from := army_point(army)
-	for stop: int in stops:
-		var def := sim.world.def_of(stop, sim.data)
-		if def == null:
-			continue
-		draw_dashed_line(from, def.world_pos, ROUTE_OK if ok else ROUTE_BAD, width, width * 4.0)
-		from = def.world_pos
+	var ok: bool = _preview["error"] == &""
+	var color := ROUTE_OK if ok else ROUTE_BAD
+	if not ok:
+		draw_dashed_line(army_point(army), _preview["to"], color, width, width * 4.0)
+		return
+	var way: Array[Vector2] = []
+	way.assign(_preview["path"])
+	_dashed_way(army_point(army), way, color, width)
+	var ashore: Vector2 = _preview["ashore"]
+	if ashore != Vector2.INF and not way.is_empty():
+		draw_dashed_line(way[way.size() - 1], ashore, color, width, width * 2.0)
+		draw_dashed_line(ashore, _preview["ashore_goal"], color, width, width * 4.0)
+
+
+func _dashed_way(from: Vector2, way: Array[Vector2], color: Color, width: float) -> void:
+	for p: Vector2 in way:
+		draw_dashed_line(from, p, color, width, width * 4.0)
+		from = p

@@ -160,3 +160,7 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 - Pomysł właściciela: po przechwyceniu wrogiej floty bitwa rozgrywa się na mapie pustego oceanu: okręty manewrują, strzelają i idą do abordażu.
 - Ocena (Claude): nowy system walki statków (dziś statki w widoku prowincji nie walczą). Ankieta 2026-11-09: w M8 bitwa morska automatyczna z animacją i raportem, bitwa na żywo jako osobny etap po M8.
 
+
+## Barwy wojsk władców (Claude, 2026-11-09)
+
+- Pomysł (Claude, przy M8 część 2): żołnierze władców i straż osad wyglądają dziś tak samo jak żołnierze gracza (te same postacie), więc na mapie pola trudno odróżnić swoich od wrogów. Tarcze, proporce albo pasy na ubraniu w kolorze właściciela (gracz czerwony, władcy niebieski, zielony, fioletowy). Ocena: grafika postaci w kilku kolorach (podmiana palety przy wczytaniu, bez nowych rysunków), mało pracy w kodzie. Kiedy: razem z częścią 4 (wojna władców) albo wcześniej, jeśli przeszkadza przy ocenie.

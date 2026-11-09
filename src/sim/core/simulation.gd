@@ -344,6 +344,38 @@ func _settle(e: Expedition) -> ProvinceSim:
 	return settled
 
 
+## The battlefield's id while it is viewed (M8 part 2): no province of the world.
+const BATTLEFIELD := -1
+
+
+## A battle in the field goes live (FieldBattles.go_live): the province viewed so far goes to
+## the simplified mode, [param field] is viewed.
+func enter_battlefield(field: ProvinceSim) -> void:
+	Armies.fold(self)
+	runtimes[viewed_id] = ProvinceAbstract.freeze(province, clock.tick)
+	province = field
+	viewed_id = BATTLEFIELD
+	province.home_faction = CombatState.PLAYER
+
+
+## After the battle in the field: province [param id] (viewed before) comes back in detail.
+func leave_battlefield(id: int) -> void:
+	if not runtimes.has(id) or not (runtimes[id] is ProvinceAbstract):
+		for other: int in runtime_ids():
+			if world.owner_of(other) == ProvinceDef.OWNER_PLAYER and runtimes[other] is ProvinceAbstract:
+				id = other
+				break
+	if not runtimes.has(id) or not (runtimes[id] is ProvinceAbstract):
+		return   # (no province of the player left: the battlefield stays the view)
+	province = (runtimes[id] as ProvinceAbstract).thaw(clock.tick, events)
+	runtimes[id] = province
+	viewed_id = id
+	province.home_faction = faction_of(id)
+	if world.owner_of(id) == ProvinceDef.OWNER_NEUTRAL:
+		Armies.spawn_guards(self, id)
+	events.emit(&"province_entered", {"province": id})
+
+
 ## Makes [param id] the viewed province (EnterProvinceCommand): the province viewed so far
 ## goes to the simplified mode, [param id] comes back in detail (ARCHITECTURE §7.2).
 func view_province(id: int) -> void:
@@ -389,7 +421,7 @@ func to_dict() -> Dictionary:
 		"world": world.to_dict(),
 		"viewed": viewed_id,
 		"provinces": list,
-	}
+	}.merged({"battlefield": province.to_dict()} if viewed_id == BATTLEFIELD else {})
 
 
 ## Restores a saved state. Commands queued but not yet applied are not part of a save.
@@ -419,6 +451,11 @@ static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 		else:
 			sim.runtimes[id] = ProvinceAbstract.from_dict(e["state"], registry, sim.ids, sim.treasury)
 	sim.province = sim.runtimes.get(sim.viewed_id) as ProvinceSim
+	if d.has("battlefield"):
+		sim.province = ProvinceSim.from_dict(d["battlefield"], registry, sim.events, sim.ids)
+		sim.province.treasury = sim.treasury
+		sim.province.tick = sim.clock.tick
+		sim.province.home_faction = CombatState.PLAYER
 	for id: int in sim.runtimes:
 		var state := sim.province_state(id)
 		if state != null:

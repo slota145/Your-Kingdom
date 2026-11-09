@@ -290,6 +290,11 @@ static func update(province: ProvinceSim) -> void:
 	for ship: ShipUnit in province.ships.values():
 		if ship.def.id == SeaMerchant.SHIP or ship.voyage != null or ship.def.id == Landing.SHIP:
 			continue   # cogs go their own way (SeaMerchant, Voyage)
+		if ship.sail_out != 0:
+			# Sailing out to the world map (M8 part 2): off the map at the edge.
+			if ship.path_state != ShipUnit.PathState.MOVING:
+				Fleets.leave_map(province, ship)
+			continue
 		if ship.def.troops > 0:
 			_anchor_warship(province, ship)
 			continue
