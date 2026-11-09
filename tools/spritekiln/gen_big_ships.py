@@ -114,9 +114,10 @@ def build(kind, war=False, stage=None):
     decks += [("fore", fz + 0.1, Lh - 0.35, D + fcf - 0.28, D + fcb)]
     rake = pr["rake"]
     profile = [(-Lh + rake, Y0), (Lh - F, Y0)] + bow_curve[1:] + top
-    # no two equal points in a row (a zero-length edge breaks the polygon, ART_SPEC 10.20)
-    profile = [p_ for i, p_ in enumerate(profile) if i == 0 or (round(p_[0], 3), round(p_[1], 3)) !=
-               (round(profile[i - 1][0], 3), round(profile[i - 1][1], 3))]
+    def dedupe(poly):   # no two equal points in a row (a zero-length edge breaks the polygon, ART_SPEC 10.20)
+        return [p_ for i, p_ in enumerate(poly) if i == 0 or (round(p_[0], 3), round(p_[1], 3)) !=
+                (round(poly[i - 1][0], 3), round(poly[i - 1][1], 3))]
+    profile = dedupe(profile)
 
     def side_extrude(poly, depth, c=(0, 0, 0)):
         return {"extrude": {"c": r3(list(c)), "rot": [0, -1.5708, 0], "depth": r3(depth),
@@ -344,13 +345,16 @@ def build(kind, war=False, stage=None):
         parts.pop("foam")
         parts["hull"]["cut"][0] = {"plane": {"n": [0, -1, 0], "at": 0.35}}
         parts["blocks"] = {"material": "castle", "prims": [
-            {"box": {"c": r3([0, -0.58, z]), "half": [0.55, 0.22, 0.2]}} for z in
+            ({"box": {"c": r3([0, -0.7, z]), "half": r3([0.8 * W, 0.34, 0.22])}} if kind == "galleon"   # wide enough to show
+             else {"box": {"c": r3([0, -0.58, z]), "half": [0.55, 0.22, 0.2]}}) for z in
             [-Lh * 0.6, -Lh * 0.2, Lh * 0.2, Lh * 0.55]]}
         if stage < 2:
             for name in [n_ for n_ in parts if n_.startswith(("mast", "ropes", "bowsprit", "spritsail", "shields"))]:
                 parts.pop(name)
         if stage < 1:   # the bare frame: keel, stem and sternpost, U-shaped ribs along the hull
-            for name in ("hull", "decks", "rudder", "beak"):
+            for name in [n_ for n_ in parts if n_ in ("hull", "decks", "rudder", "beak", "stern_windows", "gallery",
+                                                       "gallery_rail", "crest", "crest_shield", "lantern")
+                         or n_.startswith("quarter_")]:
                 parts.pop(name, None)
             tops = sorted(top)
 
@@ -371,7 +375,7 @@ def build(kind, war=False, stage=None):
             parts["ribs"] = {"material": "hull", "space": "ship", "prims": ribs}
             parts["keel"] = {"material": "castle", "space": "ship", "prims": [
                 {"box": {"c": r3([0, -0.3, (Lh - F - Lh + rake) / 2]), "half": r3([0.12, 0.1, (2 * Lh - F - rake) / 2])}},
-                side_extrude(bow_curve + [(Lh, D + fcb), (Lh - 0.2, D + fcb), (Lh - F + 0.05, Y0 + 0.25)], 0.2),
+                side_extrude(dedupe(bow_curve + [(Lh, D + fcb), (Lh - 0.2, D + fcb), (Lh - F + 0.05, Y0 + 0.25)]), 0.2),
                 side_extrude([(-Lh + rake, Y0), (-Lh, stern_top), (-Lh + 0.2, stern_top), (-Lh + rake + 0.2, Y0)], 0.2)],
                 "cut": [{"plane": {"n": [0, -1, 0], "at": 0.42}}]}
 
