@@ -18,9 +18,10 @@ SK = os.path.join(ROOT, "tools", "spritekiln", "art", "specs", "props")
 HUT = os.path.join(ROOT, "assets", "buildings", "hut")
 
 # (plot x, plot y, fragment, mirrored)
-PLOTS = [(0, -10, "end_a", False), (0, -8, "middle", False), (0, -6, "end_b", False),
-         (0, 0, "end_a", False), (0, 2, "middle", False), (0, 4, "corner_a", False),
+PLOTS = [(0, -10, "end_a", False), (0, -8, "middle_3", False), (0, -6, "end_b_2", False),
+         (0, 0, "end_a", False), (0, 2, "middle_2", False), (0, 4, "corner_a", False),
          (-2, 4, "middle", True), (-4, 4, "end_a", True)]
+CLOSEUP = ["corner_a", "corner_a_2", "corner_a_3", "middle_2", "middle_3", "end_b_2"]
 STREET = [(x, y) for x in (2, 3) for y in range(-12, 8)] + [(x, y) for x in range(-6, 4) for y in (6, 7)]
 
 
@@ -81,6 +82,17 @@ def main():
     pair = pair.resize((pair.width * 2, pair.height * 2), Image.NEAREST)
     pair.convert("RGB").save(out)
     print(out, pair.size)
+    # close-up of the chamfered corners and the new row variants, 3x
+    ims = [spritekiln(f)[0].crop((40, 20, 216, 224)) for f in CLOSEUP]
+    sheet = Image.new("RGBA", (sum(i.width for i in ims), ims[0].height), (90, 130, 70, 255))
+    x = 0
+    for i in ims:
+        sheet.alpha_composite(i, (x, 0))
+        x += i.width
+    sheet = sheet.resize((sheet.width * 3, sheet.height * 3), Image.NEAREST)
+    path = os.path.join(os.path.dirname(out), "townhouses_variants_3x.png")
+    sheet.convert("RGB").save(path)
+    print(path, sheet.size)
 
 
 if __name__ == "__main__":
