@@ -454,7 +454,8 @@ def r3p(pts):
 # from the keel): a short low waist, a forecastle from 0.23 of the half length rising to the bow, a low
 # quarterdeck from -0.15, a tall poop from -0.60, a big forefoot curve, a strongly raked transom;
 # the main mast further aft, the mizzen near the stern.
-TYPES["galleon_ref"] = dict(TYPES["galleon"], D=21,
+# owner 2026-11-09: "Nowy jest lepszy!" -> the photo-tuned shape is now the game's galleon (galleon_ref stays an alias)
+TYPES["galleon"] = TYPES["galleon_ref"] = dict(TYPES["galleon"], D=21,
                             rig=[dict(z=0.52, h=134, w=34, tiers=3, cross=True),
                                  dict(z=-0.22, h=172, w=48, tiers=3, cross=True),
                                  dict(z=-0.72, h=126, span=64, lateen=True, billow=True, y0=2.0)],
