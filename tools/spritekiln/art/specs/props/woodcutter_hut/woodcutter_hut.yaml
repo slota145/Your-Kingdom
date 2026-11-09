@@ -1,0 +1,147 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+name: woodcutter_hut
+kind: prop
+size: 192
+directions: [se]          # one view: yaw 45 turns the square footprint into the game's 2:1 diamond
+palette: ../../palettes/kingdom.yaml
+camera: {pitch: 30, scale: 0.05176, center: [0, 1.55, 0]}   # same density as the characters: 1 tile = 2.343 units
+shadow: null
+
+brief:
+  summary: "Your Kingdom woodcutter's hut, 2x2 tiles: log cabin with notched corners on a stone plinth, shingle gable roof, plank door in the front (long) wall, a chopping block with an axe and a log pile in the yard"
+  must_keep: ["footprint 2x2 tiles (4.69 x 4.69 units)", "door about 26 px tall", "walls about 40 px"]
+
+materials:
+  log: {ramp: log}
+  plank: {ramp: wood, bands: [1, 4]}
+  shingle: {ramp: shingle, bands: [1, 4]}
+  shingle_dark: {ramp: shingle, bands: [0, 2]}
+  stone: {ramp: stone}
+  dirt: {ramp: dirt, outline: false}
+  steel: {ramp: steel, finish: metal}
+  ink: {ramp: log, band: 0, outline: false}
+
+channels: {}
+bones: {}
+
+parts:
+  yard:              # trampled earth over the whole 2x2 footprint, a hair above the ground
+    material: dirt
+    prims:
+      - box: {c: [0, 0.01, 0], half: [2.30, 0.01, 2.30]}
+  plinth:
+    material: stone
+    blend: 0.02
+    prims:
+      - box: {c: [-0.35, 0.110, -0.35], half: [1.67, 0.110, 1.27], round: 0.03}
+    paint:
+      - material: ink
+        grid: {axes: [x, z], spacing: [0.35, 0.35], r: 0.025}
+  walls:
+    material: log
+    priority: 1
+    prims:
+      - cylinder: {a: [-2.080, 0.350, -1.500], b: [1.380, 0.350, -1.500], r: 0.13}
+      - cylinder: {a: [-1.900, 0.470, -1.600], b: [-1.900, 0.470, 0.900], r: 0.13}
+      - cylinder: {a: [-2.080, 0.350, 0.800], b: [1.380, 0.350, 0.800], r: 0.13}
+      - cylinder: {a: [1.200, 0.470, -1.600], b: [1.200, 0.470, 0.900], r: 0.13}
+      - cylinder: {a: [-2.000, 0.589, -1.500], b: [1.300, 0.589, -1.500], r: 0.13}
+      - cylinder: {a: [-1.900, 0.709, -1.680], b: [-1.900, 0.709, 0.980], r: 0.13}
+      - cylinder: {a: [-2.000, 0.589, 0.800], b: [1.300, 0.589, 0.800], r: 0.13}
+      - cylinder: {a: [1.200, 0.709, -1.680], b: [1.200, 0.709, 0.980], r: 0.13}
+      - cylinder: {a: [-2.080, 0.828, -1.500], b: [1.380, 0.828, -1.500], r: 0.13}
+      - cylinder: {a: [-1.900, 0.948, -1.600], b: [-1.900, 0.948, 0.900], r: 0.13}
+      - cylinder: {a: [-2.080, 0.828, 0.800], b: [1.380, 0.828, 0.800], r: 0.13}
+      - cylinder: {a: [1.200, 0.948, -1.600], b: [1.200, 0.948, 0.900], r: 0.13}
+      - cylinder: {a: [-2.000, 1.068, -1.500], b: [1.300, 1.068, -1.500], r: 0.13}
+      - cylinder: {a: [-1.900, 1.187, -1.680], b: [-1.900, 1.187, 0.980], r: 0.13}
+      - cylinder: {a: [-2.000, 1.068, 0.800], b: [1.300, 1.068, 0.800], r: 0.13}
+      - cylinder: {a: [1.200, 1.187, -1.680], b: [1.200, 1.187, 0.980], r: 0.13}
+      - cylinder: {a: [-2.080, 1.307, -1.500], b: [1.380, 1.307, -1.500], r: 0.13}
+      - cylinder: {a: [-1.900, 1.426, -1.600], b: [-1.900, 1.426, 0.900], r: 0.13}
+      - cylinder: {a: [-2.080, 1.307, 0.800], b: [1.380, 1.307, 0.800], r: 0.13}
+      - cylinder: {a: [1.200, 1.426, -1.600], b: [1.200, 1.426, 0.900], r: 0.13}
+      - cylinder: {a: [-2.000, 1.546, -1.500], b: [1.300, 1.546, -1.500], r: 0.13}
+      - cylinder: {a: [-1.900, 1.666, -1.680], b: [-1.900, 1.666, 0.980], r: 0.13}
+      - cylinder: {a: [-2.000, 1.546, 0.800], b: [1.300, 1.546, 0.800], r: 0.13}
+      - cylinder: {a: [1.200, 1.666, -1.680], b: [1.200, 1.666, 0.980], r: 0.13}
+      - cylinder: {a: [-2.080, 1.785, -1.500], b: [1.380, 1.785, -1.500], r: 0.13}
+      - cylinder: {a: [-1.900, 1.905, -1.600], b: [-1.900, 1.905, 0.900], r: 0.13}
+      - cylinder: {a: [-2.080, 1.785, 0.800], b: [1.380, 1.785, 0.800], r: 0.13}
+      - cylinder: {a: [1.200, 1.905, -1.600], b: [1.200, 1.905, 0.900], r: 0.13}
+      - cylinder: {a: [-2.000, 2.024, -1.500], b: [1.300, 2.024, -1.500], r: 0.13}
+      - cylinder: {a: [-1.900, 2.144, -1.680], b: [-1.900, 2.144, 0.980], r: 0.13}
+      - cylinder: {a: [-2.000, 2.024, 0.800], b: [1.300, 2.024, 0.800], r: 0.13}
+      - cylinder: {a: [1.200, 2.144, -1.680], b: [1.200, 2.144, 0.980], r: 0.13}
+  gable_L:           # the triangle under the roof at each end, horizontal boards
+    material: plank
+    prims:
+      - extrude: {c: [-1.900, 2.154, -0.35], rot: [0, 1.5708, 0], depth: 0.16,
+                  profile: {polygon: [[-1.200, 0], [1.200, 0], [0, 1.05]]}}
+      - extrude: {c: [1.200, 2.154, -0.35], rot: [0, 1.5708, 0], depth: 0.16,
+                  profile: {polygon: [[-1.200, 0], [1.200, 0], [0, 1.05]]}}
+    paint:
+      - material: ink
+        stripes: {axis: y, period: 0.17, width: 0.055, offset: 2.154}
+  roof_front:
+    material: shingle
+    prims:
+      - box: {c: [-0.35, 2.704, 0.370], half: [1.930, 0.06, 0.98], rot: [0.82, 0, 0], round: 0.02}
+    paint:
+      - material: shingle_dark
+        spots: {scale: 0.12, density: 0.3, seed: 3}
+      - material: ink
+        stripes: {axis: y, period: 0.14, width: 0.055}
+  roof_back:
+    material: shingle
+    prims:
+      - box: {c: [-0.35, 2.704, -1.070], half: [1.930, 0.06, 0.98], rot: [-0.82, 0, 0], round: 0.02}
+  ridge:
+    material: plank
+    prims:
+      - cylinder: {a: [-2.280, 3.294, -0.35], b: [1.580, 3.294, -0.35], r: 0.08}
+  door:              # a plank door with an iron band in the front wall
+    material: plank
+    prims:
+      - box: {c: [0.000, 0.970, 0.920], half: [0.38, 0.75, 0.04]}
+    paint:
+      - material: ink
+        stripes: {axis: x, period: 0.19, width: 0.055}
+  door_frame:
+    material: log
+    prims:
+      - box: {c: [-0.440, 1.020, 0.940], half: [0.06, 0.82, 0.06]}
+      - box: {c: [0.440, 1.020, 0.940], half: [0.06, 0.82, 0.06]}
+      - box: {c: [0.000, 1.800, 0.940], half: [0.50, 0.06, 0.06]}
+  block:             # chopping block in the yard, an axe stuck in it
+    material: log
+    prims:
+      - cylinder: {a: [1.35, 0.0, 1.45], b: [1.35, 0.42, 1.45], r: 0.24}
+    paint:
+      - material: plank
+        rings: {axis: y, period: 0.06, width: 0.055}
+  axe_haft:
+    material: plank
+    priority: 2
+    prims:
+      - cylinder: {a: [1.38, 0.45, 1.45], b: [1.70, 0.95, 1.45], r: 0.03}
+  axe_head:
+    material: steel
+    prims:
+      - box: {c: [1.36, 0.47, 1.45], half: [0.14, 0.05, 0.02], rot: [0, 0, -1.0]}
+  logpile:           # split logs stacked against the front wall, left of the door
+    material: log
+    prims:
+      - cylinder: {a: [-1.75, 0.14, 1.15], b: [-0.55, 0.14, 1.15], r: 0.14}
+      - cylinder: {a: [-1.75, 0.14, 1.43], b: [-0.55, 0.14, 1.43], r: 0.14}
+      - cylinder: {a: [-1.70, 0.38, 1.29], b: [-0.60, 0.38, 1.29], r: 0.14}
+    paint:
+      - material: plank
+        rings: {axis: x, period: 0.07, width: 0.055}
+
+animations:
+  idle:
+    frames: 1
+    ms: 500
+    channels: {}
