@@ -1163,6 +1163,26 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] AI zasiedla, handluje i atakuje.
 - [ ] Brak błędów blokujących w 3 partiach testowych.
 
+**Status: plan do akceptacji (2026-11-09).** Ankieta właściciela 2026-11-09: **generator światów**; **1–3 władców komputerowych do wyboru, 3 poziomy trudności**; warunki zwycięstwa: **podbój, liczba prowincji, liczba patrycjuszy, gra wolna** (wszystkie cztery); **3 części, ocena po każdej**. Start przed oceną M7, B1, W1, J1 i P2 (odłożona przez właściciela).
+
+**Część 1: świat i nowa gra**
+- [ ] Generator światów z ziarna (ten sam numer daje ten sam świat): 16–30 prowincji na pergaminie, granice lądowe i wybrzeża, wyspy osiągalne tylko morzem; każda prowincja to wariant jednej z 4 map (Wybrzeże, Wyspy, Pojezierze, Kraina rzek) z bogactwem surowców i czasem rzadkim surowcem; kilka osad neutralnych; miejsca startu gracza i władców daleko od siebie.
+- [ ] Ekran „Nowa gra”: numer świata (albo losowy), liczba władców (1–3), poziom trudności, warunek zwycięstwa (z progiem dla liczby prowincji i patrycjuszy). „Królestwo” zostaje jako gotowy świat do wyboru.
+- [ ] Władcy na mapie świata już są (herb, kolor, prowincja startowa z gotowym miasteczkiem), ale jeszcze nic nie robią.
+- [ ] Zwycięstwo i porażka: sprawdzane na bieżąco, okno z wynikiem; porażka, gdy gracz straci wszystkie prowincje. Zapis gry: ustawienia partii i władcy.
+
+**Część 2: władcy budują, zasiedlają i handlują**
+- [ ] Prowincje władców żyją w trybie uproszczonym; „planista” stawia im budynki według planu rozwoju (jak automatyczny gracz z testów), od chat i drwali do warsztatów, portu i koszar.
+- [ ] Władca wysyła wyprawy osadników do pustych prowincji (lądem i morzem), wykupuje osady neutralne, prowadzi szlaki handlowe między swoimi prowincjami.
+- [ ] Wejście do prowincji władcy pokazuje jego miasto (oglądanie, bez budowania).
+
+**Część 3: władcy zbroją się i atakują**
+- [ ] Władca szkoli wojsko i buduje okręty wojenne, ocenia siłę sąsiadów i atakuje słabsze prowincje: innych władców, osady neutralne i gracza (oblężenie na żywo, gdy gracz ogląda prowincję, inaczej rozstrzygnięcie automatyczne); broni się przed graczem.
+- [ ] Poziomy trudności: tempo rozwoju, wielkość armii, jak często i jak śmiało atakują.
+- [ ] 3 pełne partie testowe (automatyczny gracz przeciwko władcom) bez błędów blokujących, od startu do zwycięstwa lub porażki.
+
+**Do ustalenia w trakcie (ankiety):** szczegóły oblężenia miasta gracza przez władcę (część 3), herby i kolory władców, czy władcy mogą zawierać rozejmy (dyplomacja jest [PÓŹNIEJ]).
+
 ---
 
 ## M9 — Produkcja grafik (równolegle, od M4)
