@@ -1084,7 +1084,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Grafika kodem** (`tools/render_cog.py --type=caravel|carrack|galleon`, ART_SPEC §10.18): okrągłe, wysokie kadłuby z burtami zwężającymi się ku górze, dziób i rufa wystające nad wodę, kasztele wyrastające z kadłuba (galeon i karaka w dwóch kondygnacjach), ochrowe relingi z tralkami, ciemne listwy, okna rufowe, furty galeonu; maszty z żaglami jeden nad drugim, bocianie gniazda, żagle łacińskie na tylnych masztach, bukszpryt z żaglem, proporce; krzyż w barwie frakcji na żaglach. Wersje wojenne z tarczami w czerwieni.
 - **Zapis v23** (flota armii; starsze armie miały same okręty wojenne).
 - Testy: `tests/scenario/test_j1_ships.gd`.
-- Zrzut: `game_shot.tscn -- --map=coast --tile=60,104 --zoom=1 --j1ships`.
+- Zrzut: `game_shot.tscn -- --map=coast --tile=27,100 --focus=26,107 --zoom=1 --j1ships`.
 
 **Podział (propozycja): 3 części, ocena po każdej.**
 1. **Piechota i jazda:** nowe towary i ich wytwarzanie (halabarda, kusza, morgenstern, zbroja płytowa), rekrutacja w koszarach, wartości walki w widoku prowincji i w rozstrzyganiu automatycznym, postacie z animacjami.
