@@ -34,7 +34,7 @@ TYPES = {
                     spritsail=True, beak=True, ports=True, wales=[0.3, 0.55, 0.8],
                     # galleon (owner's references 2026-11-09): tumblehome, a two-tier stern, a beakhead
                     profile=dict(zm=0.25, wt=0.72, forefoot=0.3, rake=0.55, fc=(0.6, 0.7, 0.9), qd=(-0.3, 0.85, 1.05),
-                                 poop=(-0.62, 1.55, 1.8), tumble=True)),
+                                 poop=(-0.62, 1.55, 1.8), tumble=True), ornate_stern=True),
 }
 
 
@@ -42,7 +42,9 @@ def r3(v):
     return [round(float(x), 3) for x in v] if isinstance(v, (list, tuple)) else round(float(v), 3)
 
 
-def build(kind):
+def build(kind, war=False, stage=None):
+    """stage None: the ship afloat, rocking; 0/1/2: on the slipway (keel and ribs / planked hull and
+    castles / the whole ship), on keel blocks, out of the water. war: red faction and shields."""
     t = TYPES[kind]
     Lh, W, D, S = t["L"] * K, t["W"] * K, t["D"] * K, t["S"] * K
     parts, bones = {}, {"ship": {"parent": "root", "pos": "[0, bob, 0]", "rot": "[pitch, 0, roll]"}}
@@ -72,8 +74,14 @@ def build(kind):
 
     tum = pr.get("tumble")                        # tumblehome: two planes leaning the sides in above the waist
 
+    # owner 2026-11-09: the galleon's upper (stern) decks narrower: a second, steeper pair of planes
+    # that only reaches the high castles
+    D2 = 0.85 * W * 0.9 + 0.53 * (D + 0.8)
+
     def side_x(y):
-        return (0.96 * W + 0.28 * D - 0.28 * y) / 0.96 if tum else 99.0
+        if not tum:
+            return 99.0
+        return min((0.96 * W + 0.28 * D - 0.28 * y) / 0.96, (D2 - 0.53 * y) / 0.85)
 
     def waist(z):
         return D + 0.1 * (z / Lh) ** 2
@@ -128,6 +136,7 @@ def build(kind):
     cut = [{"plane": {"n": [0, -1, 0], "at": 0.0}}, plan_extrude(right, -1, 8), plan_extrude(left, -1, 8)]
     if tum:
         cut += [{"plane": {"n": [sx * 0.96, 0.28, 0], "at": r3(0.96 * W + 0.28 * D)}} for sx in (-1, 1)]
+        cut += [{"plane": {"n": [sx * 0.85, 0.53, 0], "at": r3(D2)}} for sx in (-1, 1)]
     for (_, za, zb, floor, ytop) in decks:
         cut.append(plan_extrude(inner(za, zb, ytop), floor, floor + 6))
 
@@ -171,6 +180,41 @@ def build(kind):
                            for (_, za, zb, floor, ytop) in decks],
          paint=[{"material": "deck_seam", "stripes": {"axis": "x", "period": 0.2, "width": 0.06}}])
     H = stern_top * 0.75
+    if t.get("ornate_stern"):   # owner 2026-11-09: a richer galleon stern
+        def xl(y):
+            return min(half_w(-Lh + rake * 0.5), side_x(y)) - 0.06
+        yg = stern_top - 1.0          # a stern gallery (balcony) across the transom, under the upper windows
+        zg = transom_z(yg)
+        part("gallery", "castle", [
+            {"box": {"c": r3([0, yg, zg - 0.2]), "half": r3([xl(yg), 0.05, 0.22])}},
+            {"box": {"c": r3([0, yg + 0.66, zg - 0.2]), "half": r3([xl(yg + 0.6), 0.04, 0.25])}}])
+        part("gallery_rail", "rail", [{"box": {"c": r3([0, yg + 0.17, zg - 0.4]), "half": r3([xl(yg), 0.12, 0.03])}}] +
+             [{"box": {"c": r3([sx * xl(yg), yg + 0.35, zg - 0.4]), "half": [0.04, 0.32, 0.04]}} for sx in (-1, 1)],
+             paint=[{"material": "rail_dark", "stripes": {"axis": "x", "period": 0.13, "width": 0.05}}])
+        # quarter galleries: little bays with windows on both sides of the stern
+        zq = -Lh + rake + 0.5
+        yq0, yq1 = D + 0.35, stern_top - 0.35
+        for sx in (-1, 1):
+            xq = sx * (min(half_w(zq), side_x(yq1)) + 0.1)
+            part(f"quarter_{'l' if sx < 0 else 'r'}", "rail", [
+                {"box": {"c": r3([xq, (yq0 + yq1) / 2, zq]), "half": r3([0.16, (yq1 - yq0) / 2, 0.36]), "round": 0.03}},
+                {"ellipsoid": {"c": r3([xq, yq1 + 0.05, zq]), "r": [0.18, 0.22, 0.38]}},
+                {"cone": {"a": r3([xq, yq0 + 0.02, zq]), "b": r3([xq - sx * 0.05, yq0 - 0.35, zq]), "r": [0.18, 0.04]}}],
+                 paint=[{"material": "port", "prims": [{"box": {"c": r3([xq + sx * 0.16, y, zq + dz]), "half": [0.06, 0.12, 0.08]}}
+                                                       for y in (yq0 + 0.35, yq1 - 0.35) for dz in (-0.16, 0.16)]}])
+        # the carved top of the transom: an arched ochre crest with the faction's shield, a lantern above
+        yt = stern_top
+        crest = [[0.0, 0.0]] + [[round(xl(yt) * math.cos(math.radians(a)), 3), round(0.45 * math.sin(math.radians(a)), 3)]
+                                for a in range(0, 181, 20)]
+        crest = crest[1:]
+        part("crest", "rail", [{"extrude": {"c": r3([0, yt - 0.05, transom_z(yt) + 0.06]), "depth": 0.12,
+                                             "profile": {"polygon": r3p(crest)}}}],
+             paint=[{"material": "rail_dark", "stripes": {"axis": "y", "at": [r3(yt + 0.05)], "width": 0.05}}])
+        part("crest_shield", "faction", [{"cylinder": {"a": r3([0, yt + 0.14, transom_z(yt) - 0.02]),
+                                                        "b": r3([0, yt + 0.14, transom_z(yt) - 0.08]), "r": 0.17}}], priority=2)
+        part("lantern", "rail", [{"cylinder": {"a": r3([0, yt + 0.4, -Lh + 0.25]), "b": r3([0, yt + 0.72, -Lh + 0.25]), "r": 0.1}},
+                                 {"cone": {"a": r3([0, yt + 0.72, -Lh + 0.25]), "b": r3([0, yt + 0.95, -Lh + 0.25]), "r": [0.13, 0.02]}}],
+             paint=[{"material": "sail", "stripes": {"axis": "y", "at": [r3(yt + 0.56)], "width": 0.12}}])
     part("rudder", "castle", [{"box": {"c": r3([0, H / 2, transom_z(H / 2) - 0.1]), "half": r3([0.06, H / 2, 0.18]),
                                        "rot": r3([-math.atan2(rake, stern_top - Y0), 0, 0])}}])
     if t["beak"]:   # the galleon's beakhead, low in front of the stem
@@ -259,6 +303,53 @@ def build(kind):
         "cut": [{"plane": {"n": [0, -1, 0], "at": 0.0}}],
         "paint": [{"material": "foam_dark", "spots": {"scale": 0.12, "density": 0.3, "seed": 5}}]}
 
+    if war:   # round shields along both sides of the waist, faction red with a white bar
+        shields, marks = [], []
+        n = 6 if kind == "caravel" else 8
+        for k in range(n):
+            z = qz + 0.35 + (fz - qz - 0.7) * k / (n - 1)
+            y = waist(z) - 0.16
+            for sx in (-1, 1):
+                x = sx * (half_w(z) + 0.01)
+                shields.append({"cylinder": {"a": r3([x, y, z]), "b": r3([x + sx * 0.06, y, z]), "r": 0.17}})
+                marks.append({"box": {"c": r3([x + sx * 0.05, y, z]), "half": [0.06, 0.04, 0.12]}})
+        parts["shields"] = {"material": "faction", "space": "ship", "priority": 2, "prims": shields,
+                            "paint": [{"material": "sail", "prims": marks}]}
+    if stage is not None:   # on the slipway: out of the water on keel blocks, no foam
+        parts.pop("foam")
+        parts["hull"]["cut"][0] = {"plane": {"n": [0, -1, 0], "at": 0.35}}
+        parts["blocks"] = {"material": "castle", "prims": [
+            {"box": {"c": r3([0, -0.58, z]), "half": [0.55, 0.22, 0.2]}} for z in
+            [-Lh * 0.6, -Lh * 0.2, Lh * 0.2, Lh * 0.55]]}
+        if stage < 2:
+            for name in [n_ for n_ in parts if n_.startswith(("mast", "ropes", "bowsprit", "spritsail", "shields"))]:
+                parts.pop(name)
+        if stage < 1:   # the bare frame: keel, stem and sternpost, U-shaped ribs along the hull
+            for name in ("hull", "decks", "rudder", "beak"):
+                parts.pop(name, None)
+            tops = sorted(top)
+
+            def top_at(z):
+                for (z0, y0_), (z1, y1_) in zip(tops, tops[1:]):
+                    if z0 <= z <= z1 and z1 > z0:
+                        return y0_ + (y1_ - y0_) * (z - z0) / (z1 - z0)
+                return tops[-1][1]
+            ribs = []
+            for k in range(13):
+                z = -Lh + rake + 0.2 + (2 * Lh - rake - F * 0.6) * k / 12
+                hb = half_w(z) - 0.04
+                if hb < 0.15:
+                    continue
+                ty = top_at(z) - 0.05
+                ribs.append({"tube": {"pts": r3p([[-hb, ty, z], [-hb * 1.02, 0.3, z], [0, -0.42, z],
+                                                    [hb * 1.02, 0.3, z], [hb, ty, z]]), "r": 0.055}})
+            parts["ribs"] = {"material": "hull", "space": "ship", "prims": ribs}
+            parts["keel"] = {"material": "castle", "space": "ship", "prims": [
+                {"box": {"c": r3([0, -0.3, (Lh - F - Lh + rake) / 2]), "half": r3([0.12, 0.1, (2 * Lh - F - rake) / 2])}},
+                side_extrude(bow_curve + [(Lh, D + fcb), (Lh - 0.2, D + fcb), (Lh - F + 0.05, Y0 + 0.25)], 0.2),
+                side_extrude([(-Lh + rake, Y0), (-Lh, stern_top), (-Lh + 0.2, stern_top), (-Lh + rake + 0.2, Y0)], 0.2)],
+                "cut": [{"plane": {"n": [0, -1, 0], "at": 0.42}}]}
+
     size = t["size"]
     cy = (t["pivot"] - size / 2) * K / math.cos(math.radians(30))
     amp = 0.6 if kind == "galleon" else 0.8
@@ -281,7 +372,8 @@ def build(kind):
             "rope": ["#0e0a06", "#22180e", "#3a2a18", "#54402a"],
             "ochre": ["#1c1308", "#4e3818", "#866228", "#b98c3e", "#d8ae5e", "#ecca86"],
             "foam": ["#1a2a38", "#3a5a70", "#7a9ab0", "#b4cad8", "#dce8f0", "#f8fcff"],
-            "faction": ["#0a0e1c", "#16244c", "#22387a", "#2e54a8", "#4a72c4", "#6e92da"],
+            "faction": (["#1c0606", "#4a1210", "#7a1e1a", "#a82824", "#c8463a", "#e07060"] if war   # 168,40,36
+                        else ["#0a0e1c", "#16244c", "#22387a", "#2e54a8", "#4a72c4", "#6e92da"]),   # 46,84,168
         },
         "brief": {"summary": f"Your Kingdom {kind} (J1 part 3) in the SpriteKiln style: a round hull with castles, "
                              "square sails filled by the wind with a faction cross, lateen sails aft, a bowsprit, rocking at anchor",
@@ -306,9 +398,10 @@ def build(kind):
         "channels": {"bob": 0.0, "pitch": 0.0, "roll": 0.0},
         "bones": bones,
         "parts": parts,
-        "animations": {"idle": {"frames": 4, "ms": 280, "channels": {
-            "bob": f"{0.035 * amp:.4f}*sin(p)", "pitch": f"{0.018 * amp:.4f}*sin(p + 1.2)",
-            "roll": f"{0.03 * amp:.4f}*sin(p + 0.5)"}}},
+        "animations": ({"idle": {"frames": 1, "ms": 500, "channels": {}}} if stage is not None else
+                       {"idle": {"frames": 4, "ms": 280, "channels": {
+                           "bob": f"{0.035 * amp:.4f}*sin(p)", "pitch": f"{0.018 * amp:.4f}*sin(p + 1.2)",
+                           "roll": f"{0.03 * amp:.4f}*sin(p + 0.5)"}}}),
     }
 
 
@@ -317,10 +410,15 @@ def r3p(pts):
 
 
 def main():
+    """Names: <type>[_war][_build_<n>], e.g. caravel, caravel_war, caravel_build_0, caravel_war_build_2."""
     for kind in sys.argv[1:] or list(TYPES):
+        base = kind.split("_")[0]
+        stage = int(kind.rsplit("_", 1)[1]) if "_build_" in kind else None
         d = os.path.join(PROPS, kind)
         os.makedirs(d, exist_ok=True)
-        text = yaml.safe_dump(build(kind), sort_keys=False, default_flow_style=None, width=140)
+        spec = build(base, war="_war" in kind, stage=stage)
+        spec["name"] = kind
+        text = yaml.safe_dump(spec, sort_keys=False, default_flow_style=None, width=140)
         first, rest = text.split("\n", 1)
         with open(os.path.join(d, kind + ".yaml"), "w") as fh:
             fh.write(first + "\n# Generated by tools/spritekiln/gen_big_ships.py; edit the script, not this file.\n" + rest)

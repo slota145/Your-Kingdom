@@ -35,7 +35,7 @@ class House:
 
     def __init__(self, name, orient, uc, w, vb, vf, floors, plaster, roof, pitch=61.0,
                  side_windows=None, side_frame=("-u",), door_u=None, chimney=0.25, gable="plain",
-                 origin=(0.0, 0.0), gate=False, front_frame=True, cuts=()):
+                 origin=(0.0, 0.0), gate=False, front_frame=True, cuts=(), mirror=(1, 1), back_detail=False):
         self.n = name
         # orient: 'z' (front +z), 'mx' (front -x) or an angle in degrees (-45: the chamfer, facing the camera)
         self.yaw = math.radians({"z": 0.0, "mx": -90.0}.get(orient, orient) if isinstance(orient, str) else orient)
@@ -43,6 +43,8 @@ class House:
         self.gate = gate                # a gateway arch instead of the door (a corner house's passage)
         self.front_frame = front_frame  # timbering on the front's upper floors
         self.cuts = list(cuts)          # cutters added to every part (the chamfered corner)
+        self.mx, self.mz = mirror       # -1: the whole house mirrored in x (corner_b) or z (the back views)
+        self.back_detail = back_detail  # timbering, windows and a back door on the back wall (the _back views)
         self.uc, self.w, self.vb, self.vf = uc, w, vb, vf
         self.floors = floors            # heights: ground floor first
         self.plaster, self.roof = plaster, roof
@@ -57,7 +59,7 @@ class House:
     # -- mapping from the local frame to SpriteKiln's ------------------------------------
     def pt(self, u, y, v):
         ca, sa = math.cos(self.yaw), math.sin(self.yaw)
-        return r4([self.origin[0] + u * ca + v * sa, y, self.origin[1] - u * sa + v * ca])
+        return r4([self.mx * (self.origin[0] + u * ca + v * sa), y, self.mz * (self.origin[1] - u * sa + v * ca)])
 
     def half(self, hu, hy, hv):
         return r4([hu, hy, hv])
@@ -72,11 +74,21 @@ class House:
         d = {"c": self.pt(*c), "half": self.half(*h)}
         r = list(rot) if rot is not None else [0, 0, 0]
         r[1] = self.yaw
+        r = self.mrot(r)
         if any(abs(x) > 1e-6 for x in r):
             d["rot"] = r4(r)
         if rnd:
             d["round"] = rnd
         return {"box": d}
+
+    def mrot(self, r):
+        """A rotation seen in the mirror: mirroring x flips the turns about y and z, mirroring z those about y and x."""
+        rx, ry, rz = r
+        if self.mx < 0:
+            ry, rz = -ry, -rz
+        if self.mz < 0:
+            ry, rx = -ry, -rx
+        return [rx, ry, rz]
 
     def add(self, part, prim, material=None, **extra):
         p = self.parts.setdefault(f"{self.n}_{part}", {"material": material, "prims": []})
@@ -86,12 +98,12 @@ class House:
         p["prims"].append(prim)
 
     # -- timber on a face ------------------------------------------------------------------
-    def beam_front(self, v, a, b, part="timber"):
-        """A beam on the front face (plane v) from (u, y) a to (u, y) b."""
+    def beam_front(self, v, a, b, part="timber", sgn=1):
+        """A beam on the front face (plane v; sgn -1: on the back face) from (u, y) a to (u, y) b."""
         (u1, y1), (u2, y2) = a, b
         L = math.hypot(u2 - u1, y2 - y1)
         ang = math.atan2(y2 - y1, u2 - u1)
-        self.add(part, self.box(((u1 + u2) / 2, (y1 + y2) / 2, v + 0.012), (L / 2 + T * 0.6, T, 0.035),
+        self.add(part, self.box(((u1 + u2) / 2, (y1 + y2) / 2, v + sgn * 0.012), (L / 2 + T * 0.6, T, 0.035),
                                 rot=self.rot_v(ang)), "timber")
 
     def beam_side(self, u, a, b, part="timber"):
@@ -102,12 +114,12 @@ class House:
         self.add(part, self.box((u, (y1 + y2) / 2, (v1 + v2) / 2), (0.035, T, L / 2 + T * 0.6),
                                 rot=self.rot_u(ang)), "timber")
 
-    def window_front(self, v, uw, ys, ww=0.42, wh=0.68, shutters=False):
-        self.add("glass", self.box((uw, ys + wh / 2, v + 0.004), (ww / 2, wh / 2, 0.02)), "glass")
-        self.add("sill", self.box((uw, ys - 0.03, v + 0.05), (ww / 2 + 0.05, 0.03, 0.06)), "sill_mat")
+    def window_front(self, v, uw, ys, ww=0.42, wh=0.68, shutters=False, sgn=1):
+        self.add("glass", self.box((uw, ys + wh / 2, v + sgn * 0.004), (ww / 2, wh / 2, 0.02)), "glass")
+        self.add("sill", self.box((uw, ys - 0.03, v + sgn * 0.05), (ww / 2 + 0.05, 0.03, 0.06)), "sill_mat")
         if shutters:
             for s in (-1, 1):
-                self.add("shutter", self.box((uw + s * (ww / 2 + 0.11), ys + wh / 2, v + 0.03),
+                self.add("shutter", self.box((uw + s * (ww / 2 + 0.11), ys + wh / 2, v + sgn * 0.03),
                                              (0.085, wh / 2, 0.02)), "shutter")
 
     def window_side(self, u, s, vw, ys, ww=0.42, wh=0.68):
@@ -150,7 +162,7 @@ class House:
                                   (arch + [[-gw, 0], [gw, 0]], "gate_dark", 0.05)):
                 g = {"c": self.pt(uc, y0 - 0.05, v + dz), "depth": 0.1, "profile": {"polygon": r4p(poly)}}
                 if abs(self.yaw) > 1e-6:
-                    g["rot"] = r4([0, self.yaw, 0])
+                    g["rot"] = r4(self.mrot([0, self.yaw, 0]))
                 self.add("gate" if mat == "gate_dark" else "gate_frame", {"extrude": g}, mat, priority=2)
         else:
             dw, dh = 0.27, 1.38
@@ -197,7 +209,7 @@ class House:
             return self.oriel(uc, vf, E)
         # gables: the back one plain; the front one timbered, or a masonry show gable above the roof
         R = (w / 2) * math.tan(self.pitch)
-        rotg = r4([0, self.yaw, 0]) if abs(self.yaw) > 1e-6 else None
+        rotg = r4(self.mrot([0, self.yaw, 0])) if abs(self.yaw) > 1e-6 else None
 
         def gable_prim(vv, poly, depth):
             g = {"c": self.pt(uc, E, vv), "depth": depth, "profile": {"polygon": r4p(poly)}}
@@ -281,6 +293,8 @@ class House:
                         self.beam_side(u, (a, ya + T), (b, yb - T))
                     else:
                         self.beam_side(u, (b, ya + T), (a, yb - T))
+        if self.back_detail:
+            self.back_face(levels, E, w / 2 * math.tan(self.pitch))
         # roof: two tiled slabs, a lath under every course, the ridge and a chimney
         ov = 0.17
         th = self.pitch
@@ -320,12 +334,50 @@ class House:
             self.add("chimney", self.box((cu, ytop, cv), (0.16, 0.04, 0.16)), "brick")
         return self.finish()
 
+    def back_face(self, levels, E, R):
+        """The back wall: a plain back door, windows, timbering on every floor and on the back gable."""
+        uc, w, v = self.uc, self.w, self.vb
+        u0, u1 = uc - w / 2, uc + w / 2
+        for (ya, yb, _) in levels:
+            ground = ya <= PL + 1e-6
+            nwin = 1 if ground or w < 1.42 else 2
+            cs = [u0 + w * (i + 0.5) / nwin for i in range(nwin)] if not ground else [u1 - 0.45]
+            self.beam_front(v, (u0, ya + T), (u1, ya + T), sgn=-1)
+            self.beam_front(v, (u0, yb - T), (u1, yb - T), sgn=-1)
+            posts = [u0 + T, u1 - T]
+            ys = ya + (0.75 if ground else 0.55)
+            for c in cs:
+                if ground and w < 1.2:
+                    break
+                self.window_front(v, c, ys, 0.38, 0.6, sgn=-1)
+                posts += [c - 0.19 - T, c + 0.19 + T]
+            if ground:   # the back door
+                dw, dh = 0.24, 1.3
+                du = u0 + 0.42
+                self.add("door", self.box((du, ya + dh / 2, v - 0.01), (dw, dh / 2, 0.03)), "door_wood")
+                posts += [du - dw - T, du + dw + T]
+            for p_ in posts:
+                self.beam_front(v, (p_, ya), (p_, yb), sgn=-1)
+            if not ground:
+                left, right = u0 + 2 * T, cs[0] - 0.19 - 2 * T
+                if right - left > 0.12:
+                    self.beam_front(v, (left, ya + T), (right, yb - T), sgn=-1)
+        if self.gable != "tower":
+            uc_ = uc
+            self.beam_front(v, (u0 + 0.05, E + 0.03), (uc_, E + R - 0.02), sgn=-1)
+            self.beam_front(v, (u1 - 0.05, E + 0.03), (uc_, E + R - 0.02), sgn=-1)
+            self.beam_front(v, (uc_, E), (uc_, E + R - 0.05), sgn=-1)
+            if R > 0.9:
+                self.window_front(v, uc_ - 0.3, E + 0.2, 0.26, 0.4, sgn=-1)
+
     def finish(self):
         for p in self.parts.values():
             if p["material"] is None:
                 p.pop("material")
             if self.cuts:
-                p.setdefault("cut", []).extend(self.cuts)
+                cuts = [{"plane": {"n": [c["plane"]["n"][0] * self.mx, c["plane"]["n"][1], c["plane"]["n"][2] * self.mz],
+                                   "at": c["plane"]["at"]}} for c in self.cuts]
+                p.setdefault("cut", []).extend(cuts)
         return self.parts
 
     def oriel(self, uc, vf, E):
@@ -394,8 +446,8 @@ def row(widths, vfs, floors, plasters, roofs, end=None, extra=None):
     houses = []
     u = lo
     for i, w in enumerate(widths):
-        sw = ("-u",) if (end == "b" and i == 0) else ()
-        sf = ("-u", "+u") if (end == "a" and i == len(widths) - 1) else ("-u",)
+        sw = ("-u",) if (end in ("b", "both") and i == 0) else ()
+        sf = ("-u", "+u") if (end in ("a", "both") and i == len(widths) - 1) else ("-u",)
         houses.append(House(f"h{i}", "z", u + w / 2, w, -H + 0.16, vfs[i], floors[i], plasters[i], roofs[i],
                             side_windows=sw, side_frame=sf, chimney=0.3 + 0.15 * (i % 2),
                             **((extra or [{}] * len(widths))[i])))
@@ -467,9 +519,72 @@ def corner(look):
     ]
 
 
+C, O, P_, B = "plaster_cream", "plaster_ochre", "plaster_pink", "plaster_blue"
+# The game's set (owner 2026-11-09: the burgher houses go into the game): level 2 pieces x 3 looks.
+GAME = {
+    ("single", 1): lambda: row([2.2, 2.1], [1.96, 2.02], [[2.0, 1.8, 1.6], [2.0, 1.75]], [P_, C], ["tile", "slate"],
+                               end="both", extra=[{"gable": "stepped", "pitch": 58}, {"pitch": 54}]),
+    ("single", 2): lambda: row([1.5, 1.45, 1.5], [2.0, 1.88, 1.98], [[2.0, 1.8], [2.0, 1.75, 1.6], [1.9, 1.85]],
+                               [C, B, O], ["tile", "tile", "slate"], end="both",
+                               extra=[{"pitch": 58}, {"gable": "curved", "pitch": 60}, {"pitch": 61}]),
+    ("single", 3): lambda: row([2.3, 2.0], [1.92, 2.03], [[2.0, 1.85], [2.0, 1.8, 1.6]], [O, C], ["slate", "tile"],
+                               end="both", extra=[{"gable": "curved", "pitch": 57, "front_frame": False}, {"pitch": 56}]),
+    ("end_a", 1): FRAGMENTS["end_a"],
+    ("end_a", 2): lambda: row([1.5, 1.5, 1.4], [1.9, 2.02, 1.95], [[2.0, 1.85], [2.0, 1.75, 1.6], [2.0, 1.8]],
+                              [B, C, P_], ["slate", "tile", "tile"], end="a",
+                              extra=[{"pitch": 60}, {"gable": "stepped", "pitch": 62}, {"pitch": 55}]),
+    ("end_a", 3): lambda: row([2.1, 2.2], [2.02, 1.92], [[2.0, 1.8], [2.0, 1.8, 1.6]], [C, O], ["tile", "slate"],
+                              end="a", extra=[{"pitch": 55}, {"gable": "curved", "pitch": 58, "front_frame": False}]),
+    ("middle", 1): FRAGMENTS["middle"],
+    ("middle", 2): FRAGMENTS["middle_2"],
+    ("middle", 3): FRAGMENTS["middle_3"],
+    ("end_b", 1): FRAGMENTS["end_b"],
+    ("end_b", 2): FRAGMENTS["end_b_2"],
+    ("end_b", 3): lambda: row([1.45, 1.5, 1.5], [1.95, 2.02, 1.88], [[2.0, 1.75], [2.0, 1.85, 1.6], [2.0, 1.8]],
+                              [O, C, P_], ["tile", "slate", "tile"], end="b",
+                              extra=[{"pitch": 59}, {"gable": "stepped", "pitch": 61}, {"pitch": 54}]),
+    ("corner_a", 1): lambda: corner("gate"),
+    ("corner_a", 2): lambda: corner("tower"),
+    ("corner_a", 3): lambda: corner("shop"),
+    # corner_b is corner_a mirrored in x (joined at side b and at the back)
+    ("corner_b", 1): lambda: corner("shop"),
+    ("corner_b", 2): lambda: corner("gate"),
+    ("corner_b", 3): lambda: corner("tower"),
+}
+
+
+def game_names():
+    out = []
+    for (frag, n) in GAME:
+        for back in (False, True):
+            out.append(f"l2_{frag}" + (f"_{n}" if n > 1 else "") + ("_back" if back else ""))
+    return out
+
+
+def game_houses(name):
+    """l2_<piece>[_<look>][_back] -> houses: corner_b mirrored in x, the back views mirrored in z with back walls."""
+    rest = name[3:]
+    back = rest.endswith("_back")
+    if back:
+        rest = rest[:-5]
+    n = 1
+    if rest[-2:] in ("_2", "_3"):
+        n, rest = int(rest[-1]), rest[:-2]
+    houses = GAME[(rest, n)]()
+    for h in houses:
+        h.mx = -1 if rest == "corner_b" else 1
+        h.mz = -1 if back else 1
+        h.back_detail = back
+        if back:   # a street (and the windows) on both sides of a corner house seen from behind
+            h.side_windows = tuple(set(h.side_windows) | ({"+u", "-u"} if h.yaw != 0 else set()))
+        if rest == "corner_b":   # mirrored in x: the side that shows (-x) was the hidden +x side
+            h.side_frame = tuple({"+u": "-u", "-u": "+u"}[x] for x in h.side_frame) if h.yaw == 0 else h.side_frame
+    return houses
+
+
 def spec(frag):
     parts = plot_parts()
-    for h in FRAGMENTS[frag]():
+    for h in (game_houses(frag) if frag.startswith("l2_") else FRAGMENTS[frag]()):
         parts.update(h.build())
     return {
         "spritekiln": 1,
@@ -495,6 +610,8 @@ def spec(frag):
 def main():
     import sys
     frags = sys.argv[1:] or list(FRAGMENTS)
+    if frags == ["game"]:
+        frags = game_names()
     for f in frags:
         d = os.path.join(OUT, f"townhouse_{f}")
         os.makedirs(d, exist_ok=True)
