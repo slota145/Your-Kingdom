@@ -3595,3 +3595,22 @@ msgstr "Na pokładzie nie ma wojska."
 
 msgid "ui.ship.troop_slot_empty"
 msgstr "Wolne miejsce na 10 żołnierzy"
+
+# P2 part 3: five tax rates
+
+msgid "ui.tax.none"
+msgstr "Brak"
+
+msgid "ui.tax.very_high"
+msgstr "Bardzo wysokie"
+
+msgid "ui.tax.slider_hint"
+msgstr "Przesuń suwak: od braku podatków (więcej zadowolenia, zero złota) do bardzo wysokich (dwa razy więcej złota, dużo mniej zadowolenia). Jeden podatek dla całego miasta."
+
+# P2 part 3: builders' hut
+
+msgid "building.builders_hut.name"
+msgstr "Chata budowniczych"
+
+msgid "building.builders_hut.desc"
+msgstr "Chata 2 budowniczych. Budowniczowie sami biorą najbliższe place budowy, jak budowniczy z ratusza, więc miasto rośnie szybciej. Możesz postawić kilka chat."

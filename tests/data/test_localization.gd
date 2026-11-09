@@ -114,7 +114,7 @@ func test_dynamic_ui_keys_exist() -> void:
 			keys.append("ui.command_error.needs_%s" % building.needs_rare)
 	for priority: String in ["high", "normal", "low"]:
 		keys.append("ui.priority.%s" % priority)
-	for rate: String in ["low", "normal", "high"]:
+	for rate: String in Treasury.RATE_KEYS:
 		keys.append("ui.tax.%s" % rate)
 	for locale: String in LOCALES:
 		for key: String in keys:

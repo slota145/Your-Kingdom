@@ -50,6 +50,7 @@ var _keep_goods: Array[StringName] = []
 var _keep_sliders: Dictionary[StringName, HSlider] = {}
 var _tax_box: Container
 var _tax_label: Label
+var _tax_slider: HSlider
 ## Shipyard (M5): order buttons and the queue with a cancel button per order.
 var _ship_box: VBoxContainer
 var _ship_orders: HFlowContainer
@@ -168,13 +169,19 @@ func _build_settings(box: VBoxContainer) -> void:
 	box.add_child(_tax_box)
 	_tax_label = UiKit.label()
 	_tax_box.add_child(_tax_label)
-	var rates := HFlowContainer.new()
-	_tax_box.add_child(rates)
-	for rate: int in [Treasury.TaxRate.LOW, Treasury.TaxRate.NORMAL, Treasury.TaxRate.HIGH]:
-		var b := UiKit.button("ui.tax.%s" % ["low", "normal", "high"][rate], func() -> void:
-			command_requested.emit(SetTaxRateCommand.new(rate)))
-		b.tooltip_text = "ui.tax.hint"
-		rates.add_child(b)
+	# One tax for the whole town, five rates (P2 part 3): a slider in the town hall's and every
+	# house's panel.
+	_tax_slider = HSlider.new()
+	_tax_slider.min_value = Treasury.TaxRate.NONE
+	_tax_slider.max_value = Treasury.TaxRate.VERY_HIGH
+	_tax_slider.step = 1
+	_tax_slider.tick_count = Treasury.RATE_KEYS.size()
+	_tax_slider.ticks_on_borders = true
+	_tax_slider.custom_minimum_size.x = 200
+	_tax_slider.tooltip_text = "ui.tax.slider_hint"
+	_tax_slider.value_changed.connect(func(value: float) -> void:
+		command_requested.emit(SetTaxRateCommand.new(int(value))))
+	_tax_box.add_child(_tax_slider)
 	_tax_box.add_child(UiKit.label("ui.tax.hint"))
 	_ship_box = VBoxContainer.new()
 	box.add_child(_ship_box)
@@ -312,9 +319,11 @@ func _refresh_settings(b: BuildingState) -> void:
 		_voyage.sim = sim
 		_voyage.refresh(province, b)
 	# The pioneer camp has the town hall's tax rate until a town hall stands (M5 part 3).
-	_tax_box.visible = (b.def.id == TOWN_HALL or b.def.id == &"pioneer_camp") and b.is_complete() and treasury != null
+	_tax_box.visible = (b.def.id == TOWN_HALL or b.def.id == &"pioneer_camp" or b.house != null) \
+			and b.is_complete() and treasury != null
 	if _tax_box.visible:
-		_tax_label.text = tr("ui.tax.title") % tr("ui.tax.%s" % ["low", "normal", "high"][treasury.tax_rate])
+		_tax_label.text = tr("ui.tax.title") % tr("ui.tax.%s" % Treasury.RATE_KEYS[treasury.tax_rate])
+		_tax_slider.set_value_no_signal(treasury.tax_rate)
 
 
 ## Goods a workshop fetches from storages (its recipe inputs).
