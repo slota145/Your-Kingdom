@@ -2,8 +2,9 @@
 
 Writes previews/cog_vs_current_2x.png (frame 0) and previews/cog_rocking_vs_current.gif (the 4 rocking
 frames). Run after `spritekiln render cog.yaml` in art/specs/props/cog:
-    python3 tools/spritekiln/compose_cog.py
+    python3 tools/spritekiln/compose_cog.py [<spec> <ship asset id>]   (default: cog cog; also caravel, galleon)
 """
+import sys
 import json
 import os
 
@@ -12,19 +13,25 @@ from PIL import Image, ImageDraw
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.path.join(ROOT, "tools", "spritekiln", "previews")
 DIRS = ["s", "se", "e", "ne", "n", "nw", "w", "sw"]      # ART_SPEC order, the rows of the game's sheet
-STEP, ROW_H, TOP = 168, 190, 150
+SPEC = sys.argv[1] if len(sys.argv) > 1 else "cog"
+ASSET = sys.argv[2] if len(sys.argv) > 2 else SPEC
+SIZE = {"cog": 220, "caravel": 270, "galleon": 370}.get(ASSET, 220)
+PIVOT = {"cog": (110, 168), "caravel": (135, 206), "galleon": (185, 290)}.get(ASSET, (110, 168))
+SC = SIZE / 220
+STEP, ROW_H, TOP = int(168 * SC), int(190 * SC), int(150 * SC)
 
 
 def current():
-    sheet = Image.open(os.path.join(ROOT, "assets", "ships", "cog", "idle.png")).convert("RGBA")
-    return [[(sheet.crop((f * 220, r * 220, f * 220 + 220, r * 220 + 220)), (110, 168)) for r in range(8)]
+    sheet = Image.open(os.path.join(ROOT, "assets", "ships", ASSET, "idle.png")).convert("RGBA")
+    nf = sheet.width // SIZE
+    return [[(sheet.crop(((f % nf) * SIZE, r * SIZE, (f % nf) * SIZE + SIZE, r * SIZE + SIZE)), PIVOT) for r in range(8)]
             for f in range(4)]
 
 
 def spritekiln():
-    d = os.path.join(ROOT, "tools", "spritekiln", "art", "specs", "props", "cog", "out", "cog")
-    atlas = Image.open(os.path.join(d, "cog.png")).convert("RGBA")
-    meta = json.load(open(os.path.join(d, "cog.json")))
+    d = os.path.join(ROOT, "tools", "spritekiln", "art", "specs", "props", SPEC, "out", SPEC)
+    atlas = Image.open(os.path.join(d, SPEC + ".png")).convert("RGBA")
+    meta = json.load(open(os.path.join(d, SPEC + ".json")))
     piv = meta["spritekiln"]["pivot"]
     frames = []
     for f in range(4):
@@ -53,7 +60,7 @@ def frame(cur, sk, f):
     for row, (src, label) in enumerate(((cur, "current (tools/render_cog.py)"), (sk, "SpriteKiln"))):
         y0 = TOP + row * ROW_H - 20
         for i, (im, (px, py)) in enumerate(src[f]):
-            img.alpha_composite(im, (int(30 + STEP * i + STEP / 2 - px), int(y0 - py + 40)))
+            img.alpha_composite(im, (int(30 + STEP * i + STEP / 2 - px), int(y0 - py + 40 * SC)))
         d.text((6, y0 - 135 if row == 0 else y0 - 80), label, fill=(255, 255, 255, 255))
     for i, dr in enumerate(DIRS):
         d.text((30 + STEP * i + STEP // 2 - 6, img.height - 14), dr.upper(), fill=(255, 255, 255, 255))
@@ -64,9 +71,9 @@ def main():
     cur, sk = current(), spritekiln()
     frames = [frame(cur, sk, f) for f in range(4)]
     big = [im.resize((im.width * 2, im.height * 2), Image.NEAREST) for im in frames]
-    big[0].convert("RGB").save(os.path.join(OUT, "cog_vs_current_2x.png"))
+    big[0].convert("RGB").save(os.path.join(OUT, f"{SPEC}_vs_current_2x.png"))
     pal = [im.convert("RGB").quantize(colors=255, method=Image.Quantize.MEDIANCUT) for im in frames]
-    pal[0].save(os.path.join(OUT, "cog_rocking_vs_current.gif"), save_all=True, append_images=pal[1:],
+    pal[0].save(os.path.join(OUT, f"{SPEC}_rocking_vs_current.gif"), save_all=True, append_images=pal[1:],
                 duration=260, loop=0)
     print("ok", big[0].size)
 
