@@ -71,7 +71,8 @@ func test_crane_stands_on_the_quay_by_a_berth() -> void:
 			province.refresh_tile(Vector2i(x, y))
 	assert_str(String(province.placement_error(crane, Vector2i(30, 30)))).is_equal("no_berth_nearby")
 	var warehouse := sim.data.get_building(&"port_warehouse")
-	assert_str(String(province.placement_error(warehouse, Vector2i(30, 26)))).is_equal("needs_quay")
+	# A port warehouse may stand on land too since P2 part 1.
+	assert_str(String(province.placement_error(warehouse, Vector2i(30, 26)))).is_empty()
 
 
 ## Two dockers alone, the crane alone, both together: the crane lifts 3 at a time and moves
@@ -165,8 +166,8 @@ func test_port_warehouse_is_a_storage_on_the_quay() -> void:
 	province.refresh_fairways()
 	var warehouse := SimFixture.place(sim, &"port_warehouse", Vector2i(5, 30))
 	assert_int(warehouse.stock.slot_count()).is_equal(8)
-	var porter := SimFixture.spawn(sim, JobBoard.PORTER_KIND, warehouse.entrance_tile())
-	assert_str(String(sim.execute(AssignWorkerCommand.new(porter.id, warehouse.id)))).is_empty()
+	# It has no porters of its own since P2 part 1: any porter carries.
+	SimFixture.spawn(sim, JobBoard.PORTER_KIND, Vector2i(4, 28))
 	# Wood on the ground by the shore goes into the warehouse.
 	province.drop_goods(Vector2i(4, 27), &"wood", 4)
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return warehouse.stock.total(&"wood") == 4, 120)).is_true()

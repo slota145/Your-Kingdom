@@ -1122,10 +1122,10 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## P2 — Port 2: słupki, dokerzy, wojsko na statki, ikonki i podatki
 
-**Status: plan do akceptacji (2026-11-09).** Prośba właściciela 2026-11-09, przed oceną M7, B1, W1 i J1 (ocena i pomiar odłożone). Ankieta: **3 części, ocena po każdej**; słupek **tylko na kamiennym nabrzeżu**; **port zostawia swoich 2 dokerów**, a magazyny portowe tracą tragarzy; **wspólny podatek, 5 poziomów**. Dopisek właściciela: budynki portowe stawiane **bardziej na wodzie** i z **dwoma wejściami** (od lądu i od nabrzeża), żeby budowa przy nabrzeżach nie sprawiała kłopotów (także automatycznemu graczowi).
+**Status: plan zaakceptowany 2026-11-09 (ankieta); część 1 w toku.** Prośba właściciela 2026-11-09, przed oceną M7, B1, W1 i J1 (ocena i pomiar odłożone). Ankieta: **3 części, ocena po każdej**; słupek **tylko na kamiennym nabrzeżu**; **port zostawia swoich 2 dokerów**, a magazyny portowe tracą tragarzy; **wspólny podatek, 5 poziomów**. Dopisek właściciela: budynki portowe stawiane **bardziej na wodzie** i z **dwoma wejściami** (od lądu i od nabrzeża), żeby budowa przy nabrzeżach nie sprawiała kłopotów (także automatycznemu graczowi).
 
 **Część 1: logistyka portu**
-- [ ] Słupek do cumowania (1 kafel na kamiennym nabrzeżu, przy głębokiej wodzie): statek cumuje przy nim, żeby handlować, rozładować i załadować towar. Słupek nie ma magazynu: towar idzie do najbliższego magazynu portowego i stamtąd wraca.
+- [ ] Słupek do cumowania (1 kafel na kamiennym nabrzeżu, przy głębokiej wodzie, ludzie przechodzą obok): statek cumuje przy nim, żeby handlować, rozładować i załadować towar. Słupek nie ma magazynu: towar idzie do najbliższego magazynu portowego (do 12 kafli) i stamtąd wraca; **magazyn portowy w pobliżu nie jest wymagany** (decyzja właściciela 2026-11-09): bez niego towar idzie prosto do zwykłych magazynów i z nich. Obsługują go portowcy z portu albo z domów portowców w pobliżu.
 - [ ] 2 mniejsze magazyny portowe (obok obecnego 3×3): mały i średni. Magazyny portowe nie mają własnej obsługi (bez tragarzy).
 - [ ] 2 domy dokerów (mały i duży, różna liczba dokerów). Dokerzy sami podejmują prace portowe (rozładunek, załadunek, noszenie między statkiem, słupkiem, portem i magazynem) i chodzą po nabrzeżach. Port zostawia swoich 2 dokerów.
 - [ ] Budynki portowe bardziej na wodzie i z 2 wejściami (od lądu i od nabrzeża); automatyczny gracz stawia je bez kłopotów.

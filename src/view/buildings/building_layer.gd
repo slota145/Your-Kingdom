@@ -173,7 +173,7 @@ func _build(building: BuildingState, key: String) -> void:
 	else:
 		for art: String in key.split("|"):
 			add_art(holder, art, building.origin)
-	if building.def.is_port() and building.is_complete():
+	if building.def.is_port() and building.def.quay_slots > 0 and building.is_complete():
 		var quay := QuayYard.new()
 		holder.add_child(quay)
 		quay.setup(building)

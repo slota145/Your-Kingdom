@@ -35,7 +35,8 @@ static func serving_port(province: ProvinceSim, centre: Vector2i) -> BuildingSta
 	var best: BuildingState = null
 	var best_d := 1 << 30
 	for building: BuildingState in province.buildings.all():
-		if not building.def.is_port() or building.def.served_by_port or not building.is_complete():
+		if not building.def.is_port() or not building.def.worker_kinds.has(DOCKER_KIND) \
+				or not building.is_complete():
 			continue
 		var c := building.origin + building.def.footprint / 2
 		var d := maxi(absi(c.x - centre.x), absi(c.y - centre.y))
@@ -48,10 +49,73 @@ static func serving_port(province: ProvinceSim, centre: Vector2i) -> BuildingSta
 ## Whose dockers work at [param port]: the port itself, or for a mooring the port serving it
 ## (0 when none does).
 static func crew_of(province: ProvinceSim, port: BuildingState) -> int:
-	if not port.def.served_by_port:
+	# A port's own dockers; a mooring or a bollard is served by the nearest port (N1, P2).
+	if not port.def.served_by_port and not port.def.uses_port_storage:
 		return port.id
 	var serving := serving_port(province, port.origin + port.def.footprint / 2)
 	return serving.id if serving != null else 0
+
+
+static func _centre(building: BuildingState) -> Vector2i:
+	return building.origin + building.def.footprint / 2
+
+
+static func _reach(a: Vector2i, b: Vector2i) -> int:
+	return maxi(absi(a.x - b.x), absi(a.y - b.y))
+
+
+## The finished port warehouse (any size) nearest to [param centre] within SERVE_RADIUS, or
+## null (where a bollard's cargo waits, P2 part 1).
+static func port_storage_near(province: ProvinceSim, centre: Vector2i) -> BuildingState:
+	var best: BuildingState = null
+	var best_d := 1 << 30
+	for building: BuildingState in province.buildings.all():
+		if not building.def.is_port_storage() or not building.is_complete():
+			continue
+		var d := _reach(_centre(building), centre)
+		if d <= SERVE_RADIUS and (d < best_d or (d == best_d and building.id < best.id)):
+			best_d = d
+			best = building
+	return best
+
+
+## Where the cargo of ships moored at [param dock] waits: its own quay yard (a port, a
+## mooring), or for a bollard the nearest port warehouse (P2 part 1); null when there is none
+## (a bollard's cargo then goes straight to and from the storages).
+static func yard(province: ProvinceSim, dock: BuildingState) -> BuildingState:
+	if dock == null:
+		return null
+	if not dock.def.uses_port_storage:
+		return dock if dock.stock != null else null
+	return port_storage_near(province, _centre(dock))
+
+
+## Id of [method yard], 0 when there is none (requests then name any storage).
+static func yard_id(province: ProvinceSim, dock: BuildingState) -> int:
+	var store := yard(province, dock)
+	return store.id if store != null else 0
+
+
+## Workplaces whose dockers carry the cargo of ships at [param dock] (P2 part 1): its own
+## crew (a port, or the port serving a mooring) and every finished house of dockers within
+## SERVE_RADIUS. Empty when nobody can.
+static func crews_for(province: ProvinceSim, dock: BuildingState) -> Array[int]:
+	var crews: Array[int] = []
+	var own := crew_of(province, dock)
+	if own != 0:
+		crews.append(own)
+	crews.append_array(docker_houses_near(province, _centre(dock)))
+	return crews
+
+
+## Finished houses of dockers within SERVE_RADIUS of [param centre] (by id).
+static func docker_houses_near(province: ProvinceSim, centre: Vector2i) -> Array[int]:
+	var result: Array[int] = []
+	for building: BuildingState in province.buildings.all():
+		if building.def.is_docker_house() and building.is_complete() \
+				and _reach(_centre(building), centre) <= SERVE_RADIUS:
+			result.append(building.id)
+	return result
 
 
 ## The ship that reserved the berth of [param port] (moored or on its way in), or null.
@@ -120,18 +184,23 @@ static func request_port(province: ProvinceSim, request: TransportRequest) -> in
 	return 0
 
 
-## Like [method request_port], but the port whose dockers carry the request (a mooring is
-## served by a nearby port, N1): -1 when nobody can carry it now.
-static func request_crew(province: ProvinceSim, request: TransportRequest) -> int:
+## Workplaces whose dockers carry [param request] (P2 part 1): for the cargo of a moored
+## ship, the crews of its dock ([method crews_for]); for goods to or from a harbour building
+## (a quay yard, a port warehouse), the houses of dockers near it, who help the porters.
+## [code]null[/code] when it is not port work (porters carry it); an empty list when it is the
+## cargo of a ship nobody can carry now.
+static func request_crews(province: ProvinceSim, request: TransportRequest) -> Variant:
 	var port_id := request_port(province, request)
-	if port_id <= 0:
-		return port_id
-	var port := province.buildings.get_building(port_id)
-	if port != null and port.def.served_by_port:
-		var crew := crew_of(province, port)
-		return crew if crew != 0 else -1
-	return port_id
-	return 0
+	if port_id < 0:
+		return [] as Array[int]
+	if port_id > 0:
+		return crews_for(province, province.buildings.get_building(port_id))
+	for id: int in [request.source_id, request.dest_id]:
+		var building := province.buildings.get_building(id) if id > 0 else null
+		if building != null and (building.def.is_port_storage() or building.def.quay_slots > 0):
+			var houses := docker_houses_near(province, _centre(building))
+			return houses if not houses.is_empty() else null
+	return null
 
 
 # --- Gangway -------------------------------------------------------------------------------
@@ -270,10 +339,10 @@ static func _kept_on_quay(province: ProvinceSim) -> Dictionary[int, Dictionary]:
 	var kept: Dictionary[int, Dictionary] = {}
 	var trader := province.sea_merchant
 	if trader.is_trading():
-		kept[trader.port_id] = trader.loading_goods()
+		kept[yard_id(province, province.buildings.get_building(trader.port_id))] = trader.loading_goods()
 	for ship: ShipUnit in province.ships.values():
 		if ship.voyage != null and not ship.voyage.loading_goods().is_empty():
-			kept[ship.dock_id] = ship.voyage.loading_goods()
+			kept[yard_id(province, province.buildings.get_building(ship.dock_id))] = ship.voyage.loading_goods()
 	return kept
 
 

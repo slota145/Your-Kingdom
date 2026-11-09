@@ -455,6 +455,15 @@ static func _balance_workforce(province: ProvinceSim, at_workplace: bool = false
 			spare += 1
 		free[building.id] = spare
 		houses.append(building)
+	# A workplace that needs fewer workers than it has (the port warehouses lost their porters
+	# in P2 part 1: an older game's go home).
+	for building: BuildingState in province.buildings.all():
+		while building.workers.size() > building.def.worker_count():
+			var extra := province.agents.get_agent(building.workers.back())
+			if extra == null:
+				building.workers.pop_back()
+			else:
+				province.remove_agent(extra)
 	var workplaces: Array[BuildingState] = []
 	for building: BuildingState in province.buildings.all():
 		if building.is_complete() and building.workers.size() < building.def.worker_count():

@@ -257,6 +257,40 @@ const BUILDINGS := {
 		"props": [["crane_mast", 1.15, 0.85], ["treadwheel", 0.5, 1.5], ["barrels", 1.7, 1.8],
 			["bollard", 1.85, 0.25]]}],
 	"port_warehouse": [{"special": "yard"}],
+	"port_store": [{"special": "yard"}],
+	"port_warehouse_small": [{"special": "yard"}],
+	# P2 part 1: a stone bollard on the edge of a stone quay: a squat post with an iron cap, a
+	# hawser coiled round it, a lantern on a pole and a few crates waiting for the ship.
+	"bollard": [{"min_height": 46.0, "volumes": [],
+		"props": [["lantern_pole", 0.8, 0.25], ["stone_bollard", 0.55, 0.75], ["rope_coil", 0.15, 0.7]]}],
+	# P2 part 1: the dockers' hut (2x2): a weatherboarded cottage with a shingle roof and a
+	# chimney, an open lean-to with coiled ropes and sacks, nets drying, a handcart and crates.
+	# Two doors (land and water): the front one is drawn, the back one is behind the house.
+	"docker_hut": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.86], "h": 34.0, "rh": 22.0, "ridge": "y",
+			"ends": ["gable", "hip"], "walls": "planks", "roof": "shingle", "shutters": Color(0.25, 0.4, 0.55),
+			"chimney": [0.7, 0.55]},
+		{"kind": "lean", "rect": [1.36, 0.2, 1.88, 1.25], "low": "x", "h": 20.0, "hh": 28.0,
+			"roof": "shingle", "walls": "planks", "open": true,
+			"inside": [["rope_coil", 1.62, 0.6], ["sacks", 1.6, 1.0]]}],
+		"props": [["crate_stack", 1.62, 1.72], ["nets", 0.25, 1.95], ["rope_coil", 0.95, 1.98]]}],
+	# P2 part 1: the dockers' house (3x3): a two-storey timber-framed house on a stone plinth
+	# with a tiled hip roof and two chimneys, a lookout turret at the back corner where the
+	# foreman watches for sails, a weatherboarded back wing, an open loading shed with sacks
+	# and barrels, crates, a handcart, a hand crane and a lantern by the door.
+	"docker_house": [{"volumes": [
+		{"kind": "tower", "rect": [0.16, 0.16, 0.86, 0.86], "h": 84.0, "spire": 26.0, "walls": "timber_stone",
+			"roof": "slate"},
+		{"kind": "house", "rect": [0.92, 0.14, 2.86, 0.98], "h": 36.0, "rh": 20.0, "ridge": "x",
+			"ends": ["gable", "hip"], "walls": "planks", "roof": "shingle", "shutters": Color(0.25, 0.4, 0.55),
+			"chimney": [2.3, 0.55]},
+		{"kind": "house", "rect": [0.14, 1.05, 2.05, 2.86], "h": 52.0, "rh": 28.0, "ridge": "x",
+			"ends": ["hip", "gable"], "walls": "timber_stone", "roof": "tile", "shutters": Color(0.25, 0.4, 0.55),
+			"floors": 2, "chimney": [1.45, 1.75]},
+		{"kind": "lean", "rect": [2.12, 1.05, 2.88, 2.86], "low": "x", "h": 24.0, "hh": 36.0,
+			"roof": "shingle", "walls": "planks", "open": true,
+			"inside": [["sacks", 2.5, 1.5], ["barrels", 2.5, 2.35], ["rope_coil", 2.35, 1.2]]}],
+		"props": [["crate_stack", 0.3, 2.95], ["hand_crane", 2.95, 2.95], ["rope_coil", 1.7, 2.98]]}],
 	# M5 part 3: the pioneer camp, the first building after a start from a ship: a log hut,
 	# canvas tents, a camp fire and the settlers' tools.
 	"pioneer_camp": [{"volumes": [
@@ -1319,6 +1353,46 @@ func _prop(img: Image, p: Vector2, prop: String) -> void:
 				_ellipse(img, q - Vector2(0, 5), Vector2(4, 5), Color(0.24, 0.17, 0.12))
 				_line(img, q - Vector2(4, 7), q - Vector2(-4, 7), C_IRON, 1)
 				_ellipse(img, q - Vector2(0, 9), Vector2(3, 1.5), Color(0.08, 0.06, 0.05))
+		"stone_bollard":
+			# A squat round stone post with an iron cap and a hawser looped over it.
+			_ellipse(img, p - Vector2(0, 1), Vector2(10, 5), Color(0.34, 0.32, 0.3))
+			for k: int in 16:
+				var y := float(k)
+				var c := _stone(int(p.x) + k % 3, int(p.y) + k, 7)
+				_ellipse(img, p - Vector2(0, 2 + y), Vector2(7.5 - 0.08 * y, 3.6), _lit(c, 1.02 - 0.015 * y))
+				_px(img, Vector2i(p + Vector2(-7.0 + 0.08 * y, -2 - y)), c.darkened(0.45))
+				_px(img, Vector2i(p + Vector2(7.0 - 0.08 * y, -2 - y)), c.darkened(0.35))
+			_ellipse(img, p - Vector2(0, 18), Vector2(8, 3.8), C_IRON)
+			_ellipse(img, p - Vector2(0, 19.5), Vector2(6.5, 3), C_IRON.lightened(0.2))
+			_ellipse(img, p - Vector2(1.5, 20.5), Vector2(2.5, 1.2), C_IRON.lightened(0.5))
+			_line(img, p + Vector2(-7, -13), p + Vector2(7, -11), Color(0.72, 0.62, 0.42), 2)
+			_line(img, p + Vector2(-7, -10), p + Vector2(7, -8), Color(0.62, 0.52, 0.34), 1)
+			_line(img, p + Vector2(6, -10), p + Vector2(16, 5), Color(0.66, 0.56, 0.38), 2)
+		"rope_coil":
+			for k: int in 3:
+				_ellipse(img, p - Vector2(0, 1 + k * 1.5), Vector2(5 - k, 2.4 - k * 0.4), Color(0.6, 0.5, 0.32).darkened(0.12 * k))
+				_ellipse(img, p - Vector2(0, 1 + k * 1.5), Vector2(3.5 - k, 1.4 - k * 0.3), Color(0.74, 0.64, 0.44))
+			_ellipse(img, p - Vector2(0, 5), Vector2(1.5, 0.6), Color(0.3, 0.24, 0.16))
+		"lantern_pole":
+			_line(img, p, p + Vector2(0, -34), C_BEAM, 2)
+			_line(img, p + Vector2(0, -33), p + Vector2(6, -33), C_BEAM, 1)
+			_line(img, p + Vector2(6, -33), p + Vector2(6, -30), C_IRON, 1)
+			_box(img, p + Vector2(6, -23), Vector2(5, 2.5), 6.0, C_IRON)
+			_ellipse(img, p + Vector2(6, -26), Vector2(1.5, 2), Color(1.0, 0.82, 0.4))
+		"crate_stack":
+			_crate(img, p + Vector2(-5, 0), Color(0.62, 0.46, 0.28))
+			_crate(img, p + Vector2(5, 2), Color(0.58, 0.42, 0.26))
+			_crate(img, p + Vector2(0, -7), Color(0.66, 0.5, 0.3))
+			_line(img, p + Vector2(-3, -13), p + Vector2(3, -12), Color(0.72, 0.62, 0.42), 1)
+		"hand_crane":
+			# A small swing crane on a post: a hook, a block and a sack hanging.
+			_box(img, p, Vector2(8, 4), 4.0, C_STONE, "stone")
+			_line(img, p + Vector2(0, -4), p + Vector2(0, -40), C_BEAM, 2)
+			_line(img, p + Vector2(0, -38), p + Vector2(-16, -34), C_BEAM, 2)
+			_line(img, p + Vector2(0, -24), p + Vector2(-10, -35), C_BEAM, 1)
+			_line(img, p + Vector2(-15, -34), p + Vector2(-15, -20), Color(0.72, 0.62, 0.42), 1)
+			_ellipse(img, p + Vector2(-15, -16), Vector2(4, 4), Color(0.78, 0.68, 0.5))
+			_line(img, p + Vector2(-17, -19), p + Vector2(-13, -19), Color(0.6, 0.5, 0.35), 1)
 		"bollard":
 			_box(img, p, Vector2(4, 2), 7.0, C_BEAM)
 			_line(img, p + Vector2(-3, -5), p + Vector2(3, -5), Color(0.75, 0.68, 0.5), 1)

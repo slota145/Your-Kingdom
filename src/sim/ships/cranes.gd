@@ -39,7 +39,8 @@ static func berth_building(province: ProvinceSim, def: BuildingDef, origin: Vect
 	var best_d := 1 << 30
 	var area := Rect2i(origin, def.footprint)
 	for building: BuildingState in province.buildings.all():
-		if not building.def.is_port() or (finished_only and not building.is_complete()):
+		if not building.def.is_port() or building.def.quay_slots == 0 \
+				or (finished_only and not building.is_complete()):
 			continue
 		var d := _distance(area, building.berth_tile())
 		if d <= def.crane_reach and (d < best_d or (d == best_d and building.id < best.id)):

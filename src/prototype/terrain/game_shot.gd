@@ -92,6 +92,11 @@ var _bridges: bool = false
 ## and the six new ships at anchor near --tile.
 var _j1ships: bool = false
 var _j1stage: int = 2
+## --p2 [--p2_seconds=<s>] (P2 part 1): a stone quay along the shore near --tile with bollards
+## and ships moored at them, port warehouses of three sizes, a dockers' hut and a dockers'
+## house standing 2 rows on piles, the dockers unloading for <s> seconds (default 25).
+var _p2: bool = false
+var _p2_seconds: int = 25
 ## --hard_shore (B1 part 2): the shoreline as before the soft shore, to compare.
 var _hard_shore: bool = false
 ## --stilts=<id,id,...> (B1 part 2): those buildings placed near --tile with a row over the water
@@ -157,6 +162,10 @@ func _ready() -> void:
 			_hard_shore = true
 		elif arg == "--j1ships":
 			_j1ships = true
+		elif arg == "--p2":
+			_p2 = true
+		elif arg.begins_with("--p2_seconds="):
+			_p2_seconds = int(arg.trim_prefix("--p2_seconds="))
 		elif arg.begins_with("--j1stage="):
 			_j1stage = int(arg.trim_prefix("--j1stage="))
 		elif arg == "--bridges":
@@ -265,6 +274,8 @@ func _arrange() -> void:
 		_place_stilts(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _j1ships:
 		_place_j1ships(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _p2:
+		_place_p2(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _bridges:
 		_place_bridges(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if not _yards.is_empty():
@@ -310,6 +321,81 @@ func _place_j1ships(sim: Simulation, at: Vector2i) -> void:
 			ship.voyage.anchor = anchor
 		province.ships[ship.id] = ship
 		k += 1
+
+
+## P2 part 1: the shore south of [param at] (the sea lies to +y): a stone quay two rows deep
+## along it, bollards with ships, port warehouses, a dockers' hut and a dockers' house.
+func _place_p2(sim: Simulation, at: Vector2i) -> void:
+	var province := sim.province
+	province.first_building = &""
+	sim.treasury.gold = 5000
+	var shore := func(x: int) -> Vector2i:
+		for y: int in range(at.y, at.y + 30):
+			if province.sail_depth(Vector2i(x, y)) > 0:
+				return Vector2i(x, y)
+		return Agent.NO_TILE
+	var quay: Array[Vector2i] = []
+	for x: int in range(at.x - 6, at.x + 8):
+		var s0: Vector2i = shore.call(x)
+		if s0 != Agent.NO_TILE:
+			for j: int in 2:
+				var t := s0 + Vector2i(0, j)
+				if province.quay_error(t) == &"":
+					province.grid.set_quay(t, TileGrid.STONE_QUAY)
+					province.refresh_tile(t)
+					quay.append(t)
+	province.refresh_fairways()
+	var place := func(id: StringName, origin: Vector2i, o: int) -> BuildingState:
+		var error := sim.execute(PlaceBuildingCommand.new(id, origin, true, o))
+		print(id, " at ", origin, " turned ", o, ": ", error)
+		return province.buildings.get_building(sim.ids.next_id - 1) if error == &"" else null
+	var s_mid: Vector2i = shore.call(at.x)
+	var warehouse: BuildingState = place.call(&"port_warehouse_small", s_mid + Vector2i(-2, -3), 0)
+	if warehouse == null:
+		warehouse = _place_near(sim, &"port_warehouse_small", s_mid + Vector2i(-2, -4))
+	place.call(&"port_store", s_mid + Vector2i(1, -2), 0)
+	var hut: BuildingState = _place_near(sim, &"docker_hut", s_mid + Vector2i(4, -4))
+	# The dockers' house on the far end, two rows on piles over the sea.
+	var house: BuildingState = null
+	for x: int in range(at.x + 9, at.x + 16):
+		var s0: Vector2i = shore.call(x)
+		if s0 == Agent.NO_TILE:
+			continue
+		for o: int in 4:
+			if province.placement_error(sim.data.get_building(&"docker_house"), s0 + Vector2i(0, -1), o) == &"":
+				house = place.call(&"docker_house", s0 + Vector2i(0, -1), o)
+				break
+		if house != null:
+			break
+	var ships: Array[ShipUnit] = []
+	for k: int in 2:
+		var x := at.x - 4 + 7 * k
+		var s0: Vector2i = shore.call(x)
+		var bollard: BuildingState = place.call(&"bollard", s0 + Vector2i(0, 1), 0) if s0 != Agent.NO_TILE else null
+		if bollard == null:
+			continue
+		var def := sim.data.get_ship(&"caravel" if k == 0 else SeaMerchant.SHIP)
+		var ship := ShipUnit.new(province.ids.take(), def, IsoMath.tile_center(bollard.berth_tile()), sim.data)
+		province.ships[ship.id] = ship
+		Harbour.moor(ship, bollard)
+		ship.hold.add(&"wood", 6)
+		ship.hold.add(&"fish", 4)
+		ships.append(ship)
+		if warehouse != null:
+			province.jobs.add(&"wood", 6, ship.id, Harbour.yard_id(province, bollard))
+			province.jobs.add(&"fish", 4, ship.id, Harbour.yard_id(province, bollard))
+	for workplace: BuildingState in [hut, house]:
+		if workplace == null:
+			continue
+		for i: int in workplace.def.worker_count():
+			var docker := province.spawn_agent(Harbour.DOCKER_KIND, workplace.door_front_tile())
+			province.assign_worker(docker, workplace)
+	sim.run_ticks(SimClock.seconds_to_ticks(_p2_seconds))
+	sim.events.drain()
+	Game.paused = true
+	var view: ProvinceView = _game.get("view")
+	view.quays.refresh()
+	view.buildings.refresh_all()
 
 
 ## B1: bridges over the river near [param at]: a timber one, a stone one, a diagonal timber one

@@ -2461,7 +2461,7 @@ msgid "ui.command_error.not_on_quay"
 msgstr "Only harbour buildings stand on a quay."
 
 msgid "ui.command_error.needs_quay"
-msgstr "This building stands only on a pier or quay."
+msgstr "This needs a quay or a pier under the building (only so many rows may stand on piles)."
 
 msgid "ui.command_error.no_port_nearby"
 msgstr "No port nearby (within 12 tiles) whose dockers would serve the ship."
@@ -2508,7 +2508,7 @@ msgid "building.port_warehouse.name"
 msgstr "Port warehouse"
 
 msgid "building.port_warehouse.desc"
-msgstr "A storage on the quay, right by the ships: room for 8 kinds of goods and 2 porters. Porters take goods for the ships from it and bring what arrived to it first, as it is the nearest. Build it on a pier or a quay."
+msgstr "A large warehouse on the quay, right by the ships: 8 slots for goods. No staff of its own: dockers and porters carry the goods. Ships at bollards are loaded from here. May stand 2 rows on piles over the water."
 
 msgid "ui.kind.crane_operator"
 msgstr "Crane operator"
@@ -3485,3 +3485,45 @@ msgstr "War galleon"
 
 msgid "ship.galleon_war.desc"
 msgstr "A galleon with shields: carries 90 soldiers, the strongest at sea. Cost: 78 planks, 20 barrels of tar, 18 bolts of cloth, 12 iron."
+
+# P2 part 1: bollards, port warehouses, dockers
+
+msgid "building.bollard.name"
+msgstr "Bollard"
+
+msgid "building.bollard.desc"
+msgstr "A stone bollard on the edge of a stone quay: a ship moors here to trade, unload or load goods. It has no yard of its own: the goods go to the nearest port warehouse (within 12 tiles), or without one straight to the ordinary storages, carried by the dockers of a port, hut or house nearby. People walk past it along the quay."
+
+msgid "building.port_store.name"
+msgstr "Port store"
+
+msgid "building.port_store.desc"
+msgstr "A small wooden shed on the quay: 2 slots for goods. No staff of its own: dockers and porters carry the goods."
+
+msgid "building.port_warehouse_small.name"
+msgstr "Small port warehouse"
+
+msgid "building.port_warehouse_small.desc"
+msgstr "A warehouse on the quay: 4 slots for goods. No staff of its own: dockers and porters carry the goods. May stand one row on piles over the water."
+
+msgid "building.docker_hut.name"
+msgstr "Dockers' hut"
+
+msgid "building.docker_hut.desc"
+msgstr "A small hut of 2 dockers. They load and unload ships at the port, moorings and bollards within 12 tiles by themselves and carry goods between the quay and the port warehouses. Two doors: landward and seaward."
+
+msgid "building.docker_house.name"
+msgstr "Dockers' house"
+
+msgid "building.docker_house.desc"
+msgstr "A large house of 4 dockers. They load and unload ships at the port, moorings and bollards within 12 tiles by themselves and carry goods between the quay and the port warehouses. Two doors; may stand 2 rows on piles over the water."
+
+msgid "ui.command_error.needs_stone_quay"
+msgstr "A bollard stands only on a stone quay."
+
+
+msgid "ui.port.yard_store"
+msgstr "The ship's goods go to: %s."
+
+msgid "ui.port.no_yard_store"
+msgstr "No port warehouse nearby: the goods go straight to and from the ordinary storages."
