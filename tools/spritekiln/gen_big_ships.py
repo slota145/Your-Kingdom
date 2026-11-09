@@ -35,7 +35,7 @@ TYPES = {
                          dict(z=-0.52, h=126, span=72, lateen=True, billow=True, y0=1.75)],
                     spritsail=True, beak=True, ports=True, wales=[0.3, 0.55, 0.8],
                     # galleon (owner's references 2026-11-09): tumblehome, a two-tier stern, a beakhead
-                    profile=dict(zm=0.25, wt=0.72, forefoot=0.3, rake=0.55, fc=(0.36, 0.7, 0.9), qd=(-0.3, 0.85, 1.05),
+                    profile=dict(zm=0.25, wt=0.72, forefoot=0.42, bow_sweep=True, rake=0.55, fc=(0.36, 0.7, 0.9), qd=(-0.3, 0.85, 1.05),
                                  poop=(-0.62, 1.55, 1.8), tumble=True), ornate_stern=True),
 }
 
@@ -89,6 +89,8 @@ def build(kind, war=False, stage=None):
         return D + 0.1 * (z / Lh) ** 2
 
     F, Dc = pr["forefoot"] * Lh, D * 0.7
+    if pr.get("bow_sweep"):   # owner 2026-11-09 (galleon): one convex curve from the waterline up to the forecastle
+        Dc = D + pr["fc"][2]
     fz, fcf, fcb = pr["fc"]
     fz *= Lh
     qz, qdf, qde = pr["qd"]
@@ -112,6 +114,9 @@ def build(kind, war=False, stage=None):
     decks += [("fore", fz + 0.1, Lh - 0.35, D + fcf - 0.28, D + fcb)]
     rake = pr["rake"]
     profile = [(-Lh + rake, Y0), (Lh - F, Y0)] + bow_curve[1:] + top
+    # no two equal points in a row (a zero-length edge breaks the polygon, ART_SPEC 10.20)
+    profile = [p_ for i, p_ in enumerate(profile) if i == 0 or (round(p_[0], 3), round(p_[1], 3)) !=
+               (round(profile[i - 1][0], 3), round(profile[i - 1][1], 3))]
 
     def side_extrude(poly, depth, c=(0, 0, 0)):
         return {"extrude": {"c": r3(list(c)), "rot": [0, -1.5708, 0], "depth": r3(depth),
@@ -220,8 +225,8 @@ def build(kind, war=False, stage=None):
     part("rudder", "castle", [{"box": {"c": r3([0, H / 2, transom_z(H / 2) - 0.1]), "half": r3([0.06, H / 2, 0.18]),
                                        "rot": r3([-math.atan2(rake, stern_top - Y0), 0, 0])}}])
     if t["beak"]:   # the galleon's beakhead, low in front of the stem
-        part("beak", "castle", [side_extrude([(Lh - 0.3, D * 0.5), (Lh + 1.0, D * 0.78), (Lh + 1.05, D * 0.9),
-                                              (Lh - 0.2, D + 0.25)], 0.35)])
+        part("beak", "castle", [side_extrude([(Lh - 0.75, D * 0.45), (Lh + 0.85, D * 0.8), (Lh + 0.9, D * 0.92),
+                                              (Lh - 0.35, D + 0.3)], 0.35)])
 
     def tumble(y):
         return min(W, side_x(y))
