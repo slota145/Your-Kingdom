@@ -43,15 +43,15 @@ parts:
     material: bark
     prims:
     - cylinder:
-        a: [-0.7, 0.3, 0]
-        b: [0.62, 0.3, 0]
+        a: [0.7, 0.3, 0]
+        b: [-0.62, 0.3, 0]
         r: 0.3
   end:
     material: cut
     prims:
     - cylinder:
-        a: [0.6, 0.3, 0]
-        b: [0.68, 0.3, 0]
+        a: [-0.6, 0.3, 0]
+        b: [-0.68, 0.3, 0]
         r: 0.29
     paint:
     - material: ring

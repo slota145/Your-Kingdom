@@ -20,8 +20,8 @@ ramps:
   gold: ['#1c1006', '#4d2f0e', '#8a5a16', '#c48c22', '#e8c04e', '#fff0a0']
 camera:
   pitch: 35
-  scale: 0.058
-  center: [0, 0.35, 0]
+  scale: 0.048
+  center: [0.1, 0.35, 0]
 shadow: null
 brief: {summary: 'Your Kingdom goods icon: sword, 32x32, one 3/4 view, bold silhouette for the UI'}
 materials:
@@ -48,11 +48,11 @@ parts:
         depth: 0.06
         profile:
           polygon:
-          - [-0.35, -0.07]
-          - [0.75, -0.06]
-          - [0.88, 0]
-          - [0.75, 0.06]
-          - [-0.35, 0.07]
+          - [-0.35, -0.1]
+          - [0.75, -0.08]
+          - [0.9, 0]
+          - [0.75, 0.08]
+          - [-0.35, 0.1]
   guard:
     material: gold
     prims:

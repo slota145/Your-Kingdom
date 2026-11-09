@@ -75,8 +75,8 @@ def ell(c, r, rot=None):
 
 ICONS = {
     "wood": {  # a log with a cut end showing the rings
-        "log": {"material": "bark", "prims": [cyl([-0.7, 0.3, 0], [0.62, 0.3, 0], 0.3)]},
-        "end": {"material": "cut", "prims": [cyl([0.6, 0.3, 0], [0.68, 0.3, 0], 0.29)],
+        "log": {"material": "bark", "prims": [cyl([0.7, 0.3, 0], [-0.62, 0.3, 0], 0.3)]},
+        "end": {"material": "cut", "prims": [cyl([-0.6, 0.3, 0], [-0.68, 0.3, 0], 0.29)],   # faces the camera
                 "paint": [{"material": "ring", "rings": {"axis": "x", "period": 0.11, "width": 0.04}}]},
     },
     "planks": {  # three boards, the top one turned a little
@@ -88,7 +88,7 @@ ICONS = {
     "stone": {  # a dressed block and a smaller rough stone
         "block": {"material": "stone", "prims": [box([0.05, 0.3, 0], [0.48, 0.3, 0.4], rnd=0.05)],
                   "paint": [{"material": "ring", "spots": {"scale": 0.12, "density": 0.15, "seed": 4}}]},
-        "chip": {"material": "stone", "prims": [box([-0.45, 0.14, 0.42], [0.18, 0.14, 0.16], rot=[0.2, 0.5, 0.1], rnd=0.04)]},
+        "chip": {"material": "stone", "prims": [box([-0.62, 0.13, 0.55], [0.16, 0.13, 0.15], rot=[0.15, 0.6, 0.1], rnd=0.04)]},
     },
     "bread": {  # a round loaf with three scores
         "loaf": {"material": "crust", "prims": [ell([0, 0.32, 0], [0.62, 0.36, 0.5])],
@@ -135,7 +135,7 @@ ICONS = {
     },
     "sword": {  # a sword lying diagonally
         "blade": {"material": "steel", "prims": [{"extrude": {"c": [0.1, 0.06, 0], "rot": [1.5708, 0, 0], "depth": 0.06,
-                                                              "profile": {"polygon": [[-0.35, -0.07], [0.75, -0.06], [0.88, 0], [0.75, 0.06], [-0.35, 0.07]]}}}]},
+                                                              "profile": {"polygon": [[-0.35, -0.1], [0.75, -0.08], [0.9, 0], [0.75, 0.08], [-0.35, 0.1]]}}}]},
         "guard": {"material": "gold", "prims": [box([-0.27, 0.07, 0], [0.04, 0.05, 0.22])]},
         "grip": {"material": "grip", "prims": [cyl([-0.3, 0.07, 0], [-0.58, 0.07, 0], 0.045)]},
         "pommel": {"material": "gold", "prims": [{"sphere": {"c": [-0.62, 0.07, 0], "r": 0.07}}]},
@@ -158,7 +158,8 @@ def spec(good):
         "directions": ["se"],
         "palette": ["../../palettes/kingdom.yaml", "../../palettes/town.yaml"],
         "ramps": {k: v for k, v in RAMPS.items()},
-        "camera": {"pitch": 35, "scale": 0.058, "center": [0, 0.35 if good not in ("grain",) else 0.55, 0]},
+        "camera": {"pitch": 35, "scale": 0.048 if good == "sword" else 0.058,
+                   "center": [0.1 if good == "sword" else 0, 0.35 if good not in ("grain",) else 0.55, 0]},
         "shadow": None,
         "brief": {"summary": f"Your Kingdom goods icon: {good}, 32x32, one 3/4 view, bold silhouette for the UI"},
         "materials": {k: v for k, v in MAT.items() if k in used},
