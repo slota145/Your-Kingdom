@@ -1163,11 +1163,11 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] AI zasiedla, handluje i atakuje.
 - [ ] Brak błędów blokujących w 3 partiach testowych.
 
-**Status: plan do akceptacji (2026-11-09).** Ankieta właściciela 2026-11-09: **generator światów**; **1–3 władców komputerowych do wyboru, 3 poziomy trudności**; warunki zwycięstwa: **podbój, liczba prowincji, liczba patrycjuszy, gra wolna** (wszystkie cztery); **3 części, ocena po każdej**. Start przed oceną M7, B1, W1, J1 i P2 (odłożona przez właściciela).
+**Status: plan do akceptacji (2026-11-09).** Ankieta właściciela 2026-11-09: **generator światów**; **1–3 władców komputerowych do wyboru, 3 poziomy trudności**; warunki zwycięstwa: **podbój, liczba prowincji, liczba patrycjuszy, gra wolna** (wszystkie cztery); **3 części, ocena po każdej**. **Scenariusze** (prośba i ankieta właściciela 2026-11-09): **Kolonizacja** (bazowy: prawie wszystkie prowincje puste, gracz i rywale zasiedlają kontynent), **Podzielony kontynent** (wszystkie prowincje zajęte przez władców i osady neutralne, gracz zaczyna od jednej i wszystko wywalcza albo wykupuje), **Kupieckie wyspy** (świat z wysp i wybrzeży, wygrywa, kto pierwszy zbierze wybraną sumę złota), **Najazd z morza** (przetrwać 60 minut coraz silniejszych fal najeźdźców z morza); Kolonizacja w części 1, pozostałe w części 3. Start przed oceną M7, B1, W1, J1 i P2 (odłożona przez właściciela).
 
 **Część 1: świat i nowa gra**
 - [ ] Generator światów z ziarna (ten sam numer daje ten sam świat): 16–30 prowincji na pergaminie, granice lądowe i wybrzeża, wyspy osiągalne tylko morzem; każda prowincja to wariant jednej z 4 map (Wybrzeże, Wyspy, Pojezierze, Kraina rzek) z bogactwem surowców i czasem rzadkim surowcem; kilka osad neutralnych; miejsca startu gracza i władców daleko od siebie.
-- [ ] Ekran „Nowa gra”: numer świata (albo losowy), liczba władców (1–3), poziom trudności, warunek zwycięstwa (z progiem dla liczby prowincji i patrycjuszy). „Królestwo” zostaje jako gotowy świat do wyboru.
+- [ ] Ekran „Nowa gra”: scenariusz (w części 1 Kolonizacja), numer świata (albo losowy), liczba władców (1–3), poziom trudności, warunek zwycięstwa (z progiem dla liczby prowincji i patrycjuszy). „Królestwo” zostaje jako gotowy świat do wyboru.
 - [ ] Władcy na mapie świata już są (herb, kolor, prowincja startowa z gotowym miasteczkiem), ale jeszcze nic nie robią.
 - [ ] Zwycięstwo i porażka: sprawdzane na bieżąco, okno z wynikiem; porażka, gdy gracz straci wszystkie prowincje. Zapis gry: ustawienia partii i władcy.
 
@@ -1179,7 +1179,10 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Część 3: władcy zbroją się i atakują**
 - [ ] Władca szkoli wojsko i buduje okręty wojenne, ocenia siłę sąsiadów i atakuje słabsze prowincje: innych władców, osady neutralne i gracza (oblężenie na żywo, gdy gracz ogląda prowincję, inaczej rozstrzygnięcie automatyczne); broni się przed graczem.
 - [ ] Poziomy trudności: tempo rozwoju, wielkość armii, jak często i jak śmiało atakują.
+- [ ] Scenariusze: **Podzielony kontynent** (miasta władców i osad na start „przewija” planista z części 2), **Kupieckie wyspy** (generator z samych wysp i wybrzeży, zwycięstwo za złoto), **Najazd z morza** (fale najeźdźców z morza co kilka minut, coraz silniejsze; zwycięstwo po 60 minutach).
 - [ ] 3 pełne partie testowe (automatyczny gracz przeciwko władcom) bez błędów blokujących, od startu do zwycięstwa lub porażki.
+
+**Ryzyko:** część 3 jest duża (wojna, trudności i 3 scenariusze); jeśli się rozrośnie, scenariusze trafią do osobnej części 4 (ankieta).
 
 **Do ustalenia w trakcie (ankiety):** szczegóły oblężenia miasta gracza przez władcę (część 3), herby i kolory władców, czy władcy mogą zawierać rozejmy (dyplomacja jest [PÓŹNIEJ]).
 
