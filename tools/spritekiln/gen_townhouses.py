@@ -34,9 +34,15 @@ class House:
     (the front gable faces +v), y up. orient 'z': front faces +z; 'mx': front faces -x."""
 
     def __init__(self, name, orient, uc, w, vb, vf, floors, plaster, roof, pitch=61.0,
-                 side_windows=None, side_frame=("-u",), door_u=None, chimney=0.25, gable="plain"):
+                 side_windows=None, side_frame=("-u",), door_u=None, chimney=0.25, gable="plain",
+                 origin=(0.0, 0.0), gate=False, front_frame=True, cuts=()):
         self.n = name
-        self.o = orient
+        # orient: 'z' (front +z), 'mx' (front -x) or an angle in degrees (-45: the chamfer, facing the camera)
+        self.yaw = math.radians({"z": 0.0, "mx": -90.0}.get(orient, orient) if isinstance(orient, str) else orient)
+        self.origin = origin
+        self.gate = gate                # a gateway arch instead of the door (a corner house's passage)
+        self.front_frame = front_frame  # timbering on the front's upper floors
+        self.cuts = list(cuts)          # cutters added to every part (the chamfered corner)
         self.uc, self.w, self.vb, self.vf = uc, w, vb, vf
         self.floors = floors            # heights: ground floor first
         self.plaster, self.roof = plaster, roof
@@ -50,21 +56,24 @@ class House:
 
     # -- mapping from the local frame to SpriteKiln's ------------------------------------
     def pt(self, u, y, v):
-        return r4([u, y, v] if self.o == "z" else [-v, y, u])
+        ca, sa = math.cos(self.yaw), math.sin(self.yaw)
+        return r4([self.origin[0] + u * ca + v * sa, y, self.origin[1] - u * sa + v * ca])
 
     def half(self, hu, hy, hv):
-        return r4([hu, hy, hv] if self.o == "z" else [hv, hy, hu])
+        return r4([hu, hy, hv])
 
     def rot_v(self, a):      # a turn in the u-y plane (front face, roof slabs)
-        return r4([0, 0, a] if self.o == "z" else [-a, 0, 0])
+        return [0, 0, a]
 
     def rot_u(self, a):      # a turn in the v-y plane (side walls)
-        return r4([-a, 0, 0] if self.o == "z" else [0, 0, -a])
+        return [-a, 0, 0]
 
     def box(self, c, h, rot=None, rnd=None):
         d = {"c": self.pt(*c), "half": self.half(*h)}
-        if rot is not None:
-            d["rot"] = rot
+        r = list(rot) if rot is not None else [0, 0, 0]
+        r[1] = self.yaw
+        if any(abs(x) > 1e-6 for x in r):
+            d["rot"] = r4(r)
         if rnd:
             d["round"] = rnd
         return {"box": d}
@@ -133,22 +142,37 @@ class House:
         y0, y1, v = levels[0]
         self.beam_front(v, (u0, y1 - T), (u1, y1 - T))
         du = self.door_u if self.door_u is not None else (u0 + 0.5 if w > 1.3 else uc)
-        dw, dh = 0.27, 1.38
-        self.add("door", self.box((du, y0 + dh / 2, v + 0.01), (dw, dh / 2, 0.03)), "door_wood")
-        self.add("door_line", self.box((du, y0 + dh / 2, v + 0.03), (0.018, dh / 2 - 0.05, 0.02)), "ink")
-        for s in (-1, 1):
-            self.beam_front(v, (du + s * (dw + T), y0), (du + s * (dw + T), y0 + dh + T))
-        self.beam_front(v, (du - dw - 2 * T, y0 + dh + T), (du + dw + 2 * T, y0 + dh + T))
-        self.add("step", self.box((du, 0.06, v + 0.22), (dw + 0.08, 0.06, 0.16)), "stone")
-        if w > 1.25:
-            ux = u1 - 0.42 if du < uc else u0 + 0.42
-            self.window_front(v, ux, y0 + 0.75, shutters=True)
+        if self.gate:      # a round-arched gateway with a stone frame (the passage under a corner house)
+            gw, gh = min(0.5, w / 2 - 0.12), 1.75
+            arch = [[gw * math.cos(math.radians(a_)), gh - gw + gw * math.sin(math.radians(a_))] for a_ in range(0, 181, 30)]
+            frame = [[x * (gw + 0.12) / gw, (y_ - (gh - gw)) * (gw + 0.12) / gw + gh - gw] for x, y_ in arch]
+            for poly, mat, dz in ((frame + [[-gw - 0.12, 0], [gw + 0.12, 0]], "sill_mat", 0.02),
+                                  (arch + [[-gw, 0], [gw, 0]], "gate_dark", 0.05)):
+                g = {"c": self.pt(uc, y0 - 0.05, v + dz), "depth": 0.1, "profile": {"polygon": r4p(poly)}}
+                if abs(self.yaw) > 1e-6:
+                    g["rot"] = r4([0, self.yaw, 0])
+                self.add("gate" if mat == "gate_dark" else "gate_frame", {"extrude": g}, mat, priority=2)
+        else:
+            dw, dh = 0.27, 1.38
+            self.add("door", self.box((du, y0 + dh / 2, v + 0.01), (dw, dh / 2, 0.03)), "door_wood")
+            self.add("door_line", self.box((du, y0 + dh / 2, v + 0.03), (0.018, dh / 2 - 0.05, 0.02)), "ink")
+            for s in (-1, 1):
+                self.beam_front(v, (du + s * (dw + T), y0), (du + s * (dw + T), y0 + dh + T))
+            self.beam_front(v, (du - dw - 2 * T, y0 + dh + T), (du + dw + 2 * T, y0 + dh + T))
+            self.add("step", self.box((du, 0.06, v + 0.22), (dw + 0.08, 0.06, 0.16)), "stone")
+            if w > 1.25:
+                ux = u1 - 0.42 if du < uc else u0 + 0.42
+                self.window_front(v, ux, y0 + 0.75, shutters=True)
         # front: upper floors (posts, rails, windows, braces)
         for (ya, yb, v) in levels[1:]:
             nwin = 3 if w > 2.15 else (2 if w > 1.42 else 1)
             ww, wh = 0.42, 0.68
             ys = ya + 0.55
             cs = [u0 + w * (i + 0.5) / nwin for i in range(nwin)]
+            if not self.front_frame:     # a plastered front: windows with shutters only
+                for c in cs:
+                    self.window_front(v, c, ys, ww, wh, shutters=w > 1.1)
+                continue
             self.beam_front(v, (u0, ya + T), (u1, ya + T))
             self.beam_front(v, (u0, yb - T), (u1, yb - T))
             self.beam_front(v, (u0, ys - T), (u1, ys - T))
@@ -169,9 +193,11 @@ class House:
             left, right = cs[-1] + ww / 2 + 2 * T, u1 - 2 * T
             if right - left > 0.12:
                 self.beam_front(v, (right, ya + T), (left, yb - T))
+        if self.gable == "tower":       # an oriel turret on the corner: no gable or roof of its own
+            return self.oriel(uc, vf, E)
         # gables: the back one plain; the front one timbered, or a masonry show gable above the roof
         R = (w / 2) * math.tan(self.pitch)
-        rotg = None if self.o == "z" else [0, -1.5708, 0]
+        rotg = r4([0, self.yaw, 0]) if abs(self.yaw) > 1e-6 else None
 
         def gable_prim(vv, poly, depth):
             g = {"c": self.pt(uc, E, vv), "depth": depth, "profile": {"polygon": r4p(poly)}}
@@ -292,10 +318,37 @@ class House:
             yb_ = E + R * 0.4
             self.add("chimney", self.box((cu, (ytop + yb_) / 2, cv), (0.13, (ytop - yb_) / 2, 0.13)), "brick")
             self.add("chimney", self.box((cu, ytop, cv), (0.16, 0.04, 0.16)), "brick")
+        return self.finish()
+
+    def finish(self):
         for p in self.parts.values():
             if p["material"] is None:
                 p.pop("material")
+            if self.cuts:
+                p.setdefault("cut", []).extend(self.cuts)
         return self.parts
+
+    def oriel(self, uc, vf, E):
+        """A round turret from the first floor up, on a corbel, with a pointed roof and a finial."""
+        G = self.floors[0]
+        r, cv = 0.66, vf + 0.3
+        y0, y1 = PL + G - 0.05, E + 0.3
+        self.add("turret", {"cylinder": {"a": self.pt(uc, y0, cv), "b": self.pt(uc, y1, cv), "r": r}}, self.plaster,
+                 priority=2)
+        tp = self.parts[f"{self.n}_turret"]
+        tp["paint"] = [{"material": "sill_mat", "stripes": {"axis": "y", "at": r4([y0 + 0.05, E - self.floors[-1] + 0.02, y1 - 0.05]),
+                                                            "width": 0.08}},
+                       {"material": "glass", "prims": [self.box((uc + du, yy, cv + r), (0.13, 0.3, 0.3))
+                                                       for yy in (PL + G + 0.95, E - self.floors[-1] + 0.85)
+                                                       for du in (-0.36, 0.0, 0.36)]}]
+        self.add("corbel", {"cone": {"a": self.pt(uc, y0 - 0.75, cv - 0.1), "b": self.pt(uc, y0, cv), "r": [0.08, r]}},
+                 "sill_mat")
+        self.add("turret_roof", {"cone": {"a": self.pt(uc, y1, cv), "b": self.pt(uc, y1 + 1.9, cv), "r": [r + 0.12, 0.02]}},
+                 self.roof)
+        self.parts[f"{self.n}_turret_roof"]["paint"] = [
+            {"material": self.roof + "_dark", "stripes": {"axis": "y", "period": 0.2, "width": 0.05, "offset": y1}}]
+        self.add("turret_roof", {"sphere": {"c": self.pt(uc, y1 + 1.98, cv), "r": 0.08}}, "sill_mat")
+        return self.finish()
 
 
 def r4p(pts):
@@ -317,6 +370,7 @@ def materials():
         "cobble": {"ramp": "cobble", "bands": [3, 4], "outline": False},
         "cobble_dark": {"ramp": "cobble", "bands": [2, 3], "outline": False},
         "ink": {"ramp": "timber", "bands": [0, 1], "outline": False},
+        "gate_dark": {"ramp": "timber", "bands": [0, 1], "line": False},
     }
     for p in PLASTERS:
         m[p] = {"ramp": p}
@@ -360,19 +414,57 @@ FRAGMENTS = {
     "end_b": lambda: row([2.15, 2.15], [1.9, 2.02], [[2.0, 1.8], [2.0, 1.85, 1.6]],
                          ["plaster_cream", "plaster_blue"], ["slate", "tile"], end="b",
                          extra=[{"pitch": 55}, {"gable": "curved", "pitch": 58}]),
-    "corner_a": lambda: [
-        # on the front street, joined to the row at side a (+x)
-        House("h0", "z", (0.02 + H - GAP) / 2, (H - GAP) - 0.02, -H + 0.16, 1.98, [2.0, 1.8], "plaster_cream",
-              "tile", side_frame=("-u",), gable="stepped", pitch=56),
-        # the corner house: gable to the side street (-x), eaves side on the front street (+z)
-        House("h1", "mx", (-0.05 + H - 0.04) / 2 - 0.05, (H - 0.04) + 0.05 - 0.1, -0.02, H - GAP - 0.2,
-              [2.0, 1.75, 1.6], "plaster_ochre", "tile", side_windows=("+u",), side_frame=(), chimney=0.2,
-              gable="curved", pitch=58),
-        # behind it, also gable to the side street; the row behind the corner joins at the back (-z)
-        House("h2", "mx", (-H + 0.16 - 0.05) / 2, (H - 0.16) - 0.05, -0.02, H - GAP - 0.14, [2.0, 1.7],
-              "plaster_cream", "slate", side_frame=(), chimney=0.35, pitch=62),
-    ],
+    # more row variants (owner 2026-11-09): plastered fronts, more storeys, other gables
+    "middle_2": lambda: row([2.4, 1.9], [1.95, 2.03], [[2.0, 1.8, 1.65], [2.0, 1.8]],
+                            ["plaster_ochre", "plaster_cream"], ["tile", "slate"],
+                            extra=[{"gable": "curved", "pitch": 56, "front_frame": False}, {"pitch": 54}]),
+    "middle_3": lambda: row([1.4, 1.65, 1.45], [2.0, 1.86, 1.96], [[2.0, 1.75, 1.6], [1.9, 1.8], [2.0, 1.95]],
+                            ["plaster_pink", "plaster_cream", "plaster_blue"], ["tile", "tile", "slate"],
+                            extra=[{"gable": "stepped", "pitch": 62}, {"pitch": 52}, {"gable": "curved", "pitch": 60,
+                                                                                     "front_frame": False}]),
+    "end_b_2": lambda: row([2.0, 2.3], [2.02, 1.9], [[2.0, 1.8, 1.6], [2.0, 1.75]],
+                           ["plaster_cream", "plaster_ochre"], ["tile", "slate"], end="b",
+                           extra=[{"pitch": 57}, {"gable": "stepped", "pitch": 60, "front_frame": False}]),
+    # chamfered corners: the corner house's corner cut at 45 degrees, a narrow bay facing the camera on the cut
+    "corner_a": lambda: corner("gate"),
+    "corner_a_2": lambda: corner("tower"),
+    "corner_a_3": lambda: corner("shop"),
 }
+
+CORNER_LOOKS = {
+    "gate": dict(h0=("plaster_cream", "tile", "stepped"), h1=("plaster_ochre", "tile"), h2=("plaster_cream", "slate"),
+                 bay=dict(gable="curved", gate=True, front_frame=False)),
+    "tower": dict(h0=("plaster_cream", "slate", "plain"), h1=("plaster_pink", "tile"), h2=("plaster_blue", "tile"),
+                  bay=dict(gable="tower", front_frame=False)),
+    "shop": dict(h0=("plaster_pink", "tile", "curved"), h1=("plaster_cream", "slate"), h2=("plaster_ochre", "tile"),
+                 bay=dict(gable="stepped", front_frame=True)),
+}
+
+
+def corner(look):
+    """Corner fragment (corner_a: joined at side a (+x) and at the back (-z)) with a chamfered corner."""
+    lk = CORNER_LOOKS[look]
+    h1_floors = [2.0, 1.75, 1.6]
+    h1_vf = H - GAP - 0.2
+    h1_uc, h1_w = (-0.05 + H - 0.04) / 2 - 0.05, (H - 0.04) + 0.05 - 0.1
+    cx, cz = -(h1_vf + 2 * JETTY), h1_uc + h1_w / 2         # the corner's outer point (x, z)
+    leg = 0.95
+    n = [-0.7071, 0, 0.7071]
+    at = ((-cx - leg) + cz) * 0.7071
+    mid = (cx + leg / 2, cz - leg / 2)
+    chamfer = [{"plane": {"n": n, "at": round(at, 4)}}]
+    plaster0, roof0, gable0 = lk["h0"]
+    bay_roof = lk["h1"][1] if look != "tower" else "slate"
+    return [
+        House("h0", "z", (0.02 + H - GAP) / 2, (H - GAP) - 0.02, -H + 0.16, 1.98, [2.0, 1.8], plaster0, roof0,
+              side_frame=("-u",), gable=gable0, pitch=56),
+        House("h1", "mx", h1_uc, h1_w, -0.02, h1_vf, h1_floors, lk["h1"][0], lk["h1"][1], side_windows=("+u",),
+              side_frame=(), chimney=0.2, gable="plain", pitch=58, cuts=chamfer),
+        House("hc", -45.0, 0.0, leg * 1.4142, -1.0, 0.0, h1_floors, lk["h1"][0], bay_roof, side_frame=(),
+              chimney=None, pitch=60, origin=mid, **lk["bay"]),
+        House("h2", "mx", (-H + 0.16 - 0.05) / 2, (H - 0.16) - 0.05, -0.02, H - GAP - 0.14, [2.0, 1.7],
+              lk["h2"][0], lk["h2"][1], side_frame=(), chimney=0.35, pitch=62),
+    ]
 
 
 def spec(frag):
