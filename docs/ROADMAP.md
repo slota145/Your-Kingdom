@@ -1120,6 +1120,30 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ---
 
+## P2 — Port 2: słupki, dokerzy, wojsko na statki, ikonki i podatki
+
+**Status: plan do akceptacji (2026-11-09).** Prośba właściciela 2026-11-09, przed oceną M7, B1, W1 i J1 (ocena i pomiar odłożone). Ankieta: **3 części, ocena po każdej**; słupek **tylko na kamiennym nabrzeżu**; **port zostawia swoich 2 dokerów**, a magazyny portowe tracą tragarzy; **wspólny podatek, 5 poziomów**. Dopisek właściciela: budynki portowe stawiane **bardziej na wodzie** i z **dwoma wejściami** (od lądu i od nabrzeża), żeby budowa przy nabrzeżach nie sprawiała kłopotów (także automatycznemu graczowi).
+
+**Część 1: logistyka portu**
+- [ ] Słupek do cumowania (1 kafel na kamiennym nabrzeżu, przy głębokiej wodzie): statek cumuje przy nim, żeby handlować, rozładować i załadować towar. Słupek nie ma magazynu: towar idzie do najbliższego magazynu portowego i stamtąd wraca.
+- [ ] 2 mniejsze magazyny portowe (obok obecnego 3×3): mały i średni. Magazyny portowe nie mają własnej obsługi (bez tragarzy).
+- [ ] 2 domy dokerów (mały i duży, różna liczba dokerów). Dokerzy sami podejmują prace portowe (rozładunek, załadunek, noszenie między statkiem, słupkiem, portem i magazynem) i chodzą po nabrzeżach. Port zostawia swoich 2 dokerów.
+- [ ] Budynki portowe bardziej na wodzie i z 2 wejściami (od lądu i od nabrzeża); automatyczny gracz stawia je bez kłopotów.
+- [ ] Szczegółowa grafika z bogatą bryłą: słupek, 2 magazyny portowe, 2 domy dokerów. Zapis: nowa wersja z migracją (tragarze magazynów znikają).
+
+**Część 2: statki i wojsko**
+- [ ] Statek bez miejsca sam cumuje do wolnego słupka lub miejsca cumowania.
+- [ ] Załadunek wojska: zaznaczone jednostki + prawy przycisk na okręt → okręt cumuje, żołnierze idą na nabrzeże i wchodzą na pokład (w granicach miejsca dla wojska); rozładunek z panelu statku.
+- [ ] Panel statku: siatka miejsc ładowni, puste albo z ikoną towaru (lub oddziału) i liczbą.
+
+**Część 3: miasto i wygląd**
+- [ ] Chata budowniczych: więcej budowniczych w mieście (pomysł z IDEAS).
+- [ ] Panel budynku produkcyjnego: ikonki towarów, które wytwarza i których potrzebuje.
+- [ ] Panel domu: potrzeby jako ikonki; suwak podatku (wspólny dla miasta, 5 poziomów od „brak” do „bardzo wysoki”, ten sam w ratuszu).
+- [ ] Nowa grafika magazynów: zwykły na drewnianej podłodze, portowe na kamiennej.
+
+**DoD:** każda część ma testy symulacji, `tools/run_tests.sh --all` przechodzi, zrzuty w grze, ocena właściciela po każdej części.
+
 ## M8 — Przeciwnicy i sandbox
 
 **Zakres:**
