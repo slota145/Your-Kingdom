@@ -1163,7 +1163,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] AI zasiedla, handluje i atakuje.
 - [ ] Brak błędów blokujących w 3 partiach testowych.
 
-**Status: plan do akceptacji (2026-11-09).** Ankieta właściciela 2026-11-09: **generator światów**; **1–3 władców komputerowych do wyboru, 3 poziomy trudności**; warunki zwycięstwa: **podbój, liczba prowincji, liczba patrycjuszy, gra wolna** (wszystkie cztery); **3 części, ocena po każdej**. **Scenariusze** (prośba i ankieta właściciela 2026-11-09): **Kolonizacja** (bazowy: prawie wszystkie prowincje puste, gracz i rywale zasiedlają kontynent), **Podzielony kontynent** (wszystkie prowincje zajęte przez władców i osady neutralne, gracz zaczyna od jednej i wszystko wywalcza albo wykupuje), **Kupieckie wyspy** (świat z wysp i wybrzeży, wygrywa, kto pierwszy zbierze wybraną sumę złota), **Najazd z morza** (przetrwać 60 minut coraz silniejszych fal najeźdźców z morza); Kolonizacja w części 1, pozostałe w części 3. Start przed oceną M7, B1, W1, J1 i P2 (odłożona przez właściciela).
+**Status: plan do akceptacji (2026-11-09).** Ankieta właściciela 2026-11-09: **generator światów**; **1–3 władców komputerowych do wyboru, 3 poziomy trudności**; warunki zwycięstwa: **podbój, liczba prowincji, liczba patrycjuszy, gra wolna** (wszystkie cztery); **4 części, ocena po każdej** (zmiana 2026-11-09 po dodaniu ruchu wojsk). **Scenariusze** (prośba i ankieta właściciela 2026-11-09): **Kolonizacja** (bazowy: prawie wszystkie prowincje puste, gracz i rywale zasiedlają kontynent), **Podzielony kontynent** (wszystkie prowincje zajęte przez władców i osady neutralne, gracz zaczyna od jednej i wszystko wywalcza albo wykupuje), **Kupieckie wyspy** (świat z wysp i wybrzeży, wygrywa, kto pierwszy zbierze wybraną sumę złota), **Najazd z morza** (przetrwać 60 minut coraz silniejszych fal najeźdźców z morza); Kolonizacja w części 1, pozostałe w części 4. **Ruch wojsk po mapie świata** (prośba i ankieta właściciela 2026-11-09): armie i floty idą prawym przyciskiem w dowolne miejsce mapy świata i mogą przechwytywać wrogie armie i floty w drodze; bitwa lądowa na żywo na pustej mapie pola albo automatycznie (wybór gracza, jak przy oblężeniu w M7); bitwa morska na razie automatyczna z animacją i raportem (bitwa morska na żywo: IDEAS, osobny etap po M8). Start przed oceną M7, B1, W1, J1 i P2 (odłożona przez właściciela).
 
 **Część 1: świat i nowa gra**
 - [ ] Generator światów z ziarna (ten sam numer daje ten sam świat): 16–30 prowincji na pergaminie, granice lądowe i wybrzeża, wyspy osiągalne tylko morzem; każda prowincja to wariant jednej z 4 map (Wybrzeże, Wyspy, Pojezierze, Kraina rzek) z bogactwem surowców i czasem rzadkim surowcem; kilka osad neutralnych; miejsca startu gracza i władców daleko od siebie.
@@ -1171,18 +1171,24 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] Władcy na mapie świata już są (herb, kolor, prowincja startowa z gotowym miasteczkiem), ale jeszcze nic nie robią.
 - [ ] Zwycięstwo i porażka: sprawdzane na bieżąco, okno z wynikiem; porażka, gdy gracz straci wszystkie prowincje. Zapis gry: ustawienia partii i władcy.
 
-**Część 2: władcy budują, zasiedlają i handlują**
+**Część 2: armie i floty na mapie świata**
+- [ ] Prawy przycisk w dowolne miejsce mapy świata: armia idzie po lądzie, flota (okręty wojenne z wojskiem lub bez) płynie po morzu; widać, dokąd zmierzają; mogą się zatrzymać w polu albo na morzu.
+- [ ] Przechwytywanie: wrogie armie i floty, które się spotkają w drodze albo w jednym miejscu, walczą.
+- [ ] Bitwa lądowa w polu: wybór gracza, na żywo na pustej mapie pola (teren jak tam, gdzie się spotkały, bez miasta; wojsko z M7) albo automatycznie z szansami. Bitwa morska: automatyczna (`BattleResolver`, rodzaje okrętów i wojsko na pokładzie), animacja na mapie świata i raport.
+- [ ] Wojsko i okręty z prowincji trafiają na mapę świata (także okręt z wojskiem na pokładzie z P2); zapis gry.
+
+**Część 3: władcy budują, zasiedlają i handlują**
 - [ ] Prowincje władców żyją w trybie uproszczonym; „planista” stawia im budynki według planu rozwoju (jak automatyczny gracz z testów), od chat i drwali do warsztatów, portu i koszar.
 - [ ] Władca wysyła wyprawy osadników do pustych prowincji (lądem i morzem), wykupuje osady neutralne, prowadzi szlaki handlowe między swoimi prowincjami.
 - [ ] Wejście do prowincji władcy pokazuje jego miasto (oglądanie, bez budowania).
 
-**Część 3: władcy zbroją się i atakują**
-- [ ] Władca szkoli wojsko i buduje okręty wojenne, ocenia siłę sąsiadów i atakuje słabsze prowincje: innych władców, osady neutralne i gracza (oblężenie na żywo, gdy gracz ogląda prowincję, inaczej rozstrzygnięcie automatyczne); broni się przed graczem.
+**Część 4: władcy zbroją się i atakują, scenariusze**
+- [ ] Władca szkoli wojsko i buduje okręty wojenne, prowadzi armie i floty po mapie świata (przechwytuje i daje się przechwycić), ocenia siłę sąsiadów i atakuje słabsze prowincje: innych władców, osady neutralne i gracza (oblężenie na żywo, gdy gracz ogląda prowincję, inaczej rozstrzygnięcie automatyczne); broni się przed graczem.
 - [ ] Poziomy trudności: tempo rozwoju, wielkość armii, jak często i jak śmiało atakują.
-- [ ] Scenariusze: **Podzielony kontynent** (miasta władców i osad na start „przewija” planista z części 2), **Kupieckie wyspy** (generator z samych wysp i wybrzeży, zwycięstwo za złoto), **Najazd z morza** (fale najeźdźców z morza co kilka minut, coraz silniejsze; zwycięstwo po 60 minutach).
+- [ ] Scenariusze: **Podzielony kontynent** (miasta władców i osad na start „przewija” planista z części 3), **Kupieckie wyspy** (generator z samych wysp i wybrzeży, zwycięstwo za złoto), **Najazd z morza** (fale najeźdźców z morza co kilka minut, coraz silniejsze; zwycięstwo po 60 minutach).
 - [ ] 3 pełne partie testowe (automatyczny gracz przeciwko władcom) bez błędów blokujących, od startu do zwycięstwa lub porażki.
 
-**Ryzyko:** część 3 jest duża (wojna, trudności i 3 scenariusze); jeśli się rozrośnie, scenariusze trafią do osobnej części 4 (ankieta).
+**Ryzyko:** część 4 jest duża (wojna władców, trudności i 3 scenariusze); jeśli się rozrośnie, scenariusze trafią do osobnej części 5 (ankieta).
 
 **Do ustalenia w trakcie (ankiety):** szczegóły oblężenia miasta gracza przez władcę (część 3), herby i kolory władców, czy władcy mogą zawierać rozejmy (dyplomacja jest [PÓŹNIEJ]).
 
