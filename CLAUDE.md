@@ -12,6 +12,8 @@ Strategia 2D w izometrii (Godot 4.7, GDScript), inspirowana Twierdzą i Anno. Gr
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | skala, animacje, nazwy plików, przepływ pracy z PixelLab |
 | [docs/IDEAS.md](docs/IDEAS.md) | poczekalnia niezatwierdzonych pomysłów |
 
+**Próba grafik (2026-11-09): SpriteKiln** (darmowy, działa w chmurze na procesorze) jako zapas na czas bez kredytów PixelLab: drwal, halabardnik i chata drwala w `tools/spritekiln/`, wnioski i pułapki w ART_SPEC §10.20. Właściciel ocenił „bardzo mi się podoba”, następne testy: domy mieszczan z narożnikiem (czy się łączą) i okręt. To test, gra nadal używa starych grafik.
+
 **Teraz (2026-11-09): M8 „Przeciwnicy i sandbox” (ROADMAP, M8; plan zaakceptowany 2026-11-09: 4 części, ocena po każdej, 4 scenariusze, ruch wojsk po mapie świata). Część 1 (generator światów, ekran „Nowa gra”, władcy z miasteczkami, zwycięstwo i porażka, zapis v27; poprawki: wyspy, 9–60 prowincji, wybór startu na podglądzie, przewijanie i przybliżanie mapy) zaakceptowana i scalona do `main` 2026-11-09; następna część 2 (armie i floty na mapie świata); zrzuty `src/prototype/m6/world_shot.tscn -- --out=<plik> --seed=<n> [--provinces=16..30] [--rulers=1..3] [--result=won|lost]`, menu `menu_shot.tscn -- --out=<plik> --open=new_game_panel`.**
 
 **Poprzednio (2026-11-09): P2 „Port 2” (ROADMAP, P2; plan zaakceptowany 2026-11-09, 3 części, ocena po każdej; ocena M7, B1, W1 i J1 odłożona przez właściciela). Część 1 (słupek, magazyny portowe bez obsługi w 3 rozmiarach, chata i dom portowców, do 2 rzędów na palach, zapis v24) zaakceptowana i scalona do `main` 2026-11-09. Część 2 (wojsko na okręty prawym przyciskiem, samo cumowanie do wolnego miejsca, „Wysadź wojsko”, ładownia jako siatka miejsc, zapis v25) zaakceptowana i scalona do `main` 2026-11-09. Część 3 (chata budowniczych, ikonki w panelach warsztatów i domów, podatek 5 poziomów z suwakiem, podłogi magazynów, zapis v26) zaakceptowana i scalona do `main` 2026-11-09; etap P2 zamknięty, następny krok: ocena M7, B1, W1, J1 i P2 na laptopie albo M8; zrzuty `town_shot.tscn -- --minutes=40 --select=bakery|hut|stockpile`; zrzut `--p2 --p2troops=<s> [--select=warship|caravel]`; zrzut `game_shot.tscn -- --map=coast --tile=30,98 --focus=33,106 --zoom=1 --p2`, grafika `"$GODOT" --headless --path . -s res://tools/generate_art.gd -- --only=<id>`. Następnie część 2 (statki i wojsko), część 3 (miasto i wygląd).**
@@ -54,6 +56,8 @@ tools/run_tests.sh --all                                            # oba poziom
 "$GODOT" --headless --path . -s res://tools/generate_characters.gd     # postacie rysowane kodem (assets/characters)
 "$GODOT" --headless --path . -s res://tools/generate_goods.gd          # towary, skały i drzewa rysowane kodem (assets/goods, assets/nature)
 "$GODOT" --headless --path . -s res://tools/build_big_city.gd         # duże miasto M4b-3 → tests/fixtures/saves/big_city.json
+pip install spritekiln                                               # SpriteKiln (bez [fast]: numba wiesza instalację w chmurze)
+cd tools/spritekiln/art/specs/<characters|props>/<id> && spritekiln pose <id>.yaml   # podgląd modelu 3D → pixel art (ART_SPEC §10.20)
 ```
 
 Raporty testów trafiają do `reports/` (ignorowane przez git). Nowy `class_name` wymaga importu, żeby trafił do cache klas. `run_tests.sh` robi to automatycznie. Przy ręcznym uruchamianiu najpierw zrób import.
