@@ -101,3 +101,35 @@ func test_another_order_takes_a_soldier_off_his_way_aboard() -> void:
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return ship.troops.size() == 3, 300)).is_true()
 	assert_bool(ship.troops.has(squad[0].id)).is_false()
 	assert_int(SaveMigrations.CURRENT_VERSION).is_greater_equal(25)
+
+
+## Soldiers take troop slots of 10, each kind its own (owner's survey 2026-11-09): a war cog
+## (30) has 3 slots, so 4 kinds of one soldier each fit only 3; 12 spearmen take 2 slots.
+func test_soldiers_take_troop_slots_of_ten_by_kind() -> void:
+	var s := _scene()
+	var sim: Simulation = s["sim"]
+	var province := sim.province
+	var ship: ShipUnit = s["ship"]
+	assert_int(TroopTransport.slot_count(ship)).is_equal(3)
+	assert_int(TroopTransport.slot_count(ShipUnit.new(0, sim.data.get_ship(&"galleon_war"), Vector2.ZERO, sim.data))).is_equal(9)
+	var mixed: Array[Agent] = []
+	for kind: StringName in [&"archer", &"halberdier", &"crossbowman", &"swordsman"]:
+		var agent := province.spawn_agent(kind, Vector2i(20, 25))
+		agent.combat = CombatState.new(sim.data.get_unit(kind).combat.hp)
+		mixed.append(agent)
+	assert_str(String(sim.execute(BoardShipCommand.new(_ids(mixed), ship.id)))).is_empty()
+	assert_int(ship.boarding.size()).is_equal(3)
+	assert_int(TroopTransport.slots_used(TroopTransport.kinds(province, ship))).is_equal(3)
+	# Full: no slot for a fourth kind, but an archer fits in the archers' slot.
+	assert_bool(TroopTransport.takes(province, ship, &"swordsman")).is_false()
+	assert_bool(TroopTransport.takes(province, ship, &"archer")).is_true()
+	var other := ShipUnit.new(province.ids.take(), sim.data.get_ship(&"warship"), IsoMath.tile_center(Vector2i(30, 42)), sim.data)
+	province.ships[other.id] = other
+	var spears: Array[Agent] = []
+	for i: int in 12:
+		var agent := province.spawn_agent(&"spearman", Vector2i(5 + i % 6, 22 + i / 6))
+		agent.combat = CombatState.new(sim.data.get_unit(&"spearman").combat.hp)
+		spears.append(agent)
+	sim.execute(BoardShipCommand.new(_ids(spears), other.id))
+	assert_int(other.boarding.size()).is_equal(12)
+	assert_int(TroopTransport.slots_used(TroopTransport.kinds(province, other))).is_equal(2)

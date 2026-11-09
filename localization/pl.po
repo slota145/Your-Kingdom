@@ -3592,3 +3592,6 @@ msgstr "Ten okręt właśnie wysadza wojsko."
 
 msgid "ui.command_error.no_troops_aboard"
 msgstr "Na pokładzie nie ma wojska."
+
+msgid "ui.ship.troop_slot_empty"
+msgstr "Wolne miejsce na 10 żołnierzy"

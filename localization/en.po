@@ -3556,3 +3556,6 @@ msgstr "This warship is landing its troops."
 
 msgid "ui.command_error.no_troops_aboard"
 msgstr "There are no troops aboard."
+
+msgid "ui.ship.troop_slot_empty"
+msgstr "Free slot for 10 soldiers"

@@ -27,9 +27,10 @@ func validate(sim: Simulation) -> StringName:
 	var ship := sim.province.ships.get(ship_id) as ShipUnit
 	if not TroopTransport.carries_troops(sim.province, ship):
 		return &"not_a_warship"
-	if _soldiers(sim).is_empty():
+	var soldiers := _soldiers(sim)
+	if soldiers.is_empty():
 		return &"no_soldiers"
-	if TroopTransport.room(ship) <= 0:
+	if not soldiers.any(func(agent: Agent) -> bool: return TroopTransport.takes(sim.province, ship, agent.kind)):
 		return &"ship_full"
 	if ship.troop_order == TroopTransport.LAND:
 		return &"ship_landing_troops"

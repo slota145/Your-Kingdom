@@ -3,7 +3,8 @@ extends RefCounted
 ## Soldiers aboard a warship (P2 part 2, ROADMAP P2): the player right-clicks a warship with
 ## soldiers selected; a ship that is not moored sails to the nearest free berth it can reach
 ## (a port, a mooring or a bollard) and moors there, the soldiers walk to it and go aboard one
-## by one, as many as it has room for (ShipDef.troops); then it sails back to anchor and frees
+## by one, as many as it has room for (ShipDef.troops, in troop slots of SLOT_MEN soldiers of
+## one kind each, owner's survey 2026-11-09); then it sails back to anchor and frees
 ## the quay (owner's survey 2026-11-09). Landing them goes the same way the other way round:
 ## to a free berth, the soldiers step ashore and stand by the dock, the ship goes back to
 ## anchor. Soldiers aboard keep their agents (life, unit, barracks) with vehicle Ships.ABOARD:
@@ -18,9 +19,49 @@ const STEP_TICKS := 4
 const REACH := 3.5
 
 
+## Soldiers one troop slot holds (owner's survey 2026-11-09): a warship has its own slots for
+## soldiers beside the hold, each holding up to this many of one kind.
+const SLOT_MEN := 10
+
+
 ## Free places for soldiers aboard [param ship] (counting those on their way aboard).
 static func room(ship: ShipUnit) -> int:
 	return maxi(ship.def.troops - ship.troops.size() - ship.boarding.size(), 0)
+
+
+## Troop slots of [param ship]: its room for soldiers in slots of SLOT_MEN.
+static func slot_count(ship: ShipUnit) -> int:
+	return ceili(ship.def.troops / float(SLOT_MEN))
+
+
+## Soldiers aboard and on their way aboard [param ship], by unit kind.
+static func kinds(province: ProvinceSim, ship: ShipUnit) -> Dictionary[StringName, int]:
+	var result: Dictionary[StringName, int] = {}
+	for id: int in ship.troops + ship.boarding:
+		var agent := province.agents.get_agent(id)
+		if agent != null:
+			result[agent.kind] = result.get(agent.kind, 0) + 1
+	return result
+
+
+## The troop slots in use: each kind fills its own slots of SLOT_MEN.
+static func slots_used(by_kind: Dictionary[StringName, int]) -> int:
+	var used := 0
+	for kind: StringName in by_kind:
+		used += ceili(by_kind[kind] / float(SLOT_MEN))
+	return used
+
+
+## Whether one more soldier of [param kind] fits aboard [param ship]: in a slot of his kind with
+## room left, or in a free slot.
+static func takes(province: ProvinceSim, ship: ShipUnit, kind: StringName) -> bool:
+	if room(ship) <= 0:
+		return false
+	var by_kind := kinds(province, ship)
+	var have: int = by_kind.get(kind, 0)
+	if have % SLOT_MEN != 0:
+		return true
+	return slots_used(by_kind) < slot_count(ship)
 
 
 ## Whether [param ship] can carry soldiers for the player (a warship of his, not a visitor's).
@@ -36,9 +77,9 @@ static func carries_troops(province: ProvinceSim, ship: ShipUnit) -> bool:
 static func order_board(province: ProvinceSim, ship: ShipUnit, soldiers: Array[Agent]) -> int:
 	var taken := 0
 	for agent: Agent in soldiers:
-		if room(ship) <= 0:
-			break
 		if ship.boarding.has(agent.id) or ship.troops.has(agent.id):
+			continue
+		if not takes(province, ship, agent.kind):
 			continue
 		_leave_other_orders(province, agent)
 		# Under orders from now on: he waits where he is until the ship has a berth.
