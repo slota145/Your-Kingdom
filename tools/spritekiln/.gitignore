@@ -2,3 +2,4 @@
 art/specs/**/out/
 art/specs/**/.kilncache/
 art/specs/**/*_ref/
+art/specs/**/render.log
