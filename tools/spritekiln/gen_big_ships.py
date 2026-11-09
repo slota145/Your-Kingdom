@@ -29,8 +29,10 @@ TYPES = {
                                  qd=(-0.14, 0.3, 0.95))),
     "galleon": dict(L=108, W=31, D=27, S=16, castle=(0.38, 17), tier2=(0.66, 14), fore=(0.62, 12), size=370,
                     pivot=290,
-                    rig=[dict(z=0.5, h=128, w=30, tiers=3, cross=True), dict(z=0.05, h=164, w=42, tiers=3, cross=True),
-                         dict(z=-0.36, h=112, span=56, lateen=True), dict(z=-0.66, h=86, span=38, lateen=True)],
+                    # owner 2026-11-09: no bonaventure mast; main and mizzen further aft, bigger sails,
+                    # the lateen filled by the wind
+                    rig=[dict(z=0.5, h=134, w=34, tiers=3, cross=True), dict(z=-0.1, h=172, w=48, tiers=3, cross=True),
+                         dict(z=-0.52, h=126, span=72, lateen=True, billow=True, y0=1.75)],
                     spritsail=True, beak=True, ports=True, wales=[0.3, 0.55, 0.8],
                     # galleon (owner's references 2026-11-09): tumblehome, a two-tier stern, a beakhead
                     profile=dict(zm=0.25, wt=0.72, forefoot=0.3, rake=0.55, fc=(0.6, 0.7, 0.9), qd=(-0.3, 0.85, 1.05),
@@ -244,14 +246,30 @@ def build(kind, war=False, stage=None):
                          "profile": {"polygon": r3p([[-0.3, 0.12], [-0.3, -0.12], [0.7, 0.0]])}}}]}
         if m.get("lateen"):
             s = m["span"] * K
-            y0 = D + S * (0.6 if m["z"] < -0.5 else 0.4) + 0.7
+            y0 = D + m["y0"] if "y0" in m else D + S * (0.6 if m["z"] < -0.5 else 0.4) + 0.7
             A, B = (0.5 * s, y0), (-0.62 * s, h)
             C = (-0.5 * s, y0 - 0.1)
             parts[f"{bn}_yard"] = {"material": "mast", "space": bn, "priority": 2, "min_cover": 2, "prims": [
                 {"cylinder": {"a": r3([0, A[1] - 0.1, A[0] + 0.15]), "b": r3([0, B[1] + 0.15, B[0] - 0.12]), "r": 0.05}}]}
-            parts[f"{bn}_sail"] = {"material": "sail", "space": bn, "priority": 2, "prims": [
-                {"extrude": {"c": [0.05, 0, 0], "rot": [0, 1.5708, 0], "depth": 0.07,
-                             "profile": {"polygon": r3p([[-A[0], A[1]], [-B[0], B[1]], [-C[0], C[1]]])}}}]}
+            if m.get("billow"):   # the cap of a big ellipsoid shell cut to the triangle: filled by a side wind
+                tri = [(A[0], A[1]), (B[0], B[1]), (C[0], C[1])]          # (z, y)
+                zc, yc = sum(p_[0] for p_ in tri) / 3, sum(p_[1] for p_ in tri) / 3
+                Rz = 1.5 * max(abs(p_[0] - zc) for p_ in tri)
+                Ry = 1.5 * max(abs(p_[1] - yc) for p_ in tri)
+                cuts = [{"plane": {"n": [-1, 0, 0], "at": 0.22}}]      # keep x > -0.22: the cap only
+                for (z1, y1), (z2, y2) in zip(tri, tri[1:] + tri[:1]):
+                    nz, ny = (y2 - y1), -(z2 - z1)                        # perpendicular to the edge
+                    ln = math.hypot(nz, ny)
+                    nz, ny = nz / ln, ny / ln
+                    if nz * (zc - z1) + ny * (yc - y1) > 0:              # point it away from the middle
+                        nz, ny = -nz, -ny
+                    cuts.append({"plane": {"n": r3([0, ny, nz]), "at": r3(nz * z1 + ny * y1)}})
+                parts[f"{bn}_sail"] = {"material": "sail", "space": bn, "priority": 2, "prims": [
+                    {"ellipsoid": {"c": r3([-0.32, yc, zc]), "r": r3([0.62, Ry, Rz]), "shell": 0.11}}], "cut": cuts}
+            else:
+                parts[f"{bn}_sail"] = {"material": "sail", "space": bn, "priority": 2, "prims": [
+                    {"extrude": {"c": [0.05, 0, 0], "rot": [0, 1.5708, 0], "depth": 0.07,
+                                 "profile": {"polygon": r3p([[-A[0], A[1]], [-B[0], B[1]], [-C[0], C[1]]])}}}]}
             continue
         hw0, tiers = m["w"] * K, m["tiers"]
         ylo, yhi = D + 0.9, h - 0.25
