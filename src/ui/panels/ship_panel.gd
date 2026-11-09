@@ -3,8 +3,14 @@ extends PanelContainer
 ## The selected ship (M5 part 2): its kind, what it is doing, whose it is and its hold. The
 ## hold list reads the ship's Stockpile like the stockpile panel, so it matches the
 ## simulation after every unit the dockers carry (tests/scenario/test_m5_port.gd).
+## P2 part 2: the hold also as a grid of its slots, each empty or with the icon and amount of
+## its good; a warship's soldiers aboard by kind, and a button that sets them ashore.
 
 signal closed
+signal command_requested(command: Command)
+
+const SLOT_SIZE := Vector2(40, 40)
+const SLOT_COLUMNS := 6
 
 var province: ProvinceSim
 var ship_id: int = 0
@@ -12,6 +18,11 @@ var ship_id: int = 0
 var _title: Label
 var _body: Label
 var _hold: StockpilePanel
+var _slots: GridContainer
+var _troops: Label
+var _land: Button
+## What the slot grid shows now (good and amount per slot), rebuilt only when it changes.
+var _slot_key: String = ""
 
 
 func _init() -> void:
@@ -22,11 +33,21 @@ func _init() -> void:
 	box.add_child(_title)
 	_body = UiKit.label()
 	box.add_child(_body)
+	_slots = GridContainer.new()
+	_slots.columns = SLOT_COLUMNS
+	_slots.add_theme_constant_override(&"h_separation", 3)
+	_slots.add_theme_constant_override(&"v_separation", 3)
+	box.add_child(_slots)
 	_hold = StockpilePanel.new()
 	_hold.title_key = "ui.ship.hold"
+	_hold.visible = false   # the slot grid shows the hold (P2 part 2); the list stays for listed()
 	box.add_child(_hold)
+	_troops = UiKit.label()
+	box.add_child(_troops)
 	var buttons := HFlowContainer.new()
 	box.add_child(buttons)
+	_land = UiKit.button("ui.ship.land_troops", func() -> void: command_requested.emit(LandTroopsCommand.new(ship_id)))
+	buttons.add_child(_land)
 	buttons.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
 
 
@@ -57,6 +78,83 @@ func _refresh() -> void:
 	_body.text = "\n".join(describe(province, ship))
 	_hold.stock = ship.hold
 	_hold.refresh()
+	_refresh_slots(ship.hold)
+	var warship := TroopTransport.carries_troops(province, ship)
+	_troops.visible = warship
+	_land.visible = warship and not ship.troops.is_empty()
+	_land.disabled = ship.troop_order == TroopTransport.LAND
+	if warship:
+		_troops.text = "\n".join(troop_lines(province, ship))
+
+
+## The hold's slots in a grid: an empty frame, or the good's icon with the amount on it.
+func _refresh_slots(hold: Stockpile) -> void:
+	var key := ""
+	for i: int in hold.slot_count():
+		key += "%s:%d;" % [hold.slot_good[i], hold.slot_amount[i]]
+	if key == _slot_key:
+		return
+	_slot_key = key
+	for child: Node in _slots.get_children():
+		child.queue_free()
+	for i: int in hold.slot_count():
+		_slots.add_child(_slot(hold.slot_good[i], hold.slot_amount[i]))
+
+
+static func _slot(good: StringName, amount: int) -> Control:
+	var frame := PanelContainer.new()
+	frame.custom_minimum_size = SLOT_SIZE
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.16, 0.11, 0.07, 0.85)
+	style.border_color = Color(0.55, 0.42, 0.25)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(2)
+	frame.add_theme_stylebox_override(&"panel", style)
+	if good == &"" or amount <= 0:
+		frame.tooltip_text = TranslationServer.translate("ui.ship.slot_empty")
+		return frame
+	frame.tooltip_text = Loc.good_count(good, amount)
+	var icon := TextureRect.new()
+	icon.texture = ArtPaths.texture("goods/icons/%s.png" % good)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = SLOT_SIZE - Vector2(6, 6)
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(icon)
+	var count := Label.new()
+	count.text = str(amount)
+	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	count.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	count.size_flags_horizontal = Control.SIZE_SHRINK_END
+	count.size_flags_vertical = Control.SIZE_SHRINK_END
+	count.add_theme_color_override(&"font_color", Color(1.0, 0.95, 0.8))
+	count.add_theme_color_override(&"font_outline_color", Color.BLACK)
+	count.add_theme_constant_override(&"outline_size", 3)
+	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(count)
+	return frame
+
+
+## A warship's soldiers: how many aboard of its room, by kind, and those on their way.
+static func troop_lines(province: ProvinceSim, ship: ShipUnit) -> PackedStringArray:
+	var lines := PackedStringArray()
+	lines.append(TranslationServer.translate("ui.ship.troops") % [ship.troops.size(), ship.def.troops])
+	var kinds: Dictionary[StringName, int] = {}
+	for id: int in ship.troops:
+		var agent := province.agents.get_agent(id)
+		if agent != null:
+			kinds[agent.kind] = kinds.get(agent.kind, 0) + 1
+	var names: Array[StringName] = []
+	names.assign(kinds.keys())
+	names.sort()
+	for kind: StringName in names:
+		var unit := province.data.get_unit(kind)
+		lines.append("  %s × %d" % [TranslationServer.translate(unit.name_key()) if unit != null else String(kind), kinds[kind]])
+	if not ship.boarding.is_empty():
+		lines.append(TranslationServer.translate("ui.ship.troops_boarding") % ship.boarding.size())
+	if ship.troop_order == TroopTransport.LAND:
+		lines.append(TranslationServer.translate("ui.ship.troops_landing"))
+	return lines
 
 
 ## Lines about [param ship]: where it is, and for the sea merchant how the trade goes.

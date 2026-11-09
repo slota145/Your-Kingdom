@@ -97,6 +97,9 @@ var _j1stage: int = 2
 ## house standing 2 rows on piles, the dockers unloading for <s> seconds (default 25).
 var _p2: bool = false
 var _p2_seconds: int = 25
+## --p2troops=<s> (P2 part 2, with --p2): eight soldiers ordered aboard a warship at anchor,
+## run for <s> seconds; --select=warship|caravel opens that ship's panel.
+var _p2troops: int = -1
 ## --hard_shore (B1 part 2): the shoreline as before the soft shore, to compare.
 var _hard_shore: bool = false
 ## --stilts=<id,id,...> (B1 part 2): those buildings placed near --tile with a row over the water
@@ -164,6 +167,8 @@ func _ready() -> void:
 			_j1ships = true
 		elif arg == "--p2":
 			_p2 = true
+		elif arg.begins_with("--p2troops="):
+			_p2troops = int(arg.trim_prefix("--p2troops="))
 		elif arg.begins_with("--p2_seconds="):
 			_p2_seconds = int(arg.trim_prefix("--p2_seconds="))
 		elif arg.begins_with("--j1stage="):
@@ -387,7 +392,7 @@ func _place_p2(sim: Simulation, at: Vector2i) -> void:
 		province.refresh_fairways()
 	var ships: Array[ShipUnit] = []
 	for k: int in 2:
-		var x := at.x - 4 + 7 * k
+		var x := at.x - 5 + 10 * k
 		var s0: Vector2i = shore.call(x)
 		var bollard: BuildingState = place.call(&"bollard", s0 + Vector2i(0, 1), 0) if s0 != Agent.NO_TILE else null
 		if bollard == null:
@@ -408,12 +413,34 @@ func _place_p2(sim: Simulation, at: Vector2i) -> void:
 		for i: int in workplace.def.worker_count():
 			var docker := province.spawn_agent(Harbour.DOCKER_KIND, workplace.door_front_tile())
 			province.assign_worker(docker, workplace)
-	sim.run_ticks(SimClock.seconds_to_ticks(_p2_seconds))
+	var warship: ShipUnit = null
+	if _p2troops >= 0:
+		var s_free: Vector2i = shore.call(at.x + 1)
+		place.call(&"bollard", s_free + Vector2i(0, 1), 0)
+		warship = ShipUnit.new(sim.ids.take(), sim.data.get_ship(&"carrack_war"), IsoMath.tile_center(at + Vector2i(2, 16)), sim.data)
+		var anchor := Voyage.anchorage(province, warship, at + Vector2i(2, 14))
+		if anchor != Agent.NO_TILE:
+			warship.pos = IsoMath.tile_center(anchor)
+			warship.prev_pos = warship.pos
+		province.ships[warship.id] = warship
+		var squad: Array[int] = []
+		var kinds: Array[StringName] = [&"spearman", &"halberdier", &"crossbowman", &"archer"]
+		for i: int in 8:
+			var agent := province.spawn_agent(kinds[i % 4], s_mid + Vector2i(-3 + i % 4, -6 + i / 4))
+			agent.combat = CombatState.new(sim.data.get_unit(agent.kind).combat.hp)
+			squad.append(agent.id)
+		print("board ", sim.execute(BoardShipCommand.new(squad, warship.id)))
+	sim.run_ticks(SimClock.seconds_to_ticks(_p2troops if _p2troops >= 0 else _p2_seconds))
 	sim.events.drain()
 	Game.paused = true
 	var view: ProvinceView = _game.get("view")
 	view.quays.refresh()
 	view.buildings.refresh_all()
+	var panel := _game.get("_ship_panel") as ShipPanel
+	if _select == &"warship" and warship != null:
+		panel.show_ship(province, warship.id)
+	elif _select == &"caravel" and not ships.is_empty():
+		panel.show_ship(province, ships[0].id)
 
 
 ## B1: bridges over the river near [param at]: a timber one, a stone one, a diagonal timber one

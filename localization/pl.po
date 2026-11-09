@@ -1897,7 +1897,7 @@ msgid "ui.voyage.last"
 msgstr "Ostatni rejs: sprzedano %d szt. za %d zł, kupiono %d szt. za %d zł."
 
 msgid "ui.ship.player_cog"
-msgstr "Twoja koga. Port: %s (plan rejsu w panelu portu)."
+msgstr "Twój statek handlowy. Port: %s (plan rejsu w panelu portu)."
 
 msgid "ui.ship.no_home"
 msgstr "brak"
@@ -3563,3 +3563,32 @@ msgstr "Towar ze statku idzie do: %s."
 
 msgid "ui.port.no_yard_store"
 msgstr "Brak magazynu portowego w pobliżu: towar idzie prosto do zwykłych magazynów i z nich."
+
+# P2 part 2: troops aboard warships
+
+msgid "ui.ship.land_troops"
+msgstr "Wysadź wojsko"
+
+msgid "ui.ship.slot_empty"
+msgstr "Puste miejsce w ładowni"
+
+msgid "ui.ship.troops"
+msgstr "Wojsko na pokładzie: %d z %d"
+
+msgid "ui.ship.troops_boarding"
+msgstr "Idą na pokład: %d"
+
+msgid "ui.ship.troops_landing"
+msgstr "Płynie do nabrzeża, żeby wysadzić wojsko."
+
+msgid "ui.command_error.not_a_warship"
+msgstr "Na pokład wsiada się tylko na własne okręty wojenne."
+
+msgid "ui.command_error.ship_full"
+msgstr "Na tym okręcie nie ma już miejsca dla wojska."
+
+msgid "ui.command_error.ship_landing_troops"
+msgstr "Ten okręt właśnie wysadza wojsko."
+
+msgid "ui.command_error.no_troops_aboard"
+msgstr "Na pokładzie nie ma wojska."

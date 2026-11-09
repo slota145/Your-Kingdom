@@ -75,10 +75,12 @@ class Arrow:
 
 # --- Orders (commands call these) -----------------------------------------------------------
 
-## Whether the player may command [param agent]: one of his soldiers, out of the barracks.
+## Whether the player may command [param agent]: one of his soldiers, out of the barracks and
+## not aboard a ship (P2 part 2).
 static func is_soldier(province: ProvinceSim, agent: Agent) -> bool:
 	return agent != null and agent.combat != null and agent.combat.faction == CombatState.PLAYER \
-			and agent.kind != Barracks.RECRUIT_KIND and province.data.get_unit(agent.kind) != null
+			and agent.kind != Barracks.RECRUIT_KIND and province.data.get_unit(agent.kind) != null \
+			and agent.vehicle != Ships.ABOARD
 
 
 ## Whether [param unit] fights people: soldiers, and of the siege engines only the ballista.
@@ -231,7 +233,7 @@ static func formation(province: ProvinceSim, tile: Vector2i, level: int, count: 
 static func update(province: ProvinceSim) -> void:
 	var fighters: Array[Agent] = []
 	for agent: Agent in province.agents.all():
-		if agent.combat != null and agent.combat.commanded:
+		if agent.combat != null and agent.combat.commanded and agent.vehicle != Ships.ABOARD:
 			fighters.append(agent)
 	if fighters.is_empty() and province.arrows.is_empty():
 		return
@@ -254,7 +256,8 @@ static func update(province: ProvinceSim) -> void:
 static func _buckets(province: ProvinceSim) -> Dictionary[Vector2i, Array]:
 	var result: Dictionary[Vector2i, Array] = {}
 	for agent: Agent in province.agents.all():
-		if agent.combat == null or agent.combat.hp <= 0 or agent.kind == Barracks.RECRUIT_KIND:
+		if agent.combat == null or agent.combat.hp <= 0 or agent.kind == Barracks.RECRUIT_KIND \
+				or agent.vehicle == Ships.ABOARD:
 			continue
 		var cell := Vector2i(floori(agent.pos.x / 4.0), floori(agent.pos.y / 4.0))
 		if not result.has(cell):

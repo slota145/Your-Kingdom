@@ -1876,7 +1876,7 @@ msgid "ui.voyage.last"
 msgstr "Last voyage: sold %d units for %d gold, bought %d units for %d gold."
 
 msgid "ui.ship.player_cog"
-msgstr "Your cog. Port: %s (voyage plan in the port panel)."
+msgstr "Your trading ship. Port: %s (voyage plan in the port's panel)."
 
 msgid "ui.ship.no_home"
 msgstr "none"
@@ -3527,3 +3527,32 @@ msgstr "The ship's goods go to: %s."
 
 msgid "ui.port.no_yard_store"
 msgstr "No port warehouse nearby: the goods go straight to and from the ordinary storages."
+
+# P2 part 2: troops aboard warships
+
+msgid "ui.ship.land_troops"
+msgstr "Land troops"
+
+msgid "ui.ship.slot_empty"
+msgstr "Empty hold slot"
+
+msgid "ui.ship.troops"
+msgstr "Troops aboard: %d of %d"
+
+msgid "ui.ship.troops_boarding"
+msgstr "Going aboard: %d"
+
+msgid "ui.ship.troops_landing"
+msgstr "Sailing to a quay to land the troops."
+
+msgid "ui.command_error.not_a_warship"
+msgstr "Soldiers go aboard only your own warships."
+
+msgid "ui.command_error.ship_full"
+msgstr "This warship has no more room for troops."
+
+msgid "ui.command_error.ship_landing_troops"
+msgstr "This warship is landing its troops."
+
+msgid "ui.command_error.no_troops_aboard"
+msgstr "There are no troops aboard."

@@ -167,6 +167,7 @@ func step() -> void:
 	Movement.move_all(self)
 	Troops.update(self)
 	Ships.move_all(self)
+	TroopTransport.update(self)
 	_remove_empty_piles()
 	if tick % GROW_CHECK_TICKS == 0:
 		if not paving.is_empty():
