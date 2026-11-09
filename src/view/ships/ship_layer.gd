@@ -43,6 +43,8 @@ const QUAY_HEIGHT := 8.0
 const GUNWALE_HEIGHT := 16.0
 ## How far (tiles) from the berth centre towards the quay the plank ends on the ship.
 const PLANK_INBOARD := 0.3
+## How far (tiles) from the centre of the gangway tile the plank starts: at the quay edge.
+const PLANK_FROM_EDGE := 0.4
 ## Frames per second of the boat animations.
 const FPS := 5.0
 ## A ship on the slipway sorts at the front of the slipway (over the building), drawn this
@@ -163,9 +165,14 @@ func _update_planks() -> void:
 			edge.default_color = PLANK_EDGE
 			plank.add_child(edge)
 			_planks[ship.id] = plank
-		var foot := IsoMath.tile_center(port.gangway_tile())
-		var berth := Harbour.moor_point(port.gangway_tile(), port.berth_tile())
-		var top := berth + (foot - berth).normalized() * PLANK_INBOARD
+		var centre := IsoMath.tile_center(port.gangway_tile())
+		# The ship's hull is drawn a little further out than its position (hull_shift): the
+		# plank goes with it, from the edge of the quay to its gunwale (owner's review
+		# 2026-11-09: it lay on the quay short of the ship).
+		var berth := Harbour.moor_point(port.gangway_tile(), port.berth_tile()) + hull_shift(province, ship)
+		var out := (berth - centre).normalized()
+		var foot := centre + out * PLANK_FROM_EDGE
+		var top := berth - out * PLANK_INBOARD
 		# Sorted just in front of the ship: the plank lies on its gunwale, over the hull.
 		plank.position = IsoMath.grid_to_screen(berth) + Vector2(0, 1)
 		var a := IsoMath.grid_to_screen(foot) - plank.position + Vector2(0, -QUAY_HEIGHT)
