@@ -1,6 +1,7 @@
 spritekiln: 1
 # yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
 name: woodcutter_hut
+render: {outline: dark, lines: depth+normal, light: classic, shading: toon}   # closer to the PixelLab buildings: one dark outline, fold lines between logs, light from the top left (ART_SPEC 1), hard steps
 kind: prop
 size: 192
 directions: [se]          # one view: yaw 45 turns the square footprint into the game's 2:1 diamond
@@ -17,10 +18,12 @@ materials:
   plank: {ramp: wood, bands: [1, 4]}
   shingle: {ramp: shingle, bands: [1, 4]}
   shingle_dark: {ramp: shingle, bands: [0, 2]}
+  shingle_light: {ramp: shingle, bands: [3, 5]}
   stone: {ramp: stone}
   dirt: {ramp: dirt, outline: false}
   steel: {ramp: steel, finish: metal}
-  ink: {ramp: log, band: 0, outline: false}
+  course: {ramp: shingle, bands: [0, 1], outline: false}   # the dark line under each shingle course
+  ink: {ramp: log, bands: [0, 1], outline: false}   # bands, not band: the toon shading keeps it dark
 
 channels: {}
 bones: {}
@@ -84,15 +87,81 @@ parts:
     paint:
       - material: ink
         stripes: {axis: y, period: 0.17, width: 0.055, offset: 2.154}
-  roof_front:
+  # front slope: one part per shingle course, so a line runs between courses; the joints are staggered row by row
+  roof_c0:
     material: shingle
     prims:
-      - box: {c: [-0.35, 2.704, 0.370], half: [1.930, 0.06, 0.98], rot: [0.82, 0, 0], round: 0.02}
+      - box: {c: [-0.35, 3.322, -0.165], half: [1.93, 0.05, 0.213], rot: [0.88, 0, 0], round: 0.015}
     paint:
-      - material: shingle_dark
-        spots: {scale: 0.12, density: 0.3, seed: 3}
+      - material: shingle_light
+        spots: {scale: 0.2, density: 0.18, seed: 7}
       - material: ink
-        stripes: {axis: y, period: 0.14, width: 0.055}
+        stripes: {axis: x, period: 0.34, width: 0.055, offset: 0.00}
+      - material: course
+        stripes: {axis: y, at: [3.241], width: 0.07}
+  roof_c1:
+    material: shingle
+    prims:
+      - box: {c: [-0.35, 3.079, 0.053], half: [1.93, 0.05, 0.213], rot: [0.88, 0, 0], round: 0.015}
+    paint:
+      - material: shingle_light
+        spots: {scale: 0.2, density: 0.18, seed: 8}
+      - material: ink
+        stripes: {axis: x, period: 0.34, width: 0.055, offset: 0.17}
+      - material: course
+        stripes: {axis: y, at: [2.998], width: 0.07}
+  roof_c2:
+    material: shingle
+    prims:
+      - box: {c: [-0.35, 2.836, 0.272], half: [1.93, 0.05, 0.213], rot: [0.88, 0, 0], round: 0.015}
+    paint:
+      - material: shingle_light
+        spots: {scale: 0.2, density: 0.18, seed: 9}
+      - material: ink
+        stripes: {axis: x, period: 0.34, width: 0.055, offset: 0.00}
+      - material: course
+        stripes: {axis: y, at: [2.755], width: 0.07}
+  roof_c3:
+    material: shingle
+    prims:
+      - box: {c: [-0.35, 2.593, 0.490], half: [1.93, 0.05, 0.213], rot: [0.88, 0, 0], round: 0.015}
+    paint:
+      - material: shingle_light
+        spots: {scale: 0.2, density: 0.18, seed: 10}
+      - material: ink
+        stripes: {axis: x, period: 0.34, width: 0.055, offset: 0.17}
+      - material: course
+        stripes: {axis: y, at: [2.512], width: 0.07}
+  roof_c4:
+    material: shingle
+    prims:
+      - box: {c: [-0.35, 2.350, 0.709], half: [1.93, 0.05, 0.213], rot: [0.88, 0, 0], round: 0.015}
+    paint:
+      - material: shingle_light
+        spots: {scale: 0.2, density: 0.18, seed: 11}
+      - material: ink
+        stripes: {axis: x, period: 0.34, width: 0.055, offset: 0.00}
+      - material: course
+        stripes: {axis: y, at: [2.269], width: 0.07}
+  roof_c5:
+    material: shingle
+    prims:
+      - box: {c: [-0.35, 2.107, 0.927], half: [1.93, 0.05, 0.213], rot: [0.88, 0, 0], round: 0.015}
+    paint:
+      - material: shingle_light
+        spots: {scale: 0.2, density: 0.18, seed: 12}
+      - material: ink
+        stripes: {axis: x, period: 0.34, width: 0.055, offset: 0.17}
+      - material: course
+        stripes: {axis: y, at: [2.026], width: 0.07}
+  roof_lines:       # a thin dark lath under the lower edge of every shingle course: the line between courses
+    material: course
+    prims:
+      - cylinder: {a: [-2.280, 3.190, 0.009], b: [1.580, 3.190, 0.009], r: 0.03}
+      - cylinder: {a: [-2.280, 2.947, 0.227], b: [1.580, 2.947, 0.227], r: 0.03}
+      - cylinder: {a: [-2.280, 2.704, 0.446], b: [1.580, 2.704, 0.446], r: 0.03}
+      - cylinder: {a: [-2.280, 2.461, 0.664], b: [1.580, 2.461, 0.664], r: 0.03}
+      - cylinder: {a: [-2.280, 2.218, 0.883], b: [1.580, 2.218, 0.883], r: 0.03}
   roof_back:
     material: shingle
     prims:
