@@ -27,6 +27,15 @@ var _window: bool = false
 var _armies: bool = false
 
 
+var _seed: int = 0
+var _provinces: int = 22
+var _rulers: int = 3
+## --zoom=<1..4> (M8 part 1): the world map zoomed in on the player's province.
+var _zoom: float = 1.0
+## --result=won|lost (M8 part 1): the end-of-game window over the province view.
+var _result: String = ""
+
+
 func _ready() -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
@@ -45,7 +54,24 @@ func _ready() -> void:
 			_window = true
 		elif arg == "--armies":
 			_armies = true
+		elif arg.begins_with("--seed="):
+			_seed = int(arg.trim_prefix("--seed="))
+		elif arg.begins_with("--provinces="):
+			_provinces = int(arg.trim_prefix("--provinces="))
+		elif arg.begins_with("--zoom="):
+			_zoom = float(arg.trim_prefix("--zoom="))
+		elif arg.begins_with("--result="):
+			_result = arg.trim_prefix("--result=")
+		elif arg.begins_with("--rulers="):
+			_rulers = int(arg.trim_prefix("--rulers="))
 	Game.start_request = {"world": "kingdom"}
+	# M8 part 1: a generated world (--seed=<n> [--provinces=<16..30>] [--rulers=<1..3>]).
+	if _seed > 0:
+		var settings := GameSettings.new()
+		settings.world_seed = _seed
+		settings.province_count = _provinces
+		settings.rulers = _rulers
+		Game.start_request = {"settings": settings.to_dict()}
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D
 	add_child(_game)
 
@@ -54,6 +80,13 @@ func _process(_delta: float) -> void:
 	_frames += 1
 	if _frames == SETTLE_FRAMES:
 		var sim: Simulation = _game.get("sim")
+		if _zoom > 1.0:
+			var canvas := _game.find_children("*", "WorldMapCanvas", true, false)
+			if not canvas.is_empty():
+				var c := canvas[0] as WorldMapCanvas
+				c.zoom_at(c.size / 2.0, _zoom)
+		if _result != "":
+			(_game.get("_result") as ResultWindow).show_result(_result == "won", GameSettings.VICTORY_CONQUEST)
 		if _settle:
 			sim.open_province(sim.world.id_of(&"willow_vale"), sim.data.get_map(&"riverlands"))
 		if _expeditions:

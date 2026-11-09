@@ -154,3 +154,9 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 
 - [właściciel, 2026-11-08] **Nowe jednostki i okręty:** halabardnik w zbroi płytowej, kusznik, ciężki zbrojny z morgensternem, lekka jazda, ruchoma balista; 3 nowe okręty (każdy w wersji cywilnej i wojennej, każdy większy od poprzedniego) i duża stocznia; bardziej naturalne „Wybrzeże” z szerszą i krótszą zatoką.
   - Ocena (Claude): jednostki i okręty najlepiej po ocenie M7 (zasady walki), ale przed M8 (AI od razu z pełnym wojskiem); wybrzeże jest małe i niezależne. **Decyzja właściciela (ankieta 2026-11-08): oba teraz** — najpierw W1 (wybrzeże), potem J1 (jednostki i okręty), przed oceną M7 (ROADMAP, W1 i J1).
+
+## Bitwa morska na żywo (właściciel, 2026-11-09)
+
+- Pomysł właściciela: po przechwyceniu wrogiej floty bitwa rozgrywa się na mapie pustego oceanu: okręty manewrują, strzelają i idą do abordażu.
+- Ocena (Claude): nowy system walki statków (dziś statki w widoku prowincji nie walczą). Ankieta 2026-11-09: w M8 bitwa morska automatyczna z animacją i raportem, bitwa na żywo jako osobny etap po M8.
+

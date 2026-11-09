@@ -3589,3 +3589,271 @@ msgstr "Needs:"
 
 msgid "ui.building.makes_goods"
 msgstr "Makes:"
+
+# M8 part 1: generated worlds and AI rulers
+
+msgid "world.adj.1"
+msgstr "Silver"
+
+msgid "world.adj.2"
+msgstr "Wolf"
+
+msgid "world.adj.3"
+msgstr "Green"
+
+msgid "world.adj.4"
+msgstr "Golden"
+
+msgid "world.adj.5"
+msgstr "Stone"
+
+msgid "world.adj.6"
+msgstr "Quiet"
+
+msgid "world.adj.7"
+msgstr "Misty"
+
+msgid "world.adj.8"
+msgstr "Pine"
+
+msgid "world.adj.9"
+msgstr "Oak"
+
+msgid "world.adj.10"
+msgstr "Amber"
+
+msgid "world.adj.11"
+msgstr "Sunny"
+
+msgid "world.adj.12"
+msgstr "Raven"
+
+msgid "world.adj.13"
+msgstr "Fox"
+
+msgid "world.adj.14"
+msgstr "Blue"
+
+msgid "world.adj.15"
+msgstr "Grey"
+
+msgid "world.adj.16"
+msgstr "Heather"
+
+msgid "world.adj.17"
+msgstr "Ash"
+
+msgid "world.adj.18"
+msgstr "Royal"
+
+msgid "world.adj.19"
+msgstr "Wild"
+
+msgid "world.adj.20"
+msgstr "Russet"
+
+msgid "world.noun.1"
+msgstr "Hills"
+
+msgid "world.noun.2"
+msgstr "Meadows"
+
+msgid "world.noun.3"
+msgstr "Fields"
+
+msgid "world.noun.4"
+msgstr "Shores"
+
+msgid "world.noun.5"
+msgstr "Vales"
+
+msgid "world.noun.6"
+msgstr "Woods"
+
+msgid "world.noun.7"
+msgstr "Marshes"
+
+msgid "world.noun.8"
+msgstr "Crags"
+
+msgid "world.noun.9"
+msgstr "Heaths"
+
+msgid "world.noun.10"
+msgstr "Bays"
+
+msgid "world.noun.11"
+msgstr "Lands"
+
+msgid "world.noun.12"
+msgstr "Groves"
+
+msgid "world.noun.13"
+msgstr "Slopes"
+
+msgid "world.noun.14"
+msgstr "Ravines"
+
+msgid "world.noun.15"
+msgstr "Commons"
+
+msgid "world.noun.16"
+msgstr "Wetlands"
+
+msgid "ruler.ruler_1.name"
+msgstr "Duke Bolko"
+
+msgid "ruler.ruler_2.name"
+msgstr "Countess Hedwig"
+
+msgid "ruler.ruler_3.name"
+msgstr "Margrave Otto"
+
+msgid "ui.world.generated"
+msgstr "World no. %d"
+
+# M8 part 1: new game, rulers, result
+
+msgid "ui.new_game.title"
+msgstr "New game"
+
+msgid "ui.new_game.scenario"
+msgstr "Scenario"
+
+msgid "ui.scenario.colonization"
+msgstr "Colonization"
+
+msgid "ui.scenario.colonization_hint"
+msgstr "Almost every province is empty: you and the rulers settle the continent."
+
+msgid "ui.new_game.world"
+msgstr "World"
+
+msgid "ui.new_game.world_generated"
+msgstr "New, from a number"
+
+msgid "ui.new_game.seed"
+msgstr "World number"
+
+msgid "ui.new_game.random"
+msgstr "Random"
+
+msgid "ui.new_game.size"
+msgstr "Size"
+
+msgid "ui.new_game.size_small"
+msgstr "Small (16 provinces)"
+
+msgid "ui.new_game.size_medium"
+msgstr "Medium (22 provinces)"
+
+msgid "ui.new_game.size_large"
+msgstr "Large (30 provinces)"
+
+msgid "ui.new_game.rulers"
+msgstr "Rulers"
+
+msgid "ui.new_game.difficulty"
+msgstr "Difficulty"
+
+msgid "ui.difficulty.easy"
+msgstr "Easy"
+
+msgid "ui.difficulty.normal"
+msgstr "Normal"
+
+msgid "ui.difficulty.hard"
+msgstr "Hard"
+
+msgid "ui.new_game.victory"
+msgstr "Victory"
+
+msgid "ui.victory.conquest"
+msgstr "Conquest"
+
+msgid "ui.victory.provinces"
+msgstr "Number of provinces"
+
+msgid "ui.victory.patricians"
+msgstr "Number of patricians"
+
+msgid "ui.victory.free"
+msgstr "Free game"
+
+msgid "ui.new_game.target"
+msgstr "Target"
+
+msgid "ui.new_game.start"
+msgstr "Start"
+
+msgid "ui.new_game.back"
+msgstr "Back"
+
+msgid "ui.world.owner_ruler"
+msgstr "Ruler: %s"
+
+msgid "ui.result.won_title"
+msgstr "Victory!"
+
+msgid "ui.result.lost_title"
+msgstr "Defeat"
+
+msgid "ui.result.won_conquest"
+msgstr "No ruler holds a province any more. The continent is yours!"
+
+msgid "ui.result.won_provinces"
+msgstr "You hold the provinces you needed. Your kingdom is a power!"
+
+msgid "ui.result.won_patricians"
+msgstr "As many patricians as you wanted live in your towns. Your kingdom flourishes!"
+
+msgid "ui.result.lost"
+msgstr "You have lost all your provinces."
+
+msgid "ui.result.continue"
+msgstr "Play on"
+
+msgid "ui.result.menu"
+msgstr "Main menu"
+
+msgid "ui.world.goal"
+msgstr "Goal: %s, %d of %d"
+
+msgid "world.template.coast"
+msgstr "A coast with a bay and a beach: room for a port, fish in the sea."
+
+msgid "world.template.islands"
+msgstr "An island in the sea: reached only by ship."
+
+msgid "world.template.lakeland"
+msgstr "Lakeland with forests and rocky ground."
+
+msgid "world.template.riverlands"
+msgstr "River country: fertile meadows, woods and a ford."
+
+msgid "ui.new_game.provinces"
+msgstr "Provinces"
+
+msgid "ui.new_game.islands"
+msgstr "Islands"
+
+msgid "ui.new_game.next"
+msgstr "Next: choose the start"
+
+msgid "ui.new_game.pick_start"
+msgstr "Where do you start?"
+
+msgid "ui.new_game.pick_hint"
+msgstr "Click the province you want to start in. In Colonization you come by ship: one on the coast or an island (the grey ones are not possible). The rulers get their provinces only then, as far from you as can be. Drag to move the map, zoom with the wheel."
+
+msgid "ui.new_game.random_start"
+msgstr "Random"
+
+msgid "ui.new_game.no_start"
+msgstr "No province chosen yet."
+
+msgid "ui.new_game.start_at"
+msgstr "Start: %s (%s)"
+
+msgid "ui.new_game.island"
+msgstr "island"

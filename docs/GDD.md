@@ -439,6 +439,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
   - liczba patrycjuszy,
   - posiadanie X prowincji,
   - brak warunku (gra wolna).
+- **M8 (ankiety 2026-11-09):** świat generowany z numeru (16–30 prowincji, ten sam numer daje ten sam świat) albo gotowe „Królestwo”; 1–3 władców komputerowych, 3 poziomy trudności; scenariusze: Kolonizacja (bazowy), Podzielony kontynent, Kupieckie wyspy, Najazd z morza; porażka, gdy gracz straci wszystkie prowincje. Armie i floty idą prawym przyciskiem w dowolne miejsce mapy świata i przechwytują wrogów w drodze (bitwa lądowa na żywo na mapie pola albo automatycznie, morska automatycznie). Szczegóły i stan: ROADMAP, M8.
 - **Kampania fabularna**: [PÓŹNIEJ].
 
 ---

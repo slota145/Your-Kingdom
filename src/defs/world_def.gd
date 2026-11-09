@@ -16,6 +16,9 @@ extends GameDef
 @export var army_speed: float = 1.1
 ## Province the bandits' camp stands in at the start (M7 part 3); empty = no bandits.
 @export var bandit_camp: StringName = &""
+## A generated world's name (M8): translation keys of its words and the values put into them.
+@export var name_parts: PackedStringArray = PackedStringArray()
+@export var name_args: Array = []
 
 
 func get_kind() -> StringName:

@@ -115,6 +115,15 @@ func register(def: GameDef) -> void:
 	_register(def, "<code>")
 
 
+## Adds or replaces a definition made by a generator (a generated world and its provinces, M8):
+## the same world made again from its number replaces the earlier one.
+func register_generated(def: GameDef) -> void:
+	var kind: StringName = def.get_kind()
+	if _defs.has(kind):
+		(_defs[kind] as Dictionary).erase(def.id)
+	_register(def, "<generated>")
+
+
 func goods() -> Array[GoodDef]:
 	var result: Array[GoodDef] = []
 	result.assign(all_of(&"good"))
@@ -153,6 +162,14 @@ func _register(def: GameDef, path: String) -> void:
 		errors.append("%s: duplicate %s id '%s'" % [path, kind, def.id])
 		return
 	bucket[def.id] = def
+	# A generated world's or province's name (M8).
+	var parts: Variant = def.get(&"name_parts")
+	if parts is PackedStringArray and not (parts as PackedStringArray).is_empty():
+		var args: Variant = def.get(&"name_args")
+		GeneratedNames.add(def.name_key(), parts, args if args is Array else [])
+	var desc: Variant = def.get(&"desc_parts")
+	if desc is PackedStringArray and not (desc as PackedStringArray).is_empty():
+		GeneratedNames.add(def.desc_key(), desc)
 
 
 ## Recursively lists .tres/.res files. Handles ".remap" entries of exported builds.

@@ -1163,6 +1163,86 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] AI zasiedla, handluje i atakuje.
 - [ ] Brak błędów blokujących w 3 partiach testowych.
 
+**Status: plan zaakceptowany 2026-11-09 (ankiety); część 1 zaakceptowana i scalona do `main` 2026-11-09; następna część 2.** Ankieta właściciela 2026-11-09: **generator światów**; **1–3 władców komputerowych do wyboru, 3 poziomy trudności**; warunki zwycięstwa: **podbój, liczba prowincji, liczba patrycjuszy, gra wolna** (wszystkie cztery); **4 części, ocena po każdej** (zmiana 2026-11-09 po dodaniu ruchu wojsk). **Scenariusze** (prośba i ankieta właściciela 2026-11-09): **Kolonizacja** (bazowy: prawie wszystkie prowincje puste, gracz i rywale zasiedlają kontynent), **Podzielony kontynent** (wszystkie prowincje zajęte przez władców i osady neutralne, gracz zaczyna od jednej i wszystko wywalcza albo wykupuje), **Kupieckie wyspy** (świat z wysp i wybrzeży, wygrywa, kto pierwszy zbierze wybraną sumę złota), **Najazd z morza** (przetrwać 60 minut coraz silniejszych fal najeźdźców z morza); Kolonizacja w części 1, pozostałe w części 4. **Ruch wojsk po mapie świata** (prośba i ankieta właściciela 2026-11-09): armie i floty idą prawym przyciskiem w dowolne miejsce mapy świata i mogą przechwytywać wrogie armie i floty w drodze; bitwa lądowa na żywo na pustej mapie pola albo automatycznie (wybór gracza, jak przy oblężeniu w M7); bitwa morska na razie automatyczna z animacją i raportem (bitwa morska na żywo: IDEAS, osobny etap po M8). Start przed oceną M7, B1, W1, J1 i P2 (odłożona przez właściciela).
+
+**Część 1: świat i nowa gra**
+- [x] Generator światów z ziarna (ten sam numer daje ten sam świat): 16–30 prowincji na pergaminie, granice lądowe i wybrzeża, wyspy osiągalne tylko morzem; każda prowincja to wariant jednej z 4 map (Wybrzeże, Wyspy, Pojezierze, Kraina rzek) z bogactwem surowców i czasem rzadkim surowcem; kilka osad neutralnych; miejsca startu gracza i władców daleko od siebie.
+- [x] Ekran „Nowa gra”: scenariusz (w części 1 Kolonizacja), numer świata (albo losowy), liczba władców (1–3), poziom trudności, warunek zwycięstwa (z progiem dla liczby prowincji i patrycjuszy). „Królestwo” zostaje jako gotowy świat do wyboru.
+- [x] Władcy na mapie świata już są (herb, kolor, prowincja startowa z gotowym miasteczkiem), ale jeszcze nic nie robią.
+- [x] Zwycięstwo i porażka: sprawdzane na bieżąco, okno z wynikiem; porażka, gdy gracz straci wszystkie prowincje. Zapis gry: ustawienia partii i władcy.
+
+
+- Stan (2026-11-09): generator w dwóch krokach (`WorldGenerator.geography`: ląd, wyspy na samotnych komórkach morza, prowincje bez właścicieli; `assign`: start gracza, władcy, osady, surowce, obóz), pergamin rośnie z liczbą prowincji (`size_for`); władcy trzymają się dalej od gracza niż od siebie nawzajem (`RULER_AWAY` 1,6). Nowa gra: suwaki prowincji 9–60 i wysp 0–10, potem „Dalej: wybór startu” z podglądem świata (`StartPicker`: klik, „Losowo”, przeciąganie i kółko). Mapa świata: przeciąganie (lewy albo środkowy przycisk) i kółko myszy, 1–4×. Zrzuty: `menu_shot.tscn -- --out=<plik> --open=start_picker`, `world_shot.tscn -- --out=<plik> --seed=<n> [--provinces=9..60] [--zoom=1..4]`.
+
+**Część 1, stan (2026-11-09): zaakceptowana („Jest super!”) i scalona do `main`.** Poprawki z oceny: dom portowców całą powierzchnią na kamiennym nabrzeżu, łączy się z nabrzeżem obok; deska trapu idzie z kadłubem od krawędzi nabrzeża do burty. Słupek (`bollard`, 1×1, na kamiennym nabrzeżu, przechodni; towar do najbliższego magazynu portowego albo prosto do magazynów), skład portowy (`port_store`, 1×1, 2 miejsca), mały magazyn portowy (`port_warehouse_small`, 2×2, 4 miejsca), duży bez tragarzy i do 2 rzędów na palach; chata portowców (`docker_hut`, 2×2, 2 portowców) i dom portowców (`docker_house`, 3×3, 4 portowców, 2 rzędy nad wodą na kamiennym nabrzeżu, które łączy się z kamiennym nabrzeżem obok: prośba właściciela 2026-11-09); obaj z 2 wejściami. Portowcy z domów obsługują każdy statek przy porcie, miejscu cumowania i słupku do 12 kafli i pomagają nosić towar z i do budynków portowych. Budynek portowy, który nie mieści się na palach, prosi o nabrzeże (`needs_quay`) zamiast „za dużo wody”: na tym potykał się automatyczny gracz; teraz stawia też chatę portowców. Zapis v24. Testy: `tests/scenario/test_p2_port.gd`, długi `test_n1_harbour_bot.gd`. Zrzut: `game_shot.tscn -- --map=coast --tile=30,98 --focus=33,106 --zoom=1 --p2 [--p2_seconds=<s>]`.
+
+**Część 2: statki i wojsko**
+- [x] Statek bez miejsca sam cumuje do wolnego słupka lub miejsca cumowania.
+- [x] Załadunek wojska: zaznaczone jednostki + prawy przycisk na okręt → okręt cumuje, żołnierze idą na nabrzeże i wchodzą na pokład (w granicach miejsca dla wojska); rozładunek z panelu statku. Decyzje (ankieta 2026-11-09): po załadunku okręt **odpływa na kotwicę** i zwalnia nabrzeże; wojsko na okręcie **na razie nie liczy się** przy wysyłaniu armii morzem z mapy świata (później, np. M8).
+- [x] Panel statku: siatka miejsc ładowni, puste albo z ikoną towaru (lub oddziału) i liczbą.
+
+**Część 2, stan (2026-11-09): zaakceptowana („Super!”) i scalona do `main`.** Zaznaczeni żołnierze + prawy przycisk na własnym okręcie wojennym: okręt, który nie stoi przy nabrzeżu, płynie do najbliższego wolnego miejsca (port, miejsce cumowania, słupek), cumuje, żołnierze idą do niego i wchodzą na pokład jeden po drugim (najwyżej tylu, ile mieści okręt), potem okręt odpływa na kotwicę. „Wysadź wojsko” w panelu statku: ta sama droga z powrotem, żołnierze stają przy nabrzeżu. Żołnierzy na pokładzie nie widać, nie da się ich zaznaczyć i nie walczą; inny rozkaz zdejmuje żołnierza z drogi na pokład; okręt z wojskiem nie odpływa z armią z mapy świata. Panel statku: ładownia jako siatka miejsc (puste albo ikona towaru z liczbą). **Miejsca na wojsko** (prośba i ankieta właściciela 2026-11-09): okręt wojenny ma osobny rząd miejsc obok ładowni, po 10 żołnierzy jednego rodzaju w miejscu (okręt wojenny 3, karawela 4, karaka 6, galeon 9), z ikonką żołnierza i liczbą; na pokład wchodzi tylko tyle, ile się zmieści w tych miejscach. Ikonki: `python3 tools/make_unit_icons.py` (popiersia z postaci). Zapis v25. Testy: `tests/scenario/test_p2_troops.gd`. Zrzut: `game_shot.tscn -- --map=coast --tile=30,98 --focus=31,106 --zoom=2 --p2 --p2troops=<s> [--select=warship|caravel]`.
+
+**Część 3: miasto i wygląd**
+- [x] Chata budowniczych: więcej budowniczych w mieście (pomysł z IDEAS).
+- [x] Panel budynku produkcyjnego: ikonki towarów, które wytwarza i których potrzebuje.
+- [x] Panel domu: potrzeby jako ikonki; suwak podatku (wspólny dla miasta, 5 poziomów od „brak” do „bardzo wysoki”, ten sam w ratuszu).
+- [x] Nowa grafika magazynów: zwykły na drewnianej podłodze, portowe na kamiennej.
+
+**Część 3, stan (2026-11-09): zaakceptowana i scalona do `main`; etap P2 zamknięty.** Chata budowniczych (`builders_hut`, 2×2, 2 budowniczych, zakładka „Magazyny”; 4 studnie stają ok. 25% szybciej, resztę ogranicza noszenie drewna). Panel warsztatu: rzędy ikonek „Potrzebuje” i „Wytwarza” z przepisu; panel domu: rząd ikonek potrzeb (zielona ramka: jest, czerwona i przygaszona: brak; potrzeby-usługi z ikoną budynku). Podatek: 5 poziomów (brak 0×/+20 zadowolenia, niskie 0,5×/+10, normalne 1×/0, wysokie 1,5×/−15, bardzo wysokie 2×/−35), suwak w panelu ratusza, obozu pionierów i każdego domu; zapis v26 (stare poziomy przesunięte o 1). Podłogi: zwykły magazyn na drewnianym podeście z desek na legarach, magazyny portowe na kamiennych płytach z krawężnikiem. Testy: `tests/scenario/test_p2_town.gd`. Zrzuty: `town_shot.tscn -- --minutes=40 --select=bakery|hut|stockpile [--zoom=2]`, `game_shot.tscn -- --map=coast --tile=30,98 --focus=30,104 --zoom=2 --p2`.
+
+**DoD:** każda część ma testy symulacji, `tools/run_tests.sh --all` przechodzi, zrzuty w grze, ocena właściciela po każdej części.
+
+## M8 — Przeciwnicy i sandbox
+
+**Zakres:**
+- władcy AI (gospodarka uproszczona, decyzje strategiczne, poziomy trudności),
+- bandyci,
+- konfiguracja sandboxa i warunki zwycięstwa,
+- generator lub zestaw map świata.
+
+**DoD:**
+- [ ] Pełna partia sandbox od startu do zwycięstwa lub porażki.
+- [ ] AI zasiedla, handluje i atakuje.
+- [ ] Brak błędów blokujących w 3 partiach testowych.
+
+**Status: plan zaakceptowany 2026-11-09 (ankiety); część 1 gotowa, czeka na ocenę.** Ankieta właściciela 2026-11-09: **generator światów**; **1–3 władców komputerowych do wyboru, 3 poziomy trudności**; warunki zwycięstwa: **podbój, liczba prowincji, liczba patrycjuszy, gra wolna** (wszystkie cztery); **4 części, ocena po każdej** (zmiana 2026-11-09 po dodaniu ruchu wojsk). **Scenariusze** (prośba i ankieta właściciela 2026-11-09): **Kolonizacja** (bazowy: prawie wszystkie prowincje puste, gracz i rywale zasiedlają kontynent), **Podzielony kontynent** (wszystkie prowincje zajęte przez władców i osady neutralne, gracz zaczyna od jednej i wszystko wywalcza albo wykupuje), **Kupieckie wyspy** (świat z wysp i wybrzeży, wygrywa, kto pierwszy zbierze wybraną sumę złota), **Najazd z morza** (przetrwać 60 minut coraz silniejszych fal najeźdźców z morza); Kolonizacja w części 1, pozostałe w części 4. **Ruch wojsk po mapie świata** (prośba i ankieta właściciela 2026-11-09): armie i floty idą prawym przyciskiem w dowolne miejsce mapy świata i mogą przechwytywać wrogie armie i floty w drodze; bitwa lądowa na żywo na pustej mapie pola albo automatycznie (wybór gracza, jak przy oblężeniu w M7); bitwa morska na razie automatyczna z animacją i raportem (bitwa morska na żywo: IDEAS, osobny etap po M8). Start przed oceną M7, B1, W1, J1 i P2 (odłożona przez właściciela).
+
+**Część 1: świat i nowa gra**
+- [x] Generator światów z ziarna (ten sam numer daje ten sam świat): 16–30 prowincji na pergaminie, granice lądowe i wybrzeża, wyspy osiągalne tylko morzem; każda prowincja to wariant jednej z 4 map (Wybrzeże, Wyspy, Pojezierze, Kraina rzek) z bogactwem surowców i czasem rzadkim surowcem; kilka osad neutralnych; miejsca startu gracza i władców daleko od siebie.
+- [x] Ekran „Nowa gra”: scenariusz (w części 1 Kolonizacja), numer świata (albo losowy), liczba władców (1–3), poziom trudności, warunek zwycięstwa (z progiem dla liczby prowincji i patrycjuszy). „Królestwo” zostaje jako gotowy świat do wyboru.
+- [x] Władcy na mapie świata już są (herb, kolor, prowincja startowa z gotowym miasteczkiem), ale jeszcze nic nie robią.
+- [x] Zwycięstwo i porażka: sprawdzane na bieżąco, okno z wynikiem; porażka, gdy gracz straci wszystkie prowincje. Zapis gry: ustawienia partii i władcy.
+
+**Poprawki z oceny części 1 (ankieta 2026-11-09):**
+- [ ] Wyspy: osobne wyspy na morzu wokół kontynentu, suwak 0–10 (wliczone w liczbę prowincji).
+- [ ] Liczba prowincji suwakiem 9–60 (granica ze względu na wydajność „Podzielonego kontynentu”; do podniesienia później); pergamin rośnie ze światem.
+- [ ] Wybór prowincji startowej kliknięciem na podglądzie mapy (Kolonizacja: nadmorska albo wyspa; Podzielony kontynent: dowolna), przycisk „Losowo”; władcy dostają prowincje dopiero potem, jak najdalej od gracza.
+- [ ] Mapa świata (i podgląd) przesuwana przeciąganiem i przybliżana kółkiem myszy.
+
+**Część 1, stan (2026-11-09): zaakceptowana („Jest super!”) i scalona do `main`.** Generator (`WorldGenerator`): ląd z szumu na pergaminie 1600×1100, podzielony na komórki wokół rozrzuconych punktów (granice lekko pofalowane, te same z obu stron), komórki morza między nimi; sąsiedzi lądowi, wybrzeża, wyspy (poza największym lądem, tylko morzem); wzór mapy: wyspa → Wyspy, wybrzeże → Wybrzeże, w głębi lądu Pojezierze albo Kraina rzek, lustrzane odbicie i bogactwo losowe; nazwy z przetłumaczonych słów („Srebrne Wzgórza”, każdy przymiotnik i rzeczownik najpierw raz), opis według wzoru mapy. Gracz na wybrzeżu lądu stałego (lądowanie ze statku), władcy (`ruler_1..3`, niebieski, zielony, fioletowy; imiona: Książę Bolko, Hrabina Jadwiga, Margrabia Otto) jak najdalej od wszystkich, z miasteczkiem (ok. 25 budynków; na razie czekają jak osady neutralne), osady neutralne (co najmniej 2, układy i żądania Żelaznego Grodu i Końskiej Przystani), rzadkie surowce, obóz bandytów w pustej prowincji. Ten sam numer daje ten sam świat; w zapisie jest tylko numer i ustawienia, świat robi się od nowa przy wczytaniu. Ekran „Nowa gra” w menu (scenariusz Kolonizacja, świat nowy z numerem i „Losuj” albo „Królestwo”, wielkość 16/22/30, władcy 1–3, trudność, zwycięstwo z celem). Zwycięstwo i porażka sprawdzane co sekundę (`Victory`), okno wyniku nad wszystkim („Graj dalej” albo „Menu główne”), cel i postęp w tytule mapy świata. Zapis v27. Testy: `tests/scenario/test_m8_world.gd` (ten sam świat z numeru, poprawność 15 światów, start gry z miastami władców i zapis, zwycięstwo i porażka). Zrzuty: `src/prototype/m6/world_shot.tscn -- --out=<plik> --seed=<n> [--provinces=16..30] [--rulers=1..3] [--result=won|lost]`, menu `menu_shot.tscn -- --out=<plik> --open=new_game_panel`.
+
+**Część 2: armie i floty na mapie świata**
+- [ ] Prawy przycisk w dowolne miejsce mapy świata: armia idzie po lądzie, flota (okręty wojenne z wojskiem lub bez) płynie po morzu; widać, dokąd zmierzają; mogą się zatrzymać w polu albo na morzu.
+- [ ] Przechwytywanie: wrogie armie i floty, które się spotkają w drodze albo w jednym miejscu, walczą.
+- [ ] Bitwa lądowa w polu: wybór gracza, na żywo na pustej mapie pola (teren jak tam, gdzie się spotkały, bez miasta; wojsko z M7) albo automatycznie z szansami. Bitwa morska: automatyczna (`BattleResolver`, rodzaje okrętów i wojsko na pokładzie), animacja na mapie świata i raport.
+- [ ] Wojsko i okręty z prowincji trafiają na mapę świata (także okręt z wojskiem na pokładzie z P2); zapis gry.
+
+**Część 3: władcy budują, zasiedlają i handlują**
+- [ ] Prowincje władców żyją w trybie uproszczonym; „planista” stawia im budynki według planu rozwoju (jak automatyczny gracz z testów), od chat i drwali do warsztatów, portu i koszar.
+- [ ] Władca wysyła wyprawy osadników do pustych prowincji (lądem i morzem), wykupuje osady neutralne, prowadzi szlaki handlowe między swoimi prowincjami.
+- [ ] Wejście do prowincji władcy pokazuje jego miasto (oglądanie, bez budowania).
+
+**Część 4: władcy zbroją się i atakują, scenariusze**
+- [ ] Władca szkoli wojsko i buduje okręty wojenne, prowadzi armie i floty po mapie świata (przechwytuje i daje się przechwycić), ocenia siłę sąsiadów i atakuje słabsze prowincje: innych władców, osady neutralne i gracza (oblężenie na żywo, gdy gracz ogląda prowincję, inaczej rozstrzygnięcie automatyczne); broni się przed graczem.
+- [ ] Poziomy trudności: tempo rozwoju, wielkość armii, jak często i jak śmiało atakują.
+- [ ] Scenariusze: **Podzielony kontynent** (miasta władców i osad na start „przewija” planista z części 3), **Kupieckie wyspy** (generator z samych wysp i wybrzeży, zwycięstwo za złoto), **Najazd z morza** (fale najeźdźców z morza co kilka minut, coraz silniejsze; zwycięstwo po 60 minutach).
+- [ ] 3 pełne partie testowe (automatyczny gracz przeciwko władcom) bez błędów blokujących, od startu do zwycięstwa lub porażki.
+
+**Ryzyko:** część 4 jest duża (wojna władców, trudności i 3 scenariusze); jeśli się rozrośnie, scenariusze trafią do osobnej części 5 (ankieta).
+
+**Do ustalenia w trakcie (ankiety):** szczegóły oblężenia miasta gracza przez władcę (część 3), herby i kolory władców, czy władcy mogą zawierać rozejmy (dyplomacja jest [PÓŹNIEJ]).
+
 ---
 
 ## M9 — Produkcja grafik (równolegle, od M4)

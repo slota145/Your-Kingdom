@@ -21,6 +21,10 @@ var _language: Button
 var _tools_button: Button
 var _tools: VBoxContainer
 var _plural_list: Label
+## The menu's buttons, and the "New game" settings shown instead of them (M8 part 1).
+var _menu_box: VBoxContainer
+var _new_game_panel: NewGamePanel
+var _start_picker: StartPicker
 
 
 func _ready() -> void:
@@ -40,10 +44,41 @@ func _ready() -> void:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size.x = MENU_WIDTH
 	column.add_child(panel)
+	var holder := VBoxContainer.new()
+	panel.add_child(holder)
 	var box := VBoxContainer.new()
 	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_theme_constant_override(&"separation", 10)
-	panel.add_child(box)
+	holder.add_child(box)
+	_menu_box = box
+	_new_game_panel = NewGamePanel.new()
+	_new_game_panel.visible = false
+	_new_game_panel.start_requested.connect(func(settings: GameSettings) -> void:
+		if settings.is_generated():
+			# A generated world: choose where to start first (M8 part 1).
+			panel.visible = false
+			_start_picker.open(settings)
+		else:
+			Game.start_request = {"settings": settings.to_dict()}
+			_open(GAME_SCENE))
+	_new_game_panel.back_requested.connect(func() -> void:
+		_new_game_panel.visible = false
+		_menu_box.visible = true)
+	holder.add_child(_new_game_panel)
+	_start_picker = StartPicker.new()
+	_start_picker.visible = false
+	_start_picker.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_start_picker.offset_left = 40
+	_start_picker.offset_top = 40
+	_start_picker.offset_right = -40
+	_start_picker.offset_bottom = -40
+	_start_picker.start_requested.connect(func(settings: GameSettings) -> void:
+		Game.start_request = {"settings": settings.to_dict()}
+		_open(GAME_SCENE))
+	_start_picker.back_requested.connect(func() -> void:
+		_start_picker.visible = false
+		panel.visible = true)
+	add_child(_start_picker)
 	_title = UiKit.title("ui.main.title")
 	_title.add_theme_font_size_override(&"font_size", 56)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -57,8 +92,8 @@ func _ready() -> void:
 	box.add_child(HSeparator.new())
 	var worlds := Data.registry.all_of(&"world")
 	_new_game = _menu_button(box, "ui.main.new_game", func() -> void:
-		Game.start_request = {"world": worlds[0].id}
-		_open(GAME_SCENE))
+		_menu_box.visible = false
+		_new_game_panel.visible = true)
 	_new_game.disabled = worlds.is_empty()
 	var quick := SaveService.slot_path("quick")
 	_load_game = _menu_button(box, "ui.main.load_game", _start_game.bind(quick))

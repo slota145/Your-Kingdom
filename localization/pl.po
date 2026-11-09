@@ -3625,3 +3625,271 @@ msgstr "Potrzebuje:"
 
 msgid "ui.building.makes_goods"
 msgstr "Wytwarza:"
+
+# M8 part 1: generated worlds and AI rulers
+
+msgid "world.adj.1"
+msgstr "Srebrne"
+
+msgid "world.adj.2"
+msgstr "Wilcze"
+
+msgid "world.adj.3"
+msgstr "Zielone"
+
+msgid "world.adj.4"
+msgstr "Złote"
+
+msgid "world.adj.5"
+msgstr "Kamienne"
+
+msgid "world.adj.6"
+msgstr "Ciche"
+
+msgid "world.adj.7"
+msgstr "Mgliste"
+
+msgid "world.adj.8"
+msgstr "Sosnowe"
+
+msgid "world.adj.9"
+msgstr "Dębowe"
+
+msgid "world.adj.10"
+msgstr "Bursztynowe"
+
+msgid "world.adj.11"
+msgstr "Słoneczne"
+
+msgid "world.adj.12"
+msgstr "Krucze"
+
+msgid "world.adj.13"
+msgstr "Lisie"
+
+msgid "world.adj.14"
+msgstr "Modre"
+
+msgid "world.adj.15"
+msgstr "Szare"
+
+msgid "world.adj.16"
+msgstr "Wrzosowe"
+
+msgid "world.adj.17"
+msgstr "Jesionowe"
+
+msgid "world.adj.18"
+msgstr "Królewskie"
+
+msgid "world.adj.19"
+msgstr "Dzikie"
+
+msgid "world.adj.20"
+msgstr "Rude"
+
+msgid "world.noun.1"
+msgstr "Wzgórza"
+
+msgid "world.noun.2"
+msgstr "Łąki"
+
+msgid "world.noun.3"
+msgstr "Pola"
+
+msgid "world.noun.4"
+msgstr "Brzegi"
+
+msgid "world.noun.5"
+msgstr "Doliny"
+
+msgid "world.noun.6"
+msgstr "Bory"
+
+msgid "world.noun.7"
+msgstr "Mokradła"
+
+msgid "world.noun.8"
+msgstr "Skały"
+
+msgid "world.noun.9"
+msgstr "Wrzosowiska"
+
+msgid "world.noun.10"
+msgstr "Zatoki"
+
+msgid "world.noun.11"
+msgstr "Ziemie"
+
+msgid "world.noun.12"
+msgstr "Gaje"
+
+msgid "world.noun.13"
+msgstr "Stoki"
+
+msgid "world.noun.14"
+msgstr "Jary"
+
+msgid "world.noun.15"
+msgstr "Błonia"
+
+msgid "world.noun.16"
+msgstr "Rozlewiska"
+
+msgid "ruler.ruler_1.name"
+msgstr "Książę Bolko"
+
+msgid "ruler.ruler_2.name"
+msgstr "Hrabina Jadwiga"
+
+msgid "ruler.ruler_3.name"
+msgstr "Margrabia Otto"
+
+msgid "ui.world.generated"
+msgstr "Świat nr %d"
+
+# M8 part 1: new game, rulers, result
+
+msgid "ui.new_game.title"
+msgstr "Nowa gra"
+
+msgid "ui.new_game.scenario"
+msgstr "Scenariusz"
+
+msgid "ui.scenario.colonization"
+msgstr "Kolonizacja"
+
+msgid "ui.scenario.colonization_hint"
+msgstr "Prawie wszystkie prowincje są puste: Ty i władcy zasiedlacie kontynent."
+
+msgid "ui.new_game.world"
+msgstr "Świat"
+
+msgid "ui.new_game.world_generated"
+msgstr "Nowy, z numeru"
+
+msgid "ui.new_game.seed"
+msgstr "Numer świata"
+
+msgid "ui.new_game.random"
+msgstr "Losuj"
+
+msgid "ui.new_game.size"
+msgstr "Wielkość"
+
+msgid "ui.new_game.size_small"
+msgstr "Mały (16 prowincji)"
+
+msgid "ui.new_game.size_medium"
+msgstr "Średni (22 prowincje)"
+
+msgid "ui.new_game.size_large"
+msgstr "Duży (30 prowincji)"
+
+msgid "ui.new_game.rulers"
+msgstr "Władcy"
+
+msgid "ui.new_game.difficulty"
+msgstr "Trudność"
+
+msgid "ui.difficulty.easy"
+msgstr "Łatwy"
+
+msgid "ui.difficulty.normal"
+msgstr "Średni"
+
+msgid "ui.difficulty.hard"
+msgstr "Trudny"
+
+msgid "ui.new_game.victory"
+msgstr "Zwycięstwo"
+
+msgid "ui.victory.conquest"
+msgstr "Podbój"
+
+msgid "ui.victory.provinces"
+msgstr "Liczba prowincji"
+
+msgid "ui.victory.patricians"
+msgstr "Liczba patrycjuszy"
+
+msgid "ui.victory.free"
+msgstr "Gra wolna"
+
+msgid "ui.new_game.target"
+msgstr "Cel"
+
+msgid "ui.new_game.start"
+msgstr "Rozpocznij"
+
+msgid "ui.new_game.back"
+msgstr "Wróć"
+
+msgid "ui.world.owner_ruler"
+msgstr "Władca: %s"
+
+msgid "ui.result.won_title"
+msgstr "Zwycięstwo!"
+
+msgid "ui.result.lost_title"
+msgstr "Porażka"
+
+msgid "ui.result.won_conquest"
+msgstr "Żaden władca nie ma już prowincji. Kontynent jest Twój!"
+
+msgid "ui.result.won_provinces"
+msgstr "Masz wymaganą liczbę prowincji. Królestwo jest potęgą!"
+
+msgid "ui.result.won_patricians"
+msgstr "W Twoich miastach mieszka tylu patrycjuszy, ilu chciałeś. Królestwo kwitnie!"
+
+msgid "ui.result.lost"
+msgstr "Straciłeś wszystkie prowincje."
+
+msgid "ui.result.continue"
+msgstr "Graj dalej"
+
+msgid "ui.result.menu"
+msgstr "Menu główne"
+
+msgid "ui.world.goal"
+msgstr "Cel: %s, %d z %d"
+
+msgid "world.template.coast"
+msgstr "Wybrzeże z zatoką i plażą: miejsce na port, ryby w morzu."
+
+msgid "world.template.islands"
+msgstr "Wyspa na morzu: dopłyniesz tu tylko statkiem."
+
+msgid "world.template.lakeland"
+msgstr "Pojezierze z lasami i kamienistym gruntem."
+
+msgid "world.template.riverlands"
+msgstr "Kraina nad rzeką: żyzne łąki, lasy i bród."
+
+msgid "ui.new_game.provinces"
+msgstr "Prowincje"
+
+msgid "ui.new_game.islands"
+msgstr "Wyspy"
+
+msgid "ui.new_game.next"
+msgstr "Dalej: wybór startu"
+
+msgid "ui.new_game.pick_start"
+msgstr "Gdzie zaczynasz?"
+
+msgid "ui.new_game.pick_hint"
+msgstr "Kliknij prowincję, w której chcesz zacząć. W Kolonizacji przypływasz statkiem: nadmorską albo wyspę (szare nie wchodzą w grę). Władcy dostaną swoje prowincje dopiero potem, jak najdalej od Ciebie. Przeciągnij, żeby przesunąć mapę, kółkiem przybliżasz."
+
+msgid "ui.new_game.random_start"
+msgstr "Losowo"
+
+msgid "ui.new_game.no_start"
+msgstr "Nie wybrano jeszcze prowincji."
+
+msgid "ui.new_game.start_at"
+msgstr "Start: %s (%s)"
+
+msgid "ui.new_game.island"
+msgstr "wyspa"
