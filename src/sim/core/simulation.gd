@@ -74,6 +74,37 @@ static func from_world(registry: DataRegistry, def: WorldDef, seed_value: int = 
 	return sim
 
 
+## A sandbox game (ROADMAP M8 part 1): the world of [param settings] (generated from its number,
+## or a hand-made one), the player's landing, the neutral settlements and the AI rulers' towns.
+static func from_settings(registry: DataRegistry, settings: GameSettings, seed_value: int = 1,
+		problems: PackedStringArray = PackedStringArray()) -> Simulation:
+	var def := WorldGenerator.generate(registry, settings) if settings.is_generated() \
+			else registry.get_world(settings.world_def)
+	if def == null:
+		problems.append("no world %s" % settings.world_def)
+		return null
+	var sim := from_world(registry, def, seed_value, problems)
+	if sim == null:
+		return null
+	sim.world.settings = settings
+	problems.append_array(sim._open_ruler_towns())
+	sim.events.drain()
+	return sim
+
+
+## Every AI ruler's province gets its town (M8 part 1: it waits there; part 3: it grows).
+func _open_ruler_towns() -> PackedStringArray:
+	var problems := PackedStringArray()
+	for id: int in world.ids():
+		if not Rulers.is_ruler(world.owner_of(id)) or runtimes.has(id):
+			continue
+		problems.append_array(NeutralTown.build(self, id))
+		var town := province_state(id)
+		if town != null:
+			town.home_faction = faction_of(id)
+	return problems
+
+
 ## Queues a command for the start of the next tick.
 func submit(command: Command) -> void:
 	_commands.append(command)
@@ -194,6 +225,7 @@ func _update_world() -> void:
 	TradeRoutes.update(self)
 	_update_settlements()
 	Armies.update(self)
+	Victory.update(self)
 
 
 ## Every neutral province without a town gets one, and its first demand (a new game; a save
@@ -336,7 +368,8 @@ func view_province(id: int) -> void:
 
 ## The side whose walls the province's are (M7 part 3): the player's, or a neutral town's.
 func faction_of(id: int) -> int:
-	return CombatState.TOWN if world.owner_of(id) == ProvinceDef.OWNER_NEUTRAL else CombatState.PLAYER
+	var owner := world.owner_of(id)
+	return CombatState.TOWN if owner == ProvinceDef.OWNER_NEUTRAL or Rulers.is_ruler(owner) else CombatState.PLAYER
 
 
 func to_dict() -> Dictionary:
@@ -362,6 +395,12 @@ func to_dict() -> Dictionary:
 ## Restores a saved state. Commands queued but not yet applied are not part of a save.
 static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 	var sim := Simulation.new(registry, Vector2i.ONE)
+	# A generated world is made again from its number (M8): its provinces are in no file.
+	var world_d: Dictionary = d.get("world", {})
+	if world_d.has("settings"):
+		var settings := GameSettings.from_dict(world_d["settings"])
+		if settings.is_generated():
+			WorldGenerator.generate(registry, settings)
 	sim.clock.tick = int(d["tick"])
 	sim.ids.next_id = int(d["next_id"])
 	sim.rng = SimRng.from_dict(d["rng"])

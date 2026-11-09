@@ -3589,3 +3589,125 @@ msgstr "Needs:"
 
 msgid "ui.building.makes_goods"
 msgstr "Makes:"
+
+# M8 part 1: generated worlds and AI rulers
+
+msgid "world.adj.1"
+msgstr "Silver"
+
+msgid "world.adj.2"
+msgstr "Wolf"
+
+msgid "world.adj.3"
+msgstr "Green"
+
+msgid "world.adj.4"
+msgstr "Golden"
+
+msgid "world.adj.5"
+msgstr "Stone"
+
+msgid "world.adj.6"
+msgstr "Quiet"
+
+msgid "world.adj.7"
+msgstr "Misty"
+
+msgid "world.adj.8"
+msgstr "Pine"
+
+msgid "world.adj.9"
+msgstr "Oak"
+
+msgid "world.adj.10"
+msgstr "Amber"
+
+msgid "world.adj.11"
+msgstr "Sunny"
+
+msgid "world.adj.12"
+msgstr "Raven"
+
+msgid "world.adj.13"
+msgstr "Fox"
+
+msgid "world.adj.14"
+msgstr "Blue"
+
+msgid "world.adj.15"
+msgstr "Grey"
+
+msgid "world.adj.16"
+msgstr "Heather"
+
+msgid "world.adj.17"
+msgstr "Ash"
+
+msgid "world.adj.18"
+msgstr "Royal"
+
+msgid "world.adj.19"
+msgstr "Wild"
+
+msgid "world.adj.20"
+msgstr "Russet"
+
+msgid "world.noun.1"
+msgstr "Hills"
+
+msgid "world.noun.2"
+msgstr "Meadows"
+
+msgid "world.noun.3"
+msgstr "Fields"
+
+msgid "world.noun.4"
+msgstr "Shores"
+
+msgid "world.noun.5"
+msgstr "Vales"
+
+msgid "world.noun.6"
+msgstr "Woods"
+
+msgid "world.noun.7"
+msgstr "Marshes"
+
+msgid "world.noun.8"
+msgstr "Crags"
+
+msgid "world.noun.9"
+msgstr "Heaths"
+
+msgid "world.noun.10"
+msgstr "Bays"
+
+msgid "world.noun.11"
+msgstr "Lands"
+
+msgid "world.noun.12"
+msgstr "Groves"
+
+msgid "world.noun.13"
+msgstr "Slopes"
+
+msgid "world.noun.14"
+msgstr "Ravines"
+
+msgid "world.noun.15"
+msgstr "Commons"
+
+msgid "world.noun.16"
+msgstr "Wetlands"
+
+msgid "ruler.ruler_1.name"
+msgstr "Duke Bolko"
+
+msgid "ruler.ruler_2.name"
+msgstr "Countess Hedwig"
+
+msgid "ruler.ruler_3.name"
+msgstr "Margrave Otto"
+
+msgid "ui.world.generated"
+msgstr "World no. %d"

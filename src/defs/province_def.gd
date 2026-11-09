@@ -28,6 +28,8 @@ const OWNER_NEUTRAL := &"neutral"
 @export var world_pos: Vector2 = Vector2.ZERO
 ## The province border on the world map, in parchment pixels.
 @export var outline: PackedVector2Array = PackedVector2Array()
+## A generated province's name (M8): translation keys of its words (GeneratedNames).
+@export var name_parts: PackedStringArray = PackedStringArray()
 
 @export_group("Neutral settlement (M6 part 3)")
 ## Buildings of the neutral town (building id -> count), placed by NeutralTown.

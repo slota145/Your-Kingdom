@@ -25,6 +25,14 @@ var camp: BanditCamp = null
 ## Reports of the last battles, newest last: {tick, province, kind, attacker, defender,
 ## result (BattleResult.to_dict)}.
 var reports: Array[Dictionary] = []
+## The settings of a sandbox game (M8 part 1); null in a game started without them (the old
+## "New game" and single provinces).
+var settings: GameSettings = null
+## How the game ended: &"" (it goes on), RESULT_WON or RESULT_LOST.
+var result: StringName = &""
+
+const RESULT_WON := &"won"
+const RESULT_LOST := &"lost"
 
 const REPORTS_KEPT := 8
 
@@ -154,12 +162,19 @@ func to_dict() -> Dictionary:
 		d["camp"] = camp.to_dict()
 	if not reports.is_empty():
 		d["reports"] = reports.duplicate(true)
+	if settings != null:
+		d["settings"] = settings.to_dict()
+	if result != &"":
+		d["result"] = String(result)
 	return d
 
 
 static func from_dict(d: Dictionary) -> WorldSim:
 	var world := WorldSim.new()
 	world.world_id = StringName(String(d.get("world", "")))
+	if d.has("settings"):
+		world.settings = GameSettings.from_dict(d["settings"])
+	world.result = StringName(String(d.get("result", "")))
 	for pd: Variant in d.get("provinces", []):
 		var province := WorldProvince.from_dict(pd)
 		world.provinces[province.id] = province
