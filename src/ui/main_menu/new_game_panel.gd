@@ -8,13 +8,13 @@ extends VBoxContainer
 signal start_requested(settings: GameSettings)
 signal back_requested
 
-const SIZES: Array[int] = [16, 22, 30]
 const HANDMADE := &"kingdom"
 
 var _scenario: OptionButton
 var _world: OptionButton
 var _seed: SpinBox
-var _size: OptionButton
+var _provinces: HSlider
+var _islands: HSlider
 var _rulers: OptionButton
 var _difficulty: OptionButton
 var _victory: OptionButton
@@ -22,6 +22,7 @@ var _target: SpinBox
 var _target_row: Control
 var _rulers_row: Control
 var _generated_rows: Array[Control] = []
+var _next: Button
 
 
 func _init() -> void:
@@ -41,9 +42,8 @@ func _init() -> void:
 	seed_row.add_child(UiKit.button("ui.new_game.random", func() -> void: _seed.value = randi_range(1, 99999)))
 	add_child(seed_row)
 	_generated_rows.append(seed_row)
-	_size = _choice("ui.new_game.size", ["ui.new_game.size_small", "ui.new_game.size_medium", "ui.new_game.size_large"])
-	_size.selected = 1
-	_generated_rows.append(_size.get_parent())
+	_provinces = _slider("ui.new_game.provinces", GameSettings.MIN_PROVINCES, GameSettings.MAX_PROVINCES, 22)
+	_islands = _slider("ui.new_game.islands", 0, GameSettings.MAX_ISLANDS, 3)
 	_rulers = _choice("ui.new_game.rulers", ["1", "2", "3"])
 	_rulers.selected = 1
 	_rulers_row = _rulers.get_parent()
@@ -60,7 +60,8 @@ func _init() -> void:
 	_target_row.add_child(_target)
 	add_child(_target_row)
 	var buttons := HBoxContainer.new()
-	buttons.add_child(UiKit.button("ui.new_game.start", func() -> void: start_requested.emit(settings())))
+	_next = UiKit.button("ui.new_game.next", func() -> void: start_requested.emit(settings()))
+	buttons.add_child(_next)
 	buttons.add_child(UiKit.button("ui.new_game.back", func() -> void: back_requested.emit()))
 	add_child(buttons)
 	_refresh()
@@ -80,6 +81,31 @@ func _choice(label_key: String, items: Array) -> OptionButton:
 	return option
 
 
+## A slider with its label and the value beside it (a row of the generated world).
+func _slider(label_key: String, from: int, to: int, value: int) -> HSlider:
+	var row := HBoxContainer.new()
+	var label := UiKit.label(label_key, false)
+	label.custom_minimum_size.x = 150
+	row.add_child(label)
+	var slider := HSlider.new()
+	slider.min_value = from
+	slider.max_value = to
+	slider.step = 1
+	slider.value = value
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(slider)
+	var shown := UiKit.label(str(value), false)
+	shown.custom_minimum_size.x = 36
+	row.add_child(shown)
+	slider.value_changed.connect(func(v: float) -> void:
+		shown.text = str(int(v))
+		_refresh())
+	add_child(row)
+	_generated_rows.append(row)
+	return slider
+
+
 ## What the player chose.
 func settings() -> GameSettings:
 	var s := GameSettings.new()
@@ -89,7 +115,8 @@ func settings() -> GameSettings:
 		s.victory = GameSettings.VICTORY_FREE if _victory.selected == 0 else GameSettings.VICTORIES[_victory.selected]
 	else:
 		s.world_seed = int(_seed.value)
-		s.province_count = SIZES[_size.selected]
+		s.province_count = int(_provinces.value)
+		s.islands = int(_islands.value)
 		s.rulers = _rulers.selected + 1
 		s.victory = GameSettings.VICTORIES[_victory.selected]
 	s.difficulty = _difficulty.selected
@@ -100,6 +127,7 @@ func settings() -> GameSettings:
 
 func _refresh() -> void:
 	var generated := _world.selected == 0
+	_next.text = tr("ui.new_game.next" if generated else "ui.new_game.start")
 	for row: Control in _generated_rows:
 		row.visible = generated
 	_rulers_row.visible = generated
@@ -111,5 +139,5 @@ func _refresh() -> void:
 	_target_row.visible = kind == GameSettings.VICTORY_PROVINCES or kind == GameSettings.VICTORY_PATRICIANS
 	if _target_row.visible:
 		var probe := GameSettings.new()
-		probe.province_count = SIZES[_size.selected]
+		probe.province_count = int(_provinces.value)
 		_target.value = probe.default_target(kind)

@@ -56,10 +56,22 @@ var expedition_from: int = 0
 ## The selected army, 0 = none.
 var army_selected: int = 0
 var _hover: int = 0
+## The player's zoom (1 = the whole world fits) and how far the map is moved (control pixels;
+## M8 part 1, owner's survey 2026-11-09: drag to move, the wheel to zoom).
+var zoom: float = 1.0
+var pan: Vector2 = Vector2.ZERO
+const ZOOM_MIN := 1.0
+const ZOOM_MAX := 4.0
+const ZOOM_STEP := 1.15
+## A left press that moves farther than this (pixels) drags the map instead of clicking.
+const DRAG_MIN := 6.0
+var _press_at: Vector2 = Vector2.INF
+var _dragging: bool = false
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	clip_contents = true
 	resized.connect(queue_redraw)
 
 
@@ -77,9 +89,30 @@ func _fit() -> Transform2D:
 	if world == null:
 		return Transform2D.IDENTITY
 	var area := size - Vector2(MARGIN, MARGIN) * 2.0
-	var scale_by := minf(area.x / world.size.x, area.y / world.size.y)
-	var offset := (size - world.size * scale_by) / 2.0
+	var scale_by := minf(area.x / world.size.x, area.y / world.size.y) * zoom
+	var offset := (size - world.size * scale_by) / 2.0 + pan
 	return Transform2D(0.0, Vector2(scale_by, scale_by), 0.0, offset)
+
+
+## Zooms by [param factor] keeping the point under [param at] (control pixels) where it is.
+func zoom_at(at: Vector2, factor: float) -> void:
+	var before := _fit().affine_inverse() * at
+	zoom = clampf(zoom * factor, ZOOM_MIN, ZOOM_MAX)
+	pan += at - _fit() * before
+	_clamp_pan()
+
+
+## The map is not moved out of sight: at most half the control past its edges.
+func _clamp_pan() -> void:
+	if zoom <= ZOOM_MIN + 0.001:
+		pan = Vector2.ZERO
+		return
+	var world := world_def()
+	if world == null:
+		return
+	var scaled := world.size * _fit().get_scale()
+	var limit := (scaled - size) / 2.0 + size * 0.25
+	pan = pan.clamp(-limit.max(Vector2.ZERO), limit.max(Vector2.ZERO))
 
 
 ## The province under [param at] (control pixels), 0 if none.
@@ -116,8 +149,32 @@ func _gui_input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion != null:
 		_hover = province_at(motion.position)
+		if _press_at != Vector2.INF and (_dragging or motion.position.distance_to(_press_at) > DRAG_MIN):
+			_dragging = true
+			pan += motion.relative
+			_clamp_pan()
+			accept_event()
+			return
 	var button := event as InputEventMouseButton
-	if button != null and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
+	if button != null and button.pressed and (button.button_index == MOUSE_BUTTON_WHEEL_UP \
+			or button.button_index == MOUSE_BUTTON_WHEEL_DOWN):
+		zoom_at(button.position, ZOOM_STEP if button.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / ZOOM_STEP)
+		accept_event()
+		return
+	# Dragging with the middle or the left button moves the map; a left click (no drag) clicks.
+	if button != null and (button.button_index == MOUSE_BUTTON_MIDDLE or button.button_index == MOUSE_BUTTON_LEFT):
+		if button.pressed:
+			_press_at = button.position
+			_dragging = false
+			accept_event()
+			return
+		var was_drag := _dragging
+		_press_at = Vector2.INF
+		_dragging = false
+		if was_drag or button.button_index == MOUSE_BUTTON_MIDDLE:
+			accept_event()
+			return
+	if button != null and not button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 		var from := expedition_at(button.position)
 		var army := army_at(button.position)
 		if army != 0:

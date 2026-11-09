@@ -12,6 +12,10 @@ const VICTORY_PATRICIANS := &"patricians"
 const VICTORY_FREE := &"free"
 const VICTORIES: Array[StringName] = [VICTORY_CONQUEST, VICTORY_PROVINCES, VICTORY_PATRICIANS, VICTORY_FREE]
 
+const MIN_PROVINCES := 9
+const MAX_PROVINCES := 60
+const MAX_ISLANDS := 10
+
 const EASY := 0
 const NORMAL := 1
 const HARD := 2
@@ -21,8 +25,12 @@ var scenario: StringName = COLONIZATION
 var world_seed: int = 1
 ## A hand-made world (WorldDef id) instead of a generated one.
 var world_def: StringName = &""
-## Provinces of a generated world.
+## Provinces of a generated world, 9-60, and how many of them are islands, 0-10 (owner's
+## survey 2026-11-09).
 var province_count: int = 22
+var islands: int = 3
+## The province the player chose to start in (ProvinceDef id); empty = a random one.
+var start: String = ""
 ## AI rulers, 1-3 (owner's survey 2026-11-09).
 var rulers: int = 2
 var difficulty: int = NORMAL
@@ -51,7 +59,7 @@ func target() -> int:
 
 func to_dict() -> Dictionary:
 	return {"scenario": String(scenario), "seed": world_seed, "world": String(world_def),
-			"provinces": province_count, "rulers": rulers, "difficulty": difficulty,
+			"provinces": province_count, "islands": islands, "start": start, "rulers": rulers, "difficulty": difficulty,
 			"victory": String(victory), "target": victory_target}
 
 
@@ -61,6 +69,8 @@ static func from_dict(d: Dictionary) -> GameSettings:
 	s.world_seed = int(d.get("seed", 1))
 	s.world_def = StringName(String(d.get("world", "")))
 	s.province_count = int(d.get("provinces", 22))
+	s.islands = int(d.get("islands", 0))
+	s.start = String(d.get("start", ""))
 	s.rulers = clampi(int(d.get("rulers", 2)), 0, 3)
 	s.difficulty = clampi(int(d.get("difficulty", NORMAL)), EASY, HARD)
 	s.victory = StringName(String(d.get("victory", VICTORY_CONQUEST)))

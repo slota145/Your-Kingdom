@@ -24,6 +24,7 @@ var _plural_list: Label
 ## The menu's buttons, and the "New game" settings shown instead of them (M8 part 1).
 var _menu_box: VBoxContainer
 var _new_game_panel: NewGamePanel
+var _start_picker: StartPicker
 
 
 func _ready() -> void:
@@ -53,12 +54,31 @@ func _ready() -> void:
 	_new_game_panel = NewGamePanel.new()
 	_new_game_panel.visible = false
 	_new_game_panel.start_requested.connect(func(settings: GameSettings) -> void:
-		Game.start_request = {"settings": settings.to_dict()}
-		_open(GAME_SCENE))
+		if settings.is_generated():
+			# A generated world: choose where to start first (M8 part 1).
+			panel.visible = false
+			_start_picker.open(settings)
+		else:
+			Game.start_request = {"settings": settings.to_dict()}
+			_open(GAME_SCENE))
 	_new_game_panel.back_requested.connect(func() -> void:
 		_new_game_panel.visible = false
 		_menu_box.visible = true)
 	holder.add_child(_new_game_panel)
+	_start_picker = StartPicker.new()
+	_start_picker.visible = false
+	_start_picker.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_start_picker.offset_left = 40
+	_start_picker.offset_top = 40
+	_start_picker.offset_right = -40
+	_start_picker.offset_bottom = -40
+	_start_picker.start_requested.connect(func(settings: GameSettings) -> void:
+		Game.start_request = {"settings": settings.to_dict()}
+		_open(GAME_SCENE))
+	_start_picker.back_requested.connect(func() -> void:
+		_start_picker.visible = false
+		panel.visible = true)
+	add_child(_start_picker)
 	_title = UiKit.title("ui.main.title")
 	_title.add_theme_font_size_override(&"font_size", 56)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

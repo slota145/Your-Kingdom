@@ -50,8 +50,13 @@ func test_generated_worlds_are_sound() -> void:
 				assert_int(owners.get(WorldGenerator.ruler_owner(r), 0)).is_equal(1)
 			assert_int(owners.get(ProvinceDef.OWNER_NEUTRAL, 0)).is_greater_equal(2)
 			var start := data.get_province(world.start_province)
-			assert_str(String(start.template)).is_equal("coast")
-			assert_bool(start.island).is_false()
+			assert_bool(start.coastal).is_true()
+			assert_str(String(start.template)).is_equal("islands" if start.island else "coast")
+			var islands := 0
+			for id: StringName in world.provinces:
+				if data.get_province(id).island:
+					islands += 1
+			assert_int(islands).is_greater_equal(2)
 			# Every province can be reached from the start: by land or, on the coast, by sea.
 			assert_int(_reachable(data, world)).is_equal(count)
 
@@ -123,3 +128,38 @@ func test_victory_and_defeat() -> void:
 			sim3.world.get_province(id).owner = ProvinceDef.OWNER_NONE
 	sim3.run_ticks(SimFixture.ticks(1.1))
 	assert_str(String(sim3.world.result)).is_equal(String(WorldSim.RESULT_LOST))
+
+
+## The player chooses where to start; the rulers get theirs only then, far from him (owner's
+## survey 2026-11-09). 9 to 60 provinces, up to 10 islands, a bigger sheet for a bigger world.
+func test_the_player_chooses_his_start_and_worlds_go_from_9_to_60() -> void:
+	var data := SimFixture.registry()
+	var settings := _settings(11, 3, 30)
+	settings.islands = 6
+	var world := WorldGenerator.geography(data, settings)
+	var choices := WorldGenerator.start_choices(data, world, settings)
+	assert_bool(choices.size() > 5).is_true()
+	for id: StringName in world.provinces:
+		assert_str(String(data.get_province(id).owner)).is_equal("")
+	var island: StringName = &""
+	for id: StringName in choices:
+		if data.get_province(id).island:
+			island = id
+	assert_str(String(island)).is_not_empty()
+	settings.start = String(island)
+	world = WorldGenerator.generate(data, settings)
+	assert_str(String(world.start_province)).is_equal(String(island))
+	var start := data.get_province(island)
+	assert_str(String(start.owner)).is_equal(String(ProvinceDef.OWNER_PLAYER))
+	assert_str(String(start.template)).is_equal("islands")
+	for r: int in range(1, 4):
+		for id: StringName in world.provinces:
+			var d := data.get_province(id)
+			if d.owner == WorldGenerator.ruler_owner(r):
+				assert_float(d.world_pos.distance_to(start.world_pos)).is_greater(world.size.x * 0.25)
+	for count: int in [9, 60]:
+		var s := _settings(3, 3, count)
+		s.islands = 10
+		var w := WorldGenerator.generate(data, s)
+		assert_int(w.provinces.size()).is_equal(count)
+	assert_float(WorldGenerator.size_for(60).x).is_greater(WorldGenerator.size_for(22).x)

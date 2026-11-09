@@ -3830,3 +3830,30 @@ msgstr "Lakeland with forests and rocky ground."
 
 msgid "world.template.riverlands"
 msgstr "River country: fertile meadows, woods and a ford."
+
+msgid "ui.new_game.provinces"
+msgstr "Provinces"
+
+msgid "ui.new_game.islands"
+msgstr "Islands"
+
+msgid "ui.new_game.next"
+msgstr "Next: choose the start"
+
+msgid "ui.new_game.pick_start"
+msgstr "Where do you start?"
+
+msgid "ui.new_game.pick_hint"
+msgstr "Click the province you want to start in. In Colonization you come by ship: one on the coast or an island (the grey ones are not possible). The rulers get their provinces only then, as far from you as can be. Drag to move the map, zoom with the wheel."
+
+msgid "ui.new_game.random_start"
+msgstr "Random"
+
+msgid "ui.new_game.no_start"
+msgstr "No province chosen yet."
+
+msgid "ui.new_game.start_at"
+msgstr "Start: %s (%s)"
+
+msgid "ui.new_game.island"
+msgstr "island"

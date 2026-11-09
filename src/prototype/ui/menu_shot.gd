@@ -36,6 +36,12 @@ func _process(_delta: float) -> void:
 		_menu.get_child(0).set("_mouse", _shift)
 	if _frames == 5 and _open != "":
 		_menu.get("_" + _open).set("visible", true)
+		if _open == "start_picker":
+			var settings := GameSettings.new()
+			settings.world_seed = 7
+			settings.province_count = 30
+			settings.islands = 6
+			(_menu.get("_start_picker") as StartPicker).open(settings)
 		if _open == "new_game_panel":
 			_menu.get("_menu_box").set("visible", false)   # as the "New game" button does (M8)
 	if _frames == 30:

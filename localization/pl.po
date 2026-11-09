@@ -3866,3 +3866,30 @@ msgstr "Pojezierze z lasami i kamienistym gruntem."
 
 msgid "world.template.riverlands"
 msgstr "Kraina nad rzeką: żyzne łąki, lasy i bród."
+
+msgid "ui.new_game.provinces"
+msgstr "Prowincje"
+
+msgid "ui.new_game.islands"
+msgstr "Wyspy"
+
+msgid "ui.new_game.next"
+msgstr "Dalej: wybór startu"
+
+msgid "ui.new_game.pick_start"
+msgstr "Gdzie zaczynasz?"
+
+msgid "ui.new_game.pick_hint"
+msgstr "Kliknij prowincję, w której chcesz zacząć. W Kolonizacji przypływasz statkiem: nadmorską albo wyspę (szare nie wchodzą w grę). Władcy dostaną swoje prowincje dopiero potem, jak najdalej od Ciebie. Przeciągnij, żeby przesunąć mapę, kółkiem przybliżasz."
+
+msgid "ui.new_game.random_start"
+msgstr "Losowo"
+
+msgid "ui.new_game.no_start"
+msgstr "Nie wybrano jeszcze prowincji."
+
+msgid "ui.new_game.start_at"
+msgstr "Start: %s (%s)"
+
+msgid "ui.new_game.island"
+msgstr "wyspa"
