@@ -222,6 +222,19 @@ const BUILDINGS := {
 			"inside": [["plank_stack", 2.9, 1.2], ["saw_horse", 3.4, 0.8]]}],
 		"props": [["crane", 2.6, 1.9], ["tar_barrels", 0.4, 1.85], ["log_pile", 3.55, 1.9],
 			["bollard", 2.95, 3.6]]}],
+	# J1 part 3: the large shipyard (6x6): a wide slipway three rows into the water between two
+	# quay strips, a big boat shed with a stone base and a sail loft, a lean-to of timber, two
+	# cranes and the stores of a great yard.
+	"large_shipyard": [{"volumes": [
+		{"kind": "deck", "rect": [0.9, 2.45, 5.1, 6.0], "h": 8.0, "h_end": -3.0, "slip": true},
+		{"kind": "house", "rect": [0.14, 0.14, 3.2, 2.2], "h": 50.0, "rh": 30.0, "ridge": "x",
+			"ends": ["gable", "gable"], "walls": "timber_stone", "roof": "shingle", "shutters": Color(0.35, 0.3, 0.25),
+			"floors": 2, "chimney": [0.6, 0.5]},
+		{"kind": "lean", "rect": [3.3, 0.14, 5.86, 2.1], "low": "x", "h": 32.0, "hh": 42.0,
+			"roof": "shingle", "walls": "planks", "open": true,
+			"inside": [["plank_stack", 4.2, 1.6], ["saw_horse", 5.0, 1.0], ["plank_stack", 3.8, 0.8]]}],
+		"props": [["crane", 1.0, 2.6], ["crane", 4.9, 2.6], ["tar_barrels", 0.5, 2.3], ["log_pile", 5.5, 2.4],
+			["log_pile", 3.2, 2.35], ["bollard", 0.5, 5.6], ["bollard", 5.5, 5.6]]}],
 	# N1: the pier over the water is the shared quay strip (QuayLayer), not part of the art.
 	"fishing_wharf": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.9, 1.55], "h": 34.0, "rh": 22.0, "ridge": "x", "ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.3, 0.45, 0.6)}],

@@ -3477,3 +3477,47 @@ msgstr "Wielka kusza na kołach: strzela ciężkim bełtem na 10 kafli. Zabija l
 
 msgid "ui.kind.ballista"
 msgstr "Balista"
+
+# J1 part 3: the large shipyard and its ships
+
+msgid "building.large_shipyard.name"
+msgstr "Duża stocznia"
+
+msgid "building.large_shipyard.desc"
+msgstr "Wielka pochylnia trzy rzędy w głąb wody, szopa z kamiennym podmurowaniem i dwa dźwigi. Buduje karawele, karaki i galeony, handlowe i wojenne. Pracuje w niej 2 cieśli okrętowych. Potrzebuje prostego brzegu na 6 kafli i głębokiej wody przed pochylnią."
+
+msgid "ship.caravel.name"
+msgstr "Karawela"
+
+msgid "ship.caravel.desc"
+msgstr "Lekka i najszybsza: trzy maszty, z tyłu trójkątny żagiel łaciński. Ładownia 6 pól, rejsy i szlaki jak koga. Koszt: 30 desek, 8 beczek smoły, 8 bel sukna."
+
+msgid "ship.caravel_war.name"
+msgstr "Karawela wojenna"
+
+msgid "ship.caravel_war.desc"
+msgstr "Karawela z tarczami na burtach: wiezie 40 żołnierzy, w bitwie morskiej silniejsza od okrętu wojennego (koga). Koszt: 36 desek, 10 beczek smoły, 8 bel sukna, 4 żelaza."
+
+msgid "ship.carrack.name"
+msgstr "Karaka"
+
+msgid "ship.carrack.desc"
+msgstr "Pękaty statek z wysokimi kasztelami na dziobie i rufie, po dwa żagle na przednich masztach. Ładownia 9 pól. Koszt: 48 desek, 12 beczek smoły, 12 bel sukna, 4 żelaza."
+
+msgid "ship.carrack_war.name"
+msgstr "Karaka wojenna"
+
+msgid "ship.carrack_war.desc"
+msgstr "Karaka z tarczami: wiezie 60 żołnierzy, mocny kadłub i dużo bełtów. Koszt: 54 deski, 14 beczek smoły, 12 bel sukna, 8 żelaza."
+
+msgid "ship.galleon.name"
+msgstr "Galeon"
+
+msgid "ship.galleon.desc"
+msgstr "Największy: cztery maszty, po trzy żagle na przednich, wysoki tylny kasztel, furty na burtach. Ładownia 12 pól. Koszt: 70 desek, 18 beczek smoły, 18 bel sukna, 6 żelaza."
+
+msgid "ship.galleon_war.name"
+msgstr "Galeon wojenny"
+
+msgid "ship.galleon_war.desc"
+msgstr "Galeon z tarczami: wiezie 90 żołnierzy, najsilniejszy na morzu. Koszt: 78 desek, 20 beczek smoły, 18 bel sukna, 12 żelaza."

@@ -12,7 +12,18 @@ const FRAMES := {&"idle": 1, &"row": 4, &"cast_net": 4, &"wait_net": 4, &"haul_n
 ## sheets have 8 rows (directions) and as many frames per row as fit (tools/render_cog.py).
 const BIG_FRAMES := {&"foreign_cog": [Vector2i(220, 220), Vector2(110, 168)],
 		&"cog": [Vector2i(220, 220), Vector2(110, 168)],
-		&"warship": [Vector2i(220, 220), Vector2(110, 168)]}
+		&"warship": [Vector2i(220, 220), Vector2(110, 168)],
+		# J1 part 3 (tools/render_cog.py --type=...): each bigger than the one before.
+		&"caravel": [Vector2i(270, 270), Vector2(135, 206)],
+		&"caravel_war": [Vector2i(270, 270), Vector2(135, 206)],
+		&"carrack": [Vector2i(320, 320), Vector2(160, 246)],
+		&"carrack_war": [Vector2i(320, 320), Vector2(160, 246)],
+		&"galleon": [Vector2i(370, 370), Vector2(185, 290)],
+		&"galleon_war": [Vector2i(370, 370), Vector2(185, 290)]}
+## How far (tiles) past the slipway centre a hull of this art lies on the slipway (a long hull
+## further towards the water); COG_ON_SLIP for the others.
+const ON_SLIP := {&"caravel": 1.4, &"caravel_war": 1.4, &"carrack": 1.8, &"carrack_war": 1.8,
+		&"galleon": 2.2, &"galleon_war": 2.2}
 ## A big ship on the slipway (M5 part 3): build_<n>.png of the same frame size, one frame per
 ## direction; the hull stands on keel blocks, this far (px) above the slipway centre.
 const SLIP_LIFT := 6.0
@@ -196,9 +207,11 @@ func _update_builds() -> void:
 		sprite.visible = true
 		# The stage being worked on: frame and keel, the planked hull, the mast with the sail
 		# (a boat has 2 stages, a cog 4; the cog's last one, the launch, slides it down).
-		var big := BIG_FRAMES.has(build.ship)
+		var def := province.data.get_ship(build.ship)
+		var art := def.art_id() if def != null else build.ship
+		var big := BIG_FRAMES.has(art)
 		var shown := clampi(build.stage, 0, 2 if big else 1)
-		sprite.texture = _texture("ships/%s/build_%d.png" % [build.ship, shown])
+		sprite.texture = _texture("ships/%s/build_%d.png" % [art, shown])
 		sprite.hframes = 1
 		sprite.vframes = IsoMath.DIR_COUNT
 		# The slipway runs towards the berth: along +y as drawn, along +x mirrored.
@@ -220,16 +233,16 @@ func _update_builds() -> void:
 		if slide > 0.0:
 			# Off its blocks: the hull as it will float (ShipLayer._show_big draws it the same
 			# way at the berth, so nothing jumps when the ship takes over).
-			sprite.texture = _texture("ships/%s/idle.png" % build.ship)
-			var frames := maxi(sprite.texture.get_width() / (BIG_FRAMES[build.ship][0] as Vector2i).x, 1)
+			sprite.texture = _texture("ships/%s/idle.png" % art)
+			var frames := maxi(sprite.texture.get_width() / (BIG_FRAMES[art][0] as Vector2i).x, 1)
 			sprite.hframes = frames
 			sprite.frame = maxi(dir, 0) * frames
 		var berth := IsoMath.tile_center(shipyard.berth_tile())
 		# A cog is longer than the slipway: it lies with its stern at the shore end of the
 		# slipway and its bow over the water, so the workshop never covers the stern.
-		var start := centre + Vector2(towards) * COG_ON_SLIP
+		var start := centre + Vector2(towards) * float(ON_SLIP.get(art, COG_ON_SLIP))
 		var at := start.lerp(berth, slide)
-		var pivot: Vector2 = BIG_FRAMES[build.ship][1]
+		var pivot: Vector2 = BIG_FRAMES[art][1]
 		var lift := SLIP_LIFT * (1.0 - slide)
 		# Sorted just in front of the whole shipyard (its front corner, where the building
 		# sorts): the tall hull on its blocks is drawn over the slipway, the low jetty beside it
@@ -244,7 +257,7 @@ func _update_builds() -> void:
 ## How far (0..1) the hull of a cog being launched has come from the slipway to the berth:
 ## 0 until the last LAUNCH_SLIDE seconds of the launch stage, then eased in and out.
 static func launch_slide(build: ShipBuild) -> float:
-	if build.stage < 3 or not build.stage_started:
+	if build.stage < build.stage_costs.size() - 1 or not build.stage_started:
 		return 0.0
 	var slide_ticks := minf(SimClock.seconds_to_ticks(LAUNCH_SLIDE), maxf(build.stage_ticks, 1.0))
 	var u := clampf(1.0 - float(build.work_left) / slide_ticks, 0.0, 1.0)

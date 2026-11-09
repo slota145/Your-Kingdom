@@ -1051,7 +1051,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## J1 — Nowe jednostki i okręty
 
-**Status: plan zaakceptowany 2026-11-08 (ankiety); część 1 gotowa i scalona do `main` 2026-11-08 na prośbę właściciela (przed oceną); część 2 gotowa i scalona do `main` 2026-11-08 (przed oceną); część 3 w toku.** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
+**Status: plan zaakceptowany 2026-11-08 (ankiety); część 1 gotowa i scalona do `main` 2026-11-08 na prośbę właściciela (przed oceną); część 2 gotowa i scalona do `main` 2026-11-08 (przed oceną); część 3 zaakceptowana i scalona do `main` 2026-11-09; etap J1 zamknięty.** Prośba właściciela 2026-11-08; ankieta: **teraz, przed oceną M7** (świadome ryzyko: jeśli ocena M7 zmieni zasady walki, część wartości trzeba będzie poprawić). Start po W1.
 
 **Cel (prośba właściciela):**
 - jednostki: **halabardnik w zbroi płytowej**, **kusznik**, **ciężki zbrojny z morgensternem**, **lekka jazda**, **ruchoma balista**,
@@ -1076,6 +1076,15 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Zapis v22** (bełty w locie: „b” i „w”; migracja bez zmian).
 - Testy: `tests/scenario/test_j1_ballista.gd`, tabela w `test_battle_resolver.gd`.
 - Zrzut: `game_shot.tscn -- --map=lakeland --tile=78,66 --focus=80,67 --zoom=2 --m7=ballista --raid_seconds=5.3`.
+
+**Część 3, stan (2026-11-08): zaakceptowana 2026-11-09 i scalona do `main`** (wygląd według referencji właściciela: karawela Pinta, karaka Victoria, galeon).
+- **Duża stocznia** (zakładka „Morze i statki”): 6×6, pochylnia trzy rzędy w głąb wody między dwoma pasami nabrzeża, szopa na kamiennym podmurowaniu, dwa dźwigi; 30 desek, 30 drewna, 20 kamieni, 150 zł; 2 cieśli. Buduje tylko nowe okręty (koga i okręt wojenny dalej w zwykłej stoczni). Potrzebuje prostego brzegu na 6 kafli i głębokiej wody przed pochylnią: na „Wybrzeżu” mieści się na południowym brzegu morza (nie w zatoce).
+- **Okręty** (każdy w 4 etapach jak koga): karawela (ładownia 6 pól, najszybsza, 1,5), karaka (9 pól, 1,1), galeon (12 pól, 1,2); handlowe pływają w rejsy i szlaki jak koga. Wojenne: 40, 60 i 90 żołnierzy; w bitwie morskiej kadłub 1000, 1600, 2400 i bełty 40, 60, 90 (okręt wojenny: 800 i 30). Koszty: `data/ships/`.
+- **Bitwa morska po rodzajach okrętów:** armia na morzu pamięta swoją flotę (ile jakich okrętów), bitwa liczy kadłub, bełty i miejsce na żołnierzy każdego rodzaju; **zatopione okręty nie wracają** (dotąd wracały wszystkie, luka z M7 część 3).
+- **Grafika kodem** (`tools/render_cog.py --type=caravel|carrack|galleon`, ART_SPEC §10.18): okrągłe, wysokie kadłuby z burtami zwężającymi się ku górze, dziób i rufa wystające nad wodę, kasztele wyrastające z kadłuba (galeon i karaka w dwóch kondygnacjach), ochrowe relingi z tralkami, ciemne listwy, okna rufowe, furty galeonu; maszty z żaglami jeden nad drugim, bocianie gniazda, żagle łacińskie na tylnych masztach, bukszpryt z żaglem, proporce; krzyż w barwie frakcji na żaglach. Wersje wojenne z tarczami w czerwieni.
+- **Zapis v23** (flota armii; starsze armie miały same okręty wojenne).
+- Testy: `tests/scenario/test_j1_ships.gd`.
+- Zrzut: `game_shot.tscn -- --map=coast --tile=27,100 --focus=26,107 --zoom=1 --j1ships`.
 
 **Podział (propozycja): 3 części, ocena po każdej.**
 1. **Piechota i jazda:** nowe towary i ich wytwarzanie (halabarda, kusza, morgenstern, zbroja płytowa), rekrutacja w koszarach, wartości walki w widoku prowincji i w rozstrzyganiu automatycznym, postacie z animacjami.

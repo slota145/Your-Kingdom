@@ -3441,3 +3441,47 @@ msgstr "A great crossbow on wheels: it shoots a heavy bolt 10 tiles. It kills me
 
 msgid "ui.kind.ballista"
 msgstr "Ballista"
+
+# J1 part 3: the large shipyard and its ships
+
+msgid "building.large_shipyard.name"
+msgstr "Large shipyard"
+
+msgid "building.large_shipyard.desc"
+msgstr "A great slipway three rows into the water, a shed on a stone base and two cranes. Builds caravels, carracks and galleons, for trade and for war. 2 shipwrights work here. Needs a straight shore 6 tiles long and deep water before the slipway."
+
+msgid "ship.caravel.name"
+msgstr "Caravel"
+
+msgid "ship.caravel.desc"
+msgstr "Light and the fastest: three masts, a triangular lateen sail aft. A hold of 6 slots, voyages and routes like the cog. Cost: 30 planks, 8 barrels of tar, 8 bolts of cloth."
+
+msgid "ship.caravel_war.name"
+msgstr "War caravel"
+
+msgid "ship.caravel_war.desc"
+msgstr "A caravel with shields along her sides: carries 40 soldiers, stronger at sea than the war cog. Cost: 36 planks, 10 barrels of tar, 8 bolts of cloth, 4 iron."
+
+msgid "ship.carrack.name"
+msgstr "Carrack"
+
+msgid "ship.carrack.desc"
+msgstr "A round ship with tall castles fore and aft, two sails on her front masts. A hold of 9 slots. Cost: 48 planks, 12 barrels of tar, 12 bolts of cloth, 4 iron."
+
+msgid "ship.carrack_war.name"
+msgstr "War carrack"
+
+msgid "ship.carrack_war.desc"
+msgstr "A carrack with shields: carries 60 soldiers, a strong hull and many bolts. Cost: 54 planks, 14 barrels of tar, 12 bolts of cloth, 8 iron."
+
+msgid "ship.galleon.name"
+msgstr "Galleon"
+
+msgid "ship.galleon.desc"
+msgstr "The biggest: four masts, three sails on the front ones, a tall stern castle, ports along her sides. A hold of 12 slots. Cost: 70 planks, 18 barrels of tar, 18 bolts of cloth, 6 iron."
+
+msgid "ship.galleon_war.name"
+msgstr "War galleon"
+
+msgid "ship.galleon_war.desc"
+msgstr "A galleon with shields: carries 90 soldiers, the strongest at sea. Cost: 78 planks, 20 barrels of tar, 18 bolts of cloth, 12 iron."

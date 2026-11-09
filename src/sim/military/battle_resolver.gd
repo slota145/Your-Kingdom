@@ -66,8 +66,12 @@ static func resolve(data: DataRegistry, a: BattleSide, b: BattleSide, kind: Kind
 	var pools_b := _pools(data, b)
 	var start_a := _men(pools_a)
 	var start_b := _men(pools_b)
-	var ship_life_a := float(a.ships * SHIP_HP) if kind == Kind.NAVAL else 0.0
-	var ship_life_b := float(b.ships * SHIP_HP) if kind == Kind.NAVAL else 0.0
+	# Each side's warships (J1 part 3: by kind, from their ShipDef): full life, damage of a
+	# round at full life, soldiers they carry.
+	var fleet_a := _fleet(data, a)
+	var fleet_b := _fleet(data, b)
+	var ship_life_a: float = fleet_a[0] if kind == Kind.NAVAL else 0.0
+	var ship_life_b: float = fleet_b[0] if kind == Kind.NAVAL else 0.0
 	var result := BattleResult.new()
 	var phase := Phase.VOLLEY
 	var phase_rounds := 0
@@ -98,8 +102,8 @@ static func resolve(data: DataRegistry, a: BattleSide, b: BattleSide, kind: Kind
 		if walls:
 			hit_b *= WALL_COVER
 		if kind == Kind.NAVAL:
-			var bolts_a := _ship_damage(ship_life_a) * mul_a
-			var bolts_b := _ship_damage(ship_life_b) * mul_b
+			var bolts_a := _fleet_damage(fleet_a, ship_life_a, a.fleet.is_empty()) * mul_a
+			var bolts_b := _fleet_damage(fleet_b, ship_life_b, b.fleet.is_empty()) * mul_b
 			# Bolts hit the ships first, then the men on deck.
 			var to_ship_b := minf(bolts_a * 0.5, ship_life_b)
 			var to_ship_a := minf(bolts_b * 0.5, ship_life_a)
@@ -153,12 +157,12 @@ static func resolve(data: DataRegistry, a: BattleSide, b: BattleSide, kind: Kind
 		result.left_b[pool.unit] = pool.alive()
 		result.lost_b[pool.unit] = pool.start - pool.alive()
 	if kind == Kind.NAVAL:
-		result.ships_left_a = mini(ceili(ship_life_a / SHIP_HP - 0.0001), a.ships) if ship_life_a > 0.0 else 0
-		result.ships_left_b = mini(ceili(ship_life_b / SHIP_HP - 0.0001), b.ships) if ship_life_b > 0.0 else 0
+		result.ships_left_a = _ships_left(a, fleet_a, ship_life_a)
+		result.ships_left_b = _ships_left(b, fleet_b, ship_life_b)
 		if a.ships > 0:
-			_drown(result.left_a, result.lost_a, result.ships_left_a)
+			_drown(result.left_a, result.lost_a, _room(fleet_a, ship_life_a, result.ships_left_a, a.fleet.is_empty()))
 		if b.ships > 0:
-			_drown(result.left_b, result.lost_b, result.ships_left_b)
+			_drown(result.left_b, result.lost_b, _room(fleet_b, ship_life_b, result.ships_left_b, b.fleet.is_empty()))
 	else:
 		result.ships_left_a = a.ships
 		result.ships_left_b = b.ships
@@ -252,6 +256,49 @@ static func _take(pools: Array[_Pool], amount: float) -> void:
 				or pool.siege == Troops.BALLISTA else maxf(pool.life - share, 0.0)
 
 
+## A side's warships: [full life, damage of a round at full life, soldiers they carry]. Ships
+## without a fleet by kind are war cogs of the starting values.
+static func _fleet(data: DataRegistry, side: BattleSide) -> Array[float]:
+	if side.fleet.is_empty():
+		return [float(side.ships * SHIP_HP), float(side.ships * SHIP_ATTACK), float(side.ships * SHIP_CAPACITY)]
+	var life := 0.0
+	var attack := 0.0
+	var room := 0.0
+	for id: StringName in side.fleet:
+		var def := data.get_ship(id)
+		var n := float(side.fleet[id])
+		life += n * (def.hp if def != null else SHIP_HP)
+		attack += n * (def.attack if def != null else SHIP_ATTACK)
+		room += n * (def.troops if def != null and def.troops > 0 else SHIP_CAPACITY)
+	return [life, attack, room]
+
+
+## Bolts of a fleet in a round: as its hull life wears down, fewer of its ships still shoot.
+static func _fleet_damage(fleet: Array[float], life: float, legacy: bool) -> float:
+	if legacy:
+		return _ship_damage(life)
+	if life <= 0.0 or fleet[0] <= 0.0:
+		return 0.0
+	return fleet[1] * (life / fleet[0]) * ROUND_SECONDS / SHIP_COOLDOWN * EFFICIENCY
+
+
+static func _ships_left(side: BattleSide, fleet: Array[float], life: float) -> int:
+	if life <= 0.0 or side.ships == 0:
+		return 0
+	if side.fleet.is_empty():
+		return mini(ceili(life / SHIP_HP - 0.0001), side.ships)
+	return mini(ceili(side.ships * life / fleet[0] - 0.0001), side.ships)
+
+
+## Soldiers the ships still afloat can carry.
+static func _room(fleet: Array[float], life: float, left: int, legacy: bool) -> int:
+	if legacy:
+		return left * SHIP_CAPACITY
+	if fleet[0] <= 0.0:
+		return 0
+	return roundi(fleet[2] * life / fleet[0])
+
+
 static func _ship_damage(life: float) -> float:
 	if life <= 0.0:
 		return 0.0
@@ -300,9 +347,8 @@ static func _note(result: BattleResult, phase: Phase, rounds: int, a: Array[_Poo
 	result.report.append({"phase": phase, "rounds": rounds, "a": _men(a), "b": _men(b)})
 
 
-## A side that kept [param ships] warships loses the men they cannot carry.
-static func _drown(left: Dictionary[StringName, int], lost: Dictionary[StringName, int], ships: int) -> void:
-	var room := ships * SHIP_CAPACITY
+## A side whose ships afloat carry [param room] soldiers loses the men they cannot carry.
+static func _drown(left: Dictionary[StringName, int], lost: Dictionary[StringName, int], room: int) -> void:
 	var ids: Array[StringName] = []
 	ids.assign(left.keys())
 	ids.sort()
