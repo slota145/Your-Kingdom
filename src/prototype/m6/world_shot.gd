@@ -30,6 +30,8 @@ var _armies: bool = false
 var _seed: int = 0
 var _provinces: int = 22
 var _rulers: int = 3
+## --zoom=<1..4> (M8 part 1): the world map zoomed in on the player's province.
+var _zoom: float = 1.0
 ## --result=won|lost (M8 part 1): the end-of-game window over the province view.
 var _result: String = ""
 
@@ -56,6 +58,8 @@ func _ready() -> void:
 			_seed = int(arg.trim_prefix("--seed="))
 		elif arg.begins_with("--provinces="):
 			_provinces = int(arg.trim_prefix("--provinces="))
+		elif arg.begins_with("--zoom="):
+			_zoom = float(arg.trim_prefix("--zoom="))
 		elif arg.begins_with("--result="):
 			_result = arg.trim_prefix("--result=")
 		elif arg.begins_with("--rulers="):
@@ -76,6 +80,11 @@ func _process(_delta: float) -> void:
 	_frames += 1
 	if _frames == SETTLE_FRAMES:
 		var sim: Simulation = _game.get("sim")
+		if _zoom > 1.0:
+			var canvas := _game.find_children("*", "WorldMapCanvas", true, false)
+			if not canvas.is_empty():
+				var c := canvas[0] as WorldMapCanvas
+				c.zoom_at(c.size / 2.0, _zoom)
 		if _result != "":
 			(_game.get("_result") as ResultWindow).show_result(_result == "won", GameSettings.VICTORY_CONQUEST)
 		if _settle:

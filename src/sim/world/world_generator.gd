@@ -25,6 +25,8 @@ const RULER_TOWN: Dictionary[StringName, int] = {&"hut": 10, &"well": 2, &"stock
 		&"forester": 1, &"quarry": 1, &"sawmill": 1, &"farm": 2, &"mill": 1, &"bakery": 1, &"fishing_hut": 1,
 		&"market": 1, &"chapel": 1}
 const NEUTRAL_TOWNS: Array[StringName] = [&"iron_wold", &"horse_haven"]
+## How much more a ruler keeps away from the player than from another ruler.
+const RULER_AWAY := 1.6
 
 
 static func world_id(seed_value: int) -> StringName:
@@ -238,10 +240,11 @@ static func assign(data: DataRegistry, world: WorldDef, settings: GameSettings) 
 		player.template = &"islands" if player.island else &"coast"
 	taken.append(player)
 	world.start_province = start
+	# Far from the player first, then from each other (a ruler is never put between them).
 	for r: int in range(1, settings.rulers + 1):
-		var best := _farthest_def(defs, taken, func(d: ProvinceDef) -> bool: return not d.island)
+		var best := _farthest_def(defs, taken, func(d: ProvinceDef) -> bool: return not d.island, player)
 		if best == null:
-			best = _farthest_def(defs, taken, func(_d: ProvinceDef) -> bool: return true)
+			best = _farthest_def(defs, taken, func(_d: ProvinceDef) -> bool: return true, player)
 		if best == null:
 			break
 		best.owner = ruler_owner(r)
@@ -284,7 +287,10 @@ static func assign(data: DataRegistry, world: WorldDef, settings: GameSettings) 
 	world.bandit_camp = camp.id if camp != null else &""
 
 
-static func _farthest_def(defs: Array[ProvinceDef], taken: Array[ProvinceDef], ok: Callable) -> ProvinceDef:
+## The province among [param defs] (free, passing [param ok]) farthest from all of [param taken];
+## the distance to [param first] counts RULER_AWAY times less (keeps rulers away from him).
+static func _farthest_def(defs: Array[ProvinceDef], taken: Array[ProvinceDef], ok: Callable,
+		first: ProvinceDef = null) -> ProvinceDef:
 	var best: ProvinceDef = null
 	var best_d := -1.0
 	for d: ProvinceDef in defs:
@@ -292,7 +298,8 @@ static func _farthest_def(defs: Array[ProvinceDef], taken: Array[ProvinceDef], o
 			continue
 		var far := INF
 		for t: ProvinceDef in taken:
-			far = minf(far, d.world_pos.distance_to(t.world_pos))
+			var gap := d.world_pos.distance_to(t.world_pos)
+			far = minf(far, gap / RULER_AWAY if t == first else gap)
 		if far > best_d:
 			best_d = far
 			best = d
