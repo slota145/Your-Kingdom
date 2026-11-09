@@ -15,8 +15,8 @@ OUT = os.path.join(ROOT, "tools", "spritekiln", "previews")
 DIRS = ["s", "se", "e", "ne", "n", "nw", "w", "sw"]      # ART_SPEC order, the rows of the game's sheet
 SPEC = sys.argv[1] if len(sys.argv) > 1 else "cog"
 ASSET = sys.argv[2] if len(sys.argv) > 2 else SPEC
-SIZE = {"cog": 220, "caravel": 270, "galleon": 370}.get(ASSET, 220)
-PIVOT = {"cog": (110, 168), "caravel": (135, 206), "galleon": (185, 290)}.get(ASSET, (110, 168))
+SIZE = {"cog": 220, "caravel": 270, "carrack": 320, "galleon": 370}.get(ASSET, 220)
+PIVOT = {"cog": (110, 168), "caravel": (135, 206), "carrack": (160, 246), "galleon": (185, 290)}.get(ASSET, (110, 168))
 SC = SIZE / 220
 STEP, ROW_H, TOP = int(168 * SC), int(190 * SC), int(150 * SC)
 

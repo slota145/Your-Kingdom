@@ -27,6 +27,14 @@ TYPES = {
                     spritsail=False, beak=False, ports=False, wales=[0.35, 0.7],
                     profile=dict(zm=0.4, wt=0.62, forefoot=0.3, rake=0.3, fc=(0.46, 0.35, 0.6),
                                  qd=(-0.14, 0.3, 0.95))),
+    # carrack (owner 2026-11-09, like the caravel and the galleon; the J1 reference: the carrack Victoria):
+    # a tall forecastle over the bow, a two-tier stern castle, two tiers of square sails, a lateen aft
+    "carrack": dict(L=90, W=30, D=26, S=22, castle=(0.44, 17), tier2=(0.74, 12), fore=(0.56, 19), size=320, pivot=246,
+                    rig=[dict(z=0.56, h=104, w=28, tiers=2, cross=True), dict(z=-0.02, h=146, w=42, tiers=2, cross=True),
+                         dict(z=-0.5, h=108, span=60, lateen=True, billow=True, y0=1.45)],
+                    spritsail=True, beak=False, ports=False, wales=[0.3, 0.55, 0.8],
+                    profile=dict(zm=0.3, wt=0.7, forefoot=0.4, bow_sweep=True, rake=0.45, fc=(0.44, 0.95, 1.25),
+                                 qd=(-0.2, 0.75, 0.95), poop=(-0.62, 1.35, 1.6), tumble=True), ornate_stern=False),
     "galleon": dict(L=108, W=31, D=27, S=16, castle=(0.38, 17), tier2=(0.66, 14), fore=(0.62, 12), size=370,
                     pivot=290,
                     # owner 2026-11-09: no bonaventure mast; main and mizzen further aft, bigger sails,
@@ -345,7 +353,7 @@ def build(kind, war=False, stage=None):
         parts.pop("foam")
         parts["hull"]["cut"][0] = {"plane": {"n": [0, -1, 0], "at": 0.35}}
         parts["blocks"] = {"material": "castle", "prims": [
-            ({"box": {"c": r3([0, -0.7, z]), "half": r3([0.8 * W, 0.34, 0.22])}} if kind == "galleon"   # wide enough to show
+            ({"box": {"c": r3([0, -0.7, z]), "half": r3([0.8 * W, 0.34, 0.22])}} if kind in ("galleon", "carrack")   # wide enough to show
              else {"box": {"c": r3([0, -0.58, z]), "half": [0.55, 0.22, 0.2]}}) for z in
             [-Lh * 0.6, -Lh * 0.2, Lh * 0.2, Lh * 0.55]]}
         if stage < 2:
@@ -394,8 +402,9 @@ def build(kind, war=False, stage=None):
         "camera": {"pitch": 30, "scale": K, "center": [0, r3(cy), 0]},
         "shadow": None,
         "ramps": {
-            "hull": (["#160a06", "#34160c", "#562614", "#76361e", "#94482a", "#b05c38"] if kind == "galleon"
-                     else ["#1a0c05", "#3e200e", "#6a3a18", "#94562a", "#b8743c", "#d49458"]),   # oiled wood, darker on the galleon
+            "hull": {"galleon": ["#160a06", "#34160c", "#562614", "#76361e", "#94482a", "#b05c38"],
+                     "carrack": ["#180c06", "#3a1e0e", "#5e3418", "#824a24", "#a2633a", "#bc7e52"]}.get(
+                         kind, ["#1a0c05", "#3e200e", "#6a3a18", "#94562a", "#b8743c", "#d49458"]),   # oiled wood
             "tar": ["#08080a", "#141418", "#202228", "#2e3038", "#40444e", "#565a66"],
             "sail": ["#1a1712", "#4a443a", "#7e7666", "#b4aa94", "#d6cdb6", "#eee8d6"],
             "rope": ["#0e0a06", "#22180e", "#3a2a18", "#54402a"],
