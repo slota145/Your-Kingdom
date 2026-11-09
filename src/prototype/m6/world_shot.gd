@@ -30,6 +30,8 @@ var _armies: bool = false
 var _seed: int = 0
 var _provinces: int = 22
 var _rulers: int = 3
+## --result=won|lost (M8 part 1): the end-of-game window over the province view.
+var _result: String = ""
 
 
 func _ready() -> void:
@@ -54,6 +56,8 @@ func _ready() -> void:
 			_seed = int(arg.trim_prefix("--seed="))
 		elif arg.begins_with("--provinces="):
 			_provinces = int(arg.trim_prefix("--provinces="))
+		elif arg.begins_with("--result="):
+			_result = arg.trim_prefix("--result=")
 		elif arg.begins_with("--rulers="):
 			_rulers = int(arg.trim_prefix("--rulers="))
 	Game.start_request = {"world": "kingdom"}
@@ -72,6 +76,8 @@ func _process(_delta: float) -> void:
 	_frames += 1
 	if _frames == SETTLE_FRAMES:
 		var sim: Simulation = _game.get("sim")
+		if _result != "":
+			(_game.get("_result") as ResultWindow).show_result(_result == "won", GameSettings.VICTORY_CONQUEST)
 		if _settle:
 			sim.open_province(sim.world.id_of(&"willow_vale"), sim.data.get_map(&"riverlands"))
 		if _expeditions:

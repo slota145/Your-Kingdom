@@ -271,7 +271,16 @@ func _build_ui() -> void:
 		_result.visible = false
 		Game.paused = false)
 	_result.menu_requested.connect(_back_to_menu)
-	root.add_child(_result)
+	# Above everything, the world map too: a game can end while it is open.
+	var top_layer := CanvasLayer.new()
+	top_layer.layer = 100
+	add_child(top_layer)
+	var top_root := Control.new()
+	top_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	top_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top_root.theme = root.theme
+	top_layer.add_child(top_root)
+	top_root.add_child(_result)
 	root.add_child(_ship_panel)
 	_world_map = WorldMapScreen.new()
 	_world_map.visible = false
