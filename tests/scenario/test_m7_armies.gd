@@ -52,6 +52,7 @@ func _army(sim: Simulation, at: int, units: Dictionary) -> Army:
 	army.state = Army.State.IDLE
 	army.units = _units(units)
 	army.food = army.food_cap()
+	army.pos = ArmyOrders.stand_point(sim, at)
 	sim.world.armies[army.id] = army
 	return army
 
@@ -129,8 +130,9 @@ func test_army_walks_through_neighbours_to_a_settlement_and_waits() -> void:
 	var food := army.food
 	assert_str(String(sim.execute(SendArmyCommand.new(army.id, iron)))).is_empty()
 	assert_int(army.state).is_equal(Army.State.MOVING)
-	assert_int(army.next).is_equal(sim.world.id_of(&"willow_vale"))
-	assert_array(army.route).is_equal([iron])
+	# M8 part 2: a way of points over the land to the border of the town.
+	assert_int(army.target).is_equal(iron)
+	assert_bool(army.path.is_empty()).is_false()
 	var events: Array[Dictionary] = []
 	for k: int in 900:
 		events.append_array(_run(sim, 1))
@@ -310,6 +312,7 @@ func test_an_army_sails_on_warships_and_they_come_back() -> void:
 	var home := sim.world.id_of(&"landing_bay")
 	var isle := sim.world.id_of(&"gull_isle")
 	var army := _army(sim, home, {"spearman": 20})
+	army.pos = ArmyOrders.stand_point(sim, home)
 	assert_str(String(Armies.send_error(sim, army, isle))).is_equal("needs_warships")
 	var def := sim.data.get_ship(&"warship")
 	var ship := ShipUnit.new(sim.ids.take(), def, Vector2.ZERO, sim.data)
@@ -322,9 +325,18 @@ func test_an_army_sails_on_warships_and_they_come_back() -> void:
 	assert_int(army.ships).is_equal(1)
 	assert_bool(army.by_sea).is_true()
 	assert_bool(sim.province.ships.has(ship.id)).is_false()
-	var there := _until(sim, 900, func() -> bool: return army.state == Army.State.IDLE and army.at == isle)
+	var there := _until(sim, 1500, func() -> bool: return army.state == Army.State.IDLE and army.at == isle)
 	assert_bool(there).is_true()
 	assert_int(army.ships).is_equal(0)
+	# M8 part 2: the warship stays off the coast as a fleet; sent home, it goes into the port.
+	var fleet: Army = null
+	for other: Army in sim.world.armies.values():
+		if other.is_fleet():
+			fleet = other
+	assert_object(fleet).is_not_null()
+	assert_str(String(sim.execute(SendArmyCommand.new(fleet.id, home)))).is_empty()
+	var back := _until(sim, 1500, func() -> bool: return not sim.world.armies.has(fleet.id))
+	assert_bool(back).is_true()
 	assert_int(Armies.warships_at(sim, home).size()).is_equal(1)
 	# Two fleets meeting at sea fight a sea battle.
 	var r := BattleResolver.resolve(sim.data, BattleSide.new(_units({"spearman": 30}), true, 1),

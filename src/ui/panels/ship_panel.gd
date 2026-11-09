@@ -23,6 +23,7 @@ var _troops: Label
 var _troop_slots: GridContainer
 var _troop_key: String = ""
 var _land: Button
+var _sail_out: Button
 ## What the slot grid shows now (good and amount per slot), rebuilt only when it changes.
 var _slot_key: String = ""
 
@@ -55,6 +56,10 @@ func _init() -> void:
 	box.add_child(buttons)
 	_land = UiKit.button("ui.ship.land_troops", func() -> void: command_requested.emit(LandTroopsCommand.new(ship_id)))
 	buttons.add_child(_land)
+	# M8 part 2: the warship sails off to the world map and joins the province's fleet there.
+	_sail_out = UiKit.button("ui.ship.sail_out", func() -> void: command_requested.emit(SailOutCommand.new(ship_id)))
+	_sail_out.tooltip_text = "ui.ship.sail_out_tip"
+	buttons.add_child(_sail_out)
 	buttons.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
 
 
@@ -91,6 +96,8 @@ func _refresh() -> void:
 	_troop_slots.visible = warship
 	_land.visible = warship and not ship.troops.is_empty()
 	_land.disabled = ship.troop_order == TroopTransport.LAND
+	_sail_out.visible = warship
+	_sail_out.disabled = ship.sail_out != 0 or ship.troop_order != &"" or not ship.boarding.is_empty()
 	if warship:
 		_troops.text = "\n".join(troop_lines(province, ship))
 		_refresh_troop_slots(ship)

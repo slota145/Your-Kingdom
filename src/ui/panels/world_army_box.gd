@@ -34,10 +34,6 @@ func _init() -> void:
 	_disband = UiKit.button("ui.world.army_disband", func() -> void:
 		command_requested.emit(DisbandArmyCommand.new(army_id)))
 	add_child(_disband)
-	var hint := UiKit.label("ui.world.army_hint")
-	hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
-	hint.add_theme_color_override(&"font_color", UiKit.INK_SOFT)
-	add_child(hint)
 
 
 func show_for(simulation: Simulation, id: int) -> void:
@@ -47,8 +43,18 @@ func show_for(simulation: Simulation, id: int) -> void:
 	visible = army != null
 	if army == null:
 		return
-	_title.text = tr_n("ui.world.army_title", "ui.world.army_title_plural", army.men()) % army.men()
+	if army.is_fleet():
+		_title.text = tr_n("ui.world.fleet_title", "ui.world.fleet_title_plural", army.ships) % army.ships
+	else:
+		_title.text = tr_n("ui.world.army_title", "ui.world.army_title_plural", army.men()) % army.men()
 	var lines := PackedStringArray()
+	if army.is_fleet():
+		var kinds: Array[StringName] = []
+		kinds.assign(army.fleet.keys())
+		kinds.sort()
+		for ship: StringName in kinds:
+			var def := sim.data.get_ship(ship)
+			lines.append("%s: %d" % [tr(def.name_key()) if def != null else String(ship), army.fleet[ship]])
 	var units: Array[StringName] = []
 	units.assign(army.units.keys())
 	units.sort()
@@ -60,8 +66,9 @@ func show_for(simulation: Simulation, id: int) -> void:
 		lines.append(tr("ui.world.army_hungry"))
 	elif per_minute > 0.0:
 		lines.append(tr("ui.world.army_food") % [floori(army.food), ceili(army.food / per_minute)])
-	if army.ships > 0:
+	if army.ships > 0 and not army.is_fleet():
 		lines.append(tr("ui.world.army_ships") % army.ships)
+	lines.append(tr("ui.world.fleet_hint") if army.is_fleet() else tr("ui.world.army_hint"))
 	_body.text = "\n".join(lines)
 	var at_siege := Armies.siege_error(sim, army) == &""
 	_enter.visible = at_siege
@@ -77,17 +84,23 @@ func _where(army: Army) -> String:
 	var name := _name(army.at)
 	match army.state:
 		Army.State.MOVING:
-			var seconds := (army.arrive_at - sim.clock.tick) / float(SimClock.TICKS_PER_SECOND)
-			var prev := army.next
-			for stop: int in army.route:
-				seconds += maxf(sim.world.army_seconds(prev, stop, army.by_sea, sim.data), 0.0)
-				prev = stop
-			return tr("ui.world.army_moving") % [_name(army.goal()), maxi(ceili(seconds / 60.0), 1)]
+			var minutes := maxi(ceili(ArmyOrders.seconds_left(sim, army) / 60.0), 1)
+			if army.chase != 0:
+				return tr("ui.world.army_chasing") % minutes
+			if army.target != 0 and army.ashore == Vector2.INF:
+				return tr("ui.world.army_moving") % [_name(army.target), minutes]
+			if army.ashore != Vector2.INF:
+				return tr("ui.world.fleet_landing") % minutes
+			return tr("ui.world.army_moving_spot") % minutes
 		Army.State.WAITING:
 			return tr("ui.world.army_waiting") % name
 		Army.State.INSIDE:
 			return tr("ui.world.army_inside") % name
-	return tr("ui.world.army_idle") % name
+		Army.State.ENGAGED:
+			return tr("ui.world.army_engaged")
+	if army.by_sea:
+		return tr("ui.world.fleet_idle")
+	return tr("ui.world.army_idle") % name if army.at != 0 else tr("ui.world.army_idle_field")
 
 
 func _name(id: int) -> String:

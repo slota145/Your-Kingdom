@@ -20,6 +20,8 @@ var routes: Dictionary[int, TradeRoute] = {}
 var settlements: Dictionary[int, NeutralSettlement] = {}
 ## Armies of the player and of the bandits by id (M7 part 3).
 var armies: Dictionary[int, Army] = {}
+## Battles in the field of the player's armies (M8 part 2) by id.
+var battles: Dictionary[int, FieldBattle] = {}
 ## The bandits' camp (null in a world without bandits and in a single-province game).
 var camp: BanditCamp = null
 ## Reports of the last battles, newest last: {tick, province, kind, attacker, defender,
@@ -158,6 +160,14 @@ func to_dict() -> Dictionary:
 		for id: int in keys:
 			a.append(armies[id].to_dict())
 		d["armies"] = a
+	if not battles.is_empty():
+		var b: Array = []
+		var keys: Array[int] = []
+		keys.assign(battles.keys())
+		keys.sort()
+		for id: int in keys:
+			b.append(battles[id].to_dict())
+		d["battles"] = b
 	if camp != null:
 		d["camp"] = camp.to_dict()
 	if not reports.is_empty():
@@ -190,6 +200,9 @@ static func from_dict(d: Dictionary) -> WorldSim:
 	for ad: Variant in d.get("armies", []):
 		var army := Army.from_dict(ad)
 		world.armies[army.id] = army
+	for bd: Variant in d.get("battles", []):
+		var battle := FieldBattle.from_dict(bd)
+		world.battles[battle.id] = battle
 	if d.has("camp"):
 		world.camp = BanditCamp.from_dict(d["camp"])
 	for rd: Variant in d.get("reports", []):

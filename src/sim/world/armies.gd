@@ -51,6 +51,7 @@ static func march_out(sim: Simulation, agents: Array[Agent]) -> Army:
 	army.at = sim.viewed_id
 	army.home = sim.viewed_id
 	army.entry = exit_tile(province, agents[0].tile(), CombatState.PLAYER)
+	army.pos = ArmyOrders.stand_point(sim, army.at)
 	sim.world.armies[army.id] = army
 	Troops.order_march(province, agents, army.id, army.entry)
 	sim.events.emit(&"army_marching", {"army": army.id, "province": army.at})
@@ -91,28 +92,25 @@ static func exit_tile(province: ProvinceSim, from: Vector2i, faction: int) -> Ve
 static func absorb(sim: Simulation) -> void:
 	for entry: Dictionary in sim.province.marched:
 		var army := sim.world.armies.get(int(entry["army"])) as Army
-		if army != null:
+		if army == null:
+			continue
+		if entry.has("ship"):
+			army.ships += 1
+			var ship := StringName(entry["ship"])
+			army.fleet[ship] = army.fleet.get(ship, 0) + 1
+		else:
 			army.add(StringName(entry["unit"]))
 	sim.province.marched.clear()
 
 
 # --- Orders ----------------------------------------------------------------------------------
 
-## Why [param army] cannot be sent to province [param to] now, or &"" (the world map shows it).
+## Why [param army] cannot be sent to the town of province [param to] now, or &"" (the world
+## map shows it). Any spot of the map: ArmyOrders.order_error (M8 part 2).
 static func send_error(sim: Simulation, army: Army, to: int) -> StringName:
-	if army == null or army.owner != ProvinceDef.OWNER_PLAYER:
-		return &"no_army"
-	if army.state == Army.State.INSIDE:
-		return &"army_busy"
-	if army.state == Army.State.MOVING:
-		return &"army_on_the_way"
-	if sim.world.get_province(to) == null or to == army.at:
+	if sim.world.get_province(to) == null:
 		return &"unknown_province"
-	if goes_by_sea(sim, army, to):
-		return &""
-	if sim.world.land_route(army.at, to, sim.data).is_empty():
-		return &"needs_warships" if sim.world.sea_route(army.at, to, sim.data) else &"no_way"
-	return &""
+	return ArmyOrders.order_error(sim, army, to, Vector2.INF)
 
 
 ## Warships of province [param id] ready to carry an army: finished, not under way.
@@ -129,51 +127,21 @@ static func warships_at(sim: Simulation, id: int) -> Array[ShipUnit]:
 	for key: int in keys:
 		var ship := province.ships[key]
 		# A warship with soldiers of the province aboard stays (P2 part 2, survey 2026-11-09).
-		if ship.def.troops > 0 and ship.troops.is_empty() and ship.boarding.is_empty():
+		if ship.def.troops > 0 and ship.troops.is_empty() and ship.boarding.is_empty() and ship.sail_out == 0:
 			result.append(ship)
 	return result
 
 
-## Whether [param army] would sail to [param to]: both have a coast, there are warships enough
-## for its men where it stands, and the sea is quicker than the land (or the only way).
+## Whether [param army] would sail to [param to] on the warships of its province (there is no
+## way by land, or the sea is quicker).
 static func goes_by_sea(sim: Simulation, army: Army, to: int) -> bool:
-	if not sim.world.sea_route(army.at, to, sim.data):
-		return false
-	var room := 0
-	for ship: ShipUnit in warships_at(sim, army.at):
-		room += ship.def.troops
-	if room < army.men():
-		return false
-	var land := sim.world.land_route(army.at, to, sim.data)
-	if land.is_empty():
-		return true
-	var walk := 0.0
-	var prev := army.at
-	for stop: int in land:
-		walk += sim.world.army_seconds(prev, stop, false, sim.data)
-		prev = stop
-	return sim.world.army_seconds(army.at, to, true, sim.data) < walk
+	var way := ArmyOrders.plan(sim, army, to, Vector2.INF)
+	return way["error"] == &"" and bool(way["board"])
 
 
-## Sends [param army] on its way to [param to] (checked with [method send_error]); by sea the
-## warships it needs leave its province with it.
+## Sends [param army] on its way to the town of [param to] (checked with [method send_error]).
 static func send(sim: Simulation, army: Army, to: int) -> void:
-	army.by_sea = goes_by_sea(sim, army, to)
-	if army.by_sea:
-		_board(sim, army)
-	var by_sea: Array[int] = [to]
-	army.route = by_sea if army.by_sea else sim.world.land_route(army.at, to, sim.data)
-	army.warned = false
-	_next_leg(sim, army)
-	sim.events.emit(&"army_sent", {"army": army.id, "province": to})
-
-
-static func _next_leg(sim: Simulation, army: Army) -> void:
-	army.next = army.route.pop_front()
-	army.state = Army.State.MOVING
-	army.depart_at = sim.clock.tick
-	var seconds := sim.world.army_seconds(army.at, army.next, army.by_sea, sim.data)
-	army.arrive_at = sim.clock.tick + SimClock.seconds_to_ticks(maxf(seconds, 1.0))
+	ArmyOrders.order(sim, army, to, Vector2.INF)
 
 
 ## Disbanding in the player's province: the men go into its barracks (as many as fit).
@@ -200,27 +168,59 @@ static func update(sim: Simulation) -> void:
 		var army := world.armies.get(id) as Army
 		if army == null:
 			continue
+		if army.pos == Vector2.INF and army.state != Army.State.INSIDE:
+			_place_old(sim, army)
+			if not world.armies.has(id):
+				continue
 		match army.state:
 			Army.State.INSIDE:
 				_inside(sim, army)
 			Army.State.MOVING:
 				_eat(army, 1.0)
+				var ended := ArmyOrders.step(sim, army, 1.0)
 				_warn(sim, army)
-				if sim.clock.tick >= army.arrive_at:
-					army.at = army.next
-					if army.route.is_empty():
-						_arrive(sim, army)
-					else:
-						_meet(sim, army)
-						if world.armies.has(army.id):
-							_next_leg(sim, army)
+				if ended and army.state == Army.State.MOVING:
+					_arrive(sim, army)
 			Army.State.IDLE, Army.State.WAITING:
 				_eat(army, 1.0)
-				if world.owner_of(army.at) == ProvinceDef.OWNER_PLAYER \
+				if not army.by_sea and world.owner_of(army.at) == ProvinceDef.OWNER_PLAYER \
 						and sim.clock.tick % SimClock.seconds_to_ticks(REFILL_SECONDS) == 0:
 					_refill(sim, army)
+			Army.State.ENGAGED:
+				_eat(army, 1.0)
+	FieldBattles.update(sim)
+	ArmyMeetings.update(sim)
 	if sim.raids_enabled:
 		_update_camp(sim)
+
+
+## An army from a save of before M8 part 2 (no place on the map yet): it stands by its
+## province's town (or at the border of a foreign one), and one on its way goes on to its goal.
+static func _place_old(sim: Simulation, army: Army) -> void:
+	var goal := army.target
+	if army.owner == Army.BANDITS:
+		var def := sim.world.def_of(army.at, sim.data)
+		army.pos = def.world_pos if def != null else Vector2.ZERO
+	elif army.by_sea and army.ships > 0:
+		army.pos = ArmyOrders.offshore(sim, army.at)
+		if army.pos == Vector2.INF:
+			army.pos = ArmyOrders.stand_point(sim, army.at)
+	elif army.state == Army.State.WAITING:
+		army.pos = ArmyOrders.town_point(sim, army, army.at)
+	else:
+		army.pos = ArmyOrders.stand_point(sim, army.at)
+	if army.state != Army.State.MOVING or goal == army.at:
+		return   # (on the spot: arrives on the next second)
+	army.state = Army.State.IDLE
+	army.target = 0
+	if goal == 0:
+		return
+	if army.owner != ProvinceDef.OWNER_PLAYER:
+		if not ArmyOrders.send_over_land(sim, army, goal):
+			_go_home(sim, army)
+		return
+	if ArmyOrders.order_error(sim, army, goal, Vector2.INF) == &"":
+		ArmyOrders.order(sim, army, goal, Vector2.INF)
 
 
 static func _eat(army: Army, seconds: float) -> void:
@@ -229,9 +229,14 @@ static func _eat(army: Army, seconds: float) -> void:
 
 ## Bread from the province's storages up to what the army takes along.
 static func _refill(sim: Simulation, army: Army) -> void:
+	refill_from(sim, army, army.at)
+
+
+## Bread from the storages of province [param id] up to what the army takes along.
+static func refill_from(sim: Simulation, army: Army, id: int) -> void:
 	if army.owner != ProvinceDef.OWNER_PLAYER:
 		return
-	var province := sim.province_state(army.at)
+	var province := sim.province_state(id)
 	if province == null:
 		return
 	var missing := floori(army.food_cap() - army.food)
@@ -250,6 +255,14 @@ static func _refill(sim: Simulation, army: Army) -> void:
 ## An army whose men are on the viewed map: when none is left there (all marched off, or
 ## fell), it stands outside (or is gone); a siege won takes the settlement.
 static func _inside(sim: Simulation, army: Army) -> void:
+	if army.by_sea:
+		if army.at == sim.viewed_id and Fleets.sailing_out(sim.province, army.id) > 0:
+			return
+		if army.ships == 0 and army.is_empty():
+			sim.world.armies.erase(army.id)
+			return
+		Fleets.out_of_province(sim, army)
+		return
 	var on_map := 0
 	if army.at == sim.viewed_id:
 		for agent: Agent in sim.province.agents.all():
@@ -281,16 +294,19 @@ static func _inside(sim: Simulation, army: Army) -> void:
 		return
 	army.state = Army.State.IDLE if sim.world.owner_of(army.at) == ProvinceDef.OWNER_PLAYER \
 			else Army.State.WAITING
+	if army.pos == Vector2.INF:
+		army.pos = ArmyOrders.stand_point(sim, army.at) if army.state == Army.State.IDLE \
+				else ArmyOrders.town_point(sim, army, army.at)
 	sim.events.emit(&"army_out", {"army": army.id, "province": army.at})
 
 
 ## Warns the viewed province a minute before bandits arrive there (the warning of part 2).
 static func _warn(sim: Simulation, army: Army) -> void:
-	if army.owner != Army.BANDITS or army.warned or not army.route.is_empty():
+	if army.owner != Army.BANDITS or army.warned or army.state != Army.State.MOVING:
 		return
-	if army.next != sim.viewed_id or sim.world.owner_of(army.next) != ProvinceDef.OWNER_PLAYER:
+	if army.target != sim.viewed_id or sim.world.owner_of(army.target) != ProvinceDef.OWNER_PLAYER:
 		return
-	if army.arrive_at - sim.clock.tick > SimClock.seconds_to_ticks(WARNING_SECONDS):
+	if ArmyOrders.seconds_left(sim, army) > WARNING_SECONDS:
 		return
 	var province := sim.province
 	if province.raids.is_active() or not province.has_seat():
@@ -301,49 +317,6 @@ static func _warn(sim: Simulation, army: Army) -> void:
 		return
 	province.raids.state = Raids.State.WARNED
 	province.events.emit(&"raid_warning", {"seconds": WARNING_SECONDS, "tile": province.raids.entry})
-
-
-## The warships [param army] needs leave its province with it (off the map).
-static func _board(sim: Simulation, army: Army) -> void:
-	var province := sim.province_state(army.at)
-	var room := 0
-	for ship: ShipUnit in warships_at(sim, army.at):
-		if room >= army.men():
-			break
-		room += ship.def.troops
-		province.ships.erase(ship.id)
-		army.ships += 1
-		army.fleet[ship.def.id] = army.fleet.get(ship.def.id, 0) + 1
-	army.fleet_home = army.at
-	sim.events.emit(&"fleet_sailed", {"army": army.id, "province": army.at, "ships": army.ships})
-
-
-## The army is ashore: its warships sail back to their port (they are there at once: a
-## simplification like the expedition's cog, ROADMAP M7 part 3).
-static func _fleet_home(sim: Simulation, army: Army) -> void:
-	if army.ships == 0:
-		return
-	var home := sim.province_state(army.fleet_home)
-	if army.fleet.is_empty():
-		army.fleet[&"warship"] = army.ships
-	if home != null and sim.world.owner_of(army.fleet_home) == ProvinceDef.OWNER_PLAYER:
-		var ids: Array[StringName] = []
-		ids.assign(army.fleet.keys())
-		ids.sort()
-		for id: StringName in ids:
-			var def := sim.data.get_ship(id)
-			if def == null:
-				continue
-			for k: int in army.fleet[id]:
-				var ship := ShipUnit.new(sim.ids.take(), def, Vector2.ZERO, sim.data)
-				var at := _sea_spot(home, ship)
-				if at == Agent.NO_TILE:
-					break
-				ship.pos = IsoMath.tile_center(at)
-				ship.prev_pos = ship.pos
-				home.ships[ship.id] = ship
-	army.ships = 0
-	army.fleet.clear()
 
 
 ## Deep water off the province's coast where a returning warship anchors.
@@ -362,13 +335,31 @@ static func _sea_spot(province: ProvinceSim, ship: ShipUnit) -> Vector2i:
 	return Voyage.anchorage(province, ship, near)
 
 
-## The army reached the end of its way.
+## The army (or fleet) reached the end of its way.
 static func _arrive(sim: Simulation, army: Army) -> void:
-	_fleet_home(sim, army)
-	army.landed_by_sea = army.by_sea
-	army.by_sea = false
-	sim.events.emit(&"army_arrived", {"army": army.id, "province": army.at})
-	_meet(sim, army)
+	if army.chase != 0:
+		army.state = Army.State.IDLE
+		army.chase = 0
+		return
+	if army.is_fleet():
+		Fleets.arrive(sim, army)
+		return
+	sim.events.emit(&"army_arrived", {"army": army.id, "province": army.target if army.target != 0 else army.at})
+	arrive_on_land(sim, army)
+
+
+## An army on the land at the end of its way: in the field it stands; at a town it does what
+## it came for (M7 part 3): bandits raid, the player's men go into the barracks, wait at a
+## neutral settlement, break the bandits' camp; enemies standing by the town fight it first.
+static func arrive_on_land(sim: Simulation, army: Army) -> void:
+	army.path.clear()
+	if army.target == 0:
+		army.state = Army.State.IDLE
+		return
+	army.at = army.target
+	army.target = 0
+	if ArmyMeetings.at_town(sim, army):
+		return
 	if not sim.world.armies.has(army.id):
 		return
 	var owner := sim.world.owner_of(army.at)
@@ -381,13 +372,13 @@ static func _arrive(sim: Simulation, army: Army) -> void:
 			_go_home(sim, army)
 		return
 	var camp := sim.world.camp
-	if camp != null and camp.province == army.at:
+	if camp != null and camp.province == army.at and camp.is_up():
 		_attack_camp(sim, army)
 		return
 	match owner:
 		ProvinceDef.OWNER_PLAYER:
 			army.state = Army.State.IDLE
-			_join_barracks(sim, army)
+			join_barracks(sim, army)
 		ProvinceDef.OWNER_NEUTRAL:
 			army.state = Army.State.WAITING
 			sim.events.emit(&"army_at_settlement", {"army": army.id, "province": army.at})
@@ -395,40 +386,21 @@ static func _arrive(sim: Simulation, army: Army) -> void:
 			army.state = Army.State.IDLE
 
 
-## Armies of other sides standing where [param army] comes fight it in the field.
-static func _meet(sim: Simulation, army: Army) -> void:
-	for other: Army in sim.world.armies_at(army.at):
-		if other == army or other.owner == army.owner or other.state == Army.State.INSIDE:
-			continue
-		var kind := BattleResolver.Kind.NAVAL if army.ships > 0 and other.ships > 0 else BattleResolver.Kind.FIELD
-		var result := battle(sim, army, other.side(), kind, null, army.at, other.owner)
-		other.lose(result.lost_b)
-		if kind == BattleResolver.Kind.NAVAL:
-			# Ships sunk stay sunk (J1 part 3; before, every ship came home).
-			army.sink_to(result.ships_left_a)
-			other.sink_to(result.ships_left_b)
-		if other.is_empty() or result.a_won():
-			if other.owner == Army.BANDITS:
-				_scatter(sim, other)
-			else:
-				_disband(sim, other, &"army_lost")
-		if army.is_empty() or not result.a_won():
-			if army.owner == Army.BANDITS:
-				_scatter(sim, army)
-			else:
-				_retreat_home(sim, army)
-			return
-
-
 ## A battle by BattleResolver: [param army] attacks [param defender]; losses come off the
 ## army, the result is reported (world.reports) and returned.
 static func battle(sim: Simulation, army: Army, defender: BattleSide, kind: BattleResolver.Kind,
-		fort: BattleFort, province: int, defender_owner: StringName) -> BattleResult:
+		fort: BattleFort, province: int, defender_owner: StringName, at: Vector2 = Vector2.INF) -> BattleResult:
 	var result := BattleResolver.resolve(sim.data, army.side(), defender, kind, sim.rng.stream(&"battles"), fort)
 	army.lose(result.lost_a)
-	sim.world.report({"tick": sim.clock.tick, "province": province, "kind": kind,
+	var entry := {"tick": sim.clock.tick, "province": province, "kind": kind,
 			"attacker": String(army.owner), "defender": String(defender_owner),
-			"result": result.to_dict()})
+			"result": result.to_dict()}
+	if at != Vector2.INF:
+		entry["pos"] = [at.x, at.y]
+	if kind == BattleResolver.Kind.NAVAL:
+		entry["ships_a"] = result.ships_left_a
+		entry["ships_b"] = result.ships_left_b
+	sim.world.report(entry)
 	sim.events.emit(&"battle_resolved", {"province": province, "kind": kind,
 			"attacker": army.owner, "won": result.a_won()})
 	return result
@@ -487,6 +459,8 @@ static func siege_chances(sim: Simulation, army: Army, id: int) -> float:
 static func siege_error(sim: Simulation, army: Army) -> StringName:
 	if army == null or army.owner != ProvinceDef.OWNER_PLAYER:
 		return &"no_army"
+	if sim.viewed_id == Simulation.BATTLEFIELD:
+		return &"army_in_battle"
 	if army.state != Army.State.WAITING or sim.world.owner_of(army.at) != ProvinceDef.OWNER_NEUTRAL:
 		return &"not_at_settlement"
 	if not sim.world.settlements.has(army.at) or sim.province_state(army.at) == null:
@@ -678,15 +652,18 @@ static func fold(sim: Simulation) -> void:
 			if army != null and unit != null:
 				army.add(unit.id)
 			province.remove_agent(agent)
-	for entry: Dictionary in province.marched:
-		var army := sim.world.armies.get(int(entry["army"])) as Army
-		if army != null:
-			army.add(StringName(entry["unit"]))
-	province.marched.clear()
+	# Warships on their way out leave at once (M8 part 2).
+	for ship: ShipUnit in province.ships.values().duplicate():
+		if ship.sail_out != 0:
+			Fleets.leave_map(province, ship)
+	absorb(sim)
 	province.arrows.clear()
 	for id: int in sim.world.armies.keys():
 		var army := sim.world.armies[id]
 		if army.state != Army.State.INSIDE or army.at != sim.viewed_id:
+			continue
+		if army.by_sea:
+			_inside(sim, army)
 			continue
 		if army.owner == Army.BANDITS and province.raids.army == army.id:
 			army.loot_gold += province.raids.loot_gold
@@ -694,9 +671,8 @@ static func fold(sim: Simulation) -> void:
 			if province.raids.state == Raids.State.WAITING and not army.is_empty():
 				# The rest of the raid is decided at once on the next second.
 				army.state = Army.State.MOVING
-				army.next = army.at
-				army.route = []
-				army.arrive_at = sim.clock.tick
+				army.target = army.at
+				army.path.clear()
 				army.warned = true
 				continue
 		if army.is_empty():
@@ -750,7 +726,7 @@ static func _free_beds(sim: Simulation, id: int) -> int:
 
 ## The army's men go into the barracks of the player's province it stands in (as many as
 ## fit; in the viewed province they walk in from the edge). Returns whether it is gone.
-static func _join_barracks(sim: Simulation, army: Army) -> bool:
+static func join_barracks(sim: Simulation, army: Army) -> bool:
 	var province := sim.province_state(army.at)
 	if province == null or _free_beds(sim, army.at) <= 0:
 		return false
@@ -793,21 +769,25 @@ static func _only_engines(sim: Simulation, army: Army) -> bool:
 
 ## The player disbands his army in his province (DisbandArmyCommand): into the barracks.
 static func disband_home(sim: Simulation, army: Army) -> void:
-	_join_barracks(sim, army)
+	join_barracks(sim, army)
 
 
 ## A beaten army of the player walks back to where it came from.
 static func _retreat_home(sim: Simulation, army: Army) -> void:
-	if army.is_empty():
+	if army.is_empty() and army.ships == 0:
 		_disband(sim, army, &"army_lost")
 		return
-	var home := army.home if sim.world.owner_of(army.home) == ProvinceDef.OWNER_PLAYER else army.at
-	if home == army.at:
-		army.state = Army.State.IDLE
-		return
 	army.state = Army.State.IDLE
-	if send_error(sim, army, home) == &"":
-		send(sim, army, home)
+	army.path.clear()
+	army.target = 0
+	var home := army.fleet_home if army.is_fleet() else army.home
+	if sim.world.owner_of(home) != army.owner:
+		return
+	if not army.is_fleet() and home == army.at:
+		return
+	var way := ArmyOrders.plan(sim, army, home, Vector2.INF)
+	if way["error"] == &"" and not bool(way["board"]):
+		ArmyOrders._follow(sim, army, way, home)
 
 
 static func _disband(sim: Simulation, army: Army, event: StringName) -> void:
@@ -872,17 +852,17 @@ static func _update_camp(sim: Simulation) -> void:
 	army.food = army.food_cap()
 	world.armies[army.id] = army
 	send_bandits(sim, army, target)
-	sim.events.emit(&"bandits_set_out", {"army": army.id, "province": target,
-			"seconds": float(army.arrive_at - sim.clock.tick) / SimClock.TICKS_PER_SECOND})
+	if world.armies.has(army.id):
+		sim.events.emit(&"bandits_set_out", {"army": army.id, "province": target,
+				"seconds": ArmyOrders.seconds_left(sim, army)})
 
 
 static func send_bandits(sim: Simulation, army: Army, target: int) -> void:
-	army.route = sim.world.land_route(army.at, target, sim.data)
-	if army.route.is_empty():
+	if army.pos == Vector2.INF:
+		var def := sim.world.def_of(army.at, sim.data)
+		army.pos = def.world_pos if def != null else Vector2.ZERO
+	if not ArmyOrders.send_over_land(sim, army, target):
 		sim.world.armies.erase(army.id)
-		return
-	army.warned = false
-	_next_leg(sim, army)
 
 
 static func _camp_place_ok(sim: Simulation, id: int, standing: bool = false) -> bool:
@@ -921,9 +901,15 @@ static func _raid_target(sim: Simulation, from: int) -> int:
 		var province := sim.province_state(id)
 		if province == null or not province.has_seat() or province.grace_until > sim.clock.tick:
 			continue
-		var route := sim.world.land_route(from, id, sim.data)
-		if not route.is_empty() and route.size() < best_steps:
-			best_steps = route.size()
+		var a := sim.world.def_of(from, sim.data)
+		var b := sim.world.def_of(id, sim.data)
+		var n := ArmyOrders.nav(sim)
+		if a == null or b == null or n == null:
+			continue
+		var way := n.find_path(a.world_pos, b.world_pos, false)
+		var steps := int(WorldNav.length_of(a.world_pos, way))
+		if not way.is_empty() and steps < best_steps:
+			best_steps = steps
 			best = id
 	return best
 

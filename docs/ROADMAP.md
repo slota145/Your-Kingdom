@@ -1228,6 +1228,8 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] Bitwa lądowa w polu: wybór gracza, na żywo na pustej mapie pola (teren jak tam, gdzie się spotkały, bez miasta; wojsko z M7) albo automatycznie z szansami. Bitwa morska: automatyczna (`BattleResolver`, rodzaje okrętów i wojsko na pokładzie), animacja na mapie świata i raport.
 - [ ] Wojsko i okręty z prowincji trafiają na mapę świata (także okręt z wojskiem na pokładzie z P2); zapis gry.
 
+**Część 2, decyzje (ankieta 2026-11-09):** mapa pola to **teren prowincji, w której armie się spotkały, bez miasta** (wojska stają naprzeciw siebie ok. 20 kafli od siebie); armia i flota **mogą stanąć wszędzie**, także w prowincji neutralnej i władcy (do oblężenia dochodzi tylko po prawym kliknięciu w samo miasto); przy spotkaniu z wrogą armią w polu **gra się zatrzymuje i pokazuje okno wyboru** („Walcz na polu” albo „Rozstrzygnij automatycznie” z szansą); okręty wojenne wypływają na mapę świata **na oba sposoby**: pojedynczo przyciskiem w panelu okrętu i całą flotą z panelu prowincji na mapie świata.
+
 **Część 3: władcy budują, zasiedlają i handlują**
 - [ ] Prowincje władców żyją w trybie uproszczonym; „planista” stawia im budynki według planu rozwoju (jak automatyczny gracz z testów), od chat i drwali do warsztatów, portu i koszar.
 - [ ] Władca wysyła wyprawy osadników do pustych prowincji (lądem i morzem), wykupuje osady neutralne, prowadzi szlaki handlowe między swoimi prowincjami.
