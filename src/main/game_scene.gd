@@ -15,6 +15,8 @@ extends Node2D
 const START_MAP := &"riverlands"
 
 ## Map of a new single-province game (main menu, M4b-3).
+## Settings of a sandbox game from the "New game" screen (M8 part 1), or null.
+var _settings: GameSettings = null
 var _map_id: StringName = START_MAP
 ## World of a new game (main menu, M6); empty = a single-province game on [member _map_id].
 var _world_id: StringName = &""
@@ -42,6 +44,7 @@ var _build_show: Button
 var _building_panel: BuildingPanel
 var _agent_panel: AgentPanel
 var _ship_panel: ShipPanel
+var _result: ResultWindow
 var _stocks: KingdomStockWindow
 var _routes: RoutesWindow
 var _world_map: WorldMapScreen
@@ -77,6 +80,7 @@ func _ready() -> void:
 	var load_path := String(Game.start_request.get("load", ""))
 	_map_id = StringName(String(Game.start_request.get("map", START_MAP)))
 	_world_id = StringName(String(Game.start_request.get("world", "")))
+	_settings = GameSettings.from_dict(Game.start_request["settings"]) if Game.start_request.has("settings") else null
 	var early_raid := bool(Game.start_request.get("early_raid", false))
 	Game.start_request = {}
 	var loaded: Simulation = null
@@ -95,6 +99,12 @@ func _exit_tree() -> void:
 
 func _new_game() -> Simulation:
 	var problems := PackedStringArray()
+	if _settings != null:
+		var sandbox := Simulation.from_settings(Data.registry, _settings, 1, problems)
+		for problem: String in problems:
+			push_warning("Sandbox: " + problem)
+		if sandbox != null:
+			return sandbox
 	var world := Data.registry.get_world(_world_id) if _world_id != &"" else null
 	if world != null:
 		var in_world := Simulation.from_world(Data.registry, world, 1, problems)
@@ -252,6 +262,16 @@ func _build_ui() -> void:
 	_ship_panel.visible = false
 	_ship_panel.closed.connect(_close_panels)
 	_ship_panel.command_requested.connect(func(command: Command) -> void: _execute(command))
+	_result = ResultWindow.new()
+	_result.set_anchors_preset(Control.PRESET_CENTER)
+	_result.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_result.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_result.visible = false
+	_result.continue_requested.connect(func() -> void:
+		_result.visible = false
+		Game.paused = false)
+	_result.menu_requested.connect(_back_to_menu)
+	root.add_child(_result)
 	root.add_child(_ship_panel)
 	_world_map = WorldMapScreen.new()
 	_world_map.visible = false
@@ -407,6 +427,10 @@ func _process(delta: float) -> void:
 
 
 func _on_sim_event(event: Dictionary) -> void:
+	# The end of a sandbox game (M8 part 1).
+	if event["type"] == &"game_won" or event["type"] == &"game_lost":
+		Game.paused = true
+		_result.show_result(event["type"] == &"game_won", StringName(String(event.get("victory", ""))))
 	_note_world_event(event)
 	view.on_sim_event(event)
 	_notes.on_sim_event(event)

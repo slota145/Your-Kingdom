@@ -167,6 +167,9 @@ func _register(def: GameDef, path: String) -> void:
 	if parts is PackedStringArray and not (parts as PackedStringArray).is_empty():
 		var args: Variant = def.get(&"name_args")
 		GeneratedNames.add(def.name_key(), parts, args if args is Array else [])
+	var desc: Variant = def.get(&"desc_parts")
+	if desc is PackedStringArray and not (desc as PackedStringArray).is_empty():
+		GeneratedNames.add(def.desc_key(), desc)
 
 
 ## Recursively lists .tres/.res files. Handles ".remap" entries of exported builds.

@@ -3747,3 +3747,122 @@ msgstr "Margrabia Otto"
 
 msgid "ui.world.generated"
 msgstr "Świat nr %d"
+
+# M8 part 1: new game, rulers, result
+
+msgid "ui.new_game.title"
+msgstr "Nowa gra"
+
+msgid "ui.new_game.scenario"
+msgstr "Scenariusz"
+
+msgid "ui.scenario.colonization"
+msgstr "Kolonizacja"
+
+msgid "ui.scenario.colonization_hint"
+msgstr "Prawie wszystkie prowincje są puste: Ty i władcy zasiedlacie kontynent."
+
+msgid "ui.new_game.world"
+msgstr "Świat"
+
+msgid "ui.new_game.world_generated"
+msgstr "Nowy, z numeru"
+
+msgid "ui.new_game.seed"
+msgstr "Numer świata"
+
+msgid "ui.new_game.random"
+msgstr "Losuj"
+
+msgid "ui.new_game.size"
+msgstr "Wielkość"
+
+msgid "ui.new_game.size_small"
+msgstr "Mały (16 prowincji)"
+
+msgid "ui.new_game.size_medium"
+msgstr "Średni (22 prowincje)"
+
+msgid "ui.new_game.size_large"
+msgstr "Duży (30 prowincji)"
+
+msgid "ui.new_game.rulers"
+msgstr "Władcy"
+
+msgid "ui.new_game.difficulty"
+msgstr "Trudność"
+
+msgid "ui.difficulty.easy"
+msgstr "Łatwy"
+
+msgid "ui.difficulty.normal"
+msgstr "Średni"
+
+msgid "ui.difficulty.hard"
+msgstr "Trudny"
+
+msgid "ui.new_game.victory"
+msgstr "Zwycięstwo"
+
+msgid "ui.victory.conquest"
+msgstr "Podbój"
+
+msgid "ui.victory.provinces"
+msgstr "Liczba prowincji"
+
+msgid "ui.victory.patricians"
+msgstr "Liczba patrycjuszy"
+
+msgid "ui.victory.free"
+msgstr "Gra wolna"
+
+msgid "ui.new_game.target"
+msgstr "Cel"
+
+msgid "ui.new_game.start"
+msgstr "Rozpocznij"
+
+msgid "ui.new_game.back"
+msgstr "Wróć"
+
+msgid "ui.world.owner_ruler"
+msgstr "Władca: %s"
+
+msgid "ui.result.won_title"
+msgstr "Zwycięstwo!"
+
+msgid "ui.result.lost_title"
+msgstr "Porażka"
+
+msgid "ui.result.won_conquest"
+msgstr "Żaden władca nie ma już prowincji. Kontynent jest Twój!"
+
+msgid "ui.result.won_provinces"
+msgstr "Masz wymaganą liczbę prowincji. Królestwo jest potęgą!"
+
+msgid "ui.result.won_patricians"
+msgstr "W Twoich miastach mieszka tylu patrycjuszy, ilu chciałeś. Królestwo kwitnie!"
+
+msgid "ui.result.lost"
+msgstr "Straciłeś wszystkie prowincje."
+
+msgid "ui.result.continue"
+msgstr "Graj dalej"
+
+msgid "ui.result.menu"
+msgstr "Menu główne"
+
+msgid "ui.world.goal"
+msgstr "Cel: %s, %d z %d"
+
+msgid "world.template.coast"
+msgstr "Wybrzeże z zatoką i plażą: miejsce na port, ryby w morzu."
+
+msgid "world.template.islands"
+msgstr "Wyspa na morzu: dopłyniesz tu tylko statkiem."
+
+msgid "world.template.lakeland"
+msgstr "Pojezierze z lasami i kamienistym gruntem."
+
+msgid "world.template.riverlands"
+msgstr "Kraina nad rzeką: żyzne łąki, lasy i bród."

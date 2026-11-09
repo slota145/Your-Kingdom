@@ -103,6 +103,15 @@ static func generate(data: DataRegistry, settings: GameSettings) -> WorldDef:
 					queue.append(j)
 		sizes.append(n)
 	var main_group := sizes.find(sizes.max())
+	# Names: each adjective and each noun once before any comes again.
+	var adjectives: Array[int] = []
+	for k: int in ADJECTIVES:
+		adjectives.append(k + 1)
+	_shuffle(adjectives, rng)
+	var nouns: Array[int] = []
+	for k: int in NOUNS:
+		nouns.append(k + 1)
+	_shuffle(nouns, rng)
 	# Province definitions.
 	var defs: Dictionary[int, ProvinceDef] = {}
 	for i: int in land:
@@ -126,8 +135,9 @@ static func generate(data: DataRegistry, settings: GameSettings) -> WorldDef:
 				(&"lakeland" if rng.randf() < 0.5 else &"riverlands"))
 		def.outline = _wavy(cells[i], rng.seed)
 		def.world_pos = _centroid(cells[i])
-		def.name_parts = PackedStringArray(["world.adj.%d" % rng.randi_range(1, ADJECTIVES),
-				"world.noun.%d" % rng.randi_range(1, NOUNS)])
+		def.name_parts = PackedStringArray(["world.adj.%d" % adjectives[land.find(i) % ADJECTIVES],
+				"world.noun.%d" % nouns[land.find(i) % NOUNS]])
+		def.desc_parts = PackedStringArray(["world.template.%s" % def.template])
 		defs[i] = def
 	# Starts: the player on the mainland's coast, the rulers as far as can be from everyone.
 	var mainland_coast: Array[int] = []

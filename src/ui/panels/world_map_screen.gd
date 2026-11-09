@@ -187,6 +187,10 @@ func _refresh() -> void:
 		return
 	var world_def := sim.data.get_world(sim.world.world_id)
 	_title.text = tr(world_def.name_key()) if world_def != null else ""
+	# The goal of a sandbox game (M8 part 1).
+	var goal := Victory.progress(sim)
+	if goal[1] > 0:
+		_title.text += "  ·  " + tr("ui.world.goal") % [tr("ui.victory.%s" % sim.world.settings.victory), goal[0], goal[1]]
 	var def := sim.world.def_of(_selected, sim.data)
 	_expedition.show_for(sim, _selected)
 	_army.show_for(sim, _canvas.army_selected)
@@ -204,7 +208,9 @@ func _refresh() -> void:
 	_name.text = tr(def.name_key())
 	var owner := sim.world.owner_of(_selected)
 	var lines := PackedStringArray()
-	lines.append(tr("ui.world.owner") % tr("ui.world.owner_%s" % (owner if owner != &"" else &"none")))
+	var owner_name := tr("ruler.%s.name" % owner) if Rulers.is_ruler(owner) \
+			else tr("ui.world.owner_%s" % (owner if owner != &"" else &"none"))
+	lines.append(tr("ui.world.owner") % owner_name)
 	var province := sim.province_state(_selected)
 	if province != null:
 		lines.append(tr("ui.world.population") % _residents(province))

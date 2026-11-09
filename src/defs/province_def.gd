@@ -30,6 +30,8 @@ const OWNER_NEUTRAL := &"neutral"
 @export var outline: PackedVector2Array = PackedVector2Array()
 ## A generated province's name (M8): translation keys of its words (GeneratedNames).
 @export var name_parts: PackedStringArray = PackedStringArray()
+## A generated province's description: translation keys of its parts (by its map template).
+@export var desc_parts: PackedStringArray = PackedStringArray()
 
 @export_group("Neutral settlement (M6 part 3)")
 ## Buildings of the neutral town (building id -> count), placed by NeutralTown.

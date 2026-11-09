@@ -27,6 +27,11 @@ var _window: bool = false
 var _armies: bool = false
 
 
+var _seed: int = 0
+var _provinces: int = 22
+var _rulers: int = 3
+
+
 func _ready() -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="):
@@ -45,7 +50,20 @@ func _ready() -> void:
 			_window = true
 		elif arg == "--armies":
 			_armies = true
+		elif arg.begins_with("--seed="):
+			_seed = int(arg.trim_prefix("--seed="))
+		elif arg.begins_with("--provinces="):
+			_provinces = int(arg.trim_prefix("--provinces="))
+		elif arg.begins_with("--rulers="):
+			_rulers = int(arg.trim_prefix("--rulers="))
 	Game.start_request = {"world": "kingdom"}
+	# M8 part 1: a generated world (--seed=<n> [--provinces=<16..30>] [--rulers=<1..3>]).
+	if _seed > 0:
+		var settings := GameSettings.new()
+		settings.world_seed = _seed
+		settings.province_count = _provinces
+		settings.rulers = _rulers
+		Game.start_request = {"settings": settings.to_dict()}
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D
 	add_child(_game)
 
