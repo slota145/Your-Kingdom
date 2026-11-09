@@ -55,3 +55,14 @@ func test_five_tax_rates_and_older_saves() -> void:
 		assert_int(int(state["treasury"]["rate"])).is_equal([Treasury.TaxRate.LOW, Treasury.TaxRate.NORMAL,
 				Treasury.TaxRate.HIGH][old])
 	assert_int(SaveMigrations.CURRENT_VERSION).is_greater_equal(26)
+
+
+## The panel's icons read what a building needs and makes from its recipe.
+func test_goods_flow_of_workshops() -> void:
+	var data := SimFixture.registry()
+	var cases := {&"bakery": [[&"flour"], [&"bread"]], &"woodcutter": [[], [&"wood"]], &"farm": [[], [&"grain"]],
+			&"sawmill": [[&"wood"], [&"planks"]]}
+	for id: StringName in cases:
+		var flow: Array = BuildingPanel.goods_flow(data.get_building(id), data)
+		assert_array(flow[0]).override_failure_message("%s needs %s" % [id, flow[0]]).contains_exactly(cases[id][0])
+		assert_array(flow[1]).override_failure_message("%s makes %s" % [id, flow[1]]).contains_exactly(cases[id][1])

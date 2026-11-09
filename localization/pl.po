@@ -3614,3 +3614,14 @@ msgstr "Chata budowniczych"
 
 msgid "building.builders_hut.desc"
 msgstr "Chata 2 budowniczych. Budowniczowie sami biorą najbliższe place budowy, jak budowniczy z ratusza, więc miasto rośnie szybciej. Możesz postawić kilka chat."
+
+# P2 part 3: icons in panels
+
+msgid "ui.house.needs"
+msgstr "Potrzeby:"
+
+msgid "ui.building.needs_goods"
+msgstr "Potrzebuje:"
+
+msgid "ui.building.makes_goods"
+msgstr "Wytwarza:"

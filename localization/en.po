@@ -3578,3 +3578,14 @@ msgstr "Builders' hut"
 
 msgid "building.builders_hut.desc"
 msgstr "A hut of 2 builders. They take the nearest construction sites by themselves, like the town hall's builder, so the town grows faster. You may build several."
+
+# P2 part 3: icons in panels
+
+msgid "ui.house.needs"
+msgstr "Needs:"
+
+msgid "ui.building.needs_goods"
+msgstr "Needs:"
+
+msgid "ui.building.makes_goods"
+msgstr "Makes:"

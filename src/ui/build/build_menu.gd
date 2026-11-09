@@ -192,6 +192,11 @@ func _wall_button(tool: StringName) -> Button:
 
 
 ## The finished building's art (a storage yard has none: its second construction phase).
+## The building's picture in the menu (also a house need's icon, P2 part 3).
+static func icon_for(def: BuildingDef) -> Texture2D:
+	return _icon(def)
+
+
 static func _icon(def: BuildingDef) -> Texture2D:
 	var visual := BuildingVisualDef.for_building(def.id)
 	var art_id := visual.art_id if visual != null else String(def.id)

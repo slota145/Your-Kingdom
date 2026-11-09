@@ -51,6 +51,9 @@ var _keep_sliders: Dictionary[StringName, HSlider] = {}
 var _tax_box: Container
 var _tax_label: Label
 var _tax_slider: HSlider
+## Icons of what the building needs and makes, or of a house's needs (P2 part 3).
+var _icons: VBoxContainer
+var _icons_key: String = ""
 ## Shipyard (M5): order buttons and the queue with a cancel button per order.
 var _ship_box: VBoxContainer
 var _ship_orders: HFlowContainer
@@ -85,6 +88,8 @@ func _init() -> void:
 	box.add_child(_title)
 	_body = UiKit.label()
 	box.add_child(_body)
+	_icons = VBoxContainer.new()
+	box.add_child(_icons)
 	_stock = StockpilePanel.new()
 	box.add_child(_stock)
 	_build_settings(box)
@@ -291,6 +296,87 @@ func _refresh() -> void:
 	_turn_button.visible = b.def.footprint.x == b.def.footprint.y and not b.def.is_on_water()
 	_look_button.visible = b.house != null and visual != null and visual.look_count(b.house.level) > 1
 	_refresh_settings(b)
+	_refresh_icons(b)
+
+
+## The icon rows (P2 part 3): a workshop's goods in and out, a house's needs met or not.
+func _refresh_icons(b: BuildingState) -> void:
+	var rows: Array[Array] = []
+	if b.is_complete() and b.house != null:
+		var needs: Array = []
+		for need: NeedDef in b.level_def().needs:
+			needs.append([need, bool(b.house.satisfied.get(need.id, false))])
+		rows.append(["ui.house.needs", needs])
+	elif b.is_complete():
+		var flow := goods_flow(b.def, province.data)
+		if not flow[0].is_empty():
+			rows.append(["ui.building.needs_goods", flow[0]])
+		if not flow[1].is_empty():
+			rows.append(["ui.building.makes_goods", flow[1]])
+	var key := str(rows)
+	if key == _icons_key:
+		return
+	_icons_key = key
+	for child: Node in _icons.get_children():
+		child.queue_free()
+	for row: Array in rows:
+		_icons.add_child(UiKit.label(row[0]))
+		var flow := HFlowContainer.new()
+		flow.add_theme_constant_override(&"h_separation", 3)
+		flow.add_theme_constant_override(&"v_separation", 3)
+		_icons.add_child(flow)
+		for item: Variant in row[1]:
+			if item is Array:
+				flow.add_child(_need_icon(item[0], item[1]))
+			else:
+				flow.add_child(IconSlot.good(item, tr("good.%s.name" % item)))
+
+
+func _need_icon(need: NeedDef, ok: bool) -> Control:
+	var state := IconSlot.State.OK if ok else IconSlot.State.MISSING
+	var tip := "%s: %s" % [tr(need.name_key()), tr("ui.need.ok" if ok else "ui.need.missing")]
+	if need.kind == "service":
+		var def := province.data.get_building(need.service)
+		return IconSlot.make(BuildMenu.icon_for(def) if def != null else null, tip, state)
+	return IconSlot.good(need.goods[0] if not need.goods.is_empty() else &"", tip, state)
+
+
+## [goods it needs, goods it makes] of a building, read from its recipe: what its worker
+## fetches or uses up, and what he produces, harvests or gathers.
+static func goods_flow(def: BuildingDef, data: DataRegistry) -> Array:
+	var needs: Array[StringName] = []
+	var makes: Array[StringName] = []
+	if def.recipe != null:
+		for step: StepDef in def.recipe.steps:
+			if step is FetchStepDef and (step as FetchStepDef).good != &"":
+				_add(needs, (step as FetchStepDef).good)
+			elif step is ProduceStepDef:
+				var produce := step as ProduceStepDef
+				for good: StringName in produce.consume:
+					_add(needs, good)
+				if produce.output != &"":
+					_add(makes, produce.output)
+			elif step is ServeStepDef:
+				for good: StringName in (step as ServeStepDef).consume:
+					_add(needs, good)
+			elif step is FieldStepDef:
+				_add(makes, (step as FieldStepDef).harvest_good)
+			elif step is GoToStepDef and (step as GoToStepDef).resource != &"":
+				var node := data.get_resource_node((step as GoToStepDef).resource)
+				if node != null and node.good != &"":
+					_add(makes, node.good)
+			elif step is SailStepDef:
+				var node := data.get_resource_node((step as SailStepDef).resource)
+				if node != null and node.good != &"":
+					_add(makes, node.good)
+	if def.herd_good != &"":
+		_add(makes, def.herd_good)
+	return [needs, makes]
+
+
+static func _add(list: Array[StringName], good: StringName) -> void:
+	if not list.has(good):
+		list.append(good)
 
 
 func _refresh_settings(b: BuildingState) -> void:
@@ -428,9 +514,6 @@ func _house_lines(b: BuildingState) -> PackedStringArray:
 		lines.append(tr("ui.house.tax") % per_minute)
 		if house.level > 1 and not province.has_seat():
 			lines.append(tr("ui.house.no_seat"))
-	for need: NeedDef in b.level_def().needs:
-		var ok: bool = house.satisfied.get(need.id, false)
-		lines.append("%s: %s" % [tr(need.name_key()), tr("ui.need.ok" if ok else "ui.need.missing")])
 	if house.unmet_seconds >= Population.WARN_AFTER:
 		lines.append(tr("ui.house.declining") % roundi(Population.LEAVE_BELOW))
 	elif house.level < b.def.house_levels.size() and house.met_seconds > 0 and b.site_id == 0:
