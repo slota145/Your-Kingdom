@@ -34,7 +34,7 @@ class House:
     (the front gable faces +v), y up. orient 'z': front faces +z; 'mx': front faces -x."""
 
     def __init__(self, name, orient, uc, w, vb, vf, floors, plaster, roof, pitch=61.0,
-                 side_windows=None, side_frame=("-u",), door_u=None, chimney=0.25):
+                 side_windows=None, side_frame=("-u",), door_u=None, chimney=0.25, gable="plain"):
         self.n = name
         self.o = orient
         self.uc, self.w, self.vb, self.vf = uc, w, vb, vf
@@ -45,6 +45,7 @@ class House:
         self.side_frame = side_frame
         self.door_u = door_u
         self.chimney = chimney
+        self.gable = gable              # plain (timbered), stepped or curved (a masonry show gable)
         self.parts = {}
 
     # -- mapping from the local frame to SpriteKiln's ------------------------------------
@@ -168,28 +169,67 @@ class House:
             left, right = cs[-1] + ww / 2 + 2 * T, u1 - 2 * T
             if right - left > 0.12:
                 self.beam_front(v, (right, ya + T), (left, yb - T))
-        # gables (front with timber, back plain)
+        # gables: the back one plain; the front one timbered, or a masonry show gable above the roof
         R = (w / 2) * math.tan(self.pitch)
-        prof = {"polygon": r4p([[-w / 2, 0], [w / 2, 0], [0, R]])}
         rotg = None if self.o == "z" else [0, -1.5708, 0]
-        for vv in (vtop - 0.05, vb + 0.05):
-            g = {"c": self.pt(uc, E, vv), "depth": 0.1, "profile": prof}
+
+        def gable_prim(vv, poly, depth):
+            g = {"c": self.pt(uc, E, vv), "depth": depth, "profile": {"polygon": r4p(poly)}}
             if rotg:
                 g["rot"] = rotg
-            self.add("gable", {"extrude": g}, self.plaster)
+            return {"extrude": g}
+
+        tri = [[-w / 2, 0], [w / 2, 0], [0, R]]
+        self.add("gable", gable_prim(vb + 0.05, tri, 0.1), self.plaster)
         v = vtop
-        self.beam_front(v, (u0, E + T), (u1, E + T))
-        self.beam_front(v, (u0 + 0.05, E + 0.03), (uc, E + R - 0.02))
-        self.beam_front(v, (u1 - 0.05, E + 0.03), (uc, E + R - 0.02))
-        yc = E + R * 0.48
-        hc = (w / 2) * (1 - 0.48)
-        self.beam_front(v, (uc - hc, yc), (uc + hc, yc))
-        self.beam_front(v, (uc, yc), (uc, E + R - 0.05))
-        if R > 0.9:
-            gw = 0.34
-            self.window_front(v, uc, E + 0.18, gw, min(0.5, yc - E - 0.3))
-            for s in (-1, 1):
-                self.beam_front(v, (uc + s * (gw / 2 + T), E), (uc + s * (gw / 2 + T), yc))
+        if self.gable == "plain":
+            self.add("gable", gable_prim(vtop - 0.05, tri, 0.1), self.plaster)
+            self.beam_front(v, (u0, E + T), (u1, E + T))
+            self.beam_front(v, (u0 + 0.05, E + 0.03), (uc, E + R - 0.02))
+            self.beam_front(v, (u1 - 0.05, E + 0.03), (uc, E + R - 0.02))
+            yc = E + R * 0.48
+            hc = (w / 2) * (1 - 0.48)
+            self.beam_front(v, (uc - hc, yc), (uc + hc, yc))
+            self.beam_front(v, (uc, yc), (uc, E + R - 0.05))
+            if R > 0.9:
+                gw = 0.34
+                self.window_front(v, uc, E + 0.18, gw, min(0.5, yc - E - 0.3))
+                for s in (-1, 1):
+                    self.beam_front(v, (uc + s * (gw / 2 + T), E), (uc + s * (gw / 2 + T), yc))
+        else:
+            hw = w / 2 + 0.04
+            if self.gable == "stepped":
+                Rg = R + 0.32
+                n = 4 if w > 1.5 else 3
+                sw, sh = hw / (n + 0.5), Rg / (n + 1)
+                right = [[hw, 0]]
+                for i in range(n):
+                    x = hw - i * sw
+                    right += [[x, (i + 1) * sh], [x - sw, (i + 1) * sh]]
+                right += [[sw / 2, Rg]]
+            else:   # curved: a volute at the bottom, a ledge, a round crown with a finial
+                Rg = R + 0.38
+                rx, ry, cy = 0.45 * hw, 0.32 * R, 0.62 * R
+                right = [[hw, 0]]
+                for k in range(7):
+                    a_ = math.radians(270 - 15 * k)
+                    right.append([hw + rx * math.cos(a_), cy + ry * math.sin(a_)])
+                right += [[0.55 * hw, 0.86 * R], [0.34 * hw, 0.86 * R]]
+                rc = 0.34 * hw
+                for k in range(7):
+                    a_ = math.radians(15 * k)
+                    right.append([rc * math.cos(a_), Rg - rc + rc * math.sin(a_)])
+            left = [[-x, y] for (x, y) in reversed(right)]
+            poly = right + (left[1:] if right[-1][0] == 0 else left)
+            poly = [p_ for i, p_ in enumerate(poly) if i == 0 or p_ != poly[i - 1]]
+            self.add("show_gable", gable_prim(vtop - 0.04, poly, 0.16), self.plaster, priority=2)
+            self.add("trim", self.box((uc, E + 0.03, vtop + 0.06), (hw + 0.04, 0.04, 0.06)), "sill_mat")
+            self.add("trim", {"sphere": {"c": self.pt(uc, E + Rg + 0.06, vtop - 0.04), "r": 0.08}}, "sill_mat")
+            nw = 2 if w > 1.4 else 1
+            for i in range(nw):
+                self.window_front(v + 0.04, uc + (i - (nw - 1) / 2) * w * 0.36, E + 0.22, 0.34, 0.5)
+            if Rg > 1.6:
+                self.window_front(v + 0.04, uc, E + 0.98, 0.24, 0.32)
         # side walls: timber where the wall may show, windows where it faces a street
         for side in ("-u", "+u"):
             if side not in self.side_frame and side not in self.side_windows:
@@ -217,7 +257,7 @@ class House:
         ov = 0.17
         th = self.pitch
         Lr = math.hypot(w / 2 + ov, (w / 2 + ov) * math.tan(th))
-        v0, v1 = vb - 0.06, vtop + 0.09
+        v0, v1 = vb - 0.06, (vtop + 0.09 if self.gable == "plain" else vtop - 0.06)
         roof_dark = self.roof + "_dark"
         for s in (-1, 1):
             eu, ey = uc + s * (w / 2 + ov), E - ov * math.tan(th)
@@ -290,7 +330,7 @@ def plot_parts():
                      "paint": [{"material": "cobble_dark", "spots": {"scale": 0.09, "density": 0.35, "seed": 3}}]}}
 
 
-def row(widths, vfs, floors, plasters, roofs, end=None):
+def row(widths, vfs, floors, plasters, roofs, end=None, extra=None):
     """Houses side by side across the plot (orient z), from -x (side b) to +x (side a)."""
     lo, hi = -H + GAP, H - GAP
     scale = (hi - lo) / sum(widths)
@@ -301,28 +341,34 @@ def row(widths, vfs, floors, plasters, roofs, end=None):
         sw = ("-u",) if (end == "b" and i == 0) else ()
         sf = ("-u", "+u") if (end == "a" and i == len(widths) - 1) else ("-u",)
         houses.append(House(f"h{i}", "z", u + w / 2, w, -H + 0.16, vfs[i], floors[i], plasters[i], roofs[i],
-                            side_windows=sw, side_frame=sf, chimney=0.3 + 0.15 * (i % 2)))
+                            side_windows=sw, side_frame=sf, chimney=0.3 + 0.15 * (i % 2),
+                            **((extra or [{}] * len(widths))[i])))
         u += w
     return houses
 
 
 FRAGMENTS = {
-    "middle": lambda: row([1.6, 1.35, 1.55], [1.98, 1.86, 2.03], [[2.0, 1.75], [2.0, 1.95], [1.9, 1.7]],
-                          ["plaster_cream", "plaster_ochre", "plaster_cream"], ["tile", "slate", "tile"]),
-    "end_a": lambda: row([2.0, 2.3], [2.0, 1.88], [[2.0, 1.85], [2.0, 1.7]],
-                         ["plaster_pink", "plaster_cream"], ["tile", "tile"], end="a"),
-    "end_b": lambda: row([2.25, 2.05], [1.9, 2.02], [[2.0, 1.8], [2.0, 1.95]],
-                         ["plaster_cream", "plaster_blue"], ["slate", "tile"], end="b"),
+    # heights differ in one plot: 2 or 3 storeys, different floor heights and roof pitches, show gables
+    "middle": lambda: row([1.55, 1.5, 1.45], [1.98, 1.84, 2.03], [[2.0, 1.75], [2.0, 1.75, 1.6], [1.9, 1.85]],
+                          ["plaster_cream", "plaster_ochre", "plaster_pink"], ["tile", "slate", "tile"],
+                          extra=[{"pitch": 57}, {"gable": "curved", "pitch": 60}, {"gable": "stepped", "pitch": 63}]),
+    "end_a": lambda: row([2.0, 2.3], [1.94, 2.02], [[2.0, 1.8, 1.6], [2.0, 1.7]],
+                         ["plaster_cream", "plaster_pink"], ["tile", "tile"], end="a",
+                         extra=[{"gable": "stepped", "pitch": 58}, {"pitch": 52}]),
+    "end_b": lambda: row([2.15, 2.15], [1.9, 2.02], [[2.0, 1.8], [2.0, 1.85, 1.6]],
+                         ["plaster_cream", "plaster_blue"], ["slate", "tile"], end="b",
+                         extra=[{"pitch": 55}, {"gable": "curved", "pitch": 58}]),
     "corner_a": lambda: [
         # on the front street, joined to the row at side a (+x)
         House("h0", "z", (0.02 + H - GAP) / 2, (H - GAP) - 0.02, -H + 0.16, 1.98, [2.0, 1.8], "plaster_cream",
-              "tile", side_frame=("-u",)),
+              "tile", side_frame=("-u",), gable="stepped", pitch=56),
         # the corner house: gable to the side street (-x), eaves side on the front street (+z)
         House("h1", "mx", (-0.05 + H - 0.04) / 2 - 0.05, (H - 0.04) + 0.05 - 0.1, -0.02, H - GAP - 0.2,
-              [2.0, 1.75, 1.6], "plaster_ochre", "tile", side_windows=("+u",), side_frame=(), chimney=0.2),
+              [2.0, 1.75, 1.6], "plaster_ochre", "tile", side_windows=("+u",), side_frame=(), chimney=0.2,
+              gable="curved", pitch=58),
         # behind it, also gable to the side street; the row behind the corner joins at the back (-z)
-        House("h2", "mx", (-H + 0.16 - 0.05) / 2, (H - 0.16) - 0.05, -0.02, H - GAP - 0.14, [2.0, 1.8],
-              "plaster_cream", "slate", side_frame=(), chimney=0.35),
+        House("h2", "mx", (-H + 0.16 - 0.05) / 2, (H - 0.16) - 0.05, -0.02, H - GAP - 0.14, [2.0, 1.7],
+              "plaster_cream", "slate", side_frame=(), chimney=0.35, pitch=62),
     ],
 }
 

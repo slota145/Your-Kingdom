@@ -13,6 +13,7 @@ ramps:
   hull:  ["#120a05", "#2a180c", "#432812", "#5e3a1c", "#7a4e28", "#966438"]
   sail:  ["#1a1712", "#4a443a", "#7e7666", "#b4aa94", "#d6cdb6", "#eee8d6"]
   rope:  ["#0e0a06", "#22180e", "#3a2a18", "#54402a"]
+  foam:  ["#1a2a38", "#3a5a70", "#7a9ab0", "#b4cad8", "#dce8f0", "#f8fcff"]
   faction: ["#0a0e1c", "#16244c", "#22387a", "#2e54a8", "#4a72c4", "#6e92da"]
 
 brief:
@@ -30,6 +31,8 @@ materials:
   faction: {ramp: faction, bands: [2, 4], two_sided: true}
   rope: {ramp: rope, bands: [1, 2], line: false}
   steel: {ramp: steel, bands: [3, 5]}
+  foam: {ramp: foam, bands: [4, 5], outline: false, line: false}
+  foam_dark: {ramp: foam, bands: [3, 3], outline: false, line: false}
 
 channels:
   bob: 0.0
@@ -37,7 +40,8 @@ channels:
   roll: 0.0
 
 bones:
-  ship: {parent: root, pos: "[0, bob, 0]", rot: "[pitch, 0, roll]"}
+  ship: {parent: root, pos: "[0, bob - 0.35, 0]", rot: "[pitch, 0, roll]"}   # sunk 0.35: a low freeboard like the game's cog
+  sailb: {parent: ship, pos: [0, 0, 0.25], rot: [0, 0.33, 0]}                # the yard braced a little across the wind
 
 parts:
   hull:              # a round hull with nearly upright sides, cut at the waterline and along the sheer, hollow above the deck
@@ -47,7 +51,7 @@ parts:
     prims:
       - ellipsoid: {c: [0, 0.6, 0], r: [1.08, 2.5, 1.35], elongate: [0, 0, 1.9]}
     cut:
-      - plane: {n: [0, -1, 0], at: 0.0}
+      - plane: {n: [0, -1, 0], at: -0.35}                          # the waterline (the ship is sunk 0.35)
       - cylinder: {a: [-3, 9.85, 0], b: [3, 9.85, 0], r: 8.6}       # the sheer: the gunwale rises to both ends
       - ellipsoid: {c: [0, 3.08, 0], r: [0.98, 0.08, 1.25], elongate: [0, 2.0, 1.9]}   # the inside of the bulwark
     paint:
@@ -123,7 +127,7 @@ parts:
     material: castle
     space: ship
     prims:
-      - box: {c: [0, 0.78, -3.55], half: [0.05, 0.5, 0.2], rot: [0.12, 0, 0]}
+      - box: {c: [0, 0.88, -3.55], half: [0.05, 0.45, 0.2], rot: [0.12, 0, 0]}
       - cylinder: {a: [0, 1.25, -3.65], b: [0, 1.62, -3.1], r: 0.04}
   mast:
     material: mast
@@ -133,25 +137,31 @@ parts:
     prims:
       - cylinder: {a: [0, 0.9, 0.25], b: [0, 6.7, 0.25], r: 0.09}
       - cylinder: {a: [0, 6.7, 0.25], b: [0, 7.05, 0.25], r: 0.05}
-  yard:              # the yard, braced a little across the wind so the sail never shows only its edge
+  yard:
     material: mast
-    space: ship
+    space: sailb
     priority: 2
     min_cover: 2
     prims:
-      - cylinder: {a: [-1.78, 6.15, 0.55], b: [1.78, 6.15, -0.05], r: 0.05}
-  sail:              # a square sail, billowing forward, in the faction's stripes
+      - cylinder: {a: [-1.8, 6.15, 0.2], b: [1.8, 6.15, 0.2], r: 0.05}
+  sail:              # a square sail filled by the wind: the front cap of a big ellipsoid shell, cut to a rectangle
     material: sail
-    space: ship
+    space: sailb
     priority: 2
     prims:
-      - box: {c: [0, 4.55, 0.38], half: [1.68, 1.55, 0.02], rot: [0, 0.33, 0], bend: 0.0}
+      - ellipsoid: {c: [0, 4.6, 0.12], r: [2.4, 2.3, 0.62], shell: 0.08}
+    cut:
+      - plane: {n: [0, 0, -1], at: -0.24}      # keeps z > 0.24: the cap only
+      - plane: {n: [1, 0, 0], at: 1.7}
+      - plane: {n: [-1, 0, 0], at: 1.7}
+      - plane: {n: [0, 1, 0], at: 6.12}
+      - plane: {n: [0, -1, 0], at: -3.05}
     paint:
       - material: faction
         prims:
-          - box: {c: [-1.17, 4.55, 0.78], half: [0.24, 1.7, 0.7], rot: [0, 0.33, 0]}
-          - box: {c: [-0.17, 4.55, 0.45], half: [0.24, 1.7, 0.7], rot: [0, 0.33, 0]}
-          - box: {c: [0.83, 4.55, 0.11], half: [0.24, 1.7, 0.7], rot: [0, 0.33, 0]}
+          - box: {c: [-1.17, 4.6, 0.5], half: [0.24, 1.8, 0.8]}
+          - box: {c: [-0.17, 4.6, 0.5], half: [0.24, 1.8, 0.8]}
+          - box: {c: [0.83, 4.6, 0.5], half: [0.24, 1.8, 0.8]}
   stays:             # forestay, backstay and shrouds
     material: rope
     space: ship
@@ -170,6 +180,23 @@ parts:
     prims:
       - extrude: {c: [0, 6.85, -0.05], rot: [0, 1.5708, 0], depth: 0.06,
                   profile: {polygon: [[-0.3, 0.12], [-0.3, -0.12], [0.55, 0.0]]}}
+
+  foam:              # foam where the hull meets the water: a thin band of the hull's shape, a little wider
+    material: foam
+    prims:
+      - ellipsoid: {c: [0, 0.25, 0], r: [1.2, 2.5, 1.47], elongate: [0, 0, 1.9], shell: 0.26}
+      - sphere: {c: [0, 0.0, -3.75], r: 0.18}
+      - sphere: {c: [0.25, 0.0, -3.6], r: 0.13}
+      - sphere: {c: [-0.25, 0.0, -3.6], r: 0.13}
+      - sphere: {c: [0, 0.0, 3.62], r: 0.2}
+      - sphere: {c: [0.22, 0.0, 3.45], r: 0.14}
+      - sphere: {c: [-0.22, 0.0, 3.45], r: 0.14}
+    cut:
+      - plane: {n: [0, 1, 0], at: 0.1}
+      - plane: {n: [0, -1, 0], at: 0.0}
+    paint:
+      - material: foam_dark
+        spots: {scale: 0.12, density: 0.3, seed: 5}
 
 animations:
   idle:              # the gentle rocking of a ship at anchor: 4 frames, like the current sheet
