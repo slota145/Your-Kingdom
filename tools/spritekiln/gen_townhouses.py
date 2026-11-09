@@ -220,8 +220,10 @@ class House:
                     a_ = math.radians(15 * k)
                     right.append([rc * math.cos(a_), Rg - rc + rc * math.sin(a_)])
             left = [[-x, y] for (x, y) in reversed(right)]
-            poly = right + (left[1:] if right[-1][0] == 0 else left)
-            poly = [p_ for i, p_ in enumerate(poly) if i == 0 or p_ != poly[i - 1]]
+            if self.gable == "curved":
+                right[-1] = [0.0, Rg]             # the crown's top point is shared by both halves
+            poly = [r4(p_) for p_ in right + (left[1:] if right[-1][0] == 0 else left)]
+            poly = [p_ for i, p_ in enumerate(poly) if i == 0 or p_ != poly[i - 1]]   # no zero-length edges
             self.add("show_gable", gable_prim(vtop - 0.04, poly, 0.16), self.plaster, priority=2)
             self.add("trim", self.box((uc, E + 0.03, vtop + 0.06), (hw + 0.04, 0.04, 0.06)), "sill_mat")
             self.add("trim", {"sphere": {"c": self.pt(uc, E + Rg + 0.06, vtop - 0.04), "r": 0.08}}, "sill_mat")
