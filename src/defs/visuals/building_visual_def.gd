@@ -27,6 +27,10 @@ extends Resource
 ## that joins the player's quays (QuayLayer). Empty = all of BuildingDef.water_tiles; a
 ## shipyard leaves its slipway out.
 @export var quay_tiles: Array[Vector2i] = []
+## When it stands over the water, it stands on a stone quay under its whole footprint (land
+## part too), not on a timber deck, so it joins a stone quay beside it (the dockers' house,
+## owner's request 2026-11-09).
+@export var stone_strip: bool = false
 ## Work spot name -> pixel offset from the entrance tile centre where the worker is drawn.
 @export var spot_offsets: Dictionary[StringName, Vector2] = {}
 

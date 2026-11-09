@@ -104,6 +104,18 @@ extends GameDef
 ## its cargo (a mooring, N1). Needs such a port to be placed.
 @export var served_by_port: bool = false
 
+## Stands only on a stone quay, every tile (a bollard, P2 part 1).
+@export var stone_quay_only: bool = false
+## Has no quay yard of its own: its cargo goes to and comes from the nearest port warehouse
+## within Harbour.SERVE_RADIUS, or any storage when there is none (a bollard, P2 part 1;
+## owner's decision 2026-11-09: no warehouse needed to place it).
+@export var uses_port_storage: bool = false
+## People walk over its tiles (a bollard on the quay, P2 part 1).
+@export var walk_through: bool = false
+## How many edge rows may stand over the water on piles (with stilts_row; P2 part 1, owner's
+## request: harbour buildings further out on the water). At most footprint - 1.
+@export_range(1, 3) var stilts_rows: int = 1
+
 ## A cargo crane (N1 part 2) when > 0: the berth of a port or a mooring must lie within this
 ## many tiles (Chebyshev) of the footprint; its workers lift cargo between that berth's quay
 ## yard and the moored ship (Cranes).
@@ -159,6 +171,11 @@ func has_crown() -> bool:
 ## line through its entrance along its door.
 func passage_at(orientation: int) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
+	if walk_through:
+		for y: int in footprint.y:
+			for x: int in footprint.x:
+				result.append(Vector2i(x, y))
+		return result
 	if not is_gate():
 		return result
 	var e := entrance_at(orientation)
@@ -328,6 +345,17 @@ func water_tiles_at(origin: Vector2i, orientation: int) -> Array[Vector2i]:
 
 func berth_at(origin: Vector2i, orientation: int) -> Vector2i:
 	return origin + turned(berth, orientation)
+
+
+## A harbour storage (port warehouse of any size, P2): where a bollard's cargo waits.
+func is_port_storage() -> bool:
+	return storage_slots > 0 and category == &"harbour"
+
+
+## A house of dockers (P2 part 1): dockers who are not a port's own; they serve every dock and
+## harbour storage within Harbour.SERVE_RADIUS.
+func is_docker_house() -> bool:
+	return not is_port() and worker_kinds.has(&"docker")
 
 
 ## Whether ships moored here are loaded and unloaded over a gangway (a port, M5 part 2).

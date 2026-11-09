@@ -63,7 +63,7 @@ func refresh() -> void:
 
 
 ## Every tile drawn as quay: laid quay, and the strips of harbour buildings (timber unless a
-## stone quay lies under them).
+## stone quay lies under them or the building's look asks for stone, BuildingVisualDef.stone_strip).
 static func quay_tiles(source: ProvinceSim) -> Dictionary[Vector2i, int]:
 	var tiles: Dictionary[Vector2i, int] = {}
 	var grid := source.grid
@@ -74,9 +74,19 @@ static func quay_tiles(source: ProvinceSim) -> Dictionary[Vector2i, int]:
 				if kind != 0:
 					tiles[Vector2i(x, y)] = kind
 	for building: BuildingState in source.buildings.all():
-		for tile: Vector2i in building_strip(building, source):
+		var strip := building_strip(building, source)
+		if strip.is_empty():
+			continue
+		var visual := BuildingVisualDef.for_building(building.def.id)
+		var stone := visual != null and visual.stone_strip
+		var kind := TileGrid.STONE_QUAY if stone else TileGrid.PIER
+		if stone:
+			# The whole building stands on the stone quay, its land part too (owner's request
+			# 2026-11-09).
+			strip = building.tiles()
+		for tile: Vector2i in strip:
 			if not tiles.has(tile):
-				tiles[tile] = TileGrid.PIER
+				tiles[tile] = kind
 	return tiles
 
 

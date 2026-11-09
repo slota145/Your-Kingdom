@@ -388,20 +388,27 @@ func _sorted(plan: Dictionary[StringName, int]) -> Array[StringName]:
 
 ## Units of [param good] still to come aboard: the plan minus what is aboard, on the quay,
 ## or on its way there or aboard.
-func _missing(province: ProvinceSim, ship: ShipUnit, port: BuildingState, good: StringName) -> int:
-	return int(cargo().get(good, 0)) - ship.hold.total(good) - port.stock.total(good) \
-			- province.jobs.in_flight(good, 0, port.id) - province.jobs.in_flight(good, port.id, ship.id)
+## [param yard] null: a bollard without a port warehouse nearby, loaded straight from storages.
+func _missing(province: ProvinceSim, ship: ShipUnit, yard: BuildingState, good: StringName) -> int:
+	if yard == null:
+		return int(cargo().get(good, 0)) - ship.hold.total(good) - province.jobs.in_flight(good, 0, ship.id)
+	return int(cargo().get(good, 0)) - ship.hold.total(good) - yard.stock.total(good) \
+			- province.jobs.in_flight(good, 0, yard.id) - province.jobs.in_flight(good, yard.id, ship.id)
 
 
 ## Whether all of the plan is aboard, or nothing more can come (storages are out of it and
 ## nothing is on the way).
 func _loaded(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> bool:
+	# A bollard's cargo waits in the nearest port warehouse (P2 part 1), or comes straight
+	# from the storages when there is none.
+	var yard := Harbour.yard(province, port)
+	var yard_id := yard.id if yard != null else 0
 	var plan := cargo()
 	for good: StringName in _sorted(plan):
 		if ship.hold.total(good) >= plan[good]:
 			continue
-		if port.stock.total(good) > 0 or province.jobs.in_flight(good, 0, port.id) > 0 \
-				or province.jobs.in_flight(good, port.id, ship.id) > 0:
+		if (yard != null and (yard.stock.total(good) > 0 or province.jobs.in_flight(good, 0, yard_id) > 0)) \
+				or province.jobs.in_flight(good, yard_id, ship.id) > 0:
 			return false
 		if province.stored(good) > 0 and ship.hold.free_space(good) > 0:
 			return false
@@ -410,19 +417,28 @@ func _loaded(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> bool
 
 func _refresh_loading(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> void:
 	_loading_goods = {}
+	var yard := Harbour.yard(province, port)
 	for good: StringName in _sorted(cargo()):
 		_loading_goods[good] = true
-		var more := mini(maxi(_missing(province, ship, port, good), 0), province.stored(good))
-		province.jobs.set_amount(good, 0, port.id, more)
-		province.jobs.set_amount(good, port.id, ship.id, port.stock.available(good))
+		if yard == null:
+			province.jobs.set_amount(good, 0, ship.id,
+					mini(maxi(_missing(province, ship, null, good), 0), province.stored(good)))
+			continue
+		var more := mini(maxi(_missing(province, ship, yard, good), 0), province.stored(good))
+		province.jobs.set_amount(good, 0, yard.id, more)
+		# Aboard no more than the plan still needs (a port warehouse holds other goods too).
+		var aboard := int(cargo().get(good, 0)) - ship.hold.total(good) \
+				- province.jobs.in_flight(good, yard.id, ship.id)
+		province.jobs.set_amount(good, yard.id, ship.id, mini(yard.stock.available(good), maxi(aboard, 0)))
 
 
 ## No more requests for loading; what is left on the quay goes back to storages.
 func _stop_loading(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> void:
 	province.jobs.cancel_for_entity(ship.id)
-	if port != null:
+	var yard := Harbour.yard(province, port)
+	if yard != null:
 		for good: StringName in _loading_goods:
-			province.jobs.set_amount(good, 0, port.id, 0)
+			province.jobs.set_amount(good, 0, yard.id, 0)
 	_loading_goods = {}
 
 
@@ -547,8 +563,11 @@ func _unload(province: ProvinceSim, ship: ShipUnit, port: BuildingState) -> void
 		state = State.IDLE
 		return
 	var goods := ship.hold.totals()
+	var yard_id := Harbour.yard_id(province, port)
 	for good: StringName in _sorted(goods):
-		province.jobs.set_amount(good, ship.id, port.id, ship.hold.available(good))
+		# Into the quay yard, or for a bollard into the nearest port warehouse (P2 part 1); with
+		# neither, into any storage.
+		province.jobs.set_amount(good, ship.id, yard_id, ship.hold.available(good))
 	if ship.hold.is_empty() and not _dockers_busy(province, ship):
 		province.jobs.cancel_for_entity(ship.id)
 		state = State.IDLE

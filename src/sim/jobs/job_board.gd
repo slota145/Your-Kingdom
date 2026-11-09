@@ -145,20 +145,27 @@ func update(province: ProvinceSim) -> void:
 			docker_count += 1
 	var assigned := 0
 	for request: TransportRequest in all():
-		var port := Harbour.request_crew(province, request) if not province.ships.is_empty() else 0
-		if port != 0:
-			# Cargo of a ship: only the dockers of the port where it is moored.
-			var crew: Array[Agent] = dockers.get(port, [] as Array[Agent])
-			while not crew.is_empty() and assigned < MAX_ASSIGNMENTS and request.unassigned() > 0 \
-					and request.retry_at <= province.tick:
-				docker_count -= 1
-				if not _assign_one(province, request, crew):
-					docker_count += 1
-					if request.in_flight == 0:
+		var crews: Variant = Harbour.request_crews(province, request) if docker_count > 0 \
+				or (not province.ships.is_empty() and _touches_ship(province, request)) else null
+		if crews != null:
+			# Port work (P2 part 1): the dockers of the crews that serve this dock or harbour
+			# building; the cargo of a ship only them, other port goods them before porters.
+			var ship_cargo := Harbour.request_port(province, request) != 0
+			while assigned < MAX_ASSIGNMENTS and request.unassigned() > 0 and request.retry_at <= province.tick:
+				var pool := _crew_pool(dockers, crews)
+				if pool.is_empty():
+					break
+				var before := pool.size()
+				if not _assign_one(province, request, pool):
+					if ship_cargo and request.in_flight == 0:
 						request.retry_at = province.tick + NO_MATCH_RETRY_TICKS
 					break
+				if pool.size() < before:
+					_take_from_crews(dockers, crews, pool)
+					docker_count -= 1
 				assigned += 1
-			continue
+			if ship_cargo:
+				continue
 		var porter_failed := false
 		while not carters.is_empty() and assigned < MAX_ASSIGNMENTS \
 				and request.unassigned() >= Carriers.WAGON_MIN and request.retry_at <= province.tick:
@@ -177,6 +184,30 @@ func update(province: ProvinceSim) -> void:
 			request.retry_at = province.tick + NO_MATCH_RETRY_TICKS
 		if (idle.is_empty() and carters.is_empty() and docker_count <= 0) or assigned >= MAX_ASSIGNMENTS:
 			return
+
+
+static func _touches_ship(province: ProvinceSim, request: TransportRequest) -> bool:
+	return province.ships.has(request.source_id) or province.ships.has(request.dest_id)
+
+
+## The idle dockers of [param crews] (workplace ids) in one list.
+static func _crew_pool(dockers: Dictionary[int, Array], crews: Array) -> Array[Agent]:
+	var pool: Array[Agent] = []
+	for crew: int in crews:
+		for agent: Agent in dockers.get(crew, []):
+			pool.append(agent)
+	return pool
+
+
+## Takes from [param dockers] the one docker of [param crews] no longer in [param pool] (the
+## one [method _assign_one] just gave a task).
+static func _take_from_crews(dockers: Dictionary[int, Array], crews: Array, pool: Array[Agent]) -> void:
+	for crew: int in crews:
+		var list: Array = dockers.get(crew, [])
+		for i: int in list.size():
+			if not pool.has(list[i]):
+				list.remove_at(i)
+				return
 
 
 func _assign_one(province: ProvinceSim, request: TransportRequest, idle: Array[Agent]) -> bool:

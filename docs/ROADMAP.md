@@ -1120,6 +1120,32 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ---
 
+## P2 — Port 2: słupki, dokerzy, wojsko na statki, ikonki i podatki
+
+**Status: plan zaakceptowany 2026-11-09 (ankieta); część 1 zaakceptowana i scalona do `main` 2026-11-09; część 2 w toku.** Prośba właściciela 2026-11-09, przed oceną M7, B1, W1 i J1 (ocena i pomiar odłożone). Ankieta: **3 części, ocena po każdej**; słupek **tylko na kamiennym nabrzeżu**; **port zostawia swoich 2 dokerów**, a magazyny portowe tracą tragarzy; **wspólny podatek, 5 poziomów**. Dopisek właściciela: budynki portowe stawiane **bardziej na wodzie** i z **dwoma wejściami** (od lądu i od nabrzeża), żeby budowa przy nabrzeżach nie sprawiała kłopotów (także automatycznemu graczowi).
+
+**Część 1: logistyka portu**
+- [x] Słupek do cumowania (1 kafel na kamiennym nabrzeżu, przy głębokiej wodzie, ludzie przechodzą obok): statek cumuje przy nim, żeby handlować, rozładować i załadować towar. Słupek nie ma magazynu: towar idzie do najbliższego magazynu portowego (do 12 kafli) i stamtąd wraca; **magazyn portowy w pobliżu nie jest wymagany** (decyzja właściciela 2026-11-09): bez niego towar idzie prosto do zwykłych magazynów i z nich. Obsługują go portowcy z portu albo z domów portowców w pobliżu.
+- [x] 2 mniejsze magazyny portowe (obok obecnego 3×3): mały i średni. Magazyny portowe nie mają własnej obsługi (bez tragarzy).
+- [x] 2 domy dokerów (mały i duży, różna liczba dokerów). Dokerzy sami podejmują prace portowe (rozładunek, załadunek, noszenie między statkiem, słupkiem, portem i magazynem) i chodzą po nabrzeżach. Port zostawia swoich 2 dokerów.
+- [x] Budynki portowe bardziej na wodzie i z 2 wejściami (od lądu i od nabrzeża); automatyczny gracz stawia je bez kłopotów.
+- [x] Szczegółowa grafika z bogatą bryłą: słupek, 2 magazyny portowe, 2 domy dokerów. Zapis: nowa wersja z migracją (tragarze magazynów znikają).
+
+**Część 1, stan (2026-11-09): zaakceptowana („Jest super!”) i scalona do `main`.** Poprawki z oceny: dom portowców całą powierzchnią na kamiennym nabrzeżu, łączy się z nabrzeżem obok; deska trapu idzie z kadłubem od krawędzi nabrzeża do burty. Słupek (`bollard`, 1×1, na kamiennym nabrzeżu, przechodni; towar do najbliższego magazynu portowego albo prosto do magazynów), skład portowy (`port_store`, 1×1, 2 miejsca), mały magazyn portowy (`port_warehouse_small`, 2×2, 4 miejsca), duży bez tragarzy i do 2 rzędów na palach; chata portowców (`docker_hut`, 2×2, 2 portowców) i dom portowców (`docker_house`, 3×3, 4 portowców, 2 rzędy nad wodą na kamiennym nabrzeżu, które łączy się z kamiennym nabrzeżem obok: prośba właściciela 2026-11-09); obaj z 2 wejściami. Portowcy z domów obsługują każdy statek przy porcie, miejscu cumowania i słupku do 12 kafli i pomagają nosić towar z i do budynków portowych. Budynek portowy, który nie mieści się na palach, prosi o nabrzeże (`needs_quay`) zamiast „za dużo wody”: na tym potykał się automatyczny gracz; teraz stawia też chatę portowców. Zapis v24. Testy: `tests/scenario/test_p2_port.gd`, długi `test_n1_harbour_bot.gd`. Zrzut: `game_shot.tscn -- --map=coast --tile=30,98 --focus=33,106 --zoom=1 --p2 [--p2_seconds=<s>]`.
+
+**Część 2: statki i wojsko**
+- [ ] Statek bez miejsca sam cumuje do wolnego słupka lub miejsca cumowania.
+- [ ] Załadunek wojska: zaznaczone jednostki + prawy przycisk na okręt → okręt cumuje, żołnierze idą na nabrzeże i wchodzą na pokład (w granicach miejsca dla wojska); rozładunek z panelu statku.
+- [ ] Panel statku: siatka miejsc ładowni, puste albo z ikoną towaru (lub oddziału) i liczbą.
+
+**Część 3: miasto i wygląd**
+- [ ] Chata budowniczych: więcej budowniczych w mieście (pomysł z IDEAS).
+- [ ] Panel budynku produkcyjnego: ikonki towarów, które wytwarza i których potrzebuje.
+- [ ] Panel domu: potrzeby jako ikonki; suwak podatku (wspólny dla miasta, 5 poziomów od „brak” do „bardzo wysoki”, ten sam w ratuszu).
+- [ ] Nowa grafika magazynów: zwykły na drewnianej podłodze, portowe na kamiennej.
+
+**DoD:** każda część ma testy symulacji, `tools/run_tests.sh --all` przechodzi, zrzuty w grze, ocena właściciela po każdej części.
+
 ## M8 — Przeciwnicy i sandbox
 
 **Zakres:**

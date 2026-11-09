@@ -60,7 +60,7 @@ func refresh_tile(province: ProvinceSim, tile: Vector2i, nav_solid: bool, cost: 
 	var closed_gate := false
 	if not province.passages.is_empty() and province.passages.has(tile):
 		var gate := province.buildings.get_building(province.passages[tile])
-		closed_gate = gate != null and not gate.is_broken()
+		closed_gate = gate != null and gate.def.is_gate() and not gate.is_broken()
 	enemy_nav.set_solid(tile, nav_solid or closed_gate)
 	if not is_equal_approx(enemy_nav.get_cost(tile), cost):
 		enemy_nav.set_cost(tile, cost)

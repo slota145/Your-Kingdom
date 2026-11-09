@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 23
+const CURRENT_VERSION := 24
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -76,6 +76,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 23:
 		result = migrate_v22_to_v23(result)
 		version = 23
+	if version < 24:
+		result = migrate_v23_to_v24(result)
+		version = 24
 	return result
 
 
@@ -327,6 +330,14 @@ static func migrate_v21_to_v22(state: Dictionary) -> Dictionary:
 ## caravels, carracks and galleons besides the war cog). An older army's "ships" were all war
 ## cogs: Army.from_dict reads them as such, nothing to change here.
 static func migrate_v22_to_v23(state: Dictionary) -> Dictionary:
+	return state
+
+
+## v24 (P2 part 1): bollards, smaller port warehouses and houses of dockers (new buildings);
+## port warehouses have no porters any more: an older game's go home on the first second
+## (Population lets a workplace keep no more workers than it needs). Nothing to change here;
+## the version guards a game with the new buildings from a build that does not know them.
+static func migrate_v23_to_v24(state: Dictionary) -> Dictionary:
 	return state
 
 

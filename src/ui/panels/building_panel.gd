@@ -464,8 +464,12 @@ func _port_lines(b: BuildingState) -> PackedStringArray:
 		lines.append(tr("ui.port.berth_moored") % tr(ship.def.name_key()))
 	else:
 		lines.append(tr("ui.port.berth_coming") % tr(ship.def.name_key()))
-	if b.workers.is_empty():
+	if Harbour.crews_for(province, b).is_empty():
 		lines.append(tr("ui.port.no_dockers"))
+	if b.def.uses_port_storage:
+		var store := Harbour.yard(province, b)
+		lines.append(tr("ui.port.yard_store") % tr(store.def.name_key()) if store != null \
+				else tr("ui.port.no_yard_store"))
 	var trader := province.sea_merchant
 	if trader.state == SeaMerchant.State.AWAY:
 		var minutes := ceili(maxi(trader.next_visit - province.tick, 0) / float(SimClock.TICKS_PER_SECOND) / 60.0)

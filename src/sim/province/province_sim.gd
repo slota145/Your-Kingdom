@@ -543,10 +543,11 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 	if def.stilts_row:
 		var error := _stilts_error(def, origin, stilts)
 		if error != &"":
-			if not def.quay_only:
+			if not def.on_quay:
 				return error
 			# A harbour building that does not fit on piles asks for a quay, as before (a
-			# builder may still be laying it under the building).
+			# builder may still be laying it under the building; P2 part 1: also those that
+			# may stand on land).
 			stilts.clear()
 	for tile: Vector2i in def.footprint_tiles(origin):
 		if not grid.is_inside(tile):
@@ -556,9 +557,15 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 		if grid.has_quay(tile):
 			if not def.on_quay:
 				return &"not_on_quay"
+			if def.stone_quay_only and grid.quay(tile) != TileGrid.STONE_QUAY:
+				return &"needs_stone_quay"
 		elif stilts.has(tile):
 			pass   # one row on piles over the water (B1 part 2)
+		elif def.stone_quay_only:
+			return &"needs_stone_quay"
 		elif def.quay_only:
+			return &"needs_quay"
+		elif def.stilts_row and def.on_quay and _is_water(tile):
 			return &"needs_quay"
 		elif on_water.has(tile):
 			if sail_depth(tile) == 0:
@@ -612,9 +619,16 @@ func stilt_tiles(def: BuildingDef, origin: Vector2i) -> Array[Vector2i]:
 	if not def.stilts_row:
 		return tiles
 	for tile: Vector2i in def.footprint_tiles(origin):
-		if grid.is_inside(tile) and not grid.has_quay(tile) and _stilt_water(tile):
+		if grid.is_inside(tile) and not grid.has_quay(tile) \
+				and (_stilt_water(tile) or (def.stilts_rows >= 2 and sail_depth(tile) > 0)):
 			tiles.append(tile)
 	return tiles
+
+
+## Sea, lake, river or ford.
+func _is_water(tile: Vector2i) -> bool:
+	var terrain := terrain_at(tile)
+	return terrain != null and (terrain.sail_depth > 0 or terrain.is_kind(&"water") or terrain.id == &"ford")
 
 
 ## Water a building may stand over on piles: shallow sea, or a river, ford or lake.
@@ -638,12 +652,11 @@ func _stilts_error(def: BuildingDef, origin: Vector2i, stilts: Array[Vector2i]) 
 			[Vector2i(0, 1), last.y]]:
 		var d: Vector2i = side[0]
 		var line: int = side[1]
-		var all_on := true
+		# The piles stand in the outer rows on this side (one row, or BuildingDef.stilts_rows).
+		var used := 0
 		for tile: Vector2i in stilts:
-			if (tile.x if d.x != 0 else tile.y) != line:
-				all_on = false
-				break
-		if all_on and (def.footprint.x if d.x != 0 else def.footprint.y) >= 2:
+			used = maxi(used, absi((tile.x if d.x != 0 else tile.y) - line) + 1)
+		if used <= def.stilts_rows and (def.footprint.x if d.x != 0 else def.footprint.y) >= used + 1:
 			outward = d
 			break
 	if outward == Vector2i.ZERO:
@@ -1223,7 +1236,7 @@ func add_building(def: BuildingDef, origin: Vector2i, instant: bool = false,
 	if not instant:
 		treasury.pay(def.gold_cost)
 	buildings.add(building)
-	if def.is_fort():
+	if def.is_fort() or def.walk_through:
 		_add_fort(building)
 	for tile: Vector2i in building.tiles():
 		grid.set_occupant(tile, building.id)
@@ -1268,7 +1281,7 @@ func remove_building(id: int) -> void:
 			TaskRunner.fail(self, agent)
 	Ships.on_building_removed(self, id)
 	var tiles := building.tiles()
-	if building.def.is_fort():
+	if building.def.is_fort() or building.def.walk_through:
 		_remove_fort(building)
 	for tile: Vector2i in tiles:
 		grid.set_occupant(tile, 0)
@@ -3084,7 +3097,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 	for building: BuildingState in province.buildings.all():
 		for tile: Vector2i in building.tiles():
 			grid.set_occupant(tile, building.id)
-		if building.def.is_fort():
+		if building.def.is_fort() or building.def.walk_through:
 			if building.def.has_crown():
 				province.walls.add_fort(building.tiles(), building.id)
 			for tile: Vector2i in building.passage_tiles():

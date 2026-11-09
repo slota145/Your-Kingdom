@@ -528,3 +528,9 @@ Przepływ pracy dla kolejnych partii budynków z PixelLab:
 - Wersje wojenne (`<id>_war`, barwa `168,40,36`, `--war`): tarcze wzdłuż śródokręcia; etapy budowy 0 i 1 to te same pliki co statku handlowego, etap 2 liczony osobno (`--stages --stage=2`).
 - Koga liczy się tak jak przedtem (sprawdzone co do piksela).
 - **Duża stocznia** (kod, `tools/generate_art.gd`, `large_shipyard`).
+
+### 10.19 Słupek, chata i dom portowców (P2, część 1, 2026-11-09)
+
+- **Kod** (`tools/generate_art.gd`, `-- --only=<id>`): `bollard` (kamienny słupek z żelazną czapą i liną, latarnia na słupie, zwój liny), `docker_hut` (chata z deskami i gontem, otwarta przybudówka z linami i workami, sieci, skrzynie), `docker_house` (piętrowy dom z muru pruskiego na kamiennym cokole i dachówką, wieżyczka z łupkowym dachem i chorągiewką, tylne skrzydło z desek, otwarta szopa z workami i beczkami, ręczny żuraw, skrzynie). Nowe elementy: `stone_bollard`, `rope_coil`, `lantern_pole`, `crate_stack`, `hand_crane`.
+- `port_store` i `port_warehouse_small` są placami jak magazyn (`special: yard`); nowe podłogi magazynów w części 3.
+- Pale pod budynkiem stojącym nad wodą rysuje `QuayLayer` (także 2 rzędy i nad głęboką wodą). Dom portowców stoi całą powierzchnią na kamiennym nabrzeżu zamiast drewnianego pomostu (`BuildingVisualDef.stone_strip`, prośba właściciela 2026-11-09), więc łączy się z kamiennym nabrzeżem obok w jedną bryłę.

@@ -50,6 +50,8 @@ func _init(simulation: Simulation, start: int = 2700) -> void:
 		# The sea merchant brings tar and cloth for the shipyard and the tailors: unloaded at
 		# whichever berth he gets, by the crane at the mooring.
 		{"at": start + 600, "buy": {&"tar": 30, &"cloth": 30}},
+		# P2 part 1: a dockers' hut inland of the port (after the warehouse has its spot); its dockers help at every berth.
+		{"at": start + 1500, "build": &"docker_hut", "near": b + Vector2i(4, 4)},
 	]
 
 

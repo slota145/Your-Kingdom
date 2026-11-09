@@ -13,9 +13,7 @@ build_cost = Dictionary[StringName, int]({
 })
 build_time = 25.0
 storage_slots = 8
-worker_kinds = Array[StringName]([&"porter", &"porter"])
-staffing_priority = 6
 on_quay = true
-quay_only = true
 id = &"port_warehouse"
 stilts_row = true
+stilts_rows = 2

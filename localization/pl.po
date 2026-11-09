@@ -2484,7 +2484,7 @@ msgid "ui.command_error.not_on_quay"
 msgstr "Na nabrzeżu stoją tylko budynki portowe."
 
 msgid "ui.command_error.needs_quay"
-msgstr "Ten budynek stoi tylko na pomoście albo nabrzeżu."
+msgstr "Tu potrzebne jest nabrzeże albo pomost pod budynkiem (na palach stoi najwyżej tyle rzędów, ile pozwala budynek)."
 
 msgid "ui.command_error.no_port_nearby"
 msgstr "W pobliżu (do 12 kafli) nie ma portu, którego portowcy obsłużą statek."
@@ -2531,7 +2531,7 @@ msgid "building.port_warehouse.name"
 msgstr "Magazyn portowy"
 
 msgid "building.port_warehouse.desc"
-msgstr "Magazyn na nabrzeżu, tuż przy statkach: 8 miejsc na towary i 2 tragarzy. Tragarze biorą z niego towar na statki i odnoszą do niego to, co przypłynęło, bo jest najbliżej. Stawiaj na pomoście albo nabrzeżu."
+msgstr "Duży magazyn na nabrzeżu, tuż przy statkach: 8 miejsc na towary. Nie ma własnej obsługi: towar noszą portowcy i tragarze. Stąd idzie towar na statki przy słupkach. Może stać 2 rzędami na palach nad wodą."
 
 msgid "ui.kind.crane_operator"
 msgstr "Dźwigowy"
@@ -3521,3 +3521,45 @@ msgstr "Galeon wojenny"
 
 msgid "ship.galleon_war.desc"
 msgstr "Galeon z tarczami: wiezie 90 żołnierzy, najsilniejszy na morzu. Koszt: 78 desek, 20 beczek smoły, 18 bel sukna, 12 żelaza."
+
+# P2 part 1: bollards, port warehouses, dockers
+
+msgid "building.bollard.name"
+msgstr "Słupek cumowniczy"
+
+msgid "building.bollard.desc"
+msgstr "Kamienny słupek na krawędzi kamiennego nabrzeża: przybija do niego statek, żeby handlować, rozładować albo załadować towar. Nie ma własnego placu: towar idzie do najbliższego magazynu portowego (do 12 kafli), a bez niego prosto do zwykłych magazynów. Noszą go portowcy z portu albo z chaty lub domu portowców w pobliżu. Ludzie przechodzą obok niego po nabrzeżu."
+
+msgid "building.port_store.name"
+msgstr "Skład portowy"
+
+msgid "building.port_store.desc"
+msgstr "Mała drewniana szopa na nabrzeżu: 2 miejsca na towary. Nie ma własnej obsługi: towar noszą portowcy i tragarze."
+
+msgid "building.port_warehouse_small.name"
+msgstr "Mały magazyn portowy"
+
+msgid "building.port_warehouse_small.desc"
+msgstr "Magazyn na nabrzeżu: 4 miejsca na towary. Nie ma własnej obsługi: towar noszą portowcy i tragarze. Może stać jednym rzędem na palach nad wodą."
+
+msgid "building.docker_hut.name"
+msgstr "Chata portowców"
+
+msgid "building.docker_hut.desc"
+msgstr "Mała chata 2 portowców. Portowcy sami ładują i rozładowują statki przy porcie, miejscu cumowania i słupkach w odległości do 12 kafli i noszą towar między nabrzeżem a magazynami portowymi. Ma 2 wejścia: od lądu i od wody."
+
+msgid "building.docker_house.name"
+msgstr "Dom portowców"
+
+msgid "building.docker_house.desc"
+msgstr "Duży dom 4 portowców. Portowcy sami ładują i rozładowują statki przy porcie, miejscu cumowania i słupkach w odległości do 12 kafli i noszą towar między nabrzeżem a magazynami portowymi. Ma 2 wejścia i może stać 2 rzędami na palach nad wodą."
+
+msgid "ui.command_error.needs_stone_quay"
+msgstr "Słupek stoi tylko na kamiennym nabrzeżu."
+
+
+msgid "ui.port.yard_store"
+msgstr "Towar ze statku idzie do: %s."
+
+msgid "ui.port.no_yard_store"
+msgstr "Brak magazynu portowego w pobliżu: towar idzie prosto do zwykłych magazynów i z nich."

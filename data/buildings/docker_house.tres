@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/building_def.gd" id="1_bld"]
+
+[resource]
+script = ExtResource("1_bld")
+category = &"harbour"
+footprint = Vector2i(3, 3)
+entrance = Vector2i(1, 2)
+build_cost = Dictionary[StringName, int]({
+&"planks": 12,
+&"stone": 8,
+&"wood": 6
+})
+build_time = 35.0
+gold_cost = 30
+worker_kinds = Array[StringName]([&"docker", &"docker", &"docker", &"docker"])
+staffing_priority = 6
+door_sides = &"opposite"
+on_quay = true
+stilts_row = true
+stilts_rows = 2
+id = &"docker_house"

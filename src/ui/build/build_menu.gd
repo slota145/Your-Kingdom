@@ -19,7 +19,7 @@ const TABS: Array[Dictionary] = [
 	{"id": &"textiles", "buildings": [&"sheep_farm", &"weaver", &"tailor"]},
 	{"id": &"storage", "buildings": [&"pioneer_camp", &"stockpile", &"town_hall", &"stable", &"trading_post"]},
 	{"id": &"harbour", "buildings": [&"tar_kiln", &"shipyard", &"large_shipyard", &"fishing_wharf", &"port", &"mooring",
-		&"crane", &"port_warehouse"]},
+		&"bollard", &"crane", &"port_store", &"port_warehouse_small", &"port_warehouse", &"docker_hut", &"docker_house"]},
 	{"id": &"military", "buildings": [&"charcoal_burner", &"mine", &"smelter", &"blacksmith",
 		&"armourer", &"bowyer", &"stud_farm", &"armoury", &"barracks"]},
 	{"id": &"defence", "buildings": [&"gatehouse", &"tower", &"palisade_gate", &"siege_workshop"],

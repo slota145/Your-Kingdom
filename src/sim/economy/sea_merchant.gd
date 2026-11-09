@@ -225,11 +225,12 @@ func _arrive(province: ProvinceSim) -> bool:
 	return true
 
 
-## The first finished port (by id) with a free berth, or null.
+## The first finished port (by id) with a free berth and dockers to serve it, or null.
 static func _port(province: ProvinceSim) -> BuildingState:
 	for building: BuildingState in province.buildings.all():
 		if building.def.is_port() and building.is_complete() \
-				and Harbour.berth_holder(province, building) == null:
+				and Harbour.berth_holder(province, building) == null \
+				and not Harbour.crews_for(province, building).is_empty():
 			return building
 	return null
 
@@ -304,25 +305,43 @@ func _settle(province: ProvinceSim, ship: ShipUnit) -> void:
 ## Sets the requests of this second: the player's surplus to the quay and aboard, his goods
 ## off the ship while the kingdom has less than the player wants.
 func _refresh_requests(province: ProvinceSim, ship: ShipUnit) -> void:
-	var port := province.buildings.get_building(port_id)
-	var quay := port.stock
+	# The quay yard of his port, or at a bollard the nearest port warehouse (P2 part 1), which
+	# holds the kingdom's goods already: from there aboard only what the player sells.
+	# Without a port warehouse near a bollard, straight from the storages (yard id 0).
+	var yard := Harbour.yard(province, province.buildings.get_building(port_id))
+	var yard_id := yard.id if yard != null else 0
+	var store := yard != null and yard.def.is_port_storage()
+	var quay := yard.stock if yard != null else null
 	var jobs := province.jobs
 	var goods := buying(province)
 	var committed := bought
 	for good: StringName in goods:
-		committed += quay.available(good) + jobs.in_flight(good, 0, port_id) \
-				+ jobs.in_flight(good, port_id, ship_id)
+		committed += (0 if store or quay == null else quay.available(good)) \
+				+ (jobs.in_flight(good, 0, yard_id) if quay != null else 0) + jobs.in_flight(good, yard_id, ship_id)
 	var left := maxi(MAX_BUY - committed, 0)
 	for good: StringName in goods:
-		jobs.set_amount(good, port_id, ship_id, quay.available(good))
-		var more := mini(province.merchant.surplus(province, good), left)
-		jobs.set_amount(good, 0, port_id, more)
+		var surplus := province.merchant.surplus(province, good)
+		if quay == null:
+			var straight := clampi(surplus, 0, left)
+			jobs.set_amount(good, 0, ship_id, straight)
+			left -= straight
+			continue
+		if store:
+			var take := mini(mini(quay.available(good), surplus), left)
+			jobs.set_amount(good, yard_id, ship_id, take)
+			left -= take
+			surplus -= quay.available(good)
+		else:
+			jobs.set_amount(good, yard_id, ship_id, quay.available(good))
+		var more := clampi(surplus, 0, left)
+		jobs.set_amount(good, 0, yard_id, more)
 		left -= more
 	# Goods the player stopped selling: no more to the quay, what is there goes back.
 	for good: StringName in _loading_goods.keys():
 		if not goods.has(good):
-			jobs.set_amount(good, 0, port_id, 0)
-			jobs.set_amount(good, port_id, ship_id, 0)
+			if yard_id != 0:
+				jobs.set_amount(good, 0, yard_id, 0)
+			jobs.set_amount(good, yard_id, ship_id, 0)
 	_loading_goods = {}
 	for good: StringName in goods:
 		_loading_goods[good] = true
@@ -330,7 +349,7 @@ func _refresh_requests(province: ProvinceSim, ship: ShipUnit) -> void:
 	offer.assign(OFFER.keys())
 	offer.sort()
 	for good: StringName in offer:
-		jobs.set_amount(good, ship_id, port_id, _units_to_sell(province, ship, good))
+		jobs.set_amount(good, ship_id, yard_id, _units_to_sell(province, ship, good))
 
 
 ## Units of [param good] to carry off the ship now: up to the player's setting, as far as
@@ -356,8 +375,10 @@ func _units_to_sell(province: ProvinceSim, ship: ShipUnit, good: StringName) -> 
 ## No more requests to or from his ship; goods kept on the quay for him go back to storages.
 func _stop_trading(province: ProvinceSim) -> void:
 	province.jobs.cancel_for_entity(ship_id)
+	var yard_id := Harbour.yard_id(province, province.buildings.get_building(port_id))
 	for good: StringName in _loading_goods:
-		province.jobs.set_amount(good, 0, port_id, 0)
+		if yard_id != 0:
+			province.jobs.set_amount(good, 0, yard_id, 0)
 	_loading_goods = {}
 
 
