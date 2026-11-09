@@ -1,0 +1,42 @@
+# SpriteKiln project settings (https://github.com/LucasJRamos/spritekiln).
+# Commands run anywhere inside this folder find this file.
+
+[project]
+specs = "art/specs"        # where `spritekiln new` creates specs
+engine = "generic"       # godot | unity | monogame | generic
+ai = ["generic"]       # assistants whose files `spritekiln update` refreshes
+
+[export]
+# `spritekiln export <spec>` (or `render --export`) copies the atlas, JSON and maps here;
+# for Godot it also writes SpriteFrames, a CanvasTexture and a ready scene.
+dir = "sprites"
+
+[defaults]                # given to specs created by `spritekiln new`
+view = "topdown"
+size = 64
+palette = "kingdom"
+camera = { pitch = 30, scale = 0.05176 }   # pitch 30: the game's 2:1 isometric ground
+
+[style]                   # the art style every asset follows (`spritekiln style`); change it only when asked
+recorded = 2026-11-09
+view = "topdown"
+height = 34               # px on screen of a human-sized character
+scale = 0.05176           # camera.scale of every asset (from height)
+size = 64                 # frame px for that character
+directions = 8
+mirror = false
+palette = "kingdom"
+colors = "warm, earthy, saturated clothes"
+outline = "selective"
+outline_color = ""        # with outline "dark"; empty: the darkest tone of the ramps
+shading = "soft"
+lines = "depth"
+highlights = true
+dither = "none"
+light = "top"
+proportions = "stylized"
+face = "minimal"          # minimal: eyes only, no nose; simple: + a hint of brow or nose on big heads; detailed
+animation = "fluid"
+snap = false              # root and torso move in whole pixels
+references = []
+notes = "Your Kingdom: medieval city builder, 2:1 isometric (64x32 tiles), camera pitch 30 deg, light from top and slightly front"

@@ -1,0 +1,13 @@
+# Your Kingdom test palette: warm, earthy, saturated clothes. Index 0 = outline/darkest.
+ramps:
+  tunic:    ["#1c0908", "#4a1512", "#7c221b", "#a63026", "#c64a34", "#dc7350"]
+  trousers: ["#120e0b", "#2e2620", "#4a4035", "#665a4b", "#837563", "#a3937c"]
+  bone:     ["#140b07", "#30200f", "#4e341c", "#6d4b2a", "#8f6a40", "#b08c5c"]
+  wood:     ["#160d07", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+  hair:     ["#120906", "#2e1a10", "#4a2c18", "#6a4224", "#8a5a32"]
+  skin:     ["#2a120c", "#5a2e20", "#8a5038", "#b87a56", "#dba27a", "#f0c8a0"]
+  steel:    ["#101216", "#2a2f38", "#475060", "#6e7888", "#a0aab6", "#dfe4ea"]
+  cloth:    ["#1c0908", "#4a1512", "#7c221b", "#a63026", "#c64a34", "#dc7350"]
+  fx_core: ["#ffffff"]
+  fx_mid:  ["#fff0b8"]
+  fx_tail: ["#ffa64d"]
