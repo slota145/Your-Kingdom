@@ -340,7 +340,7 @@ func _place_p2(sim: Simulation, at: Vector2i) -> void:
 	var shore := func(x: int) -> Vector2i:
 		return shores.get(x, Agent.NO_TILE)
 	var quay: Array[Vector2i] = []
-	for x: int in range(at.x - 6, at.x + 8):
+	for x: int in range(at.x - 6, at.x + 9):
 		var s0: Vector2i = shore.call(x)
 		if s0 != Agent.NO_TILE:
 			for j: int in 2:

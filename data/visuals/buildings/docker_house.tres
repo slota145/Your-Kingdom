@@ -5,3 +5,4 @@
 [resource]
 script = ExtResource("1_vis")
 art_id = "docker_house"
+stone_strip = true

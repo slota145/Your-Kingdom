@@ -169,3 +169,23 @@ func test_bollard_without_port_warehouse_uses_the_storages() -> void:
 	province.jobs.add(&"planks", 3, 0, ship.id)
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
 		return stockpile.stock.total(&"wood") == 4 and ship.hold.total(&"planks") == 3, 300)).is_true()
+
+
+## The dockers' house on piles is drawn as stone quay, joining the stone quay beside it
+## (owner's request 2026-11-09).
+func test_dockers_house_strip_is_stone_quay() -> void:
+	var sim := SimFixture.make_sim(Vector2i(48, 48), 1)
+	SimFixture.coast(sim, 30, 33)
+	var province := sim.province
+	for y: int in range(30, 32):
+		province.grid.set_quay(Vector2i(19, y), TileGrid.STONE_QUAY)
+		province.refresh_tile(Vector2i(19, y))
+	province.refresh_fairways()
+	SimFixture.place(sim, &"docker_house", Vector2i(20, 29))
+	var hut := SimFixture.place(sim, &"docker_hut", Vector2i(26, 29))
+	var tiles := QuayLayer.quay_tiles(province)
+	for x: int in range(19, 23):
+		assert_int(tiles.get(Vector2i(x, 30), 0)).is_equal(TileGrid.STONE_QUAY)
+		assert_int(tiles.get(Vector2i(x, 31), 0)).is_equal(TileGrid.STONE_QUAY)
+	# The hut keeps its timber deck on piles.
+	assert_int(tiles.get(hut.origin + Vector2i(0, 1), 0)).is_equal(TileGrid.PIER)

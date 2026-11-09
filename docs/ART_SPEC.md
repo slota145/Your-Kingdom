@@ -533,4 +533,4 @@ Przepływ pracy dla kolejnych partii budynków z PixelLab:
 
 - **Kod** (`tools/generate_art.gd`, `-- --only=<id>`): `bollard` (kamienny słupek z żelazną czapą i liną, latarnia na słupie, zwój liny), `docker_hut` (chata z deskami i gontem, otwarta przybudówka z linami i workami, sieci, skrzynie), `docker_house` (piętrowy dom z muru pruskiego na kamiennym cokole i dachówką, wieżyczka z łupkowym dachem i chorągiewką, tylne skrzydło z desek, otwarta szopa z workami i beczkami, ręczny żuraw, skrzynie). Nowe elementy: `stone_bollard`, `rope_coil`, `lantern_pole`, `crate_stack`, `hand_crane`.
 - `port_store` i `port_warehouse_small` są placami jak magazyn (`special: yard`); nowe podłogi magazynów w części 3.
-- Pale pod budynkiem stojącym nad wodą rysuje `QuayLayer` (także 2 rzędy i nad głęboką wodą).
+- Pale pod budynkiem stojącym nad wodą rysuje `QuayLayer` (także 2 rzędy i nad głęboką wodą). Dom portowców stoi na kamiennym nabrzeżu zamiast drewnianego pomostu (`BuildingVisualDef.stone_strip`, prośba właściciela 2026-11-09), więc łączy się z kamiennym nabrzeżem obok w jedną bryłę.
