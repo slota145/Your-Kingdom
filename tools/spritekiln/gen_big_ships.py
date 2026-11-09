@@ -56,6 +56,7 @@ def build(kind, war=False, stage=None):
     """stage None: the ship afloat, rocking; 0/1/2: on the slipway (keel and ribs / planked hull and
     castles / the whole ship), on keel blocks, out of the water. war: red faction and shields."""
     t = TYPES[kind]
+    kind = "galleon" if kind == "galleon_ref" else kind     # the same look (colours, blocks) as the galleon
     Lh, W, D, S = t["L"] * K, t["W"] * K, t["D"] * K, t["S"] * K
     parts, bones = {}, {"ship": {"parent": "root", "pos": "[0, bob, 0]", "rot": "[pitch, 0, roll]"}}
 
@@ -447,15 +448,34 @@ def r3p(pts):
     return [r3(p) for p in pts]
 
 
+# galleon_ref: a trial galleon tuned against the owner's side-view photo of a model (2026-11-09) with
+# `spritekiln ref compare` (hull only: <type>_hull); starts as a copy of the galleon
+# Read off the photo's hull outline (thin ropes filtered out; waterline assumed a third of the way up
+# from the keel): a short low waist, a forecastle from 0.23 of the half length rising to the bow, a low
+# quarterdeck from -0.15, a tall poop from -0.60, a big forefoot curve, a strongly raked transom;
+# the main mast further aft, the mizzen near the stern.
+TYPES["galleon_ref"] = dict(TYPES["galleon"], D=21,
+                            rig=[dict(z=0.52, h=134, w=34, tiers=3, cross=True),
+                                 dict(z=-0.22, h=172, w=48, tiers=3, cross=True),
+                                 dict(z=-0.72, h=126, span=64, lateen=True, billow=True, y0=2.0)],
+                            profile=dict(TYPES["galleon"]["profile"], fc=(0.23, 0.7, 1.4), qd=(-0.15, 0.7, 0.8),
+                                         poop=(-0.60, 1.6, 2.0), forefoot=0.65, rake=0.95))
+
+
 def main():
     """Names: <type>[_war][_build_<n>], e.g. caravel, caravel_war, caravel_build_0, caravel_war_build_2."""
     for kind in sys.argv[1:] or list(TYPES):
-        base = kind.split("_")[0]
+        base = "galleon_ref" if kind.startswith("galleon_ref") else kind.split("_")[0]
+        hull_only = kind.endswith("_hull")
         stage = int(kind.rsplit("_", 1)[1]) if "_build_" in kind else None
         d = os.path.join(PROPS, kind)
         os.makedirs(d, exist_ok=True)
         spec = build(base, war="_war" in kind, stage=stage)
         spec["name"] = kind
+        if hull_only:   # for `ref compare`: the hull alone, afloat, no rig, no foam
+            for name in [n_ for n_ in spec["parts"] if n_.startswith(("mast", "ropes", "bowsprit", "spritsail", "foam"))]:
+                spec["parts"].pop(name)
+            spec["animations"] = {"idle": {"frames": 1, "ms": 500, "channels": {}}}
         text = yaml.safe_dump(spec, sort_keys=False, default_flow_style=None, width=140)
         first, rest = text.split("\n", 1)
         with open(os.path.join(d, kind + ".yaml"), "w") as fh:
