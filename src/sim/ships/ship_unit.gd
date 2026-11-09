@@ -26,6 +26,16 @@ var activity: StringName = &"idle"
 var hold: Stockpile
 ## Voyages of a trading ship (the player's cog, M5 part 3); null for other ships.
 var voyage: Voyage = null
+## Soldiers aboard (agent ids, P2 part 2, TroopTransport).
+var troops: Array[int] = []
+## Soldiers ordered aboard, on their way to the dock.
+var boarding: Array[int] = []
+## Soldiers set ashore at the dock while the rest are still landing.
+var landed: Array[int] = []
+## TroopTransport.BOARD, LAND or &"" (none).
+var troop_order: StringName = &""
+## The dock the soldiers going aboard were sent to (0 = not yet).
+var troops_called: int = 0
 
 var path_state: PathState = PathState.NONE
 var path_goal: Vector2i = Agent.NO_TILE
@@ -76,6 +86,9 @@ func to_dict() -> Dictionary:
 		d["hold"] = hold.to_dict()
 	if voyage != null:
 		d["voyage"] = voyage.to_dict()
+	if not troops.is_empty() or not boarding.is_empty() or not landed.is_empty() or troop_order != &"":
+		d["troops"] = {"aboard": troops.duplicate(), "boarding": boarding.duplicate(),
+				"landed": landed.duplicate(), "order": String(troop_order), "called": troops_called}
 	return d
 
 
@@ -98,4 +111,12 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> ShipUnit:
 		ship.hold.stack_limit = ship.def.hold_stack
 	if ship.def.trades:
 		ship.voyage = Voyage.from_dict(d.get("voyage", {}))
+	if d.has("troops"):
+		var t: Dictionary = d["troops"]
+		for key: String in ["aboard", "boarding", "landed"]:
+			var list: Array[int] = ship.troops if key == "aboard" else (ship.boarding if key == "boarding" else ship.landed)
+			for id: Variant in t.get(key, []):
+				list.append(int(id))
+		ship.troop_order = StringName(String(t.get("order", "")))
+		ship.troops_called = int(t.get("called", 0))
 	return ship

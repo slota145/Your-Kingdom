@@ -128,7 +128,8 @@ static func warships_at(sim: Simulation, id: int) -> Array[ShipUnit]:
 	keys.sort()
 	for key: int in keys:
 		var ship := province.ships[key]
-		if ship.def.troops > 0:
+		# A warship with soldiers of the province aboard stays (P2 part 2, survey 2026-11-09).
+		if ship.def.troops > 0 and ship.troops.is_empty() and ship.boarding.is_empty():
 			result.append(ship)
 	return result
 

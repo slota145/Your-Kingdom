@@ -251,6 +251,7 @@ func _build_ui() -> void:
 	_ship_panel.position.y = 64
 	_ship_panel.visible = false
 	_ship_panel.closed.connect(_close_panels)
+	_ship_panel.command_requested.connect(func(command: Command) -> void: _execute(command))
 	root.add_child(_ship_panel)
 	_world_map = WorldMapScreen.new()
 	_world_map.visible = false
@@ -887,6 +888,13 @@ func _soldiers_in(box: Rect2) -> Array[int]:
 ## Right click with soldiers selected: attack the enemy under the cursor, or go there (onto
 ## the wall-walk when the cursor is over a crown).
 func _order_at(world_pos: Vector2) -> void:
+	# A warship under the cursor: the soldiers go aboard (P2 part 2).
+	var ship_id := _ship_at(world_pos)
+	if ship_id != 0 and TroopTransport.carries_troops(sim.province, sim.province.ships[ship_id]):
+		if _execute(BoardShipCommand.new(_selected.duplicate(), ship_id)) == &"":
+			view.troops.show_order(world_pos)
+			_select_soldiers([] as Array[int])
+		return
 	var enemy := _enemy_at(world_pos)
 	if enemy != null:
 		_execute(OrderTroopsCommand.new(_selected.duplicate(), OrderTroopsCommand.ATTACK,

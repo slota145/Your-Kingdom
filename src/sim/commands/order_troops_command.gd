@@ -61,6 +61,7 @@ func validate(sim: Simulation) -> StringName:
 
 func apply(sim: Simulation) -> void:
 	var soldiers := _soldiers(sim)
+	TroopTransport.forget(sim.province, soldiers)   # no longer going aboard a ship (P2)
 	match order:
 		MOVE:
 			Troops.order_move(sim.province, soldiers, tile, level)

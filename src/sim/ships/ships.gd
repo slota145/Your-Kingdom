@@ -310,6 +310,8 @@ static func update(province: ProvinceSim) -> void:
 static func _anchor_warship(province: ProvinceSim, ship: ShipUnit) -> void:
 	if ship.dock_id == 0 or ship.path_state == ShipUnit.PathState.MOVING:
 		return
+	if ship.troop_order != &"":
+		return   # moored to take soldiers aboard or set them ashore (TroopTransport, P2)
 	var anchor := Voyage.anchorage(province, ship, ship.tile())
 	if anchor == Agent.NO_TILE:
 		return
