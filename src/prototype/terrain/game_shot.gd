@@ -329,22 +329,31 @@ func _place_p2(sim: Simulation, at: Vector2i) -> void:
 	var province := sim.province
 	province.first_building = &""
 	sim.treasury.gold = 5000
-	var shore := func(x: int) -> Vector2i:
+	# The first sea tile of each column, found before the quay covers it (a quay is no sea).
+	var shores: Dictionary[int, Vector2i] = {}
+	for x: int in range(at.x - 8, at.x + 18):
+		shores[x] = Agent.NO_TILE
 		for y: int in range(at.y, at.y + 30):
 			if province.sail_depth(Vector2i(x, y)) > 0:
-				return Vector2i(x, y)
-		return Agent.NO_TILE
+				shores[x] = Vector2i(x, y)
+				break
+	var shore := func(x: int) -> Vector2i:
+		return shores.get(x, Agent.NO_TILE)
 	var quay: Array[Vector2i] = []
 	for x: int in range(at.x - 6, at.x + 8):
 		var s0: Vector2i = shore.call(x)
 		if s0 != Agent.NO_TILE:
 			for j: int in 2:
 				var t := s0 + Vector2i(0, j)
-				if province.quay_error(t) == &"":
+				var why := province.quay_error(t)
+				if why == &"":
 					province.grid.set_quay(t, TileGrid.STONE_QUAY)
 					province.refresh_tile(t)
 					quay.append(t)
+				else:
+					print("quay ", t, ": ", why)
 	province.refresh_fairways()
+	print("stone quay ", quay.size())
 	var place := func(id: StringName, origin: Vector2i, o: int) -> BuildingState:
 		var error := sim.execute(PlaceBuildingCommand.new(id, origin, true, o))
 		print(id, " at ", origin, " turned ", o, ": ", error)

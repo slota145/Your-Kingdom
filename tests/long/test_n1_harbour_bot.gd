@@ -1,7 +1,8 @@
 extends GdUnitTestSuite
 ## N1 part 2 DoD: the automatic player on Coast uses the quays. The SliceBot builds its town
 ## from the ship as in test_slice_dod; from minute 45 the HarbourBot adds a port, a shipyard, a
-## pier with a mooring and a cargo crane, and a port warehouse on a second pier, orders a cog
+## pier with a mooring and a cargo crane, a port warehouse on a second pier and a dockers' hut
+## (P2 part 1), orders a cog
 ## and keeps sending it on voyages. Within 130 minutes: the sea merchant and the cog lie at both
 ## berths at once, the crane lifts cargo 3 at a time, the warehouse takes goods, and nothing
 ## gets stuck.
@@ -41,7 +42,7 @@ func test_coast_bot_uses_the_quays_and_both_berths() -> void:
 	for site: PavingSite in sim.province.paving.values():
 		print("unfinished site ", site.id, ": ", site.tiles)
 	assert_array(Array(harbour.log)).is_empty()
-	for id: StringName in [&"port", &"shipyard", &"mooring", &"crane", &"port_warehouse"]:
+	for id: StringName in [&"port", &"shipyard", &"mooring", &"crane", &"port_warehouse", &"docker_hut"]:
 		assert_bool(_finished(sim, id)).override_failure_message("%s not finished" % id).is_true()
 	assert_str(String(harbour.cog_home)).is_equal("mooring")
 	assert_int(harbour.voyages).is_greater_equal(2)
