@@ -78,7 +78,12 @@ static func quay_tiles(source: ProvinceSim) -> Dictionary[Vector2i, int]:
 		if strip.is_empty():
 			continue
 		var visual := BuildingVisualDef.for_building(building.def.id)
-		var kind := TileGrid.STONE_QUAY if visual != null and visual.stone_strip else TileGrid.PIER
+		var stone := visual != null and visual.stone_strip
+		var kind := TileGrid.STONE_QUAY if stone else TileGrid.PIER
+		if stone:
+			# The whole building stands on the stone quay, its land part too (owner's request
+			# 2026-11-09).
+			strip = building.tiles()
 		for tile: Vector2i in strip:
 			if not tiles.has(tile):
 				tiles[tile] = kind

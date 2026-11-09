@@ -185,6 +185,8 @@ func test_dockers_house_strip_is_stone_quay() -> void:
 	var hut := SimFixture.place(sim, &"docker_hut", Vector2i(26, 29))
 	var tiles := QuayLayer.quay_tiles(province)
 	for x: int in range(19, 23):
+		if x > 19:
+			assert_int(tiles.get(Vector2i(x, 29), 0)).is_equal(TileGrid.STONE_QUAY)   # on land too
 		assert_int(tiles.get(Vector2i(x, 30), 0)).is_equal(TileGrid.STONE_QUAY)
 		assert_int(tiles.get(Vector2i(x, 31), 0)).is_equal(TileGrid.STONE_QUAY)
 	# The hut keeps its timber deck on piles.

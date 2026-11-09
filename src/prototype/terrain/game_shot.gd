@@ -376,6 +376,15 @@ func _place_p2(sim: Simulation, at: Vector2i) -> void:
 				break
 		if house != null:
 			break
+	# Stone quay on the water left of the house, so it joins the quay strip with no gap.
+	if house != null:
+		for y: int in range(house.origin.y, house.origin.y + house.def.footprint.y + 1):
+			for x: int in range(house.origin.x - 2, house.origin.x):
+				var t := Vector2i(x, y)
+				if province.sail_depth(t) > 0 and province.quay_error(t) == &"":
+					province.grid.set_quay(t, TileGrid.STONE_QUAY)
+					province.refresh_tile(t)
+		province.refresh_fairways()
 	var ships: Array[ShipUnit] = []
 	for k: int in 2:
 		var x := at.x - 4 + 7 * k
