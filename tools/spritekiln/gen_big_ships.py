@@ -35,7 +35,7 @@ TYPES = {
                          dict(z=-0.52, h=126, span=72, lateen=True, billow=True, y0=1.75)],
                     spritsail=True, beak=True, ports=True, wales=[0.3, 0.55, 0.8],
                     # galleon (owner's references 2026-11-09): tumblehome, a two-tier stern, a beakhead
-                    profile=dict(zm=0.25, wt=0.72, forefoot=0.3, rake=0.55, fc=(0.6, 0.7, 0.9), qd=(-0.3, 0.85, 1.05),
+                    profile=dict(zm=0.25, wt=0.72, forefoot=0.3, rake=0.55, fc=(0.36, 0.7, 0.9), qd=(-0.3, 0.85, 1.05),
                                  poop=(-0.62, 1.55, 1.8), tumble=True), ornate_stern=True),
 }
 
@@ -305,10 +305,12 @@ def build(kind, war=False, stage=None):
     if t["spritsail"]:
         bones["sprit"] = {"parent": "ship", "pos": r3([0, bow_top + 0.6, Lh + 0.9]), "rot": [0, 0.0, 0]}
         parts["spritsail"] = {"material": "sail", "space": "sprit", "priority": 2, "prims": [
-            {"ellipsoid": {"c": [0, -0.25, 0.0], "r": [1.1, 0.6, 0.4], "shell": 0.08}}], "cut": [
-            {"plane": {"n": [0, 0, -1], "at": -0.12}}, {"plane": {"n": [1, 0, 0], "at": 0.75}},
-            {"plane": {"n": [-1, 0, 0], "at": 0.75}}, {"plane": {"n": [0, 1, 0], "at": 0.05}},
-            {"plane": {"n": [0, -1, 0], "at": 0.62}}]}
+            {"ellipsoid": {"c": [0, -0.45, 0.0], "r": [1.6, 0.95, 0.5], "shell": 0.09}}], "cut": [   # bigger (owner 2026-11-09)
+            {"plane": {"n": [0, 0, -1], "at": -0.12}}, {"plane": {"n": [1, 0, 0], "at": 1.1}},
+            {"plane": {"n": [-1, 0, 0], "at": 1.1}}, {"plane": {"n": [0, 1, 0], "at": 0.05}},
+            {"plane": {"n": [0, -1, 0], "at": 0.95}}]}
+        parts["spritsail_yard"] = {"material": "mast", "space": "sprit", "priority": 2, "min_cover": 2, "prims": [
+            {"cylinder": {"a": [-1.2, 0.08, 0.1], "b": [1.2, 0.08, 0.1], "r": 0.045}}]}
     part("ropes", "rope", ropes, min_cover=2)
     # foam at the waterline (world space, stays on the water while the ship rocks)
     z_ws = -Lh + rake
