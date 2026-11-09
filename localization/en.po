@@ -3154,7 +3154,7 @@ msgid "ui.world.army_disband"
 msgstr "Into the barracks"
 
 msgid "ui.world.army_hint"
-msgstr "Right-click a province: send the army there (green line: it can go, red: it cannot)."
+msgstr "Right click: anywhere on the land (the army marches there and stands), on a town (goes to it, besieges a settlement) or on an enemy army (gives chase). Green line: it can go, red: it cannot."
 
 msgid "ui.world.army_hungry"
 msgstr "No bread! A hungry army fights worse."
@@ -3178,7 +3178,7 @@ msgid "ui.world.army_idle"
 msgstr "Standing in: %s"
 
 msgid "ui.world.army_selected"
-msgstr "Army selected. Right-click a province to send it there."
+msgstr "Selected. Right click anywhere on the map: send it there."
 
 msgid "ui.world.report_0"
 msgstr "Battle in the field"
@@ -3857,3 +3857,110 @@ msgstr "Start: %s (%s)"
 
 msgid "ui.new_game.island"
 msgstr "island"
+
+
+# --- M8 part 2: armies and fleets on the world map ---
+
+msgid "ui.world.fleet_title"
+msgid_plural "ui.world.fleet_title_plural"
+msgstr[0] "Fleet: %d ship"
+msgstr[1] "Fleet: %d ships"
+
+msgid "ui.world.fleet_hint"
+msgstr "Right click: on the sea it sails there; on the land it lands its soldiers; on your coastal town it goes into port; on an enemy fleet it gives chase."
+
+msgid "ui.world.fleet_idle"
+msgstr "At sea"
+
+msgid "ui.world.fleet_landing"
+msgstr "Sailing to land its soldiers (about %d min)"
+
+msgid "ui.world.fleet_out"
+msgstr "Fleet out (%d)"
+
+msgid "ui.world.fleet_out_tip"
+msgstr "All free warships of this province sail out to the world map at once, with the soldiers aboard, and stand off the coast as a fleet."
+
+msgid "ui.world.army_moving_spot"
+msgstr "Marching to the spot (about %d min)"
+
+msgid "ui.world.army_chasing"
+msgstr "Chasing the enemy (about %d min)"
+
+msgid "ui.world.army_engaged"
+msgstr "In battle!"
+
+msgid "ui.world.army_idle_field"
+msgstr "Standing in the field"
+
+msgid "ui.world.report_ships"
+msgstr "Ships after the battle: yours %d, the enemy's %d"
+
+msgid "ui.ship.sail_out"
+msgstr "Sail out to the world map"
+
+msgid "ui.ship.sail_out_tip"
+msgstr "The ship sails to the edge of the map and joins this province's fleet on the world map, with the soldiers aboard."
+
+msgid "ui.battle.title"
+msgstr "Enemy in the field!"
+
+msgid "ui.battle.met"
+msgstr "Your army met the enemy (%s) in %s."
+
+msgid "ui.battle.sides"
+msgstr "Yours: %s\nEnemy: %s"
+
+msgid "ui.battle.bandits"
+msgstr "bandits"
+
+msgid "ui.battle.enemy"
+msgstr "enemy"
+
+msgid "ui.battle.live"
+msgstr "Fight in the field"
+
+msgid "ui.battle.live_tip"
+msgstr "A live battle: the land of this province without its town, the armies face each other and you command as in a province."
+
+msgid "ui.battle.auto"
+msgstr "Decide at once (chances: %d%%)"
+
+msgid "ui.battle.auto_tip"
+msgstr "The battle is decided at once, unseen. Soldiers, archers and bread count."
+
+msgid "ui.battle.on_field"
+msgstr "Battle in the field"
+
+msgid "ui.note.battlefield_entered"
+msgstr "Battle in the field! Select soldiers and right-click an enemy. \"Retreat\" leads them off the field."
+
+msgid "ui.command_error.army_not_at_sea"
+msgstr "An army cannot go over the sea. It needs a fleet."
+
+msgid "ui.command_error.fleet_cannot_land"
+msgstr "A fleet without soldiers cannot go ashore. It can go into the port of your coastal town."
+
+msgid "ui.command_error.no_coast"
+msgstr "This province is not on the sea."
+
+msgid "ui.command_error.no_warships"
+msgstr "There are no free warships in this province."
+
+msgid "ui.command_error.not_a_warship"
+msgstr "This is not a warship."
+
+msgid "ui.command_error.ship_busy"
+msgstr "The ship is busy now."
+
+msgid "ui.command_error.army_in_battle"
+msgstr "The battle has to be finished first."
+
+msgid "ui.command_error.cannot_reach"
+msgstr "An army cannot reach a fleet at sea (nor the other way round)."
+
+msgid "ui.command_error.no_battle"
+msgstr "That battle is over."
+
+msgid "ui.command_error.no_battlefield"
+msgstr "No live battle can be fought here."

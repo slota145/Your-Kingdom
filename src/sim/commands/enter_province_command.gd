@@ -13,6 +13,8 @@ func _init(id: int) -> void:
 func validate(sim: Simulation) -> StringName:
 	if sim.world.get_province(province_id) == null:
 		return &"unknown_province"
+	if sim.viewed_id == Simulation.BATTLEFIELD:
+		return &"army_in_battle"   # the battle in the field is fought first (M8 part 2)
 	var expedition := sim.world.expedition_to(province_id)
 	if not sim.runtimes.has(province_id):
 		# An expedition waiting at its border lands when the player comes (M6 part 2).

@@ -34,6 +34,7 @@ var _hint: Label
 var _enter: Button
 var _expedition: ExpeditionBox
 var _routes: Button
+var _fleet_out: Button
 var _demand: Label
 var _pay: Button
 var _send_goods: Button
@@ -62,6 +63,10 @@ func _init() -> void:
 	_canvas.send_requested.connect(_send)
 	_canvas.army_clicked.connect(_army_clicked)
 	_canvas.army_send_requested.connect(_send_army)
+	_canvas.army_spot_requested.connect(func(id: int, spot: Vector2) -> void:
+		_order_army(SendArmyCommand.to_spot(id, spot)))
+	_canvas.army_chase_requested.connect(func(id: int, enemy: int) -> void:
+		_order_army(SendArmyCommand.after(id, enemy)))
 	row.add_child(_canvas)
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size.x = UiKit.PANEL_WIDTH
@@ -112,6 +117,11 @@ func _init() -> void:
 	box.add_child(_expedition)
 	_routes = UiKit.button("ui.world.routes", func() -> void: routes_requested.emit(_selected))
 	box.add_child(_routes)
+	_fleet_out = UiKit.button("ui.world.fleet_out", func() -> void:
+		command_requested.emit(FleetOutCommand.new(_selected))
+		_refresh())
+	_fleet_out.tooltip_text = "ui.world.fleet_out_tip"
+	box.add_child(_fleet_out)
 	box.add_child(UiKit.button("ui.world.back", func() -> void: closed.emit()))
 
 
@@ -146,23 +156,33 @@ func _army_clicked(id: int) -> void:
 	var army := sim.world.armies.get(id) as Army
 	if army == null:
 		return
-	_selected = army.at
-	_canvas.selected = army.at
+	if army.at != 0:
+		_selected = army.at
+		_canvas.selected = army.at
 	_send_note = tr("ui.world.army_selected")
 	_refresh()
 
 
-## Right click on [param to] with army [param id] selected.
+## Right click on the town of [param to] with army [param id] selected.
 func _send_army(id: int, to: int) -> void:
-	var army := sim.world.armies.get(id) as Army
-	var error := Armies.send_error(sim, army, to)
+	_order_army(SendArmyCommand.new(id, to))
+
+
+## An order for the selected army (M8 part 2): to a town, a spot or after an enemy army.
+func _order_army(command: SendArmyCommand) -> void:
+	var error := command.validate(sim)
 	if error != &"":
 		_send_note = tr("ui.command_error.%s" % error)
 		_refresh()
 		return
-	command_requested.emit(SendArmyCommand.new(id, to))
+	command_requested.emit(command)
 	_send_note = ""
 	_refresh()
+
+
+## A sea battle (M8 part 2) plays out on the map.
+func show_sea_fight(at: Vector2) -> void:
+	_canvas.show_sea_fight(at)
 
 
 ## Right click on [param to] with the expedition of [param from] selected.
@@ -197,6 +217,10 @@ func _refresh() -> void:
 	_report.text = WorldArmyBox.report_text(sim, _selected)
 	_report.visible = not _report.text.is_empty()
 	_routes.visible = sim.world.owner_of(_selected) == ProvinceDef.OWNER_PLAYER and sim.runtimes.has(_selected)
+	var fleet_error := Fleets.fleet_out_error(sim, _selected)
+	_fleet_out.visible = _routes.visible and fleet_error != &"no_coast"
+	_fleet_out.disabled = fleet_error != &""
+	_fleet_out.text = tr("ui.world.fleet_out") % Fleets.free_warships(sim, _selected).size()
 	_refresh_demand()
 	if def == null:
 		_name.text = ""
