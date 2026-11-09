@@ -257,6 +257,17 @@ const BUILDINGS := {
 		"props": [["crane_mast", 1.15, 0.85], ["treadwheel", 0.5, 1.5], ["barrels", 1.7, 1.8],
 			["bollard", 1.85, 0.25]]}],
 	"port_warehouse": [{"special": "yard"}],
+	# P2 part 3: the builders' hut (2x2): a timber-framed cottage on a stone plinth with a
+	# shingle roof and a chimney, an open shed full of tools and timber, a ladder against the
+	# wall, a saw horse, dressed stone and planks waiting for the next site.
+	"builders_hut": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.25, 1.86], "h": 36.0, "rh": 22.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "timber_stone", "roof": "shingle", "shutters": Color(0.5, 0.32, 0.18),
+			"chimney": [0.7, 0.6]},
+		{"kind": "lean", "rect": [1.3, 0.2, 1.88, 1.2], "low": "x", "h": 22.0, "hh": 30.0,
+			"roof": "shingle", "walls": "planks", "open": true,
+			"inside": [["plank_stack", 1.6, 0.85], ["saw_horse", 1.62, 0.45]]}],
+		"props": [["stone_blocks", 1.62, 1.75], ["log_stack", 0.3, 1.95], ["spade", 1.35, 1.55]]}],
 	"port_store": [{"special": "yard"}],
 	"port_warehouse_small": [{"special": "yard"}],
 	# P2 part 1: a stone bollard on the edge of a stone quay: a squat post with an iron cap, a

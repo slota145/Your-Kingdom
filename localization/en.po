@@ -3559,3 +3559,33 @@ msgstr "There are no troops aboard."
 
 msgid "ui.ship.troop_slot_empty"
 msgstr "Free slot for 10 soldiers"
+
+# P2 part 3: five tax rates
+
+msgid "ui.tax.none"
+msgstr "None"
+
+msgid "ui.tax.very_high"
+msgstr "Very high"
+
+msgid "ui.tax.slider_hint"
+msgstr "Move the slider: from no taxes (happier, no gold) to very high (twice the gold, much less happy). One tax for the whole town."
+
+# P2 part 3: builders' hut
+
+msgid "building.builders_hut.name"
+msgstr "Builders' hut"
+
+msgid "building.builders_hut.desc"
+msgstr "A hut of 2 builders. They take the nearest construction sites by themselves, like the town hall's builder, so the town grows faster. You may build several."
+
+# P2 part 3: icons in panels
+
+msgid "ui.house.needs"
+msgstr "Needs:"
+
+msgid "ui.building.needs_goods"
+msgstr "Needs:"
+
+msgid "ui.building.makes_goods"
+msgstr "Makes:"

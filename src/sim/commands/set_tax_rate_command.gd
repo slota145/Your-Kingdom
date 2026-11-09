@@ -10,7 +10,7 @@ func _init(value: int) -> void:
 
 
 func validate(_sim: Simulation) -> StringName:
-	if rate < Treasury.TaxRate.LOW or rate > Treasury.TaxRate.HIGH:
+	if rate < Treasury.TaxRate.NONE or rate > Treasury.TaxRate.VERY_HIGH:
 		return &"invalid_value"
 	return &""
 

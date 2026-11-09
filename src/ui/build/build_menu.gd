@@ -17,7 +17,7 @@ const TABS: Array[Dictionary] = [
 			&"slaughterhouse"]},
 	{"id": &"drink", "buildings": [&"hop_farm", &"brewery", &"apiary", &"meadery", &"vineyard", &"wine_press"]},
 	{"id": &"textiles", "buildings": [&"sheep_farm", &"weaver", &"tailor"]},
-	{"id": &"storage", "buildings": [&"pioneer_camp", &"stockpile", &"town_hall", &"stable", &"trading_post"]},
+	{"id": &"storage", "buildings": [&"pioneer_camp", &"stockpile", &"town_hall", &"builders_hut", &"stable", &"trading_post"]},
 	{"id": &"harbour", "buildings": [&"tar_kiln", &"shipyard", &"large_shipyard", &"fishing_wharf", &"port", &"mooring",
 		&"bollard", &"crane", &"port_store", &"port_warehouse_small", &"port_warehouse", &"docker_hut", &"docker_house"]},
 	{"id": &"military", "buildings": [&"charcoal_burner", &"mine", &"smelter", &"blacksmith",
@@ -192,6 +192,11 @@ func _wall_button(tool: StringName) -> Button:
 
 
 ## The finished building's art (a storage yard has none: its second construction phase).
+## The building's picture in the menu (also a house need's icon, P2 part 3).
+static func icon_for(def: BuildingDef) -> Texture2D:
+	return _icon(def)
+
+
 static func _icon(def: BuildingDef) -> Texture2D:
 	var visual := BuildingVisualDef.for_building(def.id)
 	var art_id := visual.art_id if visual != null else String(def.id)

@@ -3,12 +3,16 @@ extends RefCounted
 ## The kingdom's gold (GDD §3.5), the only global resource. Houses pay taxes a little every
 ## second; the fractional part is kept so nothing is lost to rounding. Some buildings cost gold.
 
-enum TaxRate { LOW, NORMAL, HIGH }
+## Five rates, one for the whole kingdom (P2 part 3, owner's survey 2026-11-09: from none to
+## very high, set with a slider in a house's or the town hall's panel).
+enum TaxRate { NONE, LOW, NORMAL, HIGH, VERY_HIGH }
 
 ## Tax multiplier per rate.
-const RATE_FACTOR: Array[float] = [0.5, 1.0, 1.5]
+const RATE_FACTOR: Array[float] = [0.0, 0.5, 1.0, 1.5, 2.0]
 ## Happiness points added to every house's target per rate (GDD §3.5: the rate affects happiness).
-const RATE_HAPPINESS: Array[float] = [10.0, 0.0, -15.0]
+const RATE_HAPPINESS: Array[float] = [20.0, 10.0, 0.0, -15.0, -35.0]
+## Save key of each rate (ui.tax.<key>).
+const RATE_KEYS: Array[String] = ["none", "low", "normal", "high", "very_high"]
 
 var gold: int = 0
 var tax_rate: int = TaxRate.NORMAL
@@ -51,6 +55,6 @@ func to_dict() -> Dictionary:
 static func from_dict(d: Dictionary) -> Treasury:
 	var t := Treasury.new()
 	t.gold = int(d.get("gold", 0))
-	t.tax_rate = clampi(int(d.get("rate", TaxRate.NORMAL)), TaxRate.LOW, TaxRate.HIGH)
+	t.tax_rate = clampi(int(d.get("rate", TaxRate.NORMAL)), TaxRate.NONE, TaxRate.VERY_HIGH)
 	t._fraction = float(d.get("fraction", 0.0))
 	return t

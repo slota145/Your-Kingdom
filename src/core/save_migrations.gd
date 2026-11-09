@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 25
+const CURRENT_VERSION := 26
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -82,6 +82,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 25:
 		result = migrate_v24_to_v25(result)
 		version = 25
+	if version < 26:
+		result = migrate_v25_to_v26(result)
+		version = 26
 	return result
 
 
@@ -347,6 +350,15 @@ static func migrate_v23_to_v24(state: Dictionary) -> Dictionary:
 ## v25 (P2 part 2): a ship keeps the soldiers aboard and the soldiers on their way aboard
 ## ("troops": aboard, boarding, landed, order, called). Optional: an older ship has none.
 static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
+	return state
+
+
+## v26 (P2 part 3): five tax rates (none, low, normal, high, very high) instead of three: the
+## old low, normal and high move up by one.
+static func migrate_v25_to_v26(state: Dictionary) -> Dictionary:
+	var treasury: Dictionary = state.get("treasury", {})
+	if treasury.has("rate"):
+		treasury["rate"] = int(treasury["rate"]) + 1
 	return state
 
 
