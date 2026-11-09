@@ -403,6 +403,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 
 - **Bitwy polowe** (dwie armie spotykają się poza oblężeniem): rozstrzygane automatycznie. Wynik zależy od siły, typów jednostek (przewagi), terenu i zaopatrzenia. Gracz dostaje raport z przebiegiem bitwy. [1.0]
 - **M7, część 3:** bitwę polową (armia gracza z bandytami, rozbicie obozu bandytów) rozstrzyga `BattleResolver`; raport (etapy i straty) jest w panelu prowincji na mapie świata.
+- **M8, część 2 (ankieta 2026-11-09):** armie i floty idą prawym przyciskiem w dowolne miejsce mapy świata (armia po lądzie, flota po morzu) i mogą stanąć wszędzie, także w cudzej prowincji. Wrogie armie, które się spotkają, walczą: gdy to armia gracza, gra staje i pyta, czy walczyć na żywo na mapie pola (teren prowincji bez miasta), czy rozstrzygnąć od razu (z szansami). Floty walczą od razu bitwą morską, z animacją na mapie świata i raportem. Okręty wojenne wypływają na mapę świata z panelu okrętu albo całą flotą z panelu prowincji, razem z wojskiem na pokładzie; flota wysadza wojsko na lądzie i wraca do portu. Szczegóły: ROADMAP M8, „Część 2, stan”.
 - **Bitwy morskie**:
   - rozstrzygane automatycznie, tak jak polowe [1.0],
   - **interaktywne bitwy morskie [PÓŹNIEJ, zaplanowane]**: walka okrętów w czasie rzeczywistym na wodach prowincji przybrzeżnej lub wyspowej, np. atak na port, blokada albo desant. Architektura jednostek i walki od początku uwzględnia okręty jako jednostki bojowe (ARCHITECTURE §10), aby ten etap nie wymagał przebudowy.

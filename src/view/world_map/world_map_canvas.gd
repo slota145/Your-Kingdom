@@ -256,7 +256,7 @@ func _draw() -> void:
 	for id: int in keys:
 		_draw_army(sim.world.armies[id])
 	for battle: FieldBattle in sim.world.battles.values():
-		_draw_swords(battle.pos + Vector2(0, -34))
+		_draw_swords(battle.pos + Vector2(0, -50))
 	_draw_planned_route()
 	_draw_army_route()
 	_draw_sea_fights()
@@ -592,7 +592,7 @@ func army_point(army: Army) -> Vector2:
 	var battle := FieldBattles.of(sim, army)
 	if army.state == Army.State.ENGAGED and battle != null:
 		# Facing each other on both sides of the crossed swords.
-		return battle.pos + Vector2(-20.0 if army.id == battle.a else 20.0, 0.0)
+		return battle.pos + Vector2(-26.0 if army.id == battle.a else 26.0, 0.0)
 	if army.pos != Vector2.INF:
 		return army.pos
 	var def := sim.world.def_of(army.at, sim.data)

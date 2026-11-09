@@ -297,3 +297,12 @@ func _make_m8(sim: Simulation) -> void:
 			_game.call("_show_province")
 			var camera := _game.get("camera") as GameCamera
 			camera.set_zoom_index(2)
+			# The camera on the middle of the fight.
+			var middle := Vector2.ZERO
+			var count := 0
+			for agent: Agent in sim.province.agents.all():
+				if agent.combat != null and agent.combat.hp > 0:
+					middle += agent.pos
+					count += 1
+			if count > 0:
+				camera.position = IsoMath.grid_to_screen(middle / count)
