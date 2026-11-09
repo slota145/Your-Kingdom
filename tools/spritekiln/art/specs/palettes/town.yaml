@@ -1,0 +1,15 @@
+# Your Kingdom test palette for the burgher townhouses (half-timbering, tiles, slate). Index 0 = darkest.
+ramps:
+  plaster_cream: ["#1a1510", "#4a4234", "#7d725c", "#b3a688", "#d8ccae", "#efe6cc"]
+  plaster_ochre: ["#1c1308", "#4e3818", "#866228", "#b98c3e", "#d8ae5e", "#ecca86"]
+  plaster_pink:  ["#1c0f0c", "#4e2c24", "#875244", "#b77a64", "#d69e84", "#ecc0a6"]
+  plaster_blue:  ["#101318", "#2e3640", "#526070", "#7a8a9a", "#a2b0bc", "#c8d2da"]
+  timber:        ["#120a06", "#24140c", "#3a2214", "#52321e", "#6a4428", "#845834"]
+  tile:          ["#1a0806", "#4a1a10", "#7a2c1a", "#a84028", "#c85a3a", "#e07c58"]
+  slate:         ["#0e1016", "#262c3a", "#3e4858", "#586478", "#76849a", "#98a6ba"]
+  brick:         ["#1a0a08", "#4a2018", "#76362a", "#9a4a38", "#b8624a", "#d27e62"]
+  glass:         ["#0a0c12", "#141a26", "#1e2838", "#2a3648", "#3a4a62", "#5a7090"]
+  shutter:       ["#0a0e18", "#1a2a48", "#2a4070", "#3e5a94", "#5a78b4", "#7a96cc"]
+  cobble:        ["#16140f", "#3a362e", "#5c574b", "#7e7868", "#9e9886", "#bcb6a2"]
+  stone:         ["#121110", "#2f2c28", "#4e4a43", "#6f6a60", "#938d80", "#b8b2a3"]
+  wood:          ["#160d07", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
