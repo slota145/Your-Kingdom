@@ -1285,15 +1285,15 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Grafiki (SpriteKiln, ART_SPEC §10.20):** owca (8 kierunków), koń bez jeźdźca (8 kierunków, z `mounted.yaml`), świnia (gotowa, eksport do gry), płot łączony (słupek, odcinki w 4 kierunkach siatki, jak mury: ART_SPEC §5), furtka (zamknięta i otwarta), mniejszy chlew 2×2 (z koszem paszy), ul (część 3). Podłoże zagrody: wydeptana trawa (kod, jak ziemia pola).
 
 **DoD:**
-- [ ] Chlew, owczarnia i stadnina stawiają kratki zagrody jak pola; połączone kratki jednego budynku to jedna zagroda z płotem na obwodzie i furtką.
-- [ ] Pojemność stada = 2 × liczba kratek (konie: 1 na kratkę, decyzja 2026-11-10); stado rośnie do pojemności, a suwak chroni zwierzęta do rozmnażania.
-- [ ] Zwierzęta chodzą po zagrodzie z animacją (świnie, owce, konie); pracownik pracuje w zagrodzie.
-- [ ] Mniejszy chlew bez wbudowanej zagrody; para zwierząt na start w każdej hodowli; kupiec sprzedaje świnie, owce i konie.
-- [ ] Wełna tym szybsza, im więcej owiec; usunięcie kratek nie zabija zwierząt.
-- [ ] Pasieka stawia ule jak kratki, miód zależy od liczby uli, pszczelarz chodzi od ula do ula.
-- [ ] Stare zapisy (v31) wczytują się po migracji: stary chlew staje się mały, a gra sama stawia kratki dla całego stada; bez utraty zwierząt, fixtura v32.
-- [ ] Automatyczni gracze, władcy i osady stawiają zagrody i ule; automatyczny gracz dalej dochodzi do patrycjuszy w limicie.
-- [ ] Testy szybkie i długie przechodzą; UI w PL i EN.
+- [x] Chlew, owczarnia i stadnina stawiają kratki zagrody jak pola; połączone kratki jednego budynku to jedna zagroda z płotem na obwodzie i furtką.
+- [x] Pojemność stada = 2 × liczba kratek (konie: 1 na kratkę, decyzja 2026-11-10); stado rośnie do pojemności, a suwak chroni zwierzęta do rozmnażania.
+- [x] Zwierzęta chodzą po zagrodzie z animacją (świnie, owce, konie); pracownik pracuje w zagrodzie.
+- [x] Mniejszy chlew bez wbudowanej zagrody; para zwierząt na start w każdej hodowli; kupiec sprzedaje świnie, owce i konie.
+- [x] Wełna tym szybsza, im więcej owiec; usunięcie kratek nie zabija zwierząt.
+- [x] Pasieka stawia ule jak kratki, miód zależy od liczby uli, pszczelarz chodzi od ula do ula.
+- [x] Stare zapisy (v31) wczytują się po migracji: stary chlew staje się mały, a gra sama stawia kratki dla całego stada; bez utraty zwierząt, fixtura v32 (i v33, v34 dla owiec, koni i uli).
+- [x] Automatyczni gracze, władcy i osady stawiają zagrody i ule; automatyczny gracz dalej dochodzi do patrycjuszy w limicie.
+- [x] Testy szybkie i długie przechodzą; UI w PL i EN.
 - [ ] **Twoja ocena gry** po każdej części.
 
 **Decyzje (ankieta 2026-11-10):**
@@ -1317,6 +1317,8 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Część 3, stan (2026-11-10): gotowa, czeka na ocenę właściciela (razem z częściami 1 i 2).** **Ule:** pasieka stawia ule jak kratki (przycisk „Dodaj ule”, do 8 w zasięgu 4 kafli; ul nie musi stać na ziemi uprawnej, ludzie przechodzą między ulami jak przez pole). **Pszczelarz chodzi od ula do ula:** idzie do jednego ula i go dogląda, potem do drugiego i zbiera miód, niesie go do magazynu. **Miód tym szybciej, im więcej uli:** czas pracy × √(4 / ule): przy 4 ulach jak dawniej, przy 2 wolniej, przy 8 szybciej (w 5 minut: 9 garnków przy 2 ulach, 12 przy 8; reszta to chodzenie do magazynu); tak samo w trybie uproszczonym. Bez uli pszczelarz czeka („brak uli”), panel: „Ule: 6 z 8”. **Widok:** słomiany ul (kosz z plecionki na deskowej podstawce, ze SpriteKiln) na kwiecistej trawie, pszczoły krążą wokół uli (złote kropki z ciemnym paskiem i migającymi skrzydełkami). **Pasieka ze SpriteKiln:** ochrowa chatka w ciemnej konstrukcji ze strzechą, wiata z półką z zapasowymi koszami i garnkami miodu, ławka ze słojami, gliniany podkurzacz, kwiaty. **Zapis v34;** migracja v33 → v34: stara pasieka w pierwszej sekundzie gry dostaje 4 ule obok siebie (tempo jak dawniej), a pszczelarz w połowie pracy zostaje na tym samym kroku (nowa kolejność kroków). **Automatycznie:** osady i władcy (4 ule), automatyczny gracz testów (4 ule), duże miasto testowe. **Testy** w `test_z1_pens.gd`: więcej uli = szybciej miód, bez uli bez miodu i limit 8, pszczelarz odwiedza różne ule, migracja v33, fixtura `v34_hives.json` (`tools/build_hive_fixture.gd`); poprawiony test pasieki w `test_m4b1_chains.gd`. Zrzut: `game_shot.tscn -- --plain --tile=62,64 --focus=57,71 --zoom=2 --pens --select=apiary`. Grafiki: ul `cd tools/spritekiln/art/specs/props/skep && spritekiln render skep.yaml` (wycięcie do `assets/nature/hive/skep.png` + `skep.json`), pasieka `gen_farms.py`, render i `export_building.py apiary`, trawa z kwiatami `python3 tools/make_pen_ground.py`.
 
 **Do sprawdzenia przy ocenie (część 3):** czy ule i pszczoły są czytelne, czy limit 8 uli i różnica w miodzie są dobre, czy pszczelarz między ulami wygląda naturalnie.
+
+**Część 4, stan (2026-11-10): gotowa, czeka na ocenę właściciela (razem z częściami 1–3).** Większość zrobiona już w częściach 1–3 (osady neutralne i władcy stawiają chlew i owczarnię z 6 kratkami, automatyczny gracz testów chlew z 6, owczarnię i pasiekę z 4, duże miasto testowe z zagrodami i ulami). Teraz: **władcy stawiają też pasiekę z 4 ulami i miodosytnię** (koniec planu rozwoju, po rzeźni). **Stadniny władcom nie dodałem:** ich wojsko (także rycerzy) werbuje się bez koni, więc konie stałyby bez pożytku; do zmiany, gdy władcy zaczną potrzebować koni. **Sprawdzone w długiej grze** (3 władców, 90 minut, `tests/long/test_m8_rulers_long.gd`, nowy warunek): u władców 5 owczarni, 2 chlewy i 3 pasieki mają stado większe niż para albo ule; w próbie `src/prototype/z1/ruler_herds.gd` zagrody owiec i świń zapełniają się do 12, pasieki dają miód. Automatyczny gracz dalej dochodzi do patrycjuszy w limicie i robi 88 sztuk mięsa w 2 godziny (dawniej 86, `test_slice_dod.gd`). **Wydajność widoku:** 100 chodzących zwierząt i 24 ule kosztują `PenLayer` ok. 0,37 ms na klatkę w chmurze (`src/prototype/z1/pen_view_bench.gd`; bez rysowania, które liczy karta), symulacja liczy tylko sztuki. Długie testy przechodzą. **Do oceny na laptopie:** płynność przy wielu zagrodach (FPS).
 
 **Poza zakresem:** owce na mięso, zwierzęta podchodzące do płotu i zbiegające się do koryta (pomysł z IDEAS, bez decyzji), mleko, ser i inne nowe towary ze zwierząt, krowy i kozy, choroby zwierząt, zagrody stawiane bez budynku.
 
