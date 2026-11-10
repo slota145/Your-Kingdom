@@ -149,6 +149,8 @@ func _terrain() -> void:
 	for stage: int in 4:
 		var name := "ripe" if stage == 3 else "sown_%d" % (stage + 1)
 		_save(_hop_poles(soil, furrow, stage), "terrain/field_hops/%s.png" % name)
+	# Hives (Z1 part 3): flowery grass.
+	_save(_diamond(Color(0.4, 0.52, 0.24), Color(0.36, 0.48, 0.22)), "terrain/hive/ground.png")
 	# Animal pens (Z1): trampled earth.
 	for name: String in ["ground", "ground_2"]:
 		_save(_diamond(Color(0.46, 0.36, 0.24), Color(0.4, 0.31, 0.21)), "terrain/pen/%s.png" % name)
@@ -1061,6 +1063,18 @@ func _animals() -> void:
 			info["anims"][anim] = {"frames": 8, "ms": 120}
 		var file := FileAccess.open(OUT.path_join("animals/%s/sheet.json" % good), FileAccess.WRITE)
 		file.store_string(JSON.stringify(info, " "))
+	# A hive (Z1 part 3): a straw dome on a stand, the ground point at (13, 21).
+	var skep := Image.create(26, 26, false, Image.FORMAT_RGBA8)
+	for y: int in 26:
+		for x: int in 26:
+			var d := pow((x - 13.0) / 9.0, 2) + pow((y - 12.0) / 9.0, 2)
+			if d <= 1.0 and y < 19:
+				skep.set_pixel(x, y, Color(0.8, 0.66, 0.36) if d < 0.8 else Color(0.3, 0.2, 0.1))
+			elif y >= 19 and y <= 21 and absi(x - 13) <= 10:
+				skep.set_pixel(x, y, Color(0.5, 0.35, 0.2))
+	_save(skep, "nature/hive/skep.png")
+	var skep_file := FileAccess.open(OUT.path_join("nature/hive/skep.json"), FileAccess.WRITE)
+	skep_file.store_string(JSON.stringify({"foot": [13, 21]}))
 
 
 func _save(img: Image, relative: String) -> void:

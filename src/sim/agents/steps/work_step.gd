@@ -11,8 +11,8 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 		var seconds := step.duration / Population.work_speed(province, agent)
 		# A shepherd shears faster in a bigger flock (Z1 part 2).
 		var workplace := province.buildings.get_building(agent.workplace_id)
-		if workplace != null and workplace.def.herd_work:
-			seconds *= workplace.herd_work_factor()
+		if workplace != null and workplace.def.paced_work():
+			seconds *= workplace.work_factor()
 		bb["_work_left"] = SimClock.seconds_to_ticks(seconds)
 		if bb.has("node"):
 			var dir := IsoMath.screen_dir(IsoMath.tile_center(SimCodec.to_vec2i(bb["node"])) - agent.pos)

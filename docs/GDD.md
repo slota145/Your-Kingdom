@@ -191,7 +191,7 @@ zboże + chmiel ──► browar ──► piwo (1 + 1 = 2 beczki)
 [M4b-1]
 glinianka (nad wodą) ──► glina; glina + drewno ──► cegielnia ──► cegły
 owczarnia z zagrodą (owce, para na start) ──► wełna (szybciej przy większym stadzie) ──► tkalnia ──► sukno ──► krawiec ──► ubrania
-pasieka ──► miód ──► miodosytnia ──► miód pitny
+pasieka z ulami (do 8, szybciej przy większej liczbie uli) ──► miód ──► miodosytnia ──► miód pitny
 leśniczy sadzi sadzonki ──► drzewa (dla drwala)
 
 [M4b-2]
@@ -348,7 +348,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Owczarnia [M4b-1, Z1] | 2×2 i zagroda z kratek (do 12, 2 owce na kratkę) | wełna (tym szybciej, im więcej owiec) |
 | Tkalnia [M4b-1] | 2×2 | sukno |
 | Krawiec [M4b-1] | 2×2, 20 złota | ubrania |
-| Pasieka [M4b-1] | 2×2 | miód |
+| Pasieka [M4b-1, Z1] | 2×2 i ule stawiane jak kratki (do 8) | miód (tym szybciej, im więcej uli) |
 | Miodosytnia [M4b-1] | 2×2, 30 złota | miód pitny |
 | Tawerna [M4b-1] | 2×2, 40 złota | usługa w zasięgu (patrycjusze), zużywa piwo i miód pitny |
 | Chlew [M4b-2, Z1] | 2×2 i zagroda z kratek (do 12, 2 świnie na kratkę) | świnie (świniarz karmi stado w zagrodzie) |

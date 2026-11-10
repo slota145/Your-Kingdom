@@ -27,6 +27,10 @@ const MARGIN := 0.2
 const CORNER := 0.42
 ## Seconds an animal stands, roots or grazes before it walks again (from, to).
 const REST := Vector2(1.5, 5.0)
+const BEES_PER_HIVE := 3
+const BEE_GOLD := Color(0.95, 0.78, 0.2)
+const BEE_DARK := Color(0.2, 0.15, 0.08)
+const BEE_WING := Color(0.92, 0.95, 1.0, 0.8)
 
 var province: ProvinceSim
 ## Building id -> its animals (_Animal).
@@ -37,6 +41,12 @@ var _pens: Dictionary[int, Array] = {}
 var _fences: Dictionary[String, _Fence] = {}
 var _sheets: Dictionary[StringName, _Sheet] = {}
 var _dirty: bool = true
+## Hives (Z1 part 3): a straw skep on every hive tile, by tile; bees fly round them.
+var _skeps: Dictionary[Vector2i, Sprite2D] = {}
+var _bees: _Bees
+var _skep_texture: Texture2D
+var _skep_foot: Vector2 = Vector2(13, 21)
+var _clock: float = 0.0
 var _rng := RandomNumberGenerator.new()
 
 
@@ -59,6 +69,26 @@ class _Animal:
 	var anim: String = "idle"
 	var dir: int = 0
 	var clock: float = 0.0
+
+
+## Bees round the hives: a few dark-gold dots on loops over each skep, drawn above the world
+## (they fly).
+class _Bees:
+	extends Node2D
+	var hives: Array[Vector2] = []
+	var clock: float = 0.0
+
+	func _draw() -> void:
+		for i: int in hives.size():
+			var at := hives[i] + Vector2(0, -16)
+			for k: int in BEES_PER_HIVE:
+				var phase := clock * (1.6 + 0.37 * k) + i * 1.7 + k * 2.1
+				var p := at + Vector2(cos(phase) * (6.0 + 3.0 * k), sin(phase * 1.3) * (4.0 + k) - 2.0 * k)
+				# A gold body with a dark stripe, wings flashing light now and then.
+				draw_rect(Rect2(p.round(), Vector2(2, 1)), BEE_GOLD)
+				draw_rect(Rect2(p.round() + Vector2(1, 0), Vector2(1, 1)), BEE_DARK)
+				if (k + int(clock * 10.0)) % 2 == 0:
+					draw_rect(Rect2(p.round() + Vector2(0, -1), Vector2(1, 1)), BEE_WING)
 
 
 class _Fence:
@@ -108,6 +138,9 @@ func _init() -> void:
 func setup(source: ProvinceSim) -> void:
 	province = source
 	_dirty = true
+	_bees = _Bees.new()
+	_bees.z_index = 1
+	add_child(_bees)
 
 
 ## Pens changed (a pen tile placed or removed, a building gone): rebuilt on the next frame.
@@ -123,6 +156,11 @@ func update_view(delta: float) -> void:
 	if _dirty:
 		_dirty = false
 		_rebuild_pens()
+		_rebuild_hives()
+	if not _skeps.is_empty():
+		_clock += delta
+		_bees.clock = _clock
+		_bees.queue_redraw()
 	for id: int in _pens:
 		var building := province.buildings.get_building(id)
 		if building == null:
@@ -173,6 +211,46 @@ func _rebuild_pens() -> void:
 			for animal: _Animal in _herds[id]:
 				animal.sprite.queue_free()
 			_herds.erase(id)
+
+
+# --- Hives ---------------------------------------------------------------------------------
+
+func _rebuild_hives() -> void:
+	var seen: Dictionary[Vector2i, bool] = {}
+	_bees.hives.clear()
+	for building: BuildingState in province.buildings.all():
+		if not building.def.has_hives():
+			continue
+		for tile: Vector2i in province.fields.tiles_of(building.id):
+			seen[tile] = true
+			var sprite: Sprite2D = _skeps.get(tile)
+			if sprite == null:
+				sprite = Sprite2D.new()
+				sprite.centered = false
+				sprite.texture = _skep()
+				sprite.offset = -_skep_foot
+				sprite.position = IsoMath.tile_center_screen(tile)
+				add_child(sprite)
+				_skeps[tile] = sprite
+			_bees.hives.append(sprite.position)
+	for tile: Vector2i in _skeps.keys():
+		if not seen.has(tile):
+			_skeps[tile].queue_free()
+			_skeps.erase(tile)
+	_bees.queue_redraw()
+
+
+## The skep (assets/nature/hive/skep.png, its ground point in skep.json).
+func _skep() -> Texture2D:
+	if _skep_texture == null:
+		_skep_texture = ArtPaths.texture("nature/hive/skep.png")
+		var path := ArtPaths.resolve("nature/hive/skep.json")
+		if FileAccess.file_exists(path):
+			var info: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+			if info is Dictionary:
+				var foot: Array = (info as Dictionary).get("foot", [13, 21])
+				_skep_foot = Vector2(float(foot[0]), float(foot[1]))
+	return _skep_texture
 
 
 func _fence(key: String, tile: Vector2i, side: Vector2i) -> _Fence:

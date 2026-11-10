@@ -1,6 +1,7 @@
 """Ground of animal pens (Z1): trampled earth with mud, straw and tufts of grass on a 64x32 tile.
 
-Writes assets/terrain/pen/ground.png and ground_2.png (two looks, chosen by the tile in TerrainLayer).
+Writes assets/terrain/pen/ground.png and ground_2.png (two looks, chosen by the tile in TerrainLayer)
+and assets/terrain/hive/ground.png (grass with flowers under the hives, part 3).
 Run: python3 tools/make_pen_ground.py, then "$GODOT" --headless --path . --import
 """
 import os
@@ -59,7 +60,28 @@ def make(seed):
     return img
 
 
+def make_meadow(seed):
+    """Ground under hives (Z1 part 3): grass with clover and flowers for the bees."""
+    rnd = random.Random(seed)
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    px = img.load()
+    greens = [(88, 120, 52), (96, 128, 58), (80, 112, 48), (104, 134, 62)]
+    flowers = [(236, 226, 120), (240, 240, 232), (200, 150, 210), (230, 170, 80)]
+    for y in range(H):
+        for x in range(W):
+            if inside(x, y):
+                px[x, y] = rnd.choice(greens) + (255,)
+    for _ in range(30):
+        x, y = rnd.randint(1, W - 2), rnd.randint(1, H - 2)
+        if inside(x, y):
+            px[x, y] = rnd.choice(flowers) + (255,)
+    return img
+
+
 def main():
+    meadow = os.path.join(ROOT, "assets", "terrain", "hive")
+    os.makedirs(meadow, exist_ok=True)
+    make_meadow(31).save(os.path.join(meadow, "ground.png"))
     out = os.path.join(ROOT, "assets", "terrain", "pen")
     os.makedirs(out, exist_ok=True)
     make(11).save(os.path.join(out, "ground.png"))

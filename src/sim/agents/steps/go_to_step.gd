@@ -33,6 +33,21 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 			var tile := pens[(agent.id + province.tick / SimClock.TICKS_PER_SECOND) % pens.size()]
 			bb["stand"] = SimCodec.vec2i(tile)
 		return Movement.walk(province, agent, SimCodec.to_vec2i(bb["stand"]))
+	if step.target == &"hive":
+		# The beekeeper goes from hive to hive (Z1 part 3): beside one of the workplace's hives,
+		# another one each time this step comes (every hive step keeps its own choice).
+		var key := "hive%d" % agent.task.step_index
+		if not bb.has(key):
+			var hives := province.fields.tiles_of(workplace.id)
+			if hives.is_empty():
+				return failed(agent, &"no_hive")
+			var hive := hives[(agent.id + agent.task.step_index + province.tick / SimClock.TICKS_PER_SECOND) % hives.size()]
+			var stand := province.approach_tile(hive, agent.tile())
+			if stand == Agent.NO_TILE:
+				return failed(agent, &"no_hive")
+			bb[key] = SimCodec.vec2i(stand)
+			bb["node"] = SimCodec.vec2i(hive)
+		return Movement.walk(province, agent, SimCodec.to_vec2i(bb[key]))
 	if step.target == &"plant_spot":
 		if not bb.has("stand"):
 			var spot := province.find_plant_spot(workplace, step.resource, agent.tile())

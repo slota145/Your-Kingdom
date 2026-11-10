@@ -87,7 +87,9 @@ func test_tailor_sews_clothes_from_cloth() -> void:
 func test_apiary_collects_honey() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	_village_with(sim, {})
-	SimFixture.place(sim, &"apiary", Vector2i(14, 4))
+	var apiary := SimFixture.place(sim, &"apiary", Vector2i(14, 4))
+	# 4 hives (Z1 part 3): as fast as an apiary before the hives.
+	assert_int(Pens.auto_place(sim.province, apiary, 4)).is_equal(4)
 	var before := sim.province.goods_total(&"honey")
 	var counts := _run_counting(sim, 180)
 	var honey := int(counts.get("good_produced:honey", 0))

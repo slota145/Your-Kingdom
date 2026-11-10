@@ -213,6 +213,8 @@ func _place(item: Array, near: Vector2i) -> void:
 	var building := sim.province.buildings.get_building(sim.province.grid.occupant(spot["origin"]))
 	if building.house != null:
 		_settle(building, int(item[3]))
+	if building.def.has_hives():
+		Pens.auto_place(sim.province, building, NeutralTown.AUTO_HIVES)
 	if building.def.herd_good != &"":
 		# A pen for the herd first (Z1): room for 12 pigs.
 		Pens.auto_place(sim.province, building, NeutralTown.AUTO_PENS)

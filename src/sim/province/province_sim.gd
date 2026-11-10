@@ -1345,12 +1345,14 @@ func field_error(farm_id: int, tile: Vector2i) -> StringName:
 	if not grid.is_inside(tile):
 		return &"outside_map"
 	if fields.tiles_of(farm_id).size() >= farm.def.field_limit():
+		if farm.def.has_hives():
+			return &"too_many_hives"
 		return &"too_many_pens" if farm.def.has_pens() else &"too_many_fields"
 	var rect := Rect2i(farm.origin, farm.def.footprint).grow(farm.def.work_radius)
 	if not rect.has_point(tile):
 		return &"out_of_range"
 	var terrain := terrain_at(tile)
-	if terrain != null and not terrain.farmable and not farm.def.has_pens():
+	if terrain != null and not terrain.farmable and not farm.def.has_tiles():
 		return &"terrain_not_farmable"
 	return _free_ground_error(tile)
 
@@ -1359,7 +1361,7 @@ func add_field(farm_id: int, tile: Vector2i) -> void:
 	fields.add(tile, farm_id)
 	refresh_tile(tile)
 	var building := buildings.get_building(farm_id)
-	if building != null and building.def.has_pens():
+	if building != null and building.def.has_tiles():
 		update_herd_room(building)
 		# The first pen brings the starting pair (Z1, owner's survey 2026-11-10).
 		if building.give_pair() > 0:
@@ -1378,7 +1380,7 @@ func remove_field(tile: Vector2i) -> void:
 	var agent := agents.get_agent(owner)
 	if agent != null and agent.task != null:
 		TaskRunner.fail(self, agent)
-	if holder != null and holder.def.has_pens():
+	if holder != null and holder.def.has_tiles():
 		update_herd_room(holder)
 	events.emit(&"field_changed", {"tile": tile, "farm": 0})
 
@@ -1386,6 +1388,9 @@ func remove_field(tile: Vector2i) -> void:
 ## Counts the pen tiles of [param building] (Z1) and sets the herd's room from them: 2 animals
 ## per pen tile, the breeding reserve kept between 2 and the room.
 func update_herd_room(building: BuildingState) -> void:
+	if building.def.has_hives():
+		building.hives = fields.tiles_of(building.id).size()
+		return
 	if not building.def.has_pens():
 		return
 	building.pens = fields.tiles_of(building.id).size()
@@ -1393,8 +1398,8 @@ func update_herd_room(building: BuildingState) -> void:
 		building.yard.stack_limit = maxi(building.herd_room(), 1)
 
 
-## Sheep farms from saves before v33 get their pen now (Z1 part 2): beside them, in one piece;
-## the first tile brings the starting pair.
+## Sheep farms from saves before v33 get their pen now (Z1 part 2), apiaries before v34 their
+## hives (part 3): beside them, in one piece; a pen brings the starting pair.
 func _place_due_pens() -> void:
 	for building: BuildingState in buildings.all():
 		if building.pens_due > 0:
@@ -1408,6 +1413,8 @@ func update_herd_rooms() -> void:
 		return
 	var counts := fields.counts()
 	for building: BuildingState in buildings.all():
+		if building.def.has_hives():
+			building.hives = counts.get(building.id, 0)
 		if building.def.has_pens():
 			building.pens = counts.get(building.id, 0)
 			if building.yard != null:
@@ -1416,9 +1423,17 @@ func update_herd_rooms() -> void:
 
 func _has_pen_buildings() -> bool:
 	for building: BuildingState in buildings.all():
-		if building.def.has_pens():
+		if building.def.has_tiles():
 			return true
 	return false
+
+
+## Whether [param tile] is a hive tile (Z1 part 3): a field tile of an apiary.
+func is_hive(tile: Vector2i) -> bool:
+	if not fields.has_field(tile):
+		return false
+	var holder := buildings.get_building(fields.farm_of(tile))
+	return holder != null and holder.def.has_hives()
 
 
 ## Whether [param tile] is a pen tile (Z1): a field tile of a building with pens.

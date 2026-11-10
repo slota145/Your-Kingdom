@@ -74,8 +74,12 @@ const PEN_ANIMALS := 2
 ## decision 2026-11-10).
 @export_range(1, 8) var pen_animals: int = PEN_ANIMALS
 ## The work of a cycle goes faster with a bigger herd (Z1 part 2: the shepherd shears wool;
-## owner's survey 2026-11-10): see BuildingState.herd_work_factor. No animals, no work.
+## owner's survey 2026-11-10): see BuildingState.work_factor. No animals, no work.
 @export var herd_work: bool = false
+## Hive tiles the building may own (Z1 part 3, an apiary): placed like field tiles within
+## [member work_radius]; the beekeeper goes from hive to hive, and the more hives, the faster
+## the honey (BuildingState.work_factor). 0 = none.
+@export_range(0, 64) var max_hives: int = 0
 ## Seconds for one young animal with 2 in the herd; a bigger herd breeds faster (the time is
 ## divided by half the herd). Breeding needs at least 2 animals and a worker at work.
 @export_range(1.0, 3600.0) var breed_time: float = 90.0
@@ -395,6 +399,24 @@ func has_pens() -> bool:
 	return max_pens > 0 and herd_good != &""
 
 
-## Tiles of the field kind the building may own: fields of a farm or pens of a herd (Z1).
+## Tiles of the field kind the building may own: fields of a farm, pens of a herd or hives of
+## an apiary (Z1).
 func field_limit() -> int:
-	return max_fields if max_fields > 0 else max_pens
+	if max_fields > 0:
+		return max_fields
+	return max_pens if max_pens > 0 else max_hives
+
+
+## Whether the building keeps hives on hive tiles (Z1 part 3).
+func has_hives() -> bool:
+	return max_hives > 0
+
+
+## Pen or hive tiles (Z1): tiles of the field kind that are not fields of a farm.
+func has_tiles() -> bool:
+	return has_pens() or has_hives()
+
+
+## The work of a cycle goes faster with a bigger herd or more hives (Z1).
+func paced_work() -> bool:
+	return herd_work or has_hives()

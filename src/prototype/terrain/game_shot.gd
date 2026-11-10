@@ -579,7 +579,11 @@ func _place_pens(sim: Simulation, at: Vector2i) -> void:
 	if stud != null:
 		Pens.auto_place(province, stud, 8)
 		stud.yard.add(&"horse", 4)
-	for building: BuildingState in [first, second, farm, stud]:
+	# Z1 part 3: an apiary with its hives.
+	var apiary := _place_near(sim, &"apiary", at + Vector2i(-6, 7))
+	if apiary != null:
+		Pens.auto_place(province, apiary, 6)
+	for building: BuildingState in [first, second, farm, stud, apiary]:
 		if building == null:
 			continue
 		var worker := province.spawn_agent(building.def.worker_kinds[0], building.entrance_tile())

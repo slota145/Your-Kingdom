@@ -17,6 +17,8 @@ const MAX_RESERVE := 60
 const YARD_DIVISOR := 2
 ## Herd size at which the work of a herd_work building takes as long as before Z1 part 2.
 const HERD_WORK_BASE := 8.0
+## Hives at which an apiary's work takes as long as before Z1 part 3.
+const HIVE_WORK_BASE := 4.0
 
 var id: int
 var def: BuildingDef
@@ -61,6 +63,8 @@ var herd_given: bool = false
 ## Herd with pens (Z1): pen tiles the building owns. Not saved: counted from the field tiles
 ## (ProvinceSim.update_herd_room).
 var pens: int = 0
+## Apiary (Z1 part 3): hive tiles it owns. Not saved, counted like [member pens].
+var hives: int = 0
 ## Pen tiles the game still places for this building (a sheep farm from a save before v33,
 ## ProvinceSim._place_due_pens); 0 = none.
 var pens_due: int = 0
@@ -207,11 +211,21 @@ func herd_room() -> int:
 	return def.herd_capacity
 
 
-## Work time of a cycle of a building with def.herd_work against today's (Z1 part 2): 1 with
-## HERD_WORK_BASE animals, slower with fewer (×2 with 2), faster with more (×0.58 with 24).
-func herd_work_factor() -> float:
+## Work time of a cycle of a building with def.paced_work() against the time before Z1: with a
+## herd (part 2) 1 with HERD_WORK_BASE animals, slower with fewer (×2 with 2), faster with more
+## (×0.58 with 24); with hives (part 3) 1 with HIVE_WORK_BASE hives (×1.41 with 2, ×0.71 with 8).
+func work_factor() -> float:
+	if def.has_hives():
+		return sqrt(HIVE_WORK_BASE / float(maxi(hives, 1)))
 	var herd := yard.total(def.herd_good) if yard != null and def.herd_good != &"" else 0
 	return sqrt(HERD_WORK_BASE / float(maxi(herd, 1)))
+
+
+## Whether a paced building has what its work needs: animals in the herd, hives.
+func has_work_source() -> bool:
+	if def.has_hives():
+		return hives > 0
+	return yard != null and yard.total(def.herd_good) > 0
 
 
 ## Animals of the herd's good others may take: all above the breeding reserve.

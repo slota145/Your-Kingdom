@@ -349,3 +349,104 @@ func test_v33_fixture_loads_and_continues() -> void:
 				wool += int(e["amount"])
 	assert_int(wool).is_greater(0)
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+# --- Part 3: hives ---------------------------------------------------------------------------
+
+func _honey_in(seconds: float, hives: int) -> int:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	_village(sim)
+	var apiary := SimFixture.place(sim, &"apiary", Vector2i(16, 4))
+	assert_int(Pens.auto_place(sim.province, apiary, hives)).is_equal(hives)
+	var honey := 0
+	for i: int in SimFixture.ticks(seconds):
+		sim.step()
+		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"good_produced" and e["good"] == &"honey":
+				honey += int(e["amount"])
+	return honey
+
+
+func test_more_hives_give_honey_faster() -> void:
+	var few := _honey_in(300, 2)
+	var many := _honey_in(300, 8)
+	print("honey in 5 min: 2 hives ", few, ", 8 hives ", many)
+	assert_int(few).is_greater(0)
+	assert_int(many).is_greater(few)
+
+
+func test_no_hives_no_honey_and_at_most_eight() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	_village(sim)
+	var apiary := SimFixture.place(sim, &"apiary", Vector2i(16, 4))
+	sim.run_ticks(SimFixture.ticks(120))
+	assert_int(sim.province.goods_total(&"honey")).is_equal(0)
+	assert_int(Pens.auto_place(sim.province, apiary, 12)).is_equal(8)
+	assert_int(apiary.hives).is_equal(8)
+	assert_bool(sim.province.is_hive(sim.province.fields.tiles_of(apiary.id)[0])).is_true()
+	assert_bool(sim.province.is_pen(sim.province.fields.tiles_of(apiary.id)[0])).is_false()
+	assert_str(String(sim.province.field_error(apiary.id, Vector2i(20, 1)))).is_equal("too_many_hives")
+
+
+func test_the_beekeeper_goes_from_hive_to_hive() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	_village(sim)
+	var apiary := SimFixture.place(sim, &"apiary", Vector2i(16, 4))
+	assert_int(Pens.auto_place(sim.province, apiary, 6)).is_equal(6)
+	var hives := sim.province.fields.tiles_of(apiary.id)
+	var visited: Dictionary[Vector2i, bool] = {}
+	for i: int in SimFixture.ticks(300):
+		sim.step()
+		for id: int in apiary.workers:
+			var agent := sim.province.agents.get_agent(id)
+			if agent == null or agent.task == null or not agent.activity in [&"tend_hives", &"collect_honey"]:
+				continue
+			for hive: Vector2i in hives:
+				if (hive - agent.tile()).abs() <= Vector2i(1, 1):
+					visited[SimCodec.to_vec2i(agent.task.bb.get("node", [0, 0]))] = true
+	print("hives visited: ", visited.size())
+	assert_int(visited.size()).is_greater_equal(2)
+
+
+## v33 → v34: an old apiary gets 4 hives on its first second; a beekeeper in the middle of his
+## cycle goes on with the same step.
+func test_v33_apiaries_get_hives() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	_village(sim)
+	var apiary := SimFixture.place(sim, &"apiary", Vector2i(16, 4))
+	var state: Dictionary = sim.to_dict()
+	var migrated := SaveMigrations.migrate(state, 33)
+	var loaded := Simulation.from_dict(migrated, SimFixture.registry())
+	assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(SimCodec.canonical(migrated))
+	var again := loaded.province.buildings.get_building(apiary.id)
+	assert_int(again.pens_due).is_equal(SaveMigrations.AUTO_HIVES)
+	loaded.run_ticks(SimFixture.ticks(2))
+	assert_int(again.hives).is_equal(SaveMigrations.AUTO_HIVES)
+	var task := {"recipe": "beekeeping", "step": 2}
+	var old := {"provinces": [{"state": {"buildings": [], "agents": [{"task": task}]}}]}
+	SaveMigrations.migrate_v33_to_v34(old)
+	assert_int(int(task["step"])).is_equal(4)
+
+
+## The v34 fixture (tools/build_hive_fixture.gd): an apiary with 5 hives loads unchanged and
+## keeps making honey.
+func test_v34_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v34_hives.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(34)
+	var state := SaveMigrations.migrate(document["state"], 34)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	var hives: Array[int] = []
+	for b: BuildingState in sim.province.buildings.all():
+		if b.def.has_hives():
+			hives.append(b.hives)
+	assert_bool(hives.has(5)).is_true()
+	var honey := 0
+	for i: int in SimFixture.ticks(180):
+		sim.step()
+		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"good_produced" and e["good"] == &"honey":
+				honey += int(e["amount"])
+	assert_int(honey).is_greater(0)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()

@@ -274,6 +274,10 @@ func _refresh() -> void:
 			lines.append(tr("ui.building.fields") % [province.fields.tiles_of(b.id).size(), b.def.max_fields])
 		elif b.def.has_pens():
 			lines.append(tr("ui.building.pens") % [b.pens, b.def.max_pens, b.herd_room()])
+		elif b.def.has_hives():
+			lines.append(tr("ui.building.hives") % [b.hives, b.def.max_hives])
+			if b.hives == 0:
+				lines.append(tr("ui.building.no_hives"))
 		if b.paused:
 			lines.append(tr("ui.building.paused"))
 		if b.def.service_radius > 0:
@@ -313,8 +317,9 @@ func _refresh() -> void:
 	_body.text = "\n".join(lines)
 	_stock.visible = b.stock != null
 	_stock.stock = b.stock
-	_fields_button.visible = b.def.field_limit() > 0 and (b.is_complete() or b.def.has_pens())
-	_fields_button.text = tr("ui.building.add_pens" if b.def.has_pens() else "ui.building.add_fields")
+	_fields_button.visible = b.def.field_limit() > 0 and (b.is_complete() or b.def.has_tiles())
+	_fields_button.text = tr("ui.building.add_hives" if b.def.has_hives() \
+			else "ui.building.add_pens" if b.def.has_pens() else "ui.building.add_fields")
 	_herd_box.visible = b.is_complete() and b.def.herd_good != &"" and b.yard != null
 	if _herd_box.visible:
 		_herd_slider.max_value = maxi(b.herd_room(), SetHerdKeepCommand.MIN_KEEP)

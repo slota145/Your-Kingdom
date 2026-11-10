@@ -16,6 +16,8 @@ const STOCK := {&"bread": 12, &"fish": 8, &"beer": 8, &"wood": 20, &"planks": 10
 		&"grain": 6}
 ## Pen tiles a pigsty gets (Z1): room for 12 animals, as much as the old pigsty held.
 const AUTO_PENS := 6
+## Hive tiles an apiary gets (Z1 part 3): as fast as an apiary before the hives.
+const AUTO_HIVES := 4
 ## Fields a farm gets (hop farms too).
 const FIELDS := 10
 ## Rings searched around an anchor for a free spot.
@@ -104,6 +106,8 @@ static func place(town: ProvinceSim, def: BuildingDef, near: Vector2i, instant: 
 					elif def.has_pens():
 						# A herd gets its pen at once (Z1).
 						Pens.auto_place(town, building, AUTO_PENS)
+					elif def.has_hives():
+						Pens.auto_place(town, building, AUTO_HIVES)
 					return building
 	return null
 

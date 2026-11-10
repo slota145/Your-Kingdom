@@ -156,6 +156,8 @@ func setup_province(source: ProvinceSim) -> void:
 	# Animal pens (Z1): trampled earth, two looks.
 	for name: String in ["ground", "ground_2"]:
 		_fields["pen/%s" % name] = ArtPaths.texture("terrain/pen/%s.png" % name)
+	# Hives (Z1 part 3): grass with flowers.
+	_fields["hive/ground"] = ArtPaths.texture("terrain/hive/ground.png")
 	_build(province.grid.size)
 
 
@@ -306,6 +308,8 @@ func _decor_chance(tile: Vector2i) -> float:
 func _field(tile: Vector2i) -> Texture2D:
 	if province == null or not province.fields.has_field(tile):
 		return null
+	if province.is_hive(tile):
+		return _fields["hive/ground"]
 	if province.is_pen(tile):
 		return _fields["pen/ground_2" if (tile.x * 7 + tile.y * 13) % 3 == 0 else "pen/ground"]
 	var stage := province.fields.stage(tile, province.tick)

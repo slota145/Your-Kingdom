@@ -1,4 +1,4 @@
-"""Sheep farm and stud farm (Z1 part 2) from the pigsty spec: the same 2x2 plot, hut, roof and
+"""Sheep farm, stud farm (Z1 part 2) and apiary (part 3) from the pigsty spec: the same 2x2 plot, hut, roof and
 lean-to (art/specs/props/pigsty/pigsty.yaml is the hand-written base), other walls, roof and
 props. Writes art/specs/props/<id>/<id>.yaml; edit this script, not those files.
 
@@ -201,9 +201,77 @@ def stud_farm(base):
     return s
 
 
+def apiary(base):
+    s = base.replace("name: pigsty", "name: apiary")
+    s = s.replace("Your Kingdom pigsty (Z1), 2x2 tiles, no pen of its own (the pens are tiles beside it): a plank hut with a thick thatched gable roof on the back half, the door in the wall facing the lower right, an open lean-to with hay bales and sacks, a trough with slop, feed baskets, a bucket and a pitchfork in the muddy yard",
+                  "Your Kingdom apiary (Z1 part 3), 2x2 tiles, the hives on tiles beside it: a small ochre-daubed beekeeper's hut in a dark timber frame with a thatched roof, an open shed with a shelf of spare skeps and honey pots, a bench with jars, a smoker pot, flowers in a grassy yard")
+    s = s.replace("palette: ../../palettes/kingdom.yaml", "palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]")
+    s = s.replace("  board: {ramp: log, bands: [2, 5]}", "  board: {ramp: plaster_ochre, bands: [2, 5]}\n  honey: {ramp: honey, bands: [2, 5], finish: glossy}\n  pot: {ramp: pot, bands: [1, 4]}\n  grass: {ramp: grass, outline: false}\n  flower: {ramp: flower, bands: [3, 4], outline: false}")
+    s = s.replace("  wicker: ['#1a1006', '#4a3216', '#74522a', '#9a7038', '#be9250']",
+                  "  wicker: ['#1a1006', '#4a3216', '#74522a', '#9a7038', '#be9250']\n  honey:  ['#2a1404', '#6a3a08', '#a8640e', '#d8901c', '#f0b83a', '#fcd870']\n  pot:    ['#1a0e08', '#4a2a18', '#7a4628', '#a6643a', '#c88452']\n  grass:  ['#14200c', '#26381a', '#34481e', '#3e5424', '#4a602a']\n  flower: ['#2a2410', '#8a7a30', '#d8c450', '#f0e070', '#fff4a0']")
+    a, b = part_block(s, "walls")
+    s = s[:a] + """  walls:             # daub between timbers
+    material: board
+    prims:
+      - box: {c: [0.42, 1.05, -1.0], half: [1.55, 0.92, 0.97]}
+""" + s[b:]
+    s = drop(s, ["trough", "slop", "puddle", "fork_haft", "fork_tines", "hay", "sacks", "baskets", "feed"])
+    s = add_parts(s, """  braces:
+    material: post
+    prims:
+      - box: {c: [0.42, 1.05, 0.0], half: [0.06, 0.92, 0.05]}
+      - box: {c: [1.2, 1.05, 0.0], half: [0.86, 0.05, 0.05], rot: [0, 0, -0.75]}
+  grass_patches:
+    material: grass
+    prims:
+      - ellipsoid: {c: [0.8, 0.014, 1.4], r: [0.6, 0.013, 0.45]}
+      - ellipsoid: {c: [-0.5, 0.014, 1.8], r: [0.4, 0.013, 0.3]}
+    paint:
+      - material: flower
+        spots: {scale: 0.05, density: 0.25, seed: 9}
+  shelf:             # a shelf under the shed with spare skeps
+    material: plank
+    prims:
+      - box: {c: [-1.65, 0.5, -1.0], half: [0.32, 0.04, 0.85]}
+      - box: {c: [-1.65, 0.25, -1.75], half: [0.04, 0.25, 0.04]}
+      - box: {c: [-1.65, 0.25, -0.25], half: [0.04, 0.25, 0.04]}
+  spare_skeps:
+    material: thatch
+    prims:
+      - ellipsoid: {c: [-1.65, 0.75, -1.45], r: [0.24, 0.26, 0.24]}
+      - ellipsoid: {c: [-1.65, 0.75, -0.85], r: [0.24, 0.26, 0.24]}
+    paint:
+      - material: thatch_dark
+        stripes: {axis: y, period: 0.1, width: 0.055}
+  pots:              # honey pots under the shelf
+    material: pot
+    prims:
+      - cylinder: {a: [-1.6, 0.0, -1.2], b: [-1.6, 0.26, -1.2], r: 0.15}
+      - cylinder: {a: [-1.65, 0.0, -0.75], b: [-1.65, 0.22, -0.75], r: 0.13}
+  bench:             # a bench by the door with jars of honey
+    material: plank
+    prims:
+      - box: {c: [1.15, 0.36, 0.45], half: [0.5, 0.04, 0.16]}
+      - box: {c: [0.75, 0.18, 0.45], half: [0.04, 0.18, 0.12]}
+      - box: {c: [1.55, 0.18, 0.45], half: [0.04, 0.18, 0.12]}
+  jars:
+    material: honey
+    prims:
+      - cylinder: {a: [0.9, 0.4, 0.45], b: [0.9, 0.6, 0.45], r: 0.09}
+      - cylinder: {a: [1.15, 0.4, 0.45], b: [1.15, 0.64, 0.45], r: 0.1}
+      - cylinder: {a: [1.4, 0.4, 0.45], b: [1.4, 0.58, 0.45], r: 0.08}
+  smoker:            # a clay smoker pot by the door
+    material: pot
+    prims:
+      - cylinder: {a: [-1.4, 0.0, 0.7], b: [-1.4, 0.3, 0.7], r: 0.12}
+      - cone: {a: [-1.4, 0.3, 0.7], b: [-1.4, 0.42, 0.7], r: [0.1, 0.03]}
+""")
+    return s
+
+
 def main():
     base = open(BASE).read()
-    for name, make in [("sheep_farm", sheep_farm), ("stud_farm", stud_farm)]:
+    for name, make in [("sheep_farm", sheep_farm), ("stud_farm", stud_farm), ("apiary", apiary)]:
         d = os.path.join(HERE, "art", "specs", "props", name)
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, name + ".yaml"), "w") as f:

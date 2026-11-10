@@ -4187,3 +4187,18 @@ msgid "good.sheep.count"
 msgid_plural "good.sheep.count_plural"
 msgstr[0] "%s sheep"
 msgstr[1] "%s sheep"
+
+msgid "ui.building.add_hives"
+msgstr "Add hives"
+
+msgid "ui.building.hives"
+msgstr "Hives: %d of %d (the more hives, the faster the honey)"
+
+msgid "ui.building.no_hives"
+msgstr "Place hives beside the apiary: no hives, no honey."
+
+msgid "ui.reason.no_hive"
+msgstr "no hives (place hives beside the apiary)"
+
+msgid "ui.command_error.too_many_hives"
+msgstr "The apiary has all its hives."

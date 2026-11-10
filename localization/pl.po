@@ -4225,3 +4225,18 @@ msgid_plural "good.sheep.count_plural"
 msgstr[0] "%s owca"
 msgstr[1] "%s owce"
 msgstr[2] "%s owiec"
+
+msgid "ui.building.add_hives"
+msgstr "Dodaj ule"
+
+msgid "ui.building.hives"
+msgstr "Ule: %d z %d (im więcej uli, tym szybciej rośnie miód)"
+
+msgid "ui.building.no_hives"
+msgstr "Postaw ule obok pasieki: bez nich nie ma miodu."
+
+msgid "ui.reason.no_hive"
+msgstr "brak uli (postaw ule obok pasieki)"
+
+msgid "ui.command_error.too_many_hives"
+msgstr "Pasieka ma już wszystkie ule."

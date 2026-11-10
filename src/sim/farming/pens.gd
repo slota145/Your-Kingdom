@@ -14,7 +14,7 @@ const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0),
 ## pigsty's freed ground). Returns how many it placed.
 static func auto_place(province: ProvinceSim, building: BuildingState, wanted: int,
 		first: Array[Vector2i] = []) -> int:
-	if not building.def.has_pens() or wanted <= 0:
+	if not building.def.has_tiles() or wanted <= 0:
 		return 0
 	var doors := _door_fronts(province)
 	var own: Array[Vector2i] = province.fields.tiles_of(building.id)
