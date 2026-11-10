@@ -1195,6 +1195,19 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [ ] Władca wysyła wyprawy osadników do pustych prowincji (lądem i morzem), wykupuje osady neutralne, prowadzi szlaki handlowe między swoimi prowincjami.
 - [ ] Wejście do prowincji władcy pokazuje jego miasto (oglądanie, bez budowania).
 
+**Część 3, plan i decyzje (ankieta 2026-11-10):**
+- **Kawałki:** A, miasta władców żyją w trybie uproszczonym (już nie zamrożone jak osady neutralne) i rosną: „planista” co jakiś czas bierze z planu rozwoju kolejny budynek (chaty, drwale, kamieniołom, rybacy → farmy, młyn, piekarnia, studnie → kamienice, warsztaty, targowisko → skład kupiecki, port i stocznia nad morzem → koszary bez szkolenia wojska), szuka miejsca jak `NeutralTown` (blisko ratusza, przy lesie, skałach, wodzie) i stawia plac budowy, który rośnie jak każda budowa w trybie uproszczonym; B, wyprawy osadników władców (lądem wozem do sąsiada, morzem kogą, cel: najbliższa pusta prowincja, lepiej bogata w surowce), nowa prowincja zaczyna od obozu pionierów i rośnie tym samym planistą; C, wykup osad neutralnych przez władców (własne żądania i licznik, złoto ze skarbca władcy, towary szlakiem) i szlaki handlowe między prowincjami władcy (np. chleb do młodej osady); D, oglądanie miasta władcy i panel władcy.
+- **Tempo według trudności:** normalny rośnie mniej więcej jak dobry gracz; łatwy buduje ok. 40% wolniej i rzadziej wysyła wyprawy; trudny ok. 30% szybciej i dostaje mały zapas na start (wartości do strojenia).
+- **Wyścig o mapę:** kto pierwszy, ten lepszy, i dla pustych prowincji, i dla osad neutralnych. Wyprawa, która dotrze do prowincji już zajętej, zawraca z ludźmi i towarem; osada wykupiona przez kogoś innego unieważnia żądania pozostałych (dane złoto i towary przepadają jak po czasie).
+- **Widoczność:** wyprawy, kogi i wozy kupieckie władców jeżdżą po mapie świata w kolorze władcy, jak pojazdy gracza.
+- **Miasto władcy:** „Wejdź” pokazuje miasto z ludźmi przy pracy, bez paska budowania; panele budynków bez przycisków; panel władcy (imię, herb, prowincje, ludność, co buduje, dokąd wysyła wyprawę).
+- **Złoto władców:** każdy władca ma własny skarbiec, zasilany podatkami jego mieszkańców jak u gracza.
+- **Ocena:** raz na końcu części (kawałki A–D po kolei, każdy z testami i wysłany na gałąź roboczą).
+- **Zapis v29:** skarbce i stan planistów władców (krok planu, zegar), ich wyprawy, szlaki i żądania osad; migracja v28 → v29: władca zaczyna plan od początku, licząc budynki, które już ma.
+- **Testy:** szybkie (planista stawia budynek we właściwym miejscu, wyprawa władcy dociera, władca wykupuje osadę, wyścig o prowincję, migracja v28 → v29); długie (świat z 3 władcami przez ok. 90 minut gry bez zakleszczeń: każdy ma więcej budynków, co najmniej jedną nową prowincję i szlak; czas ticku z rosnącymi władcami).
+- **Zrzuty:** mapa świata z wyprawami i wozami władców, panel władcy, miasto władcy z bliska.
+- **Ryzyka:** stawianie budynków w nieoglądanej prowincji (oparcie: `NeutralTown` już tak buduje); wydajność przy 10–15 miastach w tle (pomiar w długim teście).
+
 **Część 4: władcy zbroją się i atakują, scenariusze**
 - [ ] Władca szkoli wojsko i buduje okręty wojenne, prowadzi armie i floty po mapie świata (przechwytuje i daje się przechwycić), ocenia siłę sąsiadów i atakuje słabsze prowincje: innych władców, osady neutralne i gracza (oblężenie na żywo, gdy gracz ogląda prowincję, inaczej rozstrzygnięcie automatyczne); broni się przed graczem.
 - [ ] Poziomy trudności: tempo rozwoju, wielkość armii, jak często i jak śmiało atakują.
