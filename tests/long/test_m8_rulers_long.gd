@@ -16,6 +16,7 @@ func test_three_rulers_grow_settle_and_trade_for_90_minutes() -> void:
 	var start: Dictionary[StringName, int] = {}
 	for owner: StringName in Rulers.alive(sim.world):
 		start[owner] = _buildings(sim, owner)
+		sim.world.rulers[owner].next_war = 1 << 40   # (growth alone here; the war: test_m8_war_long)
 	var settled: Dictionary[StringName, int] = {}
 	var routes: Dictionary[StringName, int] = {}
 	var at_45: Dictionary[StringName, int] = {}
