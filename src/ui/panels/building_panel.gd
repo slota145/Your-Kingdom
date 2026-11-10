@@ -293,7 +293,7 @@ func _refresh() -> void:
 			var animal := tr(province.data.get_good(b.def.herd_good).name_key())
 			lines.append(tr("ui.building.herd") % [animal, herd, b.herd_room(), b.herd_keep])
 			if b.def.has_pens() and b.pens == 0:
-				lines.append(tr("ui.building.no_pens"))
+				lines.append(tr("ui.building.no_pens") % b.def.pen_animals)
 			elif herd > b.herd_room():
 				lines.append(tr("ui.building.herd_crowded"))
 			elif herd < 2:

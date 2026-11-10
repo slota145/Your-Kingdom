@@ -257,11 +257,12 @@ func test_sheep_and_stud_farms_get_their_pair_with_the_first_pen() -> void:
 	var stud := SimFixture.place(sim, &"stud_farm", Vector2i(16, 16))
 	assert_int(stud.def.footprint.x).is_equal(2)
 	assert_int(Pens.auto_place(sim.province, farm, 1)).is_equal(1)
-	assert_int(Pens.auto_place(sim.province, stud, 6)).is_equal(6)
+	assert_int(Pens.auto_place(sim.province, stud, 10)).is_equal(10)
 	assert_int(farm.yard.total(&"sheep")).is_equal(2)
 	assert_int(stud.yard.total(&"horse")).is_equal(2)
 	assert_str(String(sim.province.field_error(stud.id, Vector2i(20, 20)))).is_equal("too_many_pens")
-	assert_int(stud.herd_room()).is_equal(12)
+	# One horse a tile (owner's decision 2026-11-10).
+	assert_int(stud.herd_room()).is_equal(10)
 
 
 func test_the_merchant_sells_sheep_and_horses_where_they_have_a_pen() -> void:
@@ -310,7 +311,7 @@ func test_v32_saves_get_pens_for_stud_and_sheep_farms() -> void:
 	var stud2 := loaded.province.buildings.get_building(stud.id)
 	assert_int(stud2.pens).is_equal(5)
 	assert_int(stud2.yard.total(&"horse")).is_equal(4)
-	assert_int(stud2.herd_room()).is_equal(10)
+	assert_int(stud2.herd_room()).is_equal(5)
 	var farm2 := loaded.province.buildings.get_building(farm.id)
 	assert_int(farm2.pens_due).is_equal(SaveMigrations.AUTO_SHEEP_PENS)
 	loaded.run_ticks(SimFixture.ticks(2))

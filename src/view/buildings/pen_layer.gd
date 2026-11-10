@@ -233,7 +233,7 @@ func _update_herd(building: BuildingState, delta: float) -> void:
 		if animal.pen >= pens.size() or not (pens[animal.pen]["tiles"] as Dictionary).has(_tile_of(animal.pos)):
 			# Its pen changed: a new place in a pen.
 			animal.pen = _emptiest_pen(pens, herd, animal)
-			animal.pos = _spot(pens[animal.pen]["list"])
+			animal.pos = _spot(pens[animal.pen]["list"], herd, animal)
 			animal.walking = false
 		_step(animal, pens[animal.pen], delta)
 		_show(animal, sheet)
@@ -243,7 +243,7 @@ func _new_animal(sheet: _Sheet, pens: Array, herd: Array) -> _Animal:
 	var animal := _Animal.new()
 	animal.sheet = sheet
 	animal.pen = _emptiest_pen(pens, herd, null)
-	animal.pos = _spot(pens[animal.pen]["list"])
+	animal.pos = _spot(pens[animal.pen]["list"], herd, null)
 	animal.dir = _rng.randi_range(0, IsoMath.DIR_COUNT - 1)
 	animal.rest = _rng.randf_range(0.0, REST.y)
 	animal.clock = _rng.randf_range(0.0, 2.0)
@@ -270,8 +270,22 @@ func _emptiest_pen(pens: Array, herd: Array, except: _Animal) -> int:
 	return best
 
 
-func _spot(tiles: Array) -> Vector2:
-	return _point_in(tiles[_rng.randi_range(0, tiles.size() - 1)])
+## A place on the tile of [param tiles] with the fewest animals of [param herd] (the herd
+## spreads over its pen), the first of them from a random start.
+func _spot(tiles: Array, herd: Array, except: _Animal) -> Vector2:
+	var start := _rng.randi_range(0, tiles.size() - 1)
+	var best: Vector2i = tiles[start]
+	var best_n := 1 << 20
+	for k: int in tiles.size():
+		var tile: Vector2i = tiles[(start + k) % tiles.size()]
+		var n := 0
+		for other: _Animal in herd:
+			if other != except and other.sprite != null and _tile_of(other.pos) == tile:
+				n += 1
+		if n < best_n:
+			best_n = n
+			best = tile
+	return _point_in(best)
 
 
 ## A random point of [param tile] away from its fences: also away from the front and back

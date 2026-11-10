@@ -4,6 +4,8 @@ extends RefCounted
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
 const CURRENT_VERSION := 33
+## Horses one pen tile of a stud farm holds (data/buildings/stud_farm.tres, pen_animals).
+const STUD_PEN_ANIMALS := 1
 ## Pen tiles an old sheep farm gets on its first second after loading a save before v33.
 const AUTO_SHEEP_PENS := 3
 ## Tiles of a 3×3 pigsty (before v32) outside the 2×2 one, from its origin: its pen now.
@@ -408,7 +410,7 @@ static func _shift_steps(province: Dictionary, recipes: Array) -> void:
 
 
 ## v33 (Z1 part 2, sheep and horses in pens): a stud farm is 2×2 like the pigsty and its old
-## 3×3 ground becomes its pen (OLD_PIGSTY_PEN, room for 10 horses); a sheep farm keeps sheep
+## 3×3 ground becomes its pen (OLD_PIGSTY_PEN, room for 5 horses, one a tile; a bigger herd stays); a sheep farm keeps sheep
 ## now: it gets "pens_due" (AUTO_SHEEP_PENS pen tiles), placed by the game on its first second
 ## (ProvinceSim._place_due_pens: the pen beside it, the starting pair with the first tile). The
 ## merchant sells sheep and horses too: his "pigs" left this visit become "animals".
@@ -430,7 +432,7 @@ static func migrate_v32_to_v33(state: Dictionary) -> Dictionary:
 					fields.append([origin.x + tile.x, origin.y + tile.y, int(b["id"]), 0, 0, 0, 0])
 					added = true
 				if b.has("yard"):
-					(b["yard"] as Dictionary)["limit"] = OLD_PIGSTY_PEN.size() * BuildingDef.PEN_ANIMALS
+					(b["yard"] as Dictionary)["limit"] = OLD_PIGSTY_PEN.size() * STUD_PEN_ANIMALS
 			elif b["def"] == "sheep_farm":
 				b["pens_due"] = AUTO_SHEEP_PENS
 		if added:

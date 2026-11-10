@@ -4173,7 +4173,7 @@ msgid "ui.building.add_pens"
 msgstr "Dodaj zagrodę"
 
 msgid "ui.building.no_pens"
-msgstr "Postaw kratki zagrody: każda mieści 2 zwierzęta. Pierwsza kratka przynosi parę na start."
+msgstr "Postaw kratki zagrody (zwierząt na kratkę: %d). Gdy zmieści się para, przychodzi na start."
 
 msgid "ui.building.herd_crowded"
 msgstr "Zagroda jest za ciasna: stado nie rośnie, a rzeźnik i kupiec biorą najpierw nadmiar."

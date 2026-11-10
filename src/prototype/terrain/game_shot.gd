@@ -577,8 +577,8 @@ func _place_pens(sim: Simulation, at: Vector2i) -> void:
 		farm.yard.add(&"sheep", 8)
 	var stud := _place_near(sim, &"stud_farm", at + Vector2i(7, 7))
 	if stud != null:
-		Pens.auto_place(province, stud, 6)
-		stud.yard.add(&"horse", 5)
+		Pens.auto_place(province, stud, 8)
+		stud.yard.add(&"horse", 4)
 	for building: BuildingState in [first, second, farm, stud]:
 		if building == null:
 			continue

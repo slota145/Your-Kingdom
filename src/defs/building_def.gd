@@ -66,9 +66,13 @@ const PEN_ANIMALS := 2
 ## default of the per-building setting (BuildingState.herd_keep, Z1: the player may raise it).
 @export_range(0, 99) var herd_keep: int = 2
 ## Pen tiles the building may own (Z1, animal pens): placed like field tiles within
-## [member work_radius]; each holds PEN_ANIMALS animals, so the herd's room is pens × 2.
+## [member work_radius]; each holds [member pen_animals] animals, so the herd's room is
+## pens × pen_animals.
 ## 0 = the old herd inside the building ([member herd_capacity]).
 @export_range(0, 64) var max_pens: int = 0
+## Animals one pen tile holds (Z1: 2 pigs or sheep; a horse needs a tile of its own, owner's
+## decision 2026-11-10).
+@export_range(1, 8) var pen_animals: int = PEN_ANIMALS
 ## The work of a cycle goes faster with a bigger herd (Z1 part 2: the shepherd shears wool;
 ## owner's survey 2026-11-10): see BuildingState.herd_work_factor. No animals, no work.
 @export var herd_work: bool = false

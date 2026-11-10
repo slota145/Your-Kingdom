@@ -20,7 +20,8 @@ static func auto_place(province: ProvinceSim, building: BuildingState, wanted: i
 	var own: Array[Vector2i] = province.fields.tiles_of(building.id)
 	var queue: Array[Vector2i] = first.duplicate()
 	var seen: Dictionary[Vector2i, bool] = {}
-	# Ground round the footprint, nearest to the back of the building first.
+	# Ground round the footprint, beside the door first (not behind the building, where the
+	# building would hide the animals; the door's own front tile stays free).
 	var rect := Rect2i(building.origin, building.def.footprint)
 	var around: Array[Vector2i] = []
 	for tile: Vector2i in own:
@@ -32,7 +33,7 @@ static func auto_place(province: ProvinceSim, building: BuildingState, wanted: i
 				around.append(tile)
 	var door := building.door_front_tile()
 	around.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
-		return (a - door).length_squared() > (b - door).length_squared())
+		return _front_first(a, door) < _front_first(b, door))
 	queue.append_array(around)
 	var placed := 0
 	var i := 0
@@ -59,7 +60,7 @@ static func auto_place(province: ProvinceSim, building: BuildingState, wanted: i
 ## least [param least].
 static func wanted_for(building: BuildingState, least: int) -> int:
 	var herd := building.yard.total(building.def.herd_good) if building.yard != null else 0
-	return clampi(maxi(ceili(herd / float(BuildingDef.PEN_ANIMALS)), least), 0, building.def.max_pens)
+	return clampi(maxi(ceili(herd / float(building.def.pen_animals)), least), 0, building.def.max_pens)
 
 
 ## Pens of [param building]: groups of its pen tiles that touch by a side (each a list of tiles).
@@ -108,6 +109,12 @@ static func gate(building: BuildingState, group: Array) -> Array:
 				best_tile = tile
 				best_side = side
 	return [best_tile, best_side]
+
+
+## Sort key: tiles in front of the building (larger x + y, nearer the camera) and near the door
+## come first.
+static func _front_first(tile: Vector2i, door: Vector2i) -> int:
+	return (tile - door).length_squared() * 4 - (tile.x + tile.y) * 2
 
 
 static func _door_fronts(province: ProvinceSim) -> Dictionary[Vector2i, bool]:

@@ -188,12 +188,13 @@ func ensure_yard(data: DataRegistry) -> void:
 
 
 ## A herd in pens gets its starting pair once (Z1, owner's survey 2026-11-10): when the first
-## pen tile stands next to a finished building. Returns the animals given.
+## pen has room for it next to a finished building. Returns the animals given.
 func give_pair() -> int:
-	if not def.has_pens() or herd_given or yard == null or pens == 0:
+	# Once the pen has room for the pair (a stud farm: its second tile, one horse a tile).
+	if not def.has_pens() or herd_given or yard == null or pens == 0 or herd_room() < def.herd_start:
 		return 0
 	herd_given = true
-	var pair := mini(def.herd_start, herd_room())
+	var pair := def.herd_start
 	if pair > 0:
 		yard.add(def.herd_good, pair)
 	return pair
@@ -202,7 +203,7 @@ func give_pair() -> int:
 ## Animals the herd has room for: 2 per pen tile (Z1), else the building's own capacity.
 func herd_room() -> int:
 	if def.has_pens():
-		return pens * BuildingDef.PEN_ANIMALS
+		return pens * def.pen_animals
 	return def.herd_capacity
 
 

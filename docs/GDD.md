@@ -206,7 +206,7 @@ drewno ──► węglarz ──► węgiel drzewny
 kopalnia (żyły rudy na każdej mapie, dużo w prowincji z rudą★; decyzja 2026-11-07) ──► ruda żelaza + węgiel ──► huta ──► żelazo ──► kowal ──► narzędzia / miecze / włócznie
 drewno ──► łuczarz ──► łuki
 skóry ──► garbarz-płatnerz ──► zbroje skórzane · żelazo ──► płatnerz ──► kolczugi
-stadnina★ z zagrodą (para na start, do 12 koni) ──► konie
+stadnina★ z zagrodą (para na start, 1 koń na kratkę, do 10 koni) ──► konie
 drewno ──► smolarnia ──► smoła (stocznia)   ← od M5
 ```
 

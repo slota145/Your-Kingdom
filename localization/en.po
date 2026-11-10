@@ -4136,7 +4136,7 @@ msgid "ui.building.add_pens"
 msgstr "Add pen"
 
 msgid "ui.building.no_pens"
-msgstr "Place pen tiles: each holds 2 animals. The first tile brings a starting pair."
+msgstr "Place pen tiles (animals per tile: %d). A starting pair comes once it fits."
 
 msgid "ui.building.herd_crowded"
 msgstr "The pen is too small: the herd does not grow, and the butcher and the merchant take the surplus first."
