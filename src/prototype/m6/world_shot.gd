@@ -13,6 +13,7 @@ extends Node
 ##   [--m8=armies|choice|field|report] (M8 part 2, made up for the picture: armies and fleets
 ##   anywhere on the map, a battle in the field and a sea battle; the window asking how to fight;
 ##   the live battle on the battlefield after --field_seconds=<s>; the report of a sea battle)
+##   [--m8=storm [--field_seconds=<s>]] (M8 part 4: a ruler's army storms the player's town)
 ##   [--m8=war --advance=<minutes>] (M8 part 4: the rulers' armies on their way, a ruler's panel)
 ##   [--m8=rulers|visit --advance=<minutes>] (M8 part 3: a generated world (--seed) run for that
 ##   many minutes; the world map with the first ruler's home selected, or his town entered and
@@ -134,6 +135,9 @@ func _process(_delta: float) -> void:
 			_make_armies(sim)
 		if _m8 == "war":
 			_war_shot(sim)
+			return
+		if _m8 == "storm":
+			_storm_shot(sim)
 			return
 		if _m8 == "rulers" or _m8 == "visit":
 			if _rulers_shot(sim):
@@ -263,6 +267,73 @@ func _war_shot(sim: Simulation) -> void:
 	print("war: army %d of %s to %d" % [army.id, army.owner, army.target])
 	screen.select(army.home)
 	screen._canvas.army_selected = army.id
+
+
+## M8 part 4 (--m8=storm [--field_seconds=<s>]): in the hand-made kingdom (made up for the
+## picture) the army of a ruler from the province next to the iron settlement storms the
+## player's town live: a town hall, a few defenders, the ruler's men coming at the door.
+func _storm_shot(sim: Simulation) -> void:
+	var p := sim.province
+	sim.treasury.gold = 5000
+	var camp := _place(p, &"pioneer_camp", RulerPlanner.centre(p))
+	var hall := _place(p, &"town_hall", camp.origin if camp != null else RulerPlanner.centre(p))
+	if hall == null:
+		print("storm: no town hall")
+		return
+	for k: int in 3:
+		_place(p, &"hut", hall.origin + Vector2i(4, 4))
+	var defenders: Array[Agent] = []
+	for k: int in 6:
+		var a := p.spawn_agent(&"archer" if k % 2 == 0 else &"spearman", hall.entrance_tile())
+		a.combat = CombatState.new(sim.data.get_unit(a.kind).combat.hp)
+		defenders.append(a)
+	Troops.order_move(p, defenders, hall.entrance_tile() + Vector2i(2, 2))
+	var wold := sim.world.id_of(&"iron_wold")
+	var near := 0
+	for id: int in sim.world.ids():
+		if near == 0 and id != wold and not sim.runtimes.has(id) and sim.world.are_neighbours(id, wold, sim.data):
+			near = id
+	sim.open_province(near, sim.data.get_map(sim.world.get_province(near).map_id), &"ruler_1")
+	RulerPlanner.ensure_rulers(sim)
+	var army := Army.new()
+	army.id = sim.ids.take()
+	army.owner = &"ruler_1"
+	army.at = sim.viewed_id
+	army.home = near
+	army.state = Army.State.IDLE
+	army.pos = ArmyOrders.stand_point(sim, sim.viewed_id)
+	army.units = {&"knight": 4, &"swordsman": 6, &"crossbowman": 4, &"halberdier": 4}
+	army.food = army.food_cap()
+	sim.world.armies[army.id] = army
+	p.raids.entry = Raids.choose_entry(p, sim.rng.stream(&"raids"))
+	RulerWar.assault(sim, army)
+	var seconds := _field_seconds if _field_seconds > 0.0 else 40.0
+	for i: int in roundi(seconds * SimClock.TICKS_PER_SECOND):
+		sim.step()
+	var view: ProvinceView = _game.get("view")
+	for event: Dictionary in sim.events.drain():
+		view.on_sim_event(event)
+	view.buildings.refresh_all()
+	var camera := _game.get("camera") as Camera2D
+	var focus := Vector2(hall.entrance_tile())
+	var n := 0
+	for agent: Agent in p.agents.all():
+		if agent.combat != null and agent.combat.army == army.id:
+			focus += agent.pos
+			n += 1
+	camera.position = IsoMath.grid_to_screen(focus / float(n + 1))
+	camera.zoom = Vector2.ONE * maxf(_zoom, 2.0)
+	print("storm: %d attackers on the map, door %d/%d" % [n, hall.hp, hall.def.max_hp])
+
+
+func _place(p: ProvinceSim, id: StringName, near: Vector2i) -> BuildingState:
+	var def := p.data.get_building(id)
+	var b := NeutralTown.place(p, def, near)
+	for y: int in range(16, p.grid.size.y - 16, 10):
+		for x: int in range(16, p.grid.size.x - 16, 10):
+			if b == null and p.nav.is_walkable(Vector2i(x, y)):
+				b = NeutralTown.place(p, def, Vector2i(x, y))
+	return b
 
 
 ## M8 part 3: the rulers grow for --advance minutes; "visit" enters the first ruler's town

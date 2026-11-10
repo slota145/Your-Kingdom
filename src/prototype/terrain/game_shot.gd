@@ -33,7 +33,7 @@ extends Node
 ## --g2 (G2) puts stockpiles around --tile with every good drawn by PixelLab, each slot
 ## holding a different number of pieces (1 up to a full stack), so the stacks grow in sight.
 ## --m7=walls|battle|raid [--raid_seconds=<s>] (M7 part 2): walls, a fight, a bandit raid.
-## --world --m7=storm [--raid_seconds=<s>] (M8 part 4): an AI ruler's army storms the town.
+## --map=lakeland --m7=storm [--raid_seconds=<s>] (M8 part 4): an AI ruler's army storms the town.
 ## --m7=finished|sites|army (M7 part 1): the new buildings drawn by PixelLab around --tile
 ## (finished both ways with full yards and a herd of horses, or their sites in both stages),
 ## or a barracks with an armoury and 16 soldiers (4 of each kind) in the ranks; --drill shows
@@ -999,8 +999,8 @@ func _place_raid(sim: Simulation, at: Vector2i) -> void:
 	view.buildings.refresh_all()
 
 
-## M8 part 4 (--world --m7=storm [--raid_seconds=<s>]): an AI ruler's army (made up for the
-## picture: a ruler's town next to the iron settlement) storms the player's walled town live.
+## M8 part 4 (--map=lakeland --m7=storm [--raid_seconds=<s>]): an AI ruler's army (made up for
+## the picture) storms the player's walled town live, as a raid would.
 func _place_storm(sim: Simulation, at: Vector2i) -> void:
 	var p := sim.province
 	var o := at + Vector2i(-7, -7)
@@ -1018,13 +1018,14 @@ func _place_storm(sim: Simulation, at: Vector2i) -> void:
 	Troops.order_move(p, defenders, o + Vector2i(9, 12), MilitaryNav.WALL)
 	for k: int in 30:
 		sim.step()
-	var wold := sim.world.id_of(&"iron_wold")
 	var near := 0
-	for id: int in sim.world.ids():
-		if near == 0 and id != wold and not sim.runtimes.has(id) and sim.world.are_neighbours(id, wold, sim.data):
-			near = id
-	sim.open_province(near, sim.data.get_map(sim.world.get_province(near).map_id), &"ruler_1")
-	RulerPlanner.ensure_rulers(sim)
+	if not sim.world.is_single():
+		var wold := sim.world.id_of(&"iron_wold")
+		for id: int in sim.world.ids():
+			if near == 0 and id != wold and not sim.runtimes.has(id) and sim.world.are_neighbours(id, wold, sim.data):
+				near = id
+		sim.open_province(near, sim.data.get_map(sim.world.get_province(near).map_id), &"ruler_1")
+		RulerPlanner.ensure_rulers(sim)
 	var army := Army.new()
 	army.id = sim.ids.take()
 	army.owner = &"ruler_1"
