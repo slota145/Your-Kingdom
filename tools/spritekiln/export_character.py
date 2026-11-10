@@ -8,8 +8,10 @@ facing the viewer the horse's forelegs reach below the feet.
 The spec's camera must give that pivot (the script checks it). Animation names map to the game's: idle -> idle, walk -> walk,
 attack -> work and work_drill (soldiers fight and drill with the same blow).
 
-Run: python3 tools/spritekiln/export_character.py <spec name> [<game character id>]
+Run: python3 tools/spritekiln/export_character.py <spec name> [<game character id>] [--props] [--anims=<a>[:<b>],...]
      e.g. python3 tools/spritekiln/export_character.py halberdier
+--props reads the spec from art/specs/props (the siege engines, gen_siege.py); --anims replaces the
+animation mapping: "idle,walk,strike:work" copies idle and walk under their own names and strike as work.
 Then: "$GODOT" --headless --path . --import and python3 tools/make_unit_icons.py
 """
 import json
@@ -24,9 +26,18 @@ GAME_ANIMS = {"idle": ["idle"], "walk": ["walk"], "attack": ["work", "work_drill
 
 
 def main():
-    spec = sys.argv[1]
-    char = sys.argv[2] if len(sys.argv) > 2 else spec
-    d = os.path.join(ROOT, "tools", "spritekiln", "art", "specs", "characters", spec, "out", spec)
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    spec = args[0]
+    char = args[1] if len(args) > 1 else spec
+    kind = "props" if "--props" in sys.argv else "characters"
+    anims = GAME_ANIMS
+    for a in sys.argv:
+        if a.startswith("--anims="):
+            anims = {}
+            for item in a.split("=", 1)[1].split(","):
+                src, _, dst = item.partition(":")
+                anims.setdefault(src, []).append(dst or src)
+    d = os.path.join(ROOT, "tools", "spritekiln", "art", "specs", kind, spec, "out", spec)
     meta = json.load(open(os.path.join(d, spec + ".json")))
     piv = meta["spritekiln"]["pivot"]
     size = next(iter(meta["frames"].values()))["frame"]["w"]
@@ -35,7 +46,8 @@ def main():
         sys.exit(f"pivot {piv} is not ({size // 2}, {size - margin}): fix camera.center in the spec")
     atlas = Image.open(os.path.join(d, spec + ".png")).convert("RGBA")
     out_dir = os.path.join(ROOT, "assets", "characters", char)
-    for anim, names in GAME_ANIMS.items():
+    os.makedirs(out_dir, exist_ok=True)
+    for anim, names in anims.items():
         n = sum(1 for k in meta["frames"] if k.startswith(f"{anim}_s_"))
         if n == 0:
             continue

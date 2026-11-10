@@ -175,3 +175,4 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 
 - Właściciel podesłał referencje: balista na kołach, taran pod dachem ze skór (wóz z daszkiem), katapulta.
 - Ankieta 2026-11-10: **osobny etap później** (po reworku żołnierzy). Balista i taran są dziś rysowane kreskami w kodzie (`SiegeLayer`), więc podmiana na obrazki ze SpriteKiln to też zmiana w widoku. Katapulty w grze nie ma: to nowa jednostka (zasięg, amunicja, koszt), do zaplanowania razem z tym etapem.
+- **Zrobione 2026-11-10 (taran i balista ze SpriteKiln, 8 kierunków, ramka 128 px; ankieta: taran z dachem ze skór i nogami ludzi pod dachem, balista z 2 ludźmi przy kołowrocie):** ART_SPEC §10.20, „Machiny oblężnicze”. Zaakceptowane i scalone do `main` 2026-11-10. Katapulta dalej czeka (nowa jednostka do zaplanowania).

@@ -1,0 +1,46 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Siege engines (owner's survey 2026-11-10): the ballista's two crewmen, drawn by the game behind the machine
+# (SiegeLayer). The spearman's kettle hat and quilted gambeson, no spear and no shield.
+# Game sheets: export_character.py siege_crew --anims=idle,walk,attack:work
+name: siege_crew
+size: 64
+camera: {pitch: 30, scale: 0.05176, center: [0, 1.554, 0]}   # the feet at (32, 58)
+extends: ../spearman/spearman.yaml
+remove: [use.spear, use.shield, parts.pennant, parts.shield_cross]
+
+brief:
+  summary: "Your Kingdom ballista crewman: a steel kettle hat, a quilted tan gambeson, brown hose; pushes the ballista and winds its winch"
+  head: "face open under the kettle hat's brim"
+  must_keep: ["kettle hat brim reads at 1x", "both hands forward on the machine when pushing and cranking"]
+  simplify: ["no weapon"]
+
+use:
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+  - {kit: hair, at: head, with: {fringe: 0.3, part: 0.2, locks: 0.4, length: 0.2, volume: 0.9}}
+  - {kit: helmet, as: kettle, at: head, with: {radius: 0.2, low: 0.26, brow: 0.3, opening: 0.3, nasal: false, crest: 0, trim: false}}
+
+animations:
+  idle:
+    frames: 4
+    ms: 250
+    channels:
+      hand_R: "[0.26, 0.10 + 0.01*sin(p - 0.6), 0.06]"
+      hand_L: "[0.26, 0.10 + 0.01*sin(p - 0.6), 0.06]"
+  walk:              # pushing the machine: leaning in, both hands forward on the frame
+    channels:
+      lean: 0.28
+      hand_R: "[0.20, 0.36, 0.40]"
+      hand_L: "[0.20, 0.36, 0.40]"
+      head_pitch: -0.15
+  attack:            # winding the winch: both hands turn the handspikes in front, a quarter turn apart
+    frames: 8
+    ms: 120
+    loop: true
+    channels:
+      lean: 0.16
+      hand_R: "[0.20, 0.30 + 0.12*sin(p), 0.34 + 0.12*cos(p)]"
+      hand_L: "[0.20, 0.30 + 0.12*sin(p + 1.5708), 0.34 + 0.12*cos(p + 1.5708)]"
+      foot_L: [0.13, 0, 0.12]
+      foot_R: [0.13, 0, -0.08]
+      head_pitch: -0.1
