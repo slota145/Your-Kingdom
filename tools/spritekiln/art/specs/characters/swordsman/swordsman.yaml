@@ -9,13 +9,13 @@ extends: humanoid
 remove: [animations.attack]
 
 brief:
-  summary: "Your Kingdom swordsman: an open steel helm with a nasal and cheek guards, a mail hauberk, a red surcoat with a gold cross, a red heater shield with a gold cross, an arming sword"
+  summary: "Your Kingdom swordsman: an open steel helm with a nasal and cheek guards, a mail hauberk, a red surcoat with a gold cross, a red heater shield with a gold cross, an arming sword (long blade, wide cross-guard, round pommel: owner 2026-11-10, the short one read as a knife)"
   head: "face open between the helm's cheek guards"
   must_keep: ["red surcoat with a gold cross reads at 1x", "red shield with a gold cross", "sword readable in every direction"]
   simplify: ["no belt pouch, no scabbard"]
 
 use:
-  - {kit: sword, as: sword, at: wrist_R, with: {length: 0.5, width: 0.07, guard: 0.17}}
+  - {kit: sword, as: sword, at: wrist_R, with: {length: 0.74, width: 0.085, thick: 0.05, guard: 0.26}}
   - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
   - {kit: helmet, as: helm, at: head, with: {radius: 0.215, low: 0.05, brow: 0.235, opening: 0.28, nasal: true, crest: 0, trim: false}}
   - {kit: shield, as: shield, at: wrist_L, with: {shape: 0, width: 0.46, height: 0.6, rim: 0.035, boss: false}, materials: {wood: shield_red}}
@@ -41,6 +41,16 @@ materials:
   slit: {ramp: hair, band: 0}
 
 parts:
+  sword_guard:       # a wider, thicker cross-guard than the kit's
+    prims:
+      - extrude: {c: [0, 0.078, 0], depth: 0.06, profile: {rect: [0.13, 0.03], chamfer: 0.012}}
+  sword_grip:
+    prims:
+      - cylinder: {a: [0, -0.07, 0], b: [0, 0.066, 0], r: 0.026}
+  sword_pommel:
+    min_cover: 2
+    prims:
+      - sphere: {c: [0, -0.09, 0], r: 0.042}
   torso:             # the red surcoat with a gold cross, front and back
     material: cloth
     paint:
