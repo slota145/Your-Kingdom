@@ -671,7 +671,7 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	if _m7 == "ballista":
 		_place_ballistas(sim, at)
 		return
-	if _m7 == "army" or _m7 == "army2":
+	if _m7 == "army" or _m7 == "army2" or _m7 == "army3":
 		_place_army(sim, at)
 		return
 	if _m7 == "siege":
@@ -759,6 +759,9 @@ func _place_army(sim: Simulation, at: Vector2i) -> void:
 	var kinds: Array[StringName] = [&"spearman", &"archer", &"swordsman", &"knight"]
 	if _m7 == "army2":
 		kinds = [&"halberdier", &"crossbowman", &"man_at_arms", &"light_cavalry"]
+	# --m7=army3 (soldier rework, batch 2): the riders and the ladderman beside foot soldiers.
+	if _m7 == "army3":
+		kinds = [&"knight", &"light_cavalry", &"ladderman", &"halberdier"]
 	for k: int in 16:
 		var unit_id: StringName = kinds[k / 4]
 		var unit := sim.data.get_unit(unit_id)

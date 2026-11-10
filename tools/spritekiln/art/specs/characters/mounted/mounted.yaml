@@ -1,0 +1,220 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework, batch 2 (owner 2026-11-10): the base of both riders, one shared horse (a bay) with
+# the rider astride. knight.yaml and light_cavalry.yaml extend it and dress horse and rider.
+# Horse space: +z = the horse's head (the model's front), ground y = 0, withers ~1.5 (a man is ~1.8).
+name: mounted
+# a 128 px frame (owner's survey 2026-11-10): a real-sized horse beside the foot soldiers; centre 2.869 puts the feet at (64, 112):
+# 16 px above the bottom (CharacterSheet.foot_margin), as the forelegs reach below the feet facing the viewer
+size: 128
+camera: {pitch: 30, scale: 0.05176, center: [0, 2.869, 0]}
+palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
+shadow: null   # the game draws no shadow under characters
+extends: humanoid
+remove: [use.sword, animations.attack]
+
+brief:
+  summary: "Your Kingdom rider base: a bay horse with a black mane and tail, a saddle and bridle, the rider astride"
+  head: "the rider's head as the foot soldiers'"
+  must_keep: ["the horse reads as a horse in every direction (head, legs, tail)", "rider sits on the saddle, legs astride"]
+  simplify: ["no stirrup leathers, no reins as lines (too thin)"]
+
+use:
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+
+ramps:
+  bay: ["#160a05", "#3a1c0e", "#5e3018", "#824624", "#a25e34", "#c07c4a"]
+  mane: ["#0c0806", "#1e1510", "#30231a", "#463428", "#5c4636"]
+  hoof: ["#0e0c0a", "#2a2420", "#443a32", "#5e5246"]
+  tack: ["#120a05", "#2e1a0c", "#4a2c16", "#683e20", "#86542c"]
+  pale_h: ["#1a1712", "#4a443a", "#7e7666", "#b4aa94", "#d6cdb6", "#eee8d6"]
+  boot: ["#140a05", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+
+materials:
+  coat_h: {ramp: bay, bands: [1, 5]}
+  mane: {ramp: mane, bands: [1, 4]}
+  hoof: {ramp: hoof, bands: [1, 3]}
+  tack: {ramp: tack, bands: [1, 4]}
+  blaze: {ramp: pale_h, bands: [3, 5]}
+  boot: {ramp: boot, bands: [1, 4]}
+  leather: {ramp: boot}
+  wood: {ramp: wood}
+  hair: {ramp: hair}
+  ink: {ramp: hair, band: 0}
+  steel: {ramp: steel, finish: metal}
+  gold: {ramp: gold}
+
+channels:
+  seat: 0.76         # the rider's pelvis above the template's standing height (onto the saddle)
+  hbob: 0            # the horse's body up and down
+  hpitch: 0          # the horse's body pitched (+ = nose down)
+  neck_x: 0          # neck bend (+ = lowered)
+  hhead_x: 0         # head nod (+ = muzzle in)
+  tail_x: 0
+  tail_y: 0
+  fl_L: 0            # leg swing (+ = hoof back), knee bend: front and hind, each side its own channel
+  fk_L: 0
+  hl_L: 0
+  hk_L: 0
+  lean: 0.0
+  hand_L: [0.20, 0.32, 0.30]   # the reins hand, low in front of the belly
+  hand_R: [0.30, 0.20, 0.20]
+  foot_L: [0.36, 0.95, 0.10]   # astride: the feet hang beside the horse's barrel
+
+bones:
+  # the rider sits on the saddle and rides the horse's bob
+  torso_rot: {parent: root, pos: "[0, 0.84 + seat + bob + hbob, 0.02]", rot: "[lean, twist, roll]"}
+  horse:   {parent: root, pos: "[0, hbob, 0]", rot: "[hpitch, 0, 0]"}
+  hneck:   {parent: horse, pos: [0, 1.30, 0.66], rot: "[-0.85 + neck_x, 0, 0]"}
+  hhead:   {parent: hneck, pos: [0, 0.0, 0.58], rot: "[1.80 + hhead_x, 0, 0]"}
+  htail:   {parent: horse, pos: [0, 1.30, -0.86], rot: "[0.35 + tail_x, tail_y, 0]"}
+  fleg_L:  {parent: horse, pos: [0.15, 0.98, 0.52], rot: "[fl_L, 0, 0]"}
+  fknee_L: {parent: fleg_L, pos: [0, -0.48, 0.0], rot: "[fk_L, 0, 0]"}
+  hleg_L:  {parent: horse, pos: [0.16, 1.02, -0.56], rot: "[hl_L, 0, 0]"}
+  hhock_L: {parent: hleg_L, pos: [0, -0.50, -0.06], rot: "[hk_L, 0, 0]"}
+
+ik:
+  leg_L: {start: hip_L, space: root, target: "foot_L + [0, 0.08, -0.02]", lengths: [0.42, 0.40],
+          pole: [0.6, 0.0, 1.0], pole_space: legyaw, joint: knee_L, end: ankle_L}
+
+parts:
+  horse_body:
+    material: coat_h
+    space: horse
+    blend: 0.12
+    prims:
+      - ellipsoid: {c: [0, 1.12, 0.0], r: [0.29, 0.31, 0.60]}     # barrel
+      - ellipsoid: {c: [0, 1.17, 0.48], r: [0.25, 0.31, 0.30]}    # chest and shoulders
+      - ellipsoid: {c: [0, 1.20, -0.50], r: [0.28, 0.29, 0.33]}   # rump
+      - ellipsoid: {c: [0, 1.36, 0.36], r: [0.12, 0.10, 0.22]}    # withers
+  horse_neck:
+    material: coat_h
+    space: hneck
+    blend: 0.08
+    prims:
+      - cone: {a: [0, -0.06, -0.10], b: [0, 0.0, 0.56], r: [0.24, 0.135]}
+  horse_head:
+    material: coat_h
+    space: hhead
+    blend: 0.05
+    prims:
+      - cone: {a: [0, 0.0, 0.0], b: [0, -0.01, 0.46], r: [0.13, 0.09]}
+      - ellipsoid: {c: [0, -0.07, 0.08], r: [0.10, 0.11, 0.12]}    # jowl
+      - ellipsoid: {c: [0, -0.03, 0.48], r: [0.09, 0.085, 0.075]}  # muzzle
+  blaze:             # a white blaze down the face
+    material: blaze
+    space: hhead
+    priority: 2
+    prims:
+      - cone: {a: [0, 0.09, 0.08], b: [0, 0.07, 0.47], r: [0.035, 0.025]}
+  ear_L:
+    material: coat_h
+    space: hhead
+    prims:
+      - cone: {a: [0.06, 0.08, 0.02], b: [0.08, 0.10, -0.14], r: [0.035, 0.012]}
+  mane:
+    material: mane
+    space: hneck
+    blend: 0.04
+    prims:
+      - ellipsoid: {c: [0, 0.12, 0.26], r: [0.05, 0.08, 0.36], rot: [0.0, 0, 0]}
+      - ellipsoid: {c: [0, 0.10, 0.62], r: [0.05, 0.06, 0.08]}     # forelock
+  tail:
+    material: mane
+    space: htail
+    blend: 0.05
+    prims:
+      - cone: {a: [0, 0.0, 0.0], b: [0, -0.62, -0.10], r: [0.06, 0.10]}
+  fupper_L:
+    material: coat_h
+    space: fleg_L
+    blend: 0.04
+    prims:
+      - cone: {a: [0, 0.10, 0.02], b: [0, -0.48, 0.0], r: [0.12, 0.065]}
+  flower_L:
+    material: coat_h
+    space: fknee_L
+    blend: 0.03
+    prims:
+      - cone: {a: [0, 0.0, 0.0], b: [0, -0.42, 0.01], r: [0.06, 0.05]}
+  fhoof_L:
+    material: hoof
+    space: fknee_L
+    prims:
+      - cone: {a: [0, -0.42, 0.01], b: [0, -0.49, 0.03], r: [0.055, 0.065]}
+  hupper_L:
+    material: coat_h
+    space: hleg_L
+    blend: 0.05
+    prims:
+      - cone: {a: [0, 0.12, 0.06], b: [0, -0.50, -0.06], r: [0.14, 0.065]}
+  hlower_L:
+    material: coat_h
+    space: hhock_L
+    blend: 0.03
+    prims:
+      - cone: {a: [0, 0.0, 0.0], b: [0, -0.40, 0.07], r: [0.06, 0.05]}
+  hhoof_L:
+    material: hoof
+    space: hhock_L
+    prims:
+      - cone: {a: [0, -0.40, 0.07], b: [0, -0.46, 0.10], r: [0.055, 0.065]}
+  saddle:
+    material: tack
+    space: horse
+    blend: 0.03
+    prims:
+      - ellipsoid: {c: [0, 1.40, 0.02], r: [0.24, 0.07, 0.30]}
+      - ellipsoid: {c: [0, 1.48, 0.26], r: [0.10, 0.08, 0.05]}    # pommel
+      - ellipsoid: {c: [0, 1.47, -0.22], r: [0.18, 0.08, 0.05]}   # cantle
+  girth:
+    material: tack
+    space: horse
+    prims:
+      - cylinder: {a: [0, 1.12, 0.16], b: [0, 1.12, 0.22], r: 0.285}
+  bridle:
+    material: tack
+    space: hhead
+    prims:
+      - cylinder: {a: [0, 0.0, 0.10], b: [0, 0.0, 0.14], r: 0.125}
+      - cylinder: {a: [0, -0.01, 0.36], b: [0, -0.01, 0.40], r: 0.095}
+
+animations:
+  idle:
+    frames: 6
+    ms: 170
+    channels:
+      bob: "0.01*sin(p)"
+      squash: "1 + 0.01*sin(p)"
+      hbob: "0.008*sin(p)"
+      neck_x: "0.05*sin(p - 0.8)"
+      hhead_x: "0.06*sin(p - 1.2)"
+      tail_x: "0.08*sin(p)"
+      tail_y: "0.25*sin(p)"
+      head_pitch: "-0.03*sin(p - 0.5)"
+  walk:              # a four-beat walk: hind L, fore L, hind R, fore R a quarter apart
+    frames: 8
+    ms: 110
+    events: {0: step_l, 4: step_r}
+    channels:
+      bob: "-0.015*cos(2*p)"
+      hbob: "0.025*cos(2*p)"
+      hpitch: "0.02*sin(2*p)"
+      lean: 0.04
+      neck_x: "0.06*cos(2*p)"
+      hhead_x: "0.05*cos(2*p + 0.6)"
+      tail_x: "0.15 + 0.05*sin(p)"
+      tail_y: "0.12*sin(p)"
+      hl_L: "0.32*cos(p)"
+      hk_L: "-0.40*pos(sin(p))"
+      fl_L: "0.30*cos(p - 1.5708)"
+      fk_L: "0.85*pos(sin(p - 1.5708))"
+      hl_R: "0.32*cos(p + 3.1416)"
+      hk_R: "-0.40*pos(sin(p + 3.1416))"
+      fl_R: "0.30*cos(p + 1.5708)"
+      fk_R: "0.85*pos(sin(p + 1.5708))"
+      hand_L: "[0.20, 0.32 + 0.01*cos(2*p), 0.30]"
+      head_yaw: 0
+      coat: "0.2*sin(2*p)"
+      foot_L: "[0.36, 0.95 + 0.02*cos(2*p), 0.10]"
+      foot_R: "[0.36, 0.95 + 0.02*cos(2*p), 0.10]"

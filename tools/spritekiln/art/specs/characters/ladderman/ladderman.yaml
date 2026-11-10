@@ -1,0 +1,131 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework, batch 2 (owner 2026-11-10): the ladderman (siege workshop). Game sheets: export_character.py ladderman.
+name: ladderman
+# a 96 px frame like the halberdier: the ladder raised upright does not fit in 64 px; centre 2.51 puts the feet at (48, 90)
+size: 96
+camera: {pitch: 30, scale: 0.05176, center: [0, 2.51, 0]}
+palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
+shadow: null   # the game draws no shadow under characters
+extends: humanoid
+remove: [use.sword, animations.attack]
+
+brief:
+  summary: "Your Kingdom ladderman: a siege labourer with a red cloth cap, a tan shirt under a brown leather jerkin, brown hose and boots, a long wooden scaling ladder on his right shoulder"
+  head: "face open, short hair under the cap"
+  must_keep: ["the ladder reads as a ladder (two rails and rungs) in every direction", "red cap (kingdom colour)"]
+  simplify: ["no weapon (he carries the ladder, others fight)"]
+
+use:
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+  - {kit: hair, at: head, with: {fringe: 0.5, part: 0.2, locks: 0.6, length: 0.3, volume: 0.9}}
+
+ramps:
+  shirt: ["#1a1208", "#3e2e18", "#64502e", "#8a7448", "#ab9566", "#c9b688"]
+  jerkin: ["#120a05", "#2e1a0c", "#4a2c16", "#683e20", "#86542c", "#a46c3c"]
+  boot: ["#140a05", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+  ladder_w: ["#160d07", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+
+materials:
+  cloth: {ramp: shirt, bands: [1, 5]}
+  jerkin: {ramp: jerkin, bands: [1, 4]}
+  trousers: {ramp: trousers}
+  boot: {ramp: boot, bands: [1, 4]}
+  leather: {ramp: boot}
+  cap: {ramp: tunic, bands: [1, 4]}
+  ladder_m: {ramp: ladder_w, bands: [2, 5], finish: matte}
+  hair: {ramp: hair}
+  ink: {ramp: hair, band: 0}
+
+channels:
+  lad_p: [-0.30, 0.68, 0.0]   # the ladder (its rails along its z) in the body's frame: on the right shoulder
+  lad_x: -0.22                 # - raises its front end
+  lad_y: 0.0
+  lad_z: 0.0                   # + leans a raised ladder out to his right (keeps the face clear)
+  hand_R: [0.24, 0.62, 0.32]   # the right hand steadies the ladder in front of the shoulder
+
+bones:
+  ladder: {parent: torso_rot, pos: lad_p, rot: "[lad_x, lad_y, lad_z]"}
+
+parts:
+  torso:
+    material: cloth
+  jerkin:            # a sleeveless leather jerkin over the shirt
+    material: jerkin
+    space: pelvis
+    blend: 0.05
+    prims:
+      - ellipsoid: {c: [0, 0.06, 0], r: [0.205, 0.14, 0.155]}
+      - ellipsoid: {c: [0, 0.27, 0.0], r: [0.195, 0.17, 0.145]}
+      - ellipsoid: {c: [0, 0.44, 0.0], r: [0.24, 0.12, 0.155]}
+  coat:              # the shirt's skirt below the jerkin
+    material: cloth
+    prims:
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.2, -0.02], r: [0.2, 0.22]}
+    cut:
+      - box: {c: [0, -0.2, 0], half: [0.03, 0.12, 0.4]}
+  leg_L: {material: trousers}
+  boot_L: {material: boot}
+  cap:               # a red cloth cap pulled over the hair, the crown slumped to the back
+    material: cap
+    space: head
+    blend: 0.05
+    prims:
+      - ellipsoid: {c: [0, 0.25, -0.03], r: [0.205, 0.13, 0.215]}
+      - ellipsoid: {c: [0, 0.32, -0.14], r: [0.11, 0.07, 0.11]}
+    cut:
+      - plane: {n: [0, -1, 0.5], c: [0, 0.25, 0.1]}
+  ladder_rails:
+    material: ladder_m
+    space: ladder
+    priority: 2
+    prims:
+      - box: {c: [0.20, 0, 0.21], half: [0.035, 0.045, 1.08]}
+      - box: {c: [-0.20, 0, 0.21], half: [0.035, 0.045, 1.08]}
+  ladder_rungs:
+    material: ladder_m
+    space: ladder
+    priority: 2
+    min_cover: 2
+    prims:
+      - cylinder: {a: [-0.19, 0, -0.82], b: [0.19, 0, -0.82], r: 0.028}
+      - cylinder: {a: [-0.19, 0, -0.56], b: [0.19, 0, -0.56], r: 0.028}
+      - cylinder: {a: [-0.19, 0, -0.30], b: [0.19, 0, -0.30], r: 0.028}
+      - cylinder: {a: [-0.19, 0, -0.04], b: [0.19, 0, -0.04], r: 0.028}
+      - cylinder: {a: [-0.19, 0, 0.22], b: [0.19, 0, 0.22], r: 0.028}
+      - cylinder: {a: [-0.19, 0, 0.48], b: [0.19, 0, 0.48], r: 0.028}
+      - cylinder: {a: [-0.19, 0, 0.74], b: [0.19, 0, 0.74], r: 0.028}
+      - cylinder: {a: [-0.19, 0, 1.00], b: [0.19, 0, 1.00], r: 0.028}
+      - cylinder: {a: [-0.19, 0, 1.26], b: [0.19, 0, 1.26], r: 0.028}
+
+animations:
+  idle:
+    frames: 4
+    ms: 250
+    channels:
+      bob: "0.02*sin(p)"
+      lad_p: "[-0.30, 0.68 + 0.02*sin(p), 0.0]"
+      hand_R: "[0.24, 0.62 + 0.02*sin(p), 0.32]"
+  walk:
+    channels:
+      lad_p: "[-0.30, 0.68, 0.0]"
+      lad_x: "-0.22 + 0.03*cos(2*p)"
+      hand_R: "[0.24, 0.62, 0.32]"
+  attack:            # the game's work: swing the ladder off the shoulder, raise it upright, push it forward onto the wall, hold, take it back
+    loop: true
+    keys:
+      - {ms: 140, set: {}}
+      - {ms: 140, set: {lad_p: [-0.20, 0.55, 0.20], lad_x: -0.5, hand_R: [0.18, 0.55, 0.34], hand_L: [-0.10, 0.50, 0.30], bob: -0.04, squash: 0.96,
+                         foot_L: [0.14, 0, 0.12], foot_R: [0.14, 0, -0.06]}}
+      - {ms: 160, event: windup,
+         set: {lad_z: "0.25 + 0.2*pulse(yaw, 0, 70) + 0.2*pulse(yaw, 180, 70)", lad_p: [-0.18, 0.62, 0.36], lad_x: -1.35, hand_R: [0.22, 0.78, 0.34], hand_L: [0.0, 0.42, 0.34], lean: -0.05,
+               foot_L: [0.14, 0, 0.14], foot_R: [0.14, 0, -0.08]}}
+      - {ms: 120, set: {lad_z: "0.25 + 0.2*pulse(yaw, 0, 70) + 0.2*pulse(yaw, 180, 70)", lad_p: [-0.14, 0.66, 0.46], lad_x: -1.12, hand_R: [0.18, 0.84, 0.44], hand_L: [0.02, 0.52, 0.44], lean: 0.18,
+                         foot_L: [0.14, 0, 0.22], foot_R: [0.14, 0, -0.12]}}
+      - {ms: 200, event: hit,
+         set: {lad_z: "0.25 + 0.2*pulse(yaw, 0, 70) + 0.2*pulse(yaw, 180, 70)", lad_p: [-0.14, 0.68, 0.52], lad_x: -1.05, hand_R: [0.18, 0.86, 0.50], hand_L: [0.02, 0.56, 0.50], lean: 0.22,
+               foot_L: [0.14, 0, 0.24], foot_R: [0.14, 0, -0.12]}}
+      - {ms: 160, set: {lad_z: "0.25 + 0.2*pulse(yaw, 0, 70) + 0.2*pulse(yaw, 180, 70)", lad_p: [-0.18, 0.62, 0.36], lad_x: -1.30, hand_R: [0.22, 0.78, 0.34], hand_L: [0.0, 0.42, 0.34], lean: 0.0,
+                         foot_L: [0.14, 0, 0.14], foot_R: [0.14, 0, -0.06]}}
+      - {ms: 140, set: {lad_p: [-0.20, 0.55, 0.20], lad_x: -0.5, hand_R: [0.18, 0.55, 0.34], hand_L: [-0.10, 0.50, 0.30], bob: -0.03, squash: 0.97}}
+      - {ms: 140, set: {lad_p: [-0.28, 0.66, 0.05], lad_x: -0.25, bob: -0.01}}

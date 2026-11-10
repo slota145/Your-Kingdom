@@ -1,0 +1,119 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework, batch 2 (owner 2026-11-10): the knight on the shared horse (mounted.yaml), the horse
+# in a red caparison with gold crosses and a steel chanfron. Game sheets: export_character.py knight.
+name: knight
+extends: ../mounted/mounted.yaml
+
+brief:
+  summary: "Your Kingdom knight: a closed great helm with a red plume and a gold band, mail with plate, a red surcoat with a gold cross, a red heater shield with a gold cross, an arming sword; a bay horse in a red caparison with gold crosses and a steel chanfron"
+  head: "face hidden behind the visor, a dark slit"
+  must_keep: ["red plume", "red caparison reads at 1x and shows the horse's legs", "red shield with a gold cross", "sword readable in every direction"]
+  simplify: ["no lance (he fights with the sword in the game)", "no spurs"]
+
+use:
+  - {kit: sword, as: sword, at: wrist_R, with: {length: 0.68, width: 0.075, guard: 0.18}}
+  - {kit: helmet, as: helm, at: head, with: {radius: 0.22, low: -0.04, brow: 0.235, opening: 0.28, visor: true, nasal: false, crest: 0.16, trim: true}}
+  - {kit: shield, as: shield, at: wrist_L, with: {shape: 0, width: 0.46, height: 0.6, rim: 0.035, boss: false}, materials: {wood: shield_red}}
+
+ramps:
+  mail_r: ["#0e1012", "#2a2e34", "#40464e", "#565e68", "#707a86", "#8e98a4"]
+
+materials:
+  cloth: {ramp: tunic}
+  caparison: {ramp: tunic, bands: [1, 4]}
+  shield_red: {ramp: tunic, bands: [2, 4], finish: matte}
+  gold_c: {ramp: gold, bands: [3, 5]}
+  mail: {ramp: mail_r, bands: [2, 5]}
+  plate: {ramp: steel, finish: metal}
+  trousers: {ramp: steel, finish: metal}
+  plume: {ramp: tunic}
+  slit: {ramp: steel, bands: [0, 0], outline: false}
+
+channels:
+  sw_x: 0.25                       # the sword in the body's frame (bone override below): + leans the blade forward
+  sw_z: 0.0                        # + leans it out to the rider's right
+  hand_L: [0.30, 0.46, 0.22]       # the shield arm raised clear of the horse's neck
+  hand_R: [0.32, 0.30, 0.20]
+
+bones:
+  sword: {parent: torso_rot, at: wrist_R, pos: [0, 0, 0], rot: "[sw_x, 0, sw_z]"}   # upright at rest, not along the forearm
+
+parts:
+  torso:             # the red surcoat with a gold cross, front and back
+    material: cloth
+    paint:
+      - material: gold_c
+        prims:
+          - box: {c: [0, 0.28, 0], half: [0.04, 0.2, 0.4]}
+          - box: {c: [0, 0.33, 0], half: [0.15, 0.04, 0.4]}
+  arm_L: {material: mail}
+  leg_L: {material: plate}
+  pauldron_L:
+    material: plate
+    space: pelvis
+    prims:
+      - ellipsoid: {c: [0.26, 0.58, 0.0], r: [0.12, 0.09, 0.12]}
+  coat:              # the surcoat skirt over the saddle, split for riding
+    material: cloth
+    prims:
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.26, -0.04], r: [0.2, 0.26]}
+    cut:
+      - box: {c: [0, -0.25, 0.1], half: [0.05, 0.16, 0.4]}
+  boot_L:
+    material: plate
+  caparison:         # the cloth trapper over the horse's body, hanging to the knees, open under the belly
+    material: caparison
+    space: horse
+    blend: 0.14
+    prims:
+      - ellipsoid: {c: [0, 1.12, 0.0], r: [0.31, 0.33, 0.63]}
+      - ellipsoid: {c: [0, 1.17, 0.48], r: [0.28, 0.33, 0.33]}
+      - ellipsoid: {c: [0, 1.20, -0.50], r: [0.31, 0.31, 0.36]}
+      - box: {c: [0, 0.90, -0.01], half: [0.30, 0.22, 0.80], round: 0.10}
+    cut:
+      - plane: {n: [0, -1, 0], c: [0, 0.66, 0]}
+      - box: {c: [0, 0.62, 0.0], half: [0.20, 0.18, 0.55]}        # open under the belly
+      - ellipsoid: {c: [0, 1.62, 0.02], r: [0.26, 0.2, 0.36]}      # the saddle shows through
+    paint:
+      - material: gold_c
+        prims:
+          - box: {c: [0.42, 1.0, -0.4], half: [0.14, 0.20, 0.05]}
+          - box: {c: [0.42, 1.04, -0.4], half: [0.14, 0.05, 0.15]}
+          - box: {c: [0.42, 1.0, 0.44], half: [0.14, 0.20, 0.05]}
+          - box: {c: [0.42, 1.04, 0.44], half: [0.14, 0.05, 0.15]}
+          - box: {c: [-0.42, 1.0, -0.4], half: [0.14, 0.20, 0.05]}
+          - box: {c: [-0.42, 1.04, -0.4], half: [0.14, 0.05, 0.15]}
+          - box: {c: [-0.42, 1.0, 0.44], half: [0.14, 0.20, 0.05]}
+          - box: {c: [-0.42, 1.04, 0.44], half: [0.14, 0.05, 0.15]}
+      - material: gold_c
+        stripes: {axis: y, width: 0.06, at: [0.71]}
+  chanfron:          # the steel plate down the horse's face
+    material: plate
+    space: hhead
+    blend: 0.02
+    prims:
+      - cone: {a: [0, 0.035, 0.02], b: [0, 0.03, 0.40], r: [0.11, 0.075]}
+  sword_blade: {priority: 2, min_cover: 2}
+  shield_cross:
+    material: gold_c
+    space: shield_face
+    priority: 2
+    prims:
+      - box: {c: [0, 0.02, 0.03], half: [0.03, 0.2, 0.012]}
+      - box: {c: [0, 0.1, 0.03], half: [0.15, 0.03, 0.012]}
+
+animations:
+  attack:            # a cut from the saddle: raise the sword over the shoulder, slash down past the horse's neck, recover
+    loop: true
+    keys:
+      - {ms: 90, set: {}}
+      - {ms: 120, set: {twist: -0.35, lean: -0.05, hand_R: [0.36, 0.62, 0.0], sw_x: -0.7, sw_z: 0.2, neck_x: -0.08, head_pitch: -0.06}}
+      - {ms: 170, event: windup,
+         set: {twist: -0.50, lean: -0.08, squash: 0.97, hand_R: [0.34, 0.74, -0.10], sw_x: -1.9, sw_z: 0.35, neck_x: -0.12, hhead_x: -0.1, head_pitch: -0.08}}
+      - {ms: 50, set: {twist: 0.25, lean: 0.16, squash: 1.03, hand_R: [0.22, 0.52, 0.45], sw_x: 1.0, sw_z: 0.25, neck_x: -0.05}}
+      - {ms: 90, event: hit,
+         set: {twist: 0.45, lean: 0.24, hand_R: [0.20, 0.22, 0.50], sw_x: 2.0, sw_z: 0.45, neck_x: 0.02, hhead_x: 0.08}}
+      - {ms: 100, set: {twist: 0.40, lean: 0.18, hand_R: [0.30, 0.10, 0.30], sw_x: 2.5, sw_z: 0.5, hhead_x: 0.05}}
+      - {ms: 120, set: {twist: 0.20, lean: 0.06, hand_R: [0.34, 0.20, 0.25], sw_x: 1.2, sw_z: 0.2}}
+      - {ms: 130, set: {twist: 0.05}}

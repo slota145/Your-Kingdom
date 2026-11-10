@@ -4,11 +4,16 @@ extends RefCounted
 ## frames (ART_SPEC §4), plus optional carry anchors read from <anim>.anchors.png.
 ## Frames are square, 64 px by default; a character with a long weapon may use bigger ones
 ## (a halberd, 96 px, owner 2026-11-10): the size follows from the sheet's height (8 or 5 rows).
+## Riders take 128 px frames (owner 2026-11-10) with the feet higher in the frame: facing the
+## viewer the horse's forelegs reach in front of (below) the feet.
 
 const FRAME_SIZE := Vector2i(64, 64)
 const FOOT := Vector2i(32, 58)
 ## How far the feet stand above a frame's bottom edge (FOOT in a 64 px frame).
 const FOOT_MARGIN := 6
+## The same for frames of RIDER_FRAME px and bigger (a horse's legs reach beyond the feet).
+const RIDER_FOOT_MARGIN := 16
+const RIDER_FRAME := 128
 const ANCHOR_COLOR := Color(1, 0, 0)
 const BEHIND_COLOR := Color(0, 0, 1)
 
@@ -32,7 +37,7 @@ static func from_files(sheet_path: String, anchors_path: String, frames_per_seco
 	sheet.texture = load(sheet_path) as Texture2D
 	var side := frame_side(sheet.texture.get_height())
 	sheet.frame_size = Vector2i(side, side)
-	sheet.foot = Vector2i(side / 2, side - FOOT_MARGIN)
+	sheet.foot = Vector2i(side / 2, side - foot_margin(side))
 	sheet.frames = maxi(1, sheet.texture.get_width() / side)
 	sheet.rows = maxi(1, sheet.texture.get_height() / side)
 	sheet.fps = frames_per_second
@@ -49,6 +54,11 @@ static func frame_side(height: int) -> int:
 	if height % 5 == 0 and height >= 5 * FRAME_SIZE.y:
 		return height / 5
 	return FRAME_SIZE.y
+
+
+## How far the feet stand above the bottom of a frame [param side] px square.
+static func foot_margin(side: int) -> int:
+	return RIDER_FOOT_MARGIN if side >= RIDER_FRAME else FOOT_MARGIN
 
 
 ## Sheet row and horizontal flip for a screen direction (IsoMath.Dir).
