@@ -233,5 +233,8 @@ Never call something visual good without looking at the PNG (or reading `review`
   about the hand's x alone cannot raise a weapon upright with the arm stretched out. Find angles numerically:
   `rig.Ctx(spec, env).frame('<bone>')` + `rig.socket_points` per frame (`anim.frames_of`), e.g. the bow's
   string (socket `bow_nock`) must be nearer the torso than the grip in every frame (owner 2026-11-10).
+- A weapon built from parts (the crossbow): a bone `{parent: torso_rot, at: wrist_R, rot: "[x, y, z]"}` sits at the
+  fist but turns in the body's frame, so a rest pose is one constant; solve the Euler angles per key from target
+  axes (rig.euler is Ry @ Rz @ Rx; keep one branch, e.g. z near -pi). Script: tools/spritekiln/xbow_angles.py.
 - Export scripts handle pivot offsets and symmetric cropping (game mirrors houses about the image width).
 - After `tools/generate_art.gd`, restore SpriteKiln/PixelLab buildings: `git checkout assets/buildings/hut/` etc.

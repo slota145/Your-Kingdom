@@ -1,0 +1,90 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework, batch 1 (owner 2026-11-10). Game sheets: export_character.py.
+name: swordsman
+camera: {pitch: 30, scale: 0.05176, center: [0, 1.554, 0]}   # feet at (32, 58) of the 64 px frame
+palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
+shadow: null   # the game draws no shadow under characters
+extends: humanoid
+remove: [animations.attack]
+
+brief:
+  summary: "Your Kingdom swordsman: an open steel helm with a nasal and cheek guards, a mail hauberk, a red surcoat with a gold cross, a red heater shield with a gold cross, an arming sword"
+  head: "face open between the helm's cheek guards"
+  must_keep: ["red surcoat with a gold cross reads at 1x", "red shield with a gold cross", "sword readable in every direction"]
+  simplify: ["no belt pouch, no scabbard"]
+
+use:
+  - {kit: sword, as: sword, at: wrist_R, with: {length: 0.5, width: 0.07, guard: 0.17}}
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+  - {kit: helmet, as: helm, at: head, with: {radius: 0.215, low: 0.05, brow: 0.235, opening: 0.28, nasal: true, crest: 0, trim: false}}
+  - {kit: shield, as: shield, at: wrist_L, with: {shape: 0, width: 0.46, height: 0.6, rim: 0.035, boss: false}, materials: {wood: shield_red}}
+
+ramps:
+  mail_r: ["#0e1012", "#2a2e34", "#40464e", "#565e68", "#707a86", "#8e98a4"]
+  boot: ["#140a05", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+
+materials:
+  cloth: {ramp: tunic}
+  shield_red: {ramp: tunic, bands: [2, 4], finish: matte}
+  gold_c: {ramp: gold, bands: [3, 5]}
+  mail: {ramp: mail_r, bands: [2, 5]}
+  trousers: {ramp: mail_r, bands: [2, 5]}
+  boot: {ramp: boot, bands: [1, 4]}
+  leather: {ramp: boot}
+  wood: {ramp: wood}
+  hair: {ramp: hair}
+  ink: {ramp: hair, band: 0}
+  steel: {ramp: steel, finish: metal}
+  gold: {ramp: gold}
+  plume: {ramp: tunic}
+  slit: {ramp: hair, band: 0}
+
+parts:
+  torso:             # the red surcoat with a gold cross, front and back
+    material: cloth
+    paint:
+      - material: gold_c
+        prims:
+          - box: {c: [0, 0.28, 0], half: [0.04, 0.2, 0.4]}
+          - box: {c: [0, 0.33, 0], half: [0.15, 0.04, 0.4]}
+  arm_L: {material: mail}
+  leg_L: {material: mail}
+  coat:              # the surcoat skirt to the knee, split for walking
+    material: cloth
+    prims:
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.3, -0.03], r: [0.2, 0.23]}
+    cut:
+      - box: {c: [0, -0.28, 0], half: [0.03, 0.18, 0.4]}
+  boot_L:
+    material: boot
+  shield_cross:      # the gold cross on the shield's face
+    material: gold_c
+    space: shield_face
+    priority: 2
+    prims:
+      - box: {c: [0, 0.02, 0.03], half: [0.03, 0.2, 0.012]}
+      - box: {c: [0, 0.1, 0.03], half: [0.15, 0.03, 0.012]}
+
+animations:
+  idle:
+    frames: 4
+    ms: 250
+  attack:          # the template's slash without the light smear (no other soldier glows): raise, cut, follow through, recover
+    loop: true
+    keys:
+      - {ms: 80, set: {hand_R: [0.30, 0.10, 0.16]}}
+      - {ms: 110, set: {twist: -0.45, lean: -0.02, bob: -0.03, squash: 0.96, hand_R: [0.42, 0.62, -0.12], hand_L: [0.20, 0.28, 0.25],
+                        foot_L: [0.14, 0, 0.12], foot_R: [0.14, 0, -0.06], coat: -0.3, head_pitch: -0.08}}
+      - {ms: 160, event: windup,
+         set: {twist: -0.60, lean: -0.05, bob: -0.05, squash: 0.94, hand_R: [0.40, 0.74, -0.22], hand_L: [0.18, 0.30, 0.28],
+               foot_L: [0.14, 0, 0.14], foot_R: [0.14, 0, -0.08], coat: -0.4, head_pitch: -0.10}}
+      - {ms: 50, set: {root: [0, 0, 0.03], twist: 0.30, lean: 0.25, squash: 1.04, hand_R: [0.05, 0.30, 0.55], hand_L: [0.30, 0.10, 0.0],
+                       foot_L: [0.14, 0, 0.17], foot_R: [0.14, 0, -0.12], coat: 0.6}}
+      - {ms: 80, event: hit,
+         set: {root: [0, 0, 0.04], twist: 0.60, lean: 0.30, squash: 1.02, hand_R: [-0.35, 0.18, 0.40], hand_L: [0.32, 0.08, -0.05],
+               foot_L: [0.14, 0, 0.18], foot_R: [0.14, 0, -0.12], coat: 0.8}}
+      - {ms: 100, set: {root: [0, 0, 0.035], twist: 0.70, lean: 0.25, squash: 0.98, hand_R: [-0.42, 0.05, 0.15], hand_L: [0.32, 0.08, -0.05],
+                        foot_L: [0.14, 0, 0.17], foot_R: [0.14, 0, -0.10], coat: 0.4}}
+      - {ms: 120, set: {root: [0, 0, 0.01], twist: 0.30, lean: 0.12, hand_R: [0.05, 0.08, 0.25], foot_L: [0.13, 0, 0.12], foot_R: [0.13, 0, -0.02], coat: 0.1}}
+      - {ms: 130, set: {root: [0, 0, 0.01], twist: 0.05, hand_R: [0.28, 0.10, 0.18], coat: -0.05}}

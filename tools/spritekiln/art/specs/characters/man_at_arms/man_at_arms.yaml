@@ -1,0 +1,103 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework, batch 1 (owner 2026-11-10, reference: a knight with a shield). Game sheets: export_character.py.
+name: man_at_arms
+camera: {pitch: 30, scale: 0.05176, center: [0, 1.554, 0]}   # feet at (32, 58) of the 64 px frame
+palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
+shadow: null   # the game draws no shadow under characters
+extends: humanoid
+remove: [use.sword, animations.attack]
+
+brief:
+  summary: "Your Kingdom man-at-arms (heavy infantry): a closed steel helm with a red plume, full plate on arms and legs, steel pauldrons, a red surcoat with a gold cross, a big red heater shield with a gold cross, a flanged mace"
+  head: "face hidden behind the visor, a dark slit"
+  must_keep: ["red plume", "steel plate arms and legs read as metal", "red surcoat with a gold cross", "mace readable"]
+  simplify: ["no belt pouch, no scabbard"]
+
+use:
+  - {kit: mace, as: mace, at: wrist_R, with: {length: 0.52, head: 0.15, spike: 0.06}}
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+  - {kit: helmet, as: helm, at: head, with: {radius: 0.22, low: -0.04, brow: 0.235, opening: 0.28, visor: true, nasal: false, crest: 0.14, trim: true}}
+  - {kit: shield, as: shield, at: wrist_L, with: {shape: 0, width: 0.54, height: 0.7, rim: 0.04, boss: false}, materials: {wood: shield_red}}
+
+ramps:
+  boot: ["#140a05", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+
+materials:
+  cloth: {ramp: tunic}
+  shield_red: {ramp: tunic, bands: [2, 4], finish: matte}
+  gold_c: {ramp: gold, bands: [3, 5]}
+  plate: {ramp: steel, finish: metal}
+  trousers: {ramp: steel, finish: metal}
+  boot: {ramp: boot, bands: [1, 4]}
+  leather: {ramp: boot}
+  wood: {ramp: wood}
+  hair: {ramp: hair}
+  ink: {ramp: hair, band: 0}
+  steel: {ramp: steel, finish: metal}
+  gold: {ramp: gold}
+  plume: {ramp: tunic}
+  slit: {ramp: steel, bands: [0, 0], outline: false}
+
+parts:
+  torso:             # the red surcoat with a gold cross, front and back
+    material: cloth
+    paint:
+      - material: gold_c
+        prims:
+          - box: {c: [0, 0.28, 0], half: [0.04, 0.2, 0.4]}
+          - box: {c: [0, 0.33, 0], half: [0.15, 0.04, 0.4]}
+  arm_L: {material: plate}
+  leg_L: {material: plate}
+  pauldron_L:        # a rounded steel shoulder plate
+    material: plate
+    space: pelvis
+    prims:
+      - ellipsoid: {c: [0.26, 0.58, 0.0], r: [0.13, 0.1, 0.13]}
+  coat:              # the surcoat skirt to the knee, split for walking
+    material: cloth
+    prims:
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.3, -0.03], r: [0.2, 0.23]}
+    cut:
+      - box: {c: [0, -0.28, 0], half: [0.03, 0.18, 0.4]}
+  boot_L:
+    material: boot
+  shield_cross:      # the gold cross on the shield's face
+    material: gold_c
+    space: shield_face
+    priority: 2
+    prims:
+      - box: {c: [0, 0.02, 0.03], half: [0.035, 0.24, 0.012]}
+      - box: {c: [0, 0.12, 0.03], half: [0.18, 0.035, 0.012]}
+
+channels:
+  mace_x: 0.52       # the mace at the fist (bones below): lean about the hand's x and turn about its z; at rest the
+  mace_z: 0          # kit's forward lean; the blow sets both per key (found numerically: up and back over the shoulder, then down)
+
+bones:
+  mace: {rot: "[mace_x, 0, mace_z]"}
+
+animations:
+  idle:
+    frames: 4
+    ms: 250
+  walk:
+    ms: 115          # a heavier step than the light foot
+  attack:            # a heavy overhead blow: raise, hold high, smash down, hold, recover (8 frames: the game's work)
+    loop: true
+    keys:
+      - {ms: 120, set: {hand_R: [0.30, 0.12, 0.16]}}
+      - {ms: 150, set: {twist: -0.35, lean: -0.04, hand_R: [0.30, 0.70, -0.05], hand_L: [0.22, 0.30, 0.30], mace_x: 3.2, mace_z: 0.6,
+                        foot_L: [0.14, 0, 0.12], foot_R: [0.14, 0, -0.06], coat: -0.2}}
+      - {ms: 220, event: windup,
+         set: {twist: -0.45, lean: -0.08, squash: 0.96, hand_R: [0.26, 0.86, -0.14], hand_L: [0.22, 0.32, 0.32], mace_x: 3.0, mace_z: 0.7,
+               foot_L: [0.14, 0, 0.14], foot_R: [0.14, 0, -0.08], coat: -0.3, head_pitch: -0.06}}
+      - {ms: 60, set: {root: [0, 0, 0.03], twist: 0.10, lean: 0.20, squash: 1.03, hand_R: [0.14, 0.55, 0.38], hand_L: [0.26, 0.24, 0.20], mace_x: 1.8, mace_z: -0.7,
+                       foot_L: [0.14, 0, 0.17], foot_R: [0.14, 0, -0.10], coat: 0.5}}
+      - {ms: 160, event: hit,
+         set: {root: [0, 0, 0.04], twist: 0.25, lean: 0.30, squash: 0.97, hand_R: [0.10, 0.26, 0.42], hand_L: [0.28, 0.20, 0.18], mace_x: 1.22,
+               foot_L: [0.14, 0, 0.18], foot_R: [0.14, 0, -0.10], coat: 0.6}}
+      - {ms: 160, set: {root: [0, 0, 0.03], twist: 0.20, lean: 0.25, hand_R: [0.12, 0.22, 0.40], hand_L: [0.28, 0.20, 0.18], mace_x: 1.22,
+                        foot_L: [0.14, 0, 0.17], foot_R: [0.14, 0, -0.10], coat: 0.3}}
+      - {ms: 150, set: {root: [0, 0, 0.02], twist: 0.05, lean: 0.10, hand_R: [0.24, 0.16, 0.24], mace_x: 0.72, foot_L: [0.13, 0, 0.08], coat: 0.1}}
+      - {ms: 150, set: {root: [0, 0, 0.01], hand_R: [0.30, 0.12, 0.16], coat: -0.05}}
