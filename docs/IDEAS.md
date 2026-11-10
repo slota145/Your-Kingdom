@@ -180,3 +180,33 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 - Właściciel podesłał referencje: balista na kołach, taran pod dachem ze skór (wóz z daszkiem), katapulta.
 - Ankieta 2026-11-10: **osobny etap później** (po reworku żołnierzy). Balista i taran są dziś rysowane kreskami w kodzie (`SiegeLayer`), więc podmiana na obrazki ze SpriteKiln to też zmiana w widoku. Katapulty w grze nie ma: to nowa jednostka (zasięg, amunicja, koszt), do zaplanowania razem z tym etapem.
 - **Zrobione 2026-11-10 (taran i balista ze SpriteKiln, 8 kierunków, ramka 128 px; ankieta: taran z dachem ze skór i nogami ludzi pod dachem, balista z 2 ludźmi przy kołowrocie):** ART_SPEC §10.20, „Machiny oblężnicze”. Zaakceptowane i scalone do `main` 2026-11-10. Katapulta dalej czeka (nowa jednostka do zaplanowania).
+
+## Pakiet zmian w ekonomii i rozwoju (właściciel, 2026-11-10)
+
+Pomysły właściciela z rozmowy 2026-11-10, z oceną Claude. Ankieta 2026-11-10: **zapisać wszystko i zaplanować pierwszą paczkę** (ROADMAP, E1: magazyny, farmy i ręczny awans). Reszta czeka na kolejne etapy, w kolejności niżej.
+
+1. **Większe stosy w magazynach + dom tragarzy** → ROADMAP, E1.
+   - Właściciel: magazynów trzeba „pierdylion” i źle to wygląda; mniej tragarzy zrekompensować nowym budynkiem z tragarzami.
+   - Ocena (Claude): za. Plac ma 15 miejsc po 12–20 sztuk. Mniej placów to mniej tragarzy (2 na plac), więc osobny dom tragarzy jest potrzebny, inaczej logistyka zwolni. Stos wyższy, nie szerszy (więcej faz).
+2. **Pole rośnie dopiero po zasianiu wszystkich kratek** → ROADMAP, E1.
+   - Właściciel: rolnik kończy siać ostatnią kratkę, a pierwsza jest już do zbioru; może większy plon na wyrównanie.
+   - Ocena (Claude): 16 kratek i 90 s wzrostu, siew całego pola trwa mniej więcej tyle samo. „Cały łan rośnie razem”, rolnik w czasie wzrostu pieli albo przegania wrony; spadek wydajności oddać plonem albo krótszym wzrostem, zmierzone automatycznym graczem (cel: farma daje tyle co dziś albo trochę więcej).
+3. **Ręczny awans domu** („Rozbuduj teraz”, bez czekania) → ROADMAP, E1.
+4. **Alternatywne źródła jedzenia na start** (mapa bez wody nie ma dziś jedzenia na start).
+   - Właściciel: farma rzepy, myśliwy i dzikie zwierzęta.
+   - Ocena (Claude): sad jabłoni (jabłka są w GDD jako jedzenie chłopów „później”, mechanizm jak winnica, tanio) + myśliwy z sarnami i dzikami (dużo klimatu, najwięcej pracy; zwierzęta ze SpriteKiln jak w Z1). Rzepa to prawie to samo co zboże. Pomysł Claude: zbieracz jagód i grzybów w lesie (tani, mało daje, na pierwsze minuty).
+   - Kiedy: etap 2, razem z punktem 5.
+5. **Nowe potrzeby mieszkańców: zróżnicowana dieta i „kilka z wielu”.**
+   - Właściciel: więcej rodzajów jedzenia na poziom; do spokoju wystarczy spełnić kilka potrzeb (bez jedzenia i tak niezadowoleni); potrzeby ponad minimum dają trochę więcej podatku.
+   - Ocena (Claude): dobre i pasuje do punktu 4. Szkic: jedzenie zawsze obowiązkowe, minimum kilku potrzeb do spokoju, każda ponad minimum (też kolejny rodzaj jedzenia) to +podatek, awans wymaga więcej (np. 2 rodzaje jedzenia). Ryzyko: przebudowa serca ekonomii, trzeba poprawić władców (`RulerPlanner`), automatycznego gracza i scenariusze. Osobny etap.
+6. **Cechy prowincji: niewyczerpalne źródła.**
+   - Właściciel: prowincja bogata w kamień z odkrywką, która się nie kończy; głęboka kopalnia żelaza, która nigdy się nie kończy.
+   - Ocena (Claude): bardzo dobre, rozwija rzadkie surowce (winorośl, sól, ruda★). Tylko w prowincji z cechą; droższe, wolniejsze albo z większą obsadą, żeby nie zastąpiły zwykłych. Dalsze cechy: żyzna ziemia (plon), bogata w zwierzynę (myśliwy).
+   - Kiedy: etap 3.
+7. **Uniwersytet i badania.**
+   - Właściciel: badania odblokowują budynki i ulepszają gospodarkę (tragarze i wózki niosą +1, farmy więcej pól, hodowle więcej zagród); dużą część obecnych budynków schować za badaniami.
+   - Ocena (Claude): największa zmiana z listy. Dotyka menu budowy, zapisu, władców (muszą badać, inaczej będą silniejsi), automatycznego gracza i scenariuszy. Za dużo schowane = nudny start. Pierwsza wersja: 15–20 badań za złoto i czas, uniwersytet wymaga mieszczan albo patrycjuszy; uczeni z księgami w środku, dzwon w mieście po badaniu.
+   - Kiedy: etap 4, razem z punktem 8.
+8. **Małe i duże koszary.**
+   - Właściciel: małe, tanie koszary (łucznicy i włócznicy) od startu; duże, „zamkowe” na planie kwadratu 4×4 albo 5×5 zastępują obecne i działają jak one, ale trzeba je zbadać (tak samo jak ich jednostki).
+   - Ocena (Claude): za. Rekomendacja 5×5 z dziedzińcem, na którym żołnierze ćwiczą (musztra już jest). Grafika ze SpriteKiln. Ma sens razem z badaniami.

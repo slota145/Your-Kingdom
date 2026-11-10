@@ -26,7 +26,7 @@ M0 Fundament
                 │                        └─► M7 Wojsko, mury i oblężenia
                 │                             └─► B1 Most przez rzekę i łagodniejszy brzeg
                 │                                  └─► W1 Nowe wybrzeże ──► J1 Nowe jednostki i okręty
-                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► M10 Wersja 1.0
+                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► E1 Magazyny, farmy i awans ──► M10 Wersja 1.0
                 └─► M9 Produkcja grafik (równolegle od M4, partiami)
 Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 ```
@@ -1323,6 +1323,42 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Poza zakresem:** owce na mięso, zwierzęta podchodzące do płotu i zbiegające się do koryta (pomysł z IDEAS, bez decyzji), mleko, ser i inne nowe towary ze zwierząt, krowy i kozy, choroby zwierząt, zagrody stawiane bez budynku.
 
 ---
+
+## E1 — Magazyny, farmy i ręczny awans
+
+> Pomysły właściciela z 2026-11-10 (IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 1–3). Ankieta 2026-11-10: zapisać i zaplanować jako pierwszą paczkę; decyzje z ankiety niżej. **Plan czeka na akceptację startu.** Poprawki z ocen M8 i Z1 mają pierwszeństwo, gdy właściciel będzie miał laptopa.
+
+**Cel:** mniej magazynów w mieście, pole, które rośnie jak prawdziwy łan, i dom, który można rozbudować od razu.
+
+**Zakres (propozycja Claude):**
+- **Większe stosy w magazynach.** Plac składowy i magazyny portowe trzymają **2 × więcej** w każdym miejscu (np. drewno 20 → 40). Zmienia się tylko pojemność miejsc w magazynach; podwórka warsztatów, ładownie statków, kramy i place budów zostają jak dziś. Stos rośnie w górę (więcej faz wyglądu), a nie wszerz.
+- **Chata tragarzy** (2×2, 4 tragarzy) i **dom tragarzy** (3×3, 6 tragarzy), z drewna i desek. Tragarze biorą zlecenia przenoszenia w zasięgu (np. 12 kafli, jak chata portowców). Plac składowy zostawia swoich 2 tragarzy.
+- **„Cały łan rośnie razem”.** Rolnik (także przy chmielu i winnicy, a później w sadzie) orze i sieje albo sadzi wszystkie kratki, a uprawa zaczyna rosnąć dopiero po ostatniej. Całe pole zielenieje i złoci się razem; żniwa jak dziś, kratka po kratce. W czasie wzrostu rolnik pieli i przegania ptaki (krótka animacja), zamiast stać. Wydajność wyrównana większym plonem z kratki (czas wzrostu bez zmian), zmierzona automatycznym graczem (cel: tyle co dziś albo trochę więcej). Dotyczy też trybu uproszczonego i władców.
+- **„Rozbuduj teraz”** w panelu domu: gdy dom spełnia warunki awansu (potrzeby podstawowe i towary nowej klasy w magazynach), gracz pomija czekanie 60 s. Materiały na awans dalej muszą dojechać.
+- **Zapis v35** (stan pola „czeka na resztę siewu”), migracja v34 → v35 z fixturą, test.
+
+**Decyzje (ankieta 2026-11-10):**
+- stosy w magazynach **2 × większe** (plac składowy zostaje 4×4),
+- **oba rozmiary domu tragarzy**, jak u portowców: chata tragarzy 2×2 z 4 tragarzami i dom tragarzy 3×3 z 6,
+- wyrównanie farmy **większym plonem** (czas wzrostu bez zmian),
+- „cały łan rośnie razem” dotyczy **pól zboża, plantacji chmielu, winnicy i przyszłego sadu**.
+
+**Części (propozycja; ocena właściciela po każdej):**
+- **Część 1:** większe stosy, chata i dom tragarzy, „Rozbuduj teraz”.
+- **Część 2:** „cały łan rośnie razem”, animacja rolnika przy rosnącym polu, wyrównanie wydajności, zapis v35.
+
+**Testy:** jednostkowe (pojemność miejsc magazynu, tragarze z domu tragarzy biorą zlecenia tylko w zasięgu, pole rośnie dopiero po ostatnim siewie, „Rozbuduj teraz” tylko przy spełnionych warunkach); scenariuszowe (łańcuch chleba z nowym polem, zapis i wczytanie, migracja v34 → v35, tryb uproszczony liczy jak szczegółowy); długie (automatyczny gracz dochodzi do patrycjuszy w limicie, władcy dalej rosną, 2 godziny bez zakleszczeń).
+
+**Grafiki:** wyższe fazy stosów (`tools/compose_pixellab_stacks.py`), chata i dom tragarzy ze SpriteKiln, animacja pielenia rolnika.
+
+**DoD:**
+- [ ] Magazyny trzymają więcej w każdym miejscu, a stos widać wyższy.
+- [ ] Chata i dom tragarzy dają tragarzy, którzy noszą w jego zasięgu.
+- [ ] Pole rośnie dopiero po zasianiu wszystkich kratek; rolnik ma zajęcie w czasie wzrostu; farma nie jest słabsza niż dziś.
+- [ ] „Rozbuduj teraz” działa w panelu domu.
+- [ ] Stare zapisy (v34) wczytują się po migracji.
+- [ ] Automatyczny gracz i władcy grają dalej; testy szybkie i długie przechodzą; UI w PL i EN.
+- [ ] **Twoja ocena gry** po każdej części.
 
 ## M9 — Produkcja grafik (równolegle, od M4)
 
