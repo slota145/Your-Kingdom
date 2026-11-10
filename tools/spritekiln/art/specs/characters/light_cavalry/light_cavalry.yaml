@@ -1,0 +1,99 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework, batch 2 (owner 2026-11-10): the light cavalryman on the shared horse (mounted.yaml),
+# the horse bare with a red saddle cloth. Game sheets: export_character.py light_cavalry.
+name: light_cavalry
+extends: ../mounted/mounted.yaml
+
+brief:
+  summary: "Your Kingdom light cavalryman: an open steel helm with a nasal, a quilted tan gambeson, brown boots, a small round pale shield with a red cross, a spear with a red pennant; a bay horse with a red saddle cloth edged in gold"
+  head: "face open under the helm"
+  must_keep: ["the horse's own coat shows (no caparison): tells him from the knight", "spear with a red pennant readable in every direction", "red cross on the round shield"]
+  simplify: ["no belt pouch"]
+
+use:
+  - {kit: spear, as: spear, at: wrist_R, with: {length: 1.55, butt: 0.40, head: 0.2, width: 0.06}}
+  - {kit: hair, at: head, with: {fringe: 0.3, part: 0.2, locks: 0.4, length: 0.2, volume: 0.9}}
+  - {kit: helmet, as: helm, at: head, with: {radius: 0.215, low: 0.05, brow: 0.235, opening: 0.28, nasal: true, crest: 0, trim: false}}
+  - {kit: shield, as: shield, at: wrist_L, with: {shape: 1, width: 0.42, rim: 0.03, boss: false}, materials: {wood: shield_face_m}}
+
+ramps:
+  gambeson: ["#1a1208", "#3e2e18", "#64502e", "#8a7448", "#ab9566", "#c9b688"]
+  pale: ["#1a1712", "#4a443a", "#7e7666", "#b4aa94", "#d6cdb6", "#eee8d6"]
+
+materials:
+  cloth: {ramp: gambeson, bands: [1, 5]}
+  quilt: {ramp: gambeson, bands: [1, 3], outline: false, line: false}
+  trousers: {ramp: trousers}
+  shield_face_m: {ramp: pale, bands: [2, 5], finish: matte}
+  red: {ramp: tunic, bands: [2, 4]}
+  pennant: {ramp: tunic, bands: [2, 5]}
+  gold_c: {ramp: gold, bands: [3, 5]}
+  plume: {ramp: tunic}
+  slit: {ramp: hair, band: 0}
+
+channels:
+  sp_x: 0.15         # the spear in the body's frame (bone override below): + leans it forward, 1.57 = level
+  sp_z: 0.12         # + leans it out to the rider's right
+  sp_y: 0            # - turns a levelled spear out to the rider's right
+  hand_L: [0.30, 0.42, 0.24]       # the shield and reins hand clear of the horse's neck
+  hand_R: [0.32, 0.22, 0.16]
+
+bones:
+  spear: {parent: torso_rot, at: wrist_R, pos: [0, 0, 0], rot: "[sp_x, sp_y, sp_z]"}   # not along the forearm (it reaches forward on a horse)
+
+parts:
+  torso:             # the quilted gambeson
+    material: cloth
+    paint:
+      - material: quilt
+        stripes: {axis: y, period: 0.08, width: 0.015}
+  coat:              # the gambeson's skirt over the saddle, split for riding
+    material: cloth
+    prims:
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.2, -0.03], r: [0.2, 0.24]}
+    cut:
+      - box: {c: [0, -0.2, 0.1], half: [0.05, 0.14, 0.4]}
+    paint:
+      - material: quilt
+        stripes: {axis: y, period: 0.08, width: 0.015}
+  saddle_cloth:      # a red cloth under the saddle, edged in gold, hanging down the flanks
+    material: red
+    space: horse
+    blend: 0.04
+    prims:
+      - ellipsoid: {c: [0, 1.20, -0.02], r: [0.32, 0.24, 0.46], elongate: [0, 0.08, 0]}
+    cut:
+      - plane: {n: [0, -1, 0], c: [0, 0.90, 0]}
+    paint:
+      - material: gold_c
+        stripes: {axis: y, width: 0.055, at: [0.94]}
+  shield_cross:
+    material: red
+    space: shield_face
+    priority: 2
+    prims:
+      - box: {c: [0, 0, 0.02], half: [0.032, 0.16, 0.06]}
+      - box: {c: [0, 0, 0.02], half: [0.16, 0.032, 0.06]}
+  pennant:
+    material: pennant
+    space: spear_shaft
+    priority: 2
+    prims:
+      - extrude: {c: [0, 1.22, 0], rot: [0, -1.5708, 0], depth: 0.02, round: 0.006,
+                  profile: {polygon: [[0.0, 0.07], [-0.24, 0.0], [0.0, -0.07]]}}
+
+animations:
+  attack:            # level the spear past the horse's neck, draw back, thrust forward, recover
+    loop: true            # (in s and n the spear angles out to the side, or it would point into the camera and vanish)
+    keys:
+      - {ms: 120, set: {}}
+      - {ms: 130, set: {sp_x: 0.9, sp_y: "-0.6*pulse(yaw, 0, 60) - 0.8*pulse(yaw, 180, 60)", hand_R: [0.30, 0.34, 0.10], twist: -0.12, neck_x: -0.05}}
+      - {ms: 200, event: windup,
+         set: {sp_x: 1.55, sp_y: "-0.6*pulse(yaw, 0, 60) - 0.8*pulse(yaw, 180, 60)", hand_R: [0.30, 0.40, -0.14], twist: -0.30, lean: -0.08,
+               squash: 0.97, neck_x: -0.10, hhead_x: -0.08}}
+      - {ms: 60, set: {sp_x: 1.65, sp_y: "-0.6*pulse(yaw, 0, 60) - 0.8*pulse(yaw, 180, 60)", hand_R: [0.24, 0.36, 0.34], twist: 0.10, lean: 0.20, squash: 1.03}}
+      - {ms: 140, event: hit,
+         set: {sp_x: 1.70, sp_y: "-0.6*pulse(yaw, 0, 60) - 0.8*pulse(yaw, 180, 60)", hand_R: [0.22, 0.34, 0.44], twist: 0.15, lean: 0.26, neck_x: 0.04}}
+      - {ms: 130, tween: 1, set: {sp_x: 1.55, sp_y: "-0.6*pulse(yaw, 0, 60) - 0.8*pulse(yaw, 180, 60)", hand_R: [0.28, 0.34, 0.22], twist: 0.0, lean: 0.10}}
+      - {ms: 140, set: {sp_x: 0.6, hand_R: [0.32, 0.26, 0.16]}}
