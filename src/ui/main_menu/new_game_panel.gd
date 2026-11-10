@@ -10,12 +10,18 @@ signal start_requested(settings: GameSettings)
 signal back_requested
 
 const HANDMADE := &"kingdom"
+## Numbers of first plundering waves offered (then "all").
+const PLUNDER_CHOICES := 5
 
 var _scenario: OptionButton
 var _scenario_hint: Label
 var _gold: SpinBox
 var _gold_row: Control
 var _victory_row: Control
+## The Invasion (M8 part 5, owner's request 2026-11-10): 60 minutes or survival, and how many
+## first waves only plunder.
+var _invasion_goal: OptionButton
+var _plunder: OptionButton
 var _world: OptionButton
 var _seed: SpinBox
 var _provinces: HSlider
@@ -78,6 +84,15 @@ func _init() -> void:
 	_gold.value = GameSettings.DEFAULT_GOLD
 	_gold_row.add_child(_gold)
 	add_child(_gold_row)
+	_invasion_goal = _choice("ui.new_game.invasion_goal", ["ui.invasion.hold_60", "ui.invasion.endless"])
+	_invasion_goal.tooltip_text = "ui.invasion.endless_hint"
+	var plunder_items: Array = ["ui.invasion.plunder_none"]
+	for n: int in range(1, PLUNDER_CHOICES + 1):
+		plunder_items.append(str(n))
+	plunder_items.append("ui.invasion.plunder_all")
+	_plunder = _choice("ui.new_game.plunder", plunder_items)
+	_plunder.selected = GameSettings.DEFAULT_PLUNDER
+	_plunder.tooltip_text = "ui.invasion.plunder_hint"
 	_target_row = HBoxContainer.new()
 	_target_row.add_child(UiKit.label("ui.new_game.target", false))
 	_target = SpinBox.new()
@@ -151,6 +166,8 @@ func settings() -> GameSettings:
 	if _world.selected == 0:
 		s.scenario = GameSettings.SCENARIOS[_scenario.selected]
 		s.gold_target = int(_gold.value)
+		s.endless = _invasion_goal.selected == 1
+		s.plunder_waves = GameSettings.PLUNDER_ALL if _plunder.selected > PLUNDER_CHOICES else _plunder.selected
 		s.fit_scenario()
 	return s
 
@@ -170,6 +187,8 @@ func _refresh() -> void:
 	# (The difficulty is the rulers': the Invasion has none.)
 	_difficulty.get_parent().visible = scenario != GameSettings.INVASION
 	_gold_row.visible = scenario == GameSettings.ISLANDS
+	_invasion_goal.get_parent().visible = scenario == GameSettings.INVASION
+	_plunder.get_parent().visible = scenario == GameSettings.INVASION
 	_islands.get_parent().visible = generated and scenario != GameSettings.ISLANDS   # (all islands there)
 	_victory_row.visible = scenario != GameSettings.ISLANDS and scenario != GameSettings.INVASION
 	# The hand-made world has no rulers: no conquest there.

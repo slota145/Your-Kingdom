@@ -101,10 +101,24 @@ static func progress(sim: Simulation) -> Array[int]:
 	return [0, 0]
 
 
+## The survival mode's score: [waves held off, minutes held out] (a wave counts as held off once
+## the next one has set out, or the game goes on after the last).
+static func survived(sim: Simulation) -> Array[int]:
+	var state := sim.world.invasion
+	if state == null:
+		return [0, 0]
+	return [maxi(state.wave - 1, 0) if sim.world.result == WorldSim.RESULT_LOST else state.wave,
+			elapsed_minutes(sim)]
+
+
 ## [param winner]: the ruler who won instead of the player (the gold race), or &"".
 static func _end(sim: Simulation, result: StringName, winner: StringName = &"") -> void:
 	sim.world.result = result
 	var data := {"victory": String(sim.world.settings.victory)}
+	if sim.world.settings.victory == GameSettings.VICTORY_ENDLESS:
+		var score := survived(sim)
+		data["waves"] = score[0]
+		data["minutes"] = score[1]
 	if winner != &"":
 		data["winner"] = String(winner)
 	sim.events.emit(&"game_won" if result == WorldSim.RESULT_WON else &"game_lost", data)

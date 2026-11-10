@@ -4120,3 +4120,48 @@ msgstr "Fala %d z %d: %d najeźdźców płynie na %s! Dopłyną za ok. %d min."
 
 msgid "ui.world.next_wave"
 msgstr "Fala %d za %d:%02d"
+
+msgid "ui.note.invasion_plunder"
+msgstr " Ta fala tylko łupi."
+
+msgid "ui.note.invasion_wave_endless"
+msgstr "Fala %d: %d najeźdźców płynie na %s! Dopłyną za ok. %d min."
+
+msgid "ui.world.endless"
+msgstr "Przetrwanie: %d fal, %d min"
+
+msgid "ui.result.endless_score"
+msgstr "Odparłeś %d fal i przetrwałeś %d minut."
+
+msgid "ui.result.endless_new_record"
+msgstr "To nowy rekord!"
+
+msgid "ui.result.endless_record"
+msgstr "Rekord: %d fal (%d minut)."
+
+msgid "ui.victory.endless"
+msgstr "Przetrwanie"
+
+msgid "ui.new_game.invasion_goal"
+msgstr "Cel"
+
+msgid "ui.invasion.hold_60"
+msgstr "Przetrwaj 60 minut"
+
+msgid "ui.invasion.endless"
+msgstr "Przetrwanie (fale bez końca)"
+
+msgid "ui.invasion.endless_hint"
+msgstr "Fale przychodzą bez końca, każda większa. Wynikiem jest liczba odpartych fal i Twój rekord."
+
+msgid "ui.new_game.plunder"
+msgstr "Fale rabunkowe"
+
+msgid "ui.invasion.plunder_none"
+msgstr "Brak"
+
+msgid "ui.invasion.plunder_all"
+msgstr "Wszystkie"
+
+msgid "ui.invasion.plunder_hint"
+msgstr "Tyle pierwszych fal tylko łupi złoto i towary i odpływa. Dalsze zajmują miasto, które zdobędą."

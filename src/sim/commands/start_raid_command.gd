@@ -12,7 +12,7 @@ func _init(seconds: float = 0.0) -> void:
 
 
 func validate(sim: Simulation) -> StringName:
-	if not sim.province.has_seat():
+	if not sim.province.has_stronghold():
 		return &"no_town_hall"
 	if sim.province.raids.is_active():
 		return &"raid_under_way"

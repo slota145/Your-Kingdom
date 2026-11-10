@@ -4083,3 +4083,48 @@ msgstr "Wave %d of %d: %d raiders sail against %s! They land in about %d min."
 
 msgid "ui.world.next_wave"
 msgstr "Wave %d in %d:%02d"
+
+msgid "ui.note.invasion_plunder"
+msgstr " This wave only plunders."
+
+msgid "ui.note.invasion_wave_endless"
+msgstr "Wave %d: %d raiders sail against %s! They land in about %d min."
+
+msgid "ui.world.endless"
+msgstr "Survival: %d waves, %d min"
+
+msgid "ui.result.endless_score"
+msgstr "You held off %d waves and lasted %d minutes."
+
+msgid "ui.result.endless_new_record"
+msgstr "A new record!"
+
+msgid "ui.result.endless_record"
+msgstr "Record: %d waves (%d minutes)."
+
+msgid "ui.victory.endless"
+msgstr "Survival"
+
+msgid "ui.new_game.invasion_goal"
+msgstr "Goal"
+
+msgid "ui.invasion.hold_60"
+msgstr "Hold out 60 minutes"
+
+msgid "ui.invasion.endless"
+msgstr "Survival (endless waves)"
+
+msgid "ui.invasion.endless_hint"
+msgstr "Waves keep coming, each bigger. Your score is the waves held off, and your record."
+
+msgid "ui.new_game.plunder"
+msgstr "Plundering waves"
+
+msgid "ui.invasion.plunder_none"
+msgstr "None"
+
+msgid "ui.invasion.plunder_all"
+msgstr "All"
+
+msgid "ui.invasion.plunder_hint"
+msgstr "This many first waves only plunder gold and goods and sail away. Later ones take the town they win."

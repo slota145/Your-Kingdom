@@ -275,6 +275,7 @@ static func _inside(sim: Simulation, army: Army) -> void:
 			if on_map > 0 and Raids.can_capture(sim.province):
 				capture(sim, army.at)
 		if Rulers.is_ruler(army.owner) and sim.province.raids.army == army.id and on_map > 0 \
+				and sim.province.raids.conquest \
 				and sim.world.owner_of(army.at) == ProvinceDef.OWNER_PLAYER and Raids.can_capture(sim.province):
 			_ruler_takes_viewed(sim, army)
 			return
@@ -321,7 +322,7 @@ static func _warn(sim: Simulation, army: Army) -> void:
 	if ArmyOrders.seconds_left(sim, army) > WARNING_SECONDS:
 		return
 	var province := sim.province
-	if province.raids.is_active() or not province.has_seat():
+	if province.raids.is_active() or not province.has_stronghold():
 		return
 	army.warned = true
 	province.raids.entry = Raids.choose_entry(province, sim.rng.stream(&"raids"))
@@ -432,7 +433,7 @@ static func battle(sim: Simulation, army: Army, defender: BattleSide, kind: Batt
 ## weakest wall on the way from the edge to the town hall (none when there is a way round).
 static func fort_of(province: ProvinceSim) -> BattleFort:
 	var fort := BattleFort.new()
-	var hall := province.seat()
+	var hall := province.stronghold()
 	if hall == null or province.walls.is_empty():
 		return fort
 	var door := province.door_tile(hall)
@@ -512,7 +513,7 @@ static func enter_fight(sim: Simulation, army: Army) -> void:
 	if Rulers.is_ruler(sim.world.owner_of(army.at)):
 		spawn_guards(sim, army.at, RulerWar.guards_out(sim, army.at))
 	var province := sim.province
-	var hall := province.seat()
+	var hall := province.stronghold()
 	var door := hall.entrance_tile() if hall != null else province.grid.size / 2
 	army.entry = Raids.choose_entry(province, sim.rng.stream(&"raids"))
 	if army.landed_by_sea:
@@ -939,7 +940,7 @@ static func _raid_target(sim: Simulation, from: int) -> int:
 		if sim.world.owner_of(id) != ProvinceDef.OWNER_PLAYER:
 			continue
 		var province := sim.province_state(id)
-		if province == null or not province.has_seat() or province.grace_until > sim.clock.tick:
+		if province == null or not province.has_stronghold() or province.grace_until > sim.clock.tick:
 			continue
 		var a := sim.world.def_of(from, sim.data)
 		var b := sim.world.def_of(id, sim.data)
@@ -959,7 +960,7 @@ static func _raid_target(sim: Simulation, from: int) -> int:
 static func _raid(sim: Simulation, army: Army) -> void:
 	var id := army.at
 	var province := sim.province_state(id)
-	if province == null or not province.has_seat():
+	if province == null or not province.has_stronghold():
 		_go_home(sim, army)
 		return
 	if id == sim.viewed_id and not province.raids.is_active():
@@ -983,7 +984,7 @@ static func _raid(sim: Simulation, army: Army) -> void:
 				building.garrison.erase(unit)
 				left -= 1
 	if result.a_won() and not army.is_empty():
-		var hall := province.seat()
+		var hall := province.stronghold()
 		army.loot_gold += Raids.loot(province, hall)
 		province.raids.loot_gold = 0
 		sim.events.emit(&"province_raided", {"province": id, "gold": army.loot_gold})

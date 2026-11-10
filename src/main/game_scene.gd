@@ -455,8 +455,14 @@ func _note_world_event(event: Dictionary) -> void:
 		return
 	# The Invasion from the sea (M8 part 5).
 	if type == &"invasion_wave":
-		_notes.push(tr("ui.note.invasion_wave") % [int(event["wave"]), int(event["waves"]), int(event["men"]),
-				_province_name(int(event["province"])), maxi(ceili(float(event["seconds"]) / 60.0), 1)])
+		var minutes := maxi(ceili(float(event["seconds"]) / 60.0), 1)
+		var town := _province_name(int(event["province"]))
+		var plunder := tr("ui.note.invasion_plunder") if bool(event.get("plunder", false)) else ""
+		if int(event["waves"]) > 0:
+			_notes.push(tr("ui.note.invasion_wave") % [int(event["wave"]), int(event["waves"]), int(event["men"]),
+					town, minutes] + plunder)
+		else:
+			_notes.push(tr("ui.note.invasion_wave_endless") % [int(event["wave"]), int(event["men"]), town, minutes] + plunder)
 		return
 	if type == &"ruler_storming":
 		_notes.push(tr("ui.note.ruler_storming") % tr("ruler.%s.name" % event["owner"]))
@@ -585,8 +591,17 @@ func _on_sim_event(event: Dictionary) -> void:
 	# The end of a sandbox game (M8 part 1).
 	if event["type"] == &"game_won" or event["type"] == &"game_lost":
 		Game.paused = true
+		var detail := ""
+		if StringName(String(event.get("victory", ""))) == GameSettings.VICTORY_ENDLESS:
+			# The survival mode (M8 part 5): the score and the record on this computer.
+			var waves := int(event.get("waves", 0))
+			var minutes := int(event.get("minutes", 0))
+			var record := SurvivalRecord.submit(waves, minutes)
+			var best := SurvivalRecord.best()
+			detail = tr("ui.result.endless_score") % [waves, minutes] + "\n" + (tr("ui.result.endless_new_record")
+					if record else tr("ui.result.endless_record") % [best[0], best[1]])
 		_result.show_result(event["type"] == &"game_won", StringName(String(event.get("victory", ""))),
-				StringName(String(event.get("winner", ""))))
+				StringName(String(event.get("winner", ""))), detail)
 	_on_battle_event(event)
 	_note_world_event(event)
 	view.on_sim_event(event)

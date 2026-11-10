@@ -213,6 +213,8 @@ func _refresh() -> void:
 		_title.text += "  ·  " + tr("ui.world.goal") % [tr("ui.victory.%s" % sim.world.settings.victory), goal[0], goal[1]]
 	# The Invasion from the sea (M8 part 5): when the next wave sets out.
 	var wave_in := Invasion.seconds_to_next(sim)
+	if sim.world.settings != null and sim.world.settings.victory == GameSettings.VICTORY_ENDLESS:
+		_title.text += "  ·  " + tr("ui.world.endless") % [Victory.survived(sim)[0], Victory.elapsed_minutes(sim)]
 	if wave_in >= 0:
 		_title.text += "  ·  " + tr("ui.world.next_wave") % [sim.world.invasion.wave + 1, wave_in / 60, wave_in % 60]
 	var def := sim.world.def_of(_selected, sim.data)

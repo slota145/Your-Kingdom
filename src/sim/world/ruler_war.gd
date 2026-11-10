@@ -437,11 +437,11 @@ static func target_ok(sim: Simulation, owner: StringName, id: int) -> bool:
 	if other == owner or other == ProvinceDef.OWNER_NONE or other == Army.BANDITS:
 		return false
 	var town := sim.province_state(id)
-	# The raiders go for any town of the player, a camp without a hall too (decided at once
-	# then: there is no door to storm), and in the time of grace too (M8 part 5).
+	# The raiders go for any town of the player (its town hall, or its pioneer camp), in the
+	# time of grace too (M8 part 5).
 	if Rulers.is_raiders(owner):
 		return other == ProvinceDef.OWNER_PLAYER and town != null
-	if town == null or not town.has_seat():
+	if town == null or not town.has_stronghold():
 		return false
 	if other == ProvinceDef.OWNER_PLAYER:
 		if peaceful(sim) or town.grace_until > sim.clock.tick:
@@ -546,16 +546,23 @@ static func assault(sim: Simulation, army: Army) -> void:
 	var owner := sim.world.owner_of(id)
 	var town := sim.province_state(id)
 	if owner == ProvinceDef.OWNER_PLAYER and id == sim.viewed_id and not town.raids.is_active():
-		var entry := Raids.start_army(town, sim.rng.stream(&"raids"), army.units, army.id, true)
+		var entry := Raids.start_army(town, sim.rng.stream(&"raids"), army.units, army.id, not army.plunder, true)
 		if entry != Agent.NO_TILE:
 			army.units.clear()
 			army.entry = entry
 			army.state = Army.State.INSIDE
-			sim.events.emit(&"ruler_storming", {"owner": army.owner, "province": id})
+			sim.events.emit(&"ruler_storming", {"owner": army.owner, "province": id, "plunder": army.plunder})
 			return
 	var result := Armies.battle(sim, army, BattleSide.new(defenders(sim, id)), BattleResolver.Kind.SIEGE,
 			Armies.fort_of(town), id, owner)
 	lose_defenders(sim, id, result.lost_b)
+	if result.a_won() and not army.is_empty() and army.plunder:
+		# A wave that only plunders (the Invasion): it loots like bandits and sails away.
+		army.loot_gold += Raids.loot(town, town.stronghold()) if town.stronghold() != null else 0
+		town.raids.loot_gold = 0
+		sim.events.emit(&"province_raided", {"province": id, "gold": army.loot_gold})
+		army.state = Army.State.IDLE
+		return
 	if result.a_won() and not army.is_empty():
 		take_province(sim, id, army.owner)
 		army.state = Army.State.IDLE
@@ -609,7 +616,7 @@ static func take_province(sim: Simulation, id: int, owner: StringName) -> void:
 			for agent: Agent in town.agents.all():
 				if agent.task != null and agent.task.kind == Task.KIND_SHELTER:
 					TaskRunner.fail(town, agent)
-		var hall := town.seat()
+		var hall := town.stronghold()
 		if hall != null and hall.def.max_hp > 0:
 			hall.hp = hall.def.max_hp
 	for route: TradeRoute in sim.world.routes.values().duplicate():

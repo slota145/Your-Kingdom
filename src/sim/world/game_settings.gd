@@ -24,6 +24,9 @@ const VICTORIES: Array[StringName] = [VICTORY_CONQUEST, VICTORY_PROVINCES, VICTO
 ## holding out (the Invasion from the sea).
 const VICTORY_GOLD := &"gold"
 const VICTORY_SURVIVE := &"survive"
+## The Invasion's survival mode (owner's request 2026-11-10): waves without end, never won;
+## how long the player held out is his score.
+const VICTORY_ENDLESS := &"endless"
 
 ## The gold target of the Merchant islands: chosen 2 000-100 000, 10 000 by default.
 const MIN_GOLD := 2000
@@ -31,6 +34,10 @@ const MAX_GOLD := 100000
 const DEFAULT_GOLD := 10000
 ## The Invasion from the sea is won after this many minutes.
 const SURVIVE_MINUTES := 60
+## Waves of the Invasion that only plunder, by default; PLUNDER_ALL: every wave (owner's request
+## 2026-11-10: chosen in "New game", "only plundering waves" too).
+const DEFAULT_PLUNDER := 2
+const PLUNDER_ALL := 999
 
 const MIN_PROVINCES := 9
 const MAX_PROVINCES := 60
@@ -62,6 +69,9 @@ var victory: StringName = VICTORY_CONQUEST
 var victory_target: int = 0
 ## The gold target of the Merchant islands (M8 part 5).
 var gold_target: int = DEFAULT_GOLD
+## The Invasion: the first waves that only plunder (PLUNDER_ALL: all), and the survival mode.
+var plunder_waves: int = DEFAULT_PLUNDER
+var endless: bool = false
 
 
 ## Makes the settings fit the scenario: the Merchant islands are won by gold, the Invasion from
@@ -72,10 +82,11 @@ func fit_scenario() -> void:
 			victory = VICTORY_GOLD
 			gold_target = clampi(gold_target, MIN_GOLD, MAX_GOLD)
 		INVASION:
-			victory = VICTORY_SURVIVE
+			victory = VICTORY_ENDLESS if endless else VICTORY_SURVIVE
 			rulers = 0
 		_:
-			if victory == VICTORY_GOLD or victory == VICTORY_SURVIVE:
+			endless = false
+			if victory == VICTORY_GOLD or victory == VICTORY_SURVIVE or victory == VICTORY_ENDLESS:
 				victory = VICTORY_CONQUEST
 
 
@@ -118,7 +129,8 @@ func target() -> int:
 func to_dict() -> Dictionary:
 	return {"scenario": String(scenario), "seed": world_seed, "world": String(world_def),
 			"provinces": province_count, "islands": islands, "start": start, "rulers": rulers, "difficulty": difficulty,
-			"victory": String(victory), "target": victory_target, "gold": gold_target}
+			"victory": String(victory), "target": victory_target, "gold": gold_target,
+			"plunder": plunder_waves, "endless": endless}
 
 
 static func from_dict(d: Dictionary) -> GameSettings:
@@ -134,4 +146,6 @@ static func from_dict(d: Dictionary) -> GameSettings:
 	s.victory = StringName(String(d.get("victory", VICTORY_CONQUEST)))
 	s.victory_target = int(d.get("target", 0))
 	s.gold_target = int(d.get("gold", DEFAULT_GOLD))
+	s.plunder_waves = int(d.get("plunder", DEFAULT_PLUNDER))
+	s.endless = bool(d.get("endless", false))
 	return s

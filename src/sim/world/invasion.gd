@@ -1,7 +1,9 @@
 class_name Invasion
 extends RefCounted
 ## The Invasion from the sea (ROADMAP M8 part 5, owner's survey 2026-11-10): the first wave of
-## raiders comes in the 20th minute, then one every 5 minutes, eight in all, each stronger.
+## raiders comes in the 20th minute, then one every 5 minutes, eight in all, each stronger (the
+## survival mode: on without end). The first GameSettings.plunder_waves of them only plunder
+## (they loot like bandits and sail away; owner's request 2026-11-10).
 ## A wave is a fleet of war cogs that sails in from the edge of the world map to a coastal town
 ## of the player (it can be caught at sea by his warships), puts its men ashore and storms the
 ## town: live in the viewed province (with the warning a minute before), at once elsewhere
@@ -29,6 +31,14 @@ const MIX: Array[Array] = [
 ]
 ## From this wave on a ram comes along (taran, owner's survey).
 const RAM_FROM := 5
+## The survival mode (owner's request 2026-11-10): after the eighth, waves come on without
+## end, each about 20% bigger, up to MAX_MEN; past that they get better men instead (more
+## men-at-arms and knights, laddermen and a second ram).
+const ENDLESS_GROWTH := 1.2
+const MAX_MEN := 120
+const MIX_LATE: Array[StringName] = [&"swordsman", &"crossbowman", &"halberdier", &"man_at_arms", &"spearman",
+		&"knight"]
+const MIX_ELITE: Array[StringName] = [&"man_at_arms", &"knight", &"crossbowman", &"halberdier", &"swordsman"]
 ## The war ship of the raiders and the men it carries.
 const SHIP := &"warship"
 ## Seconds a wave waits when the player has no coastal town to attack (an expedition at sea).
@@ -73,7 +83,8 @@ static func update(sim: Simulation) -> void:
 	if state == null or sim.world.result != &"":
 		return
 	_tidy(sim)
-	if state.wave >= WAVE_MEN.size() or sim.clock.tick < state.next_wave:
+	var last := last_wave(sim)
+	if (last >= 0 and state.wave > last) or sim.clock.tick < state.next_wave:
 		return
 	if launch(sim, state.wave) != null:
 		state.wave += 1
@@ -82,17 +93,41 @@ static func update(sim: Simulation) -> void:
 		state.next_wave = sim.clock.tick + SimClock.seconds_to_ticks(RETRY_SECONDS)
 
 
+## Men of wave [param wave] (0-based; past the eighth: the survival mode).
+static func men_of(wave: int) -> int:
+	if wave < WAVE_MEN.size():
+		return WAVE_MEN[maxi(wave, 0)]
+	return mini(roundi(WAVE_MEN[-1] * pow(ENDLESS_GROWTH, wave - WAVE_MEN.size() + 1)), MAX_MEN)
+
+
 ## The units of wave [param wave] (0-based).
 static func units_of(wave: int) -> Dictionary[StringName, int]:
 	var k := clampi(wave, 0, WAVE_MEN.size() - 1)
 	var mix: Array = MIX[k]
+	var capped := wave >= WAVE_MEN.size() and men_of(wave) >= MAX_MEN
+	if wave >= WAVE_MEN.size():
+		mix = MIX_ELITE if capped else MIX_LATE
 	var units: Dictionary[StringName, int] = {}
-	for i: int in WAVE_MEN[k]:
+	for i: int in men_of(wave):
 		var unit: StringName = mix[i % mix.size()]
 		units[unit] = units.get(unit, 0) + 1
 	if wave >= RAM_FROM:
-		units[&"ram"] = 1
+		units[&"ram"] = 2 if capped else 1
+	if wave >= WAVE_MEN.size():
+		units[&"ladderman"] = 2 if not capped else 4
 	return units
+
+
+## Whether wave [param wave] (0-based) only plunders (GameSettings.plunder_waves).
+static func plunders(sim: Simulation, wave: int) -> bool:
+	var settings := sim.world.settings
+	return settings != null and wave < settings.plunder_waves
+
+
+## The last wave there is (0-based); -1: no end (the survival mode).
+static func last_wave(sim: Simulation) -> int:
+	var settings := sim.world.settings
+	return -1 if settings != null and settings.endless else WAVE_MEN.size() - 1
 
 
 ## The coastal towns of the player a wave may go for, sorted: settled (the landing done), with a
@@ -122,8 +157,10 @@ static func launch(sim: Simulation, wave: int) -> Army:
 		var to := towns[(wave + k) % towns.size()]
 		var fleet := _fleet(sim, wave, to)
 		if fleet != null:
-			sim.events.emit(&"invasion_wave", {"province": to, "wave": wave + 1, "waves": WAVE_MEN.size(),
-					"men": fleet.men(), "army": fleet.id, "seconds": ArmyOrders.seconds_left(sim, fleet)})
+			fleet.plunder = plunders(sim, wave)
+			sim.events.emit(&"invasion_wave", {"province": to, "wave": wave + 1,
+					"waves": last_wave(sim) + 1, "men": fleet.men(), "army": fleet.id,
+					"plunder": fleet.plunder, "seconds": ArmyOrders.seconds_left(sim, fleet)})
 			return fleet
 	return null
 
@@ -212,6 +249,7 @@ static func _tidy(sim: Simulation) -> void:
 ## Seconds until the next wave sets out (-1: all are on their way).
 static func seconds_to_next(sim: Simulation) -> int:
 	var state := sim.world.invasion
-	if state == null or state.wave >= WAVE_MEN.size():
+	var last := last_wave(sim)
+	if state == null or (last >= 0 and state.wave > last):
 		return -1
 	return maxi(state.next_wave - sim.clock.tick, 0) / SimClock.TICKS_PER_SECOND

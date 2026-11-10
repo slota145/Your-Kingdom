@@ -136,14 +136,20 @@ func test_rulers_of_the_islands_save_and_sell_their_surplus() -> void:
 
 # --- The Invasion from the sea ------------------------------------------------------------------
 
-## An Invasion game whose landing has a town hall (the waves go for towns with a seat).
-func _invasion() -> Simulation:
+## An Invasion game whose landing has a town hall ([param hall]) or only its pioneer camp;
+## [param plunder]: the first waves that only plunder (0: every wave takes the town).
+func _invasion(plunder: int = 0, hall: bool = true, endless: bool = false) -> Simulation:
 	var problems := PackedStringArray()
-	var sim := Simulation.from_settings(SimFixture.registry(), _settings(GameSettings.INVASION, 5, 2, 16), 1, problems)
+	var s := _settings(GameSettings.INVASION, 5, 2, 16)
+	s.plunder_waves = plunder
+	s.endless = endless
+	s.fit_scenario()
+	var sim := Simulation.from_settings(SimFixture.registry(), s, 1, problems)
 	assert_array(Array(problems)).is_empty()
 	RulerExpansion.found(sim, sim.viewed_id, sim.province)
-	NeutralTown.place(sim.province, SimFixture.registry().get_building(ProvinceSim.SEAT), RulerPlanner.centre(sim.province))
-	assert_bool(sim.province.has_seat()).is_true()
+	if hall:
+		NeutralTown.place(sim.province, SimFixture.registry().get_building(ProvinceSim.SEAT), RulerPlanner.centre(sim.province))
+		assert_bool(sim.province.has_seat()).is_true()
 	return sim
 
 
@@ -322,3 +328,135 @@ func test_scenarios_survive_a_save_and_v30_migrates() -> void:
 	assert_str(String(settings.scenario)).is_equal(String(GameSettings.COLONIZATION))
 	assert_int(settings.gold_target).is_equal(GameSettings.DEFAULT_GOLD)
 	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(31)
+
+
+# --- The owner's requests after part 5 (2026-11-10) --------------------------------------------
+
+## Without a town hall the attackers make for the pioneer camp: its door is what they break and
+## hold; a ruler may march on such a young town too.
+func test_without_a_hall_the_pioneer_camp_is_the_stronghold() -> void:
+	var sim := _invasion(0, false)
+	var camp := sim.province.stronghold()
+	assert_object(camp).is_not_null()
+	assert_str(String(camp.def.id)).is_equal("pioneer_camp")
+	assert_bool(sim.province.has_seat()).is_false()
+	assert_bool(sim.province.has_stronghold()).is_true()
+	assert_int(Armies.fort_of(sim.province).door_hp).is_equal(camp.def.max_hp)
+	assert_bool(Raids.choose_entry(sim.province, sim.rng.stream(&"raids")) != Agent.NO_TILE).is_true()
+	# Looting a young town (a camp keeps no stock of its own) does not fail.
+	sim.treasury.gold = 100
+	assert_int(Raids.loot(sim.province, camp)).is_equal(30)
+	sim.province.raids.loot_gold = 0
+	sim.province.raids.mood_until = 0
+	# The wave storms it live (the camp's door), as it would the hall.
+	sim.world.invasion.next_wave = sim.clock.tick + 1
+	var stormed := false
+	for second: int in 400:
+		sim.run_ticks(SimClock.TICKS_PER_SECOND)
+		for e: Dictionary in sim.events.drain():
+			stormed = stormed or e["type"] == &"ruler_storming"
+		if stormed:
+			break
+	assert_bool(stormed).is_true()
+	assert_bool(sim.province.raids.conquest).is_true()
+	# A hall built later takes over.
+	NeutralTown.place(sim.province, SimFixture.registry().get_building(ProvinceSim.SEAT), RulerPlanner.centre(sim.province))
+	assert_str(String(sim.province.stronghold().def.id)).is_equal(String(ProvinceSim.SEAT))
+
+
+## The first waves (chosen in "New game", 2 by default) only plunder: live like bandits (no
+## conquest), at once they loot gold and goods and leave the town to the player.
+func test_the_first_waves_only_plunder() -> void:
+	assert_int(GameSettings.new().plunder_waves).is_equal(2)
+	var sim := _invasion(2)
+	assert_bool(Invasion.plunders(sim, 1)).is_true()
+	assert_bool(Invasion.plunders(sim, 2)).is_false()
+	sim.world.invasion.next_wave = sim.clock.tick + 1
+	var fleet: Army = null
+	var stormed := false
+	for second: int in 400:
+		sim.run_ticks(SimClock.TICKS_PER_SECOND)
+		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"invasion_wave":
+				fleet = sim.world.armies.get(int(e["army"]))
+				assert_bool(bool(e["plunder"])).is_true()
+			stormed = stormed or e["type"] == &"ruler_storming"
+		if stormed:
+			break
+	assert_bool(fleet != null and stormed).is_true()
+	assert_bool(sim.province.raids.is_active()).is_true()
+	assert_bool(sim.province.raids.conquest).is_false()
+	# A town nobody looks at: looted at once, still the player's, the raiders gone.
+	var other := _second_town(sim)
+	sim.treasury.gold = 1000
+	var army := Army.new()
+	army.id = sim.ids.take()
+	army.owner = Rulers.RAIDERS
+	army.at = other
+	army.state = Army.State.IDLE
+	army.pos = ArmyOrders.stand_point(sim, other)
+	army.add(&"swordsman", 20)
+	army.plunder = true
+	sim.world.armies[army.id] = army
+	RulerWar.assault(sim, army)
+	assert_str(String(sim.world.owner_of(other))).is_equal(String(ProvinceDef.OWNER_PLAYER))
+	assert_int(army.loot_gold).is_greater(0)
+	assert_int(sim.treasury.gold).is_less(1000)
+	sim.run_ticks(SimFixture.ticks(2))
+	assert_bool(sim.world.armies.has(army.id)).is_false()
+	# All waves plunder.
+	var all := _settings(GameSettings.INVASION)
+	all.plunder_waves = GameSettings.PLUNDER_ALL
+	var copy := GameSettings.from_dict(all.to_dict())
+	assert_int(copy.plunder_waves).is_equal(GameSettings.PLUNDER_ALL)
+
+
+## The survival mode: waves past the eighth, bigger up to 120 men and then better men; never
+## won; the defeat tells the waves held off and the minutes; the record is kept.
+func test_survival_mode_sends_waves_without_end() -> void:
+	var sim := _invasion(0, true, true)
+	assert_str(String(sim.world.settings.victory)).is_equal(String(GameSettings.VICTORY_ENDLESS))
+	assert_int(Invasion.last_wave(sim)).is_equal(-1)
+	var last := Invasion.men_of(7)
+	for wave: int in range(8, 30):
+		assert_int(Invasion.men_of(wave)).is_greater_equal(last)
+		assert_int(Invasion.men_of(wave)).is_less_equal(Invasion.MAX_MEN)
+		last = Invasion.men_of(wave)
+	assert_int(Invasion.men_of(25)).is_equal(Invasion.MAX_MEN)
+	assert_int(Invasion.units_of(25).get(&"knight", 0)).is_greater(Invasion.units_of(9).get(&"knight", 0))
+	assert_int(Invasion.units_of(25).get(&"ram", 0)).is_equal(2)
+	# The 9th wave sets out after the 8th; holding out 60 minutes does not end the game.
+	sim.world.invasion.wave = 8
+	sim.world.invasion.next_wave = sim.clock.tick + 1
+	sim.clock.tick = sim.world.invasion.started + SimClock.seconds_to_ticks(61 * 60.0)
+	sim.world.invasion.next_wave = sim.clock.tick + 1
+	var sent := false
+	for i: int in SimFixture.ticks(3):
+		sim.step()
+		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"invasion_wave":
+				sent = true
+				assert_int(int(e["wave"])).is_equal(9)
+				assert_int(int(e["waves"])).is_equal(0)
+	assert_bool(sent).is_true()
+	assert_str(String(sim.world.result)).is_equal("")
+	assert_int(Invasion.seconds_to_next(sim)).is_greater(0)
+	# The last town lost: the score.
+	var lost := {}
+	RulerWar.take_province(sim, sim.viewed_id, Rulers.RAIDERS)
+	for i: int in SimFixture.ticks(2):
+		sim.step()
+		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"game_lost":
+				lost = e
+	assert_str(String(lost.get("victory", ""))).is_equal(String(GameSettings.VICTORY_ENDLESS))
+	assert_int(int(lost["waves"])).is_equal(8)
+	assert_int(int(lost["minutes"])).is_equal(61)
+	# The record on this computer.
+	var path := "user://test_records.cfg"
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	assert_bool(SurvivalRecord.submit(8, 61, path)).is_true()
+	assert_bool(SurvivalRecord.submit(7, 90, path)).is_false()
+	assert_bool(SurvivalRecord.submit(8, 70, path)).is_true()
+	assert_array(SurvivalRecord.best(path)).is_equal([8, 70])
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

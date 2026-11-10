@@ -2796,6 +2796,24 @@ func seat() -> BuildingState:
 	return buildings.get_building(_seat)
 
 
+## What attackers make for and hold (M8 part 5, owner's request 2026-11-10): the finished town
+## hall, else the finished pioneer camp (a young town), else the town hall still being built;
+## null when there is neither.
+func stronghold() -> BuildingState:
+	if has_seat():
+		return seat()
+	for building: BuildingState in buildings.all():
+		if building.def.id == &"pioneer_camp" and building.is_complete():
+			return building
+	return seat()
+
+
+## Whether there is a finished town hall or pioneer camp to attack (and to defend).
+func has_stronghold() -> bool:
+	var keep := stronghold()
+	return keep != null and keep.is_complete()
+
+
 func _refresh_goods_index() -> void:
 	if _goods_index_version == buildings.version:
 		return
