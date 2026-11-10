@@ -23,6 +23,12 @@ RAMPS = {
     "cut": ["#2a1a0c", "#6a4a26", "#a07440", "#c8995a", "#e2bc80", "#f4dcaa"],
     "leaf": ["#06100a", "#16301a", "#244a26", "#346432", "#4a8040", "#6a9e52"],
     "leaf_hi": ["#16301a", "#346432", "#4a8040", "#6a9e52", "#8cba66", "#b0d47e"],
+    "leaf_pale": ["#24401c", "#4a7a32", "#6a9e48", "#8cba60", "#acd27a", "#c8e49a"],
+    "needle": ["#060e0a", "#102a1c", "#1a3e28", "#255234", "#326a42", "#448252"],
+    "needle_hi": ["#102a1c", "#255234", "#326a42", "#448252", "#5a9a62", "#76b07a"],
+    "needle_light": ["#0e1a06", "#2a4410", "#44641c", "#5e8228", "#7a9e36", "#98b84a"],
+    "needle_light_hi": ["#2a4410", "#5e8228", "#7a9e36", "#98b84a", "#b4cc64", "#cce082"],
+    "tuft": ["#0c1408", "#24401a", "#3a5e26", "#527a34", "#6c9444", "#8aae58"],
     "rock": ["#121110", "#3a3834", "#56534c", "#747068", "#948f84", "#b4afa2"],
     "moss": ["#0c1408", "#24401a", "#3a5e26", "#527a34", "#6c9444", "#8aae58"],
     "pig": ["#1e0c0c", "#5a2a2c", "#965052", "#c87a78", "#e4a09a", "#f6c6be"],
@@ -33,9 +39,14 @@ RAMPS = {
 MAT = {
     "bark": {"ramp": "bark", "bands": [2, 5]},
     "bark_dark": {"ramp": "bark", "bands": [1, 2], "outline": False, "line": False},
+    "bark_hi": {"ramp": "bark", "bands": [4, 5], "outline": False, "line": False},
+    "needle": {"ramp": "needle", "bands": [2, 5]},
+    "needle_dark": {"ramp": "needle", "bands": [1, 2], "outline": False, "line": False},
+    "needle_hi": {"ramp": "needle_hi", "bands": [3, 5], "outline": False, "line": False},
+    "tuft": {"ramp": "tuft", "bands": [2, 4]},
     "cut": {"ramp": "cut", "bands": [2, 5]},
     "ring": {"ramp": "cut", "bands": [1, 2], "outline": False, "line": False},
-    "leaf": {"ramp": "leaf", "bands": [2, 5]},
+    "leaf": {"ramp": "leaf", "bands": [1, 5]},
     "leaf_hi": {"ramp": "leaf_hi", "bands": [3, 5], "outline": False, "line": False},
     "leaf_dark": {"ramp": "leaf", "bands": [1, 2], "outline": False, "line": False},
     "rock": {"ramp": "rock", "bands": [1, 5]},
@@ -194,6 +205,88 @@ def pig():
     return bones, parts, channels, anims
 
 
+def clump(rng, c, r, n_bumps=7):
+    """One cloud of leaves: a body and small bumps on its outline (a fluffy edge, not a ball)."""
+    prims = [{"ellipsoid": {"c": r3(c), "r": r3([r, r * 0.8, r])}}]
+    for k in range(n_bumps):
+        a = k * math.tau / n_bumps + rng.uniform(-0.3, 0.3)
+        e = rng.uniform(-0.2, 0.9)
+        rb = r * rng.uniform(0.3, 0.42)
+        prims.append({"sphere": {"c": r3([c[0] + r * 0.85 * math.cos(a) * math.cos(e), c[1] + r * 0.7 * math.sin(e),
+                                          c[2] + r * 0.85 * math.sin(a) * math.cos(e)]), "r": r3(rb)}})
+    return prims
+
+
+def leafy(variant):
+    """Deciduous trees after the owner's oak reference: a thick trunk with bark plates and a root flare,
+    two big limbs showing under the crown, a wide crown of big leaf clouds, each its own part so a dark
+    line runs between them. a = oak (wide), b = linden (rounder, lighter)."""
+    rng = random.Random(21 if variant == "a" else 22)
+    wide = 1.0 if variant == "a" else 0.82
+    parts = {"trunk": {"material": "bark", "blend": 0.08, "prims": [
+        {"tube": {"pts": [[0, 0, 0], [0.04, 0.8, 0.02], [-0.03, 1.5, 0.0]], "r": [0.3, 0.2]}},
+        {"tube": {"pts": [[-0.02, 1.35, 0], [-0.55 * wide, 1.85, 0.15], [-1.0 * wide, 2.15, 0.25]], "r": [0.13, 0.05]}},
+        {"tube": {"pts": [[0.0, 1.45, 0], [0.5 * wide, 1.95, -0.05], [0.95 * wide, 2.25, -0.1]], "r": [0.12, 0.05]}},
+        {"tube": {"pts": [[-0.03, 1.45, 0], [0.0, 2.1, -0.2], [0.05, 2.6, -0.3]], "r": [0.14, 0.06]}}] +
+        [{"cone": {"a": r3([0.18 * math.cos(a), 0.18, 0.18 * math.sin(a)]), "b": r3([0.45 * math.cos(a), 0.0, 0.45 * math.sin(a)]),
+                   "r": [0.11, 0.03]}} for a in (0.3, 1.9, 3.3, 4.8)],
+        "paint": [{"material": "bark_dark", "stripes": {"axis": "x", "period": 0.11, "width": 0.03}},
+                  {"material": "bark_dark", "stripes": {"axis": "y", "period": 0.23, "width": 0.025}},
+                  {"material": "bark_hi", "spots": {"scale": 0.07, "density": 0.22, "seed": 6}}]}}
+    # the clouds: a lower ring hanging over the limbs, a middle ring, a top
+    clouds = []
+    for k in range(5):   # the lower clouds, apart, so the limbs show between them
+        a = k * math.tau / 5 + 0.15
+        clouds.append(([1.15 * wide * math.cos(a), 2.35 + rng.uniform(-0.12, 0.12), 0.95 * wide * math.sin(a)], 0.48 * wide))
+    for k in range(5):
+        a = k * math.tau / 5 + 0.8
+        clouds.append(([0.75 * wide * math.cos(a), 3.05 + rng.uniform(-0.1, 0.1), 0.65 * wide * math.sin(a)], 0.6 * wide))
+    clouds.append(([0.05, 3.75, -0.05], 0.62 * wide))
+    clouds.append(([0.0, 3.0, -0.2], 0.62 * wide))   # the bulk inside, high enough to leave the limbs free
+    for i, (c, r) in enumerate(clouds):
+        parts[f"cloud_{i}"] = {"material": "leaf", "blend": 0.04, "prims": clump(rng, c, r),
+                               "paint": [{"material": "leaf_dark", "spots": {"scale": 0.07, "density": 0.3, "seed": 30 + i}},
+                                         {"material": "leaf_hi", "spots": {"scale": 0.05, "density": 0.16, "seed": 50 + i}}]}
+    parts["grass"] = {"material": "tuft", "prims": [{"cone": {"a": r3([0.5 * math.cos(a), 0, 0.5 * math.sin(a)]),
+                                                             "b": r3([0.55 * math.cos(a), 0.1, 0.55 * math.sin(a)]), "r": [0.05, 0.01]}}
+                                                   for a in [k * 0.7 for k in range(9)]]}
+    return parts
+
+
+def conifer(variant):
+    """Conifers after the owner's reference: stacked, drooping, jagged tiers narrowing to a spire.
+    spruce = dense and dark; pine = fewer tiers with the trunk showing between them; spruce_light = a
+    lighter green, wider at the bottom."""
+    rng = random.Random({"spruce": 31, "pine": 32, "spruce_light": 33}[variant])
+    sparse = variant == "pine"
+    n = 5 if sparse else 8
+    R0 = 1.05 if variant != "spruce_light" else 1.2
+    parts = {"trunk": {"material": "bark", "prims": [{"cone": {"a": [0, 0, 0], "b": [0, 4.5, 0], "r": [0.15, 0.04]}}],
+                       "paint": [{"material": "bark_dark", "stripes": {"axis": "x", "period": 0.09, "width": 0.025}}]}}
+    base = 1.1 if sparse else 0.8
+    top = 4.55
+    for k in range(n):
+        f = k / n
+        y = base + (top - base - 0.35) * f
+        R = R0 * (1 - f) ** 0.85 + 0.12
+        h = (0.55 if not sparse else 0.3) * (1 - 0.4 * f)
+        prims = [{"cone": {"a": r3([0, y + h, 0]), "b": r3([0, y, 0]), "r": r3([0.06, R * 0.75])}}]
+        m = 9
+        for j in range(m):   # drooping branch tips: a jagged outline
+            a = j * math.tau / m + rng.uniform(-0.25, 0.25) + k * 0.5
+            rr = R * rng.uniform(0.85, 1.12)
+            prims.append({"cone": {"a": r3([0.25 * R * math.cos(a), y + h * 0.55, 0.25 * R * math.sin(a)]),
+                                   "b": r3([rr * math.cos(a), y - (0.06 if sparse else 0.12) - 0.08 * rng.random(), rr * math.sin(a)]),
+                                   "r": r3([0.2 * R + 0.05, 0.035])}})
+        parts[f"tier_{k}"] = {"material": "needle", "blend": 0.05, "prims": prims,
+                              "paint": [{"material": "needle_dark", "spots": {"scale": 0.05, "density": 0.25, "seed": 40 + k}},
+                                        {"material": "needle_hi", "spots": {"scale": 0.045, "density": 0.18, "seed": 60 + k}}]}
+    parts["tip"] = {"material": "needle", "prims": [{"cone": {"a": r3([0, top - 0.5, 0]), "b": r3([0, top + 0.25, 0]), "r": [0.14, 0.02]}}]}
+    return parts
+
+
+VARIANTS = {"tree_oak_a": lambda: leafy("a"), "tree_oak_b": lambda: leafy("b"), "tree_spruce": lambda: conifer("spruce"),
+            "tree_pine": lambda: conifer("pine"), "tree_spruce_light": lambda: conifer("spruce_light")}
 TREE = ["tree_grown", "tree_felled", "tree_stump"]
 ROCK = ["rock_grown", "rock_felled", "rock_stump"]
 
@@ -210,8 +303,15 @@ def spec(name):
                  channels=channels, bones=bones, parts=parts, animations=anims)
         d["render"] = dict(d["render"], shading="soft")
     else:
-        parts, cy = (tree if name.startswith("tree") else rock)(name.split("_")[1])
-        common["render"] = dict(common["render"], shading="soft", lines="depth")
+        if name in VARIANTS:   # tree variants after the owner's references: toon, dark outline, lines between clouds/tiers
+            parts = VARIANTS[name]()
+            if "spruce_light" in name:
+                common["ramps"] = dict(RAMPS, needle=RAMPS["needle_light"], needle_hi=RAMPS["needle_light_hi"])
+            if name == "tree_oak_b":
+                common["ramps"] = dict(RAMPS, leaf=RAMPS["leaf_hi"], leaf_hi=RAMPS["leaf_pale"])
+        else:
+            parts, cy = (tree if name.startswith("tree") else rock)(name.split("_")[1])
+            common["render"] = dict(common["render"], shading="soft", lines="depth")
         # frame 96: the tile centre at (48, 80) -> cut to 64x96 at (32, 80)
         d = dict(common, size=96, directions=["se"],
                  camera={"pitch": 30, "scale": K, "center": [0, round(32 * K / math.cos(math.radians(30)), 3), 0]},
@@ -227,7 +327,7 @@ def spec(name):
 
 
 def main():
-    for name in sys.argv[1:] or TREE + ROCK + ["pig"]:
+    for name in sys.argv[1:] or TREE + ROCK + ["pig"] + list(VARIANTS):
         dd = os.path.join(PROPS, name)
         os.makedirs(dd, exist_ok=True)
         text = yaml.safe_dump(spec(name), sort_keys=False, default_flow_style=None, width=140)
