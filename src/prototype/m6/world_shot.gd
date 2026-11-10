@@ -287,7 +287,7 @@ func _storm_shot(sim: Simulation) -> void:
 		var a := p.spawn_agent(&"archer" if k % 2 == 0 else &"spearman", hall.entrance_tile())
 		a.combat = CombatState.new(sim.data.get_unit(a.kind).combat.hp)
 		defenders.append(a)
-	Troops.order_move(p, defenders, hall.entrance_tile() + Vector2i(2, 2))
+	Troops.order_move(p, defenders, hall.entrance_tile() + Vector2i(2, 2), MilitaryNav.GROUND)
 	var wold := sim.world.id_of(&"iron_wold")
 	var near := 0
 	for id: int in sim.world.ids():
@@ -305,7 +305,15 @@ func _storm_shot(sim: Simulation) -> void:
 	army.units = {&"knight": 4, &"swordsman": 6, &"crossbowman": 4, &"halberdier": 4}
 	army.food = army.food_cap()
 	sim.world.armies[army.id] = army
+	# They come in near the town (the picture), not at the far edge of the map.
 	p.raids.entry = Raids.choose_entry(p, sim.rng.stream(&"raids"))
+	var door := hall.entrance_tile()
+	var found := false
+	for r: int in range(12, 20):
+		for t: Vector2i in [door + Vector2i(r, 0), door + Vector2i(0, r), door + Vector2i(-r, 0), door + Vector2i(0, -r)]:
+			if not found and p.grid.is_inside(t) and p.nav.is_walkable(t) and p.grid.occupant(t) == 0:
+				p.raids.entry = t
+				found = true
 	RulerWar.assault(sim, army)
 	var seconds := _field_seconds if _field_seconds > 0.0 else 40.0
 	for i: int in roundi(seconds * SimClock.TICKS_PER_SECOND):
@@ -315,13 +323,14 @@ func _storm_shot(sim: Simulation) -> void:
 		view.on_sim_event(event)
 	view.buildings.refresh_all()
 	var camera := _game.get("camera") as Camera2D
-	var focus := Vector2(hall.entrance_tile())
+	var focus := Vector2.ZERO
 	var n := 0
 	for agent: Agent in p.agents.all():
 		if agent.combat != null and agent.combat.army == army.id:
 			focus += agent.pos
 			n += 1
-	camera.position = IsoMath.grid_to_screen(focus / float(n + 1))
+	focus = (focus / float(maxi(n, 1))).lerp(Vector2(hall.entrance_tile()), 0.4) if n > 0 else Vector2(hall.entrance_tile())
+	camera.position = IsoMath.grid_to_screen(focus)
 	camera.zoom = Vector2.ONE * maxf(_zoom, 2.0)
 	print("storm: %d attackers on the map, door %d/%d" % [n, hall.hp, hall.def.max_hp])
 
