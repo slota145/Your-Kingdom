@@ -18,6 +18,9 @@ const TOWN_HALL := &"town_hall"
 
 const REFRESH := 0.25
 
+## An AI ruler's town is only looked at (M8 part 3): no buttons but "Close".
+var read_only: bool = false
+var _close_button: Button
 var province: ProvinceSim
 var treasury: Treasury
 ## The world (the town hall's expedition of settlers, M6 part 2).
@@ -127,7 +130,8 @@ func _init() -> void:
 	_turn_button.tooltip_text = "ui.building.turn_hint"
 	buttons.add_child(_turn_button)
 	buttons.add_child(UiKit.button("ui.building.demolish", func() -> void: demolish_requested.emit(building_id)))
-	buttons.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
+	_close_button = UiKit.button("ui.close", func() -> void: closed.emit())
+	buttons.add_child(_close_button)
 
 
 func _build_settings(box: VBoxContainer) -> void:
@@ -211,6 +215,8 @@ func show_building(source: ProvinceSim, id: int) -> void:
 	visible = true
 	_timer = REFRESH
 	_refresh()
+	if read_only:
+		UiKit.lock_buttons(self, _close_button)
 
 
 func _process(delta: float) -> void:
@@ -219,6 +225,8 @@ func _process(delta: float) -> void:
 	_timer += delta
 	if _timer >= REFRESH:
 		_refresh()
+		if read_only:
+			UiKit.lock_buttons(self, _close_button)
 	var room := maxf(get_viewport_rect().size.y - position.y - BOTTOM_MARGIN, 120.0)
 	_scroll.custom_minimum_size = Vector2(UiKit.PANEL_WIDTH, minf(_box.get_combined_minimum_size().y, room))
 

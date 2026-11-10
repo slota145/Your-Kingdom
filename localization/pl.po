@@ -4001,3 +4001,48 @@ msgstr "Tej bitwy już nie ma."
 
 msgid "ui.command_error.no_battlefield"
 msgstr "Tu nie da się stoczyć bitwy na żywo."
+
+msgid "ui.world.visit"
+msgstr "Zobacz miasto"
+
+msgid "ui.world.visit_hint"
+msgstr "To miasto władcy. Możesz je obejrzeć, ale nie możesz w nim budować."
+
+msgid "ui.world.demand_rival"
+msgstr "%s też kupuje: zapłacił %d z %d zł"
+
+msgid "ui.ruler.summary"
+msgstr "Prowincje: %d, mieszkańcy: %d, skarbiec: %d zł"
+
+msgid "ui.ruler.building"
+msgstr "Buduje: %s"
+
+msgid "ui.ruler.building_none"
+msgstr "Teraz nic nie buduje"
+
+msgid "ui.ruler.plan"
+msgstr "Rozwój tej prowincji: %d%%"
+
+msgid "ui.ruler.expedition"
+msgstr "Wyprawa osadników płynie lub jedzie do: %s"
+
+msgid "ui.ruler.gathering"
+msgstr "Zbiera osadników na wyprawę"
+
+msgid "ui.ruler.buying"
+msgstr "Wykupuje osadę: %s"
+
+msgid "ui.visit.title"
+msgstr "Miasto władcy: %s (tylko oglądanie)"
+
+msgid "ui.visit.back"
+msgstr "Mapa świata"
+
+msgid "ui.note.ruler_province_settled"
+msgstr "%s zasiedla prowincję: %s."
+
+msgid "ui.note.ruler_settlement_joined"
+msgstr "%s wykupuje osadę: %s."
+
+msgid "ui.note.expedition_turned_back"
+msgstr "Ktoś był pierwszy w prowincji %s. Twoja wyprawa wraca do domu z ludźmi i towarem."

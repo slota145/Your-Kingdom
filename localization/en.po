@@ -3964,3 +3964,48 @@ msgstr "That battle is over."
 
 msgid "ui.command_error.no_battlefield"
 msgstr "No live battle can be fought here."
+
+msgid "ui.world.visit"
+msgstr "View the town"
+
+msgid "ui.world.visit_hint"
+msgstr "This is a ruler's town. You may look at it, but not build in it."
+
+msgid "ui.world.demand_rival"
+msgstr "%s is buying too: paid %d of %d gold"
+
+msgid "ui.ruler.summary"
+msgstr "Provinces: %d, people: %d, treasury: %d gold"
+
+msgid "ui.ruler.building"
+msgstr "Building: %s"
+
+msgid "ui.ruler.building_none"
+msgstr "Building nothing right now"
+
+msgid "ui.ruler.plan"
+msgstr "Growth of this province: %d%%"
+
+msgid "ui.ruler.expedition"
+msgstr "Settlers on their way to: %s"
+
+msgid "ui.ruler.gathering"
+msgstr "Gathering settlers for an expedition"
+
+msgid "ui.ruler.buying"
+msgstr "Buying the settlement: %s"
+
+msgid "ui.visit.title"
+msgstr "Town of %s (looking only)"
+
+msgid "ui.visit.back"
+msgstr "World map"
+
+msgid "ui.note.ruler_province_settled"
+msgstr "%s settles the province: %s."
+
+msgid "ui.note.ruler_settlement_joined"
+msgstr "%s buys the settlement: %s."
+
+msgid "ui.note.expedition_turned_back"
+msgstr "Someone came first to %s. Your expedition goes home with its people and goods."

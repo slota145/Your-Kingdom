@@ -166,6 +166,19 @@ static func title(text: String = "") -> Label:
 	return l
 
 
+## Hides every button under [param root] but [param keep] and stops sliders (an AI ruler's
+## town is only looked at, M8 part 3).
+static func lock_buttons(root: Node, keep: Node) -> void:
+	for child: Node in root.get_children():
+		if child == keep:
+			continue
+		if child is BaseButton:
+			(child as BaseButton).visible = false
+		elif child is Range:
+			(child as Range).editable = false
+		lock_buttons(child, keep)
+
+
 static func button(key: String, on_pressed: Callable) -> Button:
 	var b := Button.new()
 	b.text = key

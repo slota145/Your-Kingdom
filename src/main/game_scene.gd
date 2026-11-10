@@ -49,6 +49,9 @@ var _result: ResultWindow
 var _battle_window: FieldBattleWindow
 var _report_window: BattleReportWindow
 var _field_bar: PanelContainer
+## An AI ruler's town is looked at (M8 part 3): nothing is built, the bar says whose it is.
+var _visit_bar: PanelContainer
+var _visit_title: Label
 var _stocks: KingdomStockWindow
 var _routes: RoutesWindow
 var _world_map: WorldMapScreen
@@ -170,11 +173,22 @@ func _show_province() -> void:
 	# On the battlefield (M8 part 2) nothing is built; the bar offers the retreat.
 	var on_field := sim.viewed_id == Simulation.BATTLEFIELD
 	_field_bar.visible = on_field
-	if on_field:
+	var visiting := _visiting()
+	_visit_bar.visible = visiting
+	_building_panel.read_only = visiting
+	_ship_panel.read_only = visiting
+	if visiting:
+		_visit_title.text = tr("ui.visit.title") % tr("ruler.%s.name" % sim.world.owner_of(sim.viewed_id))
+	if on_field or visiting:
 		_build.visible = false
 		_build_show.visible = false
 	elif not _build.visible and not _build_show.visible:
 		_build.visible = true
+
+
+## Whether the viewed province is an AI ruler's town (only looked at, M8 part 3).
+func _visiting() -> bool:
+	return Rulers.is_ruler(sim.world.owner_of(sim.viewed_id))
 
 
 func _start_tile() -> Vector2i:
@@ -333,6 +347,18 @@ func _build_ui() -> void:
 		if battle != null:
 			_execute(FieldBattleCommand.new(battle.id, FieldBattleCommand.RETREAT))))
 	root.add_child(_field_bar)
+	_visit_bar = PanelContainer.new()
+	_visit_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_visit_bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_visit_bar.position.y = 64
+	_visit_bar.visible = false
+	var visit_row := HBoxContainer.new()
+	visit_row.add_theme_constant_override(&"separation", 12)
+	_visit_bar.add_child(visit_row)
+	_visit_title = UiKit.title("ui.visit.title")
+	visit_row.add_child(_visit_title)
+	visit_row.add_child(UiKit.button("ui.visit.back", func() -> void: _toggle_world_map()))
+	root.add_child(_visit_bar)
 	root.add_child(_ship_panel)
 	_world_map = WorldMapScreen.new()
 	_world_map.visible = false
@@ -410,6 +436,16 @@ func _note_world_event(event: Dictionary) -> void:
 			&"bandit_camp_raised"]:
 		_notes.push(tr("ui.note.%s" % type) % _province_name(int(event["province"])))
 		return
+	# The AI rulers' doings (M8 part 3): only what changes the map is told.
+	var by: StringName = event.get("owner", ProvinceDef.OWNER_PLAYER)
+	if Rulers.is_ruler(by):
+		if type == &"province_settled" or type == &"settlement_joined":
+			_notes.push(tr("ui.note.ruler_%s" % type) % [tr("ruler.%s.name" % by),
+					_province_name(int(event["province"]))])
+		return
+	if type == &"expedition_turned_back":
+		_notes.push(tr("ui.note.expedition_turned_back") % _province_name(int(event["province"])))
+		return
 	if type != &"expedition_departed" and type != &"expedition_arrived" \
 			and type != &"settlement_joined" and type != &"settlement_refused" \
 			and type != &"settlement_asks":
@@ -452,6 +488,8 @@ func _enter_province(id: int) -> void:
 
 ## Shows or hides the build bar (button, B); hiding it drops the tool in hand.
 func _show_build_menu(on: bool) -> void:
+	if on and (_visiting() or sim.viewed_id == Simulation.BATTLEFIELD):
+		return
 	_build.visible = on
 	_build_show.visible = not on
 	if not on:

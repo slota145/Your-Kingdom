@@ -13,6 +13,9 @@ extends Node
 ##   [--m8=armies|choice|field|report] (M8 part 2, made up for the picture: armies and fleets
 ##   anywhere on the map, a battle in the field and a sea battle; the window asking how to fight;
 ##   the live battle on the battlefield after --field_seconds=<s>; the report of a sea battle)
+##   [--m8=rulers|visit --advance=<minutes>] (M8 part 3: a generated world (--seed) run for that
+##   many minutes; the world map with the first ruler's home selected, or his town entered and
+##   looked at, with --building=<id> the panel of his first such building open)
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
 const SETTLE_FRAMES := 10
@@ -33,6 +36,8 @@ var _field_seconds: float = 6.0
 
 
 var _seed: int = 0
+var _advance: int = 0
+var _building: StringName = &""
 var _provinces: int = 22
 var _rulers: int = 3
 ## --zoom=<1..4> (M8 part 1): the world map zoomed in on the player's province.
@@ -63,6 +68,10 @@ func _ready() -> void:
 			_m8 = arg.trim_prefix("--m8=")
 		elif arg.begins_with("--field_seconds="):
 			_field_seconds = float(arg.trim_prefix("--field_seconds="))
+		elif arg.begins_with("--advance="):
+			_advance = int(arg.trim_prefix("--advance="))
+		elif arg.begins_with("--building="):
+			_building = StringName(arg.trim_prefix("--building="))
 		elif arg.begins_with("--seed="):
 			_seed = int(arg.trim_prefix("--seed="))
 		elif arg.begins_with("--provinces="):
@@ -122,7 +131,10 @@ func _process(_delta: float) -> void:
 			_make_routes(sim)
 		if _armies:
 			_make_armies(sim)
-		if _m8 != "":
+		if _m8 == "rulers" or _m8 == "visit":
+			if _rulers_shot(sim):
+				return
+		elif _m8 != "":
 			_make_m8(sim)
 			if _m8 == "field":
 				return
@@ -222,6 +234,32 @@ func _make_armies(sim: Simulation) -> void:
 			Armies.fort_of(sim.province_state(iron)), iron, ProvinceDef.OWNER_NEUTRAL)
 	sim.world.armies.erase(963)
 	sim.events.drain()
+
+
+## M8 part 3: the rulers grow for --advance minutes; "visit" enters the first ruler's town
+## (returns true: no world map), "rulers" selects it on the world map.
+func _rulers_shot(sim: Simulation) -> bool:
+	sim.run_ticks(_advance * 60 * SimClock.TICKS_PER_SECOND)
+	sim.events.drain()
+	var owner: StringName = Rulers.alive(sim.world)[0]
+	var home: int = Rulers.provinces_of(sim.world, owner)[0]
+	if _m8 == "rulers":
+		_select = &""
+		_game.call("_toggle_world_map")
+		(_game.get("_world_map") as WorldMapScreen).select(home)
+		return true
+	_game.call("_enter_province", home)
+	var camera := _game.get("camera") as Camera2D
+	var town := sim.province
+	var at := RulerPlanner.centre(town)
+	for b: BuildingState in town.buildings.all():
+		if _building != &"" and b.def.id == _building:
+			(_game.get("_building_panel") as BuildingPanel).show_building(town, b.id)
+			at = b.origin
+			break
+	camera.position = IsoMath.grid_to_screen(Vector2(at))
+	camera.zoom = Vector2.ONE * maxf(_zoom, 1.0)
+	return true
 
 
 ## M8 part 2: armies and fleets anywhere, a battle in the field, a sea battle.

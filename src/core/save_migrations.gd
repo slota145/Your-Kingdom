@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 28
+const CURRENT_VERSION := 29
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -91,6 +91,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 28:
 		result = migrate_v27_to_v28(result)
 		version = 28
+	if version < 29:
+		result = migrate_v28_to_v29(result)
+		version = 29
 	return result
 
 
@@ -367,6 +370,31 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v28 (M8 part 2): armies have a place on the world map and a way of points instead of a
 ## route of provinces; an army on its way keeps its goal (the town of its last province) and
 ## finds its way again on the next second (Armies._place_old).
+## M8 part 3: every AI ruler gets his treasury (the start gold of the game's difficulty) and
+## his clocks: his first expedition after the usual wait, trade at once. His plan of growth
+## starts where his town is (it is read from the buildings). Expeditions without an owner are
+## the player's (the rulers sent none before).
+static func migrate_v28_to_v29(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	var settings: Dictionary = world.get("settings", {})
+	var level := clampi(int(settings.get("difficulty", GameSettings.NORMAL)), GameSettings.EASY, GameSettings.HARD)
+	var tick := int(state.get("tick", 0))
+	var owners: Array[String] = []
+	for p: Variant in world.get("provinces", []):
+		var owner := String((p as Dictionary).get("owner", ""))
+		if owner.begins_with(Rulers.PREFIX) and not owners.has(owner):
+			owners.append(owner)
+	owners.sort()
+	var rulers: Array = []
+	for owner: String in owners:
+		rulers.append({"owner": owner, "treasury": {"gold": RulerPlanner.START_GOLD[level]},
+				"next_build": {}, "next_trade": tick, "saving_for": 0,
+				"next_expedition": tick + roundi(RulerExpansion.EXPEDITION_MINUTES[level] * 60.0 * SimClock.TICKS_PER_SECOND)})
+	if not rulers.is_empty():
+		world["rulers"] = rulers
+	return state
+
+
 static func migrate_v27_to_v28(state: Dictionary) -> Dictionary:
 	var world: Dictionary = state.get("world", {})
 	for army: Variant in world.get("armies", []):

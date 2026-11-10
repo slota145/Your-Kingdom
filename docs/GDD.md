@@ -441,6 +441,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
   - posiadanie X prowincji,
   - brak warunku (gra wolna).
 - **M8 (ankiety 2026-11-09):** świat generowany z numeru (16–30 prowincji, ten sam numer daje ten sam świat) albo gotowe „Królestwo”; 1–3 władców komputerowych, 3 poziomy trudności; scenariusze: Kolonizacja (bazowy), Podzielony kontynent, Kupieckie wyspy, Najazd z morza; porażka, gdy gracz straci wszystkie prowincje. Armie i floty idą prawym przyciskiem w dowolne miejsce mapy świata i przechwytują wrogów w drodze (bitwa lądowa na żywo na mapie pola albo automatycznie, morska automatycznie). Szczegóły i stan: ROADMAP, M8.
+- **Władcy budują, zasiedlają i handlują (M8, część 3, ankieta 2026-11-10):** każdy władca ma własny skarbiec z podatków swoich mieszkańców. Jego miasta rosną według planu rozwoju (od chat i drwali do warsztatów, portu i koszar); na łatwym ok. 40% wolniej, na trudnym ok. 30% szybciej i z małym zapasem na start. Wysyła wyprawy osadników (lądem wozem, morzem kogą), wykupuje osady neutralne i wozi chleb i drewno do młodych prowincji. O puste prowincje i osady ściga się z graczem: kto pierwszy, ten lepszy (spóźniona wyprawa wraca z ludźmi i towarem, wpłaty przegranych przepadają). Jego wozy, kogi i szlaki widać na mapie świata w jego kolorze. Do miasta władcy można wejść i je oglądać (bez budowania), a panel prowincji na mapie świata mówi, co władca buduje, dokąd wysyła osadników i co wykupuje.
 - **Kampania fabularna**: [PÓŹNIEJ].
 
 ---

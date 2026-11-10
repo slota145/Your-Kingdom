@@ -22,6 +22,8 @@ func _init(from: int, to: int, sea: bool, vehicle_id: int, goods: Array[Dictiona
 
 func validate(sim: Simulation) -> StringName:
 	var error := route_error(sim, from_id, to_id, by_sea)
+	if error == &"" and sim.world.owner_of(from_id) != ProvinceDef.OWNER_PLAYER:
+		error = &"not_your_province"
 	if error != &"":
 		return error
 	if not vehicle_free(sim, from_id, by_sea, vehicle):
@@ -29,7 +31,8 @@ func validate(sim: Simulation) -> StringName:
 	return lines_error(sim, lines)
 
 
-## Why no route can go from [param from] to [param to] this way, or &"".
+## Why no route can go from [param from] to [param to] this way, or &"" (the player's, or an
+## AI ruler's between his provinces: [param from]'s owner).
 static func route_error(sim: Simulation, from: int, to: int, sea: bool) -> StringName:
 	var world := sim.world
 	if world.is_single() or world.get_province(from) == null or world.get_province(to) == null \
@@ -38,8 +41,9 @@ static func route_error(sim: Simulation, from: int, to: int, sea: bool) -> Strin
 	# To a neutral settlement too, while it asks for goods (M6 part 3: buying it).
 	var buying := world.owner_of(to) == ProvinceDef.OWNER_NEUTRAL and world.settlements.has(to) \
 			and not world.settlements[to].goods.is_empty()
-	if world.owner_of(from) != ProvinceDef.OWNER_PLAYER \
-			or (world.owner_of(to) != ProvinceDef.OWNER_PLAYER and not buying) \
+	var owner := world.owner_of(from)
+	if not (owner == ProvinceDef.OWNER_PLAYER or Rulers.is_ruler(owner)) \
+			or (world.owner_of(to) != owner and not buying) \
 			or not sim.runtimes.has(from) or not sim.runtimes.has(to):
 		return &"not_your_province"
 	if sea and not world.sea_route(from, to, sim.data):
@@ -94,12 +98,19 @@ static func lines_error(sim: Simulation, goods: Array[Dictionary]) -> StringName
 
 
 func apply(sim: Simulation) -> void:
+	create(sim, from_id, to_id, by_sea, vehicle, lines)
+
+
+## Sets up the route (checked by [method validate] or, for an AI ruler, by RulerExpansion).
+static func create(sim: Simulation, from_id: int, to_id: int, by_sea: bool, vehicle: int,
+		lines: Array[Dictionary], one_off: bool = false) -> TradeRoute:
 	var route := TradeRoute.new()
 	route.id = sim.ids.take()
 	route.from = from_id
 	route.to = to_id
 	route.by_sea = by_sea
 	route.vehicle = vehicle
+	route.one_off = one_off
 	for entry: Dictionary in lines:
 		route.lines.append(TradeRoute.line(StringName(entry["good"]), int(entry["amount"]), int(entry["below"])))
 	sim.world.routes[route.id] = route
@@ -108,7 +119,9 @@ func apply(sim: Simulation) -> void:
 		(province.ships[vehicle] as ShipUnit).voyage.route = route.id
 	else:
 		province.buildings.get_building(vehicle).lent += 1
-	sim.events.emit(&"route_created", {"route": route.id, "from": from_id, "to": to_id})
+	sim.events.emit(&"route_created", {"route": route.id, "from": from_id, "to": to_id,
+			"owner": sim.world.owner_of(from_id)})
+	return route
 
 
 func get_name() -> StringName:

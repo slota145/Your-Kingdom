@@ -21,9 +21,10 @@ func validate(sim: Simulation) -> StringName:
 
 ## Why an expedition cannot get ready in province [param id] now, or &"" (the town hall and the
 ## world map show the reason on the button).
-static func error_for(sim: Simulation, id: int, sea: bool) -> StringName:
+static func error_for(sim: Simulation, id: int, sea: bool,
+		owner: StringName = ProvinceDef.OWNER_PLAYER) -> StringName:
 	var province := sim.province_state(id)
-	if sim.world.is_single() or province == null or sim.world.owner_of(id) != ProvinceDef.OWNER_PLAYER:
+	if sim.world.is_single() or province == null or sim.world.owner_of(id) != owner:
 		return &"unknown_province"
 	if not province.has_seat():
 		return &"no_town_hall"
@@ -31,7 +32,7 @@ static func error_for(sim: Simulation, id: int, sea: bool) -> StringName:
 		return &"expedition_gathering"
 	if sea and idle_cog(province) == null:
 		return &"no_cog"
-	if not sim.treasury.can_pay(Departure.COST):
+	if not sim.treasury_of(owner).can_pay(Departure.COST):
 		return &"not_enough_gold"
 	var residents := 0
 	for building: BuildingState in province.buildings.all():
@@ -59,10 +60,16 @@ static func idle_cog(province: ProvinceSim) -> ShipUnit:
 
 
 func apply(sim: Simulation) -> void:
-	var province := sim.province_state(province_id)
-	var cog := idle_cog(province) if by_sea else null
-	province.departure = Departure.begin(province, sim.ids.take(), by_sea, cog.id if cog != null else 0)
-	sim.events.emit(&"expedition_prepared", {"province": province_id, "by_sea": by_sea})
+	prepare(sim, province_id, by_sea)
+
+
+## Gets the expedition of province [param id] ready (checked by [method error_for]; the
+## player's, or an AI ruler's: RulerExpansion).
+static func prepare(sim: Simulation, id: int, sea: bool) -> void:
+	var province := sim.province_state(id)
+	var cog := idle_cog(province) if sea else null
+	province.departure = Departure.begin(province, sim.ids.take(), sea, cog.id if cog != null else 0)
+	sim.events.emit(&"expedition_prepared", {"province": id, "by_sea": sea})
 
 
 func get_name() -> StringName:
