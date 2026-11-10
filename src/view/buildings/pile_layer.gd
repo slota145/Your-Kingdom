@@ -40,7 +40,8 @@ func update_yards(buildings: BuildingStore) -> void:
 	var seen: Dictionary[String, bool] = {}
 	for building: BuildingState in buildings.all():
 		var yard := building.yard
-		if yard == null or yard.total_amount() == 0:
+		if yard == null or yard.total_amount() == 0 or building.def.has_pens():
+			# A herd in pens walks in its pen (PenLayer, Z1).
 			continue
 		var herd := building.def.herd_good != &""
 		var tiles: Array[Vector2i] = []

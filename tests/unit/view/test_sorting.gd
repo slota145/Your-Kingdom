@@ -402,3 +402,41 @@ func test_docker_on_ship_deck_sorts_over_ship_and_plank() -> void:
 		# He still stands on the berth tile (the hold is handed over there).
 		var feet := Harbour.gangway_points(port)[2]
 		assert_vector(Vector2i(floori(feet.x), floori(feet.y))).is_equal(port.berth_tile())
+
+
+## Z1: in a pen, every resting animal sorts after the fence behind it (sides -x, -y of its tile) and
+## before the fence in front (sides +x, +y), and stands inside its pen.
+func test_pen_fence_and_animals_sort_correctly() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	var sty := SimFixture.place(sim, &"pigsty", Vector2i(16, 16))
+	for tile: Vector2i in [Vector2i(14, 16), Vector2i(14, 17), Vector2i(13, 17), Vector2i(14, 18)]:
+		assert_str(String(sim.execute(PlaceFieldCommand.new(sty.id, tile)))).is_equal("")
+	sty.yard.add(&"pig", 4)
+	var layer := PenLayer.new()
+	layer.setup(sim.province)
+	for i: int in 200:
+		layer.update_view(0.1)
+	var herd: Array = layer._herds[sty.id]
+	assert_int(herd.size()).is_equal(6)
+	var pen := sim.province.fields.tiles_of(sty.id)
+	for animal: Variant in herd:
+		if animal.walking:
+			continue
+		var sprite: Sprite2D = animal.sprite
+		var tile := IsoMath.tile_at_screen(sprite.position)
+		assert_bool(pen.has(tile)).is_true()
+		for side: Vector2i in Pens.SIDES:
+			var fence: Node2D = layer._fences.get("%d,%d,%d,%d" % [tile.x, tile.y, side.x, side.y])
+			if fence == null:
+				continue
+			if side.x + side.y > 0:
+				assert_float(fence.position.y).is_greater(sprite.position.y)
+			else:
+				assert_float(fence.position.y).is_less(sprite.position.y)
+	# One gate per pen.
+	var gates := 0
+	for key: String in layer._fences:
+		if layer._fences[key].gate != 0:
+			gates += 1
+	assert_int(gates).is_equal(1)
+	layer.free()

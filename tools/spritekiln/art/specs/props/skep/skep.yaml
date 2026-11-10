@@ -1,0 +1,49 @@
+spritekiln: 1
+# Z1 part 3: a straw beehive (skep) on a wooden stand, one per hive tile of an apiary.
+name: skep
+render: {outline: dark, lines: depth+normal, light: classic, shading: toon}
+kind: prop
+size: 64
+directions: [se]
+palette: ../../palettes/kingdom.yaml
+camera: {pitch: 30, scale: 0.05176, center: [0, 0.75, 0]}
+shadow: null
+ramps:
+  straw: ['#1a1208', '#3f2e14', '#6a5022', '#93723a', '#b89650', '#d8b870']
+  cord:  ['#140c06', '#3a2a14', '#5e4422', '#7e5e32']
+  grass: ['#14200c', '#26381a', '#34481e', '#3e5424', '#4a602a']
+brief: {summary: "Your Kingdom beehive: a coiled straw skep with a dark entrance hole, on a small plank stand with a little roof board, in a tile of grass"}
+materials:
+  straw: {ramp: straw, bands: [1, 5]}
+  cord: {ramp: cord, bands: [0, 2], outline: false}
+  plank: {ramp: wood, bands: [1, 4]}
+  ink: {ramp: cord, bands: [0, 0], outline: false}
+channels: {}
+bones: {}
+parts:
+  stand:             # a plank on two short legs
+    material: plank
+    prims:
+      - box: {c: [0, 0.32, 0], half: [0.42, 0.04, 0.42]}
+      - box: {c: [0.3, 0.15, 0], half: [0.05, 0.15, 0.32]}
+      - box: {c: [-0.3, 0.15, 0], half: [0.05, 0.15, 0.32]}
+  skep:              # coiled straw dome
+    material: straw
+    prims:
+      - revolve: {c: [0, 0.36, 0], profile: {bezier: [[0, 0], [0.2, 0], [0.4, 0], [0.43, 0.3], [0.4, 0.5], [0.32, 0.72], [0, 0.76], [0, 0.38]]}}
+    paint:
+      - material: cord
+        stripes: {axis: y, period: 0.12, width: 0.055, offset: 0.4}
+  hole:              # the entrance at the foot, facing the lower right
+    material: ink
+    prims:
+      - box: {c: [0, 0.43, 0.4], half: [0.1, 0.05, 0.04]}
+  cap:               # a knob of straw on the top
+    material: cord
+    prims:
+      - sphere: {c: [0, 1.12, 0], r: 0.08}
+animations:
+  idle:
+    frames: 1
+    ms: 500
+    channels: {}

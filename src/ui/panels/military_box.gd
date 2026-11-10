@@ -162,5 +162,5 @@ static func _available(province: ProvinceSim, good: StringName) -> int:
 			if store != null:
 				sum += store.available(good)
 		if building.def.herd_good == good and building.yard != null:
-			sum -= mini(building.def.herd_keep, building.yard.available(good))
+			sum -= mini(building.herd_keep, building.yard.available(good))
 	return maxi(sum, 0)

@@ -15,6 +15,10 @@ const MAX_RESERVE := 60
 ## A production yard holds this share of a storage slot (half a stack, M4b-2). A herd (a
 ## pigsty's animals) is a yard too.
 const YARD_DIVISOR := 2
+## Herd size at which the work of a herd_work building takes as long as before Z1 part 2.
+const HERD_WORK_BASE := 8.0
+## Hives at which an apiary's work takes as long as before Z1 part 3.
+const HIVE_WORK_BASE := 4.0
 
 var id: int
 var def: BuildingDef
@@ -51,6 +55,19 @@ var serving_until: int = 0
 var plant_area: Array[Vector2i] = []
 ## Herd (pigsty): ticks of breeding towards the next young animal.
 var breed_ticks: int = 0
+## Herd: animals nobody takes, kept for breeding (Z1: the player's slider, from 2 up to the
+## herd's room; starts at def.herd_keep).
+var herd_keep: int = 2
+## Herd with pens (Z1): the starting pair has come (with the first pen tile).
+var herd_given: bool = false
+## Herd with pens (Z1): pen tiles the building owns. Not saved: counted from the field tiles
+## (ProvinceSim.update_herd_room).
+var pens: int = 0
+## Apiary (Z1 part 3): hive tiles it owns. Not saved, counted like [member pens].
+var hives: int = 0
+## Pen tiles the game still places for this building (a sheep farm from a save before v33,
+## ProvinceSim._place_due_pens); 0 = none.
+var pens_due: int = 0
 ## Storage: handcarts bought for its porters (M4b-3, at most def.max_carts).
 var carts: int = 0
 ## Trading post: merchant wagons lent to trade routes (M6 part 3).
@@ -88,6 +105,7 @@ func _init(entity_id: int, building_def: BuildingDef, at: Vector2i, turned: int 
 	origin = at
 	orientation = turned
 	hp = def.max_hp if def != null else 0
+	herd_keep = def.herd_keep if def != null else 2
 
 
 ## Makes a finished building usable: storage, pantry, household.
@@ -159,16 +177,62 @@ func ensure_yard(data: DataRegistry) -> void:
 	if def.herd_good != &"":
 		# A herd is a yard of one slot holding up to herd_capacity animals.
 		yard = Stockpile.new(1, data)
-		yard.stack_limit = def.herd_capacity
-		# A stud farm starts with a pair of horses (M7); a pigsty with none (bought pigs).
-		if def.herd_start > 0:
+		yard.stack_limit = maxi(herd_room(), 1)
+		# A stud farm starts with a pair of horses (M7). A herd in pens gets its pair with
+		# the first pen tile (Z1, ProvinceSim.add_field).
+		if def.herd_start > 0 and not def.has_pens():
 			yard.add(def.herd_good, def.herd_start)
+		give_pair()
 		return
 	var goods := yard_goods(def, data)
 	if goods.is_empty():
 		return
 	yard = Stockpile.new(goods.size(), data)
 	yard.stack_divisor = YARD_DIVISOR
+
+
+## A herd in pens gets its starting pair once (Z1, owner's survey 2026-11-10): when the first
+## pen has room for it next to a finished building. Returns the animals given.
+func give_pair() -> int:
+	# Once the pen has room for the pair (a stud farm: its second tile, one horse a tile).
+	if not def.has_pens() or herd_given or yard == null or pens == 0 or herd_room() < def.herd_start:
+		return 0
+	herd_given = true
+	var pair := def.herd_start
+	if pair > 0:
+		yard.add(def.herd_good, pair)
+	return pair
+
+
+## Animals the herd has room for: 2 per pen tile (Z1), else the building's own capacity.
+func herd_room() -> int:
+	if def.has_pens():
+		return pens * def.pen_animals
+	return def.herd_capacity
+
+
+## Work time of a cycle of a building with def.paced_work() against the time before Z1: with a
+## herd (part 2) 1 with HERD_WORK_BASE animals, slower with fewer (×2 with 2), faster with more
+## (×0.58 with 24); with hives (part 3) 1 with HIVE_WORK_BASE hives (×1.41 with 2, ×0.71 with 8).
+func work_factor() -> float:
+	if def.has_hives():
+		return sqrt(HIVE_WORK_BASE / float(maxi(hives, 1)))
+	var herd := yard.total(def.herd_good) if yard != null and def.herd_good != &"" else 0
+	return sqrt(HERD_WORK_BASE / float(maxi(herd, 1)))
+
+
+## Whether a paced building has what its work needs: animals in the herd, hives.
+func has_work_source() -> bool:
+	if def.has_hives():
+		return hives > 0
+	return yard != null and yard.total(def.herd_good) > 0
+
+
+## Animals of the herd's good others may take: all above the breeding reserve.
+func herd_spare() -> int:
+	if yard == null or def.herd_good == &"":
+		return 0
+	return maxi(yard.available(def.herd_good) - herd_keep, 0)
 
 
 ## What the workers of a building of [param building_def] bring to storages (one yard slot
@@ -320,6 +384,12 @@ func to_dict() -> Dictionary:
 		d["serving_until"] = serving_until
 	if breed_ticks != 0:
 		d["breed"] = breed_ticks
+	if herd_keep != def.herd_keep:
+		d["herd_keep"] = herd_keep
+	if herd_given:
+		d["herd_given"] = true
+	if pens_due != 0:
+		d["pens_due"] = pens_due
 	if carts != 0:
 		d["carts"] = carts
 	if lent != 0:
@@ -385,6 +455,9 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 		b.plant_area.append(SimCodec.to_vec2i(t))
 	b.serving_until = int(d.get("serving_until", 0))
 	b.breed_ticks = int(d.get("breed", 0))
+	b.herd_keep = int(d.get("herd_keep", b.def.herd_keep))
+	b.herd_given = bool(d.get("herd_given", false))
+	b.pens_due = int(d.get("pens_due", 0))
 	b.carts = int(d.get("carts", 0))
 	b.lent = int(d.get("lent", 0))
 	b.recipe_mode = int(d.get("recipe_mode", -1))

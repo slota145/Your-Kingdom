@@ -72,6 +72,9 @@ var _cog_stage: int = -1
 var _launch: float = -1.0
 ## --vineyard (review fix 2026-11-07): a vineyard at --tile with rows of fields in every stage.
 var _vineyard: bool = false
+## --pens (Z1 part 1): two pigsties at --tile with pens (an L of 6 tiles and a 3×3 square) and
+## their pigs; the swineherd walks in (not paused).
+var _pens: bool = false
 var _yards: PackedStringArray = PackedStringArray()
 ## --g1=finished|sites (G1): which half of the pioneer set to lay out; "" = none.
 var _g1: String = ""
@@ -149,6 +152,8 @@ func _ready() -> void:
 			_launch = float(arg.trim_prefix("--launch="))
 		elif arg == "--vineyard":
 			_vineyard = true
+		elif arg == "--pens":
+			_pens = true
 		elif arg.begins_with("--yards="):
 			_yards = arg.trim_prefix("--yards=").split(",")
 		elif arg == "--g2":
@@ -270,6 +275,8 @@ func _arrange() -> void:
 		_place_cogs(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _vineyard:
 		_place_vineyard(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
+	if _pens:
+		_place_pens(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _g2:
 		_place_g2(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _g1 != "":
@@ -544,6 +551,44 @@ func _place_bridges(sim: Simulation, at: Vector2i) -> void:
 		carter.activity = &"walk"
 	var view: ProvinceView = _game.get("view")
 	view.bridges.refresh()
+
+
+## Two pigsties with pens and pigs (--pens, Z1 part 1), a sheep farm and a stud farm with their
+## flocks (part 2).
+func _place_pens(sim: Simulation, at: Vector2i) -> void:
+	var province := sim.province
+	var first := _place_near(sim, &"pigsty", at)
+	if first == null:
+		return
+	for tile: Vector2i in [Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(-1, 2), Vector2i(0, 2), Vector2i(-2, 2), Vector2i(-2, 1)]:
+		sim.execute(PlaceFieldCommand.new(first.id, first.origin + tile))
+	first.yard.add(&"pig", 6)
+	var second := _place_near(sim, &"pigsty", at + Vector2i(6, 0))
+	if second != null:
+		for y: int in 3:
+			for x: int in 3:
+				sim.execute(PlaceFieldCommand.new(second.id, second.origin + Vector2i(3 + x, y - 1)))
+		second.yard.add(&"pig", 8)
+	# Z1 part 2: a sheep farm and a stud farm with their flocks.
+	province.rare_resource = &"horses"
+	var farm := _place_near(sim, &"sheep_farm", at + Vector2i(0, 7))
+	if farm != null:
+		Pens.auto_place(province, farm, 6)
+		farm.yard.add(&"sheep", 8)
+	var stud := _place_near(sim, &"stud_farm", at + Vector2i(7, 7))
+	if stud != null:
+		Pens.auto_place(province, stud, 8)
+		stud.yard.add(&"horse", 4)
+	# Z1 part 3: an apiary with its hives.
+	var apiary := _place_near(sim, &"apiary", at + Vector2i(-6, 7))
+	if apiary != null:
+		Pens.auto_place(province, apiary, 6)
+	for building: BuildingState in [first, second, farm, stud, apiary]:
+		if building == null:
+			continue
+		var worker := province.spawn_agent(building.def.worker_kinds[0], building.entrance_tile())
+		province.assign_worker(worker, building)
+	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(first.origin + Vector2i(2, 1))
 
 
 ## A vineyard with 5 rows of 3 fields in front of it: pruned, budding, leafy, green grapes,

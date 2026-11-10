@@ -14,6 +14,10 @@ extends RefCounted
 ## Goods each storage of the town starts with.
 const STOCK := {&"bread": 12, &"fish": 8, &"beer": 8, &"wood": 20, &"planks": 10, &"stone": 8,
 		&"grain": 6}
+## Pen tiles a pigsty gets (Z1): room for 12 animals, as much as the old pigsty held.
+const AUTO_PENS := 6
+## Hive tiles an apiary gets (Z1 part 3): as fast as an apiary before the hives.
+const AUTO_HIVES := 4
 ## Fields a farm gets (hop farms too).
 const FIELDS := 10
 ## Rings searched around an anchor for a free spot.
@@ -99,6 +103,11 @@ static func place(town: ProvinceSim, def: BuildingDef, near: Vector2i, instant: 
 					var building := town.buildings.get_building(town.grid.occupant(origin))
 					if def.id == &"farm" or def.id == &"hop_farm":
 						_fields(town, building, FIELDS if instant else def.max_fields)
+					elif def.has_pens():
+						# A herd gets its pen at once (Z1).
+						Pens.auto_place(town, building, AUTO_PENS)
+					elif def.has_hives():
+						Pens.auto_place(town, building, AUTO_HIVES)
 					return building
 	return null
 
@@ -323,6 +332,10 @@ static func _place_gate(sim: Simulation, town: ProvinceSim, ring: Array[Vector2i
 			var d := def.door_dir(orientation)
 			var along := Vector2i(d.y, d.x).abs()
 			if not (on_ring.has(tile - along) and on_ring.has(tile + along)):
+				continue
+			# Through the gate, not into more wall: where the ring runs two tiles thick (a bend),
+			# the tiles in and out of the passage are ring too.
+			if on_ring.has(tile + d) or on_ring.has(tile - d):
 				continue
 			# The middle of its passage on the ring tile.
 			var passage := def.passage_at(orientation)

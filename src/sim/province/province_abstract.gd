@@ -300,7 +300,8 @@ func _work() -> void:
 		var cycle := WorkCycle.of(building.def, detail.data)
 		if not cycle.is_productive():
 			continue
-		if not _rates.has(building.id):
+		# A flock's pace changes with its size (Z1 part 2): never kept.
+		if not _rates.has(building.id) or building.def.paced_work():
 			_rates[building.id] = cycles_per_second(building)
 		var per_second: float = _rates[building.id]
 		if per_second <= 0.0:
@@ -319,7 +320,7 @@ func _work() -> void:
 ## (ProductionLog), else estimated from the work and the walks (ARCHITECTURE §7.1).
 func cycles_per_second(building: BuildingState) -> float:
 	var cycle := WorkCycle.of(building.def, detail.data)
-	var measured := detail.production.rate(building.id)
+	var measured := detail.production.rate(building.id) if not building.def.paced_work() else 0.0
 	if measured > 0.0:
 		return measured / maxf(cycle.primary_amount, 1.0)
 	return 1.0 / estimated_cycle_seconds(building)
@@ -330,7 +331,13 @@ func cycles_per_second(building: BuildingState) -> float:
 func estimated_cycle_seconds(building: BuildingState) -> float:
 	var cycle := WorkCycle.of(building.def, detail.data)
 	var walk := _walk_to_storage(building)
-	var seconds := cycle.work_seconds + cycle.trips * 2.0 * walk / Movement.BASE_SPEED
+	var work := cycle.work_seconds
+	if building.def.paced_work():
+		# A flock shears faster when bigger, and gives nothing without sheep (Z1 part 2).
+		if not building.has_work_source():
+			return INF
+		work *= building.work_factor()
+	var seconds := work + cycle.trips * 2.0 * walk / Movement.BASE_SPEED
 	if cycle.gather != &"" and not cycle.by_sea:
 		seconds += 2.0 * maxf(building.def.work_radius / 2.0, 1.0) / Movement.BASE_SPEED
 	if cycle.by_sea:
@@ -485,7 +492,7 @@ func _keep(id: int, good: StringName) -> int:
 	if id >= 0:
 		return 0
 	var building := detail.buildings.get_building(-id)
-	return building.def.herd_keep if building != null and building.def.herd_good == good else 0
+	return building.herd_keep if building != null and building.def.herd_good == good else 0
 
 
 ## The next tile of the forester's marked area (or work area) where a sapling may go,

@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_bld")
 category = &"food"
-footprint = Vector2i(3, 3)
-entrance = Vector2i(1, 2)
+footprint = Vector2i(2, 2)
+entrance = Vector2i(1, 1)
 build_cost = Dictionary[StringName, int]({
 &"wood": 8,
 &"planks": 2
@@ -16,5 +16,8 @@ build_time = 22.0
 worker_kinds = Array[StringName]([&"swineherd"])
 recipe = ExtResource("2_recipe")
 herd_good = &"pig"
-herd_capacity = 12
+herd_capacity = 24
+herd_start = 2
+max_pens = 12
+work_radius = 4
 id = &"pigsty"

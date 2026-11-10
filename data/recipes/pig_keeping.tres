@@ -9,6 +9,10 @@
 script = ExtResource("3_goto")
 target = &"workplace"
 
+[sub_resource type="Resource" id="to_pen"]
+script = ExtResource("3_goto")
+target = &"pen"
+
 [sub_resource type="Resource" id="feed"]
 script = ExtResource("4_work")
 activity = &"feed"
@@ -23,5 +27,5 @@ spot = &"pen"
 
 [resource]
 script = ExtResource("1_recipe")
-steps = Array[ExtResource("7_stepdef")]([SubResource("go_home"), SubResource("feed"), SubResource("muck")])
+steps = Array[ExtResource("7_stepdef")]([SubResource("go_home"), SubResource("to_pen"), SubResource("feed"), SubResource("muck")])
 id = &"pig_keeping"

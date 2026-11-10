@@ -50,6 +50,9 @@ func test_stud_farm_only_with_pastures_and_starts_with_a_pair() -> void:
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"stud_farm", Vector2i(10, 10))))).is_equal("needs_horses")
 	sim.province.rare_resource = &"horses"
 	var farm := SimFixture.place(sim, &"stud_farm", Vector2i(10, 10))
+	# The pair comes with the first pen tile (Z1 part 2).
+	assert_int(farm.yard.total(&"horse")).is_equal(0)
+	assert_int(Pens.auto_place(sim.province, farm, 2)).is_equal(2)
 	assert_int(farm.yard.total(&"horse")).is_equal(2)
 
 

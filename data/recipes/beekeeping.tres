@@ -11,17 +11,23 @@
 script = ExtResource("3_goto")
 target = &"workplace"
 
+[sub_resource type="Resource" id="to_hive"]
+script = ExtResource("3_goto")
+target = &"hive"
+
+[sub_resource type="Resource" id="to_hive_2"]
+script = ExtResource("3_goto")
+target = &"hive"
+
 [sub_resource type="Resource" id="tend"]
 script = ExtResource("4_work")
 activity = &"tend_hives"
 duration = 8.0
-spot = &"hives"
 
 [sub_resource type="Resource" id="collect"]
 script = ExtResource("4_work")
 activity = &"collect_honey"
 duration = 5.0
-spot = &"hives"
 
 [sub_resource type="Resource" id="produce"]
 script = ExtResource("5_produce")
@@ -33,5 +39,5 @@ script = ExtResource("6_deliver")
 
 [resource]
 script = ExtResource("1_recipe")
-steps = Array[ExtResource("7_stepdef")]([SubResource("go_home"), SubResource("tend"), SubResource("collect"), SubResource("produce"), SubResource("deliver")])
+steps = Array[ExtResource("7_stepdef")]([SubResource("go_home"), SubResource("to_hive"), SubResource("tend"), SubResource("to_hive_2"), SubResource("collect"), SubResource("produce"), SubResource("deliver")])
 id = &"beekeeping"

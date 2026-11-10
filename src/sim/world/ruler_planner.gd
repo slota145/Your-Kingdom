@@ -25,6 +25,8 @@ const PLAN: Array[Array] = [
 	[&"hut", 18], [&"tailor", 1], [&"fishing_hut", 2], [&"tavern", 1], [&"bakery", 2],
 	[&"mill", 2], [&"farm", 3], [&"hut", 22], [&"church", 1],
 	[&"stockpile", 3], [&"hut", 26], [&"pigsty", 1], [&"slaughterhouse", 1], [&"hut", 30],
+	# Z1 part 4: an apiary with its hives (NeutralTown.place gives it 4) and mead for the tavern.
+	[&"apiary", 1], [&"meadery", 1],
 ]
 ## Plan entries looked at each time (the first ones the province lacks).
 const LOOK_AHEAD := 3

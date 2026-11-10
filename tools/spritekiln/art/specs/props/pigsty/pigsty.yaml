@@ -1,0 +1,220 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+name: pigsty
+render: {outline: dark, lines: depth+normal, light: classic, shading: toon}   # like the other SpriteKiln buildings (woodcutter_hut): one dark outline, hard steps
+kind: prop
+size: 192
+directions: [se]          # yaw 45: the 2x2 plot becomes the game's diamond; +z = game +x (door wall), +x = game -y
+palette: ../../palettes/kingdom.yaml
+camera: {pitch: 30, scale: 0.05176, center: [0, 1.55, 0]}
+shadow: null
+ramps:
+  straw:  ['#1a1208', '#3f2e14', '#6a5022', '#93723a', '#b89650', '#d8b870']
+  hay:    ['#1c1406', '#4a3812', '#7a6020', '#a88a34', '#cdb050', '#ecd47a']
+  mud:    ['#120c08', '#2a1c12', '#3e2a1a', '#523a24', '#664a30']
+  slop:   ['#140e08', '#3a2a16', '#5a4424', '#7a5e34']
+  wicker: ['#1a1006', '#4a3216', '#74522a', '#9a7038', '#be9250']
+
+brief:
+  summary: "Your Kingdom pigsty (Z1), 2x2 tiles, no pen of its own (the pens are tiles beside it): a plank hut with a thick thatched gable roof on the back half, the door in the wall facing the lower right, an open lean-to with hay bales and sacks, a trough with slop, feed baskets, a bucket and a pitchfork in the muddy yard"
+  must_keep: ["footprint 2x2 tiles (4.69 x 4.69 units)", "door on the +z wall at game y about 1.25 (model x -0.59)", "yard tile in front (game x 1..2) free to walk"]
+
+materials:
+  plank: {ramp: wood, bands: [2, 5]}
+  board: {ramp: log, bands: [2, 5]}
+  post: {ramp: log, bands: [1, 3]}
+  thatch: {ramp: straw, bands: [1, 5]}
+  thatch_dark: {ramp: straw, bands: [0, 2]}
+  stone: {ramp: stone}
+  dirt: {ramp: dirt, outline: false}
+  mud: {ramp: mud, outline: false}
+  hay: {ramp: hay, bands: [2, 5]}
+  sack: {ramp: bone, bands: [3, 5]}
+  slop: {ramp: slop, outline: false}
+  wicker: {ramp: wicker, bands: [2, 4]}
+  steel: {ramp: steel, finish: metal}
+  ink: {ramp: log, bands: [0, 1], outline: false}
+
+channels: {}
+bones: {}
+
+parts:
+  yard:
+    material: dirt
+    prims:
+      - box: {c: [0, 0.01, 0], half: [2.30, 0.01, 2.30]}
+  puddle:
+    material: mud
+    prims:
+      - ellipsoid: {c: [0.55, 0.012, 1.25], r: [0.75, 0.012, 0.45]}
+      - ellipsoid: {c: [-0.35, 0.012, 1.75], r: [0.45, 0.012, 0.3]}
+  plinth:
+    material: stone
+    prims:
+      - box: {c: [0.42, 0.07, -1.0], half: [1.62, 0.07, 1.03], round: 0.02}
+    paint:
+      - material: ink
+        grid: {axes: [x, z], spacing: [0.35, 0.35], r: 0.022}
+  walls:             # vertical boards
+    material: board
+    prims:
+      - box: {c: [0.42, 1.05, -1.0], half: [1.55, 0.92, 0.97]}
+    paint:
+      - material: ink
+        stripes: {axis: x, period: 0.22, width: 0.055}
+      - material: ink
+        stripes: {axis: z, period: 0.22, width: 0.055}
+  posts:             # corner posts and a sill and a wall plate of darker timber
+    material: post
+    prims:
+      - box: {c: [1.97, 1.05, 0.0], half: [0.08, 0.94, 0.08]}
+      - box: {c: [-1.13, 1.05, 0.0], half: [0.08, 0.94, 0.08]}
+      - box: {c: [1.97, 1.05, -2.0], half: [0.08, 0.94, 0.08]}
+      - box: {c: [0.42, 1.94, 0.0], half: [1.62, 0.07, 0.07]}
+      - box: {c: [0.42, 0.2, 0.0], half: [1.62, 0.06, 0.06]}
+      - box: {c: [1.97, 1.94, -1.0], half: [0.07, 0.07, 1.03]}
+  gables:
+    material: plank
+    prims:
+      - extrude: {c: [1.94, 1.97, -1.0], rot: [0, 1.5708, 0], depth: 0.1,
+                  profile: {polygon: [[-1.0, 0], [1.0, 0], [0, 1.1]]}}
+      - extrude: {c: [-1.10, 1.97, -1.0], rot: [0, 1.5708, 0], depth: 0.1,
+                  profile: {polygon: [[-1.0, 0], [1.0, 0], [0, 1.1]]}}
+    paint:
+      - material: ink
+        stripes: {axis: z, period: 0.22, width: 0.055}
+  vent:              # a little round hole under the ridge in the gable
+    material: ink
+    prims:
+      - box: {c: [2.0, 2.45, -1.0], half: [0.03, 0.12, 0.12]}
+  roof_front:        # thick thatch, eaves well over the door wall
+    material: thatch
+    blend: 0.03
+    prims:
+      - box: {c: [0.42, 2.49, -0.33], half: [1.85, 0.11, 0.92], rot: [0.80, 0, 0], round: 0.05}
+    paint:
+      - material: thatch_dark
+        spots: {scale: 0.12, density: 0.28, seed: 3}
+      - material: thatch_dark
+        spots: {scale: 0.06, density: 0.2, seed: 11}
+  eave:              # the cut edge of the thatch over the door wall
+    material: thatch_dark
+    prims:
+      - cylinder: {a: [-1.43, 1.78, 0.33], b: [2.27, 1.78, 0.33], r: 0.09}
+  roof_back:
+    material: thatch
+    blend: 0.03
+    prims:
+      - box: {c: [0.42, 2.49, -1.67], half: [1.85, 0.11, 0.92], rot: [-0.80, 0, 0], round: 0.05}
+    paint:
+      - material: thatch_dark
+        spots: {scale: 0.12, density: 0.28, seed: 4}
+  ridge:             # bound straw along the ridge
+    material: thatch_dark
+    prims:
+      - cylinder: {a: [-1.45, 3.15, -1.0], b: [2.29, 3.15, -1.0], r: 0.13}
+    paint:
+      - material: ink
+        stripes: {axis: x, period: 0.45, width: 0.06}
+  door:
+    material: plank
+    prims:
+      - box: {c: [-0.59, 0.86, 0.0], half: [0.34, 0.68, 0.035]}
+    paint:
+      - material: ink
+        stripes: {axis: x, period: 0.17, width: 0.055}
+  door_frame:
+    material: post
+    prims:
+      - box: {c: [-0.98, 0.9, 0.02], half: [0.06, 0.76, 0.06]}
+      - box: {c: [-0.20, 0.9, 0.02], half: [0.06, 0.76, 0.06]}
+      - box: {c: [-0.59, 1.6, 0.02], half: [0.45, 0.06, 0.06]}
+  door_bands:
+    material: steel
+    prims:
+      - box: {c: [-0.59, 0.5, 0.045], half: [0.30, 0.03, 0.01]}
+      - box: {c: [-0.59, 1.2, 0.045], half: [0.30, 0.03, 0.01]}
+  window:            # a small shuttered hatch
+    material: ink
+    prims:
+      - box: {c: [1.15, 1.25, 0.0], half: [0.24, 0.2, 0.03]}
+  shutter:
+    material: plank
+    prims:
+      - box: {c: [1.52, 1.25, 0.12], half: [0.12, 0.2, 0.02], rot: [0, 0.6, 0]}
+  shed_roof:         # open lean-to at the -x end (game y 1.5..1.9)
+    material: thatch
+    blend: 0.02
+    prims:
+      - box: {c: [-1.68, 1.62, -1.0], half: [0.66, 0.08, 1.12], rot: [0, 0, 0.45], round: 0.04}
+    paint:
+      - material: thatch_dark
+        spots: {scale: 0.12, density: 0.28, seed: 5}
+  shed_posts:
+    material: post
+    prims:
+      - cylinder: {a: [-2.15, 0.0, 0.0], b: [-2.15, 1.44, 0.0], r: 0.06}
+      - cylinder: {a: [-2.15, 0.0, -1.95], b: [-2.15, 1.44, -1.95], r: 0.06}
+      - box: {c: [-2.15, 1.41, -1.0], half: [0.06, 0.05, 1.05]}
+  hay:               # bales under the lean-to
+    material: hay
+    prims:
+      - box: {c: [-1.62, 0.22, -1.35], half: [0.36, 0.22, 0.5], round: 0.05}
+      - box: {c: [-1.62, 0.62, -1.45], half: [0.33, 0.19, 0.42], round: 0.05}
+    paint:
+      - material: ink
+        stripes: {axis: z, at: [-1.6, -1.1], width: 0.055}
+  sacks:
+    material: sack
+    blend: 0.04
+    prims:
+      - ellipsoid: {c: [-1.55, 0.25, -0.45], r: [0.24, 0.27, 0.22]}
+      - ellipsoid: {c: [-1.9, 0.22, -0.35], r: [0.21, 0.23, 0.2]}
+  trough:            # a plank trough with slop in the yard
+    material: plank
+    prims:
+      - box: {c: [1.15, 0.17, 1.15], half: [0.62, 0.17, 0.24]}
+    cut:
+      - box: {c: [1.15, 0.30, 1.15], half: [0.54, 0.16, 0.16]}
+  slop:
+    material: slop
+    prims:
+      - box: {c: [1.15, 0.24, 1.15], half: [0.54, 0.02, 0.16]}
+  baskets:           # wicker baskets of feed by the door
+    material: wicker
+    prims:
+      - cylinder: {a: [-1.5, 0.0, 0.6], b: [-1.5, 0.24, 0.6], r: 0.27}
+      - cylinder: {a: [-1.95, 0.0, 1.05], b: [-1.95, 0.2, 1.05], r: 0.23}
+    paint:
+      - material: ink
+        rings: {axis: y, period: 0.09, width: 0.055}
+  feed:
+    material: hay
+    prims:
+      - ellipsoid: {c: [-1.5, 0.25, 0.6], r: [0.23, 0.07, 0.23]}
+      - ellipsoid: {c: [-1.95, 0.21, 1.05], r: [0.19, 0.06, 0.19]}
+  bucket:
+    material: plank
+    prims:
+      - cylinder: {a: [0.2, 0.0, 0.45], b: [0.2, 0.28, 0.45], r: 0.15}
+    paint:
+      - material: steel
+        rings: {axis: y, period: 0.14, width: 0.055}
+  fork_haft:         # a pitchfork leaning on the wall right of the door
+    material: post
+    priority: 2
+    prims:
+      - cylinder: {a: [0.25, 0.0, 0.32], b: [0.12, 1.55, 0.08], r: 0.03}
+  fork_tines:
+    material: steel
+    priority: 2
+    prims:
+      - box: {c: [0.12, 1.62, 0.08], half: [0.11, 0.02, 0.02]}
+      - cylinder: {a: [0.03, 1.62, 0.08], b: [0.03, 1.85, 0.06], r: 0.018}
+      - cylinder: {a: [0.21, 1.62, 0.08], b: [0.21, 1.85, 0.06], r: 0.018}
+
+animations:
+  idle:
+    frames: 1
+    ms: 500
+    channels: {}

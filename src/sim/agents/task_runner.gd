@@ -13,7 +13,7 @@ const RETRY_TICKS := 30
 ## plant): 10 s. The worker stands idle either way; looking again costs a search of the
 ## whole work area (M4b-3).
 const IDLE_RETRY_TICKS := 100
-const NOTHING_TO_DO: Array[StringName] = [&"no_resource", &"no_plant_spot", &"no_order", &"no_boat"]
+const NOTHING_TO_DO: Array[StringName] = [&"no_resource", &"no_plant_spot", &"no_order", &"no_boat", &"no_pen", &"no_animals", &"no_hive"]
 
 static var _executors: Dictionary[StringName, TaskStep] = {}
 static var _transport_steps: Array[StepDef] = []

@@ -110,12 +110,12 @@ func _init(simulation: Simulation) -> void:
 		{"at": 2700, "build": &"forester", "near": town + Vector2i(-10, 6)},
 		{"at": 2760, "build": &"clay_pit", "near": town + Vector2i(21, 3)},
 		{"at": 2820, "build": &"brickworks", "near": town + Vector2i(16, -2)},
-		{"at": 2880, "build": &"sheep_farm", "near": town + Vector2i(-12, 12)},
-		{"at": 2880, "build": &"apiary", "near": town + Vector2i(18, 24)},
+		{"at": 2880, "build": &"sheep_farm", "near": town + Vector2i(-12, 12), "fields": 4},
+		{"at": 2880, "build": &"apiary", "near": town + Vector2i(18, 24), "fields": 4},
 		{"at": 2940, "build": &"weaver", "near": town + Vector2i(-6, 12)},
-		{"at": 2940, "build": &"apiary", "near": town + Vector2i(12, 25)},
+		{"at": 2940, "build": &"apiary", "near": town + Vector2i(12, 25), "fields": 4},
 		{"at": 3000, "build": &"tailor", "near": town + Vector2i(-3, 12)},
-		{"at": 3000, "build": &"sheep_farm", "near": town + Vector2i(-14, 17)},
+		{"at": 3000, "build": &"sheep_farm", "near": town + Vector2i(-14, 17), "fields": 4},
 		{"at": 3060, "build": &"meadery", "near": town + Vector2i(8, -14)},
 		{"at": 3120, "build": &"tavern", "near": town + Vector2i(8, 21)},
 		{"at": 3180, "build": &"hut", "near": town + Vector2i(-2, 19)},
@@ -125,9 +125,9 @@ func _init(simulation: Simulation) -> void:
 		{"at": 3300, "build": &"hop_farm", "near": town + Vector2i(-4, 26), "fields": 12},
 		{"at": 3360, "build": &"brewery", "near": town + Vector2i(-2, -14)},
 		{"at": 3600, "build": &"meadery", "near": town + Vector2i(12, -14)},
-		{"at": 3600, "build": &"apiary", "near": town + Vector2i(22, 24)},
+		{"at": 3600, "build": &"apiary", "near": town + Vector2i(22, 24), "fields": 4},
 		# M4b-2: meat (pigs bought from the travelling merchant) and selling surplus to him.
-		{"at": 1500, "build": &"pigsty", "near": town + Vector2i(-14, 22)},
+		{"at": 1500, "build": &"pigsty", "near": town + Vector2i(-14, 22), "fields": 6},
 		{"at": 1560, "build": &"slaughterhouse", "near": town + Vector2i(-9, 23)},
 		{"at": 1560, "buy_pigs": 3},
 		{"at": 1560, "sell": {&"hides": 0, &"planks": 60, &"stone": 60}},
@@ -257,6 +257,10 @@ func _do(action: Dictionary) -> void:
 	if action.has("priority"):
 		sim.execute(SetPriorityCommand.new(building.id, int(action["priority"])))
 	var fields := int(action.get("fields", 0))
+	if def.has_tiles():
+		# A pen or the hives in one piece beside the building (Z1).
+		Pens.auto_place(sim.province, building, fields)
+		fields = 0
 	for r: int in range(1, def.work_radius + 1):
 		for y: int in range(spot.y - r, spot.y + def.footprint.y + r):
 			for x: int in range(spot.x - r, spot.x + def.footprint.x + r):

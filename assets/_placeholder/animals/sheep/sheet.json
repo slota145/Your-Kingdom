@@ -1,0 +1,21 @@
+{
+ "anims": {
+  "graze": {
+   "frames": 8,
+   "ms": 120
+  },
+  "idle": {
+   "frames": 8,
+   "ms": 120
+  },
+  "walk": {
+   "frames": 8,
+   "ms": 120
+  }
+ },
+ "foot": [
+  16,
+  21
+ ],
+ "frame": 32
+}

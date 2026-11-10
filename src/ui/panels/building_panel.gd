@@ -37,7 +37,8 @@ var _look_button: Button
 var _turn_button: Button
 var _plant_button: Button
 var _plant_clear_button: Button
-var _pig_button: Button
+## Market: a "buy" button per animal the merchant sells (Merchant.ANIMALS, Z1 part 2).
+var _animal_buttons: Dictionary[StringName, Button] = {}
 var _trade_button: Button
 var _expedition: ExpeditionBox
 var _priority_buttons: Array[Button] = []
@@ -48,6 +49,10 @@ var _cart_row: HFlowContainer
 var _cart_label: Label
 var _cart_button: Button
 var _keep_box: VBoxContainer
+## Herd (Z1): the breeding reserve slider.
+var _herd_box: VBoxContainer
+var _herd_label: Label
+var _herd_slider: HSlider
 ## Input goods the keep sliders are built for, and a slider per good.
 var _keep_goods: Array[StringName] = []
 var _keep_sliders: Dictionary[StringName, HSlider] = {}
@@ -107,9 +112,10 @@ func _init() -> void:
 		var none: Array[Vector2i] = []
 		command_requested.emit(SetPlantAreaCommand.new(building_id, none)))
 	buttons.add_child(_plant_clear_button)
-	_pig_button = UiKit.button("", func() -> void: command_requested.emit(BuyPigCommand.new()))
-	_pig_button.tooltip_text = "ui.market.buy_pig_hint"
-	buttons.add_child(_pig_button)
+	for animal: StringName in Merchant.ANIMALS:
+		var button := UiKit.button("", func() -> void: command_requested.emit(BuyAnimalCommand.new(animal)))
+		buttons.add_child(button)
+		_animal_buttons[animal] = button
 	_trade_button = UiKit.button("ui.market.trade", func() -> void: stocks_requested.emit())
 	buttons.add_child(_trade_button)
 	_pause_button = UiKit.button("ui.building.pause", func() -> void:
@@ -174,6 +180,19 @@ func _build_settings(box: VBoxContainer) -> void:
 	_cart_row.add_child(_cart_button)
 	_keep_box = VBoxContainer.new()
 	box.add_child(_keep_box)
+	_herd_box = VBoxContainer.new()
+	box.add_child(_herd_box)
+	_herd_label = UiKit.label()
+	_herd_box.add_child(_herd_label)
+	_herd_slider = HSlider.new()
+	_herd_slider.min_value = SetHerdKeepCommand.MIN_KEEP
+	_herd_slider.step = 1
+	_herd_slider.custom_minimum_size.x = UiKit.PANEL_WIDTH - 24.0
+	_herd_slider.tooltip_text = "ui.herd.keep_hint"
+	_herd_slider.value_changed.connect(func(value: float) -> void:
+		_herd_label.text = tr("ui.herd.keep") % int(value)
+		command_requested.emit(SetHerdKeepCommand.new(building_id, int(value))))
+	_herd_box.add_child(_herd_slider)
 	_tax_box = VBoxContainer.new()
 	box.add_child(_tax_box)
 	_tax_label = UiKit.label()
@@ -253,6 +272,12 @@ func _refresh() -> void:
 			lines.append(tr("ui.building.no_workers") % missing)
 		if b.def.max_fields > 0:
 			lines.append(tr("ui.building.fields") % [province.fields.tiles_of(b.id).size(), b.def.max_fields])
+		elif b.def.has_pens():
+			lines.append(tr("ui.building.pens") % [b.pens, b.def.max_pens, b.herd_room()])
+		elif b.def.has_hives():
+			lines.append(tr("ui.building.hives") % [b.hives, b.def.max_hives])
+			if b.hives == 0:
+				lines.append(tr("ui.building.no_hives"))
 		if b.paused:
 			lines.append(tr("ui.building.paused"))
 		if b.def.service_radius > 0:
@@ -269,8 +294,13 @@ func _refresh() -> void:
 			lines.append_array(_market_lines(b))
 		if b.def.herd_good != &"" and b.yard != null:
 			var herd := b.yard.total(b.def.herd_good)
-			lines.append(tr("ui.building.herd") % [herd, b.def.herd_capacity, b.def.herd_keep])
-			if herd < 2:
+			var animal := tr(province.data.get_good(b.def.herd_good).name_key())
+			lines.append(tr("ui.building.herd") % [animal, herd, b.herd_room(), b.herd_keep])
+			if b.def.has_pens() and b.pens == 0:
+				lines.append(tr("ui.building.no_pens") % b.def.pen_animals)
+			elif herd > b.herd_room():
+				lines.append(tr("ui.building.herd_crowded"))
+			elif herd < 2:
 				lines.append(tr("ui.building.herd_too_small"))
 		elif b.yard != null:
 			var piled := b.yard.totals()
@@ -287,15 +317,29 @@ func _refresh() -> void:
 	_body.text = "\n".join(lines)
 	_stock.visible = b.stock != null
 	_stock.stock = b.stock
-	_fields_button.visible = b.is_complete() and b.def.max_fields > 0
+	_fields_button.visible = b.def.field_limit() > 0 and (b.is_complete() or b.def.has_tiles())
+	_fields_button.text = tr("ui.building.add_hives" if b.def.has_hives() \
+			else "ui.building.add_pens" if b.def.has_pens() else "ui.building.add_fields")
+	_herd_box.visible = b.is_complete() and b.def.herd_good != &"" and b.yard != null
+	if _herd_box.visible:
+		_herd_slider.max_value = maxi(b.herd_room(), SetHerdKeepCommand.MIN_KEEP)
+		if not _herd_slider.has_focus():
+			_herd_slider.set_value_no_signal(b.herd_keep)
+		_herd_label.text = tr("ui.herd.keep") % int(_herd_slider.value)
 	var market := b.is_complete() and not b.def.stall_goods.is_empty()
 	_trade_button.visible = market
-	_pig_button.visible = market and province.merchant.is_trading()
-	if _pig_button.visible:
-		_pig_button.text = tr("ui.market.buy_pig") % [Merchant.PIG_PRICE, province.merchant.pigs_left]
-		var why := province.merchant.pig_error(province)
-		_pig_button.disabled = why != &""
-		_pig_button.tooltip_text = tr("ui.command_error.%s" % why) if why != &"" else tr("ui.market.buy_pig_hint")
+	for animal: StringName in _animal_buttons:
+		var button := _animal_buttons[animal]
+		# Pigs always (as before); sheep and horses once the town keeps them.
+		button.visible = market and province.merchant.is_trading() \
+				and (animal == Merchant.PIG or not province.yard_buildings(animal).is_empty())
+		if not button.visible:
+			continue
+		button.text = tr("ui.market.buy_%s" % animal) % [Merchant.animal_price(animal), province.merchant.left(animal)]
+		var why := province.merchant.animal_error(province, animal)
+		button.disabled = why != &""
+		button.tooltip_text = tr("ui.command_error.%s" % why) if why != &"" \
+				else tr("ui.market.buy_%s_hint" % animal)
 	_plant_button.visible = b.def.plants_trees()
 	_plant_clear_button.visible = b.def.plants_trees() and not b.plant_area.is_empty()
 	_pause_button.visible = b.is_complete() and b.def.recipe != null

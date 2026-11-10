@@ -190,13 +190,14 @@ zboże + chmiel ──► browar ──► piwo (1 + 1 = 2 beczki)
 
 [M4b-1]
 glinianka (nad wodą) ──► glina; glina + drewno ──► cegielnia ──► cegły
-owczarnia ──► wełna ──► tkalnia ──► sukno ──► krawiec ──► ubrania
-pasieka ──► miód ──► miodosytnia ──► miód pitny
+owczarnia z zagrodą (owce, para na start) ──► wełna (szybciej przy większym stadzie) ──► tkalnia ──► sukno ──► krawiec ──► ubrania
+pasieka z ulami (do 8, szybciej przy większej liczbie uli) ──► miód ──► miodosytnia ──► miód pitny
 leśniczy sadzi sadzonki ──► drzewa (dla drwala)
 
 [M4b-2]
-chlew (stado, od 2 świń rośnie samo) ──► świnia ──► rzeźnia ──► 2 mięsa + 1 skóra
-pierwsze świnie od kupca wędrownego (30 złota sztuka); ostatnie 2 świnie zawsze zostają
+chlew z zagrodą (stado, od 2 świń rośnie samo) ──► świnia ──► rzeźnia ──► 2 mięsa + 1 skóra
+zagroda z kratek (2 świnie na kratkę, do 12 kratek); pierwsza kratka przynosi parę świń (Z1),
+kupiec wędrowny sprzedaje więcej (30 złota sztuka); suwak „zostaw do rozmnażania” (od 2)
 
 [1.0]
 sad ──► jabłka
@@ -205,7 +206,7 @@ drewno ──► węglarz ──► węgiel drzewny
 kopalnia (żyły rudy na każdej mapie, dużo w prowincji z rudą★; decyzja 2026-11-07) ──► ruda żelaza + węgiel ──► huta ──► żelazo ──► kowal ──► narzędzia / miecze / włócznie
 drewno ──► łuczarz ──► łuki
 skóry ──► garbarz-płatnerz ──► zbroje skórzane · żelazo ──► płatnerz ──► kolczugi
-stadnina★ ──► konie
+stadnina★ z zagrodą (para na start, 1 koń na kratkę, do 10 koni) ──► konie
 drewno ──► smolarnia ──► smoła (stocznia)   ← od M5
 ```
 
@@ -344,13 +345,13 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Leśniczówka [M4b-1] | 2×2, zasięg 8 | sadzi drzewa |
 | Glinianka [M4b-1] | 2×2, woda w zasięgu 5 | glina |
 | Cegielnia [M4b-1] | 2×2 | cegły |
-| Owczarnia [M4b-1] | 2×2 | wełna |
+| Owczarnia [M4b-1, Z1] | 2×2 i zagroda z kratek (do 12, 2 owce na kratkę) | wełna (tym szybciej, im więcej owiec) |
 | Tkalnia [M4b-1] | 2×2 | sukno |
 | Krawiec [M4b-1] | 2×2, 20 złota | ubrania |
-| Pasieka [M4b-1] | 2×2 | miód |
+| Pasieka [M4b-1, Z1] | 2×2 i ule stawiane jak kratki (do 8) | miód (tym szybciej, im więcej uli) |
 | Miodosytnia [M4b-1] | 2×2, 30 złota | miód pitny |
 | Tawerna [M4b-1] | 2×2, 40 złota | usługa w zasięgu (patrycjusze), zużywa piwo i miód pitny |
-| Chlew [M4b-2] | 3×3, stado do 12 świń | świnie (świniarz karmi stado) |
+| Chlew [M4b-2, Z1] | 2×2 i zagroda z kratek (do 12, 2 świnie na kratkę) | świnie (świniarz karmi stado w zagrodzie) |
 | Rzeźnia [M4b-2] | 2×2 | mięso i skóry ze świni |
 | Stajnia [M4b-3] | 3×3, 40 złota | 2 wozy konne z woźnicami |
 | Smolarnia [M5] | 2×2 | smoła z drewna |

@@ -27,24 +27,33 @@ func _village(sim: Simulation) -> BuildingState:
 	return village["stock"]
 
 
+## A pigsty with [param pens] pen tiles (Z1). Its first pen brings a pair of pigs unless
+## [param pair] is false.
+func _sty(sim: Simulation, at: Vector2i, pens: int, pair: bool = true) -> BuildingState:
+	var sty := SimFixture.place(sim, &"pigsty", at)
+	sty.herd_given = not pair
+	assert_int(Pens.auto_place(sim.province, sty, pens)).is_equal(pens)
+	return sty
+
+
 func test_pigs_breed_faster_in_a_bigger_herd_up_to_the_pigsty_size() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	_village(sim)
-	var sty := SimFixture.place(sim, &"pigsty", Vector2i(16, 4))
-	sty.yard.add(&"pig", 2)
+	var sty := _sty(sim, Vector2i(16, 4), 6)
+	assert_int(sty.yard.total(&"pig")).is_equal(2)
 	var counts := _run_counting(sim, 150)
 	# One young pig after about 2 minutes with 2 pigs (and a walk to work first).
 	print("pigsty in 2.5 min: ", counts)
 	assert_int(int(counts.get("born", 0))).is_between(1, 2)
 	counts = _run_counting(sim, 600)
-	assert_int(sty.yard.total(&"pig")).is_equal(sty.def.herd_capacity)
-	assert_int(sim.province.goods_total(&"pig")).is_equal(sty.def.herd_capacity)
+	assert_int(sty.yard.total(&"pig")).is_equal(12)
+	assert_int(sim.province.goods_total(&"pig")).is_equal(12)
 
 
 func test_one_pig_does_not_breed() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	_village(sim)
-	var sty := SimFixture.place(sim, &"pigsty", Vector2i(16, 4))
+	var sty := _sty(sim, Vector2i(16, 4), 2, false)
 	sty.yard.add(&"pig", 1)
 	var counts := _run_counting(sim, 300)
 	assert_int(int(counts.get("born", 0))).is_equal(0)
@@ -53,8 +62,8 @@ func test_one_pig_does_not_breed() -> void:
 func test_butcher_leads_a_pig_and_makes_meat_and_hides() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	var stock := _village(sim)
-	var sty := SimFixture.place(sim, &"pigsty", Vector2i(16, 4))
-	sty.yard.add(&"pig", 8)
+	var sty := _sty(sim, Vector2i(16, 4), 6)
+	sty.yard.add(&"pig", 6)
 	SimFixture.place(sim, &"slaughterhouse", Vector2i(16, 10))
 	# Village pantries start full, some meat included.
 	var meat_before := sim.province.goods_total(&"meat")
@@ -85,8 +94,8 @@ func test_butcher_leads_a_pig_and_makes_meat_and_hides() -> void:
 func test_the_last_two_pigs_stay() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	_village(sim)
-	var sty := SimFixture.place(sim, &"pigsty", Vector2i(16, 4))
-	sty.yard.add(&"pig", 3)
+	var sty := _sty(sim, Vector2i(16, 4), 2)
+	sty.yard.add(&"pig", 1)
 	SimFixture.place(sim, &"slaughterhouse", Vector2i(16, 10))
 	# Paused: no young pigs, so only the butcher changes the herd.
 	sty.paused = true
@@ -158,7 +167,7 @@ func test_pigs_bought_from_the_merchant_are_led_to_the_pigsty() -> void:
 	_village(sim)
 	sim.province.entry_tile = Vector2i(39, 20)
 	SimFixture.place(sim, &"market", Vector2i(20, 20))
-	var sty := SimFixture.place(sim, &"pigsty", Vector2i(16, 4))
+	var sty := _sty(sim, Vector2i(16, 4), 3)
 	sim.province.treasury.gold = 200
 	assert_str(String(sim.execute(BuyPigCommand.new()))).is_equal("merchant_away")
 	sim.province.merchant.next_visit = sim.province.tick + 10
@@ -168,8 +177,8 @@ func test_pigs_bought_from_the_merchant_are_led_to_the_pigsty() -> void:
 	assert_str(String(sim.execute(BuyPigCommand.new()))).is_equal("")
 	assert_int(sim.province.treasury.gold).is_less_equal(gold - 2 * Merchant.PIG_PRICE + 1)
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
-		return sty.yard.total(&"pig") >= 2, 120)).is_true()
-	assert_int(sim.province.goods_total(&"pig")).is_greater_equal(2)
+		return sty.yard.total(&"pig") >= 4, 120)).is_true()
+	assert_int(sim.province.goods_total(&"pig")).is_greater_equal(4)
 	sim.province.treasury.gold = 0
 	assert_str(String(sim.execute(BuyPigCommand.new()))).is_equal("not_enough_gold")
 

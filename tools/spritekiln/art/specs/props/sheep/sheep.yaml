@@ -1,0 +1,119 @@
+spritekiln: 1
+# Z1 part 2: written by hand from the pig (gen_nature.py), same camera and frame.
+name: sheep
+render: {outline: dark, lines: depth+normal, light: classic, shading: soft}
+kind: prop
+shadow: null
+ramps:
+  wool:      ['#2a241c', '#6e6452', '#a39784', '#c8bea8', '#e2dac6', '#f4efe2']
+  wool_dark: ['#2a241c', '#5e5444', '#857a66', '#a89c86', '#c4baa4']
+  face:      ['#120e0c', '#2e2622', '#4a3e36', '#66584c', '#82725f']
+  hoof:      ['#0c0a08', '#1e1a16', '#2e2822', '#40382f']
+  eye:       ['#0a0606', '#1a1010', '#2a1a1a', '#3a2424']
+size: 32
+directions: 8
+mirror: false
+camera:
+  pitch: 30
+  scale: 0.05176
+  center: [0, 0.3, 0]
+brief: {summary: 'Your Kingdom sheep (Z1 part 2): a round cream fleece of curls, a dark face and dark legs, small ears; idle, walk, graze'}
+channels: {bob: 0.0, pitch: 0.0, roll: 0.0, head_pitch: 0.0, head_yaw: 0.0, tail: 0.0, ear: 0.0, swing_a: 0.0, swing_b: 0.0}
+bones:
+  body: {parent: root, pos: '[0, 0.33 + bob, 0]', rot: '[pitch, 0, roll]', scale: 0.85}
+  head:
+    parent: body
+    pos: [0, 0.06, 0.44]
+    rot: '[head_pitch, head_yaw, 0]'
+  tail:
+    parent: body
+    pos: [0, 0.06, -0.42]
+    rot: '[tail, 0, 0]'
+  leg_fl: {parent: body, pos: [0.12, -0.12, 0.24], rot: '[swing_a, 0, 0]'}
+  leg_br: {parent: body, pos: [-0.12, -0.12, -0.24], rot: '[swing_a, 0, 0]'}
+  leg_fr: {parent: body, pos: [-0.12, -0.12, 0.24], rot: '[swing_b, 0, 0]'}
+  leg_bl: {parent: body, pos: [0.12, -0.12, -0.24], rot: '[swing_b, 0, 0]'}
+parts:
+  fleece:
+    material: wool
+    space: body
+    blend: 0.06
+    prims:
+    - ellipsoid: {c: [0, 0.0, 0], r: [0.25, 0.22, 0.40]}
+    - sphere: {c: [0.14, 0.1, 0.18], r: 0.13}
+    - sphere: {c: [-0.14, 0.1, 0.18], r: 0.13}
+    - sphere: {c: [0.15, 0.12, -0.12], r: 0.14}
+    - sphere: {c: [-0.15, 0.12, -0.12], r: 0.14}
+    - sphere: {c: [0.0, 0.17, 0.02], r: 0.15}
+    - sphere: {c: [0.0, 0.1, -0.3], r: 0.14}
+    paint:
+    - material: wool_dark
+      spots: {scale: 0.06, density: 0.22, seed: 5}
+  head:
+    material: face
+    space: head
+    prims:
+    - ellipsoid: {c: [0, -0.02, 0.1], r: [0.11, 0.12, 0.17], rot: [0.6, 0, 0]}
+  poll:              # the woolly top of the head
+    material: wool
+    space: head
+    prims:
+    - sphere: {c: [0, 0.08, -0.04], r: 0.09}
+  ears:
+    material: face
+    space: head
+    prims:
+    - ellipsoid: {c: [0.13, 0.05, -0.01], r: [0.09, 0.03, 0.045], rot: '[0, 0, -0.3 - ear]'}
+    - ellipsoid: {c: [-0.13, 0.05, -0.01], r: [0.09, 0.03, 0.045], rot: '[0, 0, 0.3 + ear]'}
+  eyes:
+    material: eye
+    space: head
+    min_cover: 1
+    prims:
+    - sphere: {c: [0.08, 0.03, 0.12], r: 0.025}
+    - sphere: {c: [-0.08, 0.03, 0.12], r: 0.025}
+  tail:
+    material: wool
+    space: tail
+    prims:
+    - ellipsoid: {c: [0, -0.06, -0.02], r: [0.06, 0.1, 0.05]}
+  leg_fl:
+    material: face
+    space: leg_fl
+    prims:
+    - cylinder: {a: [0, 0, 0], b: [0, -0.27, 0], r: 0.04}
+  leg_br:
+    material: face
+    space: leg_br
+    prims:
+    - cylinder: {a: [0, 0, 0], b: [0, -0.27, 0], r: 0.04}
+  leg_fr:
+    material: face
+    space: leg_fr
+    prims:
+    - cylinder: {a: [0, 0, 0], b: [0, -0.27, 0], r: 0.04}
+  leg_bl:
+    material: face
+    space: leg_bl
+    prims:
+    - cylinder: {a: [0, 0, 0], b: [0, -0.27, 0], r: 0.04}
+animations:
+  idle:
+    frames: 8
+    ms: 160
+    channels: {bob: 0.01*sin(p), tail: 0.4*sin(2*p), ear: '0.25*pulse(t, 0.6, 0.15)', head_pitch: 0.05*sin(p)}
+  walk:
+    frames: 8
+    ms: 100
+    events: {0: step, 4: step}
+    channels: {swing_a: 0.45*sin(p), swing_b: -0.45*sin(p), bob: 0.016*abs(sin(p)), roll: 0.03*sin(p), head_pitch: 0.06*sin(2*p), tail: 0.3*sin(p)}
+  graze:
+    frames: 8
+    ms: 140
+    channels: {head_pitch: 0.95 + 0.07*sin(2*p), head_yaw: 0.15*sin(p), pitch: '0.06', bob: '-0.01', tail: 0.3*sin(2*p), ear: 0.15*sin(p)}
+materials:
+  wool: {ramp: wool, bands: [2, 5], finish: soft}
+  wool_dark: {ramp: wool_dark, bands: [1, 4]}
+  face: {ramp: face, bands: [1, 4]}
+  hoof: {ramp: hoof, bands: [0, 2]}
+  eye: {ramp: wool, bands: [5, 5], outline: false}

@@ -1293,7 +1293,7 @@ msgid "good.pig.name"
 msgstr "Świnie"
 
 msgid "good.pig.desc"
-msgstr "Hodowane w chlewie. Rzeźnik prowadzi świnię do rzeźni. Pierwsze świnie sprzedaje kupiec wędrowny."
+msgstr "Hodowane w chlewie, w zagrodzie. Rzeźnik prowadzi świnię do rzeźni. Kupiec wędrowny sprzedaje więcej."
 
 msgid "good.meat.name"
 msgstr "Mięso"
@@ -1377,10 +1377,10 @@ msgstr[1] "%s skóry"
 msgstr[2] "%s skór"
 
 msgid "ui.building.herd"
-msgstr "Świnie w stadzie: %d z %d (ostatnie %d zawsze zostają)"
+msgstr "%s w stadzie: %d, miejsca w zagrodzie: %d (do rozmnażania zostaje %d)"
 
 msgid "ui.building.herd_too_small"
-msgstr "Stado rośnie od 2 świń. Kupisz je u kupca wędrownego."
+msgstr "Stado rośnie od 2 zwierząt. Możesz je dokupić u kupca wędrownego."
 
 msgid "ui.building.yard"
 msgstr "Stos przy budynku: %s"
@@ -4165,3 +4165,78 @@ msgstr "Wszystkie"
 
 msgid "ui.invasion.plunder_hint"
 msgstr "Tyle pierwszych fal tylko łupi złoto i towary i odpływa. Dalsze zajmują miasto, które zdobędą."
+
+msgid "ui.building.pens"
+msgstr "Kratki zagrody: %d z %d (miejsce dla %d zwierząt)"
+
+msgid "ui.building.add_pens"
+msgstr "Dodaj zagrodę"
+
+msgid "ui.building.no_pens"
+msgstr "Postaw kratki zagrody (zwierząt na kratkę: %d). Gdy zmieści się para, przychodzi na start."
+
+msgid "ui.building.herd_crowded"
+msgstr "Zagroda jest za ciasna: stado nie rośnie, a rzeźnik i kupiec biorą najpierw nadmiar."
+
+msgid "ui.herd.keep"
+msgstr "Zostaw do rozmnażania: %d"
+
+msgid "ui.herd.keep_hint"
+msgstr "Tyle zwierząt zawsze zostaje w zagrodzie. Rzeźnik, kupiec i koszary biorą tylko resztę."
+
+msgid "ui.reason.no_pen"
+msgstr "brak zagrody (postaw kratki zagrody)"
+
+msgid "ui.command_error.too_many_pens"
+msgstr "Zagroda ma już wszystkie kratki."
+
+msgid "ui.command_error.no_herd"
+msgstr "Ten budynek nie ma stada."
+
+msgid "good.sheep.name"
+msgstr "Owce"
+
+msgid "good.sheep.desc"
+msgstr "Pasą się w zagrodzie owczarni. Pasterz strzyże z nich wełnę: im więcej owiec, tym szybciej. Kupiec wędrowny sprzedaje więcej."
+
+msgid "ui.market.buy_sheep"
+msgstr "Kup owcę (%d zł, zostało %d)"
+
+msgid "ui.market.buy_sheep_hint"
+msgstr "Tragarz zaprowadzi owcę do najbliższej owczarni z miejscem w zagrodzie."
+
+msgid "ui.market.buy_horse"
+msgstr "Kup konia (%d zł, zostało %d)"
+
+msgid "ui.market.buy_horse_hint"
+msgstr "Tragarz zaprowadzi konia do najbliższej stadniny z miejscem w zagrodzie."
+
+msgid "ui.command_error.no_animals_left"
+msgstr "Kupiec nie ma już tych zwierząt."
+
+msgid "ui.command_error.no_room_for_animals"
+msgstr "Brak zagrody z wolnym miejscem dla tych zwierząt."
+
+msgid "ui.reason.no_animals"
+msgstr "brak zwierząt w zagrodzie"
+
+msgid "good.sheep.count"
+msgid_plural "good.sheep.count_plural"
+msgstr[0] "%s owca"
+msgstr[1] "%s owce"
+msgstr[2] "%s owiec"
+
+msgid "ui.building.add_hives"
+msgstr "Dodaj ule"
+
+msgid "ui.building.hives"
+msgstr "Ule: %d z %d (im więcej uli, tym szybciej rośnie miód)"
+
+msgid "ui.building.no_hives"
+msgstr "Postaw ule obok pasieki: bez nich nie ma miodu."
+
+msgid "ui.reason.no_hive"
+msgstr "brak uli (postaw ule obok pasieki)"
+
+msgid "ui.command_error.too_many_hives"
+msgstr "Pasieka ma już wszystkie ule."

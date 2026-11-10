@@ -2,7 +2,8 @@ extends GdUnitTestSuite
 ## M8 part 3, long: a sandbox world with three AI rulers runs 90 minutes of game time (owner's
 ## survey 2026-11-10). Each ruler builds by his plan, settles at least one new province and
 ## runs a trade route; no ruler's town gets stuck (it keeps growing), a save in the middle
-## loads back alike, and the simplified-mode cost of the growing rulers stays small.
+## loads back alike, and the simplified-mode cost of the growing rulers stays small. Z1: their
+## sheep farms, pigsties and apiaries have pens and hives, and the herds grow.
 
 const MINUTES := 90
 
@@ -50,6 +51,21 @@ func test_three_rulers_grow_settle_and_trade_for_90_minutes() -> void:
 		# Still growing in the second half (nothing stuck).
 		assert_int(_buildings(sim, owner)).is_greater(at_45[owner])
 		assert_int(sim.world.rulers[owner].treasury.gold).is_greater(0)
+	# Z1 part 4: the rulers keep animals in pens and bees in hives, and they breed and work.
+	var herds := {}
+	for owner: StringName in start:
+		for id: int in Rulers.provinces_of(sim.world, owner):
+			var town := sim.province_state(id)
+			for b: BuildingState in town.buildings.all():
+				if not b.def.has_tiles() or b.under_construction:
+					continue
+				var tiles := town.fields.tiles_of(b.id).size()
+				var animals := b.yard.total(b.def.herd_good) if b.yard != null and b.def.herd_good != &"" else 0
+				if tiles > 0 and (b.def.has_hives() or animals > 2):
+					herds[b.def.id] = int(herds.get(b.def.id, 0)) + 1
+	print("rulers' herds and hives (more than the pair): ", herds)
+	for id: StringName in [&"sheep_farm", &"pigsty", &"apiary"]:
+		assert_int(int(herds.get(id, 0))).override_failure_message("no ruler keeps a %s" % id).is_greater_equal(2)
 	# Every ruler's province is in the simplified mode and cheap (the player's landing is viewed).
 	assert_float(ms_per_tick).is_less(4.0)
 

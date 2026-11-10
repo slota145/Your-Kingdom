@@ -41,6 +41,8 @@ var troops: TroopsLayer
 var corpses: CorpseLayer
 ## Rams and ladders (M7 part 2).
 var siege: SiegeLayer
+## Animal pens: fences, gates and the animals walking inside (Z1).
+var pens: PenLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 
@@ -93,6 +95,9 @@ func setup(source: ProvinceSim) -> void:
 	buildings.setup(province)
 	piles = PileLayer.new()
 	world.add_child(piles)
+	pens = PenLayer.new()
+	world.add_child(pens)
+	pens.setup(province)
 	forts = FortLayer.new()
 	world.add_child(forts)
 	forts.setup(province)
@@ -138,6 +143,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 	cranes.update_view()
 	piles.update_view(province.piles)
 	piles.update_yards(province.buildings)
+	pens.update_view(delta)
 	buildings.update_view()
 	forts.update_view()
 	var merchant := province.merchant
@@ -156,6 +162,7 @@ func on_sim_event(event: Dictionary) -> void:
 	paving_plan.on_sim_event(event)
 	forts.on_sim_event(event)
 	corpses.on_sim_event(event)
+	pens.on_sim_event(event)
 	match event["type"]:
 		&"building_placed", &"building_removed", &"building_completed", &"site_opened", \
 				&"site_phase_started", &"site_phase_finished", &"house_upgraded", &"building_turned", \
