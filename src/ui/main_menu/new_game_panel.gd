@@ -167,7 +167,10 @@ func _refresh() -> void:
 	for row: Control in _generated_rows:
 		row.visible = generated
 	_rulers_row.visible = generated and scenario != GameSettings.INVASION
+	# (The difficulty is the rulers': the Invasion has none.)
+	_difficulty.get_parent().visible = scenario != GameSettings.INVASION
 	_gold_row.visible = scenario == GameSettings.ISLANDS
+	_islands.get_parent().visible = generated and scenario != GameSettings.ISLANDS   # (all islands there)
 	_victory_row.visible = scenario != GameSettings.ISLANDS and scenario != GameSettings.INVASION
 	# The hand-made world has no rulers: no conquest there.
 	_victory.set_item_disabled(0, not generated)

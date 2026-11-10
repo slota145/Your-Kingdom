@@ -33,6 +33,10 @@ const RAM_FROM := 5
 const SHIP := &"warship"
 ## Seconds a wave waits when the player has no coastal town to attack (an expedition at sea).
 const RETRY_SECONDS := 60.0
+## Points tried on each edge of the parchment, and the sailing a fleet should have at least
+## (owner's survey: it sails about 1-2 minutes, time to catch it).
+const EDGE_POINTS := 6
+const MIN_SAIL_SECONDS := 60.0
 ## The 6 soldiers the player's ship brings (owner's survey 2026-11-10).
 const START_TROOPS: Dictionary[StringName, int] = {&"spearman": 4, &"archer": 2}
 
@@ -140,11 +144,23 @@ static func _fleet(sim: Simulation, wave: int, to: int) -> Army:
 	army.fleet[SHIP] = ships
 	army.ships = ships
 	army.food = army.food_cap()
-	# The edge points nearest the town first (the fleet comes in over the horizon).
+	# The fleet comes in over the horizon: from the edge point nearest the town that leaves at
+	# least MIN_SAIL_SECONDS of sailing (time to see it coming and catch it), else the farthest.
 	var size := world_def.size
 	var p := def.world_pos
-	var edges: Array[Vector2] = [Vector2(4, p.y), Vector2(size.x - 4, p.y), Vector2(p.x, 4), Vector2(p.x, size.y - 4)]
+	var edges: Array[Vector2] = []
+	for k: int in EDGE_POINTS:
+		var t := (k + 0.5) / EDGE_POINTS
+		edges.append_array([Vector2(4, size.y * t), Vector2(size.x - 4, size.y * t), Vector2(size.x * t, 4),
+				Vector2(size.x * t, size.y - 4)])
 	edges.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_to(p) < b.distance_to(p))
+	# A town on water cut off from the open sea: the fleet appears on that water, as far out as
+	# it can (rings round the town, the widest first).
+	for radius: float in [480.0, 360.0, 260.0, 180.0, 120.0]:
+		for k: int in 12:
+			edges.append(p + Vector2.RIGHT.rotated(TAU * k / 12.0) * radius)
+	var best := {}
+	var best_seconds := -1.0
 	for edge: Vector2 in edges:
 		var start := n.nearest(edge, true)
 		if start == Vector2.INF:
@@ -153,11 +169,21 @@ static func _fleet(sim: Simulation, wave: int, to: int) -> Army:
 		var way := ArmyOrders.plan(sim, army, to, Vector2.INF)
 		if way["error"] != &"":
 			continue
-		army.id = sim.ids.take()
-		sim.world.armies[army.id] = army
-		ArmyOrders.follow(sim, army, way, to)
-		return army
-	return null
+		var path: Array[Vector2] = []
+		path.assign(way["path"])
+		var seconds := WorldNav.length_of(start, path) / world_def.ship_speed
+		if seconds > best_seconds:
+			best_seconds = seconds
+			best = {"start": start, "way": way}
+		if seconds >= MIN_SAIL_SECONDS:
+			break
+	if best.is_empty():
+		return null
+	army.pos = best["start"]
+	army.id = sim.ids.take()
+	sim.world.armies[army.id] = army
+	ArmyOrders.follow(sim, army, best["way"], to)
+	return army
 
 
 ## The raiders' ships whose men are ashore sail away; raiders standing about in the field (beaten,

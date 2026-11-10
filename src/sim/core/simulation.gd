@@ -27,6 +27,10 @@ var _commands: Array[Command] = []
 ## Bandit raids on the viewed province (M7 part 2): on in a game the player plays (the game
 ## scene turns them on), off in tests and benchmarks. Not saved.
 var raids_enabled: bool = false
+## The automatic player of the test games (M8 part 5, tests/support/auto_player.gd): the
+## player's expeditions land at once, like an AI ruler's (nobody is there to enter the
+## province). Off in a game; not saved.
+var autopilot: bool = false
 
 
 func _init(registry: DataRegistry, map_size: Vector2i = Vector2i(64, 64), seed_value: int = 1) -> void:
@@ -360,7 +364,7 @@ func _arrive(e: Expedition) -> void:
 		return
 	e.state = Expedition.State.WAITING
 	events.emit(&"expedition_arrived", {"expedition": e.id, "province": e.to, "owner": e.owner})
-	if Rulers.is_ruler(e.owner):
+	if Rulers.is_ruler(e.owner) or autopilot:
 		var settled := _settle(e)
 		RulerExpansion.found(self, e.to, settled)
 		runtimes[e.to] = ProvinceAbstract.freeze(settled, clock.tick)

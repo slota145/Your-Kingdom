@@ -35,7 +35,9 @@ const CAPITAL_TOWN: Dictionary[StringName, int] = {&"hut": 16, &"well": 3, &"sto
 const RULERS_SHARE := 0.45
 const MAX_REALM := 6
 ## Sea cells and land cells together per province of the Merchant islands (more sea).
-const ISLAND_CELLS_PER_PROVINCE := 3.4
+const ISLAND_CELLS_PER_PROVINCE := 4.5
+## How much bigger the sheet of the Merchant islands is (as for this many times the provinces).
+const ISLAND_SHEET := 1.8
 ## How much more a ruler keeps away from the player than from another ruler.
 const RULER_AWAY := 1.6
 
@@ -72,10 +74,11 @@ static func geography(data: DataRegistry, settings: GameSettings) -> WorldDef:
 	noise.fractal_octaves = 4
 	var count := clampi(settings.province_count, GameSettings.MIN_PROVINCES, GameSettings.MAX_PROVINCES)
 	var islands := clampi(settings.islands, 0, mini(GameSettings.MAX_ISLANDS, count / 3))
-	var size := size_for(count)
+	var archipelago := settings.scenario == GameSettings.ISLANDS
+	# (The Merchant islands: a bigger sheet, so the islands have sea round them.)
+	var size := size_for(roundi(count * ISLAND_SHEET)) if archipelago else size_for(count)
 	noise.frequency = 0.0028 * SIZE.x / size.x
 	# Scattered points on a jittered grid over the parchment; more sea for more islands.
-	var archipelago := settings.scenario == GameSettings.ISLANDS
 	var total := int(count * (ISLAND_CELLS_PER_PROVINCE if archipelago else CELLS_PER_PROVINCE + 0.12 * islands))
 	var step := sqrt(size.x * size.y / total)
 	var sites: Array[Vector2] = []
@@ -349,8 +352,8 @@ static func _realms(data: DataRegistry, defs: Array[ProvinceDef], taken: Array[P
 			taken.append(best)
 
 
-## The Merchant islands: islands of 1 to 3 provinces on a sea cell touching no other land,
-## spread over the parchment (away from each other and from the edge where they can be).
+## The Merchant islands: islands of 1 to 3 provinces on a sea cell touching no other land and
+## not the edge of the parchment, spread over it (away from each other).
 ## Marks [param is_land] and the island of each cell in [param group_of].
 static func _archipelago(sites: Array[Vector2], cells: Array[PackedVector2Array], adjacent: Array[Array],
 		is_land: Array[bool], group_of: Dictionary[int, int], count: int, size: Vector2, step: float,
@@ -362,30 +365,38 @@ static func _archipelago(sites: Array[Vector2], cells: Array[PackedVector2Array]
 		var best := -1
 		var best_d := -INF
 		for i: int in sites.size():
-			if is_land[i] or not _lonely(i, adjacent, is_land, group_of, -1):
+			if is_land[i] or _touches_edge(cells[i], size) or not _lonely(i, adjacent, is_land, group_of, -1):
 				continue
 			var d := INF
 			for j: int in group_of:
 				d = minf(d, sites[i].distance_to(sites[j]))
 			var middle := ((sites[i] - size * 0.5) / (size * 0.5)).length()
-			d = minf(d, step * 2.5) + rng.randf() * step - middle * step * 0.6 \
-					- (step * 2.0 if _touches_edge(cells[i], size) else 0.0)
+			d = minf(d, step * 2.5) + rng.randf() * step - middle * step * 0.6
 			if d > best_d:
 				best_d = d
 				best = i
 		if best < 0:
-			# No room left for a lonely island: the rest join the islands there are.
-			for i: int in sites.size():
-				if left == 0:
+			# No room left for a lonely island: the rest join the smallest islands there are.
+			while left > 0:
+				var pick := -1
+				var pick_size := 1 << 20
+				for i: int in sites.size():
+					if is_land[i] or _touches_edge(cells[i], size):
+						continue
+					for j: int in adjacent[i]:
+						if is_land[j] and _lonely(i, adjacent, is_land, group_of, group_of[j]):
+							var n := group_of.values().count(group_of[j])
+							if n < pick_size:
+								pick_size = n
+								pick = i
+								group_of[-1] = group_of[j]   # (the island it would join)
+				if pick < 0:
 					break
-				if is_land[i]:
-					continue
-				for j: int in adjacent[i]:
-					if is_land[j]:
-						is_land[i] = true
-						group_of[i] = group_of[j]
-						left -= 1
-						break
+				is_land[pick] = true
+				group_of[pick] = group_of[-1]
+				group_of.erase(-1)
+				left -= 1
+			group_of.erase(-1)
 			break
 		is_land[best] = true
 		group_of[best] = island
@@ -395,7 +406,8 @@ static func _archipelago(sites: Array[Vector2], cells: Array[PackedVector2Array]
 			var grown := false
 			for m: int in members.duplicate():
 				for j: int in adjacent[m]:
-					if members.size() >= want or is_land[j] or not _lonely(j, adjacent, is_land, group_of, island):
+					if members.size() >= want or is_land[j] or _touches_edge(cells[j], size) \
+							or not _lonely(j, adjacent, is_land, group_of, island):
 						continue
 					is_land[j] = true
 					group_of[j] = island

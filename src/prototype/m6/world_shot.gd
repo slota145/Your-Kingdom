@@ -18,6 +18,9 @@ extends Node
 ##   [--m8=rulers|visit --advance=<minutes>] (M8 part 3: a generated world (--seed) run for that
 ##   many minutes; the world map with the first ruler's home selected, or his town entered and
 ##   looked at, with --building=<id> the panel of his first such building open)
+##   [--scenario=divided|islands|invasion] (M8 part 5: a generated world of that scenario, with
+##   --seed; [--gold=<n>]) [--m8=invasion [--advance=<seconds>]] (the next wave sent at once and
+##   sailing that long, the world map open) [--m8=storm --scenario=invasion] (the raiders storm)
 
 const GAME_SCENE := "res://src/main/game_scene.tscn"
 const SETTLE_FRAMES := 10
@@ -42,6 +45,8 @@ var _advance: int = 0
 var _building: StringName = &""
 var _provinces: int = 22
 var _rulers: int = 3
+var _scenario: StringName = GameSettings.COLONIZATION
+var _gold: int = GameSettings.DEFAULT_GOLD
 ## --zoom=<1..4> (M8 part 1): the world map zoomed in on the player's province.
 var _zoom: float = 1.0
 ## --result=won|lost (M8 part 1): the end-of-game window over the province view.
@@ -84,6 +89,10 @@ func _ready() -> void:
 			_result = arg.trim_prefix("--result=")
 		elif arg.begins_with("--rulers="):
 			_rulers = int(arg.trim_prefix("--rulers="))
+		elif arg.begins_with("--scenario="):
+			_scenario = StringName(arg.trim_prefix("--scenario="))
+		elif arg.begins_with("--gold="):
+			_gold = int(arg.trim_prefix("--gold="))
 	Game.start_request = {"world": "kingdom"}
 	# M8 part 1: a generated world (--seed=<n> [--provinces=<16..30>] [--rulers=<1..3>]).
 	if _seed > 0:
@@ -91,6 +100,9 @@ func _ready() -> void:
 		settings.world_seed = _seed
 		settings.province_count = _provinces
 		settings.rulers = _rulers
+		settings.scenario = _scenario
+		settings.gold_target = _gold
+		settings.fit_scenario()
 		Game.start_request = {"settings": settings.to_dict()}
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D
 	add_child(_game)
@@ -139,10 +151,12 @@ func _process(_delta: float) -> void:
 		if _m8 == "storm":
 			_storm_shot(sim)
 			return
+		if _m8 == "invasion":
+			_invasion_shot(sim)
 		if _m8 == "rulers" or _m8 == "visit":
 			if _rulers_shot(sim):
 				return
-		elif _m8 != "":
+		elif _m8 != "" and _m8 != "invasion":
 			_make_m8(sim)
 			if _m8 == "field":
 				return
@@ -272,8 +286,30 @@ func _war_shot(sim: Simulation) -> void:
 ## M8 part 4 (--m8=storm [--field_seconds=<s>]): in the hand-made kingdom (made up for the
 ## picture) the army of a ruler from the province next to the iron settlement storms the
 ## player's town live: a town hall, a few defenders, the ruler's men coming at the door.
+## M8 part 5: the next wave of raiders sent now, sailing for [member _advance] seconds; the world
+## map opens with its title counting down to the wave after.
+func _invasion_shot(sim: Simulation) -> void:
+	if sim.province.landing != null:
+		RulerExpansion.found(sim, sim.viewed_id, sim.province)
+	var state := sim.world.invasion
+	if state == null:
+		print("invasion: not an Invasion game (--scenario=invasion --seed=<n>)")
+		return
+	state.wave = 2
+	state.next_wave = sim.clock.tick + 1
+	for i: int in roundi(maxf(_advance, 1.0) * SimClock.TICKS_PER_SECOND):
+		sim.step()
+	for event: Dictionary in sim.events.drain():
+		_game.call("_on_sim_event", event)
+	for army: Army in sim.world.armies.values():
+		if army.owner == Rulers.RAIDERS:
+			print("invasion: wave of %d at %s, %.0f s to go" % [army.men(), army.pos, ArmyOrders.seconds_left(sim, army)])
+
+
 func _storm_shot(sim: Simulation) -> void:
 	var p := sim.province
+	if p.landing != null:
+		RulerExpansion.found(sim, sim.viewed_id, p)   # (a generated world: the landing done)
 	sim.treasury.gold = 5000
 	var camp := _place(p, &"pioneer_camp", RulerPlanner.centre(p))
 	var hall := _place(p, &"town_hall", camp.origin if camp != null else RulerPlanner.centre(p))
@@ -288,16 +324,20 @@ func _storm_shot(sim: Simulation) -> void:
 		a.combat = CombatState.new(sim.data.get_unit(a.kind).combat.hp)
 		defenders.append(a)
 	Troops.order_move(p, defenders, hall.entrance_tile() + Vector2i(2, 2), MilitaryNav.GROUND)
-	var wold := sim.world.id_of(&"iron_wold")
+	var owner := &"ruler_1"
 	var near := 0
-	for id: int in sim.world.ids():
-		if near == 0 and id != wold and not sim.runtimes.has(id) and sim.world.are_neighbours(id, wold, sim.data):
-			near = id
-	sim.open_province(near, sim.data.get_map(sim.world.get_province(near).map_id), &"ruler_1")
-	RulerPlanner.ensure_rulers(sim)
+	if sim.world.invasion != null:
+		owner = Rulers.RAIDERS   # (M8 part 5: the raiders storm)
+	else:
+		var wold := sim.world.id_of(&"iron_wold")
+		for id: int in sim.world.ids():
+			if near == 0 and id != wold and not sim.runtimes.has(id) and sim.world.are_neighbours(id, wold, sim.data):
+				near = id
+		sim.open_province(near, sim.data.get_map(sim.world.get_province(near).map_id), &"ruler_1")
+		RulerPlanner.ensure_rulers(sim)
 	var army := Army.new()
 	army.id = sim.ids.take()
-	army.owner = &"ruler_1"
+	army.owner = owner
 	army.at = sim.viewed_id
 	army.home = near
 	army.state = Army.State.IDLE
