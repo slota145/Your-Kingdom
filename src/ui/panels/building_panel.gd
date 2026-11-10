@@ -37,7 +37,8 @@ var _look_button: Button
 var _turn_button: Button
 var _plant_button: Button
 var _plant_clear_button: Button
-var _pig_button: Button
+## Market: a "buy" button per animal the merchant sells (Merchant.ANIMALS, Z1 part 2).
+var _animal_buttons: Dictionary[StringName, Button] = {}
 var _trade_button: Button
 var _expedition: ExpeditionBox
 var _priority_buttons: Array[Button] = []
@@ -111,9 +112,10 @@ func _init() -> void:
 		var none: Array[Vector2i] = []
 		command_requested.emit(SetPlantAreaCommand.new(building_id, none)))
 	buttons.add_child(_plant_clear_button)
-	_pig_button = UiKit.button("", func() -> void: command_requested.emit(BuyPigCommand.new()))
-	_pig_button.tooltip_text = "ui.market.buy_pig_hint"
-	buttons.add_child(_pig_button)
+	for animal: StringName in Merchant.ANIMALS:
+		var button := UiKit.button("", func() -> void: command_requested.emit(BuyAnimalCommand.new(animal)))
+		buttons.add_child(button)
+		_animal_buttons[animal] = button
 	_trade_button = UiKit.button("ui.market.trade", func() -> void: stocks_requested.emit())
 	buttons.add_child(_trade_button)
 	_pause_button = UiKit.button("ui.building.pause", func() -> void:
@@ -321,12 +323,18 @@ func _refresh() -> void:
 		_herd_label.text = tr("ui.herd.keep") % int(_herd_slider.value)
 	var market := b.is_complete() and not b.def.stall_goods.is_empty()
 	_trade_button.visible = market
-	_pig_button.visible = market and province.merchant.is_trading()
-	if _pig_button.visible:
-		_pig_button.text = tr("ui.market.buy_pig") % [Merchant.PIG_PRICE, province.merchant.pigs_left]
-		var why := province.merchant.pig_error(province)
-		_pig_button.disabled = why != &""
-		_pig_button.tooltip_text = tr("ui.command_error.%s" % why) if why != &"" else tr("ui.market.buy_pig_hint")
+	for animal: StringName in _animal_buttons:
+		var button := _animal_buttons[animal]
+		# Pigs always (as before); sheep and horses once the town keeps them.
+		button.visible = market and province.merchant.is_trading() \
+				and (animal == Merchant.PIG or not province.yard_buildings(animal).is_empty())
+		if not button.visible:
+			continue
+		button.text = tr("ui.market.buy_%s" % animal) % [Merchant.animal_price(animal), province.merchant.left(animal)]
+		var why := province.merchant.animal_error(province, animal)
+		button.disabled = why != &""
+		button.tooltip_text = tr("ui.command_error.%s" % why) if why != &"" \
+				else tr("ui.market.buy_%s_hint" % animal)
 	_plant_button.visible = b.def.plants_trees()
 	_plant_clear_button.visible = b.def.plants_trees() and not b.plant_area.is_empty()
 	_pause_button.visible = b.is_complete() and b.def.recipe != null

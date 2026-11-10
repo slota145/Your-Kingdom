@@ -553,7 +553,8 @@ func _place_bridges(sim: Simulation, at: Vector2i) -> void:
 	view.bridges.refresh()
 
 
-## Two pigsties with pens and pigs (--pens, Z1 part 1).
+## Two pigsties with pens and pigs (--pens, Z1 part 1), a sheep farm and a stud farm with their
+## flocks (part 2).
 func _place_pens(sim: Simulation, at: Vector2i) -> void:
 	var province := sim.province
 	var first := _place_near(sim, &"pigsty", at)
@@ -568,10 +569,20 @@ func _place_pens(sim: Simulation, at: Vector2i) -> void:
 			for x: int in 3:
 				sim.execute(PlaceFieldCommand.new(second.id, second.origin + Vector2i(3 + x, y - 1)))
 		second.yard.add(&"pig", 8)
-	for building: BuildingState in [first, second]:
+	# Z1 part 2: a sheep farm and a stud farm with their flocks.
+	province.rare_resource = &"horses"
+	var farm := _place_near(sim, &"sheep_farm", at + Vector2i(0, 7))
+	if farm != null:
+		Pens.auto_place(province, farm, 6)
+		farm.yard.add(&"sheep", 8)
+	var stud := _place_near(sim, &"stud_farm", at + Vector2i(7, 7))
+	if stud != null:
+		Pens.auto_place(province, stud, 6)
+		stud.yard.add(&"horse", 5)
+	for building: BuildingState in [first, second, farm, stud]:
 		if building == null:
 			continue
-		var worker := province.spawn_agent(&"swineherd", building.entrance_tile())
+		var worker := province.spawn_agent(building.def.worker_kinds[0], building.entrance_tile())
 		province.assign_worker(worker, building)
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(first.origin + Vector2i(2, 1))
 

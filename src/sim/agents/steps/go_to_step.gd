@@ -26,6 +26,10 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 			var pens := province.fields.tiles_of(workplace.id)
 			if pens.is_empty():
 				return failed(agent, &"no_pen")
+			# Nothing to shear without a flock (Z1 part 2).
+			if workplace.def.herd_work and workplace.yard != null \
+					and workplace.yard.total(workplace.def.herd_good) == 0:
+				return failed(agent, &"no_animals")
 			var tile := pens[(agent.id + province.tick / SimClock.TICKS_PER_SECOND) % pens.size()]
 			bb["stand"] = SimCodec.vec2i(tile)
 		return Movement.walk(province, agent, SimCodec.to_vec2i(bb["stand"]))

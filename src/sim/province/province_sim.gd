@@ -127,6 +127,8 @@ const PAVED_COST := 0.55
 const FIELD_COST := 1.2
 ## Walking cost of a pen tile (Z1): fenced, so paths go round it unless they end inside.
 const PEN_COST := 6.0
+## Due pens (_place_due_pens) were looked for since this province was made or loaded.
+var _due_pens_checked: bool = false
 ## How often young trees are checked for growing up (1 s).
 const GROW_CHECK_TICKS := 10
 ## How long the start protection lasts (owner's survey 2026-11-07: 15 minutes, in a new game
@@ -1187,6 +1189,9 @@ func market_source(good: StringName, amount: int, house: BuildingState) -> int:
 ## Herds with 2 or more animals, a worker and room breed (M4b-2): one young animal every
 ## breed_time seconds with 2 animals, faster in a bigger herd (the time over half the herd).
 func _breed_herds() -> void:
+	if not _due_pens_checked:
+		_due_pens_checked = true
+		_place_due_pens()
 	for building: BuildingState in buildings.all():
 		var good := building.def.herd_good
 		if good == &"" or building.yard == null or building.paused \
@@ -1386,6 +1391,15 @@ func update_herd_room(building: BuildingState) -> void:
 	building.pens = fields.tiles_of(building.id).size()
 	if building.yard != null:
 		building.yard.stack_limit = maxi(building.herd_room(), 1)
+
+
+## Sheep farms from saves before v33 get their pen now (Z1 part 2): beside them, in one piece;
+## the first tile brings the starting pair.
+func _place_due_pens() -> void:
+	for building: BuildingState in buildings.all():
+		if building.pens_due > 0:
+			Pens.auto_place(self, building, building.pens_due)
+			building.pens_due = 0
 
 
 ## Every herd in pens counts its pen tiles again (after loading a game).

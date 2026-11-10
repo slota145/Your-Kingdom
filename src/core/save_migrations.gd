@@ -3,7 +3,9 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 32
+const CURRENT_VERSION := 33
+## Pen tiles an old sheep farm gets on its first second after loading a save before v33.
+const AUTO_SHEEP_PENS := 3
 ## Tiles of a 3×3 pigsty (before v32) outside the 2×2 one, from its origin: its pen now.
 const OLD_PIGSTY_PEN: Array[Vector2i] = [Vector2i(2, 0), Vector2i(2, 1), Vector2i(0, 2), Vector2i(1, 2),
 		Vector2i(2, 2)]
@@ -106,6 +108,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 32:
 		result = migrate_v31_to_v32(result)
 		version = 32
+	if version < 33:
+		result = migrate_v32_to_v33(result)
+		version = 33
 	return result
 
 
@@ -393,6 +398,52 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
 ## target, the Invasion from the sea with the clock of its waves). A game from before is a
 ## Colonization game: its settings name the scenario and get the default gold target.
+## Tasks of [param recipes] past their first step move one step on: a step was put in after
+## the first one (Z1: the walk into the pen).
+static func _shift_steps(province: Dictionary, recipes: Array) -> void:
+	for agent: Variant in province.get("agents", []):
+		var task: Dictionary = (agent as Dictionary).get("task", {})
+		if recipes.has(String(task.get("recipe", ""))) and int(task.get("step", 0)) >= 1:
+			task["step"] = int(task["step"]) + 1
+
+
+## v33 (Z1 part 2, sheep and horses in pens): a stud farm is 2×2 like the pigsty and its old
+## 3×3 ground becomes its pen (OLD_PIGSTY_PEN, room for 10 horses); a sheep farm keeps sheep
+## now: it gets "pens_due" (AUTO_SHEEP_PENS pen tiles), placed by the game on its first second
+## (ProvinceSim._place_due_pens: the pen beside it, the starting pair with the first tile). The
+## merchant sells sheep and horses too: his "pigs" left this visit become "animals".
+static func migrate_v32_to_v33(state: Dictionary) -> Dictionary:
+	for entry: Variant in state.get("provinces", []):
+		var province: Dictionary = (entry as Dictionary)["state"]
+		if province.has("province"):
+			province = province["province"]   # the simplified mode keeps its detail inside
+		# The shepherd's and the groom's cycles got a walk into the pen after their first step.
+		_shift_steps(province, ["sheep_farming", "horse_breeding"])
+		var fields: Array = province.get("fields", [])
+		var added := false
+		for building: Variant in province.get("buildings", []):
+			var b := building as Dictionary
+			if b["def"] == "stud_farm":
+				b["herd_given"] = true
+				var origin := SimCodec.to_vec2i(b["origin"])
+				for tile: Vector2i in OLD_PIGSTY_PEN:
+					fields.append([origin.x + tile.x, origin.y + tile.y, int(b["id"]), 0, 0, 0, 0])
+					added = true
+				if b.has("yard"):
+					(b["yard"] as Dictionary)["limit"] = OLD_PIGSTY_PEN.size() * BuildingDef.PEN_ANIMALS
+			elif b["def"] == "sheep_farm":
+				b["pens_due"] = AUTO_SHEEP_PENS
+		if added:
+			fields.sort_custom(func(x: Array, y: Array) -> bool:
+				return int(x[0]) < int(y[0]) or (int(x[0]) == int(y[0]) and int(x[1]) < int(y[1])))
+			province["fields"] = fields
+		var merchant: Dictionary = province.get("merchant", {})
+		if merchant.has("pigs"):
+			merchant["animals"] = {"pig": int(merchant["pigs"]), "sheep": 4, "horse": 2}
+			merchant.erase("pigs")
+	return state
+
+
 ## v32 (Z1 part 1, animal pens): a pigsty is 2×2 without a built-in pen; its pigs live in pen
 ## tiles (field tiles of the pigsty), 2 a tile. A building keeps its breeding reserve
 ## ("herd_keep", default 2) and whether its starting pair came ("herd_given"). An old 3×3
@@ -404,6 +455,8 @@ static func migrate_v31_to_v32(state: Dictionary) -> Dictionary:
 		var province: Dictionary = (entry as Dictionary)["state"]
 		if province.has("province"):
 			province = province["province"]   # the simplified mode keeps its detail inside
+		# The swineherd's cycle got a walk into the pen after its first step.
+		_shift_steps(province, ["pig_keeping"])
 		var fields: Array = province.get("fields", [])
 		var added := false
 		for building: Variant in province.get("buildings", []):

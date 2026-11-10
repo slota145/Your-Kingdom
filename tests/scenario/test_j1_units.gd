@@ -64,6 +64,7 @@ func test_new_units_are_recruited_with_their_gear() -> void:
 		armoury.stock.add(good, 2)
 	sim.province.rare_resource = &"horses"
 	var stud := SimFixture.place(sim, &"stud_farm", Vector2i(28, 2))
+	Pens.auto_place(sim.province, stud, 2)   # its pen brings the breeding pair (Z1)
 	stud.yard.add(&"horse", 2)   # beyond the breeding pair
 	var barracks := SimFixture.place(sim, &"barracks", Vector2i(20, 14))
 	sim.treasury.gold = 1000

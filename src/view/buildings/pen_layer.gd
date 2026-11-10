@@ -50,6 +50,7 @@ class _Sheet:
 
 class _Animal:
 	var sprite: Sprite2D
+	var sheet: _Sheet
 	var pen: int = 0
 	var pos: Vector2
 	var target: Vector2
@@ -240,6 +241,7 @@ func _update_herd(building: BuildingState, delta: float) -> void:
 
 func _new_animal(sheet: _Sheet, pens: Array, herd: Array) -> _Animal:
 	var animal := _Animal.new()
+	animal.sheet = sheet
 	animal.pen = _emptiest_pen(pens, herd, null)
 	animal.pos = _spot(pens[animal.pen]["list"])
 	animal.dir = _rng.randi_range(0, IsoMath.DIR_COUNT - 1)
@@ -297,7 +299,10 @@ func _step(animal: _Animal, pen: Dictionary, delta: float) -> void:
 			animal.pos = animal.target
 			animal.walking = false
 			animal.rest = _rng.randf_range(REST.x, REST.y)
-			animal.anim = "root" if _rng.randf() < 0.45 else "idle"
+			# Pigs root in the mud, sheep and horses graze (whichever the sheet has).
+			animal.anim = "idle"
+			if _rng.randf() < 0.5:
+				animal.anim = "graze" if animal.sheet.textures.has("graze") else "root"
 			animal.clock = 0.0
 		else:
 			animal.pos += to.normalized() * step

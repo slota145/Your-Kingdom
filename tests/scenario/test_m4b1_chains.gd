@@ -41,7 +41,10 @@ func _village_with(sim: Simulation, goods: Dictionary) -> BuildingState:
 func test_sheep_farm_shears_wool() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	var stock := _village_with(sim, {})
-	SimFixture.place(sim, &"sheep_farm", Vector2i(14, 4))
+	var farm := SimFixture.place(sim, &"sheep_farm", Vector2i(14, 4))
+	# A flock of 8 in a pen (Z1 part 2): the shepherd shears as fast as before the pens.
+	assert_int(Pens.auto_place(sim.province, farm, 4)).is_equal(4)
+	farm.yard.add(&"sheep", 6)
 	var counts := _run_counting(sim, 180)
 	var wool := int(counts.get("good_produced:wool", 0))
 	print("sheep farm in 3 min: ", counts)

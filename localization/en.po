@@ -1276,7 +1276,7 @@ msgid "good.pig.name"
 msgstr "Pigs"
 
 msgid "good.pig.desc"
-msgstr "Raised in the pigsty. The butcher leads a pig to the slaughterhouse. The travelling merchant sells the first pigs."
+msgstr "Raised in the pigsty's pen. The butcher leads a pig to the slaughterhouse. The travelling merchant sells more."
 
 msgid "good.meat.name"
 msgstr "Meat"
@@ -4155,3 +4155,35 @@ msgstr "The pen has all its tiles."
 
 msgid "ui.command_error.no_herd"
 msgstr "This building has no herd."
+
+msgid "good.sheep.name"
+msgstr "Sheep"
+
+msgid "good.sheep.desc"
+msgstr "Graze in the sheep farm's pen. The shepherd shears their wool: the more sheep, the faster. The travelling merchant sells more."
+
+msgid "ui.market.buy_sheep"
+msgstr "Buy a sheep (%d gold, %d left)"
+
+msgid "ui.market.buy_sheep_hint"
+msgstr "A porter leads the sheep to the nearest sheep farm with room in its pen."
+
+msgid "ui.market.buy_horse"
+msgstr "Buy a horse (%d gold, %d left)"
+
+msgid "ui.market.buy_horse_hint"
+msgstr "A porter leads the horse to the nearest stud farm with room in its pen."
+
+msgid "ui.command_error.no_animals_left"
+msgstr "The merchant has none of these left."
+
+msgid "ui.command_error.no_room_for_animals"
+msgstr "No pen with room for these animals."
+
+msgid "ui.reason.no_animals"
+msgstr "no animals in the pen"
+
+msgid "good.sheep.count"
+msgid_plural "good.sheep.count_plural"
+msgstr[0] "%s sheep"
+msgstr[1] "%s sheep"

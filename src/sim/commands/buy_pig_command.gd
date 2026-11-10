@@ -1,15 +1,10 @@
 class_name BuyPigCommand
-extends Command
-## Buys one pig from the travelling merchant while he trades at the market (M4b-2): paid at
-## once, then a porter leads it to the nearest pigsty with room.
+extends BuyAnimalCommand
+## Buys one pig from the travelling merchant (M4b-2): BuyAnimalCommand for a pig.
 
 
-func validate(sim: Simulation) -> StringName:
-	return sim.province.merchant.pig_error(sim.province)
-
-
-func apply(sim: Simulation) -> void:
-	sim.province.merchant.buy_pig(sim.province)
+func _init() -> void:
+	super(Merchant.PIG)
 
 
 func get_name() -> StringName:

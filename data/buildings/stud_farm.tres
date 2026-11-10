@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_bld")
 category = &"military"
-footprint = Vector2i(3, 3)
-entrance = Vector2i(2, 1)
+footprint = Vector2i(2, 2)
+entrance = Vector2i(1, 1)
 build_cost = Dictionary[StringName, int]({
 &"wood": 10,
 &"planks": 4
@@ -17,10 +17,11 @@ gold_cost = 40
 worker_kinds = Array[StringName]([&"groom"])
 needs_rare = &"horses"
 herd_good = &"horse"
-herd_capacity = 6
+herd_capacity = 12
+max_pens = 6
+work_radius = 4
 herd_start = 2
 breed_time = 120.0
 door_sides = &"one"
-yard_tile = Vector2i(0, 2)
 recipe = ExtResource("2_r")
 id = &"stud_farm"

@@ -69,6 +69,9 @@ const PEN_ANIMALS := 2
 ## [member work_radius]; each holds PEN_ANIMALS animals, so the herd's room is pens × 2.
 ## 0 = the old herd inside the building ([member herd_capacity]).
 @export_range(0, 64) var max_pens: int = 0
+## The work of a cycle goes faster with a bigger herd (Z1 part 2: the shepherd shears wool;
+## owner's survey 2026-11-10): see BuildingState.herd_work_factor. No animals, no work.
+@export var herd_work: bool = false
 ## Seconds for one young animal with 2 in the herd; a bigger herd breeds faster (the time is
 ## divided by half the herd). Breeding needs at least 2 animals and a worker at work.
 @export_range(1.0, 3600.0) var breed_time: float = 90.0

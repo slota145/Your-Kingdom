@@ -15,6 +15,8 @@ const MAX_RESERVE := 60
 ## A production yard holds this share of a storage slot (half a stack, M4b-2). A herd (a
 ## pigsty's animals) is a yard too.
 const YARD_DIVISOR := 2
+## Herd size at which the work of a herd_work building takes as long as before Z1 part 2.
+const HERD_WORK_BASE := 8.0
 
 var id: int
 var def: BuildingDef
@@ -59,6 +61,9 @@ var herd_given: bool = false
 ## Herd with pens (Z1): pen tiles the building owns. Not saved: counted from the field tiles
 ## (ProvinceSim.update_herd_room).
 var pens: int = 0
+## Pen tiles the game still places for this building (a sheep farm from a save before v33,
+## ProvinceSim._place_due_pens); 0 = none.
+var pens_due: int = 0
 ## Storage: handcarts bought for its porters (M4b-3, at most def.max_carts).
 var carts: int = 0
 ## Trading post: merchant wagons lent to trade routes (M6 part 3).
@@ -199,6 +204,13 @@ func herd_room() -> int:
 	if def.has_pens():
 		return pens * BuildingDef.PEN_ANIMALS
 	return def.herd_capacity
+
+
+## Work time of a cycle of a building with def.herd_work against today's (Z1 part 2): 1 with
+## HERD_WORK_BASE animals, slower with fewer (×2 with 2), faster with more (×0.58 with 24).
+func herd_work_factor() -> float:
+	var herd := yard.total(def.herd_good) if yard != null and def.herd_good != &"" else 0
+	return sqrt(HERD_WORK_BASE / float(maxi(herd, 1)))
 
 
 ## Animals of the herd's good others may take: all above the breeding reserve.
@@ -361,6 +373,8 @@ func to_dict() -> Dictionary:
 		d["herd_keep"] = herd_keep
 	if herd_given:
 		d["herd_given"] = true
+	if pens_due != 0:
+		d["pens_due"] = pens_due
 	if carts != 0:
 		d["carts"] = carts
 	if lent != 0:
@@ -428,6 +442,7 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	b.breed_ticks = int(d.get("breed", 0))
 	b.herd_keep = int(d.get("herd_keep", b.def.herd_keep))
 	b.herd_given = bool(d.get("herd_given", false))
+	b.pens_due = int(d.get("pens_due", 0))
 	b.carts = int(d.get("carts", 0))
 	b.lent = int(d.get("lent", 0))
 	b.recipe_mode = int(d.get("recipe_mode", -1))

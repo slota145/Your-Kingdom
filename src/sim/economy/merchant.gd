@@ -4,7 +4,8 @@ extends RefCounted
 ## comes from the map edge to the market (no market, no visit), stands by it for STAY seconds
 ## and buys what the player sells: of every good with a "sell above N" setting, porters carry
 ## what the storages hold above N to his wagon, and each unit is paid at its base price. He
-## also sells pigs (BuyPigCommand): a porter leads each one to a pigsty. Then he leaves.
+## also sells animals (BuyAnimalCommand: pigs, and since Z1 part 2 sheep and horses): a porter
+## leads each one to a pen of its kind. Then he leaves.
 ##
 ## The wagon is a storage with its own entity id while he trades; porters deliver to it.
 
@@ -12,9 +13,11 @@ enum State { AWAY, COMING, TRADING, LEAVING }
 
 const VISIT_EVERY := 600.0
 const STAY := 180.0
-## Extra wait for porters to lead bought pigs away; pigs left after it are refunded.
+## Extra wait for porters to lead bought animals away; those left after it are refunded.
 const PIG_WAIT := 120.0
-## Pigs he brings to sell on each visit, and the price of one.
+## Animals he sells: good -> [price, how many he brings on each visit] (Z1 part 2: sheep and
+## horses too; a horse goes only to a stud farm, so only where horses can be bred).
+const ANIMALS: Dictionary[StringName, Array] = {&"pig": [30, 4], &"sheep": [30, 4], &"horse": [120, 2]}
 const PIGS_PER_VISIT := 4
 const PIG_PRICE := 30
 const PIG := &"pig"
@@ -34,7 +37,8 @@ var market_id: int = 0
 var stand: Vector2i = Vector2i.ZERO
 var wagon_id: int = 0
 var wagon: Stockpile
-var pigs_left: int = 0
+## Animals he still has for sale this visit: good -> count.
+var animals_left: Dictionary[StringName, int] = {}
 ## Player setting: good -> units the storages keep; the merchant buys only what is above.
 ## A good without a setting is not sold.
 var sell_above: Dictionary[StringName, int] = {}
@@ -67,7 +71,7 @@ func update(province: ProvinceSim) -> void:
 				_refresh_requests(province)
 				return
 			_stop_buying(province)
-			if _pigs_waiting() == 0 or province.tick >= leave_at + SimClock.seconds_to_ticks(PIG_WAIT):
+			if _animals_waiting() == 0 or province.tick >= leave_at + SimClock.seconds_to_ticks(PIG_WAIT):
 				_close(province)
 
 
@@ -132,7 +136,9 @@ func start_trading(province: ProvinceSim) -> void:
 	leave_at = province.tick + SimClock.seconds_to_ticks(STAY)
 	wagon_id = province.ids.take()
 	wagon = Stockpile.new(WAGON_SLOTS, province.data)
-	pigs_left = PIGS_PER_VISIT
+	animals_left.clear()
+	for good: StringName in ANIMALS:
+		animals_left[good] = int(ANIMALS[good][1])
 	earned = 0
 	_refresh_requests(province)
 	province.events.emit(&"merchant_arrived", {"agent": agent_id, "market": market_id})
@@ -150,32 +156,50 @@ func gone() -> void:
 	agent_id = 0
 
 
-## Sells one pig to the player: paid now, then a porter leads it from the wagon to the
-## pigsty. &"" when done, otherwise the reason.
-func buy_pig(province: ProvinceSim) -> StringName:
-	var error := pig_error(province)
+## Sells one animal of [param good] to the player: paid now, then a porter leads it from the
+## wagon to the nearest pen of its kind. &"" when done, otherwise the reason.
+func buy_animal(province: ProvinceSim, good: StringName) -> StringName:
+	var error := animal_error(province, good)
 	if error != &"":
 		return error
-	var herd := province.nearest_sink(PIG, 1, stand)
-	province.treasury.pay(PIG_PRICE)
-	pigs_left -= 1
-	wagon.add(PIG, 1)
-	province.jobs.add(PIG, 1, wagon_id, herd)
-	province.ledger.made(PIG, 1, province.tick)
-	province.events.emit(&"pig_bought", {"herd": herd})
+	var herd := province.nearest_sink(good, 1, stand)
+	province.treasury.pay(animal_price(good))
+	animals_left[good] = animals_left.get(good, 0) - 1
+	wagon.add(good, 1)
+	province.jobs.add(good, 1, wagon_id, herd)
+	province.ledger.made(good, 1, province.tick)
+	province.events.emit(&"pig_bought" if good == PIG else &"animal_bought", {"herd": herd, "good": good})
+	return &""
+
+
+func buy_pig(province: ProvinceSim) -> StringName:
+	return buy_animal(province, PIG)
+
+
+func animal_error(province: ProvinceSim, good: StringName) -> StringName:
+	if not ANIMALS.has(good):
+		return &"not_for_sale"
+	if not is_trading() or province.tick >= leave_at:
+		return &"merchant_away"
+	if animals_left.get(good, 0) <= 0:
+		return &"no_pigs_left" if good == PIG else &"no_animals_left"
+	if province.treasury.gold < animal_price(good):
+		return &"not_enough_gold"
+	if province.nearest_sink(good, 1, stand) == 0:
+		return &"no_room_for_pigs" if good == PIG else &"no_room_for_animals"
 	return &""
 
 
 func pig_error(province: ProvinceSim) -> StringName:
-	if not is_trading() or province.tick >= leave_at:
-		return &"merchant_away"
-	if pigs_left <= 0:
-		return &"no_pigs_left"
-	if province.treasury.gold < PIG_PRICE:
-		return &"not_enough_gold"
-	if province.nearest_sink(PIG, 1, stand) == 0:
-		return &"no_room_for_pigs"
-	return &""
+	return animal_error(province, PIG)
+
+
+static func animal_price(good: StringName) -> int:
+	return int(ANIMALS[good][0]) if ANIMALS.has(good) else 0
+
+
+func left(good: StringName) -> int:
+	return animals_left.get(good, 0)
 
 
 ## Units of [param good] the merchant would buy now (what is above the player's setting).
@@ -189,7 +213,7 @@ func surplus(province: ProvinceSim, good: StringName) -> int:
 func _pay_for_wagon(province: ProvinceSim) -> void:
 	for slot: int in wagon.slot_count():
 		var good := wagon.slot_good[slot]
-		if good == &"" or good == PIG:
+		if good == &"" or ANIMALS.has(good):
 			continue
 		var amount := wagon.remove(good, wagon.slot_amount[slot] - wagon.slot_out[slot])
 		if amount <= 0:
@@ -213,16 +237,21 @@ func _stop_buying(province: ProvinceSim) -> void:
 		province.jobs.set_amount(good, 0, wagon_id, 0)
 
 
-func _pigs_waiting() -> int:
-	return wagon.total(PIG) if wagon != null else 0
+## Gold for the animals still on the wagon (bought, not led away yet).
+func _animals_waiting() -> int:
+	var gold := 0
+	if wagon != null:
+		for good: StringName in ANIMALS:
+			gold += wagon.total(good) * animal_price(good)
+	return gold
 
 
 ## Stops trading: requests to the wagon end, unled pigs are refunded, the merchant leaves.
 func _close(province: ProvinceSim) -> void:
 	province.jobs.cancel_for_entity(wagon_id)
-	var refund := _pigs_waiting()
+	var refund := _animals_waiting()
 	if refund > 0:
-		province.treasury.add(refund * PIG_PRICE)
+		province.treasury.add(refund)
 	for agent: Agent in province.agents.all():
 		if agent.task != null and (int(agent.task.bb.get("_src", 0)) == wagon_id \
 				or int(agent.task.bb.get("_dst", 0)) == wagon_id):
@@ -245,7 +274,10 @@ func to_dict() -> Dictionary:
 		d["market"] = market_id
 		d["stand"] = SimCodec.vec2i(stand)
 		d["leave_at"] = leave_at
-		d["pigs"] = pigs_left
+		var left := {}
+		for good: StringName in animals_left:
+			left[String(good)] = animals_left[good]
+		d["animals"] = left
 		d["earned"] = earned
 	if wagon != null:
 		d["wagon_id"] = wagon_id
@@ -264,7 +296,9 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> Merchant:
 	m.market_id = int(d.get("market", 0))
 	m.stand = SimCodec.to_vec2i(d.get("stand", [0, 0]))
 	m.leave_at = int(d.get("leave_at", 0))
-	m.pigs_left = int(d.get("pigs", 0))
+	var left: Dictionary = d.get("animals", {})
+	for good: Variant in left:
+		m.animals_left[StringName(String(good))] = int(left[good])
 	m.earned = int(d.get("earned", 0))
 	if d.has("wagon"):
 		m.wagon_id = int(d["wagon_id"])

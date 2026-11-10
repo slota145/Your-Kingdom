@@ -210,3 +210,141 @@ func test_v32_fixture_loads_and_continues() -> void:
 	assert_array(keeps).is_equal([2, 3])
 	sim.run_ticks(SimFixture.ticks(120))
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+# --- Part 2: sheep and horses ----------------------------------------------------------------
+
+func _wool_in(seconds: float, sheep: int) -> int:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	_village(sim)
+	var farm := SimFixture.place(sim, &"sheep_farm", Vector2i(16, 4))
+	farm.herd_given = sheep != 2
+	# A full pen: no lambs, the flock stays the same size for the comparison.
+	assert_int(Pens.auto_place(sim.province, farm, sheep / 2)).is_equal(sheep / 2)
+	farm.yard.add(&"sheep", sheep - farm.yard.total(&"sheep"))
+	var wool := 0
+	for i: int in SimFixture.ticks(seconds):
+		sim.step()
+		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"good_produced" and e["good"] == &"wool":
+				wool += int(e["amount"])
+	return wool
+
+
+func test_a_bigger_flock_gives_wool_faster() -> void:
+	var small := _wool_in(300, 2)
+	var big := _wool_in(300, 24)
+	print("wool in 5 min: 2 sheep ", small, ", 24 sheep ", big)
+	assert_int(small).is_greater(0)
+	assert_int(big).is_greater_equal(small * 3 / 2)
+
+
+func test_no_sheep_no_wool() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	_village(sim)
+	var farm := SimFixture.place(sim, &"sheep_farm", Vector2i(16, 4))
+	farm.herd_given = true
+	assert_int(Pens.auto_place(sim.province, farm, 2)).is_equal(2)
+	assert_int(farm.yard.total(&"sheep")).is_equal(0)
+	sim.run_ticks(SimFixture.ticks(180))
+	assert_int(sim.province.goods_total(&"wool")).is_equal(0)
+
+
+func test_sheep_and_stud_farms_get_their_pair_with_the_first_pen() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	sim.province.rare_resource = &"horses"
+	var farm := SimFixture.place(sim, &"sheep_farm", Vector2i(16, 4))
+	var stud := SimFixture.place(sim, &"stud_farm", Vector2i(16, 16))
+	assert_int(stud.def.footprint.x).is_equal(2)
+	assert_int(Pens.auto_place(sim.province, farm, 1)).is_equal(1)
+	assert_int(Pens.auto_place(sim.province, stud, 6)).is_equal(6)
+	assert_int(farm.yard.total(&"sheep")).is_equal(2)
+	assert_int(stud.yard.total(&"horse")).is_equal(2)
+	assert_str(String(sim.province.field_error(stud.id, Vector2i(20, 20)))).is_equal("too_many_pens")
+	assert_int(stud.herd_room()).is_equal(12)
+
+
+func test_the_merchant_sells_sheep_and_horses_where_they_have_a_pen() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	_village(sim)
+	sim.province.entry_tile = Vector2i(39, 20)
+	SimFixture.place(sim, &"market", Vector2i(20, 20))
+	sim.province.treasury.gold = 500
+	sim.province.merchant.next_visit = sim.province.tick + 10
+	assert_bool(SimFixture.run_until(sim, func() -> bool:
+		return sim.province.merchant.is_trading(), 120)).is_true()
+	# No sheep farm, no stud farm: nowhere to lead them.
+	assert_str(String(sim.execute(BuyAnimalCommand.new(&"sheep")))).is_equal("no_room_for_animals")
+	assert_str(String(sim.execute(BuyAnimalCommand.new(&"horse")))).is_equal("no_room_for_animals")
+	assert_str(String(sim.execute(BuyAnimalCommand.new(&"wool")))).is_equal("not_for_sale")
+	var farm := SimFixture.place(sim, &"sheep_farm", Vector2i(16, 4))
+	assert_int(Pens.auto_place(sim.province, farm, 3)).is_equal(3)
+	var gold := sim.province.treasury.gold
+	assert_str(String(sim.execute(BuyAnimalCommand.new(&"sheep")))).is_equal("")
+	assert_int(gold - sim.province.treasury.gold).is_equal(Merchant.animal_price(&"sheep"))
+	assert_int(sim.province.merchant.left(&"sheep")).is_equal(3)
+	assert_bool(SimFixture.run_until(sim, func() -> bool:
+		return farm.yard.total(&"sheep") >= 3, 120)).is_true()
+
+
+## v32 → v33: an old stud farm shrinks to 2×2 with a pen of its freed ground, an old sheep farm
+## gets a pen and a pair of sheep on its first second.
+func test_v32_saves_get_pens_for_stud_and_sheep_farms() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	sim.province.rare_resource = &"horses"
+	var farm := SimFixture.place(sim, &"sheep_farm", Vector2i(16, 4))
+	var stud := SimFixture.place(sim, &"stud_farm", Vector2i(16, 16))
+	var state: Dictionary = sim.to_dict()
+	# As a v32 save had them: a 3×3 stud farm with 4 horses and no pens, no sheep.
+	for entry: Variant in state["provinces"]:
+		var province: Dictionary = (entry as Dictionary)["state"]
+		province["fields"] = []
+		for b: Variant in province["buildings"]:
+			var d := b as Dictionary
+			if d["def"] == "stud_farm":
+				d["yard"] = {"slots": [["horse", 4]], "reservations": [], "next": 1, "limit": 6}
+				d.erase("herd_given")
+	var migrated := SaveMigrations.migrate(state, 32)
+	var loaded := Simulation.from_dict(migrated, SimFixture.registry())
+	assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(SimCodec.canonical(migrated))
+	var stud2 := loaded.province.buildings.get_building(stud.id)
+	assert_int(stud2.pens).is_equal(5)
+	assert_int(stud2.yard.total(&"horse")).is_equal(4)
+	assert_int(stud2.herd_room()).is_equal(10)
+	var farm2 := loaded.province.buildings.get_building(farm.id)
+	assert_int(farm2.pens_due).is_equal(SaveMigrations.AUTO_SHEEP_PENS)
+	loaded.run_ticks(SimFixture.ticks(2))
+	assert_int(farm2.pens).is_equal(SaveMigrations.AUTO_SHEEP_PENS)
+	assert_int(farm2.pens_due).is_equal(0)
+	assert_int(farm2.yard.total(&"sheep")).is_equal(2)
+
+
+## The v33 fixture (tools/build_flock_fixture.gd): a sheep farm and a stud farm with pens load
+## unchanged and keep playing; wool keeps coming.
+func test_v33_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v33_flocks.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(33)
+	var state := SaveMigrations.migrate(document["state"], 33)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	var farm: BuildingState = null
+	var stud: BuildingState = null
+	for b: BuildingState in sim.province.buildings.all():
+		if b.def.id == &"sheep_farm":
+			farm = b
+		elif b.def.id == &"stud_farm":
+			stud = b
+	assert_int(farm.pens).is_equal(4)
+	assert_int(farm.herd_keep).is_equal(4)
+	assert_int(farm.yard.total(&"sheep")).is_greater_equal(6)
+	assert_int(stud.pens).is_equal(3)
+	assert_int(stud.yard.total(&"horse")).is_greater_equal(2)
+	var wool := 0
+	for i: int in SimFixture.ticks(180):
+		sim.step()
+		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"good_produced" and e["good"] == &"wool":
+				wool += int(e["amount"])
+	assert_int(wool).is_greater(0)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()

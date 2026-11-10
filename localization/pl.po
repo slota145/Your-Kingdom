@@ -1293,7 +1293,7 @@ msgid "good.pig.name"
 msgstr "Świnie"
 
 msgid "good.pig.desc"
-msgstr "Hodowane w chlewie. Rzeźnik prowadzi świnię do rzeźni. Pierwsze świnie sprzedaje kupiec wędrowny."
+msgstr "Hodowane w chlewie, w zagrodzie. Rzeźnik prowadzi świnię do rzeźni. Kupiec wędrowny sprzedaje więcej."
 
 msgid "good.meat.name"
 msgstr "Mięso"
@@ -4192,3 +4192,36 @@ msgstr "Zagroda ma już wszystkie kratki."
 
 msgid "ui.command_error.no_herd"
 msgstr "Ten budynek nie ma stada."
+
+msgid "good.sheep.name"
+msgstr "Owce"
+
+msgid "good.sheep.desc"
+msgstr "Pasą się w zagrodzie owczarni. Pasterz strzyże z nich wełnę: im więcej owiec, tym szybciej. Kupiec wędrowny sprzedaje więcej."
+
+msgid "ui.market.buy_sheep"
+msgstr "Kup owcę (%d zł, zostało %d)"
+
+msgid "ui.market.buy_sheep_hint"
+msgstr "Tragarz zaprowadzi owcę do najbliższej owczarni z miejscem w zagrodzie."
+
+msgid "ui.market.buy_horse"
+msgstr "Kup konia (%d zł, zostało %d)"
+
+msgid "ui.market.buy_horse_hint"
+msgstr "Tragarz zaprowadzi konia do najbliższej stadniny z miejscem w zagrodzie."
+
+msgid "ui.command_error.no_animals_left"
+msgstr "Kupiec nie ma już tych zwierząt."
+
+msgid "ui.command_error.no_room_for_animals"
+msgstr "Brak zagrody z wolnym miejscem dla tych zwierząt."
+
+msgid "ui.reason.no_animals"
+msgstr "brak zwierząt w zagrodzie"
+
+msgid "good.sheep.count"
+msgid_plural "good.sheep.count_plural"
+msgstr[0] "%s owca"
+msgstr[1] "%s owce"
+msgstr[2] "%s owiec"

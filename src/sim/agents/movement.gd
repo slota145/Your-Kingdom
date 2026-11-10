@@ -87,6 +87,10 @@ static func _advance(province: ProvinceSim, agent: Agent) -> void:
 		var delta := target - agent.pos
 		var length := delta.length()
 		var cost := nav.get_cost(tile)
+		if cost == ProvinceSim.PEN_COST and province.is_pen(tile):
+			# A pen is dear to plan through (people go round it) but its keeper walks it at the
+			# pace of a field (Z1).
+			cost = ProvinceSim.FIELD_COST
 		if agent.vehicle != &"":
 			cost *= Carriers.speed_penalty(province, agent, tile)
 		var reach := budget / cost

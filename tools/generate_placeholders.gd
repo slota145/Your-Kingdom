@@ -70,6 +70,7 @@ const CARRIED_GOODS := {
 	"sword": ["bundle", Color(0.75, 0.77, 0.8), Color(0.55, 0.38, 0.2)],
 	"chainmail": ["crate", Color(0.6, 0.62, 0.65), Color(0.4, 0.42, 0.45)],
 	"horse": ["animal", Color(0.5, 0.33, 0.2), Color(0.25, 0.18, 0.12)],
+	"sheep": ["animal", Color(0.9, 0.87, 0.78), Color(0.3, 0.25, 0.2)],
 	# J1 part 1 (new weapons)
 	"halberd": ["bundle", Color(0.6, 0.45, 0.28), Color(0.78, 0.8, 0.84)],
 	"crossbow": ["bundle", Color(0.55, 0.35, 0.18), Color(0.7, 0.72, 0.76)],
@@ -627,7 +628,7 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.88, 0.84, 0.78), "roof_color": Color(0.66, 0.28, 0.2), "extra": "barrels"},
 	"bowyer": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 20.0,
 			"wall": Color(0.55, 0.38, 0.22), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
-	"stud_farm": {"footprint": Vector2i(3, 3), "entrance": Vector2i(2, 1), "walls": 22.0, "roof": 18.0,
+	"stud_farm": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 22.0, "roof": 18.0,
 			"wall": Color(0.58, 0.44, 0.3), "roof_color": Color(0.8, 0.68, 0.36), "extra": "sheep"},
 	"armoury": {"footprint": Vector2i(3, 3), "entrance": Vector2i(2, 1), "walls": 34.0, "roof": 26.0,
 			"wall": Color(0.62, 0.62, 0.64), "roof_color": Color(0.35, 0.36, 0.42), "extra": "barrels"},
@@ -1043,10 +1044,10 @@ func _vehicles() -> void:
 ## Animals in pens (Z1): an oval body in 8 rows (directions) of 8 frames, 32 px, the ground
 ## point at (16, 21), like tools/spritekiln/export_animal.py writes them.
 func _animals() -> void:
-	var colours := {"pig": Color(0.85, 0.55, 0.52)}
+	var colours := {"pig": Color(0.85, 0.55, 0.52), "sheep": Color(0.9, 0.87, 0.78), "horse": Color(0.55, 0.33, 0.2)}
 	for good: String in colours:
 		var info := {"frame": 32, "foot": [16, 21], "anims": {}}
-		for anim: String in ["idle", "walk", "root"]:
+		for anim: String in ["idle", "walk", "graze" if good != "pig" else "root"]:
 			var img := Image.create(32 * 8, 32 * 8, false, Image.FORMAT_RGBA8)
 			for row: int in 8:
 				for f: int in 8:
