@@ -153,6 +153,9 @@ func setup_province(source: ProvinceSim) -> void:
 	for folder: String in ["field", "field_hops", "field_grapes"]:
 		for name: String in ["fallow", "plowed", "sown_1", "sown_2", "sown_3", "ripe"]:
 			_fields["%s/%s" % [folder, name]] = ArtPaths.texture("terrain/%s/%s.png" % [folder, name])
+	# Animal pens (Z1): trampled earth, two looks.
+	for name: String in ["ground", "ground_2"]:
+		_fields["pen/%s" % name] = ArtPaths.texture("terrain/pen/%s.png" % name)
 	_build(province.grid.size)
 
 
@@ -303,6 +306,8 @@ func _decor_chance(tile: Vector2i) -> float:
 func _field(tile: Vector2i) -> Texture2D:
 	if province == null or not province.fields.has_field(tile):
 		return null
+	if province.is_pen(tile):
+		return _fields["pen/ground_2" if (tile.x * 7 + tile.y * 13) % 3 == 0 else "pen/ground"]
 	var stage := province.fields.stage(tile, province.tick)
 	var folder := _crop_folder(province.fields.farm_of(tile))
 	if stage == FieldStore.Stage.SOWN:

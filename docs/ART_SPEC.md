@@ -592,3 +592,12 @@ Powód: kredyty PixelLab skończyły się po ok. 2 tygodniach. Szukamy darmowych
     - `sockets` (punkty zaczepienia na klatkę, np. dłoń z niesionym towarem, §4.5), `--lit` z mapą normalnych do oświetlenia w Godocie i `spritekiln godot` (eksport do SpriteFrames): na później, przy postaciach.
   - Budynek: `kind: prop`, `directions: [se]`, `shadow: null`, gruntu nie podnosić (podwórko 0,01 nad ziemią, `outline: false`). Wymiary w jednostkach: kafel 2,343, drzwi ok. 1,5, ściana parteru ok. 2,2–2,4.
 - Następny krok próby: decyzja właściciela po obejrzeniu porównań (`previews/*_vs_current_*.png`, `previews/woodcutter_hut_closeup.png`). Alternatywa do porównania na laptopie właściciela: Spriteloom (dodatek AI do Aseprite, karta NVIDIA ≥ 12 GB).
+
+### 10.21 Zagrody ze zwierzętami (Z1, część 1, 2026-11-10)
+
+- **Zwierzęta w zagrodzie:** `assets/animals/<towar>/{idle,walk,root}.png` (wiersze: kierunki S, SE, E, NE, N, NW, W, SW, bez luster; kolumny: klatki) i `sheet.json` (rozmiar klatki, punkt na ziemi, liczba klatek i czas klatki każdej animacji). Świnia ze SpriteKiln (`art/specs/props/pig`, klatka 32, punkt (16, 21)): `cd tools/spritekiln/art/specs/props/pig && spritekiln render pig.yaml`, potem `python3 tools/spritekiln/export_animal.py pig`. Placeholdery (owal) pisze `tools/generate_placeholders.gd`.
+- **Płot i furtka** rysuje kod (`PenLayer`, jak poręcze mostu): słupki 13 px, dwie żerdzie na 5 i 10 px (ciemna linia z jasnym grzbietem); furtka między dwoma wyższymi słupkami (16 px), skrzydło z desek z zastrzałem, otwarte obraca się do środka zagrody. Zamiast osobnych obrazków ze SpriteKiln: brzegi zagrody mają dowolny kształt, a płot rysowany kodem sam łączy się w narożnikach (do zmiany po ocenie, jeśli będzie wyglądał za skromnie).
+- **Podłoże zagrody:** wydeptana ziemia z kałużami błota, słomą i kępkami trawy przy brzegach, 2 wyglądy (`terrain/pen/ground{,_2}.png`, 64×32): `python3 tools/make_pen_ground.py`.
+- **Mniejszy chlew** 2×2 (kod, `tools/generate_art.gd -- --only=pigsty`): chata z desek ze strzechą, otwarta wiata z sianem, koryto, kosze z paszą, wiadro.
+- Zrzut: `game_shot.tscn -- --plain --tile=62,64 --zoom=2 --pens [--select=pigsty]`.
+

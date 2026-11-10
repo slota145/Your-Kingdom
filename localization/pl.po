@@ -1377,10 +1377,10 @@ msgstr[1] "%s skóry"
 msgstr[2] "%s skór"
 
 msgid "ui.building.herd"
-msgstr "Świnie w stadzie: %d z %d (ostatnie %d zawsze zostają)"
+msgstr "%s w stadzie: %d, miejsca w zagrodzie: %d (do rozmnażania zostaje %d)"
 
 msgid "ui.building.herd_too_small"
-msgstr "Stado rośnie od 2 świń. Kupisz je u kupca wędrownego."
+msgstr "Stado rośnie od 2 zwierząt. Możesz je dokupić u kupca wędrownego."
 
 msgid "ui.building.yard"
 msgstr "Stos przy budynku: %s"
@@ -4165,3 +4165,30 @@ msgstr "Wszystkie"
 
 msgid "ui.invasion.plunder_hint"
 msgstr "Tyle pierwszych fal tylko łupi złoto i towary i odpływa. Dalsze zajmują miasto, które zdobędą."
+
+msgid "ui.building.pens"
+msgstr "Kratki zagrody: %d z %d (miejsce dla %d zwierząt)"
+
+msgid "ui.building.add_pens"
+msgstr "Dodaj zagrodę"
+
+msgid "ui.building.no_pens"
+msgstr "Postaw kratki zagrody: każda mieści 2 zwierzęta. Pierwsza kratka przynosi parę na start."
+
+msgid "ui.building.herd_crowded"
+msgstr "Zagroda jest za ciasna: stado nie rośnie, a rzeźnik i kupiec biorą najpierw nadmiar."
+
+msgid "ui.herd.keep"
+msgstr "Zostaw do rozmnażania: %d"
+
+msgid "ui.herd.keep_hint"
+msgstr "Tyle zwierząt zawsze zostaje w zagrodzie. Rzeźnik, kupiec i koszary biorą tylko resztę."
+
+msgid "ui.reason.no_pen"
+msgstr "brak zagrody (postaw kratki zagrody)"
+
+msgid "ui.command_error.too_many_pens"
+msgstr "Zagroda ma już wszystkie kratki."
+
+msgid "ui.command_error.no_herd"
+msgstr "Ten budynek nie ma stada."

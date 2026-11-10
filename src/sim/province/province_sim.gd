@@ -125,6 +125,8 @@ const ROAD_COST := 0.67
 const PAVED_COST := 0.55
 ## Walking cost on a field tile (ARCHITECTURE §5.3).
 const FIELD_COST := 1.2
+## Walking cost of a pen tile (Z1): fenced, so paths go round it unless they end inside.
+const PEN_COST := 6.0
 ## How often young trees are checked for growing up (1 s).
 const GROW_CHECK_TICKS := 10
 ## How long the start protection lasts (owner's survey 2026-11-07: 15 minutes, in a new game
@@ -252,7 +254,8 @@ func refresh_tile(tile: Vector2i) -> void:
 	elif grid.has_bridge(tile):
 		cost = PAVED_COST if grid.bridge(tile) == TileGrid.STONE_BRIDGE else ROAD_COST
 	elif fields.has_field(tile):
-		cost = FIELD_COST
+		# People go round a fenced pen when they can (Z1); its keeper walks in.
+		cost = PEN_COST if is_pen(tile) else FIELD_COST
 	else:
 		var terrain := terrain_at(tile)
 		if terrain != null:
@@ -1328,20 +1331,21 @@ func assign_worker(agent: Agent, building: BuildingState) -> void:
 
 # --- Fields and roads ----------------------------------------------------------------------
 
-## &"" when [param tile] can become a field of [param farm_id], otherwise the reason.
+## &"" when [param tile] can become a field of [param farm_id], otherwise the reason. A
+## building with pens (Z1) places its pen tiles the same way.
 func field_error(farm_id: int, tile: Vector2i) -> StringName:
 	var farm := buildings.get_building(farm_id)
-	if farm == null or farm.def.max_fields == 0:
+	if farm == null or farm.def.field_limit() == 0:
 		return &"not_a_farm"
 	if not grid.is_inside(tile):
 		return &"outside_map"
-	if fields.tiles_of(farm_id).size() >= farm.def.max_fields:
-		return &"too_many_fields"
+	if fields.tiles_of(farm_id).size() >= farm.def.field_limit():
+		return &"too_many_pens" if farm.def.has_pens() else &"too_many_fields"
 	var rect := Rect2i(farm.origin, farm.def.footprint).grow(farm.def.work_radius)
 	if not rect.has_point(tile):
 		return &"out_of_range"
 	var terrain := terrain_at(tile)
-	if terrain != null and not terrain.farmable:
+	if terrain != null and not terrain.farmable and not farm.def.has_pens():
 		return &"terrain_not_farmable"
 	return _free_ground_error(tile)
 
@@ -1349,18 +1353,66 @@ func field_error(farm_id: int, tile: Vector2i) -> StringName:
 func add_field(farm_id: int, tile: Vector2i) -> void:
 	fields.add(tile, farm_id)
 	refresh_tile(tile)
+	var building := buildings.get_building(farm_id)
+	if building != null and building.def.has_pens():
+		update_herd_room(building)
+		# The first pen brings the starting pair (Z1, owner's survey 2026-11-10).
+		if building.give_pair() > 0:
+			events.emit(&"animal_born", {"building": building.id, "good": building.def.herd_good,
+					"herd": building.yard.total(building.def.herd_good)})
 	events.emit(&"field_changed", {"tile": tile, "farm": farm_id})
 
 
-## Removes a field tile; a farmer working it gives up.
+## Removes a field tile; a farmer working it gives up. A pen tile (Z1) shrinks the herd's room;
+## animals above it stay (owner's survey 2026-11-10: nobody vanishes, the herd stops growing).
 func remove_field(tile: Vector2i) -> void:
 	var owner := fields.claimant(tile)
+	var holder := buildings.get_building(fields.farm_of(tile))
 	fields.remove(tile)
 	refresh_tile(tile)
 	var agent := agents.get_agent(owner)
 	if agent != null and agent.task != null:
 		TaskRunner.fail(self, agent)
+	if holder != null and holder.def.has_pens():
+		update_herd_room(holder)
 	events.emit(&"field_changed", {"tile": tile, "farm": 0})
+
+
+## Counts the pen tiles of [param building] (Z1) and sets the herd's room from them: 2 animals
+## per pen tile, the breeding reserve kept between 2 and the room.
+func update_herd_room(building: BuildingState) -> void:
+	if not building.def.has_pens():
+		return
+	building.pens = fields.tiles_of(building.id).size()
+	if building.yard != null:
+		building.yard.stack_limit = maxi(building.herd_room(), 1)
+
+
+## Every herd in pens counts its pen tiles again (after loading a game).
+func update_herd_rooms() -> void:
+	if fields.count() == 0 and not _has_pen_buildings():
+		return
+	var counts := fields.counts()
+	for building: BuildingState in buildings.all():
+		if building.def.has_pens():
+			building.pens = counts.get(building.id, 0)
+			if building.yard != null:
+				building.yard.stack_limit = maxi(building.herd_room(), 1)
+
+
+func _has_pen_buildings() -> bool:
+	for building: BuildingState in buildings.all():
+		if building.def.has_pens():
+			return true
+	return false
+
+
+## Whether [param tile] is a pen tile (Z1): a field tile of a building with pens.
+func is_pen(tile: Vector2i) -> bool:
+	if not fields.has_field(tile):
+		return false
+	var holder := buildings.get_building(fields.farm_of(tile))
+	return holder != null and holder.def.has_pens()
 
 
 ## &"" when a dirt road can go on [param tile].
@@ -2708,7 +2760,7 @@ func nearest_source(good: StringName, amount: int, from: Vector2i, exclude: int 
 	for building: BuildingState in yard_buildings(good):
 		var yard := yard_id(building.id)
 		# A herd always keeps its last animals for breeding (M4b-2).
-		var keep := building.def.herd_keep if building.def.herd_good == good else 0
+		var keep := building.herd_keep if building.def.herd_good == good else 0
 		if building.yard != null and yard != exclude and building.yard.can_supply(good, amount) 				and building.yard.available(good) - keep >= amount:
 			var d := (building.entrance_tile() - from).length_squared()
 			if d < best_d:
@@ -2891,7 +2943,7 @@ func nearest_sink(good: StringName, amount: int, from: Vector2i, exclude: int = 
 	if good_def != null and good_def.is_live():
 		for building: BuildingState in yard_buildings(good):
 			var herd := yard_id(building.id)
-			if building.def.herd_good == good and building.yard != null and herd != exclude 					and building.yard.can_accept(good, amount):
+			if building.def.herd_good == good and building.yard != null and herd != exclude 					and building.herd_room() > 0 and building.yard.can_accept(good, amount):
 				var d := (building.entrance_tile() - from).length_squared()
 				if d < best_d:
 					best_d = d
@@ -3168,5 +3220,6 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 		var build := ShipBuild.from_dict(bd, registry)
 		province.ship_builds[build.id] = build
 	province.fairway = Ships.fairway_tiles(province)
+	province.update_herd_rooms()
 	province.rebuild_nav()
 	return province

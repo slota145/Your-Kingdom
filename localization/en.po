@@ -1357,10 +1357,10 @@ msgstr[0] "%s hide"
 msgstr[1] "%s hides"
 
 msgid "ui.building.herd"
-msgstr "Pigs in the herd: %d of %d (the last %d always stay)"
+msgstr "%s in the herd: %d, room in the pen: %d (%d kept for breeding)"
 
 msgid "ui.building.herd_too_small"
-msgstr "The herd grows from 2 pigs. Buy them from the travelling merchant."
+msgstr "The herd grows from 2 animals. You can buy more from the travelling merchant."
 
 msgid "ui.building.yard"
 msgstr "Stack by the building: %s"
@@ -4128,3 +4128,30 @@ msgstr "All"
 
 msgid "ui.invasion.plunder_hint"
 msgstr "This many first waves only plunder gold and goods and sail away. Later ones take the town they win."
+
+msgid "ui.building.pens"
+msgstr "Pen tiles: %d of %d (room for %d animals)"
+
+msgid "ui.building.add_pens"
+msgstr "Add pen"
+
+msgid "ui.building.no_pens"
+msgstr "Place pen tiles: each holds 2 animals. The first tile brings a starting pair."
+
+msgid "ui.building.herd_crowded"
+msgstr "The pen is too small: the herd does not grow, and the butcher and the merchant take the surplus first."
+
+msgid "ui.herd.keep"
+msgstr "Keep for breeding: %d"
+
+msgid "ui.herd.keep_hint"
+msgstr "This many animals always stay in the pen. The butcher, the merchant and the barracks take only the rest."
+
+msgid "ui.reason.no_pen"
+msgstr "no pen (place pen tiles)"
+
+msgid "ui.command_error.too_many_pens"
+msgstr "The pen has all its tiles."
+
+msgid "ui.command_error.no_herd"
+msgstr "This building has no herd."

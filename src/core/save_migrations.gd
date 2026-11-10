@@ -3,7 +3,10 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 31
+const CURRENT_VERSION := 32
+## Tiles of a 3×3 pigsty (before v32) outside the 2×2 one, from its origin: its pen now.
+const OLD_PIGSTY_PEN: Array[Vector2i] = [Vector2i(2, 0), Vector2i(2, 1), Vector2i(0, 2), Vector2i(1, 2),
+		Vector2i(2, 2)]
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -100,6 +103,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 31:
 		result = migrate_v30_to_v31(result)
 		version = 31
+	if version < 32:
+		result = migrate_v31_to_v32(result)
+		version = 32
 	return result
 
 
@@ -387,6 +393,38 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
 ## target, the Invasion from the sea with the clock of its waves). A game from before is a
 ## Colonization game: its settings name the scenario and get the default gold target.
+## v32 (Z1 part 1, animal pens): a pigsty is 2×2 without a built-in pen; its pigs live in pen
+## tiles (field tiles of the pigsty), 2 a tile. A building keeps its breeding reserve
+## ("herd_keep", default 2) and whether its starting pair came ("herd_given"). An old 3×3
+## pigsty keeps its origin; the 5 tiles it frees become its pen (room for 10 pigs, owner's
+## survey 2026-11-10: the game places the pen, no pig is lost; a bigger herd stays and stops
+## growing until the player adds pen tiles).
+static func migrate_v31_to_v32(state: Dictionary) -> Dictionary:
+	for entry: Variant in state.get("provinces", []):
+		var province: Dictionary = (entry as Dictionary)["state"]
+		if province.has("province"):
+			province = province["province"]   # the simplified mode keeps its detail inside
+		var fields: Array = province.get("fields", [])
+		var added := false
+		for building: Variant in province.get("buildings", []):
+			var b := building as Dictionary
+			if b["def"] != "pigsty":
+				continue
+			b["herd_given"] = true
+			var origin := SimCodec.to_vec2i(b["origin"])
+			for tile: Vector2i in OLD_PIGSTY_PEN:
+				var at := origin + tile
+				fields.append([at.x, at.y, int(b["id"]), 0, 0, 0, 0])
+				added = true
+			if b.has("yard"):
+				(b["yard"] as Dictionary)["limit"] = OLD_PIGSTY_PEN.size() * BuildingDef.PEN_ANIMALS
+		if added:
+			fields.sort_custom(func(x: Array, y: Array) -> bool:
+				return int(x[0]) < int(y[0]) or (int(x[0]) == int(y[0]) and int(x[1]) < int(y[1])))
+			province["fields"] = fields
+	return state
+
+
 static func migrate_v30_to_v31(state: Dictionary) -> Dictionary:
 	var world: Dictionary = state.get("world", {})
 	if world.has("settings"):

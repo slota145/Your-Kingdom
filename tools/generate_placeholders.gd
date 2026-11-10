@@ -90,6 +90,7 @@ func _init() -> void:
 	_buildings()
 	_walls()
 	_vehicles()
+	_animals()
 	print("Placeholders written to ", OUT)
 	quit()
 
@@ -147,6 +148,9 @@ func _terrain() -> void:
 	for stage: int in 4:
 		var name := "ripe" if stage == 3 else "sown_%d" % (stage + 1)
 		_save(_hop_poles(soil, furrow, stage), "terrain/field_hops/%s.png" % name)
+	# Animal pens (Z1): trampled earth.
+	for name: String in ["ground", "ground_2"]:
+		_save(_diamond(Color(0.46, 0.36, 0.24), Color(0.4, 0.31, 0.21)), "terrain/pen/%s.png" % name)
 	# Vineyard (M6 part 3): vine rows on stakes, leafing out, purple grapes when ripe.
 	_save(_diamond(Color(0.5, 0.38, 0.28), Color(0.44, 0.32, 0.24)), "terrain/field_grapes/fallow.png")
 	_save(_furrows(Color(0.46, 0.32, 0.24), Color(0.36, 0.24, 0.18), Color(0, 0, 0, 0)), "terrain/field_grapes/plowed.png")
@@ -1034,6 +1038,28 @@ func _vehicles() -> void:
 			_ellipse(wagon, centre + Vector2(-16, -24), Vector2(18, 9), Color(0.9, 0.86, 0.74))
 			_ellipse(wagon, centre + Vector2(12, -16), Vector2(9, 6), Color(0.48, 0.3, 0.18))
 		_save(wagon, "vehicles/trade_wagon/%s.png" % state)
+
+
+## Animals in pens (Z1): an oval body in 8 rows (directions) of 8 frames, 32 px, the ground
+## point at (16, 21), like tools/spritekiln/export_animal.py writes them.
+func _animals() -> void:
+	var colours := {"pig": Color(0.85, 0.55, 0.52)}
+	for good: String in colours:
+		var info := {"frame": 32, "foot": [16, 21], "anims": {}}
+		for anim: String in ["idle", "walk", "root"]:
+			var img := Image.create(32 * 8, 32 * 8, false, Image.FORMAT_RGBA8)
+			for row: int in 8:
+				for f: int in 8:
+					var bob := 1 if anim == "walk" and f % 2 == 1 else 0
+					for y: int in range(13, 22):
+						for x: int in range(8, 25):
+							var d := pow((x - 16.0) / 8.0, 2) + pow((y - 17.0 - bob) / 4.0, 2)
+							if d <= 1.0:
+								img.set_pixel(f * 32 + x, row * 32 + y, colours[good] if d < 0.8 else Color(0.2, 0.1, 0.1))
+			_save(img, "animals/%s/%s.png" % [good, anim])
+			info["anims"][anim] = {"frames": 8, "ms": 120}
+		var file := FileAccess.open(OUT.path_join("animals/%s/sheet.json" % good), FileAccess.WRITE)
+		file.store_string(JSON.stringify(info, " "))
 
 
 func _save(img: Image, relative: String) -> void:

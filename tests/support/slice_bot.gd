@@ -127,7 +127,7 @@ func _init(simulation: Simulation) -> void:
 		{"at": 3600, "build": &"meadery", "near": town + Vector2i(12, -14)},
 		{"at": 3600, "build": &"apiary", "near": town + Vector2i(22, 24)},
 		# M4b-2: meat (pigs bought from the travelling merchant) and selling surplus to him.
-		{"at": 1500, "build": &"pigsty", "near": town + Vector2i(-14, 22)},
+		{"at": 1500, "build": &"pigsty", "near": town + Vector2i(-14, 22), "fields": 6},
 		{"at": 1560, "build": &"slaughterhouse", "near": town + Vector2i(-9, 23)},
 		{"at": 1560, "buy_pigs": 3},
 		{"at": 1560, "sell": {&"hides": 0, &"planks": 60, &"stone": 60}},
@@ -257,6 +257,10 @@ func _do(action: Dictionary) -> void:
 	if action.has("priority"):
 		sim.execute(SetPriorityCommand.new(building.id, int(action["priority"])))
 	var fields := int(action.get("fields", 0))
+	if def.has_pens():
+		# A pen in one piece beside the pigsty (Z1).
+		Pens.auto_place(sim.province, building, fields)
+		fields = 0
 	for r: int in range(1, def.work_radius + 1):
 		for y: int in range(spot.y - r, spot.y + def.footprint.y + r):
 			for x: int in range(spot.x - r, spot.x + def.footprint.x + r):

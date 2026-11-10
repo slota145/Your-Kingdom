@@ -1,5 +1,7 @@
 class_name BuildingDef
 extends GameDef
+## Animals one pen tile holds (Z1, owner's survey 2026-11-10).
+const PEN_ANIMALS := 2
 ## A placeable building. Visual data lives separately in data/visuals (ARCHITECTURE §3.3).
 
 ## Handcarts the player can buy for this storage's porters (M4b-3, GDD §5.2).
@@ -60,8 +62,13 @@ extends GameDef
 @export var herd_good: StringName = &""
 ## Animals the herd holds at most.
 @export_range(0, 99) var herd_capacity: int = 0
-## Animals always left for breeding (owner's decision 2026-11-05: the last 2 pigs stay).
+## Animals always left for breeding (owner's decision 2026-11-05: the last 2 pigs stay). The
+## default of the per-building setting (BuildingState.herd_keep, Z1: the player may raise it).
 @export_range(0, 99) var herd_keep: int = 2
+## Pen tiles the building may own (Z1, animal pens): placed like field tiles within
+## [member work_radius]; each holds PEN_ANIMALS animals, so the herd's room is pens × 2.
+## 0 = the old herd inside the building ([member herd_capacity]).
+@export_range(0, 64) var max_pens: int = 0
 ## Seconds for one young animal with 2 in the herd; a bigger herd breeds faster (the time is
 ## divided by half the herd). Breeding needs at least 2 animals and a worker at work.
 @export_range(1.0, 3600.0) var breed_time: float = 90.0
@@ -127,7 +134,8 @@ extends GameDef
 ## M7: other work cycles the player may switch to (a blacksmith: spears or swords). The
 ## first is usually [member recipe]; empty = only [member recipe].
 @export var recipe_choices: Array[RecipeDef] = []
-## Animals a finished building's herd starts with (a stud farm's pair of horses, M7).
+## Animals a finished building's herd starts with (a stud farm's pair of horses, M7). With
+## pens (Z1) the pair comes when the first pen tile is placed.
 @export_range(0, 99) var herd_start: int = 0
 ## Resource node that must lie within [member work_radius] of the footprint (a mine needs
 ## an ore vein, M7); empty = none.
@@ -373,3 +381,13 @@ func is_entrance_on_edge() -> bool:
 	var on_edge: bool = entrance.x == 0 or entrance.y == 0 \
 			or entrance.x == footprint.x - 1 or entrance.y == footprint.y - 1
 	return inside and on_edge
+
+
+## Whether the herd lives in pen tiles placed by the player (Z1).
+func has_pens() -> bool:
+	return max_pens > 0 and herd_good != &""
+
+
+## Tiles of the field kind the building may own: fields of a farm or pens of a herd (Z1).
+func field_limit() -> int:
+	return max_fields if max_fields > 0 else max_pens

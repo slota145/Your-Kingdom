@@ -20,6 +20,15 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 			# Work steps face "node": the angler looks at the water.
 			bb["node"] = SimCodec.vec2i(province.shore_water(shore, workplace.def.needs_terrain_near))
 		return Movement.walk(province, agent, SimCodec.to_vec2i(bb["stand"]))
+	if step.target == &"pen":
+		# The keeper walks into the pen (Z1): a pen tile of the workplace, another each time.
+		if not bb.has("stand"):
+			var pens := province.fields.tiles_of(workplace.id)
+			if pens.is_empty():
+				return failed(agent, &"no_pen")
+			var tile := pens[(agent.id + province.tick / SimClock.TICKS_PER_SECOND) % pens.size()]
+			bb["stand"] = SimCodec.vec2i(tile)
+		return Movement.walk(province, agent, SimCodec.to_vec2i(bb["stand"]))
 	if step.target == &"plant_spot":
 		if not bb.has("stand"):
 			var spot := province.find_plant_spot(workplace, step.resource, agent.tile())

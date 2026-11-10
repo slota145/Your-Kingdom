@@ -152,14 +152,14 @@ const BUILDINGS := {
 		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.5], "h": 34.0, "rh": 24.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2)}],
 		"pens": [[0.12, 1.58, 1.0, 1.94, "sheep"]],
 		"props": [["hay", 1.3, 1.82]]}],
-	# M4b-2 (meat): a pigsty with a muddy pen, a stone slaughterhouse with an open shed.
+	# M4b-2 (meat), smaller in Z1 (animal pens): the sty without a built-in pen (the pigs live
+	# in the pen tiles the player places): a plank hut, an open feed shed with a feed basket.
 	"pigsty": [{"volumes": [
-		{"kind": "house", "rect": [0.14, 0.14, 1.3, 1.5], "h": 30.0, "rh": 22.0, "ridge": "y",
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.5], "h": 30.0, "rh": 22.0, "ridge": "y",
 			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.55, 0.35, 0.2)},
-		{"kind": "lean", "rect": [1.3, 0.2, 2.2, 1.0], "low": "y", "h": 20.0, "hh": 28.0,
-			"roof": "thatch", "walls": "planks", "open": true, "inside": [["hay", 1.75, 0.75]]}],
-		"pens": [[1.25, 1.1, 2.9, 2.9, "pigs"], [0.12, 1.6, 1.15, 2.9, "pigs"]],
-		"props": [["trough", 2.2, 1.35], ["bucket", 1.05, 2.98]]}],
+		{"kind": "lean", "rect": [1.0, 0.2, 1.86, 1.0], "low": "x", "h": 20.0, "hh": 28.0,
+			"roof": "thatch", "walls": "planks", "open": true, "inside": [["hay", 1.45, 0.65]]}],
+		"props": [["trough", 1.35, 1.45], ["baskets", 1.55, 1.85], ["bucket", 0.25, 1.95]]}],
 	# M4b-3: a stable with a hay loft, an open wagon shed and a paddock.
 	# M6 part 3 (owner's decision 2026-11-07): the trading post keeps the big covered merchant
 	# wagon that runs trade routes between provinces: a stone warehouse with a loading bay.

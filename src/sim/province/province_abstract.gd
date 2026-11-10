@@ -485,7 +485,7 @@ func _keep(id: int, good: StringName) -> int:
 	if id >= 0:
 		return 0
 	var building := detail.buildings.get_building(-id)
-	return building.def.herd_keep if building != null and building.def.herd_good == good else 0
+	return building.herd_keep if building != null and building.def.herd_good == good else 0
 
 
 ## The next tile of the forester's marked area (or work area) where a sapling may go,

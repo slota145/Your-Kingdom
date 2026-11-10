@@ -195,8 +195,9 @@ pasieka ──► miód ──► miodosytnia ──► miód pitny
 leśniczy sadzi sadzonki ──► drzewa (dla drwala)
 
 [M4b-2]
-chlew (stado, od 2 świń rośnie samo) ──► świnia ──► rzeźnia ──► 2 mięsa + 1 skóra
-pierwsze świnie od kupca wędrownego (30 złota sztuka); ostatnie 2 świnie zawsze zostają
+chlew z zagrodą (stado, od 2 świń rośnie samo) ──► świnia ──► rzeźnia ──► 2 mięsa + 1 skóra
+zagroda z kratek (2 świnie na kratkę, do 12 kratek); pierwsza kratka przynosi parę świń (Z1),
+kupiec wędrowny sprzedaje więcej (30 złota sztuka); suwak „zostaw do rozmnażania” (od 2)
 
 [1.0]
 sad ──► jabłka
@@ -350,7 +351,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Pasieka [M4b-1] | 2×2 | miód |
 | Miodosytnia [M4b-1] | 2×2, 30 złota | miód pitny |
 | Tawerna [M4b-1] | 2×2, 40 złota | usługa w zasięgu (patrycjusze), zużywa piwo i miód pitny |
-| Chlew [M4b-2] | 3×3, stado do 12 świń | świnie (świniarz karmi stado) |
+| Chlew [M4b-2, Z1] | 2×2 i zagroda z kratek (do 12, 2 świnie na kratkę) | świnie (świniarz karmi stado w zagrodzie) |
 | Rzeźnia [M4b-2] | 2×2 | mięso i skóry ze świni |
 | Stajnia [M4b-3] | 3×3, 40 złota | 2 wozy konne z woźnicami |
 | Smolarnia [M5] | 2×2 | smoła z drewna |
