@@ -211,6 +211,10 @@ func _refresh() -> void:
 	var goal := Victory.progress(sim)
 	if goal[1] > 0:
 		_title.text += "  ·  " + tr("ui.world.goal") % [tr("ui.victory.%s" % sim.world.settings.victory), goal[0], goal[1]]
+	# The Invasion from the sea (M8 part 5): when the next wave sets out.
+	var wave_in := Invasion.seconds_to_next(sim)
+	if wave_in >= 0:
+		_title.text += "  ·  " + tr("ui.world.next_wave") % [sim.world.invasion.wave + 1, wave_in / 60, wave_in % 60]
 	var def := sim.world.def_of(_selected, sim.data)
 	_expedition.show_for(sim, _selected)
 	_army.show_for(sim, _canvas.army_selected)

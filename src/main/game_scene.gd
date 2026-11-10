@@ -453,6 +453,11 @@ func _note_world_event(event: Dictionary) -> void:
 			_notes.push(tr("ui.note.ruler_marched_player") % [tr("ruler.%s.name" % event["owner"]),
 					_province_name(int(event["province"])), maxi(ceili(float(event["seconds"]) / 60.0), 1)])
 		return
+	# The Invasion from the sea (M8 part 5).
+	if type == &"invasion_wave":
+		_notes.push(tr("ui.note.invasion_wave") % [int(event["wave"]), int(event["waves"]), int(event["men"]),
+				_province_name(int(event["province"])), maxi(ceili(float(event["seconds"]) / 60.0), 1)])
+		return
 	if type == &"ruler_storming":
 		_notes.push(tr("ui.note.ruler_storming") % tr("ruler.%s.name" % event["owner"]))
 		return
@@ -580,7 +585,8 @@ func _on_sim_event(event: Dictionary) -> void:
 	# The end of a sandbox game (M8 part 1).
 	if event["type"] == &"game_won" or event["type"] == &"game_lost":
 		Game.paused = true
-		_result.show_result(event["type"] == &"game_won", StringName(String(event.get("victory", ""))))
+		_result.show_result(event["type"] == &"game_won", StringName(String(event.get("victory", ""))),
+				StringName(String(event.get("winner", ""))))
 	_on_battle_event(event)
 	_note_world_event(event)
 	view.on_sim_event(event)

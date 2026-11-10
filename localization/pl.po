@@ -4073,3 +4073,50 @@ msgstr "Maszeruje na: %s"
 
 msgid "ui.ruler.campaign_soon"
 msgstr "Pierwszy atak najwcześniej za ok. %d min"
+
+# M8 part 5: scenarios
+
+msgid "ui.scenario.divided"
+msgstr "Podzielony kontynent"
+
+msgid "ui.scenario.islands"
+msgstr "Kupieckie wyspy"
+
+msgid "ui.scenario.invasion"
+msgstr "Najazd z morza"
+
+msgid "ui.scenario.divided_hint"
+msgstr "Wszystkie prowincje mają już władców albo są osadami neutralnymi. Lądujesz w ostatniej wolnej i wszystko wywalczasz albo wykupujesz."
+
+msgid "ui.scenario.islands_hint"
+msgstr "Świat z samych wysp, wszystko wozi się statkami. Wygrywa ten, kto pierwszy zbierze w skarbcu wybraną sumę złota. Władcy też się ścigają."
+
+msgid "ui.scenario.invasion_hint"
+msgstr "Bez władców. Od 20. minuty co 5 minut z morza przypływa coraz silniejsza fala najeźdźców. Przetrwaj 60 minut!"
+
+msgid "ui.new_game.gold"
+msgstr "Suma złota"
+
+msgid "ui.victory.gold"
+msgstr "Złoto"
+
+msgid "ui.victory.survive"
+msgstr "Przetrwaj (minuty)"
+
+msgid "ui.result.won_gold"
+msgstr "Zebrałeś wymaganą sumę złota jako pierwszy. Jesteś królem kupców!"
+
+msgid "ui.result.won_survive"
+msgstr "Przetrwałeś najazd z morza. Królestwo stoi!"
+
+msgid "ui.result.lost_gold"
+msgstr "%s pierwszy zebrał wymaganą sumę złota."
+
+msgid "ruler.ruler_raiders.name"
+msgstr "Najeźdźcy"
+
+msgid "ui.note.invasion_wave"
+msgstr "Fala %d z %d: %d najeźdźców płynie na %s! Dopłyną za ok. %d min."
+
+msgid "ui.world.next_wave"
+msgstr "Fala %d za %d:%02d"

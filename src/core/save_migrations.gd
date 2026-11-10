@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 30
+const CURRENT_VERSION := 31
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -97,6 +97,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 30:
 		result = migrate_v29_to_v30(result)
 		version = 30
+	if version < 31:
+		result = migrate_v30_to_v31(result)
+		version = 31
 	return result
 
 
@@ -381,6 +384,18 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## of loading (as at the start of a game: 45/30/20 minutes by difficulty); no campaign is under
 ## way. Raids of bandits may be a ruler's storming ("conquest"; none before). The difficulty
 ## may be "peaceful" (3).
+## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
+## target, the Invasion from the sea with the clock of its waves). A game from before is a
+## Colonization game: its settings name the scenario and get the default gold target.
+static func migrate_v30_to_v31(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	if world.has("settings"):
+		var settings: Dictionary = world["settings"]
+		settings["scenario"] = String(GameSettings.COLONIZATION)
+		settings["gold"] = GameSettings.DEFAULT_GOLD
+	return state
+
+
 static func migrate_v29_to_v30(state: Dictionary) -> Dictionary:
 	var world: Dictionary = state.get("world", {})
 	var settings: Dictionary = world.get("settings", {})

@@ -25,6 +25,14 @@ const YOUNG_BUILDINGS := 40
 ## A pioneer camp and a storage come with a ruler's expedition (it lands in the simplified
 ## mode, where nobody would carry the kit off the beach to the first sites).
 const FOUNDED: Array[StringName] = [&"pioneer_camp", &"stockpile"]
+## The Merchant islands (M8 part 5, owner's survey 2026-11-10): the rulers race for gold, so
+## each look at trade a province with a port or a trading post sells what it has above
+## [constant SURPLUS_KEEP] of these goods (at most [constant SURPLUS_UNITS] each) at their base
+## price, as the player sells to the merchants.
+const SURPLUS_GOODS: Array[StringName] = [&"beer", &"bread", &"cloth", &"clothes", &"fish", &"flour",
+		&"planks", &"tar", &"wool", &"meat", &"hides", &"wine", &"mead", &"honey"]
+const SURPLUS_KEEP := 30
+const SURPLUS_UNITS := 20
 
 
 ## Once a second (Simulation._update_world).
@@ -33,12 +41,53 @@ static func update(sim: Simulation) -> void:
 	owners.assign(sim.world.rulers.keys())
 	owners.sort()
 	for owner: StringName in owners:
-		var ruler := sim.world.rulers[owner]
-		_expeditions(sim, ruler)
-		if sim.clock.tick >= ruler.next_trade:
-			ruler.next_trade = sim.clock.tick + SimClock.seconds_to_ticks(TRADE_SECONDS)
-			_buy_settlement(sim, ruler)
-			_supply_young(sim, ruler)
+		if not Rulers.is_raiders(owner):
+			update_owner(sim, sim.world.rulers[owner])
+
+
+## Expeditions, settlements and routes of [param ruler] (also the automatic player's, M8 part 5).
+static func update_owner(sim: Simulation, ruler: RulerState) -> void:
+	_expeditions(sim, ruler)
+	if sim.clock.tick >= ruler.next_trade:
+		ruler.next_trade = sim.clock.tick + SimClock.seconds_to_ticks(TRADE_SECONDS)
+		_buy_settlement(sim, ruler)
+		_supply_young(sim, ruler)
+		if trader(sim):
+			sell_surplus(sim, ruler)
+
+
+## Whether the rulers trade their surplus for gold (the Merchant islands).
+static func trader(sim: Simulation) -> bool:
+	return sim.world.settings != null and sim.world.settings.scenario == GameSettings.ISLANDS
+
+
+## Sells the surplus of [param ruler]'s provinces that trade (a port or a trading post); returns
+## the gold earned.
+static func sell_surplus(sim: Simulation, ruler: RulerState) -> int:
+	var earned := 0
+	for id: int in Rulers.provinces_of(sim.world, ruler.owner):
+		var town := sim.province_state(id)
+		if town == null or not _trades(town):
+			continue
+		var at := RulerPlanner.centre(town)
+		for good: StringName in SURPLUS_GOODS:
+			var extra := mini(town.stored(good) - SURPLUS_KEEP, SURPLUS_UNITS)
+			if extra <= 0:
+				continue
+			var def := sim.data.get_good(good)
+			var sold := town.take_from_storages(good, extra, at)
+			if def != null and sold > 0:
+				earned += sold * def.base_price
+	if earned > 0:
+		ruler.treasury.gold += earned
+	return earned
+
+
+static func _trades(town: ProvinceSim) -> bool:
+	for building: BuildingState in town.buildings.all():
+		if building.is_complete() and (building.def.is_port() or building.def.id == &"trading_post"):
+			return true
+	return false
 
 
 # --- Neutral settlements -----------------------------------------------------------------------

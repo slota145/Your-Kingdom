@@ -32,6 +32,8 @@ var reports: Array[Dictionary] = []
 var settings: GameSettings = null
 ## The AI rulers' treasuries and plans by owner id (M8 part 3).
 var rulers: Dictionary[StringName, RulerState] = {}
+## The clock of the Invasion from the sea (M8 part 5); null in the other scenarios.
+var invasion: InvasionState = null
 ## How the game ended: &"" (it goes on), RESULT_WON or RESULT_LOST.
 var result: StringName = &""
 
@@ -184,6 +186,8 @@ func to_dict() -> Dictionary:
 		for owner: StringName in owners:
 			states.append(rulers[owner].to_dict())
 		d["rulers"] = states
+	if invasion != null:
+		d["invasion"] = invasion.to_dict()
 	if result != &"":
 		d["result"] = String(result)
 	return d
@@ -195,6 +199,8 @@ static func from_dict(d: Dictionary) -> WorldSim:
 	if d.has("settings"):
 		world.settings = GameSettings.from_dict(d["settings"])
 	world.result = StringName(String(d.get("result", "")))
+	if d.has("invasion"):
+		world.invasion = InvasionState.from_dict(d["invasion"])
 	for pd: Variant in d.get("provinces", []):
 		var province := WorldProvince.from_dict(pd)
 		world.provinces[province.id] = province

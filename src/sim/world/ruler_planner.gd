@@ -95,10 +95,16 @@ static func update(sim: Simulation) -> void:
 	owners.assign(sim.world.rulers.keys())
 	owners.sort()
 	for owner: StringName in owners:
-		var ruler := sim.world.rulers[owner]
-		for id: int in Rulers.provinces_of(sim.world, owner):
-			if (second + id) % EVERY == 0:
-				_plan_province(sim, ruler, id)
+		if not Rulers.is_raiders(owner):   # (the raiders' towns stand as they are, M8 part 5)
+			update_owner(sim, sim.world.rulers[owner], second)
+
+
+## The planner of the provinces of [param ruler] (the automatic player of the test games uses
+## it for the player's provinces too, M8 part 5).
+static func update_owner(sim: Simulation, ruler: RulerState, second: int) -> void:
+	for id: int in Rulers.provinces_of(sim.world, ruler.owner):
+		if (second + id) % EVERY == 0:
+			_plan_province(sim, ruler, id)
 
 
 static func _plan_province(sim: Simulation, ruler: RulerState, id: int) -> void:

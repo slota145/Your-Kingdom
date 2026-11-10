@@ -4036,3 +4036,50 @@ msgstr "Marching on: %s"
 
 msgid "ui.ruler.campaign_soon"
 msgstr "First attack in about %d min at the earliest"
+
+# M8 part 5: scenarios
+
+msgid "ui.scenario.divided"
+msgstr "Divided continent"
+
+msgid "ui.scenario.islands"
+msgstr "Merchant islands"
+
+msgid "ui.scenario.invasion"
+msgstr "Invasion from the sea"
+
+msgid "ui.scenario.divided_hint"
+msgstr "Every province already has a ruler or is a neutral settlement. You land in the last free one and win everything by force or gold."
+
+msgid "ui.scenario.islands_hint"
+msgstr "A world of islands only, everything goes by ship. Whoever first holds the chosen sum of gold in the treasury wins. The rulers race too."
+
+msgid "ui.scenario.invasion_hint"
+msgstr "No rulers. From the 20th minute, every 5 minutes, a stronger wave of raiders comes from the sea. Hold out for 60 minutes!"
+
+msgid "ui.new_game.gold"
+msgstr "Gold target"
+
+msgid "ui.victory.gold"
+msgstr "Gold"
+
+msgid "ui.victory.survive"
+msgstr "Hold out (minutes)"
+
+msgid "ui.result.won_gold"
+msgstr "You were the first to gather the gold. You are the king of merchants!"
+
+msgid "ui.result.won_survive"
+msgstr "You held out against the invasion from the sea. The kingdom stands!"
+
+msgid "ui.result.lost_gold"
+msgstr "%s was the first to gather the gold."
+
+msgid "ruler.ruler_raiders.name"
+msgstr "Raiders"
+
+msgid "ui.note.invasion_wave"
+msgstr "Wave %d of %d: %d raiders sail against %s! They land in about %d min."
+
+msgid "ui.world.next_wave"
+msgstr "Wave %d in %d:%02d"

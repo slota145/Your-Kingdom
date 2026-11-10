@@ -39,6 +39,8 @@ const OWNER_TINT: Dictionary[StringName, Color] = {
 	&"ruler_1": Color(0.16, 0.30, 0.70, 0.30),
 	&"ruler_2": Color(0.18, 0.52, 0.20, 0.30),
 	&"ruler_3": Color(0.48, 0.20, 0.60, 0.30),
+	# The raiders from over the sea (M8 part 5): black.
+	&"ruler_raiders": Color(0.10, 0.09, 0.08, 0.34),
 }
 const OWNER_ARMS: Dictionary[StringName, Color] = {
 	ProvinceDef.OWNER_PLAYER: Color(0.70, 0.12, 0.10),
@@ -46,6 +48,7 @@ const OWNER_ARMS: Dictionary[StringName, Color] = {
 	&"ruler_1": Color(0.14, 0.26, 0.66),
 	&"ruler_2": Color(0.14, 0.46, 0.16),
 	&"ruler_3": Color(0.44, 0.16, 0.56),
+	&"ruler_raiders": Color(0.12, 0.11, 0.10),
 }
 const MARGIN := 24.0
 ## How near (parchment pixels) a click has to be to an expedition's mark.

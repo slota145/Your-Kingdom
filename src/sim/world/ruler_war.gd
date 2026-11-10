@@ -74,16 +74,23 @@ static func update(sim: Simulation) -> void:
 	owners.assign(sim.world.rulers.keys())
 	owners.sort()
 	for k: int in owners.size():
-		var ruler := sim.world.rulers[owners[k]]
-		var provinces := Rulers.provinces_of(sim.world, ruler.owner)
-		if provinces.is_empty():
+		if not Rulers.is_raiders(owners[k]):   # (Invasion drives the raiders, M8 part 5)
+			update_owner(sim, sim.world.rulers[owners[k]], second, k)
+
+
+## Recruits and the commander of [param ruler], the [param k]-th ruler (the automatic player of
+## the test games too, M8 part 5).
+static func update_owner(sim: Simulation, ruler: RulerState, second: int, k: int) -> void:
+	var provinces := Rulers.provinces_of(sim.world, ruler.owner)
+	if provinces.is_empty():
+		if Rulers.is_ruler(ruler.owner):
 			_out_of_game(sim, ruler)
-			continue
-		for id: int in provinces:
-			if (second + id) % RECRUIT_EVERY == 0:
-				recruit(sim, ruler, id)
-		if (second + k * 3) % EVERY == 0:
-			command(sim, ruler)
+		return
+	for id: int in provinces:
+		if (second + id) % RECRUIT_EVERY == 0:
+			recruit(sim, ruler, id)
+	if (second + k * 3) % EVERY == 0:
+		command(sim, ruler)
 
 
 ## A ruler without provinces: his armies and fleets are gone, the player is told once.
@@ -114,7 +121,9 @@ static func strength(sim: Simulation, owner: StringName) -> int:
 
 ## The soldiers a ruler wants: by difficulty, more with more provinces.
 static func wanted(sim: Simulation, owner: StringName) -> int:
-	return ARMY_SIZE[level(sim)] + PER_PROVINCE * maxi(Rulers.provinces_of(sim.world, owner).size() - 1, 0)
+	var n := ARMY_SIZE[level(sim)] + PER_PROVINCE * maxi(Rulers.provinces_of(sim.world, owner).size() - 1, 0)
+	# In the Merchant islands they save for the gold race (M8 part 5): half the army.
+	return n / 2 if RulerExpansion.trader(sim) else n
 
 
 ## One recruit in province [param id] of [param ruler] when his barracks have a bed, he is
@@ -356,7 +365,7 @@ static func attack(sim: Simulation, ruler: RulerState) -> Army:
 	var source := 0
 	var most := 0
 	for id: int in Rulers.provinces_of(sim.world, ruler.owner):
-		if id == sim.viewed_id:
+		if id == sim.viewed_id and Rulers.is_ruler(ruler.owner):
 			continue   # (the player watches it: nobody marches off under his eyes)
 		var n := _count(defenders(sim, id))
 		if n > most:
@@ -428,6 +437,10 @@ static func target_ok(sim: Simulation, owner: StringName, id: int) -> bool:
 	if other == owner or other == ProvinceDef.OWNER_NONE or other == Army.BANDITS:
 		return false
 	var town := sim.province_state(id)
+	# The raiders go for any town of the player, a camp without a hall too (decided at once
+	# then: there is no door to storm), and in the time of grace too (M8 part 5).
+	if Rulers.is_raiders(owner):
+		return other == ProvinceDef.OWNER_PLAYER and town != null
 	if town == null or not town.has_seat():
 		return false
 	if other == ProvinceDef.OWNER_PLAYER:

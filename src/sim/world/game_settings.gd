@@ -4,13 +4,33 @@ extends RefCounted
 ## the world (a generated one from its number, or a hand-made one), the AI rulers and their
 ## difficulty, and the victory condition. Saved with the world.
 
+## Scenarios (owner's surveys 2026-11-09 and 2026-11-10, M8 part 5): Colonization (almost every
+## province empty), the Divided continent (every province held by the rulers and the neutral
+## settlements, the player lands in the one left), the Merchant islands (islands only; the
+## first to hold the gold target wins), the Invasion from the sea (no rulers; waves of raiders
+## from over the sea, the player wins by holding out [constant SURVIVE_MINUTES] minutes).
 const COLONIZATION := &"colonization"
+const DIVIDED := &"divided"
+const ISLANDS := &"islands"
+const INVASION := &"invasion"
+const SCENARIOS: Array[StringName] = [COLONIZATION, DIVIDED, ISLANDS, INVASION]
 
 const VICTORY_CONQUEST := &"conquest"
 const VICTORY_PROVINCES := &"provinces"
 const VICTORY_PATRICIANS := &"patricians"
 const VICTORY_FREE := &"free"
 const VICTORIES: Array[StringName] = [VICTORY_CONQUEST, VICTORY_PROVINCES, VICTORY_PATRICIANS, VICTORY_FREE]
+## Set by the scenario, not chosen (M8 part 5): gold in the treasury (the Merchant islands),
+## holding out (the Invasion from the sea).
+const VICTORY_GOLD := &"gold"
+const VICTORY_SURVIVE := &"survive"
+
+## The gold target of the Merchant islands: chosen 2 000-100 000, 10 000 by default.
+const MIN_GOLD := 2000
+const MAX_GOLD := 100000
+const DEFAULT_GOLD := 10000
+## The Invasion from the sea is won after this many minutes.
+const SURVIVE_MINUTES := 60
 
 const MIN_PROVINCES := 9
 const MAX_PROVINCES := 60
@@ -40,6 +60,23 @@ var difficulty: int = NORMAL
 var victory: StringName = VICTORY_CONQUEST
 ## Provinces to hold (VICTORY_PROVINCES) or patricians to house (VICTORY_PATRICIANS).
 var victory_target: int = 0
+## The gold target of the Merchant islands (M8 part 5).
+var gold_target: int = DEFAULT_GOLD
+
+
+## Makes the settings fit the scenario: the Merchant islands are won by gold, the Invasion from
+## the sea by holding out and has no rulers (owner's survey 2026-11-10).
+func fit_scenario() -> void:
+	match scenario:
+		ISLANDS:
+			victory = VICTORY_GOLD
+			gold_target = clampi(gold_target, MIN_GOLD, MAX_GOLD)
+		INVASION:
+			victory = VICTORY_SURVIVE
+			rulers = 0
+		_:
+			if victory == VICTORY_GOLD or victory == VICTORY_SURVIVE:
+				victory = VICTORY_CONQUEST
 
 
 ## The level the rulers grow, arm and dare by: EASY, NORMAL or HARD (PEACEFUL grows as EASY).
@@ -62,17 +99,26 @@ func default_target(kind: StringName) -> int:
 			return maxi(province_count / 2, 4)
 		VICTORY_PATRICIANS:
 			return 100
+		VICTORY_GOLD:
+			return DEFAULT_GOLD
+		VICTORY_SURVIVE:
+			return SURVIVE_MINUTES
 	return 0
 
 
 func target() -> int:
+	match victory:
+		VICTORY_GOLD:
+			return gold_target
+		VICTORY_SURVIVE:
+			return SURVIVE_MINUTES
 	return victory_target if victory_target > 0 else default_target(victory)
 
 
 func to_dict() -> Dictionary:
 	return {"scenario": String(scenario), "seed": world_seed, "world": String(world_def),
 			"provinces": province_count, "islands": islands, "start": start, "rulers": rulers, "difficulty": difficulty,
-			"victory": String(victory), "target": victory_target}
+			"victory": String(victory), "target": victory_target, "gold": gold_target}
 
 
 static func from_dict(d: Dictionary) -> GameSettings:
@@ -87,4 +133,5 @@ static func from_dict(d: Dictionary) -> GameSettings:
 	s.difficulty = clampi(int(d.get("difficulty", NORMAL)), EASY, PEACEFUL)
 	s.victory = StringName(String(d.get("victory", VICTORY_CONQUEST)))
 	s.victory_target = int(d.get("target", 0))
+	s.gold_target = int(d.get("gold", DEFAULT_GOLD))
 	return s

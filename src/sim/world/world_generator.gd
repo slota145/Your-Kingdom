@@ -25,6 +25,17 @@ const RULER_TOWN: Dictionary[StringName, int] = {&"hut": 10, &"well": 2, &"stock
 		&"forester": 1, &"quarry": 1, &"sawmill": 1, &"farm": 2, &"mill": 1, &"bakery": 1, &"fishing_hut": 1,
 		&"market": 1, &"chapel": 1}
 const NEUTRAL_TOWNS: Array[StringName] = [&"iron_wold", &"horse_haven"]
+## The capital of a ruler in the Divided continent (M8 part 5: towns ready at the start, the
+## first part of his plan of growth with barracks; the town hall comes by itself).
+const CAPITAL_TOWN: Dictionary[StringName, int] = {&"hut": 16, &"well": 3, &"stockpile": 3, &"woodcutter": 3,
+		&"forester": 1, &"quarry": 1, &"sawmill": 1, &"farm": 3, &"mill": 1, &"bakery": 1, &"fishing_hut": 2,
+		&"market": 1, &"chapel": 1, &"hop_farm": 1, &"brewery": 1, &"trading_post": 1, &"barracks": 1}
+## Share of the provinces of the Divided continent the rulers hold together (each at least 2,
+## at most [constant MAX_REALM]); the rest are neutral settlements.
+const RULERS_SHARE := 0.45
+const MAX_REALM := 6
+## Sea cells and land cells together per province of the Merchant islands (more sea).
+const ISLAND_CELLS_PER_PROVINCE := 3.4
 ## How much more a ruler keeps away from the player than from another ruler.
 const RULER_AWAY := 1.6
 
@@ -64,7 +75,8 @@ static func geography(data: DataRegistry, settings: GameSettings) -> WorldDef:
 	var size := size_for(count)
 	noise.frequency = 0.0028 * SIZE.x / size.x
 	# Scattered points on a jittered grid over the parchment; more sea for more islands.
-	var total := int(count * (CELLS_PER_PROVINCE + 0.12 * islands))
+	var archipelago := settings.scenario == GameSettings.ISLANDS
+	var total := int(count * (ISLAND_CELLS_PER_PROVINCE if archipelago else CELLS_PER_PROVINCE + 0.12 * islands))
 	var step := sqrt(size.x * size.y / total)
 	var sites: Array[Vector2] = []
 	var y := step * 0.5
@@ -87,14 +99,19 @@ static func geography(data: DataRegistry, settings: GameSettings) -> WorldDef:
 	order.sort_custom(func(a: int, b: int) -> bool: return scores[a] > scores[b])
 	var is_land: Array[bool] = []
 	is_land.resize(sites.size())
-	for k: int in mini(count - islands, sites.size()):
-		is_land[order[k]] = true
+	if not archipelago:
+		for k: int in mini(count - islands, sites.size()):
+			is_land[order[k]] = true
 	var cells: Array[PackedVector2Array] = []
 	var adjacent: Array[Array] = []
 	for i: int in sites.size():
 		var cell := _cell(sites, i, size)
 		cells.append(cell[0])
 		adjacent.append(cell[1])
+	var group_of: Dictionary[int, int] = {}
+	if archipelago:
+		_archipelago(sites, cells, adjacent, is_land, group_of, count, size, step, rng)
+		islands = 0
 	# Islands: sea cells touching no land, far from the land and from each other.
 	var placed := 0
 	while placed < islands:
@@ -160,7 +177,7 @@ static func geography(data: DataRegistry, settings: GameSettings) -> WorldDef:
 					group[j] = g
 					queue.append(j)
 		sizes.append(n)
-	var main_group := sizes.find(sizes.max())
+	var main_group := sizes.find(sizes.max()) if not archipelago else -1
 	# Names: each adjective and each noun once before any comes again.
 	var adjectives: Array[int] = []
 	for k: int in ADJECTIVES:
@@ -197,6 +214,8 @@ static func geography(data: DataRegistry, settings: GameSettings) -> WorldDef:
 		def.mirrored = rng.randf() < 0.5
 		def.template = &"islands" if def.island else (&"coast" if coastal else
 				(&"lakeland" if rng.randf() < 0.5 else &"riverlands"))
+		if archipelago and sizes[group[i]] > 1:
+			def.template = &"coast"   # (an island of 2-3 provinces: coasts with land borders)
 		def.outline = _wavy(cells[i], rng.seed)
 		def.world_pos = _centroid(cells[i])
 		def.name_parts = PackedStringArray(["world.adj.%d" % adjectives[k % ADJECTIVES],
@@ -208,13 +227,13 @@ static func geography(data: DataRegistry, settings: GameSettings) -> WorldDef:
 	return world
 
 
-## Provinces the player may start in (owner's survey 2026-11-09): in Colonization one on the
-## coast or an island (he comes by ship), in the other scenarios any.
-static func start_choices(data: DataRegistry, world: WorldDef, settings: GameSettings) -> Array[StringName]:
+## Provinces the player may start in (owner's surveys 2026-11-09 and 2026-11-10): one on the
+## coast or an island, in every scenario (he comes by ship).
+static func start_choices(data: DataRegistry, world: WorldDef, _settings: GameSettings) -> Array[StringName]:
 	var result: Array[StringName] = []
 	for id: StringName in world.provinces:
 		var def := data.get_province(id)
-		if settings.scenario != GameSettings.COLONIZATION or def.coastal:
+		if def.coastal:
 			result.append(id)
 	return result
 
@@ -236,8 +255,9 @@ static func assign(data: DataRegistry, world: WorldDef, settings: GameSettings) 
 	var taken: Array[ProvinceDef] = []
 	var player := data.get_province(start)
 	player.owner = ProvinceDef.OWNER_PLAYER
-	if settings.scenario == GameSettings.COLONIZATION:
-		player.template = &"islands" if player.island else &"coast"
+	player.template = &"islands" if player.island and player.template != &"coast" else &"coast"
+	var divided := settings.scenario == GameSettings.DIVIDED
+	var anywhere := divided or settings.scenario == GameSettings.ISLANDS
 	taken.append(player)
 	world.start_province = start
 	# Far from the player first, then from each other (a ruler is never put between them).
@@ -248,12 +268,14 @@ static func assign(data: DataRegistry, world: WorldDef, settings: GameSettings) 
 		if best == null:
 			break
 		best.owner = ruler_owner(r)
-		best.town_buildings = RULER_TOWN.duplicate()
-		best.town_burghers = 3
+		best.town_buildings = (CAPITAL_TOWN if divided else RULER_TOWN).duplicate()
+		best.town_burghers = 6 if divided else 3
 		taken.append(best)
-	var neutrals := maxi(2, defs.size() / 9)
+	if divided:
+		_realms(data, defs, taken, player, settings.rulers)
+	var neutrals := defs.size() if divided else maxi(2, defs.size() / 9)
 	for k: int in neutrals:
-		var best := _farthest_def(defs, taken, func(d: ProvinceDef) -> bool: return not d.island)
+		var best := _farthest_def(defs, taken, func(d: ProvinceDef) -> bool: return anywhere or not d.island)
 		if best == null:
 			break
 		var layout := data.get_province(NEUTRAL_TOWNS[k % NEUTRAL_TOWNS.size()])
@@ -284,7 +306,114 @@ static func assign(data: DataRegistry, world: WorldDef, settings: GameSettings) 
 		empty[k].rare_resource = RARE[k % RARE.size()]
 	var only_player: Array[ProvinceDef] = [player]
 	var camp := _farthest_def(empty, only_player, func(d: ProvinceDef) -> bool: return not d.island)
-	world.bandit_camp = camp.id if camp != null else &""
+	# (No camp in the Invasion from the sea: the waves are the danger there.)
+	world.bandit_camp = camp.id if camp != null and settings.scenario != GameSettings.INVASION else &""
+
+
+## The Divided continent: each ruler's capital gets the provinces nearest it (land neighbours of
+## his realm first) in turn, never one bordering the player's start, until the rulers hold
+## RULERS_SHARE of the world; their towns are ready (RULER_TOWN).
+static func _realms(data: DataRegistry, defs: Array[ProvinceDef], taken: Array[ProvinceDef], player: ProvinceDef,
+		rulers: int) -> void:
+	if rulers <= 0:
+		return
+	var each := clampi(roundi(defs.size() * RULERS_SHARE / rulers), 2, MAX_REALM)
+	var realms: Array[Array] = []
+	for d: ProvinceDef in taken:
+		if d != player:
+			realms.append([d])
+	for _r: int in each - 1:
+		for realm: Array in realms:
+			var capital: ProvinceDef = realm[0]
+			var best: ProvinceDef = null
+			var best_d := INF
+			for d: ProvinceDef in defs:
+				if d.owner != ProvinceDef.OWNER_NONE or d == player or player.neighbours.has(d.id) \
+						or d.neighbours.has(player.id):
+					continue
+				var touches := false
+				for r: ProvinceDef in realm:
+					if r.neighbours.has(d.id) or d.neighbours.has(r.id):
+						touches = true
+						break
+				var gap := d.world_pos.distance_to(capital.world_pos) + (0.0 if touches else 10000.0)
+				if gap < best_d:
+					best_d = gap
+					best = d
+			if best == null:
+				continue
+			best.owner = capital.owner
+			best.town_buildings = RULER_TOWN.duplicate()
+			best.town_burghers = 3
+			realm.append(best)
+			taken.append(best)
+
+
+## The Merchant islands: islands of 1 to 3 provinces on a sea cell touching no other land,
+## spread over the parchment (away from each other and from the edge where they can be).
+## Marks [param is_land] and the island of each cell in [param group_of].
+static func _archipelago(sites: Array[Vector2], cells: Array[PackedVector2Array], adjacent: Array[Array],
+		is_land: Array[bool], group_of: Dictionary[int, int], count: int, size: Vector2, step: float,
+		rng: RandomNumberGenerator) -> void:
+	var left := count
+	var island := 0
+	while left > 0:
+		var want := mini(rng.randi_range(1, 3), left)
+		var best := -1
+		var best_d := -INF
+		for i: int in sites.size():
+			if is_land[i] or not _lonely(i, adjacent, is_land, group_of, -1):
+				continue
+			var d := INF
+			for j: int in group_of:
+				d = minf(d, sites[i].distance_to(sites[j]))
+			var middle := ((sites[i] - size * 0.5) / (size * 0.5)).length()
+			d = minf(d, step * 2.5) + rng.randf() * step - middle * step * 0.6 \
+					- (step * 2.0 if _touches_edge(cells[i], size) else 0.0)
+			if d > best_d:
+				best_d = d
+				best = i
+		if best < 0:
+			# No room left for a lonely island: the rest join the islands there are.
+			for i: int in sites.size():
+				if left == 0:
+					break
+				if is_land[i]:
+					continue
+				for j: int in adjacent[i]:
+					if is_land[j]:
+						is_land[i] = true
+						group_of[i] = group_of[j]
+						left -= 1
+						break
+			break
+		is_land[best] = true
+		group_of[best] = island
+		left -= 1
+		var members: Array[int] = [best]
+		while members.size() < want and left > 0:
+			var grown := false
+			for m: int in members.duplicate():
+				for j: int in adjacent[m]:
+					if members.size() >= want or is_land[j] or not _lonely(j, adjacent, is_land, group_of, island):
+						continue
+					is_land[j] = true
+					group_of[j] = island
+					members.append(j)
+					left -= 1
+					grown = true
+			if not grown:
+				break
+		island += 1
+
+
+## Whether cell [param i] touches no land but that of island [param island].
+static func _lonely(i: int, adjacent: Array[Array], is_land: Array[bool], group_of: Dictionary[int, int],
+		island: int) -> bool:
+	for j: int in adjacent[i]:
+		if is_land[j] and int(group_of.get(j, -2)) != island:
+			return false
+	return true
 
 
 ## The province among [param defs] (free, passing [param ok]) farthest from all of [param taken];

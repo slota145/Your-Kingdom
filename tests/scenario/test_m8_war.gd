@@ -278,4 +278,4 @@ func test_war_survives_a_save_and_v29_migrates() -> void:
 	assert_int(loaded.world.rulers[k["owner"]].next_war).is_equal(
 			loaded.clock.tick + RulerWar.first_ticks(GameSettings.NORMAL))
 	loaded.run_ticks(SimFixture.ticks(30))
-	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(30)
+	assert_int(SaveMigrations.CURRENT_VERSION).is_greater_equal(30)

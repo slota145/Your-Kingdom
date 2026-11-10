@@ -88,6 +88,8 @@ static func from_settings(registry: DataRegistry, settings: GameSettings, seed_v
 		return null
 	sim.world.settings = settings
 	problems.append_array(sim._open_ruler_towns())
+	if settings.scenario == GameSettings.INVASION:
+		Invasion.start(sim)
 	RulerPlanner.ensure_rulers(sim)
 	sim.bind_treasuries()
 	sim.events.drain()
@@ -250,6 +252,7 @@ func _update_world() -> void:
 		RulerPlanner.update(self)
 		RulerExpansion.update(self)
 		RulerWar.update(self)
+	Invasion.update(self)
 	TradeRoutes.update(self)
 	_update_settlements()
 	Armies.update(self)
