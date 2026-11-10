@@ -1332,7 +1332,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Zakres (propozycja Claude):**
 - **Większe stosy w magazynach.** Plac składowy i magazyny portowe trzymają **2 × więcej** w każdym miejscu (np. drewno 20 → 40). Zmienia się tylko pojemność miejsc w magazynach; podwórka warsztatów, ładownie statków, kramy i place budów zostają jak dziś. Stos rośnie w górę (więcej faz wyglądu), a nie wszerz.
-- **Chata tragarzy** (2×2, 4 tragarzy) i **dom tragarzy** (3×3, 6 tragarzy), z drewna i desek. Tragarze biorą zlecenia przenoszenia w zasięgu (np. 12 kafli, jak chata portowców). Plac składowy zostawia swoich 2 tragarzy.
+- **Chata tragarzy** (2×2, 4 tragarzy) i **dom tragarzy** (3×3, 6 tragarzy), z drewna i desek. Tragarze biorą zlecenia przenoszenia w całej prowincji, jak tragarze magazynów (zmiana przy realizacji: tragarze w grze nigdy nie mieli zasięgu, więc zasięg tylko by komplikował). Plac składowy zostawia swoich 2 tragarzy.
 - **„Cały łan rośnie razem”.** Rolnik (także przy chmielu i winnicy, a później w sadzie) orze i sieje albo sadzi wszystkie kratki, a uprawa zaczyna rosnąć dopiero po ostatniej. Całe pole zielenieje i złoci się razem; żniwa jak dziś, kratka po kratce. W czasie wzrostu rolnik pieli i przegania ptaki (krótka animacja), zamiast stać. Wydajność wyrównana większym plonem z kratki (czas wzrostu bez zmian), zmierzona automatycznym graczem (cel: tyle co dziś albo trochę więcej). Dotyczy też trybu uproszczonego i władców.
 - **„Rozbuduj teraz”** w panelu domu: gdy dom spełnia warunki awansu (potrzeby podstawowe i towary nowej klasy w magazynach), gracz pomija czekanie 60 s. Materiały na awans dalej muszą dojechać.
 - **Zapis v35** (stan pola „czeka na resztę siewu”), migracja v34 → v35 z fixturą, test.
@@ -1347,9 +1347,16 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Część 1:** większe stosy, chata i dom tragarzy, „Rozbuduj teraz”.
 - **Część 2:** „cały łan rośnie razem”, animacja rolnika przy rosnącym polu, wyrównanie wydajności, zapis v35.
 
-**Testy:** jednostkowe (pojemność miejsc magazynu, tragarze z domu tragarzy biorą zlecenia tylko w zasięgu, pole rośnie dopiero po ostatnim siewie, „Rozbuduj teraz” tylko przy spełnionych warunkach); scenariuszowe (łańcuch chleba z nowym polem, zapis i wczytanie, migracja v34 → v35, tryb uproszczony liczy jak szczegółowy); długie (automatyczny gracz dochodzi do patrycjuszy w limicie, władcy dalej rosną, 2 godziny bez zakleszczeń).
+**Testy:** jednostkowe (pojemność miejsc magazynu, tragarze z chaty tragarzy noszą między magazynami, pole rośnie dopiero po ostatnim siewie, „Rozbuduj teraz” tylko przy spełnionych warunkach); scenariuszowe (łańcuch chleba z nowym polem, zapis i wczytanie, migracja v34 → v35, tryb uproszczony liczy jak szczegółowy); długie (automatyczny gracz dochodzi do patrycjuszy w limicie, władcy dalej rosną, 2 godziny bez zakleszczeń).
 
 **Grafiki:** wyższe fazy stosów (`tools/compose_pixellab_stacks.py`), chata i dom tragarzy ze SpriteKiln, animacja pielenia rolnika.
+
+**Część 1, stan (2026-11-10): gotowa, czeka na ocenę.**
+- Stosy: `BuildingDef.stack_multiplier` (plac składowy, skład, mały i duży magazyn portowy: 2; zbrojownia 1). Mnożnik pochodzi z danych, więc zapis gry bez zmian (v34), a stare zapisy od razu mają większe magazyny. Wyższe arkusze stosów `assets/goods/stacks/<towar>_x2.png` (2 × więcej klatek, ramka 64×128) ze skryptu `tools/compose_pixellab_stacks.py`; widok bierze wyższy arkusz, gdy miejsce mieści więcej niż zwykły stos.
+- Chata tragarzy (`porters_hut`, 2×2, 4 tragarzy, 2 wózki; 6 drewna i 4 deski) i dom tragarzy (`porters_house`, 3×3, 6 tragarzy, 3 wózki; 6 drewna, 10 desek, 6 kamieni), zakładka „Magazyny”. Grafika ze SpriteKiln: chata z bazy chlewu (`tools/spritekiln/gen_porters.py`: wózek z workami, skrzynie, beczki pod wiatą, nosidło przy drzwiach), dom pisany ręcznie (`art/specs/props/porters_house/`: kamienny parter z szeroką bramą, piętro w kratownicy, dachówka, wciągarka z workiem w szczycie, wiata z beczkami, podwórko z wózkiem i skrzyniami). Etapy budowy rysowane kodem (`tools/generate_art.gd`).
+- „Rozbuduj teraz”: `UpgradeHouseCommand`, `Population.upgrade_blocker` (te same warunki co awans sam z siebie, bez czekania 60 s; przycisk wyszarzony z powodem w podpowiedzi).
+- Automatyczni gracze i władcy bez zmian (stawiają magazyny jak dotąd, mieszczą one teraz więcej).
+- Zrzut: `game_shot.tscn -- --plain --tile=56,62 --zoom=2 --yards=porters_hut,stockpile,porters_house --fill_stores`.
 
 **DoD:**
 - [ ] Magazyny trzymają więcej w każdym miejscu, a stos widać wyższy.
