@@ -64,8 +64,8 @@ assets/
 | Kafel terenu | **64×32 px** (romb 2:1) | plik 64×32. Kafle z wysokością, np. skarpy brzegu: 64×48 z romb u dołu |
 | Postać dorosła | **ok. 34 px wysokości** (było 42 px w M1) | głowa ok. 8 px. Zmiana 2026-11-05: przy 42 px ludzie byli ponad dwa razy wyżsi od drzwi. Drzwi mają ok. 26 px, ściany parterowe ok. 36–42 px |
 | Dziecko | ok. 30 px | [PÓŹNIEJ], przechodnie |
-| Płótno klatki postaci | **64×64 px** | zapas na narzędzia (kosa, łopata do pieca, włócznia) |
-| Punkt stopy (pivot) | **(32, 58)** na płótnie 64×64 | środek między stopami, dotyka ziemi |
+| Płótno klatki postaci | **64×64 px** (długa broń: większa kwadratowa klatka, np. 96×96 halabardnika, 2026-11-10) | zapas na narzędzia (kosa, łopata do pieca, włócznia) |
+| Punkt stopy (pivot) | **(32, 58)** na płótnie 64×64; w większej klatce (szerokość/2, wysokość − 6), np. (48, 90) | środek między stopami, dotyka ziemi |
 | Niesiony towar | 10–16 px | większy niż „realistycznie”, żeby był czytelny |
 | Jeździec | płótno 96×96, pivot (48, 88) | [1.0] |
 | Ikona towaru (UI) | 32×32 (rysowana w 16×16 ×2 lub natywnie 32) | **(M1)** |
@@ -147,7 +147,7 @@ Arkusz z odbiciami ma 5 wierszy (S, SE, E, NE, N), a importer to wykrywa.
 
 ### 4.3 Stany i liczba klatek
 
-Klatka ma 64×64. Arkusz to wiersze kierunków × kolumny klatek. Wartości FPS to **(M1)**.
+Klatka ma 64×64 (albo większa kwadratowa, np. 96×96: gra odczytuje jej rozmiar z wysokości arkusza, 8 albo 5 wierszy, `CharacterSheet.frame_side`). Arkusz to wiersze kierunków × kolumny klatek. Wartości FPS to **(M1)**.
 
 **Wspólne dla wszystkich cywilów:**
 

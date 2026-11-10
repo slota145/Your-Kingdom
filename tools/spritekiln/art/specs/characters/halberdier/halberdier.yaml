@@ -1,9 +1,11 @@
 spritekiln: 1
 # yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
-# Soldier rework pilot (owner 2026-11-10, reference: a landsknecht halberdier). Game sheets: export_character.py.
+# Soldier rework pilot (owner 2026-11-10, reference: a landsknecht halberdier; owner 2026-11-10: a much longer shaft, a bigger blade). Game sheets: export_character.py.
 name: halberdier
-# pitch 30: the game's 2:1 ground; centre 1.554 puts the feet at (32, 58) of the 64 px frame (ART_SPEC 3.1)
-camera: {pitch: 30, scale: 0.05176, center: [0, 1.554, 0]}
+# pitch 30: the game's 2:1 ground; a 96 px frame (the long halberd, owner 2026-11-10), centre 2.51 puts the feet
+# at (48, 90) of it (same scale as the 64 px soldiers: feet 6 px above the bottom; CharacterSheet.frame_side)
+size: 96
+camera: {pitch: 30, scale: 0.05176, center: [0, 2.51, 0]}
 palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
 shadow: null   # the game draws no shadow under characters
 extends: humanoid
@@ -16,7 +18,7 @@ brief:
   simplify: ["no ribbons, no rivets"]
 
 use:
-  - {kit: spear, as: spear, at: wrist_R, with: {length: 1.12, butt: 0.36, head: 0.2, width: 0.05, pitch: spear_pitch, cheat: spear_cheat, splay: spear_splay}}
+  - {kit: spear, as: spear, at: wrist_R, with: {length: 1.65, butt: 0.4, head: 0.24, width: 0.055, pitch: spear_pitch, cheat: spear_cheat, splay: spear_splay}}
   - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
   - {kit: helmet, as: sallet, at: head, with: {radius: 0.215, low: 0.12, brow: 0.215, opening: 0.3, visor: false, nasal: false, crest: 0, trim: false}}
 
@@ -38,9 +40,9 @@ materials:
   slit: {ramp: hair, band: 0}
 
 channels:
-  spear_cheat: 0.3   # the kit's per-direction cheats (off in the attack: the halberd points where the body faces)
-  spear_splay: 0.12  # lean away from the body (0 in the attack)
-  spear_pitch: 0     # extra lean of the halberd at the wrist (attack: down to level, then the thrust)
+  spear_cheat: 0     # the kit's per-direction cheats: off (they leant the long halberd at the camera in e and se)
+  spear_splay: -0.2  # at rest the halberd stands almost upright, leaning a little forward (0 in the attack)
+  spear_pitch: 0.4   # extra lean of the halberd at the wrist (attack: level for the thrust; raised facing the camera, where a level shaft would seem to stab the ground)
 
 parts:
   torso:           # a steel breastplate (the template's torso), a ridge down the middle
@@ -87,10 +89,10 @@ parts:
     space: spear_shaft
     priority: 2
     prims:
-      - extrude: {c: [0, 0.86, 0], rot: [0, -1.5708, 0], depth: 0.055, round: 0.008,
-                  profile: {polygon: [[0.02, 0.08], [0.13, 0.11], [0.19, 0.02], [0.16, -0.10], [0.02, -0.07]]}}
-      - extrude: {c: [0, 0.88, 0], rot: [0, -1.5708, 0], depth: 0.055, round: 0.008,
-                  profile: {polygon: [[-0.02, 0.03], [-0.13, -0.01], [-0.11, -0.05], [-0.02, -0.02]]}}
+      - extrude: {c: [0, 1.32, 0], rot: [0, -1.5708, 0], depth: 0.06, round: 0.008,
+                  profile: {polygon: [[0.03, 0.12], [0.195, 0.165], [0.285, 0.03], [0.24, -0.15], [0.03, -0.105]]}}
+      - extrude: {c: [0, 1.35, 0], rot: [0, -1.5708, 0], depth: 0.06, round: 0.008,
+                  profile: {polygon: [[-0.03, 0.045], [-0.195, -0.015], [-0.165, -0.075], [-0.03, -0.03]]}}
 
 animations:
   idle:
@@ -105,16 +107,16 @@ animations:
     loop: true
     keys:
       - {ms: 120, set: {hand_R: [0.30, 0.13, 0.16]}}
-      - {ms: 130, set: {spear_pitch: 1.2, spear_cheat: 0, spear_splay: 0, hand_R: [0.22, 0.28, 0.10], hand_L: [0.10, 0.30, 0.35], twist: -0.15,
+      - {ms: 130, set: {spear_pitch: 1.6, spear_cheat: 0, spear_splay: -0.8, hand_R: [0.22, 0.28, 0.10], hand_L: [0.10, 0.30, 0.35], twist: -0.15,
                         foot_L: [0.14, 0, 0.14], foot_R: [0.14, 0, -0.08]}}
       - {ms: 200, event: windup,
-         set: {spear_pitch: "2.0 - 0.55*pulse(yaw, 0, 60) - 0.55*pulse(yaw, 180, 60)", spear_cheat: 0, spear_splay: 0, hand_R: [0.20, 0.30, -0.08], hand_L: [0.08, 0.32, 0.18], twist: -0.30, lean: -0.06,
+         set: {spear_pitch: "1.7 - 0.5*pulse(yaw, 0, 70)", spear_cheat: 0, spear_splay: -0.1, hand_R: [0.20, 0.30, -0.08], hand_L: [0.08, 0.32, 0.18], twist: -0.30, lean: -0.06,
                squash: 0.97, foot_L: [0.14, 0, 0.16], foot_R: [0.14, 0, -0.10]}}
-      - {ms: 60, set: {spear_pitch: "2.0 - 0.55*pulse(yaw, 0, 60) - 0.55*pulse(yaw, 180, 60)", spear_cheat: 0, spear_splay: 0, root: [0, 0, 0.05], hand_R: [0.14, 0.30, 0.30], hand_L: [0.06, 0.32, 0.55],
+      - {ms: 60, set: {spear_pitch: "1.8 - 0.5*pulse(yaw, 0, 70)", spear_cheat: 0, spear_splay: -0.5, root: [0, 0, 0.05], hand_R: [0.14, 0.30, 0.30], hand_L: [0.06, 0.32, 0.55],
                        twist: 0.10, lean: 0.20, squash: 1.03, foot_L: [0.14, 0, 0.26], foot_R: [0.14, 0, -0.12]}}
       - {ms: 140, event: hit,
-         set: {spear_pitch: "2.0 - 0.55*pulse(yaw, 0, 60) - 0.55*pulse(yaw, 180, 60)", spear_cheat: 0, spear_splay: 0, root: [0, 0, 0.07], hand_R: [0.12, 0.30, 0.34], hand_L: [0.05, 0.32, 0.58],
+         set: {spear_pitch: "1.75 - 0.5*pulse(yaw, 0, 70)", spear_cheat: 0, spear_splay: -0.55, root: [0, 0, 0.07], hand_R: [0.12, 0.30, 0.34], hand_L: [0.05, 0.32, 0.58],
                twist: 0.15, lean: 0.25, foot_L: [0.14, 0, 0.28], foot_R: [0.14, 0, -0.12]}}
-      - {ms: 130, tween: 1, set: {spear_pitch: 1.3, spear_cheat: 0, spear_splay: 0, root: [0, 0, 0.06], hand_R: [0.20, 0.28, 0.18], hand_L: [0.10, 0.30, 0.40],
+      - {ms: 130, tween: 1, set: {spear_pitch: "1.65 - 0.5*pulse(yaw, 0, 70)", spear_cheat: 0, spear_splay: -0.35, root: [0, 0, 0.06], hand_R: [0.20, 0.28, 0.18], hand_L: [0.10, 0.30, 0.40],
                         twist: 0.0, lean: 0.10, foot_L: [0.14, 0, 0.16], foot_R: [0.14, 0, -0.06]}}
-      - {ms: 140, set: {spear_pitch: 0.4, hand_R: [0.28, 0.16, 0.16], foot_L: [0.13, 0, 0.06]}}
+      - {ms: 140, set: {spear_pitch: 0.85, spear_splay: -0.3, hand_R: [0.28, 0.16, 0.16], foot_L: [0.13, 0, 0.06]}}

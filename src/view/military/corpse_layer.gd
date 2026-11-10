@@ -43,7 +43,7 @@ func on_sim_event(event: Dictionary) -> void:
 	body.frame = row_flip.x * sheet.frames
 	body.flip_h = row_flip.y == 1
 	body.centered = false
-	body.offset = -Vector2(CharacterSheet.FOOT)
+	body.offset = -Vector2(sheet.foot)
 	# Laid on his side: turned about his feet, a little lower.
 	body.rotation = -PI / 2.0 if (int(event["agent"]) % 2 == 0) else PI / 2.0
 	body.position = Vector2(0, -lift - 4.0)

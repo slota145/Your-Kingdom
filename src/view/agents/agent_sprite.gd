@@ -29,6 +29,7 @@ static var _carried_cache: Dictionary[StringName, Texture2D] = {}
 var _good_overlay: Sprite2D
 var _vehicle: Sprite2D
 var _sheet: CharacterSheet
+var _lift: float = 0.0
 
 
 func _init() -> void:
@@ -47,7 +48,8 @@ func _init() -> void:
 ## Draws the person [param h] px above its node (a soldier on a wall, M7 part 2): the node
 ## stays at the sort point.
 func set_lift(h: float) -> void:
-	offset = -Vector2(CharacterSheet.FOOT) - Vector2(0, h)
+	_lift = h
+	offset = -Vector2(_sheet.foot if _sheet != null else CharacterSheet.FOOT) - Vector2(0, h)
 
 
 ## [param carry_category] and [param good] select the carried overlay; empty = hands free.
@@ -59,6 +61,7 @@ func show_state(visual: CharacterVisual, anim: StringName, dir: int, time: float
 		texture = sheet.texture
 		hframes = sheet.frames
 		vframes = sheet.rows
+		offset = -Vector2(sheet.foot) - Vector2(0, _lift)
 	var row_flip := sheet.row_for(maxi(dir, 0))
 	var column := sheet.frame_at(time)
 	frame = row_flip.x * sheet.frames + column
