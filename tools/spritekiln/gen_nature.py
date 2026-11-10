@@ -285,8 +285,51 @@ def conifer(variant):
     return parts
 
 
+def species_rest(sp, state):
+    """The felled tree and the stump of a species: a stump as thick as its trunk with roots and a cut face
+    with rings; felled = the stump plus the trunk lying towards the upper left with a small crown at its end."""
+    rng = random.Random(77)
+    conifer_sp = sp not in ("oak_a", "oak_b")
+    rt = 0.17 if conifer_sp else 0.29
+    parts = {"stump": {"material": "bark", "prims": [{"cylinder": {"a": [0, 0, 0], "b": [0, 0.3, 0], "r": rt}}] +
+                       [{"tube": {"pts": r3p([[rt * 0.7 * math.cos(a), 0.1, rt * 0.7 * math.sin(a)],
+                                              [(rt + 0.12) * math.cos(a), 0.04, (rt + 0.12) * math.sin(a)],
+                                              [(rt + 0.24) * math.cos(a), 0.0, (rt + 0.24) * math.sin(a)]]), "r": [0.06, 0.02]}}
+                        for a in (0.4, 1.9, 3.4, 4.8)],
+                       "paint": [{"material": "bark_dark", "stripes": {"axis": "x", "period": 0.1, "width": 0.025}}]},
+             "top": {"material": "cut", "prims": [{"cylinder": {"a": [0, 0.29, 0], "b": [0, 0.32, 0], "r": rt - 0.01}}],
+                     "paint": [{"material": "ring", "rings": {"axis": "y", "period": 0.07, "width": 0.03}}]}}
+    if state == "felled":
+        parts["log"] = {"material": "bark", "prims": [{"cone": {"a": [0.35, rt, 0.15], "b": [0.15, rt * 0.6, -1.15],
+                                                               "r": r3([rt * 0.95, rt * 0.55])}}],
+                        "paint": [{"material": "bark_dark", "stripes": {"axis": "z", "period": 0.09, "width": 0.025}}]}
+        parts["log_end"] = {"material": "cut", "prims": [{"cylinder": {"a": [0.36, rt, 0.2], "b": [0.355, rt, 0.16], "r": rt - 0.01}}]}
+        if conifer_sp:   # a short lying spire: drooping tufts along the top of the log
+            for t in range(4):   # lying tiers: each a fan of drooping branch tips, its own part (a line between tiers)
+                z = -0.95 - 0.3 * t
+                w = 0.55 * (1 - 0.2 * t)
+                prims = [{"cone": {"a": r3([0.14, 0.32, z]), "b": r3([0.12, 0.3, z - 0.35]), "r": r3([w * 0.55, w * 0.3])}}]
+                for j in range(5):
+                    a = (j - 2) * 0.55
+                    prims.append({"cone": {"a": r3([0.14, 0.32, z]), "b": r3([0.14 + w * math.sin(a), 0.08 + 0.12 * math.cos(a),
+                                                                             z - 0.25 - 0.1 * math.cos(a)]), "r": [0.1, 0.03]}})
+                parts[f"crown_{t}"] = {"material": "needle", "blend": 0.04, "prims": prims,
+                                       "paint": [{"material": "needle_dark", "spots": {"scale": 0.05, "density": 0.25, "seed": 41 + t}},
+                                                 {"material": "needle_hi", "spots": {"scale": 0.045, "density": 0.15, "seed": 61 + t}}]}
+            parts["crown_tip"] = {"material": "needle", "prims": [{"cone": {"a": [0.12, 0.3, -2.1], "b": [0.1, 0.28, -2.45], "r": [0.12, 0.02]}}]}
+        else:
+            parts["crown"] = crown(rng, 0.1, 0.5, -1.65, scale=0.55)
+        for p_ in parts.values():
+            p_["prims"] = [shift(pr, 0.25, 0.25) for pr in p_["prims"]]
+    return parts
+
+
+SPECIES = ["oak_a", "oak_b", "spruce", "pine", "spruce_light"]   # the game's tree looks 1..5 (grown, grown_2...)
 VARIANTS = {"tree_oak_a": lambda: leafy("a"), "tree_oak_b": lambda: leafy("b"), "tree_spruce": lambda: conifer("spruce"),
             "tree_pine": lambda: conifer("pine"), "tree_spruce_light": lambda: conifer("spruce_light")}
+for _sp in SPECIES:
+    for _st in ("felled", "stump"):
+        VARIANTS[f"tree_{_sp}_{_st}"] = (lambda sp=_sp, st=_st: species_rest(sp, st))
 TREE = ["tree_grown", "tree_felled", "tree_stump"]
 ROCK = ["rock_grown", "rock_felled", "rock_stump"]
 
@@ -305,6 +348,8 @@ def spec(name):
     else:
         if name in VARIANTS:   # tree variants after the owner's references: toon, dark outline, lines between clouds/tiers
             parts = VARIANTS[name]()
+            if name == "tree_oak_b" or name.startswith("tree_oak_b_"):
+                common["ramps"] = dict(RAMPS, leaf=RAMPS["leaf_hi"], leaf_hi=RAMPS["leaf_pale"])
             if "spruce_light" in name:
                 common["ramps"] = dict(RAMPS, needle=RAMPS["needle_light"], needle_hi=RAMPS["needle_light_hi"])
             if name == "tree_oak_b":

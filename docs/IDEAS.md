@@ -164,3 +164,9 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 ## Barwy wojsk władców (Claude, 2026-11-09)
 
 - Pomysł (Claude, przy M8 część 2): żołnierze władców i straż osad wyglądają dziś tak samo jak żołnierze gracza (te same postacie), więc na mapie pola trudno odróżnić swoich od wrogów. Tarcze, proporce albo pasy na ubraniu w kolorze właściciela (gracz czerwony, władcy niebieski, zielony, fioletowy). Ocena: grafika postaci w kilku kolorach (podmiana palety przy wczytaniu, bez nowych rysunków), mało pracy w kodzie. Kiedy: razem z częścią 4 (wojna władców) albo wcześniej, jeśli przeszkadza przy ocenie.
+
+## Mieszany las i więcej gatunków drzew (właściciel, 2026-11-10)
+
+- Pomysł właściciela: kilka gatunków drzew naraz zamiast jednego wyglądu (dęby, lipy, świerki, sosny).
+- **Zrobione 2026-11-10 (ankieta: „mieszany las teraz”):** 5 wyglądów ze SpriteKiln (dąb, jaśniejszy dąb, świerk, sosna, jasny świerk), każdy w 3 stanach (`nature/tree/{grown,felled,stump}[_2.._5].png`). Wygląd wybiera tylko widok (`NatureLayer.variant_suffix`) ze współrzędnych kafla, więc drzewo zachowuje gatunek przy ścinaniu i po wczytaniu gry; symulacja i zapis bez zmian.
+- Dalej (do decyzji): gatunki zależne od terenu (iglaste wyżej i na kamienistym gruncie, liściaste przy wodzie), skupiska jednego gatunku zamiast losowej mieszanki, różne drewno z różnych drzew (np. sosna na smołę), pora roku (jesienne liście).
