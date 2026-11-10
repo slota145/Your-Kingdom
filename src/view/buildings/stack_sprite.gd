@@ -4,10 +4,13 @@ extends Sprite2D
 ## (frames FRAME_W wide side by side, tile diamond in the bottom 32 px, ART_SPEC §2/§8).
 ## G2: the sheet has as many frames as it has stages: one per piece for the goods drawn by
 ## PixelLab (stack_size frames), 4 for the older sheets (25/50/75/100%).
+## E1: a store slot holding twice the stack size shows goods/stacks/<good>_x2.png (twice the
+## frames, a taller stack); without that sheet the normal one is scaled to the capacity.
 
 const FRAME_W := 64
 
 static var _sheets: Dictionary[StringName, Texture2D] = {}
+static var _tall_sheets: Dictionary[StringName, Texture2D] = {}
 
 
 func _init() -> void:
@@ -26,6 +29,9 @@ func show_stack(good: StringName, amount: int, capacity: int, sort_shift: float 
 	if not visible:
 		return
 	texture = _sheet(good)
+	var tall := _tall_sheet(good) if capacity > texture.get_width() / FRAME_W else null
+	if tall != null:
+		texture = tall
 	var stages := maxi(1, texture.get_width() / FRAME_W)
 	var stage := StockpileLayout.fill_stage(amount, capacity, stages)
 	var frame := Vector2(texture.get_width() / float(stages), texture.get_height())
@@ -40,3 +46,11 @@ static func _sheet(good: StringName) -> Texture2D:
 	if not _sheets.has(good):
 		_sheets[good] = ArtPaths.texture("goods/stacks/%s.png" % good)
 	return _sheets[good]
+
+
+## The taller sheet of [param good] (E1), null when it was not drawn.
+static func _tall_sheet(good: StringName) -> Texture2D:
+	if not _tall_sheets.has(good):
+		var path := ArtPaths.resolve("goods/stacks/%s_x2.png" % good)
+		_tall_sheets[good] = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	return _tall_sheets[good]

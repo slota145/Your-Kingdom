@@ -607,6 +607,11 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.55, 0.42, 0.28), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
 	"port_warehouse_small": {"footprint": Vector2i(2, 2), "entrance": Vector2i(0, 1), "walls": 0.0, "roof": 0.0,
 			"wall": Color(0.55, 0.42, 0.28), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
+	# E1 part 1
+	"porters_hut": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 20.0,
+			"wall": Color(0.62, 0.5, 0.34), "roof_color": Color(0.55, 0.45, 0.28), "extra": "barrels"},
+	"porters_house": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 40.0, "roof": 24.0,
+			"wall": Color(0.82, 0.76, 0.62), "roof_color": Color(0.6, 0.3, 0.22), "extra": "barrels"},
 	"docker_hut": {"footprint": Vector2i(2, 2), "entrance": Vector2i(0, 1), "walls": 30.0, "roof": 20.0,
 			"wall": Color(0.6, 0.48, 0.32), "roof_color": Color(0.5, 0.42, 0.34), "extra": "barrels"},
 	"docker_house": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 40.0, "roof": 24.0,

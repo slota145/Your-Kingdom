@@ -34,6 +34,8 @@ var _fields_button: Button
 var _priority_row: Container
 var _pause_button: Button
 var _look_button: Button
+## "Upgrade now" on a house (E1).
+var _upgrade_button: Button
 var _turn_button: Button
 var _plant_button: Button
 var _plant_clear_button: Button
@@ -131,6 +133,9 @@ func _init() -> void:
 			command_requested.emit(SetLookCommand.new(building_id, b.look % visual.look_count(b.house.level) + 1)))
 	_look_button.tooltip_text = "ui.building.change_look_hint"
 	buttons.add_child(_look_button)
+	_upgrade_button = UiKit.button("ui.house.upgrade_now", func() -> void:
+		command_requested.emit(UpgradeHouseCommand.new(building_id)))
+	buttons.add_child(_upgrade_button)
 	_turn_button = UiKit.button("ui.building.turn", func() -> void:
 		command_requested.emit(RotateBuildingCommand.new(building_id)))
 	_turn_button.tooltip_text = "ui.building.turn_hint"
@@ -347,6 +352,13 @@ func _refresh() -> void:
 	var visual := BuildingVisualDef.for_building(b.def.id)
 	_turn_button.visible = b.def.footprint.x == b.def.footprint.y and not b.def.is_on_water()
 	_look_button.visible = b.house != null and visual != null and visual.look_count(b.house.level) > 1
+	_upgrade_button.visible = b.house != null and b.is_complete() \
+			and b.house.level < b.def.house_levels.size() and b.site_id == 0
+	if _upgrade_button.visible:
+		var why := Population.upgrade_blocker(province, b)
+		_upgrade_button.disabled = why != &""
+		_upgrade_button.tooltip_text = tr("ui.command_error.%s" % why) if why != &"" \
+				else tr("ui.house.upgrade_now_hint")
 	_refresh_settings(b)
 	_refresh_icons(b)
 

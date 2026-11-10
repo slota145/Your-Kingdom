@@ -257,6 +257,17 @@ const BUILDINGS := {
 		"props": [["crane_mast", 1.15, 0.85], ["treadwheel", 0.5, 1.5], ["barrels", 1.7, 1.8],
 			["bollard", 1.85, 0.25]]}],
 	"port_warehouse": [{"special": "yard"}],
+	# E1 part 1: the porters' hut (2x2) and house (3x3); final art from SpriteKiln
+	# (tools/spritekiln/gen_porters.py), these drawings give the construction stages.
+	"porters_hut": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.25, 1.86], "h": 34.0, "rh": 22.0, "ridge": "y",
+			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.35, 0.3, 0.25)}],
+		"props": [["crate_stack", 1.62, 1.72], ["sacks", 1.6, 0.6]]}],
+	"porters_house": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 2.05, 2.86], "h": 50.0, "rh": 28.0, "ridge": "x",
+			"ends": ["gable", "gable"], "walls": "timber_stone", "roof": "tile", "shutters": Color(0.25, 0.4, 0.55),
+			"floors": 2, "chimney": [1.45, 1.75]}],
+		"props": [["crate_stack", 2.5, 0.6], ["sacks", 2.5, 1.5], ["barrels", 2.5, 2.4]]}],
 	# P2 part 3: the builders' hut (2x2): a timber-framed cottage on a stone plinth with a
 	# shingle roof and a chimney, an open shed full of tools and timber, a ladder against the
 	# wall, a saw horse, dressed stone and planks waiting for the next site.

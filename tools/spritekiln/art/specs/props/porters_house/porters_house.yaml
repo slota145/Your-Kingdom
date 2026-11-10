@@ -1,0 +1,243 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+name: porters_house
+render: {outline: dark, lines: depth+normal, light: classic, shading: toon}   # like the other SpriteKiln buildings
+kind: prop
+size: 320
+directions: [se]          # yaw 45; +z = game +x (lower right), +x = game -y; model x = (1.5 - game y) * 2.343
+palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
+camera: {pitch: 30, scale: 0.05176, center: [0, 2.6, 0]}
+shadow: null
+ramps:
+  straw:  ['#1a1208', '#3f2e14', '#6a5022', '#93723a', '#b89650', '#d8b870']
+  mud:    ['#120c08', '#2a1c12', '#3e2a1a', '#523a24', '#664a30']
+
+brief:
+  summary: "Your Kingdom porters' house (E1), 3x3 tiles: a two-storey house, the ground floor of stone with a wide double door to the front yard, the upper floor half-timbered over cream daub, a steep tiled gable roof with a chimney, a loft door with a hoist beam and rope in the gable, an open lean-to with barrels and sacks, a handcart, crates and sacks in the trodden front yard"
+  must_keep: ["footprint 3x3 tiles (7.03 x 7.03 units)", "door on the -x wall (game y 2) at game x 1.5 (model z 0)", "front yard (game y 2..3, model x -3.5..-1.17) free to walk"]
+
+materials:
+  plank: {ramp: wood, bands: [2, 5]}
+  post: {ramp: log, bands: [1, 3]}
+  timber: {ramp: timber, bands: [1, 3]}
+  daub: {ramp: plaster_cream, bands: [2, 5]}
+  stone: {ramp: stone, bands: [2, 4]}
+  tile: {ramp: tile, bands: [2, 4]}
+  tile_dark: {ramp: tile, bands: [0, 1], outline: false}
+  thatch: {ramp: straw, bands: [1, 5]}
+  thatch_dark: {ramp: straw, bands: [0, 2]}
+  dirt: {ramp: dirt, outline: false}
+  sack: {ramp: bone, bands: [3, 5]}
+  steel: {ramp: steel, finish: metal}
+  rope: {ramp: straw, bands: [2, 4]}
+  ink: {ramp: log, bands: [0, 1], outline: false}
+
+channels: {}
+bones: {}
+
+parts:
+  yard:
+    material: dirt
+    prims:
+      - box: {c: [0, 0.01, 0], half: [3.45, 0.01, 3.45]}
+  ground_floor:      # stone walls
+    material: stone
+    prims:
+      - box: {c: [1.15, 0.95, 0.0], half: [2.15, 0.95, 2.4]}
+    paint:
+      - material: ink
+        grid: {axes: [y, z], spacing: [0.32, 0.5], r: 0.026}
+      - material: ink
+        grid: {axes: [x, y], spacing: [0.5, 0.32], r: 0.026}
+  upper_floor:       # daub between timbers, jettied a little over the yard
+    material: daub
+    prims:
+      - box: {c: [1.1, 2.85, 0.0], half: [2.3, 0.95, 2.45]}
+  sill:              # the beam under the jetty
+    material: timber
+    prims:
+      - box: {c: [1.1, 1.93, 0.0], half: [2.33, 0.07, 2.48]}
+  frame_front:       # timbers on the front (-x) wall
+    material: timber
+    prims:
+      - box: {c: [-1.21, 2.85, -2.38], half: [0.04, 0.95, 0.08]}
+      - box: {c: [-1.21, 2.85, -0.8], half: [0.04, 0.95, 0.07]}
+      - box: {c: [-1.21, 2.85, 0.8], half: [0.04, 0.95, 0.07]}
+      - box: {c: [-1.21, 2.85, 2.38], half: [0.04, 0.95, 0.08]}
+      - box: {c: [-1.21, 3.75, 0.0], half: [0.04, 0.07, 2.45]}
+      - box: {c: [-1.21, 2.6, -1.6], half: [0.04, 0.06, 0.95], rot: [0.62, 0, 0]}
+      - box: {c: [-1.21, 2.6, 1.6], half: [0.04, 0.06, 0.95], rot: [-0.62, 0, 0]}
+  frame_side:        # timbers on the gable (+z) wall
+    material: timber
+    prims:
+      - box: {c: [-0.4, 2.85, 2.46], half: [0.07, 0.95, 0.04]}
+      - box: {c: [2.6, 2.85, 2.46], half: [0.07, 0.95, 0.04]}
+      - box: {c: [3.36, 2.85, 2.46], half: [0.08, 0.95, 0.04]}
+      - box: {c: [1.1, 3.75, 2.46], half: [2.3, 0.07, 0.04]}
+      - box: {c: [0.4, 2.6, 2.46], half: [0.85, 0.06, 0.04], rot: [0, 0, -0.62]}
+  windows:
+    material: ink
+    prims:
+      - box: {c: [-1.22, 2.95, -1.6], half: [0.03, 0.3, 0.26]}
+      - box: {c: [-1.22, 2.95, 1.6], half: [0.03, 0.3, 0.26]}
+      - box: {c: [-1.17, 1.1, -1.7], half: [0.03, 0.26, 0.24]}
+      - box: {c: [3.0, 2.95, 2.47], half: [0.24, 0.3, 0.03]}
+      - box: {c: [0.2, 1.1, 2.42], half: [0.26, 0.26, 0.03]}
+  shutters:
+    material: plank
+    prims:
+      - box: {c: [-1.32, 2.95, -2.0], half: [0.02, 0.3, 0.13], rot: [0, -0.6, 0]}
+      - box: {c: [-1.32, 2.95, 2.0], half: [0.02, 0.3, 0.13], rot: [0, 0.6, 0]}
+      - box: {c: [3.42, 2.95, 2.58], half: [0.13, 0.3, 0.02], rot: [0, -0.6, 0]}
+  door:              # wide double door to the yard
+    material: plank
+    prims:
+      - box: {c: [-1.03, 0.85, 0.0], half: [0.04, 0.82, 0.6]}
+    paint:
+      - material: ink
+        stripes: {axis: z, period: 0.2, width: 0.055}
+      - material: ink
+        stripes: {axis: z, at: [0.0], width: 0.07}
+  door_frame:
+    material: timber
+    prims:
+      - box: {c: [-1.05, 0.9, -0.68], half: [0.07, 0.9, 0.07]}
+      - box: {c: [-1.05, 0.9, 0.68], half: [0.07, 0.9, 0.07]}
+      - box: {c: [-1.05, 1.75, 0.0], half: [0.07, 0.08, 0.75]}
+  door_bands:
+    material: steel
+    prims:
+      - box: {c: [-1.08, 0.45, 0.0], half: [0.01, 0.03, 0.55]}
+      - box: {c: [-1.08, 1.25, 0.0], half: [0.01, 0.03, 0.55]}
+  gables:
+    material: daub
+    prims:
+      - extrude: {c: [1.1, 3.82, 2.42], depth: 0.1, profile: {polygon: [[-2.3, 0], [2.3, 0], [0, 2.35]]}}
+      - extrude: {c: [1.1, 3.82, -2.42], depth: 0.1, profile: {polygon: [[-2.3, 0], [2.3, 0], [0, 2.35]]}}
+  gable_timber:
+    material: timber
+    prims:
+      - box: {c: [1.1, 4.7, 2.48], half: [0.07, 0.85, 0.04]}
+      - box: {c: [1.1, 4.3, 2.48], half: [1.3, 0.06, 0.04]}
+  loft_door:         # the loft door with a hoist beam above it
+    material: plank
+    prims:
+      - box: {c: [1.1, 4.5, 2.5], half: [0.3, 0.35, 0.03]}
+    paint:
+      - material: ink
+        stripes: {axis: x, period: 0.15, width: 0.055}
+  hoist_beam:
+    material: timber
+    prims:
+      - box: {c: [1.1, 5.15, 2.95], half: [0.08, 0.08, 0.6]}
+  hoist_rope:
+    material: rope
+    priority: 2
+    min_cover: 2
+    prims:
+      - cylinder: {a: [1.1, 5.08, 3.45], b: [1.1, 3.2, 3.45], r: 0.03}
+  hoist_sack:
+    material: sack
+    prims:
+      - ellipsoid: {c: [1.1, 2.95, 3.45], r: [0.22, 0.27, 0.2]}
+  roof_front:
+    material: tile
+    prims:
+      - box: {c: [-0.1, 4.95, 0.0], half: [1.72, 0.1, 2.75], rot: [0, 0, 0.82]}
+    paint:
+      - material: tile_dark
+        stripes: {axis: z, period: 0.26, width: 0.055}
+  roof_back:
+    material: tile
+    prims:
+      - box: {c: [2.3, 4.95, 0.0], half: [1.72, 0.1, 2.75], rot: [0, 0, -0.82]}
+    paint:
+      - material: tile_dark
+        stripes: {axis: z, period: 0.26, width: 0.055}
+  ridge:
+    material: tile_dark
+    prims:
+      - cylinder: {a: [1.1, 6.25, -2.78], b: [1.1, 6.25, 2.78], r: 0.11}
+  chimney:
+    material: stone
+    prims:
+      - box: {c: [2.3, 6.0, -1.3], half: [0.22, 0.75, 0.22]}
+  chimney_top:
+    material: ink
+    prims:
+      - box: {c: [2.3, 6.76, -1.3], half: [0.16, 0.02, 0.16]}
+  shed_roof:         # an open lean-to on the +z side
+    material: thatch
+    blend: 0.02
+    prims:
+      - box: {c: [1.1, 1.85, 2.95], half: [2.2, 0.08, 0.62], rot: [-0.42, 0, 0], round: 0.04}
+    paint:
+      - material: thatch_dark
+        spots: {scale: 0.12, density: 0.28, seed: 6}
+  shed_posts:
+    material: post
+    prims:
+      - cylinder: {a: [-0.95, 0.0, 3.35], b: [-0.95, 1.65, 3.35], r: 0.07}
+      - cylinder: {a: [3.1, 0.0, 3.35], b: [3.1, 1.65, 3.35], r: 0.07}
+      - box: {c: [1.1, 1.65, 3.35], half: [2.1, 0.06, 0.06]}
+  barrels:
+    material: plank
+    prims:
+      - cylinder: {a: [0.0, 0.0, 2.95], b: [0.0, 0.58, 2.95], r: 0.27, round: 0.04}
+      - cylinder: {a: [0.62, 0.0, 2.95], b: [0.62, 0.58, 2.95], r: 0.27, round: 0.04}
+      - cylinder: {a: [0.3, 0.6, 2.95], b: [0.3, 1.12, 2.95], r: 0.25, round: 0.04}
+    paint:
+      - material: steel
+        rings: {axis: y, period: 0.25, width: 0.055}
+  shed_sacks:
+    material: sack
+    blend: 0.04
+    prims:
+      - ellipsoid: {c: [1.6, 0.27, 2.95], r: [0.26, 0.28, 0.24]}
+      - ellipsoid: {c: [2.1, 0.25, 3.0], r: [0.24, 0.26, 0.22]}
+      - ellipsoid: {c: [1.85, 0.62, 2.95], r: [0.22, 0.22, 0.2]}
+  cart_box:          # the handcart in the front yard
+    material: plank
+    prims:
+      - box: {c: [-2.4, 0.42, -1.8], half: [0.5, 0.14, 0.34]}
+    cut:
+      - box: {c: [-2.4, 0.52, -1.8], half: [0.44, 0.12, 0.28]}
+  cart_load:
+    material: sack
+    blend: 0.04
+    prims:
+      - ellipsoid: {c: [-2.2, 0.58, -1.8], r: [0.2, 0.17, 0.24]}
+      - ellipsoid: {c: [-2.6, 0.6, -1.78], r: [0.2, 0.16, 0.22]}
+  cart_handles:
+    material: post
+    priority: 2
+    prims:
+      - cylinder: {a: [-2.85, 0.42, -2.08], b: [-3.35, 0.12, -2.08], r: 0.04}
+      - cylinder: {a: [-2.85, 0.42, -1.52], b: [-3.35, 0.12, -1.52], r: 0.04}
+  cart_wheels:
+    material: post
+    prims:
+      - cylinder: {a: [-2.35, 0.3, -2.2], b: [-2.35, 0.3, -2.26], r: 0.3}
+      - cylinder: {a: [-2.35, 0.3, -1.4], b: [-2.35, 0.3, -1.34], r: 0.3}
+  crates:
+    material: plank
+    prims:
+      - box: {c: [-2.0, 0.24, 1.6], half: [0.26, 0.24, 0.26]}
+      - box: {c: [-2.55, 0.22, 1.9], half: [0.23, 0.22, 0.23]}
+      - box: {c: [-2.05, 0.68, 1.62], half: [0.21, 0.2, 0.21], rot: [0, 0.35, 0]}
+      - box: {c: [-1.6, 0.2, 2.2], half: [0.2, 0.2, 0.2]}
+    paint:
+      - material: ink
+        stripes: {axis: y, period: 0.16, width: 0.055}
+  yard_sacks:
+    material: sack
+    blend: 0.04
+    prims:
+      - ellipsoid: {c: [-1.5, 0.26, -1.0], r: [0.25, 0.27, 0.23]}
+      - ellipsoid: {c: [-1.55, 0.24, -1.5], r: [0.23, 0.25, 0.22]}
+
+animations:
+  idle:
+    frames: 1
+    ms: 500
+    channels: {}

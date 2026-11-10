@@ -118,3 +118,34 @@ func test_one_slot_per_good_keeps_a_good_to_one_stack() -> void:
 	assert_bool(stock.can_accept(&"bread", 1)).is_false()
 	assert_int(stock.free_space(&"fish")).is_equal(6)
 	assert_bool(stock.can_accept(&"fish", 2)).is_true()
+
+
+## E1 (owner 2026-11-10): the stockpile and harbour stores hold twice a stack per slot.
+func test_stack_multiplier_doubles_a_slot() -> void:
+	var stock := _stock(1)
+	stock.stack_multiplier = 2
+	assert_int(stock.stack_size(&"wood")).is_equal(40)
+	assert_int(stock.add(&"wood", 45)).is_equal(5)
+	assert_bool(stock.is_consistent()).is_true()
+
+
+func test_stores_hold_twice_a_stack_but_the_armoury_does_not() -> void:
+	var data := SimFixture.registry()
+	for id: StringName in [&"stockpile", &"port_store", &"port_warehouse", &"port_warehouse_small"]:
+		var building := BuildingState.new(1, data.get_building(id), Vector2i.ZERO)
+		building.finish(data)
+		assert_int(building.stock.stack_size(&"wood")).override_failure_message(String(id)).is_equal(40)
+	var armoury := BuildingState.new(2, data.get_building(&"armoury"), Vector2i.ZERO)
+	armoury.finish(data)
+	assert_int(armoury.stock.stack_size(&"sword")).is_equal(data.get_good(&"sword").stack_size)
+
+
+func test_stack_multiplier_survives_save_and_load() -> void:
+	var data := SimFixture.registry()
+	var building := BuildingState.new(1, data.get_building(&"stockpile"), Vector2i.ZERO)
+	building.finish(data)
+	building.stock.add(&"wood", 35)
+	var loaded := BuildingState.from_dict(building.to_dict(), data)
+	assert_int(loaded.stock.total(&"wood")).is_equal(35)
+	assert_int(loaded.stock.stack_size(&"wood")).is_equal(40)
+	assert_bool(loaded.stock.is_consistent()).is_true()

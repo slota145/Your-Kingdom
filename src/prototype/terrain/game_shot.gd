@@ -76,6 +76,8 @@ var _vineyard: bool = false
 ## their pigs; the swineherd walks in (not paused).
 var _pens: bool = false
 var _yards: PackedStringArray = PackedStringArray()
+## --fill_stores (E1): storages placed by --yards get stacks of many goods, some full, some not.
+var _fill_stores: bool = false
 ## --g1=finished|sites (G1): which half of the pioneer set to lay out; "" = none.
 var _g1: String = ""
 var _g2: bool = false
@@ -154,6 +156,8 @@ func _ready() -> void:
 			_vineyard = true
 		elif arg == "--pens":
 			_pens = true
+		elif arg == "--fill_stores":
+			_fill_stores = true
 		elif arg.begins_with("--yards="):
 			_yards = arg.trim_prefix("--yards=").split(",")
 		elif arg == "--g2":
@@ -783,6 +787,13 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 			if site != null:
 				site.phase = mini(phase, site.phase_count())
 			continue
+		if _fill_stores and b.stock != null and b.def.storage_slots > 0:
+			var goods: Array[StringName] = [&"wood", &"planks", &"stone", &"bricks", &"grain", &"beer",
+					&"bread", &"cloth", &"fish", &"wood", &"clothes", &"flour", &"planks", &"iron", &"stone"]
+			for s: int in b.stock.slot_count():
+				var good := goods[s % goods.size()]
+				var full := b.stock.stack_size(good)
+				b.stock.add(good, full if s % 3 != 2 else full / 2)
 		b.ensure_yard(sim.data)
 		if b.yard != null:
 			if def.herd_good != &"":

@@ -26,6 +26,9 @@ const PEN_ANIMALS := 2
 @export_range(0, 9) var staffing_priority: int = 5
 ## Number of stockpile slots; > 0 makes the building a storage (GDD §4.2).
 @export_range(0, 64) var storage_slots: int = 0
+## Storage only: each slot holds this many times a good's stack size (E1, owner 2026-11-10:
+## the stockpile and harbour stores hold twice as much, so a town needs fewer of them).
+@export_range(1, 4) var stack_multiplier: int = 1
 ## Storage only: units of a good construction deliveries leave in place (the player can change
 ## it per storage). Keeps firewood for houses when sites want wood (ROADMAP M4 decisions).
 @export var default_reserves: Dictionary[StringName, int] = {}

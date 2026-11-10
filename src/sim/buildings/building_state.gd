@@ -154,6 +154,7 @@ func take_recipe() -> RecipeDef:
 func apply_storage_filter(data: DataRegistry) -> void:
 	if stock == null or def.storage_slots <= 0:
 		return
+	stock.stack_multiplier = def.stack_multiplier
 	stock.only = def.storage_accepts.duplicate()
 	stock.never.clear()
 	if def.storage_accepts.is_empty():

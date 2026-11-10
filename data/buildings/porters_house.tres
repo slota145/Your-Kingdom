@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/building_def.gd" id="1_bld"]
+
+[resource]
+script = ExtResource("1_bld")
+category = &"storage"
+footprint = Vector2i(3, 3)
+entrance = Vector2i(1, 2)
+build_cost = Dictionary[StringName, int]({
+&"planks": 10,
+&"stone": 6,
+&"wood": 6
+})
+build_time = 30.0
+worker_kinds = Array[StringName]([&"porter", &"porter", &"porter", &"porter", &"porter", &"porter"])
+staffing_priority = 6
+max_carts = 3
+id = &"porters_house"

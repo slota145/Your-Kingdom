@@ -154,6 +154,36 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 			province.events.emit(&"resident_left", {"building": building.id})
 
 
+## Why the player cannot upgrade [param building] at once ("Upgrade now", E1, owner
+## 2026-11-10), &"" when they can: the same conditions as the automatic upgrade (every basic
+## need met, the next level's basic goods in store) without the wait of UPGRADE_AFTER.
+static func upgrade_blocker(province: ProvinceSim, building: BuildingState) -> StringName:
+	if building == null or building.house == null or not building.is_complete():
+		return &"not_a_house"
+	var house := building.house
+	if house.level >= building.def.house_levels.size():
+		return &"house_top_level"
+	if building.site_id != 0:
+		return &"upgrade_running"
+	if house.residents == 0:
+		return &"house_empty"
+	for need: NeedDef in building.level_def().needs:
+		if need.is_basic and not bool(house.satisfied.get(need.id, false)):
+			return &"house_needs_unmet"
+	if not next_level_available(province, building):
+		return &"house_next_goods_missing"
+	return &""
+
+
+## Opens the upgrade site of [param building] now (UpgradeHouseCommand); the materials still
+## have to be carried to it. Returns whether it opened.
+static func upgrade_now(province: ProvinceSim, building: BuildingState) -> bool:
+	if upgrade_blocker(province, building) != &"":
+		return false
+	Construction.open_upgrade_site(province, building, building.def.house_levels[building.house.level])
+	return building.site_id != 0
+
+
 ## Whether the town can already supply the basic goods of the next level: a full pantry of
 ## each (the next level's supply units) in the pantry and the storages together. Without it a
 ## house would upgrade, go short and decline again, wasting the materials (M4a balance, found

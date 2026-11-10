@@ -117,3 +117,22 @@ func test_handcarts_survive_save_and_load() -> void:
 	var loaded := Simulation.from_dict(JSON.parse_string(text), SimFixture.registry())
 	assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(text)
 	assert_int(loaded.province.buildings.get_building(a.id).carts).is_equal(2)
+
+
+## E1: the porters' hut and house give porters who carry anywhere, like the stockpile's.
+func test_porters_hut_porters_carry_between_storages() -> void:
+	var sim := SimFixture.make_sim(Vector2i(40, 40))
+	var a := SimFixture.place(sim, &"stockpile", Vector2i(4, 4))
+	var b := SimFixture.place(sim, &"stockpile", Vector2i(24, 4))
+	var lodge := SimFixture.place(sim, &"porters_hut", Vector2i(14, 12))
+	assert_int(lodge.def.worker_kinds.size()).is_equal(4)
+	assert_int(sim.province.data.get_building(&"porters_house").worker_kinds.size()).is_equal(6)
+	var porter := SimFixture.spawn(sim, &"porter", lodge.door_front_tile())
+	assert_str(String(sim.execute(AssignWorkerCommand.new(porter.id, lodge.id)))).is_empty()
+	lodge.carts = 1
+	a.stock.add(&"bread", 4)
+	sim.execute(RequestTransportCommand.new(&"bread", 4, a.id, b.id))
+	var loads := _loads(sim, 120.0, b.id)
+	assert_array(loads).is_equal([3, 1])
+	assert_int(b.stock.total(&"bread")).is_equal(4)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()

@@ -101,6 +101,18 @@ msgstr "Magazyn"
 msgid "building.stockpile.desc"
 msgstr "Plac składowy. Towary leżą tu w stosach, a tragarze je przynoszą i zabierają."
 
+msgid "building.porters_hut.name"
+msgstr "Chata tragarzy"
+
+msgid "building.porters_hut.desc"
+msgstr "Mała chata 4 tragarzy. Noszą towary w całej prowincji, tak jak tragarze magazynów. Można jej kupić 2 wózki."
+
+msgid "building.porters_house.name"
+msgstr "Dom tragarzy"
+
+msgid "building.porters_house.desc"
+msgstr "Duży dom 6 tragarzy. Noszą towary w całej prowincji, tak jak tragarze magazynów. Można mu kupić 3 wózki."
+
 # --- Recipes ---
 
 msgid "recipe.woodcutting.name"
@@ -345,6 +357,30 @@ msgstr "Uwaga: brakuje podstawowych rzeczy! Zadowolenie spada i ludzie pracują 
 
 msgid "ui.house.upgrade_in"
 msgstr "Awans za %d s, jeśli nic nie zabraknie"
+
+msgid "ui.house.upgrade_now"
+msgstr "Rozbuduj teraz"
+
+msgid "ui.house.upgrade_now_hint"
+msgstr "Zaczyna rozbudowę domu od razu, bez czekania. Tragarze i tak muszą przynieść materiały."
+
+msgid "ui.command_error.not_a_house"
+msgstr "To nie jest dom."
+
+msgid "ui.command_error.house_top_level"
+msgstr "Ten dom ma już najwyższy poziom."
+
+msgid "ui.command_error.upgrade_running"
+msgstr "Ten dom już się rozbudowuje."
+
+msgid "ui.command_error.house_empty"
+msgstr "W domu nikt nie mieszka."
+
+msgid "ui.command_error.house_needs_unmet"
+msgstr "Najpierw spełnij wszystkie potrzeby podstawowe domu."
+
+msgid "ui.command_error.house_next_goods_missing"
+msgstr "W magazynach brakuje towarów dla mieszkańców wyższego poziomu."
 
 msgid "ui.need.ok"
 msgstr "jest"
