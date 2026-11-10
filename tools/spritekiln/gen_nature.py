@@ -32,12 +32,14 @@ RAMPS = {
 }
 MAT = {
     "bark": {"ramp": "bark", "bands": [2, 5]},
+    "bark_dark": {"ramp": "bark", "bands": [1, 2], "outline": False, "line": False},
     "cut": {"ramp": "cut", "bands": [2, 5]},
     "ring": {"ramp": "cut", "bands": [1, 2], "outline": False, "line": False},
     "leaf": {"ramp": "leaf", "bands": [2, 5]},
     "leaf_hi": {"ramp": "leaf_hi", "bands": [3, 5], "outline": False, "line": False},
     "leaf_dark": {"ramp": "leaf", "bands": [1, 2], "outline": False, "line": False},
-    "rock": {"ramp": "rock", "bands": [2, 5], "crease": True, "edge_highlight": True},
+    "rock": {"ramp": "rock", "bands": [1, 5]},
+    "rock_dark": {"ramp": "rock", "bands": [1, 3], "outline": False, "line": False},
     "crack": {"ramp": "rock", "bands": [0, 1], "outline": False, "line": False},
     "moss": {"ramp": "moss", "bands": [2, 3], "outline": False, "line": False},
     "pig": {"ramp": "pig", "bands": [2, 5], "finish": "soft"},
@@ -52,19 +54,24 @@ def r3(v):
 
 
 def crown(rng, cx, cy, cz, scale=1.0):
-    """A leafy crown: overlapping clumps, lighter leaves where the light falls, darker hollows."""
+    """A natural crown: clumps of different sizes on an uneven dome (not a ball), gaps between them,
+    small leaf spots (lighter where the light falls, darker hollows)."""
     prims = []
-    for k in range(15):
-        a = k * 2.4
-        rr = (0.55 if k < 8 else 0.25) * scale
-        y = cy + (0.25 * math.sin(k * 1.3) + (0.35 if k >= 8 else 0.0)) * scale
-        prims.append({"ellipsoid": {"c": r3([cx + rr * math.cos(a) + rng.uniform(-0.08, 0.08), y,
-                                             cz + rr * math.sin(a) + rng.uniform(-0.08, 0.08)]),
-                                    "r": r3([0.55 * scale, 0.46 * scale, 0.55 * scale])}})
-    prims.append({"ellipsoid": {"c": r3([cx, cy + 0.75 * scale, cz]), "r": r3([0.5 * scale, 0.42 * scale, 0.5 * scale])}})
-    return {"material": "leaf", "blend": 0.08, "priority": 1, "prims": prims,
-            "paint": [{"material": "leaf_dark", "spots": {"scale": 0.12, "density": 0.3, "seed": 3}},
-                      {"material": "leaf_hi", "spots": {"scale": 0.09, "density": 0.28, "seed": 4}}]}
+    for k in range(24):
+        a = k * 2.399 + rng.uniform(-0.3, 0.3)            # golden-angle spread round the trunk
+        e = rng.uniform(-0.35, 1.0)                      # from the lower rim to the top
+        rad = 1.0 * math.cos(e * 0.9) * rng.uniform(0.75, 1.05)
+        x = cx + scale * rad * math.cos(a) * (1.1 if math.cos(a) > 0 else 0.95)   # a little lopsided
+        z = cz + scale * rad * math.sin(a)
+        y = cy + scale * (0.75 * math.sin(e * 1.2) + rng.uniform(-0.08, 0.08))
+        r = scale * rng.uniform(0.24, 0.46)
+        prims.append({"ellipsoid": {"c": r3([x, y, z]), "r": r3([r, r * 0.82, r]), "rot": r3([0, rng.uniform(0, 3), 0])}})
+    for k in range(4):   # the inner bulk, so no daylight through the middle
+        prims.append({"ellipsoid": {"c": r3([cx + scale * rng.uniform(-0.3, 0.3), cy + scale * rng.uniform(-0.1, 0.4),
+                                             cz + scale * rng.uniform(-0.3, 0.3)]), "r": r3([0.55 * scale, 0.45 * scale, 0.55 * scale])}})
+    return {"material": "leaf", "blend": 0.05, "priority": 1, "prims": prims,
+            "paint": [{"material": "leaf_dark", "spots": {"scale": 0.06, "density": 0.32, "seed": 3}},
+                      {"material": "leaf_hi", "spots": {"scale": 0.05, "density": 0.26, "seed": 4}}]}
 
 
 def r3p(pts):
@@ -95,41 +102,50 @@ def tree(state):
                         "paint": [{"material": "ring", "rings": {"axis": "y", "period": 0.07, "width": 0.03}}]}
         return parts, 0.5
     if state == "grown":
-        parts["trunk"] = {"material": "bark", "prims": [
-            {"cone": {"a": [0, 0, 0], "b": [0, 2.4, 0], "r": [0.2, 0.11]}},
-            {"tube": {"pts": [[0, 1.5, 0], [0.35, 2.0, 0.1], [0.6, 2.5, 0.15]], "r": [0.08, 0.04]}},
-            {"tube": {"pts": [[0, 1.7, 0], [-0.3, 2.2, -0.1], [-0.55, 2.6, -0.1]], "r": [0.07, 0.04]}}] +
-            stump["prims"][1:]}
-        parts["crown"] = crown(rng, 0, 3.05, 0)
+        parts["trunk"] = {"material": "bark", "blend": 0.06, "prims": [
+            {"tube": {"pts": [[0, 0, 0], [0.05, 0.9, 0.03], [-0.06, 1.7, -0.02], [0.04, 2.5, 0.0]], "r": [0.21, 0.1]}},
+            {"tube": {"pts": [[0.02, 1.55, 0], [0.4, 2.0, 0.15], [0.7, 2.55, 0.2]], "r": [0.08, 0.035]}},
+            {"tube": {"pts": [[-0.03, 1.75, 0], [-0.35, 2.15, -0.15], [-0.62, 2.7, -0.12]], "r": [0.07, 0.03]}},
+            {"tube": {"pts": [[0.0, 2.0, 0], [0.1, 2.4, -0.45], [0.15, 2.9, -0.6]], "r": [0.06, 0.03]}}] +
+            stump["prims"][1:],
+            "paint": [{"material": "bark_dark", "stripes": {"axis": "x", "period": 0.09, "width": 0.025}}]}
+        parts["crown"] = crown(rng, 0.03, 3.1, -0.05)
         return parts, 1.91
     # felled: the trunk lies on the ground towards the upper right, the crown at its end, the stump behind
     parts["stump"] = stump
     parts["top"] = {"material": "cut", "prims": [{"cylinder": {"a": [0, 0.3, 0], "b": [0, 0.34, 0], "r": 0.19}}],
                     "paint": [{"material": "ring", "rings": {"axis": "y", "period": 0.06, "width": 0.04}}]}
-    parts["log"] = {"material": "bark", "prims": [{"cone": {"a": [-0.15, 0.2, 0.45], "b": [1.15, 0.14, 0.25], "r": [0.19, 0.12]}}]}
-    parts["log_end"] = {"material": "cut", "prims": [{"cylinder": {"a": [-0.2, 0.2, 0.46], "b": [-0.16, 0.2, 0.455], "r": 0.18}}]}
-    parts["crown"] = crown(rng, 1.55, 0.45, 0.2, scale=0.6)
-    for p_ in parts.values():   # the whole group a step to the lower left, so the crown fits
-        p_["prims"] = [shift(pr, -0.55, 0.45) for pr in p_["prims"]]
+    parts["log"] = {"material": "bark", "prims": [{"cone": {"a": [0.35, 0.2, 0.15], "b": [0.15, 0.15, -1.15], "r": [0.19, 0.12]}}],
+                    "paint": [{"material": "bark_dark", "stripes": {"axis": "z", "period": 0.09, "width": 0.025}}]}
+    parts["log_end"] = {"material": "cut", "prims": [{"cylinder": {"a": [0.36, 0.2, 0.2], "b": [0.355, 0.2, 0.16], "r": 0.18}}]}
+    parts["crown"] = crown(rng, 0.1, 0.5, -1.65, scale=0.55)
+    for p_ in parts.values():   # the stump a little to the right of the tile centre
+        p_["prims"] = [shift(pr, 0.25, 0.25) for pr in p_["prims"]]
     return parts, 0.9
 
 
 def rock(state):
-    parts = {}
+    rng = random.Random({"grown": 11, "felled": 12, "stump": 13}[state])
     if state == "grown":
-        boulders = [([0.0, 0.55, -0.1], [0.75, 0.6, 0.6], [0, 0.4, 0.1]), ([0.55, 0.38, 0.45], [0.5, 0.42, 0.45], [0, -0.3, 0]),
-                    ([-0.55, 0.3, 0.45], [0.45, 0.32, 0.4], [0.1, 0.6, 0])]
+        masses = [([0.0, 0.55, -0.15], [0.62, 0.62, 0.55]), ([0.55, 0.4, 0.35], [0.45, 0.42, 0.4]),
+                  ([-0.5, 0.32, 0.4], [0.42, 0.34, 0.38]), ([0.1, 0.95, -0.05], [0.4, 0.32, 0.36]),
+                  ([0.15, 0.2, 0.75], [0.25, 0.2, 0.22])]
     elif state == "felled":
-        boulders = [([0.2, 0.3, 0.1], [0.5, 0.34, 0.45], [0, 0.4, 0.1]), ([-0.45, 0.22, 0.4], [0.38, 0.25, 0.32], [0.1, 0.6, 0])]
+        masses = [([0.15, 0.32, 0.05], [0.48, 0.38, 0.42]), ([-0.4, 0.22, 0.45], [0.34, 0.26, 0.3]),
+                  ([0.45, 0.15, 0.6], [0.2, 0.16, 0.18])]
     else:   # rubble
-        rng = random.Random(2)
-        boulders = [([rng.uniform(-0.7, 0.7), 0.08, rng.uniform(-0.6, 0.7)], [rng.uniform(0.1, 0.2), 0.09, rng.uniform(0.08, 0.16)],
-                     [0, rng.uniform(0, 3), 0.2]) for _ in range(8)]
-    prims = [{"box": {"c": r3(c), "half": r3(h), "rot": r3(rot), "round": 0.12 if state != "stump" else 0.04}} for c, h, rot in boulders]
-    parts["rock"] = {"material": "rock", "blend": {"mode": "chamfer", "k": 0.05} if state != "stump" else 0.0, "prims": prims,
-                     "cut": [{"plane": {"n": [0, -1, 0], "at": 0.0}}],
-                     "paint": [{"material": "crack", "stripes": {"axis": "x", "at": [0.12, -0.31], "width": 0.025}},
-                               {"material": "moss", "spots": {"scale": 0.08, "density": 0.16, "seed": 8}}]}
+        masses = [([rng.uniform(-0.7, 0.7), 0.08, rng.uniform(-0.6, 0.7)], [rng.uniform(0.1, 0.2), 0.1, rng.uniform(0.08, 0.16)])
+                  for _ in range(9)]
+    prims = [{"box": {"c": r3(c), "half": r3(h), "round": r3(min(h) * 0.55),
+                      "rot": r3([rng.uniform(-0.35, 0.35), rng.uniform(0, 3.1), rng.uniform(-0.3, 0.3)])}} for c, h in masses]
+    cracks = [{"box": {"c": r3([rng.uniform(-0.4, 0.4), rng.uniform(0.3, 0.8), rng.uniform(-0.4, 0.4)]),
+                       "half": [0.9, 0.012, 0.012], "rot": r3([rng.uniform(-1, 1), rng.uniform(0, 3), rng.uniform(-0.6, 0.6)])}}
+              for _ in range(3 if state == "grown" else 1)] if state != "stump" else []
+    parts = {"rock": {"material": "rock", "blend": 0.07, "prims": prims,
+                      "cut": [{"plane": {"n": [0, -1, 0], "at": 0.0}}] + cracks,
+                      "cut_blend": {"mode": "groove", "depth": 0.03, "width": 0.015},
+                      "paint": [{"material": "rock_dark", "spots": {"scale": 0.1, "density": 0.25, "seed": 5}},
+                                {"material": "moss", "spots": {"scale": 0.07, "density": 0.12, "seed": 8}}]}}
     return parts, 0.9
 
 
@@ -195,6 +211,7 @@ def spec(name):
         d["render"] = dict(d["render"], shading="soft")
     else:
         parts, cy = (tree if name.startswith("tree") else rock)(name.split("_")[1])
+        common["render"] = dict(common["render"], shading="soft", lines="depth")
         # frame 96: the tile centre at (48, 80) -> cut to 64x96 at (32, 80)
         d = dict(common, size=96, directions=["se"],
                  camera={"pitch": 30, "scale": K, "center": [0, round(32 * K / math.cos(math.radians(30)), 3), 0]},
