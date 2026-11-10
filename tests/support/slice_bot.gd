@@ -126,6 +126,9 @@ func _init(simulation: Simulation) -> void:
 		{"at": 3360, "build": &"brewery", "near": town + Vector2i(-2, -14)},
 		{"at": 3600, "build": &"meadery", "near": town + Vector2i(12, -14)},
 		{"at": 3600, "build": &"apiary", "near": town + Vector2i(22, 24), "fields": 4},
+		# E1: a third farm for the long game (after the patrician tests' 90 minutes): the bread
+		# of two farms ran short at about 2 hours already before E1 (6 supplied houses, the limit).
+		{"at": 5460, "build": &"farm", "near": town + Vector2i(18, 12), "fields": 16},
 		# M4b-2: meat (pigs bought from the travelling merchant) and selling surplus to him.
 		{"at": 1500, "build": &"pigsty", "near": town + Vector2i(-14, 22), "fields": 6},
 		{"at": 1560, "build": &"slaughterhouse", "near": town + Vector2i(-9, 23)},
