@@ -238,3 +238,9 @@ Never call something visual good without looking at the PNG (or reading `review`
   axes (rig.euler is Ry @ Rz @ Rx; keep one branch, e.g. z near -pi). Script: tools/spritekiln/xbow_angles.py.
 - Export scripts handle pivot offsets and symmetric cropping (game mirrors houses about the image width).
 - After `tools/generate_art.gd`, restore SpriteKiln/PixelLab buildings: `git checkout assets/buildings/hut/` etc.
+- Siege engines (gen_siege.py): `kind: prop` with 8 directions and animations works like a character sheet; export with
+  `export_character.py <spec> --props --anims=idle,walk,strike:work`. A string between two moving bones: a cylinder from
+  `"@tip_l"` to `"@nut"` in the cart's space. Hide a part per animation by scaling its bone (`scale: "max(bolt, 0.001)"`).
+  Wheels with N spokes look the same after 1/(N/2) of a turn: rotate by `-p/(N/2)` per walk cycle for a seamless loop.
+  A crew that must look like the soldiers is a separate character extending one (`siege_crew` extends the spearman,
+  `remove: [use.spear, use.shield, ...]`; replacing `use:` alone does not drop the inherited kits).
