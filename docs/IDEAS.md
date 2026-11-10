@@ -170,3 +170,8 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 - Pomysł właściciela: kilka gatunków drzew naraz zamiast jednego wyglądu (dęby, lipy, świerki, sosny).
 - **Zrobione 2026-11-10 (ankieta: „mieszany las teraz”):** 5 wyglądów ze SpriteKiln (dąb, jaśniejszy dąb, świerk, sosna, jasny świerk), każdy w 3 stanach (`nature/tree/{grown,felled,stump}[_2.._5].png`). Wygląd wybiera tylko widok (`NatureLayer.variant_suffix`) ze współrzędnych kafla, więc drzewo zachowuje gatunek przy ścinaniu i po wczytaniu gry; symulacja i zapis bez zmian.
 - Dalej (do decyzji): gatunki zależne od terenu (iglaste wyżej i na kamienistym gruncie, liściaste przy wodzie), skupiska jednego gatunku zamiast losowej mieszanki, różne drewno z różnych drzew (np. sosna na smołę), pora roku (jesienne liście).
+
+## Machiny oblężnicze ze SpriteKiln i katapulta (właściciel, 2026-11-10)
+
+- Właściciel podesłał referencje: balista na kołach, taran pod dachem ze skór (wóz z daszkiem), katapulta.
+- Ankieta 2026-11-10: **osobny etap później** (po reworku żołnierzy). Balista i taran są dziś rysowane kreskami w kodzie (`SiegeLayer`), więc podmiana na obrazki ze SpriteKiln to też zmiana w widoku. Katapulty w grze nie ma: to nowa jednostka (zasięg, amunicja, koszt), do zaplanowania razem z tym etapem.

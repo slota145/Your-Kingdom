@@ -1,57 +1,87 @@
 spritekiln: 1
 # yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework pilot (owner 2026-11-10, reference: a landsknecht halberdier). Game sheets: export_character.py.
 name: halberdier
-camera: {pitch: 30, scale: 0.05176}   # pitch 30: matches the game's 2:1 isometric ground (sin 30 = 0.5)
-palette: ../../palettes/kingdom.yaml
+# pitch 30: the game's 2:1 ground; centre 1.554 puts the feet at (32, 58) of the 64 px frame (ART_SPEC 3.1)
+camera: {pitch: 30, scale: 0.05176, center: [0, 1.554, 0]}
+palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
+shadow: null   # the game draws no shadow under characters
 extends: humanoid
 remove: [use.sword, animations.attack]
 
 brief:
-  summary: "Your Kingdom halberdier: steel kettle hat (kapalin), red kingdom tabard with a gold cross over plate, steel arms and pauldrons, halberd (spike, axe blade, back hook)"
-  head: "short brown hair mostly under a steel kettle hat with a wide drooping brim, clean-shaven, eyes only"
-  must_keep: ["gold cross on the red tabard reads at 1x", "halberd axe blade readable in every direction", "kettle hat brim breaks the head outline"]
-  simplify: ["no rivets, no straps"]
+  summary: "Your Kingdom halberdier after a landsknecht reference: steel sallet with a bevor, steel breastplate and tassets, puffed slashed sleeves and breeches in the kingdom's red and gold, red-and-gold striped breeches and hose, a halberd"
+  head: "face mostly hidden: the sallet's brim over the eyes, the bevor over chin and mouth"
+  must_keep: ["red and gold puffed sleeves read at 1x", "steel breastplate", "halberd axe blade readable in every direction"]
+  simplify: ["no ribbons, no rivets"]
 
 use:
   - {kit: spear, as: spear, at: wrist_R, with: {length: 1.12, butt: 0.36, head: 0.2, width: 0.05, pitch: spear_pitch, cheat: spear_cheat, splay: spear_splay}}
   - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
-  - {kit: hair, at: head, with: {fringe: 0.3, part: 0.2, locks: 0.4, length: 0.15, volume: 0.85}}
-  - {kit: hat, as: kapalin, at: head, with: {size: 0.9, brim: 0.25, crown: 0.13, droop: 0.04, tilt: -0.5, seat: 0.24, band: false},
-     materials: {cloth: steel, leather: steel}}
+  - {kit: helmet, as: sallet, at: head, with: {radius: 0.215, low: 0.12, brow: 0.215, opening: 0.3, visor: false, nasal: false, crest: 0, trim: false}}
+
+ramps:
+  slash_blue: ["#0a0e1c", "#16244c", "#22387a", "#2e54a8", "#4a72c4", "#6e92da"]
 
 materials:
   cloth: {ramp: tunic}
-  trousers: {ramp: trousers}
+  gold_cloth: {ramp: gold, bands: [2, 4]}
+  slash: {ramp: slash_blue, bands: [2, 4], outline: false, line: false}
+  trousers: {ramp: tunic}
   wood: {ramp: wood}
   hair: {ramp: hair}
   ink: {ramp: hair, band: 0}
   plate: {ramp: steel, finish: metal}
+  steel: {ramp: steel, finish: metal}
   gold: {ramp: gold}
+  plume: {ramp: tunic}
+  slit: {ramp: hair, band: 0}
 
 channels:
   spear_cheat: 0.3   # the kit's per-direction cheats (off in the attack: the halberd points where the body faces)
   spear_splay: 0.12  # lean away from the body (0 in the attack)
-  spear_pitch: 0   # extra lean of the halberd at the wrist (attack: down to level, then the thrust)
+  spear_pitch: 0     # extra lean of the halberd at the wrist (attack: down to level, then the thrust)
 
 parts:
-  leg_L: {material: trousers}
-  arm_L: {material: plate}
-  pauldron_L:      # a steel shoulder plate
+  torso:           # a steel breastplate (the template's torso), a ridge down the middle
     material: plate
+    paint:
+      - material: steel
+        stripes: {axis: x, at: [0.0], width: 0.03}
+  arm_L:           # puffed, slashed sleeves: gold with red bands and blue slashes
+    material: gold_cloth
+    paint:
+      - material: cloth
+        stripes: {axis: y, period: 0.12, width: 0.05}
+      - material: slash
+        stripes: {axis: y, period: 0.12, width: 0.02, offset: 0.06}
+  puff_L:          # the puff at the upper arm
+    material: cloth
     space: pelvis
     prims:
-      - ellipsoid: {c: [0.27, 0.57, 0.0], r: [0.11, 0.08, 0.11]}
-  torso:           # the red tabard over the plate, a gold cross on the chest and the back
+      - ellipsoid: {c: [0.27, 0.53, 0.0], r: [0.12, 0.11, 0.12]}
     paint:
-      - material: gold
-        prims:
-          - box: {c: [0, 0.28, 0], half: [0.05, 0.20, 0.4]}
-          - box: {c: [0, 0.36, 0], half: [0.15, 0.05, 0.4]}
-  coat:            # tabard skirt to mid-thigh, straight
+      - material: slash
+        stripes: {axis: x, period: 0.07, width: 0.02}
+  leg_L:           # puffed breeches and hose striped red and gold (a leg's twin mirrors it, so both legs match)
+    material: gold_cloth
+    paint:
+      - material: cloth
+        stripes: {axis: x, period: 0.09, width: 0.04}
+  coat:            # steel tassets over the hips, split for walking
+    material: plate
     prims:
-      - cone: {a: [0, 0.05, -0.01], b: [0, -0.22, -0.02], r: [0.20, 0.205]}
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.14, -0.02], r: [0.2, 0.215]}
     cut:
-      - box: {c: [0, -0.22, 0], half: [0.03, 0.16, 0.4]}   # split at the front and back for walking
+      - box: {c: [0, -0.16, 0], half: [0.03, 0.12, 0.4]}
+    paint:
+      - material: steel
+        stripes: {axis: y, period: 0.06, width: 0.02}
+  bevor:           # the steel chin guard of the sallet
+    material: plate
+    space: head
+    prims:
+      - ellipsoid: {c: [0, -0.05, 0.07], r: [0.14, 0.06, 0.12]}
   halberd_blade:   # the axe blade under the spike, on the shaft's +z side, and the hook on -z
     material: steel
     space: spear_shaft
@@ -64,13 +94,15 @@ parts:
 
 animations:
   idle:
+    frames: 4
+    ms: 250
     channels:
       hand_R: "[0.30, 0.12 + 0.01*sin(p - 0.6), 0.16]"
   walk:
     channels:
       hand_R: "[0.30, 0.13, 0.16 + 0.03*cos(p)]"   # the halberd hand stays steady on the march
-  attack:          # lower the halberd to level, draw back, thrust with the spike, recover
-    loop: false
+  attack:          # lower the halberd to level, draw back, thrust with the spike, recover (8 frames: the game's work)
+    loop: true
     keys:
       - {ms: 120, set: {hand_R: [0.30, 0.13, 0.16]}}
       - {ms: 130, set: {spear_pitch: 1.2, spear_cheat: 0, spear_splay: 0, hand_R: [0.22, 0.28, 0.10], hand_L: [0.10, 0.30, 0.35], twist: -0.15,
@@ -83,6 +115,6 @@ animations:
       - {ms: 140, event: hit,
          set: {spear_pitch: "2.0 - 0.55*pulse(yaw, 0, 60) - 0.55*pulse(yaw, 180, 60)", spear_cheat: 0, spear_splay: 0, root: [0, 0, 0.07], hand_R: [0.12, 0.30, 0.34], hand_L: [0.05, 0.32, 0.58],
                twist: 0.15, lean: 0.25, foot_L: [0.14, 0, 0.28], foot_R: [0.14, 0, -0.12]}}
-      - {ms: 130, set: {spear_pitch: 1.3, spear_cheat: 0, spear_splay: 0, root: [0, 0, 0.06], hand_R: [0.20, 0.28, 0.18], hand_L: [0.10, 0.30, 0.40],
+      - {ms: 130, tween: 1, set: {spear_pitch: 1.3, spear_cheat: 0, spear_splay: 0, root: [0, 0, 0.06], hand_R: [0.20, 0.28, 0.18], hand_L: [0.10, 0.30, 0.40],
                         twist: 0.0, lean: 0.10, foot_L: [0.14, 0, 0.16], foot_R: [0.14, 0, -0.06]}}
       - {ms: 140, set: {spear_pitch: 0.4, hand_R: [0.28, 0.16, 0.16], foot_L: [0.13, 0, 0.06]}}

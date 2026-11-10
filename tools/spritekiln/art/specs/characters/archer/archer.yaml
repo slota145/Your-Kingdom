@@ -1,0 +1,108 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework pilot (owner 2026-11-10, reference: an English longbowman). Game sheets: export_character.py.
+name: archer
+camera: {pitch: 30, scale: 0.05176, center: [0, 1.554, 0]}   # feet at (32, 58) of the 64 px frame
+palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
+shadow: null   # the game draws no shadow under characters
+extends: humanoid
+remove: [use.sword, animations.attack]
+
+brief:
+  summary: "Your Kingdom archer after a longbowman reference: a round nasal helmet over a mail coif, a pale tabard with a red cross over an olive gambeson, red hose, brown boots, a longbow, a quiver of arrows on the back"
+  head: "face open under the helmet's rim, the mail coif round the face and over the shoulders"
+  must_keep: ["red cross on the pale tabard reads at 1x", "longbow taller than the head when drawn", "quiver on the back", "mail coif"]
+  simplify: ["no belt pouch, no knife"]
+
+use:
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+  - {kit: hood, as: coif, at: head, with: {size: 0.9, depth: 0.3, tip: 0, tilt: -0.1, mantle: false}, materials: {hood: mail}}
+  - {kit: helmet, as: helm, at: head, with: {radius: 0.2, low: 0.2, brow: 0.235, opening: 0.3, nasal: true, crest: 0, trim: false}}
+  - {kit: bow, as: bow, at: wrist_L, with: {length: 1.35, depth: 0.15, thick: 0.06, pitch: bow_pitch, cheat: bow_cheat}}
+
+ramps:
+  gambeson: ["#141008", "#3a3018", "#5a4c28", "#786a3a", "#958850", "#b0a46a"]
+  tabard: ["#1a1712", "#4a443a", "#7e7666", "#b4aa94", "#d6cdb6", "#eee8d6"]
+  mail_r: ["#0e1012", "#2a2e34", "#40464e", "#565e68", "#707a86", "#8e98a4"]
+  boot: ["#140a05", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+
+materials:
+  cloth: {ramp: gambeson}
+  tabard: {ramp: tabard, bands: [2, 5]}
+  red: {ramp: tunic, bands: [2, 4]}
+  trousers: {ramp: tunic}
+  boot: {ramp: boot, bands: [1, 4]}
+  mail: {ramp: mail_r, bands: [2, 5]}
+  wood: {ramp: wood}
+  leather: {ramp: boot}
+  string: {ramp: tabard, bands: [3, 4]}
+  hair: {ramp: hair}
+  ink: {ramp: hair, band: 0}
+  steel: {ramp: steel, finish: metal}
+  gold: {ramp: gold}
+  plume: {ramp: tunic}
+  slit: {ramp: hair, band: 0}
+  feather: {ramp: tabard, bands: [3, 5], outline: false}
+
+channels:
+  bow_pitch: 0       # extra lean of the bow at the wrist; while shooting, -1.4 facing the camera or away (so it stands upright there too)
+  bow_cheat: 1       # the kit's turn of the bow towards the camera (0 while shooting)
+  arrow: 0           # 1: an arrow nocked between the drawing hand and the bow
+
+parts:
+  torso:             # the pale tabard with a red cross, front and back
+    material: tabard
+    paint:
+      - material: red
+        prims:
+          - box: {c: [0, 0.28, 0], half: [0.045, 0.22, 0.4]}
+          - box: {c: [0, 0.34, 0], half: [0.17, 0.045, 0.4]}
+  coat:              # the gambeson skirt to mid-thigh, split for walking
+    material: cloth
+    prims:
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.2, -0.02], r: [0.2, 0.21]}
+    cut:
+      - box: {c: [0, -0.2, 0], half: [0.03, 0.14, 0.4]}
+  boot_L:            # turned-down boots over the hose
+    material: boot
+    space: sole_L
+    prims:
+      - cylinder: {a: [0, 0.0, 0.02], b: [0, 0.2, 0.0], r: 0.075}
+  quiver:            # on the back, arrows sticking up over the right shoulder
+    material: leather
+    space: torso_rot
+    prims:
+      - cylinder: {a: [-0.08, 0.05, -0.2], b: [-0.17, 0.52, -0.23], r: 0.055}
+  quiver_arrows:
+    material: feather
+    space: torso_rot
+    min_cover: 2
+    prims:
+      - cone: {a: [-0.17, 0.5, -0.23], b: [-0.21, 0.66, -0.25], r: [0.045, 0.03]}
+  nocked:            # the arrow while drawing: from the string hand past the bow
+    material: wood
+    when: "arrow > 0.5"
+    priority: 3
+    min_cover: 2
+    prims:
+      - cylinder: {a: "@wrist_R", b: {between: ["@wrist_R", "@wrist_L"], t: 1.25}, r: 0.018}
+
+animations:
+  idle:
+    frames: 4
+    ms: 250
+  walk: {}
+  attack:            # nock, raise, draw to the cheek, hold, loose, follow through, lower (8 frames: the game's work)
+    loop: true
+    keys:
+      - {ms: 120, set: {arrow: 1, hand_L: [0.2, 0.18, 0.18], hand_R: [0.12, 0.2, 0.12]}}
+      - {ms: 120, set: {arrow: 1, bow_cheat: 0, bow_pitch: 0, hand_L: [0.1, 0.42, 0.38], hand_R: [0.04, 0.4, 0.18], twist: -0.2}}
+      - {ms: 160, tween: 1, set: {arrow: 1, bow_cheat: 0, bow_pitch: "-1.4*pulse(yaw, 0, 70) - 1.4*pulse(yaw, 180, 70)", hand_L: [0.05, 0.47, 0.5], hand_R: [-0.02, 0.5, -0.02],
+                                  twist: -0.45, lean: -0.05, foot_L: [0.16, 0, 0.14], foot_R: [0.14, 0, -0.12]}}
+      - {ms: 260, event: windup, set: {arrow: 1, bow_cheat: 0, bow_pitch: "-1.4*pulse(yaw, 0, 70) - 1.4*pulse(yaw, 180, 70)", hand_L: [0.05, 0.47, 0.52], hand_R: [-0.03, 0.5, -0.06],
+                                       twist: -0.5, lean: -0.05, foot_L: [0.16, 0, 0.14], foot_R: [0.14, 0, -0.12]}}
+      - {ms: 80, event: hit, set: {arrow: 0, bow_cheat: 0, bow_pitch: "-1.4*pulse(yaw, 0, 70) - 1.4*pulse(yaw, 180, 70)", hand_L: [0.05, 0.47, 0.54], hand_R: [-0.12, 0.52, -0.14],
+                                   twist: -0.5, foot_L: [0.16, 0, 0.14], foot_R: [0.14, 0, -0.12]}}
+      - {ms: 140, set: {arrow: 0, bow_cheat: 0, bow_pitch: 0, hand_L: [0.08, 0.42, 0.45], hand_R: [-0.06, 0.4, -0.05], twist: -0.3,
+                        foot_L: [0.15, 0, 0.1], foot_R: [0.14, 0, -0.08]}}
+      - {ms: 150, set: {arrow: 0, bow_pitch: 0.4, hand_L: [0.18, 0.22, 0.2], hand_R: [0.14, 0.16, 0.1]}}
