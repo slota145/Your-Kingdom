@@ -5,7 +5,7 @@ extends TaskStep
 
 
 func run(province: ProvinceSim, agent: Agent, _def: StepDef) -> Status:
-	var hall := province.seat()
+	var hall := province.stronghold()
 	if hall == null or not province.raids.is_active():
 		agent.activity = &"idle"
 		return Status.DONE

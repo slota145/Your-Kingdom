@@ -10,6 +10,9 @@ extends RefCounted
 ##   buildings.
 ## RESTING: the time ran out: what was given is lost, and a new demand, DEARER dearer, comes
 ##   after REST_MINUTES.
+## The AI rulers may buy it too (M8 part 3, owner's survey 2026-11-10: whoever comes first):
+## what each ruler gave is kept apart ([member rivals]); the first to give it all gets the
+## settlement, and what the others gave is lost, as when the time runs out.
 
 enum State { ASKING, RESTING }
 
@@ -32,6 +35,8 @@ var until: int = 0
 ## (NeutralTown.fortify).
 var guards: Dictionary[StringName, int] = {}
 var fortified: bool = false
+## What the AI rulers gave towards the demand now: owner -> {"gold": int, "goods": {good: n}}.
+var rivals: Dictionary[StringName, Dictionary] = {}
 
 
 ## The first demand of province [param id] of [param def], from tick [param now].
@@ -51,38 +56,81 @@ func ask(def: ProvinceDef, now: int) -> void:
 		goods[good] = roundi(int(def.demand_goods[good]) * factor)
 	gold_paid = 0
 	delivered = {}
+	rivals = {}
 	state = State.ASKING
 	until = now + SimClock.seconds_to_ticks(def.demand_minutes * 60.0)
 
 
-## Units of [param good] still missing.
-func missing(good: StringName) -> int:
-	return maxi(int(goods.get(good, 0)) - int(delivered.get(good, 0)), 0)
+## Units of [param good] still missing (from the player, or from AI ruler [param buyer]).
+func missing(good: StringName, buyer: StringName = ProvinceDef.OWNER_PLAYER) -> int:
+	return maxi(int(goods.get(good, 0)) - int(_given(buyer).get(good, 0)), 0)
 
 
-func gold_missing() -> int:
-	return maxi(gold - gold_paid, 0)
+func gold_missing(buyer: StringName = ProvinceDef.OWNER_PLAYER) -> int:
+	return maxi(gold - _gold_given(buyer), 0)
 
 
-## Whether the whole demand is given.
-func is_met() -> bool:
-	if state != State.ASKING or gold_missing() > 0:
+## Whether the whole demand is given (by the player, or by [param buyer]).
+func is_met(buyer: StringName = ProvinceDef.OWNER_PLAYER) -> bool:
+	if state != State.ASKING or gold_missing(buyer) > 0:
 		return false
 	for good: StringName in goods:
-		if missing(good) > 0:
+		if missing(good, buyer) > 0:
 			return false
 	return true
 
 
-## [param amount] of [param good] arrived: what the demand still needs is counted, the rest is
-## returned (it goes into the town's storages).
-func take(good: StringName, amount: int) -> int:
+## [param amount] of [param good] arrived from [param buyer]: what the demand still needs is
+## counted, the rest is returned (it goes into the town's storages).
+func take(good: StringName, amount: int, buyer: StringName = ProvinceDef.OWNER_PLAYER) -> int:
 	if state != State.ASKING:
 		return amount
-	var counted := mini(amount, missing(good))
+	var counted := mini(amount, missing(good, buyer))
 	if counted > 0:
-		delivered[good] = int(delivered.get(good, 0)) + counted
+		var given := _given(buyer)
+		given[good] = int(given.get(good, 0)) + counted
+		if buyer != ProvinceDef.OWNER_PLAYER:
+			_rival(buyer)["goods"] = given
 	return amount - counted
+
+
+## [param buyer] pays [param amount] gold towards the demand.
+func pay(amount: int, buyer: StringName = ProvinceDef.OWNER_PLAYER) -> void:
+	if buyer == ProvinceDef.OWNER_PLAYER:
+		gold_paid += amount
+	else:
+		_rival(buyer)["gold"] = int(_rival(buyer).get("gold", 0)) + amount
+
+
+## Who gave the whole demand first: the player, an AI ruler, or &"" (nobody yet).
+func winner() -> StringName:
+	if is_met():
+		return ProvinceDef.OWNER_PLAYER
+	var owners: Array[StringName] = []
+	owners.assign(rivals.keys())
+	owners.sort()
+	for owner: StringName in owners:
+		if is_met(owner):
+			return owner
+	return &""
+
+
+func _given(buyer: StringName) -> Dictionary:
+	if buyer == ProvinceDef.OWNER_PLAYER:
+		return delivered
+	return rivals[buyer].get("goods", {}) if rivals.has(buyer) else {}
+
+
+func _gold_given(buyer: StringName) -> int:
+	if buyer == ProvinceDef.OWNER_PLAYER:
+		return gold_paid
+	return int(rivals[buyer].get("gold", 0)) if rivals.has(buyer) else 0
+
+
+func _rival(buyer: StringName) -> Dictionary:
+	if not rivals.has(buyer):
+		rivals[buyer] = {"gold": 0, "goods": {}}
+	return rivals[buyer]
 
 
 func to_dict() -> Dictionary:
@@ -93,6 +141,16 @@ func to_dict() -> Dictionary:
 		d["guards"] = Expedition.goods_to_dict(guards)
 	if fortified:
 		d["fortified"] = true
+	if not rivals.is_empty():
+		var r := {}
+		var owners: Array[StringName] = []
+		owners.assign(rivals.keys())
+		owners.sort()
+		for owner: StringName in owners:
+			var goods_given: Dictionary[StringName, int] = Expedition.goods_from(rivals[owner].get("goods", {}))
+			r[String(owner)] = {"gold": int(rivals[owner].get("gold", 0)),
+					"goods": Expedition.goods_to_dict(goods_given)}
+		d["rivals"] = r
 	return d
 
 
@@ -108,4 +166,11 @@ static func from_dict(d: Dictionary) -> NeutralSettlement:
 	s.until = int(d.get("until", 0))
 	s.guards = Expedition.goods_from(d.get("guards", {}))
 	s.fortified = bool(d.get("fortified", false))
+	var r: Dictionary = d.get("rivals", {})
+	for owner: Variant in r:
+		var given: Dictionary = {}
+		var goods_d: Dictionary[StringName, int] = Expedition.goods_from(r[owner].get("goods", {}))
+		for good: StringName in goods_d:
+			given[good] = goods_d[good]
+		s.rivals[StringName(String(owner))] = {"gold": int(r[owner].get("gold", 0)), "goods": given}
 	return s

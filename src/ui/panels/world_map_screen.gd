@@ -211,6 +211,12 @@ func _refresh() -> void:
 	var goal := Victory.progress(sim)
 	if goal[1] > 0:
 		_title.text += "  ·  " + tr("ui.world.goal") % [tr("ui.victory.%s" % sim.world.settings.victory), goal[0], goal[1]]
+	# The Invasion from the sea (M8 part 5): when the next wave sets out.
+	var wave_in := Invasion.seconds_to_next(sim)
+	if sim.world.settings != null and sim.world.settings.victory == GameSettings.VICTORY_ENDLESS:
+		_title.text += "  ·  " + tr("ui.world.endless") % [Victory.survived(sim)[0], Victory.elapsed_minutes(sim)]
+	if wave_in >= 0:
+		_title.text += "  ·  " + tr("ui.world.next_wave") % [sim.world.invasion.wave + 1, wave_in / 60, wave_in % 60]
 	var def := sim.world.def_of(_selected, sim.data)
 	_expedition.show_for(sim, _selected)
 	_army.show_for(sim, _canvas.army_selected)
@@ -244,22 +250,27 @@ func _refresh() -> void:
 			if def.rare_resource != &"" else tr("ui.world.rare_none")))
 	if def.island:
 		lines.append(tr("ui.world.island"))
+	if Rulers.is_ruler(owner) and province != null:
+		lines.append_array(_ruler_lines(owner, province))
 	var routes := sim.world.routes_of(_selected).size()
 	if routes > 0:
 		lines.append(tr("ui.world.routes_count") % routes)
 	lines.append(tr(def.desc_key()))
 	_lines.text = "\n".join(lines)
-	var expedition := sim.world.expedition_to(_selected)
+	var expedition := sim.world.expedition_to(_selected, ProvinceDef.OWNER_PLAYER)
 	var waiting := expedition != null and expedition.state == Expedition.State.WAITING
-	var can_enter := (province != null and owner == ProvinceDef.OWNER_PLAYER) or waiting
+	var visit := province != null and Rulers.is_ruler(owner)
+	var can_enter := (province != null and owner == ProvinceDef.OWNER_PLAYER) or waiting or visit
 	_enter.visible = can_enter
 	_enter.text = tr("ui.world.return") if _selected == sim.viewed_id \
-			else tr("ui.world.land") if waiting else tr("ui.world.enter")
+			else tr("ui.world.land") if waiting else tr("ui.world.visit") if visit else tr("ui.world.enter")
 	if waiting:
 		_hint.text = tr("ui.world.expedition_waiting")
 	elif expedition != null and expedition.state == Expedition.State.TRAVELLING:
 		var minutes := ceili((expedition.arrive_at - sim.clock.tick) / float(SimClock.TICKS_PER_SECOND) / 60.0)
 		_hint.text = tr("ui.world.expedition_coming") % maxi(minutes, 1)
+	elif visit:
+		_hint.text = tr("ui.world.visit_hint")
 	elif can_enter:
 		_hint.text = ""
 	elif sim.world.camp != null and sim.world.camp.province == _selected:
@@ -294,10 +305,64 @@ func _refresh_demand() -> void:
 		for good: StringName in goods:
 			lines.append(tr("ui.world.demand_good") % [tr(sim.data.get_good(good).name_key()),
 					int(s.delivered.get(good, 0)), s.goods[good]])
+		var rivals: Array[StringName] = []
+		rivals.assign(s.rivals.keys())
+		rivals.sort()
+		for rival: StringName in rivals:
+			lines.append(tr("ui.world.demand_rival") % [tr("ruler.%s.name" % rival),
+					s.gold - s.gold_missing(rival), s.gold])
 		lines.append(tr("ui.world.demand_hint"))
 	_demand.text = "\n".join(lines)
 	_pay.text = tr("ui.world.pay") % mini(s.gold_missing(), sim.treasury.gold)
 	_pay.disabled = sim.treasury.gold <= 0
+
+
+## What the panel tells about AI ruler [param owner] (M8 part 3, owner's survey 2026-11-10):
+## his provinces, people and gold, what he builds, where his settlers go, what he buys, and
+## how far along the plan of growth the selected province is.
+func _ruler_lines(owner: StringName, province: ProvinceSim) -> PackedStringArray:
+	var lines := PackedStringArray()
+	var held := Rulers.provinces_of(sim.world, owner)
+	var people := 0
+	var building: Array[String] = []
+	for id: int in held:
+		var p := sim.province_state(id)
+		if p == null:
+			continue
+		people += _residents(p)
+		for b: BuildingState in p.buildings.all():
+			var name := tr(b.def.name_key())
+			if b.under_construction and building.size() < 3 and not building.has(name):
+				building.append(name)
+	var ruler := sim.world.rulers.get(owner) as RulerState
+	lines.append(tr("ui.ruler.summary") % [held.size(), people, ruler.treasury.gold if ruler != null else 0])
+	lines.append(tr("ui.ruler.building") % ", ".join(building) if not building.is_empty()
+			else tr("ui.ruler.building_none"))
+	var progress := RulerPlanner.plan_progress(province)
+	lines.append(tr("ui.ruler.plan") % [progress.x * 100 / maxi(progress.y, 1)])
+	lines.append(tr("ui.ruler.army") % RulerWar.strength(sim, owner))
+	if ruler != null and sim.world.armies.has(ruler.campaign) and ruler.war_target != 0:
+		lines.append(tr("ui.ruler.campaign") % _province_name(ruler.war_target))
+	elif ruler != null and ruler.next_war > sim.clock.tick and ruler.war_target == 0 \
+			and sim.clock.tick < RulerWar.first_ticks(RulerWar.level(sim)):
+		lines.append(tr("ui.ruler.campaign_soon") % maxi(ceili((ruler.next_war - sim.clock.tick)
+				/ float(SimClock.TICKS_PER_SECOND) / 60.0), 1))
+	for e: Expedition in sim.world.expeditions.values():
+		if e.owner == owner and e.state == Expedition.State.TRAVELLING:
+			lines.append(tr("ui.ruler.expedition") % _province_name(e.to))
+	for id: int in held:
+		var p := sim.province_state(id)
+		if p != null and p.departure != null and not p.departure.is_sent():
+			lines.append(tr("ui.ruler.gathering"))
+	for route: TradeRoute in sim.world.routes.values():
+		if sim.world.owner_of(route.from) == owner and sim.world.settlements.has(route.to):
+			lines.append(tr("ui.ruler.buying") % _province_name(route.to))
+	return lines
+
+
+func _province_name(id: int) -> String:
+	var def := sim.world.def_of(id, sim.data)
+	return tr(def.name_key()) if def != null else ""
 
 
 static func _residents(province: ProvinceSim) -> int:

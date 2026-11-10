@@ -216,7 +216,7 @@ static func arrive(sim: Simulation, fleet: Army) -> void:
 static func dock(sim: Simulation, fleet: Army, id: int) -> void:
 	var province := sim.province_state(id)
 	fleet.docking = false
-	if province != null and sim.world.owner_of(id) == ProvinceDef.OWNER_PLAYER:
+	if province != null and sim.world.owner_of(id) == fleet.owner:
 		var ids: Array[StringName] = []
 		ids.assign(fleet.fleet.keys())
 		ids.sort()

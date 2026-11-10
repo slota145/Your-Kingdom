@@ -33,6 +33,7 @@ extends Node
 ## --g2 (G2) puts stockpiles around --tile with every good drawn by PixelLab, each slot
 ## holding a different number of pieces (1 up to a full stack), so the stacks grow in sight.
 ## --m7=walls|battle|raid [--raid_seconds=<s>] (M7 part 2): walls, a fight, a bandit raid.
+## --map=lakeland --m7=storm [--raid_seconds=<s>] (M8 part 4): an AI ruler's army storms the town.
 ## --m7=finished|sites|army (M7 part 1): the new buildings drawn by PixelLab around --tile
 ## (finished both ways with full yards and a herd of horses, or their sites in both stages),
 ## or a barracks with an armoury and 16 soldiers (4 of each kind) in the ranks; --drill shows
@@ -691,6 +692,10 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 		_place_walls(sim, at)
 		_place_raid(sim, at)
 		return
+	if _m7 == "storm":
+		_place_walls(sim, at)
+		_place_storm(sim, at)
+		return
 	var ids: Array[StringName] = [&"charcoal_burner", &"mine", &"smelter", &"blacksmith",
 			&"armourer", &"bowyer"]
 	var plan: Array = []
@@ -983,6 +988,56 @@ func _place_raid(sim: Simulation, at: Vector2i) -> void:
 	p.raids.count = Raids.RAM_EVERY - 1   # the big one, with a ram
 	Raids.start(p, sim.rng.stream(&"raids"))
 	sim.raids_enabled = true
+	Game.paused = false
+	for i: int in roundi(_raid_seconds * SimClock.TICKS_PER_SECOND):
+		sim.step()
+	Game.paused = true
+	var view: ProvinceView = _game.get("view")
+	for event: Dictionary in sim.events.drain():
+		view.on_sim_event(event)
+	view.forts.refresh()
+	view.buildings.refresh_all()
+
+
+## M8 part 4 (--map=lakeland --m7=storm [--raid_seconds=<s>]): an AI ruler's army (made up for
+## the picture) storms the player's walled town live, as a raid would.
+func _place_storm(sim: Simulation, at: Vector2i) -> void:
+	var p := sim.province
+	var o := at + Vector2i(-7, -7)
+	for b: BuildingState in p.buildings.all().duplicate():
+		if b.def.id == &"town_hall" or b.def.id == &"pioneer_camp":
+			p.remove_building(b.id)
+	p.first_building = &""
+	if p.execute_place(&"town_hall", o + Vector2i(5, 3), 0) == null:
+		print("storm: no town hall")
+	var defenders: Array[Agent] = []
+	for k: int in 6:
+		var a := p.spawn_agent(&"archer" if k % 2 == 0 else &"spearman", o + Vector2i(6, 8))
+		a.combat = CombatState.new(sim.data.get_unit(a.kind).combat.hp)
+		defenders.append(a)
+	Troops.order_move(p, defenders, o + Vector2i(9, 12), MilitaryNav.WALL)
+	for k: int in 30:
+		sim.step()
+	var near := 0
+	if not sim.world.is_single():
+		var wold := sim.world.id_of(&"iron_wold")
+		for id: int in sim.world.ids():
+			if near == 0 and id != wold and not sim.runtimes.has(id) and sim.world.are_neighbours(id, wold, sim.data):
+				near = id
+		sim.open_province(near, sim.data.get_map(sim.world.get_province(near).map_id), &"ruler_1")
+		RulerPlanner.ensure_rulers(sim)
+	var army := Army.new()
+	army.id = sim.ids.take()
+	army.owner = &"ruler_1"
+	army.at = sim.viewed_id
+	army.home = near
+	army.state = Army.State.IDLE
+	army.pos = ArmyOrders.stand_point(sim, sim.viewed_id)
+	army.units = {&"knight": 4, &"swordsman": 6, &"crossbowman": 4, &"halberdier": 4, &"ladderman": 2, &"ram": 1}
+	army.food = army.food_cap()
+	sim.world.armies[army.id] = army
+	p.raids.entry = o + Vector2i(6, 24)
+	RulerWar.assault(sim, army)
 	Game.paused = false
 	for i: int in roundi(_raid_seconds * SimClock.TICKS_PER_SECOND):
 		sim.step()

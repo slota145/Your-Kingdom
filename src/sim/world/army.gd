@@ -72,6 +72,9 @@ var loot_gold: int = 0
 var warned: bool = false
 ## It came by sea: its men land on the beach (not at the edge of the map).
 var landed_by_sea: bool = false
+## Raiders of a wave that only plunders (M8 part 5, the Invasion): they loot like bandits and
+## sail away instead of taking the town.
+var plunder: bool = false
 
 
 func men() -> int:
@@ -187,6 +190,8 @@ func to_dict() -> Dictionary:
 		d["warned"] = true
 	if landed_by_sea:
 		d["landed_by_sea"] = true
+	if plunder:
+		d["plunder"] = true
 	return d
 
 
@@ -221,6 +226,7 @@ static func from_dict(d: Dictionary) -> Army:
 	a.loot_gold = int(d.get("loot_gold", 0))
 	a.warned = bool(d.get("warned", false))
 	a.landed_by_sea = bool(d.get("landed_by_sea", false))
+	a.plunder = bool(d.get("plunder", false))
 	return a
 
 

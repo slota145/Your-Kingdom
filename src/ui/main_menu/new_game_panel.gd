@@ -3,14 +3,25 @@ extends VBoxContainer
 ## "New game" of the main menu (ROADMAP M8 part 1, owner's surveys 2026-11-09): the scenario,
 ## the world (generated from a number, or the hand-made "Kingdom"), its size, the AI rulers and
 ## their difficulty, the victory condition (with its target). "Start" sends GameSettings to the
-## game scene.
+## game scene. M8 part 5: four scenarios with a line about each; the Merchant islands take a
+## gold target instead of a victory condition, the Invasion from the sea has neither (nor rulers).
 
 signal start_requested(settings: GameSettings)
 signal back_requested
 
 const HANDMADE := &"kingdom"
+## Numbers of first plundering waves offered (then "all").
+const PLUNDER_CHOICES := 5
 
 var _scenario: OptionButton
+var _scenario_hint: Label
+var _gold: SpinBox
+var _gold_row: Control
+var _victory_row: Control
+## The Invasion (M8 part 5, owner's request 2026-11-10): 60 minutes or survival, and how many
+## first waves only plunder.
+var _invasion_goal: OptionButton
+var _plunder: OptionButton
 var _world: OptionButton
 var _seed: SpinBox
 var _provinces: HSlider
@@ -28,8 +39,15 @@ var _next: Button
 func _init() -> void:
 	add_theme_constant_override(&"separation", 8)
 	add_child(UiKit.title("ui.new_game.title"))
-	_scenario = _choice("ui.new_game.scenario", ["ui.scenario.colonization"])
-	_scenario.tooltip_text = "ui.scenario.colonization_hint"
+	var scenario_keys: Array = []
+	for scenario: StringName in GameSettings.SCENARIOS:
+		scenario_keys.append("ui.scenario.%s" % scenario)
+	_scenario = _choice("ui.new_game.scenario", scenario_keys)
+	_scenario.item_selected.connect(func(_i: int) -> void: _refresh())
+	_scenario_hint = UiKit.label("", false)
+	_scenario_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_scenario_hint.custom_minimum_size.x = 420
+	add_child(_scenario_hint)
 	_world = _choice("ui.new_game.world", ["ui.new_game.world_generated", "world.%s.name" % HANDMADE])
 	_world.item_selected.connect(func(_i: int) -> void: _refresh())
 	var seed_row := HBoxContainer.new()
@@ -47,11 +65,34 @@ func _init() -> void:
 	_rulers = _choice("ui.new_game.rulers", ["1", "2", "3"])
 	_rulers.selected = 1
 	_rulers_row = _rulers.get_parent()
-	_difficulty = _choice("ui.new_game.difficulty", ["ui.difficulty.easy", "ui.difficulty.normal", "ui.difficulty.hard"])
+	# Item index = GameSettings level (peaceful last, M8 part 4).
+	_difficulty = _choice("ui.new_game.difficulty", ["ui.difficulty.easy", "ui.difficulty.normal", "ui.difficulty.hard",
+			"ui.difficulty.peaceful"])
 	_difficulty.selected = GameSettings.NORMAL
 	_victory = _choice("ui.new_game.victory", ["ui.victory.conquest", "ui.victory.provinces",
 			"ui.victory.patricians", "ui.victory.free"])
 	_victory.item_selected.connect(func(_i: int) -> void: _refresh())
+	_victory_row = _victory.get_parent()
+	_gold_row = HBoxContainer.new()
+	var gold_label := UiKit.label("ui.new_game.gold", false)
+	gold_label.custom_minimum_size.x = 150
+	_gold_row.add_child(gold_label)
+	_gold = SpinBox.new()
+	_gold.min_value = GameSettings.MIN_GOLD
+	_gold.max_value = GameSettings.MAX_GOLD
+	_gold.step = 1000
+	_gold.value = GameSettings.DEFAULT_GOLD
+	_gold_row.add_child(_gold)
+	add_child(_gold_row)
+	_invasion_goal = _choice("ui.new_game.invasion_goal", ["ui.invasion.hold_60", "ui.invasion.endless"])
+	_invasion_goal.tooltip_text = "ui.invasion.endless_hint"
+	var plunder_items: Array = ["ui.invasion.plunder_none"]
+	for n: int in range(1, PLUNDER_CHOICES + 1):
+		plunder_items.append(str(n))
+	plunder_items.append("ui.invasion.plunder_all")
+	_plunder = _choice("ui.new_game.plunder", plunder_items)
+	_plunder.selected = GameSettings.DEFAULT_PLUNDER
+	_plunder.tooltip_text = "ui.invasion.plunder_hint"
 	_target_row = HBoxContainer.new()
 	_target_row.add_child(UiKit.label("ui.new_game.target", false))
 	_target = SpinBox.new()
@@ -122,21 +163,41 @@ func settings() -> GameSettings:
 	s.difficulty = _difficulty.selected
 	if s.victory == GameSettings.VICTORY_PROVINCES or s.victory == GameSettings.VICTORY_PATRICIANS:
 		s.victory_target = int(_target.value)
+	if _world.selected == 0:
+		s.scenario = GameSettings.SCENARIOS[_scenario.selected]
+		s.gold_target = int(_gold.value)
+		s.endless = _invasion_goal.selected == 1
+		s.plunder_waves = GameSettings.PLUNDER_ALL if _plunder.selected > PLUNDER_CHOICES else _plunder.selected
+		s.fit_scenario()
 	return s
 
 
 func _refresh() -> void:
 	var generated := _world.selected == 0
+	# The scenarios are worlds made from a number; "Kingdom" is played as it is.
+	_scenario.disabled = not generated
+	if not generated:
+		_scenario.selected = 0
+	var scenario := GameSettings.SCENARIOS[_scenario.selected]
+	_scenario_hint.text = tr("ui.scenario.%s_hint" % scenario)
 	_next.text = tr("ui.new_game.next" if generated else "ui.new_game.start")
 	for row: Control in _generated_rows:
 		row.visible = generated
-	_rulers_row.visible = generated
+	_rulers_row.visible = generated and scenario != GameSettings.INVASION
+	# (The difficulty is the rulers': the Invasion has none.)
+	_difficulty.get_parent().visible = scenario != GameSettings.INVASION
+	_gold_row.visible = scenario == GameSettings.ISLANDS
+	_invasion_goal.get_parent().visible = scenario == GameSettings.INVASION
+	_plunder.get_parent().visible = scenario == GameSettings.INVASION
+	_islands.get_parent().visible = generated and scenario != GameSettings.ISLANDS   # (all islands there)
+	_victory_row.visible = scenario != GameSettings.ISLANDS and scenario != GameSettings.INVASION
 	# The hand-made world has no rulers: no conquest there.
 	_victory.set_item_disabled(0, not generated)
 	if not generated and _victory.selected == 0:
 		_victory.selected = 3
 	var kind := GameSettings.VICTORIES[_victory.selected]
-	_target_row.visible = kind == GameSettings.VICTORY_PROVINCES or kind == GameSettings.VICTORY_PATRICIANS
+	_target_row.visible = _victory_row.visible and (kind == GameSettings.VICTORY_PROVINCES
+			or kind == GameSettings.VICTORY_PATRICIANS)
 	if _target_row.visible:
 		var probe := GameSettings.new()
 		probe.province_count = int(_provinces.value)

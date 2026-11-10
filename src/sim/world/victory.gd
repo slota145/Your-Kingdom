@@ -19,6 +19,11 @@ static func update(sim: Simulation) -> void:
 		return
 	if is_won(sim):
 		_end(sim, WorldSim.RESULT_WON)
+		return
+	var rich := richest_ruler(sim)
+	if world.settings.victory == GameSettings.VICTORY_GOLD and rich != &"" \
+			and world.rulers[rich].treasury.gold >= world.settings.gold_target:
+		_end(sim, WorldSim.RESULT_LOST, rich)
 
 
 static func is_won(sim: Simulation) -> bool:
@@ -30,7 +35,28 @@ static func is_won(sim: Simulation) -> bool:
 			return player_provinces(sim.world) >= settings.target()
 		GameSettings.VICTORY_PATRICIANS:
 			return patricians(sim) >= settings.target()
+		GameSettings.VICTORY_GOLD:
+			return sim.treasury.gold >= settings.gold_target
+		GameSettings.VICTORY_SURVIVE:
+			return elapsed_minutes(sim) >= GameSettings.SURVIVE_MINUTES
 	return false
+
+
+## Whole minutes of play since the game began (the Invasion from the sea counts them).
+static func elapsed_minutes(sim: Simulation) -> int:
+	var since := sim.world.invasion.started if sim.world.invasion != null else 0
+	return (sim.clock.tick - since) / SimClock.seconds_to_ticks(60.0)
+
+
+## The AI ruler with the most gold (still in the game), or &"" (the Merchant islands' race).
+static func richest_ruler(sim: Simulation) -> StringName:
+	var best := &""
+	for owner: StringName in Rulers.alive(sim.world):
+		var ruler := sim.world.rulers.get(owner) as RulerState
+		if ruler != null and (best == &""
+				or ruler.treasury.gold > sim.world.rulers[best].treasury.gold):
+			best = owner
+	return best
 
 
 static func player_provinces(world: WorldSim) -> int:
@@ -68,10 +94,31 @@ static func progress(sim: Simulation) -> Array[int]:
 			return [player_provinces(sim.world), settings.target()]
 		GameSettings.VICTORY_PATRICIANS:
 			return [patricians(sim), settings.target()]
+		GameSettings.VICTORY_GOLD:
+			return [sim.treasury.gold, settings.gold_target]
+		GameSettings.VICTORY_SURVIVE:
+			return [mini(elapsed_minutes(sim), GameSettings.SURVIVE_MINUTES), GameSettings.SURVIVE_MINUTES]
 	return [0, 0]
 
 
-static func _end(sim: Simulation, result: StringName) -> void:
+## The survival mode's score: [waves held off, minutes held out] (a wave counts as held off once
+## the next one has set out, or the game goes on after the last).
+static func survived(sim: Simulation) -> Array[int]:
+	var state := sim.world.invasion
+	if state == null:
+		return [0, 0]
+	return [maxi(state.wave - 1, 0) if sim.world.result == WorldSim.RESULT_LOST else state.wave,
+			elapsed_minutes(sim)]
+
+
+## [param winner]: the ruler who won instead of the player (the gold race), or &"".
+static func _end(sim: Simulation, result: StringName, winner: StringName = &"") -> void:
 	sim.world.result = result
-	sim.events.emit(&"game_won" if result == WorldSim.RESULT_WON else &"game_lost",
-			{"victory": String(sim.world.settings.victory)})
+	var data := {"victory": String(sim.world.settings.victory)}
+	if sim.world.settings.victory == GameSettings.VICTORY_ENDLESS:
+		var score := survived(sim)
+		data["waves"] = score[0]
+		data["minutes"] = score[1]
+	if winner != &"":
+		data["winner"] = String(winner)
+	sim.events.emit(&"game_won" if result == WorldSim.RESULT_WON else &"game_lost", data)

@@ -30,6 +30,10 @@ var reports: Array[Dictionary] = []
 ## The settings of a sandbox game (M8 part 1); null in a game started without them (the old
 ## "New game" and single provinces).
 var settings: GameSettings = null
+## The AI rulers' treasuries and plans by owner id (M8 part 3).
+var rulers: Dictionary[StringName, RulerState] = {}
+## The clock of the Invasion from the sea (M8 part 5); null in the other scenarios.
+var invasion: InvasionState = null
 ## How the game ended: &"" (it goes on), RESULT_WON or RESULT_LOST.
 var result: StringName = &""
 
@@ -174,6 +178,16 @@ func to_dict() -> Dictionary:
 		d["reports"] = reports.duplicate(true)
 	if settings != null:
 		d["settings"] = settings.to_dict()
+	if not rulers.is_empty():
+		var states: Array = []
+		var owners: Array[StringName] = []
+		owners.assign(rulers.keys())
+		owners.sort()
+		for owner: StringName in owners:
+			states.append(rulers[owner].to_dict())
+		d["rulers"] = states
+	if invasion != null:
+		d["invasion"] = invasion.to_dict()
 	if result != &"":
 		d["result"] = String(result)
 	return d
@@ -185,6 +199,8 @@ static func from_dict(d: Dictionary) -> WorldSim:
 	if d.has("settings"):
 		world.settings = GameSettings.from_dict(d["settings"])
 	world.result = StringName(String(d.get("result", "")))
+	if d.has("invasion"):
+		world.invasion = InvasionState.from_dict(d["invasion"])
 	for pd: Variant in d.get("provinces", []):
 		var province := WorldProvince.from_dict(pd)
 		world.provinces[province.id] = province
@@ -207,6 +223,9 @@ static func from_dict(d: Dictionary) -> WorldSim:
 		world.camp = BanditCamp.from_dict(d["camp"])
 	for rd: Variant in d.get("reports", []):
 		world.reports.append(rd)
+	for rd: Variant in d.get("rulers", []):
+		var ruler := RulerState.from_dict(rd)
+		world.rulers[ruler.owner] = ruler
 	return world
 
 
@@ -290,9 +309,27 @@ func routes_of(id: int) -> Array[TradeRoute]:
 	return result
 
 
-## The expedition headed for province [param id] (on its way, waiting or landing), or null.
-func expedition_to(id: int) -> Expedition:
-	for expedition: Expedition in expeditions.values():
-		if expedition.to == id and expedition.state != Expedition.State.RETURNING:
+## The expedition headed for province [param id] (on its way, waiting or landing), or null;
+## only [param owner]'s when given (M8 part 3: the player's and the rulers' may race there).
+func expedition_to(id: int, owner: StringName = &"") -> Expedition:
+	var keys: Array[int] = []
+	keys.assign(expeditions.keys())
+	keys.sort()
+	for key: int in keys:
+		var expedition := expeditions[key]
+		if expedition.to == id and expedition.state != Expedition.State.RETURNING \
+				and (owner == &"" or expedition.owner == owner):
 			return expedition
 	return null
+
+
+## Whether province [param id] is claimed for someone else than [param owner]: it has an
+## owner, or another's expedition waits or lands at its border (whoever came first).
+func is_claimed(id: int, owner: StringName) -> bool:
+	if owner_of(id) != ProvinceDef.OWNER_NONE:
+		return true
+	for expedition: Expedition in expeditions.values():
+		if expedition.to == id and expedition.owner != owner and (expedition.state == Expedition.State.WAITING
+				or expedition.state == Expedition.State.LANDED):
+			return true
+	return false

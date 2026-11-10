@@ -25,7 +25,7 @@ func apply(sim: Simulation) -> void:
 	var s := sim.world.settlements[province_id] as NeutralSettlement
 	var gold := mini(s.gold_missing(), sim.treasury.gold)
 	sim.treasury.pay(gold)
-	s.gold_paid += gold
+	s.pay(gold)
 	sim.events.emit(&"settlement_paid", {"province": province_id, "gold": gold})
 
 

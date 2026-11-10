@@ -49,6 +49,9 @@ var _result: ResultWindow
 var _battle_window: FieldBattleWindow
 var _report_window: BattleReportWindow
 var _field_bar: PanelContainer
+## An AI ruler's town is looked at (M8 part 3): nothing is built, the bar says whose it is.
+var _visit_bar: PanelContainer
+var _visit_title: Label
 var _stocks: KingdomStockWindow
 var _routes: RoutesWindow
 var _world_map: WorldMapScreen
@@ -170,11 +173,22 @@ func _show_province() -> void:
 	# On the battlefield (M8 part 2) nothing is built; the bar offers the retreat.
 	var on_field := sim.viewed_id == Simulation.BATTLEFIELD
 	_field_bar.visible = on_field
-	if on_field:
+	var visiting := _visiting()
+	_visit_bar.visible = visiting
+	_building_panel.read_only = visiting
+	_ship_panel.read_only = visiting
+	if visiting:
+		_visit_title.text = tr("ui.visit.title") % tr("ruler.%s.name" % sim.world.owner_of(sim.viewed_id))
+	if on_field or visiting:
 		_build.visible = false
 		_build_show.visible = false
 	elif not _build.visible and not _build_show.visible:
 		_build.visible = true
+
+
+## Whether the viewed province is an AI ruler's town (only looked at, M8 part 3).
+func _visiting() -> bool:
+	return Rulers.is_ruler(sim.world.owner_of(sim.viewed_id))
 
 
 func _start_tile() -> Vector2i:
@@ -333,6 +347,18 @@ func _build_ui() -> void:
 		if battle != null:
 			_execute(FieldBattleCommand.new(battle.id, FieldBattleCommand.RETREAT))))
 	root.add_child(_field_bar)
+	_visit_bar = PanelContainer.new()
+	_visit_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_visit_bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_visit_bar.position.y = 64
+	_visit_bar.visible = false
+	var visit_row := HBoxContainer.new()
+	visit_row.add_theme_constant_override(&"separation", 12)
+	_visit_bar.add_child(visit_row)
+	_visit_title = UiKit.title("ui.visit.title")
+	visit_row.add_child(_visit_title)
+	visit_row.add_child(UiKit.button("ui.visit.back", func() -> void: _toggle_world_map()))
+	root.add_child(_visit_bar)
 	root.add_child(_ship_panel)
 	_world_map = WorldMapScreen.new()
 	_world_map.visible = false
@@ -390,7 +416,12 @@ func _note_world_event(event: Dictionary) -> void:
 	if type == &"expedition_ready":
 		_notes.push(tr("ui.note.expedition_ready"))
 		return
+	if type in [&"army_lost", &"army_home"] and StringName(event.get("owner", ProvinceDef.OWNER_PLAYER)) != ProvinceDef.OWNER_PLAYER:
+		return   # (the rulers' and bandits' armies)
 	if type == &"battle_resolved":
+		if StringName(event["attacker"]) != ProvinceDef.OWNER_PLAYER \
+				and StringName(event.get("defender", ProvinceDef.OWNER_PLAYER)) != ProvinceDef.OWNER_PLAYER:
+			return   # (a battle of others)
 		var name_b := _province_name(int(event["province"]))
 		var mine := StringName(event["attacker"]) == ProvinceDef.OWNER_PLAYER
 		var won := bool(event["won"]) == mine
@@ -406,9 +437,51 @@ func _note_world_event(event: Dictionary) -> void:
 	if type == &"bandit_camp_broken":
 		_notes.push(tr("ui.note.bandit_camp_broken") % int(event["gold"]))
 		return
+	# The rulers at war (M8 part 4).
+	if type == &"province_taken":
+		var taker := StringName(event["owner"])
+		var lost := StringName(event["from"]) == ProvinceDef.OWNER_PLAYER
+		if Rulers.is_ruler(taker):
+			_notes.push(tr("ui.note.province_lost" if lost else "ui.note.ruler_took") % [
+					tr("ruler.%s.name" % taker), _province_name(int(event["province"]))])
+		return
+	if type == &"ruler_defeated":
+		_notes.push(tr("ui.note.ruler_defeated") % tr("ruler.%s.name" % event["owner"]))
+		return
+	if type == &"ruler_marched":
+		if StringName(event["against"]) == ProvinceDef.OWNER_PLAYER:
+			_notes.push(tr("ui.note.ruler_marched_player") % [tr("ruler.%s.name" % event["owner"]),
+					_province_name(int(event["province"])), maxi(ceili(float(event["seconds"]) / 60.0), 1)])
+		return
+	# The Invasion from the sea (M8 part 5).
+	if type == &"invasion_wave":
+		var minutes := maxi(ceili(float(event["seconds"]) / 60.0), 1)
+		var town := _province_name(int(event["province"]))
+		var plunder := tr("ui.note.invasion_plunder") if bool(event.get("plunder", false)) else ""
+		if int(event["waves"]) > 0:
+			_notes.push(tr("ui.note.invasion_wave") % [int(event["wave"]), int(event["waves"]), int(event["men"]),
+					town, minutes] + plunder)
+		else:
+			_notes.push(tr("ui.note.invasion_wave_endless") % [int(event["wave"]), int(event["men"]), town, minutes] + plunder)
+		return
+	if type == &"ruler_storming":
+		_notes.push(tr("ui.note.ruler_storming") % tr("ruler.%s.name" % event["owner"]))
+		return
+	if type == &"province_captured" and StringName(event.get("owner", ProvinceDef.OWNER_PLAYER)) != ProvinceDef.OWNER_PLAYER:
+		return
 	if type in [&"army_at_settlement", &"army_home", &"army_lost", &"raid_beaten_off", &"province_captured",
 			&"bandit_camp_raised"]:
 		_notes.push(tr("ui.note.%s" % type) % _province_name(int(event["province"])))
+		return
+	# The AI rulers' doings (M8 part 3): only what changes the map is told.
+	var by: StringName = event.get("owner", ProvinceDef.OWNER_PLAYER)
+	if Rulers.is_ruler(by):
+		if type == &"province_settled" or type == &"settlement_joined":
+			_notes.push(tr("ui.note.ruler_%s" % type) % [tr("ruler.%s.name" % by),
+					_province_name(int(event["province"]))])
+		return
+	if type == &"expedition_turned_back":
+		_notes.push(tr("ui.note.expedition_turned_back") % _province_name(int(event["province"])))
 		return
 	if type != &"expedition_departed" and type != &"expedition_arrived" \
 			and type != &"settlement_joined" and type != &"settlement_refused" \
@@ -452,6 +525,8 @@ func _enter_province(id: int) -> void:
 
 ## Shows or hides the build bar (button, B); hiding it drops the tool in hand.
 func _show_build_menu(on: bool) -> void:
+	if on and (_visiting() or sim.viewed_id == Simulation.BATTLEFIELD):
+		return
 	_build.visible = on
 	_build_show.visible = not on
 	if not on:
@@ -516,7 +591,17 @@ func _on_sim_event(event: Dictionary) -> void:
 	# The end of a sandbox game (M8 part 1).
 	if event["type"] == &"game_won" or event["type"] == &"game_lost":
 		Game.paused = true
-		_result.show_result(event["type"] == &"game_won", StringName(String(event.get("victory", ""))))
+		var detail := ""
+		if StringName(String(event.get("victory", ""))) == GameSettings.VICTORY_ENDLESS:
+			# The survival mode (M8 part 5): the score and the record on this computer.
+			var waves := int(event.get("waves", 0))
+			var minutes := int(event.get("minutes", 0))
+			var record := SurvivalRecord.submit(waves, minutes)
+			var best := SurvivalRecord.best()
+			detail = tr("ui.result.endless_score") % [waves, minutes] + "\n" + (tr("ui.result.endless_new_record")
+					if record else tr("ui.result.endless_record") % [best[0], best[1]])
+		_result.show_result(event["type"] == &"game_won", StringName(String(event.get("victory", ""))),
+				StringName(String(event.get("winner", ""))), detail)
 	_on_battle_event(event)
 	_note_world_event(event)
 	view.on_sim_event(event)

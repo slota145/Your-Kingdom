@@ -8,7 +8,7 @@ extends RefCounted
 ## The lines a route to the neutral settlement [param to] starts with (review fix 2026-11-07:
 ## "Send goods" fills in the demand): each good it still asks for, as many units as it lacks,
 ## at most MAX_LINES goods in a fixed order. Empty when it asks for no goods.
-static func demand_lines(sim: Simulation, to: int) -> Array[Dictionary]:
+static func demand_lines(sim: Simulation, to: int, buyer: StringName = ProvinceDef.OWNER_PLAYER) -> Array[Dictionary]:
 	var lines: Array[Dictionary] = []
 	var settlement := sim.world.settlements.get(to) as NeutralSettlement
 	if settlement == null or settlement.state != NeutralSettlement.State.ASKING:
@@ -17,7 +17,7 @@ static func demand_lines(sim: Simulation, to: int) -> Array[Dictionary]:
 	goods.assign(settlement.goods.keys())
 	goods.sort()
 	for good: StringName in goods:
-		var missing := settlement.missing(good)
+		var missing := settlement.missing(good, buyer)
 		if missing > 0 and lines.size() < TradeRoute.MAX_LINES:
 			lines.append(TradeRoute.line(good, missing, TradeRoute.DEFAULT_BELOW))
 	return lines
@@ -138,7 +138,8 @@ static func plan_run(sim: Simulation, route: TradeRoute) -> Dictionary[StringNam
 			continue
 		var most := int(entry["amount"])
 		if settlement != null:
-			most = mini(most, settlement.missing(good) if settlement.state == NeutralSettlement.State.ASKING else 0)
+			most = mini(most, settlement.missing(good, sim.world.owner_of(route.from)) \
+					if settlement.state == NeutralSettlement.State.ASKING else 0)
 		elif b.stored(good) >= int(entry["below"]):
 			continue
 		var units := mini(most, a.stored(good))
@@ -244,7 +245,7 @@ static func _begin_unloading(sim: Simulation, route: TradeRoute) -> void:
 	if settlement != null:
 		# Bought goods: counted towards the demand, the rest goes into the town's storages.
 		for good: StringName in RouteWagon._sorted(cargo):
-			cargo[good] = settlement.take(good, cargo[good])
+			cargo[good] = settlement.take(good, cargo[good], sim.world.owner_of(route.from))
 			if cargo[good] <= 0:
 				cargo.erase(good)
 		sim.events.emit(&"settlement_delivered", {"province": route.to, "route": route.id})

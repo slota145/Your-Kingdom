@@ -39,6 +39,8 @@ const OWNER_TINT: Dictionary[StringName, Color] = {
 	&"ruler_1": Color(0.16, 0.30, 0.70, 0.30),
 	&"ruler_2": Color(0.18, 0.52, 0.20, 0.30),
 	&"ruler_3": Color(0.48, 0.20, 0.60, 0.30),
+	# The raiders from over the sea (M8 part 5): black.
+	&"ruler_raiders": Color(0.10, 0.09, 0.08, 0.34),
 }
 const OWNER_ARMS: Dictionary[StringName, Color] = {
 	ProvinceDef.OWNER_PLAYER: Color(0.70, 0.12, 0.10),
@@ -46,6 +48,7 @@ const OWNER_ARMS: Dictionary[StringName, Color] = {
 	&"ruler_1": Color(0.14, 0.26, 0.66),
 	&"ruler_2": Color(0.14, 0.46, 0.16),
 	&"ruler_3": Color(0.44, 0.16, 0.56),
+	&"ruler_raiders": Color(0.12, 0.11, 0.10),
 }
 const MARGIN := 24.0
 ## How near (parchment pixels) a click has to be to an expedition's mark.
@@ -145,6 +148,7 @@ func expedition_at(at: Vector2) -> int:
 	for id: int in sim.runtime_ids():
 		var p := sim.province_state(id)
 		if p != null and p.departure != null and not p.departure.is_sent() \
+				and sim.world.owner_of(id) == ProvinceDef.OWNER_PLAYER \
 				and local.distance_to(departure_point(id)) <= MARK_RADIUS:
 			return id
 	return 0
@@ -439,9 +443,9 @@ func _draw_expedition(e: Expedition) -> void:
 		var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 250.0)
 		draw_circle(at, 18.0 + pulse * 4.0, Color(SELECTED, 0.25 + 0.25 * pulse))
 	if e.by_sea:
-		_draw_cog(at, flip)
+		_draw_cog(at, flip, 1.0, e.owner)
 	else:
-		_draw_wagon(at, flip)
+		_draw_wagon(at, flip, 1.0, e.owner)
 
 
 ## A trade route (M6 part 3): a dotted way between its provinces, a small sack at each end,
@@ -451,7 +455,9 @@ func _draw_trade_route(route: TradeRoute) -> void:
 		return
 	var width := 2.0 / maxf(_fit().get_scale().x, 0.01)
 	var steps := 16
-	var color := Color(ROUTE_TRADE, 0.35 if route.paused else 0.75)
+	var owner := sim.world.owner_of(route.from)
+	var color := Color(ROUTE_TRADE if owner == ProvinceDef.OWNER_PLAYER else OWNER_ARMS.get(owner, ROUTE_TRADE),
+			0.35 if route.paused else 0.75)
 	for i: int in steps:
 		if i % 2 == 0:
 			draw_line(way_point(route.from, route.to, route.by_sea, i / float(steps)),
@@ -467,9 +473,9 @@ func _draw_trade_route(route: TradeRoute) -> void:
 	var flip := -1.0 if ahead.x < 0.0 else 1.0
 	var alpha := 0.6 if back else 1.0
 	if route.by_sea:
-		_draw_cog(at, flip, alpha)
+		_draw_cog(at, flip, alpha, owner)
 	else:
-		_draw_wagon(at, flip, alpha)
+		_draw_wagon(at, flip, alpha, owner)
 	if not back:
 		draw_circle(at + Vector2(0, -8), 3.5, Color(0.85, 0.65, 0.25))
 
@@ -488,11 +494,12 @@ func _draw_departure(id: int) -> void:
 	elif ready:
 		draw_arc(at, 19.0, 0.0, TAU, 24, Color(SELECTED, 0.8), 2.0)
 	var alpha := 1.0 if ready else 0.45
+	var owner := sim.world.owner_of(id)
 	if p.departure.by_sea:
-		_draw_cog(at, 1.0, alpha)
+		_draw_cog(at, 1.0, alpha, owner)
 	else:
-		_draw_wagon(at, 1.0, alpha)
-	if ready:
+		_draw_wagon(at, 1.0, alpha, owner)
+	if ready and owner == ProvinceDef.OWNER_PLAYER:
 		draw_line(at + Vector2(-14, -4), at + Vector2(-14, -26), INK, 1.5)
 		draw_colored_polygon(PackedVector2Array([at + Vector2(-14, -26), at + Vector2(-2, -22),
 				at + Vector2(-14, -18)]), OWNER_ARMS[ProvinceDef.OWNER_PLAYER])
@@ -516,19 +523,27 @@ func _draw_planned_route() -> void:
 			width, width * 4.0)
 
 
-func _draw_cog(at: Vector2, flip: float, alpha: float = 1.0) -> void:
+## A cog with its owner's pennant (the player's red, an AI ruler's colour; M8 part 3).
+func _draw_cog(at: Vector2, flip: float, alpha: float = 1.0, owner: StringName = ProvinceDef.OWNER_PLAYER) -> void:
 	var hull := PackedVector2Array([at + Vector2(-12 * flip, -2), at + Vector2(12 * flip, -2),
 			at + Vector2(8 * flip, 5), at + Vector2(-9 * flip, 5)])
 	draw_colored_polygon(hull, Color(0.45, 0.28, 0.14, alpha))
 	draw_line(at + Vector2(0, -2), at + Vector2(0, -20), Color(INK, alpha), 1.5)
 	draw_colored_polygon(PackedVector2Array([at + Vector2(1 * flip, -19), at + Vector2(1 * flip, -5),
 			at + Vector2(11 * flip, -6)]), Color(0.95, 0.92, 0.85, alpha))
-	draw_rect(Rect2(at + Vector2(-1, -22), Vector2(2, 3)), Color(OWNER_ARMS[ProvinceDef.OWNER_PLAYER], alpha))
+	var arms: Color = OWNER_ARMS.get(owner, OWNER_ARMS[ProvinceDef.OWNER_PLAYER])
+	draw_rect(Rect2(at + Vector2(-1, -22), Vector2(2, 3)), Color(arms, alpha))
+	if owner != ProvinceDef.OWNER_PLAYER:
+		draw_colored_polygon(PackedVector2Array([at + Vector2(0, -22), at + Vector2(-8 * flip, -20),
+				at + Vector2(0, -18)]), Color(arms, alpha))
 
 
-func _draw_wagon(at: Vector2, flip: float, alpha: float = 1.0) -> void:
+## A wagon; an AI ruler's has a cover in his colour (M8 part 3).
+func _draw_wagon(at: Vector2, flip: float, alpha: float = 1.0, owner: StringName = ProvinceDef.OWNER_PLAYER) -> void:
 	draw_rect(Rect2(at + Vector2(-10, -10), Vector2(20, 9)), Color(0.55, 0.38, 0.20, alpha))
-	draw_arc(at + Vector2(0, -10), 9.0, PI, TAU, 10, Color(0.92, 0.88, 0.78, alpha), 3.0)
+	var cover := Color(0.92, 0.88, 0.78) if owner == ProvinceDef.OWNER_PLAYER \
+			else (OWNER_ARMS.get(owner, INK) as Color).lightened(0.25)
+	draw_arc(at + Vector2(0, -10), 9.0, PI, TAU, 10, Color(cover, alpha), 3.0)
 	for x: float in [-6.0, 6.0]:
 		draw_circle(at + Vector2(x, 1), 3.5, Color(INK, alpha))
 	draw_line(at + Vector2(10 * flip, -4), at + Vector2(17 * flip, -4), Color(INK, alpha), 1.5)

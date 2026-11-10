@@ -115,7 +115,7 @@ func _refresh() -> void:
 		var route := sim.world.routes.get(id) as TradeRoute
 		if route != null:
 			_state_labels[id].text = _state_text(route)
-	_empty.visible = sim.world.routes.is_empty()
+	_empty.visible = _route_ids().is_empty()
 
 
 func _signature() -> String:
@@ -126,9 +126,12 @@ func _signature() -> String:
 	return ";".join(parts)
 
 
+## The player's routes (the AI rulers' run on their own, M8 part 3).
 func _route_ids() -> Array[int]:
 	var ids: Array[int] = []
-	ids.assign(sim.world.routes.keys())
+	for id: int in sim.world.routes:
+		if sim.world.owner_of(sim.world.routes[id].from) == ProvinceDef.OWNER_PLAYER:
+			ids.append(id)
 	ids.sort()
 	return ids
 

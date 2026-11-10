@@ -8,10 +8,16 @@ extends RefCounted
 ## 2026-11-06: it waits for the player; the landing starts when he enters). LANDED: the
 ## landing is under way there. RETURNING: the cog sails home empty (owner's decision: the cog
 ## comes back); a wagon stays with the settlers, so a land expedition ends when it lands.
+## An AI ruler's expedition (M8 part 3) does not wait: it lands at once, in the simplified
+## mode. Whoever comes first takes the province (owner's survey 2026-11-10): an expedition
+## that finds it taken (settled, or another's expedition waiting or landing there) turns back
+## ([member bounced]) and brings its settlers and kit home.
 
 enum State { TRAVELLING, WAITING, LANDED, RETURNING }
 
 var id: int = 0
+## Who sent it: the player or an AI ruler (M8 part 3).
+var owner: StringName = ProvinceDef.OWNER_PLAYER
 var from: int = 0
 var to: int = 0
 var by_sea: bool = false
@@ -24,6 +30,8 @@ var ship_id: int = 0
 ## Ticks it set out and arrives (TRAVELLING), or the cog set out home and is back (RETURNING).
 var depart_at: int = 0
 var arrive_at: int = 0
+## RETURNING because it found the province taken: the settlers and the kit come home.
+var bounced: bool = false
 
 
 ## How far along its way it is (0..1), for the world map.
@@ -43,6 +51,10 @@ func to_dict() -> Dictionary:
 			"kit": goods_to_dict(kit), "depart": depart_at, "arrive": arrive_at}
 	if ship_id != 0:
 		d["ship"] = ship_id
+	if owner != ProvinceDef.OWNER_PLAYER:
+		d["owner"] = String(owner)
+	if bounced:
+		d["bounced"] = true
 	return d
 
 
@@ -59,6 +71,8 @@ static func from_dict(d: Dictionary) -> Expedition:
 	e.ship_id = int(d.get("ship", 0))
 	e.depart_at = int(d.get("depart", 0))
 	e.arrive_at = int(d.get("arrive", 0))
+	e.owner = StringName(String(d.get("owner", String(ProvinceDef.OWNER_PLAYER))))
+	e.bounced = bool(d.get("bounced", false))
 	return e
 
 

@@ -116,8 +116,6 @@ static func send_error(sim: Simulation, army: Army, to: int) -> StringName:
 ## Warships of province [param id] ready to carry an army: finished, not under way.
 static func warships_at(sim: Simulation, id: int) -> Array[ShipUnit]:
 	var result: Array[ShipUnit] = []
-	if sim.world.owner_of(id) != ProvinceDef.OWNER_PLAYER:
-		return result
 	var province := sim.province_state(id)
 	if province == null:
 		return result
@@ -183,7 +181,7 @@ static func update(sim: Simulation) -> void:
 					_arrive(sim, army)
 			Army.State.IDLE, Army.State.WAITING:
 				_eat(army, 1.0)
-				if not army.by_sea and world.owner_of(army.at) == ProvinceDef.OWNER_PLAYER \
+				if not army.by_sea and world.owner_of(army.at) == army.owner \
 						and sim.clock.tick % SimClock.seconds_to_ticks(REFILL_SECONDS) == 0:
 					_refill(sim, army)
 			Army.State.ENGAGED:
@@ -234,7 +232,7 @@ static func _refill(sim: Simulation, army: Army) -> void:
 
 ## Bread from the storages of province [param id] up to what the army takes along.
 static func refill_from(sim: Simulation, army: Army, id: int) -> void:
-	if army.owner != ProvinceDef.OWNER_PLAYER:
+	if sim.world.owner_of(id) != army.owner:
 		return
 	var province := sim.province_state(id)
 	if province == null:
@@ -268,7 +266,7 @@ static func _inside(sim: Simulation, army: Army) -> void:
 		for agent: Agent in sim.province.agents.all():
 			if agent.combat != null and agent.combat.army == army.id and agent.combat.hp > 0:
 				on_map += 1
-		if army.owner == ProvinceDef.OWNER_PLAYER and sim.world.owner_of(army.at) == ProvinceDef.OWNER_NEUTRAL:
+		if army.owner == ProvinceDef.OWNER_PLAYER and sim.world.owner_of(army.at) != ProvinceDef.OWNER_PLAYER:
 			var enemies: Array[Vector2] = []
 			for agent: Agent in sim.province.agents.all():
 				if agent.combat != null and agent.combat.army == army.id:
@@ -276,10 +274,25 @@ static func _inside(sim: Simulation, army: Army) -> void:
 			Raids.shelter_near(sim.province, enemies)
 			if on_map > 0 and Raids.can_capture(sim.province):
 				capture(sim, army.at)
-		if army.owner == Army.BANDITS and sim.province.raids.army == army.id \
+		if Rulers.is_ruler(army.owner) and sim.province.raids.army == army.id and on_map > 0 \
+				and sim.province.raids.conquest \
+				and sim.world.owner_of(army.at) == ProvinceDef.OWNER_PLAYER and Raids.can_capture(sim.province):
+			_ruler_takes_viewed(sim, army)
+			return
+		if army.owner != ProvinceDef.OWNER_PLAYER and sim.province.raids.army == army.id \
 				and sim.province.raids.is_active():
 			return
 	if on_map > 0:
+		return
+	if Rulers.is_ruler(army.owner):
+		var raids_now := sim.province.raids if army.at == sim.viewed_id else null
+		if raids_now != null and raids_now.army == army.id:
+			raids_now.army = 0
+		if army.is_empty():
+			_disband(sim, army, &"army_lost")
+		else:
+			army.state = Army.State.IDLE
+			RulerWar._home(sim, army)
 		return
 	if army.owner == Army.BANDITS:
 		var raids := sim.province.raids if army.at == sim.viewed_id else null
@@ -302,14 +315,14 @@ static func _inside(sim: Simulation, army: Army) -> void:
 
 ## Warns the viewed province a minute before bandits arrive there (the warning of part 2).
 static func _warn(sim: Simulation, army: Army) -> void:
-	if army.owner != Army.BANDITS or army.warned or army.state != Army.State.MOVING:
+	if army.owner == ProvinceDef.OWNER_PLAYER or army.warned or army.state != Army.State.MOVING:
 		return
 	if army.target != sim.viewed_id or sim.world.owner_of(army.target) != ProvinceDef.OWNER_PLAYER:
 		return
 	if ArmyOrders.seconds_left(sim, army) > WARNING_SECONDS:
 		return
 	var province := sim.province
-	if province.raids.is_active() or not province.has_seat():
+	if province.raids.is_active() or not province.has_stronghold():
 		return
 	army.warned = true
 	province.raids.entry = Raids.choose_entry(province, sim.rng.stream(&"raids"))
@@ -363,6 +376,9 @@ static func arrive_on_land(sim: Simulation, army: Army) -> void:
 	if not sim.world.armies.has(army.id):
 		return
 	var owner := sim.world.owner_of(army.at)
+	if Rulers.is_ruler(army.owner):
+		RulerWar.arrive(sim, army)
+		return
 	if army.owner == Army.BANDITS:
 		if army.at == army.home:
 			_back_at_camp(sim, army)
@@ -383,7 +399,12 @@ static func arrive_on_land(sim: Simulation, army: Army) -> void:
 			army.state = Army.State.WAITING
 			sim.events.emit(&"army_at_settlement", {"army": army.id, "province": army.at})
 		_:
-			army.state = Army.State.IDLE
+			# A ruler's town (M8 part 4): it waits for the player's choice, as at a settlement.
+			if Rulers.is_ruler(owner) and sim.province_state(army.at) != null:
+				army.state = Army.State.WAITING
+				sim.events.emit(&"army_at_settlement", {"army": army.id, "province": army.at})
+			else:
+				army.state = Army.State.IDLE
 
 
 ## A battle by BattleResolver: [param army] attacks [param defender]; losses come off the
@@ -402,7 +423,7 @@ static func battle(sim: Simulation, army: Army, defender: BattleSide, kind: Batt
 		entry["ships_b"] = result.ships_left_b
 	sim.world.report(entry)
 	sim.events.emit(&"battle_resolved", {"province": province, "kind": kind,
-			"attacker": army.owner, "won": result.a_won()})
+			"attacker": army.owner, "defender": defender_owner, "won": result.a_won()})
 	return result
 
 
@@ -412,7 +433,7 @@ static func battle(sim: Simulation, army: Army, defender: BattleSide, kind: Batt
 ## weakest wall on the way from the edge to the town hall (none when there is a way round).
 static func fort_of(province: ProvinceSim) -> BattleFort:
 	var fort := BattleFort.new()
-	var hall := province.seat()
+	var hall := province.stronghold()
 	if hall == null or province.walls.is_empty():
 		return fort
 	var door := province.door_tile(hall)
@@ -447,11 +468,10 @@ static func fort_of(province: ProvinceSim) -> BattleFort:
 
 ## The chance (0..1) [param army] has to take the settlement at [param id] by BattleResolver.
 static func siege_chances(sim: Simulation, army: Army, id: int) -> float:
-	var settlement := sim.world.settlements.get(id) as NeutralSettlement
 	var province := sim.province_state(id)
-	if settlement == null or province == null:
+	if province == null:
 		return 0.0
-	return BattleResolver.chances(sim.data, army.side(), BattleSide.new(settlement.guards),
+	return BattleResolver.chances(sim.data, army.side(), BattleSide.new(RulerWar.defenders(sim, id)),
 			BattleResolver.Kind.SIEGE, fort_of(province))
 
 
@@ -461,9 +481,12 @@ static func siege_error(sim: Simulation, army: Army) -> StringName:
 		return &"no_army"
 	if sim.viewed_id == Simulation.BATTLEFIELD:
 		return &"army_in_battle"
-	if army.state != Army.State.WAITING or sim.world.owner_of(army.at) != ProvinceDef.OWNER_NEUTRAL:
+	var owner := sim.world.owner_of(army.at)
+	if army.state != Army.State.WAITING or (owner != ProvinceDef.OWNER_NEUTRAL and not Rulers.is_ruler(owner)):
 		return &"not_at_settlement"
-	if not sim.world.settlements.has(army.at) or sim.province_state(army.at) == null:
+	if owner == ProvinceDef.OWNER_NEUTRAL and not sim.world.settlements.has(army.at):
+		return &"not_at_settlement"
+	if sim.province_state(army.at) == null:
 		return &"not_at_settlement"
 	return &""
 
@@ -471,12 +494,10 @@ static func siege_error(sim: Simulation, army: Army) -> StringName:
 ## The settlement's fate decided at once (the "automatic" button).
 static func resolve_siege(sim: Simulation, army: Army) -> BattleResult:
 	var id := army.at
-	var settlement := sim.world.settlements[id]
 	var province := sim.province_state(id)
-	var result := battle(sim, army, BattleSide.new(settlement.guards), BattleResolver.Kind.SIEGE,
-			fort_of(province), id, ProvinceDef.OWNER_NEUTRAL)
-	for unit: StringName in result.lost_b:
-		settlement.guards[unit] = maxi(settlement.guards.get(unit, 0) - result.lost_b[unit], 0)
+	var result := battle(sim, army, BattleSide.new(RulerWar.defenders(sim, id)), BattleResolver.Kind.SIEGE,
+			fort_of(province), id, sim.world.owner_of(id))
+	RulerWar.lose_defenders(sim, id, result.lost_b)
 	if result.a_won() and not army.is_empty():
 		capture(sim, id)
 		army.state = Army.State.IDLE
@@ -489,8 +510,10 @@ static func resolve_siege(sim: Simulation, army: Army) -> BattleResult:
 ## it): its men come in at the edge, the guards stand on the walls and at the hall.
 static func enter_fight(sim: Simulation, army: Army) -> void:
 	sim.view_province(army.at)
+	if Rulers.is_ruler(sim.world.owner_of(army.at)):
+		spawn_guards(sim, army.at, RulerWar.guards_out(sim, army.at))
 	var province := sim.province
-	var hall := province.seat()
+	var hall := province.stronghold()
 	var door := hall.entrance_tile() if hall != null else province.grid.size / 2
 	army.entry = Raids.choose_entry(province, sim.rng.stream(&"raids"))
 	if army.landed_by_sea:
@@ -549,10 +572,11 @@ static func retreat(sim: Simulation, army: Army) -> void:
 
 ## The guards of the neutral settlement viewed now stand at their posts: archers on the walls
 ## by the gate, spearmen at the gate and at the town hall.
-static func spawn_guards(sim: Simulation, id: int) -> void:
+static func spawn_guards(sim: Simulation, id: int, men: Dictionary[StringName, int] = {}) -> void:
 	var settlement := sim.world.settlements.get(id) as NeutralSettlement
-	if settlement == null or id != sim.viewed_id:
+	if (settlement == null and men.is_empty()) or id != sim.viewed_id:
 		return
+	var guards: Dictionary[StringName, int] = men if settlement == null else settlement.guards
 	var province := sim.province
 	var hall := province.seat()
 	if hall == null:
@@ -563,10 +587,10 @@ static func spawn_guards(sim: Simulation, id: int) -> void:
 			gate = building
 	var kinds: Array[StringName] = []
 	var ids: Array[StringName] = []
-	ids.assign(settlement.guards.keys())
+	ids.assign(guards.keys())
 	ids.sort()
 	for unit: StringName in ids:
-		for k: int in settlement.guards[unit]:
+		for k: int in guards[unit]:
 			kinds.append(unit)
 	var archers := kinds.filter(func(u: StringName) -> bool: return u == &"archer")
 	var others := kinds.filter(func(u: StringName) -> bool: return u != &"archer")
@@ -597,7 +621,7 @@ static func spawn_guards(sim: Simulation, id: int) -> void:
 			spot = at_hall[k_hall % maxi(at_hall.size(), 1)] if not at_hall.is_empty() else IsoMath.tile_center(hall.entrance_tile())
 			k_hall += 1
 		_guard(sim, province, others[k], spot, MilitaryNav.GROUND)
-	settlement.guards.clear()
+	guards.clear()
 
 
 static func _guard(sim: Simulation, province: ProvinceSim, unit: StringName, spot: Vector2, level: int) -> void:
@@ -644,8 +668,13 @@ static func fold(sim: Simulation) -> void:
 			continue
 		var unit := Troops.unit_of(province, agent)
 		if c.faction == CombatState.TOWN:
+			if c.army == 0 and Barracks.is_military(province, agent) \
+					and province.buildings.get_building(agent.home_id) != null:
+				continue   # a ruler's barracks soldier: kept by number as the province freezes
 			if settlement != null and unit != null:
 				settlement.guards[unit.id] = settlement.guards.get(unit.id, 0) + 1
+			elif unit != null and Rulers.is_ruler(sim.world.owner_of(sim.viewed_id)):
+				RulerWar.guard_home(province, unit.id)
 			province.remove_agent(agent)
 		elif c.army != 0:
 			var army := sim.world.armies.get(c.army) as Army
@@ -665,7 +694,7 @@ static func fold(sim: Simulation) -> void:
 		if army.by_sea:
 			_inside(sim, army)
 			continue
-		if army.owner == Army.BANDITS and province.raids.army == army.id:
+		if army.owner != ProvinceDef.OWNER_PLAYER and province.raids.army == army.id:
 			army.loot_gold += province.raids.loot_gold
 			Raids.call_off(province)
 			if province.raids.state == Raids.State.WAITING and not army.is_empty():
@@ -684,6 +713,9 @@ static func fold(sim: Simulation) -> void:
 		if army.owner == Army.BANDITS:
 			army.state = Army.State.IDLE
 			_go_home(sim, army)
+		elif Rulers.is_ruler(army.owner):
+			army.state = Army.State.IDLE
+			RulerWar._home(sim, army)
 		else:
 			army.state = Army.State.IDLE if sim.world.owner_of(army.at) == ProvinceDef.OWNER_PLAYER \
 					else Army.State.WAITING
@@ -692,23 +724,31 @@ static func fold(sim: Simulation) -> void:
 ## The settlement at [param id] falls to the player: its people and buildings stay, they lose
 ## heart for a while (Raids.capture), the guards left lay down their arms.
 static func capture(sim: Simulation, id: int) -> void:
-	sim.world.settlements.erase(id)
-	Raids.capture(sim, id, ProvinceDef.OWNER_PLAYER)
+	RulerWar.take_province(sim, id, ProvinceDef.OWNER_PLAYER)
 	var province := sim.province_state(id)
-	if province == null:
-		return
-	province.home_faction = CombatState.PLAYER
-	if id == sim.viewed_id:
+	if province != null and id == sim.viewed_id:
 		for agent: Agent in province.agents.all():
 			if agent.combat != null and agent.combat.faction == CombatState.TOWN:
 				province.remove_agent(agent)
-		for agent: Agent in province.agents.all():
-			if agent.task != null and agent.task.kind == Task.KIND_SHELTER:
-				TaskRunner.fail(province, agent)
-	# The door is mended, the town is the player's.
-	var hall := province.seat()
-	if hall != null and hall.def.max_hp > 0:
-		hall.hp = hall.def.max_hp
+
+
+## The ruler's men stormed the player's viewed town and hold its hall (M8 part 4): the raid
+## ends, the attackers count as their army again and move into the barracks of the town, which
+## is the ruler's now.
+static func _ruler_takes_viewed(sim: Simulation, army: Army) -> void:
+	var province := sim.province
+	for agent: Agent in province.agents.all():
+		if agent.combat != null and agent.combat.army == army.id:
+			var unit := Troops.unit_of(province, agent)
+			if unit != null and agent.combat.hp > 0:
+				army.add(unit.id)
+			province.remove_agent(agent)
+	Raids.call_off(province)
+	province.raids.army = 0
+	RulerWar.take_province(sim, army.at, army.owner)
+	army.state = Army.State.IDLE
+	army.pos = ArmyOrders.stand_point(sim, army.at)
+	join_barracks(sim, army)
 
 
 # --- Home -------------------------------------------------------------------------------------
@@ -748,11 +788,12 @@ static func join_barracks(sim: Simulation, army: Army) -> bool:
 					var agent := province.spawn_agent(unit, entry)
 					agent.home_id = building.id
 					agent.combat = CombatState.new(def.combat.hp)
+					agent.combat.faction = province.home_faction
 					building.soldiers.append(agent.id)
 					Troops.order_return(province, [agent])
 				else:
 					building.garrison.append(unit)
-	sim.events.emit(&"army_home", {"army": army.id, "province": army.at})
+	sim.events.emit(&"army_home", {"army": army.id, "province": army.at, "owner": army.owner})
 	if army.men() == 0 or _only_engines(sim, army):
 		sim.world.armies.erase(army.id)
 		return true
@@ -792,7 +833,7 @@ static func _retreat_home(sim: Simulation, army: Army) -> void:
 
 static func _disband(sim: Simulation, army: Army, event: StringName) -> void:
 	sim.world.armies.erase(army.id)
-	sim.events.emit(event, {"army": army.id, "province": army.at})
+	sim.events.emit(event, {"army": army.id, "province": army.at, "owner": army.owner})
 
 
 # --- Bandits ----------------------------------------------------------------------------------
@@ -899,7 +940,7 @@ static func _raid_target(sim: Simulation, from: int) -> int:
 		if sim.world.owner_of(id) != ProvinceDef.OWNER_PLAYER:
 			continue
 		var province := sim.province_state(id)
-		if province == null or not province.has_seat() or province.grace_until > sim.clock.tick:
+		if province == null or not province.has_stronghold() or province.grace_until > sim.clock.tick:
 			continue
 		var a := sim.world.def_of(from, sim.data)
 		var b := sim.world.def_of(id, sim.data)
@@ -919,7 +960,7 @@ static func _raid_target(sim: Simulation, from: int) -> int:
 static func _raid(sim: Simulation, army: Army) -> void:
 	var id := army.at
 	var province := sim.province_state(id)
-	if province == null or not province.has_seat():
+	if province == null or not province.has_stronghold():
 		_go_home(sim, army)
 		return
 	if id == sim.viewed_id and not province.raids.is_active():
@@ -943,7 +984,7 @@ static func _raid(sim: Simulation, army: Army) -> void:
 				building.garrison.erase(unit)
 				left -= 1
 	if result.a_won() and not army.is_empty():
-		var hall := province.seat()
+		var hall := province.stronghold()
 		army.loot_gold += Raids.loot(province, hall)
 		province.raids.loot_gold = 0
 		sim.events.emit(&"province_raided", {"province": id, "gold": army.loot_gold})

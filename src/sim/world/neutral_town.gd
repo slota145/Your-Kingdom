@@ -43,7 +43,7 @@ static func build(sim: Simulation, id: int, layout: ProvinceDef = null) -> Packe
 	if hall == null and map.beach_tile != Agent.NO_TILE:
 		centre = ProvinceSim._variant_tile(map.beach_tile, def.mirrored)
 	if hall == null:
-		hall = _place(town, sim.data.get_building(ProvinceSim.SEAT), centre)
+		hall = place(town, sim.data.get_building(ProvinceSim.SEAT), centre)
 	if hall != null:
 		centre = hall.entrance_tile()
 	var ids: Array[StringName] = []
@@ -56,7 +56,7 @@ static func build(sim: Simulation, id: int, layout: ProvinceDef = null) -> Packe
 			problems.append("neutral town: unknown building %s" % building_id)
 			continue
 		for i: int in int(town_def.town_buildings[building_id]):
-			var placed := _place(town, building_def, _near_its_work(town, building_def, centre))
+			var placed := place(town, building_def, near_its_work(town, building_def, centre))
 			if placed == null:
 				problems.append("neutral town: no spot for %s" % building_id)
 				continue
@@ -75,7 +75,10 @@ static func build(sim: Simulation, id: int, layout: ProvinceDef = null) -> Packe
 	return problems
 
 
-static func _place(town: ProvinceSim, def: BuildingDef, near: Vector2i) -> BuildingState:
+## [param def] at the free spot nearest [param near] (a margin of free ground around it,
+## the door reachable), finished ([param instant]) or as a construction site; a farm gets its
+## fields. Null when there is no room within SEARCH tiles.
+static func place(town: ProvinceSim, def: BuildingDef, near: Vector2i, instant: bool = true) -> BuildingState:
 	for r: int in SEARCH:
 		for y: int in range(near.y - r, near.y + r + 1):
 			for x: int in range(near.x - r, near.x + r + 1):
@@ -92,10 +95,10 @@ static func _place(town: ProvinceSim, def: BuildingDef, near: Vector2i) -> Build
 						continue
 					if town.placement_error(def, origin, o) != &"":
 						continue
-					town.add_building(def, origin, true, o)
+					town.add_building(def, origin, instant, o)
 					var building := town.buildings.get_building(town.grid.occupant(origin))
 					if def.id == &"farm" or def.id == &"hop_farm":
-						_fields(town, building)
+						_fields(town, building, FIELDS if instant else def.max_fields)
 					return building
 	return null
 
@@ -110,8 +113,8 @@ static func _free_with_margin(town: ProvinceSim, def: BuildingDef, origin: Vecto
 	return true
 
 
-static func _fields(town: ProvinceSim, farm: BuildingState) -> void:
-	var left := FIELDS
+static func _fields(town: ProvinceSim, farm: BuildingState, count: int = FIELDS) -> void:
+	var left := count
 	for r: int in range(1, farm.def.work_radius + 1):
 		for y: int in range(farm.origin.y - r, farm.origin.y + farm.def.footprint.y + r):
 			for x: int in range(farm.origin.x - r, farm.origin.x + farm.def.footprint.x + r):
@@ -132,7 +135,7 @@ static func _settle(building: BuildingState, level: int) -> void:
 
 
 ## [param near], or the nearest tile with what [param def] works on when nothing is in reach.
-static func _near_its_work(town: ProvinceSim, def: BuildingDef, near: Vector2i) -> Vector2i:
+static func near_its_work(town: ProvinceSim, def: BuildingDef, near: Vector2i) -> Vector2i:
 	var node := &""
 	if def.recipe != null:
 		for step: StepDef in def.recipe.steps:

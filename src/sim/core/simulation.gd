@@ -27,6 +27,10 @@ var _commands: Array[Command] = []
 ## Bandit raids on the viewed province (M7 part 2): on in a game the player plays (the game
 ## scene turns them on), off in tests and benchmarks. Not saved.
 var raids_enabled: bool = false
+## The automatic player of the test games (M8 part 5, tests/support/auto_player.gd): the
+## player's expeditions land at once, like an AI ruler's (nobody is there to enter the
+## province). Off in a game; not saved.
+var autopilot: bool = false
 
 
 func _init(registry: DataRegistry, map_size: Vector2i = Vector2i(64, 64), seed_value: int = 1) -> void:
@@ -88,11 +92,15 @@ static func from_settings(registry: DataRegistry, settings: GameSettings, seed_v
 		return null
 	sim.world.settings = settings
 	problems.append_array(sim._open_ruler_towns())
+	if settings.scenario == GameSettings.INVASION:
+		Invasion.start(sim)
+	RulerPlanner.ensure_rulers(sim)
+	sim.bind_treasuries()
 	sim.events.drain()
 	return sim
 
 
-## Every AI ruler's province gets its town (M8 part 1: it waits there; part 3: it grows).
+## Every AI ruler's province gets its town (M8 part 1; part 3: it grows, RulerPlanner).
 func _open_ruler_towns() -> PackedStringArray:
 	var problems := PackedStringArray()
 	for id: int in world.ids():
@@ -133,7 +141,8 @@ func step() -> void:
 	province.step()
 	if not province.marched.is_empty():
 		Armies.absorb(self)
-	if raids_enabled and clock.tick % SimClock.TICKS_PER_SECOND == 0 \
+	# (A ruler's storming is driven even where bandits' raids are off, M8 part 4.)
+	if (raids_enabled or province.raids.conquest) and clock.tick % SimClock.TICKS_PER_SECOND == 0 \
 			and world.owner_of(viewed_id) == ProvinceDef.OWNER_PLAYER:
 		Raids.update(province, rng.stream(&"raids"), world.is_single())
 	# Each simplified province updates once a second, in the tick of its id within the second
@@ -142,8 +151,10 @@ func step() -> void:
 	for id: int in runtimes:
 		if id % ProvinceAbstract.STEP_TICKS == slot:
 			var abstract := runtimes[id] as ProvinceAbstract
-			# A neutral town waits as it is until it joins the kingdom (M6 part 3).
-			if abstract != null and world.owner_of(id) == ProvinceDef.OWNER_PLAYER:
+			# A neutral town waits as it is until it joins the kingdom (M6 part 3); the AI
+			# rulers' towns live like the player's (M8 part 3).
+			if abstract != null and (world.owner_of(id) == ProvinceDef.OWNER_PLAYER
+					or Rulers.is_ruler(world.owner_of(id))):
 				abstract.step(clock.tick - slot)
 	if slot == 0:
 		_update_world()
@@ -172,6 +183,22 @@ func province_state(id: int) -> ProvinceSim:
 	if runtime is ProvinceAbstract:
 		return (runtime as ProvinceAbstract).detail
 	return null
+
+
+## The treasury of [param owner]: an AI ruler's own (M8 part 3), else the kingdom's.
+func treasury_of(owner: StringName) -> Treasury:
+	var ruler := world.rulers.get(owner) as RulerState
+	return ruler.treasury if ruler != null else treasury
+
+
+## Every settled province pays into and builds from its owner's treasury (the player's, a
+## ruler's; a neutral town's is the kingdom's, as it was). Cheap: run once a second and after
+## loading, so a province that changed hands pays its new owner.
+func bind_treasuries() -> void:
+	for id: int in runtimes:
+		var state := province_state(id)
+		if state != null:
+			state.treasury = treasury_of(world.owner_of(id))
 
 
 func is_detailed(id: int) -> bool:
@@ -212,8 +239,7 @@ func _update_world() -> void:
 		match e.state:
 			Expedition.State.TRAVELLING:
 				if clock.tick >= e.arrive_at:
-					e.state = Expedition.State.WAITING
-					events.emit(&"expedition_arrived", {"expedition": e.id, "province": e.to})
+					_arrive(e)
 			Expedition.State.LANDED:
 				var there := province_state(e.to)
 				if there == null or there.landing == null or there.landing.expedition != e.id \
@@ -221,7 +247,16 @@ func _update_world() -> void:
 					_landed(e)
 			Expedition.State.RETURNING:
 				if clock.tick >= e.arrive_at:
+					if e.bounced:
+						_come_home(e)
 					world.expeditions.erase(id)
+	if not world.rulers.is_empty() or world.settings != null:
+		RulerPlanner.ensure_rulers(self)
+		bind_treasuries()
+		RulerPlanner.update(self)
+		RulerExpansion.update(self)
+		RulerWar.update(self)
+	Invasion.update(self)
 	TradeRoutes.update(self)
 	_update_settlements()
 	Armies.update(self)
@@ -274,10 +309,16 @@ func _update_settlements() -> void:
 			continue
 		match s.state:
 			NeutralSettlement.State.ASKING:
-				if s.is_met():
+				var buyer := s.winner()
+				if buyer != &"":
+					# Whoever gave it all first gets it; what the others gave is lost (M8 part 3).
 					world.settlements.erase(id)
-					world.get_province(id).owner = ProvinceDef.OWNER_PLAYER
-					events.emit(&"settlement_joined", {"province": id})
+					world.get_province(id).owner = buyer
+					var town := province_state(id)
+					if town != null:
+						town.home_faction = faction_of(id)
+						town.treasury = treasury_of(buyer)
+					events.emit(&"settlement_joined", {"province": id, "owner": buyer})
 				elif clock.tick >= s.until:
 					s.state = NeutralSettlement.State.RESTING
 					s.round += 1
@@ -294,6 +335,7 @@ func _set_out(id: int, p: ProvinceSim) -> void:
 	var d := p.departure
 	var e := Expedition.new()
 	e.id = d.id
+	e.owner = world.owner_of(id)
 	e.from = id
 	e.to = d.target
 	e.by_sea = d.by_sea
@@ -304,7 +346,53 @@ func _set_out(id: int, p: ProvinceSim) -> void:
 	e.arrive_at = clock.tick + SimClock.seconds_to_ticks(maxf(world.travel_seconds(id, e.to, e.by_sea, data), 0.0))
 	world.expeditions[e.id] = e
 	p.departure = null
-	events.emit(&"expedition_departed", {"expedition": e.id, "province": e.to})
+	events.emit(&"expedition_departed", {"expedition": e.id, "province": e.to, "owner": e.owner})
+
+
+## An expedition reached the border of its province (M6 part 2): the player's waits for him
+## to enter; an AI ruler's lands at once (M8 part 3). Whoever comes first takes it: one that
+## finds the province taken turns back.
+func _arrive(e: Expedition) -> void:
+	if runtimes.has(e.to) or world.is_claimed(e.to, e.owner):
+		e.state = Expedition.State.RETURNING
+		e.bounced = true
+		var seconds := float(e.arrive_at - e.depart_at) / SimClock.TICKS_PER_SECOND
+		e.depart_at = clock.tick
+		e.arrive_at = clock.tick + SimClock.seconds_to_ticks(maxf(seconds, 0.0))
+		_cog_back_at(e)
+		events.emit(&"expedition_turned_back", {"expedition": e.id, "province": e.to, "owner": e.owner})
+		return
+	e.state = Expedition.State.WAITING
+	events.emit(&"expedition_arrived", {"expedition": e.id, "province": e.to, "owner": e.owner})
+	if Rulers.is_ruler(e.owner) or autopilot:
+		var settled := _settle(e)
+		RulerExpansion.found(self, e.to, settled)
+		runtimes[e.to] = ProvinceAbstract.freeze(settled, clock.tick)
+		settled.home_faction = faction_of(e.to)
+		settled.treasury = treasury_of(e.owner)
+
+
+## An expedition that turned back is home: its settlers move back into the houses with room
+## and its kit goes into the storages (lost if the province is not its owner's any more).
+func _come_home(e: Expedition) -> void:
+	var home := province_state(e.from)
+	if home == null or world.owner_of(e.from) != e.owner:
+		return
+	var at := RulerPlanner.centre(home)
+	for good: StringName in e.kit:
+		Departure.give_back(home, good, e.kit[good], at, not is_detailed(e.from))
+	Departure.return_home(home, e.settlers.size())
+	events.emit(&"expedition_home", {"expedition": e.id, "province": e.from})
+
+
+## The cog of a sea expedition is back home when the expedition is.
+func _cog_back_at(e: Expedition) -> void:
+	if not e.by_sea:
+		return
+	var home := province_state(e.from)
+	var cog := home.ships.get(e.ship_id) as ShipUnit if home != null else null
+	if cog != null and cog.voyage != null and cog.voyage.expedition == e.id:
+		cog.voyage.back_at = e.arrive_at
 
 
 ## The settlers are ashore: a cog sails home (as long as it took to come), a wagon stays.
@@ -315,13 +403,11 @@ func _landed(e: Expedition) -> void:
 	e.state = Expedition.State.RETURNING
 	e.depart_at = clock.tick
 	e.arrive_at = clock.tick + SimClock.seconds_to_ticks(maxf(world.travel_seconds(e.from, e.to, true, data), 0.0))
-	var home := province_state(e.from)
-	var cog := home.ships.get(e.ship_id) as ShipUnit if home != null else null
-	if cog != null and cog.voyage != null and cog.voyage.expedition == e.id:
-		cog.voyage.back_at = e.arrive_at
+	_cog_back_at(e)
 
 
-## The province an expedition waits at becomes the player's: its map (the template's variant)
+## The province an expedition waits at becomes its owner's (the player's, or an AI ruler's):
+## its map (the template's variant)
 ## without the start layout, and the landing of the expedition (ROADMAP M6 part 2).
 func _settle(e: Expedition) -> ProvinceSim:
 	var place := world.get_province(e.to)
@@ -338,9 +424,9 @@ func _settle(e: Expedition) -> ProvinceSim:
 	else:
 		settled.landing = Landing.arrive_by_land(settled, e.settlers, e.kit, e.id)
 	settled.start_grace(clock.tick)
-	place.owner = ProvinceDef.OWNER_PLAYER
+	place.owner = e.owner
 	e.state = Expedition.State.LANDED
-	events.emit(&"province_settled", {"province": e.to, "expedition": e.id})
+	events.emit(&"province_settled", {"province": e.to, "expedition": e.id, "owner": e.owner})
 	return settled
 
 
@@ -371,6 +457,7 @@ func leave_battlefield(id: int) -> void:
 	runtimes[id] = province
 	viewed_id = id
 	province.home_faction = faction_of(id)
+	RulerWar.set_factions(province)
 	if world.owner_of(id) == ProvinceDef.OWNER_NEUTRAL:
 		Armies.spawn_guards(self, id)
 	events.emit(&"province_entered", {"province": id})
@@ -381,7 +468,7 @@ func leave_battlefield(id: int) -> void:
 func view_province(id: int) -> void:
 	if id == viewed_id:
 		return
-	var waiting := world.expedition_to(id)
+	var waiting := world.expedition_to(id, ProvinceDef.OWNER_PLAYER)
 	if not runtimes.has(id) and (waiting == null or waiting.state != Expedition.State.WAITING):
 		return
 	Armies.fold(self)
@@ -393,6 +480,7 @@ func view_province(id: int) -> void:
 	runtimes[id] = province
 	viewed_id = id
 	province.home_faction = faction_of(id)
+	RulerWar.set_factions(province)
 	if world.owner_of(id) == ProvinceDef.OWNER_NEUTRAL:
 		Armies.spawn_guards(self, id)
 	events.emit(&"province_entered", {"province": id})
@@ -460,4 +548,5 @@ static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 		var state := sim.province_state(id)
 		if state != null:
 			state.home_faction = sim.faction_of(id)
+	sim.bind_treasuries()
 	return sim

@@ -160,7 +160,7 @@ static func order_return(province: ProvinceSim, agents: Array[Agent]) -> void:
 ## for what stands in his way to it first; laddermen lean their ladders on stone walls.
 static func order_break(province: ProvinceSim, agents: Array[Agent], tile: Vector2i) -> void:
 	var building := province.buildings.get_building(province.grid.occupant(tile))
-	if building != null and building == province.seat():
+	if building != null and building == province.stronghold():
 		tile = building.entrance_tile()
 	for agent: Agent in agents:
 		take_command(agent)

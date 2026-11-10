@@ -283,7 +283,7 @@ func disband(province: ProvinceSim, at_once: bool) -> void:
 	if wagon_man != null:
 		province.remove_agent(wagon_man)
 	wagon_agent = 0
-	_return_home(province, people)
+	return_home(province, people)
 	if wagon != null:
 		var goods := wagon.totals()
 		for good: StringName in _sorted(goods):
@@ -300,7 +300,7 @@ func disband(province: ProvinceSim, at_once: bool) -> void:
 
 
 ## [param people] settlers move back in: into houses with room, the emptiest first.
-static func _return_home(province: ProvinceSim, people: int) -> void:
+static func return_home(province: ProvinceSim, people: int) -> void:
 	var left := people
 	while left > 0:
 		var best: BuildingState = null

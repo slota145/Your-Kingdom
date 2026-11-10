@@ -4001,3 +4001,167 @@ msgstr "Tej bitwy już nie ma."
 
 msgid "ui.command_error.no_battlefield"
 msgstr "Tu nie da się stoczyć bitwy na żywo."
+
+msgid "ui.world.visit"
+msgstr "Zobacz miasto"
+
+msgid "ui.world.visit_hint"
+msgstr "To miasto władcy. Możesz je obejrzeć, ale nie możesz w nim budować."
+
+msgid "ui.world.demand_rival"
+msgstr "%s też kupuje: zapłacił %d z %d zł"
+
+msgid "ui.ruler.summary"
+msgstr "Prowincje: %d, mieszkańcy: %d, skarbiec: %d zł"
+
+msgid "ui.ruler.building"
+msgstr "Buduje: %s"
+
+msgid "ui.ruler.building_none"
+msgstr "Teraz nic nie buduje"
+
+msgid "ui.ruler.plan"
+msgstr "Rozwój tej prowincji: %d%%"
+
+msgid "ui.ruler.expedition"
+msgstr "Wyprawa osadników płynie lub jedzie do: %s"
+
+msgid "ui.ruler.gathering"
+msgstr "Zbiera osadników na wyprawę"
+
+msgid "ui.ruler.buying"
+msgstr "Wykupuje osadę: %s"
+
+msgid "ui.visit.title"
+msgstr "Miasto władcy: %s (tylko oglądanie)"
+
+msgid "ui.visit.back"
+msgstr "Mapa świata"
+
+msgid "ui.note.ruler_province_settled"
+msgstr "%s zasiedla prowincję: %s."
+
+msgid "ui.note.ruler_settlement_joined"
+msgstr "%s wykupuje osadę: %s."
+
+msgid "ui.note.expedition_turned_back"
+msgstr "Ktoś był pierwszy w prowincji %s. Twoja wyprawa wraca do domu z ludźmi i towarem."
+
+msgid "ui.difficulty.peaceful"
+msgstr "Pokojowy (władcy nie atakują gracza)"
+
+msgid "ui.note.ruler_marched_player"
+msgstr "%s wysyła wojsko na %s! Dotrze za ok. %d min."
+
+msgid "ui.note.ruler_storming"
+msgstr "Wojsko władcy (%s) szturmuje miasto! Broń ratusza."
+
+msgid "ui.note.province_lost"
+msgstr "%s zdobywa twoją prowincję: %s."
+
+msgid "ui.note.ruler_took"
+msgstr "%s zdobywa prowincję %s."
+
+msgid "ui.note.ruler_defeated"
+msgstr "%s stracił wszystkie prowincje i odpada z gry."
+
+msgid "ui.ruler.army"
+msgstr "Wojsko: %d żołnierzy"
+
+msgid "ui.ruler.campaign"
+msgstr "Maszeruje na: %s"
+
+msgid "ui.ruler.campaign_soon"
+msgstr "Pierwszy atak najwcześniej za ok. %d min"
+
+# M8 part 5: scenarios
+
+msgid "ui.scenario.divided"
+msgstr "Podzielony kontynent"
+
+msgid "ui.scenario.islands"
+msgstr "Kupieckie wyspy"
+
+msgid "ui.scenario.invasion"
+msgstr "Najazd z morza"
+
+msgid "ui.scenario.divided_hint"
+msgstr "Wszystkie prowincje mają już władców albo są osadami neutralnymi. Lądujesz w ostatniej wolnej i wszystko wywalczasz albo wykupujesz."
+
+msgid "ui.scenario.islands_hint"
+msgstr "Świat z samych wysp, wszystko wozi się statkami. Wygrywa ten, kto pierwszy zbierze w skarbcu wybraną sumę złota. Władcy też się ścigają."
+
+msgid "ui.scenario.invasion_hint"
+msgstr "Bez władców. Od 20. minuty co 5 minut z morza przypływa coraz silniejsza fala najeźdźców. Przetrwaj 60 minut!"
+
+msgid "ui.new_game.gold"
+msgstr "Suma złota"
+
+msgid "ui.victory.gold"
+msgstr "Złoto"
+
+msgid "ui.victory.survive"
+msgstr "Przetrwaj (minuty)"
+
+msgid "ui.result.won_gold"
+msgstr "Zebrałeś wymaganą sumę złota jako pierwszy. Jesteś królem kupców!"
+
+msgid "ui.result.won_survive"
+msgstr "Przetrwałeś najazd z morza. Królestwo stoi!"
+
+msgid "ui.result.lost_gold"
+msgstr "%s pierwszy zebrał wymaganą sumę złota."
+
+msgid "ruler.ruler_raiders.name"
+msgstr "Najeźdźcy"
+
+msgid "ui.note.invasion_wave"
+msgstr "Fala %d z %d: %d najeźdźców płynie na %s! Dopłyną za ok. %d min."
+
+msgid "ui.world.next_wave"
+msgstr "Fala %d za %d:%02d"
+
+msgid "ui.note.invasion_plunder"
+msgstr " Ta fala tylko łupi."
+
+msgid "ui.note.invasion_wave_endless"
+msgstr "Fala %d: %d najeźdźców płynie na %s! Dopłyną za ok. %d min."
+
+msgid "ui.world.endless"
+msgstr "Przetrwanie: %d fal, %d min"
+
+msgid "ui.result.endless_score"
+msgstr "Odparłeś %d fal i przetrwałeś %d minut."
+
+msgid "ui.result.endless_new_record"
+msgstr "To nowy rekord!"
+
+msgid "ui.result.endless_record"
+msgstr "Rekord: %d fal (%d minut)."
+
+msgid "ui.victory.endless"
+msgstr "Przetrwanie"
+
+msgid "ui.new_game.invasion_goal"
+msgstr "Cel"
+
+msgid "ui.invasion.hold_60"
+msgstr "Przetrwaj 60 minut"
+
+msgid "ui.invasion.endless"
+msgstr "Przetrwanie (fale bez końca)"
+
+msgid "ui.invasion.endless_hint"
+msgstr "Fale przychodzą bez końca, każda większa. Wynikiem jest liczba odpartych fal i Twój rekord."
+
+msgid "ui.new_game.plunder"
+msgstr "Fale rabunkowe"
+
+msgid "ui.invasion.plunder_none"
+msgstr "Brak"
+
+msgid "ui.invasion.plunder_all"
+msgstr "Wszystkie"
+
+msgid "ui.invasion.plunder_hint"
+msgstr "Tyle pierwszych fal tylko łupi złoto i towary i odpływa. Dalsze zajmują miasto, które zdobędą."

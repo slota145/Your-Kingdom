@@ -13,6 +13,9 @@ const SLOT_SIZE := Vector2(40, 40)
 const SLOT_COLUMNS := 6
 
 var province: ProvinceSim
+## An AI ruler's town is only looked at (M8 part 3): no buttons but "Close".
+var read_only: bool = false
+var _close_button: Button
 var ship_id: int = 0
 
 var _title: Label
@@ -60,7 +63,8 @@ func _init() -> void:
 	_sail_out = UiKit.button("ui.ship.sail_out", func() -> void: command_requested.emit(SailOutCommand.new(ship_id)))
 	_sail_out.tooltip_text = "ui.ship.sail_out_tip"
 	buttons.add_child(_sail_out)
-	buttons.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
+	_close_button = UiKit.button("ui.close", func() -> void: closed.emit())
+	buttons.add_child(_close_button)
 
 
 func show_ship(source: ProvinceSim, id: int) -> void:
@@ -78,6 +82,8 @@ func listed() -> Dictionary[StringName, int]:
 func _process(_delta: float) -> void:
 	if visible and province != null:
 		_refresh()
+		if read_only:
+			UiKit.lock_buttons(self, _close_button)
 
 
 func _refresh() -> void:

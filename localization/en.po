@@ -3964,3 +3964,167 @@ msgstr "That battle is over."
 
 msgid "ui.command_error.no_battlefield"
 msgstr "No live battle can be fought here."
+
+msgid "ui.world.visit"
+msgstr "View the town"
+
+msgid "ui.world.visit_hint"
+msgstr "This is a ruler's town. You may look at it, but not build in it."
+
+msgid "ui.world.demand_rival"
+msgstr "%s is buying too: paid %d of %d gold"
+
+msgid "ui.ruler.summary"
+msgstr "Provinces: %d, people: %d, treasury: %d gold"
+
+msgid "ui.ruler.building"
+msgstr "Building: %s"
+
+msgid "ui.ruler.building_none"
+msgstr "Building nothing right now"
+
+msgid "ui.ruler.plan"
+msgstr "Growth of this province: %d%%"
+
+msgid "ui.ruler.expedition"
+msgstr "Settlers on their way to: %s"
+
+msgid "ui.ruler.gathering"
+msgstr "Gathering settlers for an expedition"
+
+msgid "ui.ruler.buying"
+msgstr "Buying the settlement: %s"
+
+msgid "ui.visit.title"
+msgstr "Town of %s (looking only)"
+
+msgid "ui.visit.back"
+msgstr "World map"
+
+msgid "ui.note.ruler_province_settled"
+msgstr "%s settles the province: %s."
+
+msgid "ui.note.ruler_settlement_joined"
+msgstr "%s buys the settlement: %s."
+
+msgid "ui.note.expedition_turned_back"
+msgstr "Someone came first to %s. Your expedition goes home with its people and goods."
+
+msgid "ui.difficulty.peaceful"
+msgstr "Peaceful (rulers never attack the player)"
+
+msgid "ui.note.ruler_marched_player"
+msgstr "%s sends an army against %s! It arrives in about %d min."
+
+msgid "ui.note.ruler_storming"
+msgstr "The army of %s storms the town! Defend the town hall."
+
+msgid "ui.note.province_lost"
+msgstr "%s takes your province: %s."
+
+msgid "ui.note.ruler_took"
+msgstr "%s takes the province of %s."
+
+msgid "ui.note.ruler_defeated"
+msgstr "%s lost all provinces and is out of the game."
+
+msgid "ui.ruler.army"
+msgstr "Army: %d soldiers"
+
+msgid "ui.ruler.campaign"
+msgstr "Marching on: %s"
+
+msgid "ui.ruler.campaign_soon"
+msgstr "First attack in about %d min at the earliest"
+
+# M8 part 5: scenarios
+
+msgid "ui.scenario.divided"
+msgstr "Divided continent"
+
+msgid "ui.scenario.islands"
+msgstr "Merchant islands"
+
+msgid "ui.scenario.invasion"
+msgstr "Invasion from the sea"
+
+msgid "ui.scenario.divided_hint"
+msgstr "Every province already has a ruler or is a neutral settlement. You land in the last free one and win everything by force or gold."
+
+msgid "ui.scenario.islands_hint"
+msgstr "A world of islands only, everything goes by ship. Whoever first holds the chosen sum of gold in the treasury wins. The rulers race too."
+
+msgid "ui.scenario.invasion_hint"
+msgstr "No rulers. From the 20th minute, every 5 minutes, a stronger wave of raiders comes from the sea. Hold out for 60 minutes!"
+
+msgid "ui.new_game.gold"
+msgstr "Gold target"
+
+msgid "ui.victory.gold"
+msgstr "Gold"
+
+msgid "ui.victory.survive"
+msgstr "Hold out (minutes)"
+
+msgid "ui.result.won_gold"
+msgstr "You were the first to gather the gold. You are the king of merchants!"
+
+msgid "ui.result.won_survive"
+msgstr "You held out against the invasion from the sea. The kingdom stands!"
+
+msgid "ui.result.lost_gold"
+msgstr "%s was the first to gather the gold."
+
+msgid "ruler.ruler_raiders.name"
+msgstr "Raiders"
+
+msgid "ui.note.invasion_wave"
+msgstr "Wave %d of %d: %d raiders sail against %s! They land in about %d min."
+
+msgid "ui.world.next_wave"
+msgstr "Wave %d in %d:%02d"
+
+msgid "ui.note.invasion_plunder"
+msgstr " This wave only plunders."
+
+msgid "ui.note.invasion_wave_endless"
+msgstr "Wave %d: %d raiders sail against %s! They land in about %d min."
+
+msgid "ui.world.endless"
+msgstr "Survival: %d waves, %d min"
+
+msgid "ui.result.endless_score"
+msgstr "You held off %d waves and lasted %d minutes."
+
+msgid "ui.result.endless_new_record"
+msgstr "A new record!"
+
+msgid "ui.result.endless_record"
+msgstr "Record: %d waves (%d minutes)."
+
+msgid "ui.victory.endless"
+msgstr "Survival"
+
+msgid "ui.new_game.invasion_goal"
+msgstr "Goal"
+
+msgid "ui.invasion.hold_60"
+msgstr "Hold out 60 minutes"
+
+msgid "ui.invasion.endless"
+msgstr "Survival (endless waves)"
+
+msgid "ui.invasion.endless_hint"
+msgstr "Waves keep coming, each bigger. Your score is the waves held off, and your record."
+
+msgid "ui.new_game.plunder"
+msgstr "Plundering waves"
+
+msgid "ui.invasion.plunder_none"
+msgstr "None"
+
+msgid "ui.invasion.plunder_all"
+msgstr "All"
+
+msgid "ui.invasion.plunder_hint"
+msgstr "This many first waves only plunder gold and goods and sail away. Later ones take the town they win."

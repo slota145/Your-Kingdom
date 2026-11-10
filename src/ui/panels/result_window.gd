@@ -30,7 +30,16 @@ func _init() -> void:
 
 
 ## Shows the end of the game: [param won], by [param victory] (GameSettings.VICTORY_*).
-func show_result(won: bool, victory: StringName) -> void:
+## [param winner]: the ruler who won the gold race instead of the player (M8 part 5), or &"".
+## [param detail]: more lines under it (the survival mode's score and record).
+func show_result(won: bool, victory: StringName, winner: StringName = &"", detail: String = "") -> void:
 	_title.text = tr("ui.result.won_title" if won else "ui.result.lost_title")
-	_text.text = tr("ui.result.won_%s" % victory) if won else tr("ui.result.lost")
+	if won:
+		_text.text = tr("ui.result.won_%s" % victory)
+	elif winner != &"":
+		_text.text = tr("ui.result.lost_gold") % tr("ruler.%s.name" % winner)
+	else:
+		_text.text = tr("ui.result.lost")
+	if detail != "":
+		_text.text += "\n\n" + detail
 	visible = true

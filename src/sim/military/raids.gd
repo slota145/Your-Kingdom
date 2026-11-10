@@ -49,6 +49,9 @@ var mood_until: int = 0
 ## single-province game) and the gold it took, handed to the army when the raid is over.
 var army: int = 0
 var loot_gold: int = 0
+## The men of an AI ruler storming the town (M8 part 4): they hold the broken hall's door
+## instead of looting; the town is taken (Armies).
+var conquest: bool = false
 
 
 func is_active() -> bool:
@@ -68,7 +71,7 @@ static func update(province: ProvinceSim, rng: RandomNumberGenerator, scheduled:
 	match raids.state:
 		State.WAITING:
 			if province.tick >= raids.next_tick - SimClock.seconds_to_ticks(WARNING_SECONDS) \
-					and province.has_seat():
+					and province.has_stronghold():
 				raids.entry = choose_entry(province, rng)
 				if raids.entry == Agent.NO_TILE:
 					raids.next_tick += SimClock.seconds_to_ticks(GAP_MIN_SECONDS)
@@ -105,8 +108,9 @@ static func start(province: ProvinceSim, rng: RandomNumberGenerator) -> void:
 
 
 ## The bandits of army [param army_id] (unit id -> men) come in at the edge (M7 part 3).
+## [param soldiers]: they keep their own look (a ruler's men, the raiders), not the bandits'.
 static func start_army(province: ProvinceSim, rng: RandomNumberGenerator, units: Dictionary[StringName, int],
-		army_id: int) -> Vector2i:
+		army_id: int, conquest: bool = false, soldiers: bool = false) -> Vector2i:
 	var raids := province.raids
 	if raids.entry == Agent.NO_TILE or raids.entry.x < 0:
 		raids.entry = choose_entry(province, rng)
@@ -119,8 +123,9 @@ static func start_army(province: ProvinceSim, rng: RandomNumberGenerator, units:
 	ids.sort()
 	for unit: StringName in ids:
 		for k: int in units[unit]:
-			kinds.append({&"spearman": &"bandit", &"archer": &"bandit_archer"}.get(unit, unit))
+			kinds.append(unit if conquest or soldiers else {&"spearman": &"bandit", &"archer": &"bandit_archer"}.get(unit, unit))
 	_spawn(province, kinds, army_id)
+	raids.conquest = conquest
 	return raids.entry
 
 
@@ -150,7 +155,7 @@ static func _spawn(province: ProvinceSim, kinds: Array[StringName], army_id: int
 ## A land tile at the edge of the map, far from the town hall, from which the town can be
 ## reached by breaking through: null-tile when none.
 static func choose_entry(province: ProvinceSim, rng: RandomNumberGenerator) -> Vector2i:
-	var hall := province.seat()
+	var hall := province.stronghold()
 	if hall == null:
 		return Agent.NO_TILE
 	var target := hall.entrance_tile()
@@ -222,11 +227,13 @@ static func _drive(province: ProvinceSim, rng: RandomNumberGenerator) -> void:
 		if raids.members.all(func(id: int) -> bool: return not province.agents.has_agent(id)):
 			_end(province, rng, &"raid_left")
 		return
-	var hall := province.seat()
+	var hall := province.stronghold()
 	if hall == null:
 		_leave(province)
 		return
 	if hall.is_broken() and not defended(province, hall):
+		if raids.conquest:
+			return   # they hold the door: the town is taken (Armies)
 		loot(province, hall)
 		_leave(province)
 		return
@@ -308,6 +315,8 @@ static func loot(province: ProvinceSim, hall: BuildingState) -> int:
 		province.treasury.pay(gold)
 	var totals: Dictionary[StringName, int] = {}
 	for building: BuildingState in province.storage_buildings():
+		if building.stock == null:
+			continue   # (a storage that keeps no stock of its own)
 		for good: StringName in building.stock.totals():
 			totals[good] = totals.get(good, 0) + building.stock.available(good)
 	var goods: Array[StringName] = []
@@ -363,6 +372,7 @@ static func call_off(province: ProvinceSim) -> void:
 	raids.state = State.WAITING
 	raids.members.clear()
 	raids.entry = Vector2i(-1, -1)
+	raids.conquest = false
 	for foot: Vector2i in province.mil.ladders.keys():
 		Troops.remove_ladder(province, foot)
 	for building: BuildingState in province.buildings.all():
@@ -377,7 +387,7 @@ static func call_off(province: ProvinceSim) -> void:
 ## Townsfolk near a bandit drop their work and run for the town hall (or the camp).
 static func _shelter_townsfolk(province: ProvinceSim) -> void:
 	var raids := province.raids
-	var hall := province.seat()
+	var hall := province.stronghold()
 	if hall == null:
 		return
 	var bandits: Array[Vector2] = []
@@ -391,7 +401,7 @@ static func _shelter_townsfolk(province: ProvinceSim) -> void:
 ## Townsfolk within DANGER_RADIUS of [param enemies] (positions) run for the town hall.
 static func shelter_near(province: ProvinceSim, enemies: Array[Vector2]) -> void:
 	var bandits := enemies
-	if bandits.is_empty() or province.seat() == null:
+	if bandits.is_empty() or province.stronghold() == null:
 		return
 	for agent: Agent in province.agents.all():
 		if agent.combat != null or agent.kind == Barracks.RECRUIT_KIND or agent.kind == Merchant.AGENT_KIND:
@@ -434,7 +444,7 @@ static func shelter_steps() -> Array[StepDef]:
 
 ## Whether an attacker holds the province's seat: its door broken and no defender at it.
 static func can_capture(province: ProvinceSim) -> bool:
-	var hall := province.seat()
+	var hall := province.stronghold()
 	return hall != null and hall.is_broken() and not defended(province, hall)
 
 
@@ -463,6 +473,8 @@ func to_dict() -> Dictionary:
 		d["army"] = army
 	if loot_gold != 0:
 		d["loot_gold"] = loot_gold
+	if conquest:
+		d["conquest"] = true
 	return d
 
 
@@ -476,4 +488,5 @@ static func from_dict(d: Dictionary) -> Raids:
 	raids.mood_until = int(d.get("mood_until", 0))
 	raids.army = int(d.get("army", 0))
 	raids.loot_gold = int(d.get("loot_gold", 0))
+	raids.conquest = bool(d.get("conquest", false))
 	return raids
