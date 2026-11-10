@@ -135,7 +135,8 @@ func step() -> void:
 	province.step()
 	if not province.marched.is_empty():
 		Armies.absorb(self)
-	if raids_enabled and clock.tick % SimClock.TICKS_PER_SECOND == 0 \
+	# (A ruler's storming is driven even where bandits' raids are off, M8 part 4.)
+	if (raids_enabled or province.raids.conquest) and clock.tick % SimClock.TICKS_PER_SECOND == 0 \
 			and world.owner_of(viewed_id) == ProvinceDef.OWNER_PLAYER:
 		Raids.update(province, rng.stream(&"raids"), world.is_single())
 	# Each simplified province updates once a second, in the tick of its id within the second
@@ -248,6 +249,7 @@ func _update_world() -> void:
 		bind_treasuries()
 		RulerPlanner.update(self)
 		RulerExpansion.update(self)
+		RulerWar.update(self)
 	TradeRoutes.update(self)
 	_update_settlements()
 	Armies.update(self)
@@ -448,6 +450,7 @@ func leave_battlefield(id: int) -> void:
 	runtimes[id] = province
 	viewed_id = id
 	province.home_faction = faction_of(id)
+	RulerWar.set_factions(province)
 	if world.owner_of(id) == ProvinceDef.OWNER_NEUTRAL:
 		Armies.spawn_guards(self, id)
 	events.emit(&"province_entered", {"province": id})
@@ -470,6 +473,7 @@ func view_province(id: int) -> void:
 	runtimes[id] = province
 	viewed_id = id
 	province.home_faction = faction_of(id)
+	RulerWar.set_factions(province)
 	if world.owner_of(id) == ProvinceDef.OWNER_NEUTRAL:
 		Armies.spawn_guards(self, id)
 	events.emit(&"province_entered", {"province": id})

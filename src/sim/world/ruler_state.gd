@@ -19,6 +19,14 @@ var next_trade: int = 0
 ## The province saving up the start kit of the next expedition (it opens no new sites but
 ## those of its shortages until the kit is there); 0 = none.
 var saving_for: int = 0
+## War (M8 part 4, RulerWar): no attack is started before this tick (the time of grace at
+## the start, then the gap between two campaigns).
+var next_war: int = 0
+## The army now on a campaign (0 = none) and the province it goes for.
+var campaign: int = 0
+var war_target: int = 0
+## He lost his last province (the player was told).
+var defeated: bool = false
 ## "province:building" -> tick before which a building that found no room is not tried
 ## there again. Not saved (after loading it is simply tried once more).
 var no_room: Dictionary[String, int] = {}
@@ -41,7 +49,8 @@ func to_dict() -> Dictionary:
 	for id: int in keys:
 		builds[str(id)] = next_build[id]
 	return {"owner": String(owner), "treasury": treasury.to_dict(), "next_build": builds,
-			"next_expedition": next_expedition, "next_trade": next_trade, "saving_for": saving_for}
+			"next_expedition": next_expedition, "next_trade": next_trade, "saving_for": saving_for,
+			"next_war": next_war, "campaign": campaign, "war_target": war_target, "defeated": defeated}
 
 
 static func from_dict(d: Dictionary) -> RulerState:
@@ -54,4 +63,8 @@ static func from_dict(d: Dictionary) -> RulerState:
 	r.next_expedition = int(d.get("next_expedition", 0))
 	r.next_trade = int(d.get("next_trade", 0))
 	r.saving_for = int(d.get("saving_for", 0))
+	r.next_war = int(d.get("next_war", 0))
+	r.campaign = int(d.get("campaign", 0))
+	r.war_target = int(d.get("war_target", 0))
+	r.defeated = bool(d.get("defeated", false))
 	return r

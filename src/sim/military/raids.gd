@@ -49,6 +49,9 @@ var mood_until: int = 0
 ## single-province game) and the gold it took, handed to the army when the raid is over.
 var army: int = 0
 var loot_gold: int = 0
+## The men of an AI ruler storming the town (M8 part 4): they hold the broken hall's door
+## instead of looting; the town is taken (Armies).
+var conquest: bool = false
 
 
 func is_active() -> bool:
@@ -106,7 +109,7 @@ static func start(province: ProvinceSim, rng: RandomNumberGenerator) -> void:
 
 ## The bandits of army [param army_id] (unit id -> men) come in at the edge (M7 part 3).
 static func start_army(province: ProvinceSim, rng: RandomNumberGenerator, units: Dictionary[StringName, int],
-		army_id: int) -> Vector2i:
+		army_id: int, conquest: bool = false) -> Vector2i:
 	var raids := province.raids
 	if raids.entry == Agent.NO_TILE or raids.entry.x < 0:
 		raids.entry = choose_entry(province, rng)
@@ -119,8 +122,9 @@ static func start_army(province: ProvinceSim, rng: RandomNumberGenerator, units:
 	ids.sort()
 	for unit: StringName in ids:
 		for k: int in units[unit]:
-			kinds.append({&"spearman": &"bandit", &"archer": &"bandit_archer"}.get(unit, unit))
+			kinds.append(unit if conquest else {&"spearman": &"bandit", &"archer": &"bandit_archer"}.get(unit, unit))
 	_spawn(province, kinds, army_id)
+	raids.conquest = conquest
 	return raids.entry
 
 
@@ -227,6 +231,8 @@ static func _drive(province: ProvinceSim, rng: RandomNumberGenerator) -> void:
 		_leave(province)
 		return
 	if hall.is_broken() and not defended(province, hall):
+		if raids.conquest:
+			return   # they hold the door: the town is taken (Armies)
 		loot(province, hall)
 		_leave(province)
 		return
@@ -363,6 +369,7 @@ static func call_off(province: ProvinceSim) -> void:
 	raids.state = State.WAITING
 	raids.members.clear()
 	raids.entry = Vector2i(-1, -1)
+	raids.conquest = false
 	for foot: Vector2i in province.mil.ladders.keys():
 		Troops.remove_ladder(province, foot)
 	for building: BuildingState in province.buildings.all():
@@ -463,6 +470,8 @@ func to_dict() -> Dictionary:
 		d["army"] = army
 	if loot_gold != 0:
 		d["loot_gold"] = loot_gold
+	if conquest:
+		d["conquest"] = true
 	return d
 
 
@@ -476,4 +485,5 @@ static func from_dict(d: Dictionary) -> Raids:
 	raids.mood_until = int(d.get("mood_until", 0))
 	raids.army = int(d.get("army", 0))
 	raids.loot_gold = int(d.get("loot_gold", 0))
+	raids.conquest = bool(d.get("conquest", false))
 	return raids

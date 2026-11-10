@@ -31,13 +31,25 @@ static func update(sim: Simulation) -> void:
 			var b := list[j]
 			if not _can_meet(sim, a) or not _can_meet(sim, b) or a.owner == b.owner or a.by_sea != b.by_sea:
 				continue
-			if a.pos.distance_to(b.pos) > MEET:
+			if a.pos.distance_to(b.pos) > MEET or _at_peace(sim, a, b):
 				continue
 			# The one on the move attacks.
 			if b.state == Army.State.MOVING and a.state != Army.State.MOVING:
 				meet(sim, b, a)
 			else:
 				meet(sim, a, b)
+
+
+## On the peaceful level (M8 part 4) the rulers' armies pass the player's by, unless the player
+## goes after them.
+static func _at_peace(sim: Simulation, a: Army, b: Army) -> bool:
+	if not RulerWar.peaceful(sim):
+		return false
+	var player := a if a.owner == ProvinceDef.OWNER_PLAYER else b if b.owner == ProvinceDef.OWNER_PLAYER else null
+	var other := b if player == a else a
+	if player == null or not Rulers.is_ruler(other.owner):
+		return false
+	return player.chase != other.id
 
 
 static func _can_meet(sim: Simulation, army: Army) -> bool:

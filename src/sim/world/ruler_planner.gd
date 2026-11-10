@@ -3,8 +3,8 @@ extends RefCounted
 ## The "planner" of the AI rulers (ROADMAP M8 part 3, owner's survey 2026-11-10): their towns
 ## live in the simplified mode like the player's provinces nobody looks at, and every so often
 ## each of their provinces opens a construction site for the next building of [constant PLAN],
-## from huts and woodcutters to workshops, a port and barracks (the barracks stand; soldiers
-## come in part 4). A spot is searched the way the neutral towns are laid out (NeutralTown):
+## from huts and woodcutters to workshops, a port and barracks (the barracks come early: the
+## ruler recruits soldiers there, RulerWar, M8 part 4). A spot is searched the way the neutral towns are laid out (NeutralTown):
 ## near the town centre, a woodcutter by the forest, a fisherman by the water; a farm gets its
 ## fields at once. The materials are carried and the site built by the province's own porters
 ## and builders, in the simplified mode or, while the player looks, by people.
@@ -20,10 +20,10 @@ const PLAN: Array[Array] = [
 	[&"fishing_hut", 1], [&"well", 1], [&"hut", 6], [&"farm", 1], [&"mill", 1], [&"bakery", 1],
 	[&"forester", 1], [&"hut", 9], [&"town_hall", 1], [&"woodcutter", 3], [&"chapel", 1],
 	[&"market", 1], [&"well", 2], [&"hut", 12], [&"stockpile", 2], [&"hop_farm", 1],
-	[&"brewery", 1], [&"farm", 2], [&"hut", 15], [&"trading_post", 1], [&"builders_hut", 1],
+	[&"brewery", 1], [&"farm", 2], [&"hut", 15], [&"barracks", 1], [&"trading_post", 1], [&"builders_hut", 1],
 	[&"sheep_farm", 1], [&"weaver", 1], [&"tar_kiln", 1], [&"port", 1], [&"shipyard", 1],
 	[&"hut", 18], [&"tailor", 1], [&"fishing_hut", 2], [&"tavern", 1], [&"bakery", 2],
-	[&"mill", 2], [&"farm", 3], [&"hut", 22], [&"church", 1], [&"barracks", 1],
+	[&"mill", 2], [&"farm", 3], [&"hut", 22], [&"church", 1],
 	[&"stockpile", 3], [&"hut", 26], [&"pigsty", 1], [&"slaughterhouse", 1], [&"hut", 30],
 ]
 ## Plan entries looked at each time (the first ones the province lacks).
@@ -58,7 +58,7 @@ const PLANKS_ENOUGH := 40
 ## The difficulty of the game (normal when the world has no settings).
 static func difficulty(sim: Simulation) -> int:
 	var s := sim.world.settings
-	return clampi(s.difficulty, GameSettings.EASY, GameSettings.HARD) if s != null else GameSettings.NORMAL
+	return s.growth_level() if s != null else GameSettings.NORMAL
 
 
 ## Every ruler holding a province has his state (a new game; a save from before part 3).
@@ -70,6 +70,7 @@ static func ensure_rulers(sim: Simulation) -> void:
 		var ruler := RulerState.create(owner, START_GOLD[level], sim.clock.tick)
 		ruler.next_expedition = sim.clock.tick + SimClock.seconds_to_ticks(
 				RulerExpansion.EXPEDITION_MINUTES[level] * 60.0)
+		ruler.next_war = sim.clock.tick + RulerWar.first_ticks(level)
 		sim.world.rulers[owner] = ruler
 		if level == GameSettings.HARD:
 			for id: int in Rulers.provinces_of(sim.world, owner):
@@ -130,8 +131,9 @@ static func try_next(sim: Simulation, ruler: RulerState, id: int) -> BuildingSta
 			var placed := _open(sim, ruler, id, town, def)
 			if placed != null:
 				return placed
-	if saving:
-		return null   # the wood goes to the expedition's kit
+	if saving and town.stored(&"wood") < LOW_WOOD + int(Departure.KIT[&"wood"]):
+		return null   # the wood goes to the expedition's kit (with the wood there, the town
+		# grows on while it waits for the bread: M8 part 4, it stalled before)
 	var looked := 0
 	for entry: Array in PLAN:
 		var building_id: StringName = entry[0]

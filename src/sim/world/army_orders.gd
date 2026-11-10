@@ -120,8 +120,8 @@ static func plan(sim: Simulation, army: Army, to: int, spot: Vector2) -> Diction
 	# By sea on the warships of the province it stands in (M7 part 3).
 	var sea_path: Array[Vector2] = []
 	var start := Vector2.INF
-	if army.owner == ProvinceDef.OWNER_PLAYER and army.is_standing() \
-			and sim.world.owner_of(army.at) == ProvinceDef.OWNER_PLAYER:
+	if army.owner != Army.BANDITS and army.is_standing() \
+			and sim.world.owner_of(army.at) == army.owner:
 		start = offshore(sim, army.at)
 	var landing_from := sim.world.def_of(to, sim.data).world_pos if to != 0 else dest
 	var sea_end := n.nearest(landing_from, true)
@@ -161,8 +161,8 @@ static func _plan_fleet(sim: Simulation, army: Army, to: int, dest: Vector2, res
 		if (result["path"] as Array).is_empty():
 			result["error"] = &"no_way"
 		return result
-	var own_port := to != 0 and army.owner == ProvinceDef.OWNER_PLAYER \
-			and sim.world.owner_of(to) == ProvinceDef.OWNER_PLAYER and sim.runtimes.has(to)
+	var own_port := to != 0 and army.owner != Army.BANDITS \
+			and sim.world.owner_of(to) == army.owner and sim.runtimes.has(to)
 	if own_port:
 		var off := offshore(sim, to)
 		if off == Vector2.INF:
@@ -211,11 +211,16 @@ static func order(sim: Simulation, army: Army, to: int, spot: Vector2) -> void:
 	if way["error"] != &"":
 		return
 	army.chase = 0
-	_follow(sim, army, way, to)
+	follow(sim, army, way, to)
 	sim.events.emit(&"army_sent", {"army": army.id, "province": to})
 
 
 static func _follow(sim: Simulation, army: Army, way: Dictionary, to: int) -> void:
+	follow(sim, army, way, to)
+
+
+## Sets [param army] on [param way] (from [method plan]) to the town of [param to].
+static func follow(sim: Simulation, army: Army, way: Dictionary, to: int) -> void:
 	if bool(way["board"]):
 		_board(sim, army)
 	army.by_sea = bool(way["sea"]) or army.is_fleet()

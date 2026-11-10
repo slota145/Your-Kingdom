@@ -334,6 +334,13 @@ func _ruler_lines(owner: StringName, province: ProvinceSim) -> PackedStringArray
 			else tr("ui.ruler.building_none"))
 	var progress := RulerPlanner.plan_progress(province)
 	lines.append(tr("ui.ruler.plan") % [progress.x * 100 / maxi(progress.y, 1)])
+	lines.append(tr("ui.ruler.army") % RulerWar.strength(sim, owner))
+	if ruler != null and sim.world.armies.has(ruler.campaign) and ruler.war_target != 0:
+		lines.append(tr("ui.ruler.campaign") % _province_name(ruler.war_target))
+	elif ruler != null and ruler.next_war > sim.clock.tick and ruler.war_target == 0 \
+			and sim.clock.tick < RulerWar.first_ticks(RulerWar.level(sim)):
+		lines.append(tr("ui.ruler.campaign_soon") % maxi(ceili((ruler.next_war - sim.clock.tick)
+				/ float(SimClock.TICKS_PER_SECOND) / 60.0), 1))
 	for e: Expedition in sim.world.expeditions.values():
 		if e.owner == owner and e.state == Expedition.State.TRAVELLING:
 			lines.append(tr("ui.ruler.expedition") % _province_name(e.to))

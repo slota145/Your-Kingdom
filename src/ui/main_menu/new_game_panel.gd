@@ -47,7 +47,9 @@ func _init() -> void:
 	_rulers = _choice("ui.new_game.rulers", ["1", "2", "3"])
 	_rulers.selected = 1
 	_rulers_row = _rulers.get_parent()
-	_difficulty = _choice("ui.new_game.difficulty", ["ui.difficulty.easy", "ui.difficulty.normal", "ui.difficulty.hard"])
+	# Item index = GameSettings level (peaceful last, M8 part 4).
+	_difficulty = _choice("ui.new_game.difficulty", ["ui.difficulty.easy", "ui.difficulty.normal", "ui.difficulty.hard",
+			"ui.difficulty.peaceful"])
 	_difficulty.selected = GameSettings.NORMAL
 	_victory = _choice("ui.new_game.victory", ["ui.victory.conquest", "ui.victory.provinces",
 			"ui.victory.patricians", "ui.victory.free"])

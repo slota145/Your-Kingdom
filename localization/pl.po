@@ -4046,3 +4046,30 @@ msgstr "%s wykupuje osadę: %s."
 
 msgid "ui.note.expedition_turned_back"
 msgstr "Ktoś był pierwszy w prowincji %s. Twoja wyprawa wraca do domu z ludźmi i towarem."
+
+msgid "ui.difficulty.peaceful"
+msgstr "Pokojowy (władcy nie atakują gracza)"
+
+msgid "ui.note.ruler_marched_player"
+msgstr "%s wysyła wojsko na %s! Dotrze za ok. %d min."
+
+msgid "ui.note.ruler_storming"
+msgstr "Wojsko władcy (%s) szturmuje miasto! Broń ratusza."
+
+msgid "ui.note.province_lost"
+msgstr "%s zdobywa twoją prowincję: %s."
+
+msgid "ui.note.ruler_took"
+msgstr "%s zdobywa prowincję %s."
+
+msgid "ui.note.ruler_defeated"
+msgstr "%s stracił wszystkie prowincje i odpada z gry."
+
+msgid "ui.ruler.army"
+msgstr "Wojsko: %d żołnierzy"
+
+msgid "ui.ruler.campaign"
+msgstr "Maszeruje na: %s"
+
+msgid "ui.ruler.campaign_soon"
+msgstr "Pierwszy atak najwcześniej za ok. %d min"

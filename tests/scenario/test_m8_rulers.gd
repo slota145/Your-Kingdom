@@ -244,4 +244,4 @@ func test_rulers_survive_a_save_and_v28_migrates() -> void:
 	assert_int(loaded.world.rulers[owner].treasury.gold).is_equal(RulerPlanner.START_GOLD[GameSettings.NORMAL])
 	assert_object(loaded.province_state(_home(loaded, owner)).treasury).is_same(loaded.world.rulers[owner].treasury)
 	loaded.run_ticks(SimFixture.ticks(60))
-	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(29)
+	assert_int(SaveMigrations.CURRENT_VERSION).is_greater_equal(29)

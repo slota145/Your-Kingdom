@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 29
+const CURRENT_VERSION := 30
 
 
 ## Returns [param state] (saved by [param from_version]) in the current format.
@@ -94,6 +94,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 29:
 		result = migrate_v28_to_v29(result)
 		version = 29
+	if version < 30:
+		result = migrate_v29_to_v30(result)
+		version = 30
 	return result
 
 
@@ -374,6 +377,23 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## his clocks: his first expedition after the usual wait, trade at once. His plan of growth
 ## starts where his town is (it is read from the buildings). Expeditions without an owner are
 ## the player's (the rulers sent none before).
+## v30 (M8 part 4): the rulers go to war. Each ruler gets his time of grace from the moment
+## of loading (as at the start of a game: 45/30/20 minutes by difficulty); no campaign is under
+## way. Raids of bandits may be a ruler's storming ("conquest"; none before). The difficulty
+## may be "peaceful" (3).
+static func migrate_v29_to_v30(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	var settings: Dictionary = world.get("settings", {})
+	var growth := clampi(int(settings.get("difficulty", GameSettings.NORMAL)), GameSettings.EASY, GameSettings.HARD)
+	var tick := int(state.get("tick", 0))
+	for r: Variant in world.get("rulers", []):
+		var ruler := r as Dictionary
+		ruler["next_war"] = tick + RulerWar.first_ticks(growth)
+		ruler["campaign"] = 0
+		ruler["war_target"] = 0
+	return state
+
+
 static func migrate_v28_to_v29(state: Dictionary) -> Dictionary:
 	var world: Dictionary = state.get("world", {})
 	var settings: Dictionary = world.get("settings", {})

@@ -4009,3 +4009,30 @@ msgstr "%s buys the settlement: %s."
 
 msgid "ui.note.expedition_turned_back"
 msgstr "Someone came first to %s. Your expedition goes home with its people and goods."
+
+msgid "ui.difficulty.peaceful"
+msgstr "Peaceful (rulers never attack the player)"
+
+msgid "ui.note.ruler_marched_player"
+msgstr "%s sends an army against %s! It arrives in about %d min."
+
+msgid "ui.note.ruler_storming"
+msgstr "The army of %s storms the town! Defend the town hall."
+
+msgid "ui.note.province_lost"
+msgstr "%s takes your province: %s."
+
+msgid "ui.note.ruler_took"
+msgstr "%s takes the province of %s."
+
+msgid "ui.note.ruler_defeated"
+msgstr "%s lost all provinces and is out of the game."
+
+msgid "ui.ruler.army"
+msgstr "Army: %d soldiers"
+
+msgid "ui.ruler.campaign"
+msgstr "Marching on: %s"
+
+msgid "ui.ruler.campaign_soon"
+msgstr "First attack in about %d min at the earliest"

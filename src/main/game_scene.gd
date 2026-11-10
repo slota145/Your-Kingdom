@@ -416,7 +416,12 @@ func _note_world_event(event: Dictionary) -> void:
 	if type == &"expedition_ready":
 		_notes.push(tr("ui.note.expedition_ready"))
 		return
+	if type in [&"army_lost", &"army_home"] and StringName(event.get("owner", ProvinceDef.OWNER_PLAYER)) != ProvinceDef.OWNER_PLAYER:
+		return   # (the rulers' and bandits' armies)
 	if type == &"battle_resolved":
+		if StringName(event["attacker"]) != ProvinceDef.OWNER_PLAYER \
+				and StringName(event.get("defender", ProvinceDef.OWNER_PLAYER)) != ProvinceDef.OWNER_PLAYER:
+			return   # (a battle of others)
 		var name_b := _province_name(int(event["province"]))
 		var mine := StringName(event["attacker"]) == ProvinceDef.OWNER_PLAYER
 		var won := bool(event["won"]) == mine
@@ -431,6 +436,27 @@ func _note_world_event(event: Dictionary) -> void:
 		return
 	if type == &"bandit_camp_broken":
 		_notes.push(tr("ui.note.bandit_camp_broken") % int(event["gold"]))
+		return
+	# The rulers at war (M8 part 4).
+	if type == &"province_taken":
+		var taker := StringName(event["owner"])
+		var lost := StringName(event["from"]) == ProvinceDef.OWNER_PLAYER
+		if Rulers.is_ruler(taker):
+			_notes.push(tr("ui.note.province_lost" if lost else "ui.note.ruler_took") % [
+					tr("ruler.%s.name" % taker), _province_name(int(event["province"]))])
+		return
+	if type == &"ruler_defeated":
+		_notes.push(tr("ui.note.ruler_defeated") % tr("ruler.%s.name" % event["owner"]))
+		return
+	if type == &"ruler_marched":
+		if StringName(event["against"]) == ProvinceDef.OWNER_PLAYER:
+			_notes.push(tr("ui.note.ruler_marched_player") % [tr("ruler.%s.name" % event["owner"]),
+					_province_name(int(event["province"])), maxi(ceili(float(event["seconds"]) / 60.0), 1)])
+		return
+	if type == &"ruler_storming":
+		_notes.push(tr("ui.note.ruler_storming") % tr("ruler.%s.name" % event["owner"]))
+		return
+	if type == &"province_captured" and StringName(event.get("owner", ProvinceDef.OWNER_PLAYER)) != ProvinceDef.OWNER_PLAYER:
 		return
 	if type in [&"army_at_settlement", &"army_home", &"army_lost", &"raid_beaten_off", &"province_captured",
 			&"bandit_camp_raised"]:

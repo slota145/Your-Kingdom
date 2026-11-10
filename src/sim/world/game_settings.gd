@@ -19,6 +19,9 @@ const MAX_ISLANDS := 10
 const EASY := 0
 const NORMAL := 1
 const HARD := 2
+## The AI rulers grow as on EASY, arm and fight each other and the neutral settlements, but
+## never attack the player (owner's survey 2026-11-10, instead of truces).
+const PEACEFUL := 3
 
 var scenario: StringName = COLONIZATION
 ## World number (seed) of a generated world; 0 = a hand-made world ([member world_def]).
@@ -37,6 +40,15 @@ var difficulty: int = NORMAL
 var victory: StringName = VICTORY_CONQUEST
 ## Provinces to hold (VICTORY_PROVINCES) or patricians to house (VICTORY_PATRICIANS).
 var victory_target: int = 0
+
+
+## The level the rulers grow, arm and dare by: EASY, NORMAL or HARD (PEACEFUL grows as EASY).
+func growth_level() -> int:
+	return GameSettings.EASY if difficulty == PEACEFUL else clampi(difficulty, EASY, HARD)
+
+
+func is_peaceful() -> bool:
+	return difficulty == PEACEFUL
 
 
 func is_generated() -> bool:
@@ -72,7 +84,7 @@ static func from_dict(d: Dictionary) -> GameSettings:
 	s.islands = int(d.get("islands", 0))
 	s.start = String(d.get("start", ""))
 	s.rulers = clampi(int(d.get("rulers", 2)), 0, 3)
-	s.difficulty = clampi(int(d.get("difficulty", NORMAL)), EASY, HARD)
+	s.difficulty = clampi(int(d.get("difficulty", NORMAL)), EASY, PEACEFUL)
 	s.victory = StringName(String(d.get("victory", VICTORY_CONQUEST)))
 	s.victory_target = int(d.get("target", 0))
 	return s

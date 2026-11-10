@@ -13,6 +13,7 @@ extends Node
 ##   [--m8=armies|choice|field|report] (M8 part 2, made up for the picture: armies and fleets
 ##   anywhere on the map, a battle in the field and a sea battle; the window asking how to fight;
 ##   the live battle on the battlefield after --field_seconds=<s>; the report of a sea battle)
+##   [--m8=war --advance=<minutes>] (M8 part 4: the rulers' armies on their way, a ruler's panel)
 ##   [--m8=rulers|visit --advance=<minutes>] (M8 part 3: a generated world (--seed) run for that
 ##   many minutes; the world map with the first ruler's home selected, or his town entered and
 ##   looked at, with --building=<id> the panel of his first such building open)
@@ -131,6 +132,9 @@ func _process(_delta: float) -> void:
 			_make_routes(sim)
 		if _armies:
 			_make_armies(sim)
+		if _m8 == "war":
+			_war_shot(sim)
+			return
 		if _m8 == "rulers" or _m8 == "visit":
 			if _rulers_shot(sim):
 				return
@@ -234,6 +238,31 @@ func _make_armies(sim: Simulation) -> void:
 			Armies.fort_of(sim.province_state(iron)), iron, ProvinceDef.OWNER_NEUTRAL)
 	sim.world.armies.erase(963)
 	sim.events.drain()
+
+
+## M8 part 4 (--m8=war --advance=<minutes>): the rulers grow and arm for that long; then the
+## world map with the first ruler holding an army on its way selected (his army selected too).
+func _war_shot(sim: Simulation) -> void:
+	var marching := 0
+	for minute: int in _advance + 30:
+		sim.run_ticks(60 * SimClock.TICKS_PER_SECOND)
+		sim.events.drain()
+		if minute + 1 < _advance:
+			continue
+		for army: Army in sim.world.armies.values():
+			if Rulers.is_ruler(army.owner) and army.state == Army.State.MOVING:
+				marching = army.id
+		if marching != 0:
+			break
+	_game.call("_toggle_world_map")
+	var screen := _game.get("_world_map") as WorldMapScreen
+	var army := sim.world.armies.get(marching) as Army
+	if army == null:
+		print("war: no ruler army on its way")
+		return
+	print("war: army %d of %s to %d" % [army.id, army.owner, army.target])
+	screen.select(army.home)
+	screen._canvas.army_selected = army.id
 
 
 ## M8 part 3: the rulers grow for --advance minutes; "visit" enters the first ruler's town

@@ -21,11 +21,13 @@ func _init() -> void:
 			sim.run_ticks(SimClock.TICKS_PER_SECOND)
 			for e: Dictionary in sim.events.drain():
 				if String(e["type"]).begins_with("expedition_") or e["type"] in [&"province_settled",
-						&"settlement_joined", &"route_created"]:
+						&"settlement_joined", &"route_created", &"ruler_marched", &"province_taken", &"battle_resolved",
+						&"ruler_defeated", &"ruler_sallied", &"army_lost", &"sea_battle", &"fleet_docked", &"army_landed"]:
 					print("  %d:%02d %s %s" % [m, k, e["type"], e])
 		if (m + 1) % 5 == 0:
 			for owner: StringName in Rulers.alive(sim.world):
-				var line := "%3d min %s gold %d:" % [m + 1, owner, sim.world.rulers[owner].treasury.gold]
+				var line := "%3d min %s gold %d soldiers %d:" % [m + 1, owner, sim.world.rulers[owner].treasury.gold,
+						RulerWar.strength(sim, owner)]
 				for id: int in Rulers.provinces_of(sim.world, owner):
 					var t := sim.province_state(id)
 					var people := 0
