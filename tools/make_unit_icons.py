@@ -20,18 +20,28 @@ ROW = 0
 BUST = 16
 
 
+def frame_side(height):
+    """Side of a square frame (as CharacterSheet.frame_side): 8 rows of a multiple of 32 px, else 5 rows."""
+    if height % 8 == 0 and (height // 8) % 32 == 0:
+        return height // 8
+    if height % 5 == 0 and height >= 5 * FRAME:
+        return height // 5
+    return FRAME
+
+
 def icon(unit):
     path = os.path.join(SHEETS, unit, "idle.png")
     if not os.path.exists(path):
         return None
     sheet = Image.open(path).convert("RGBA")
-    frame = sheet.crop((0, ROW * FRAME, FRAME, ROW * FRAME + FRAME))
+    side = frame_side(sheet.height)
+    frame = sheet.crop((0, ROW * side, side, ROW * side + side))
     box = frame.getbbox()
     if box is None:
         return None
     # The body's middle column: the centre of the lower half of the figure (weapons held
     # up beside it do not move it much); the head is the topmost pixel near that column.
-    lower = frame.crop((0, (box[1] + box[3]) // 2, FRAME, box[3]))
+    lower = frame.crop((0, (box[1] + box[3]) // 2, side, box[3]))
     lb = lower.getbbox() or box
     cx = (lb[0] + lb[2]) // 2
     px = frame.load()

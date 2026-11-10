@@ -1,0 +1,115 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework, batch 1 (owner 2026-11-10). Game sheets: export_character.py.
+name: spearman
+# a 96 px frame like the halberdier (a level spear thrust does not fit in 64 px); centre 2.51 puts the feet at (48, 90)
+size: 96
+camera: {pitch: 30, scale: 0.05176, center: [0, 2.51, 0]}
+palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
+shadow: null   # the game draws no shadow under characters
+extends: humanoid
+remove: [use.sword, animations.attack]
+
+brief:
+  summary: "Your Kingdom spearman (levy): a steel kettle hat with a wide brim, a quilted tan gambeson, brown hose, a small round shield with a red cross on the left arm, a spear with a small red pennant"
+  head: "face open under the kettle hat's brim"
+  must_keep: ["kettle hat brim reads at 1x", "red cross on the round shield", "spear with a red pennant readable in every direction"]
+  simplify: ["no belt pouch"]
+
+use:
+  - {kit: spear, as: spear, at: wrist_R, with: {length: 1.45, butt: 0.32, head: 0.2, width: 0.06, pitch: spear_pitch, cheat: spear_cheat, splay: spear_splay}}
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+  - {kit: hair, at: head, with: {fringe: 0.3, part: 0.2, locks: 0.4, length: 0.2, volume: 0.9}}
+  - {kit: helmet, as: kettle, at: head, with: {radius: 0.2, low: 0.26, brow: 0.3, opening: 0.3, nasal: false, crest: 0, trim: false}}
+  - {kit: shield, as: shield, at: wrist_L, with: {shape: 1, width: 0.44, rim: 0.03, boss: false}, materials: {wood: shield_face_m}}
+
+ramps:
+  gambeson: ["#1a1208", "#3e2e18", "#64502e", "#8a7448", "#ab9566", "#c9b688"]
+  pale: ["#1a1712", "#4a443a", "#7e7666", "#b4aa94", "#d6cdb6", "#eee8d6"]
+  boot: ["#140a05", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+
+materials:
+  cloth: {ramp: gambeson, bands: [1, 5]}
+  quilt: {ramp: gambeson, bands: [1, 3], outline: false, line: false}
+  trousers: {ramp: trousers}
+  shield_face_m: {ramp: pale, bands: [2, 5], finish: matte}
+  red: {ramp: tunic, bands: [2, 4]}
+  pennant: {ramp: tunic, bands: [2, 5]}
+  boot: {ramp: boot, bands: [1, 4]}
+  leather: {ramp: boot}
+  wood: {ramp: wood}
+  hair: {ramp: hair}
+  ink: {ramp: hair, band: 0}
+  steel: {ramp: steel, finish: metal}
+  gold: {ramp: gold}
+  plume: {ramp: tunic}
+  slit: {ramp: hair, band: 0}
+
+channels:
+  spear_cheat: 0     # the kit's per-direction cheats: off (as the halberdier)
+  spear_splay: -0.2  # at rest the spear stands almost upright, leaning a little forward (0 in the attack)
+  spear_pitch: 0.4   # extra lean of the spear at the wrist (attack: level for the thrust; raised facing the camera)
+
+parts:
+  torso:             # the quilted gambeson
+    material: cloth
+    paint:
+      - material: quilt
+        stripes: {axis: y, period: 0.08, width: 0.015}
+  coat:              # the gambeson's skirt to mid-thigh, quilted, split for walking
+    material: cloth
+    prims:
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.22, -0.02], r: [0.2, 0.22]}
+    cut:
+      - box: {c: [0, -0.22, 0], half: [0.03, 0.14, 0.4]}
+    paint:
+      - material: quilt
+        stripes: {axis: y, period: 0.08, width: 0.015}
+  boot_L:
+    material: boot
+  kettle_brim:       # the kettle hat's wide brim, sloping down
+    material: steel
+    space: kettle
+    prims:
+      - cylinder: {a: [0, 0.235, 0], b: [0, 0.255, 0], r: 0.245}
+  shield_cross:      # the red cross on the round shield
+    material: red
+    space: shield_face
+    priority: 2
+    prims:
+      - box: {c: [0, 0, 0.02], half: [0.032, 0.17, 0.06]}
+      - box: {c: [0, 0, 0.02], half: [0.17, 0.032, 0.06]}
+  pennant:           # a small red pennant under the spearhead, streaming back
+    material: pennant
+    space: spear_shaft
+    priority: 2
+    prims:
+      - extrude: {c: [0, 1.12, 0], rot: [0, -1.5708, 0], depth: 0.02, round: 0.006,
+                  profile: {polygon: [[0.0, 0.06], [-0.2, 0.0], [0.0, -0.06]]}}
+
+animations:
+  idle:
+    frames: 4
+    ms: 250
+    channels:
+      hand_R: "[0.30, 0.12 + 0.01*sin(p - 0.6), 0.16]"
+  walk:
+    channels:
+      hand_R: "[0.30, 0.13, 0.16 + 0.03*cos(p)]"   # the halberd hand stays steady on the march
+  attack:          # lower the spear to level, draw back, thrust, recover (8 frames: the game's work)
+    loop: true
+    keys:
+      - {ms: 120, set: {hand_R: [0.30, 0.13, 0.16]}}
+      - {ms: 130, set: {spear_pitch: 1.6, spear_cheat: 0, spear_splay: -0.8, hand_R: [0.22, 0.28, 0.10], hand_L: [0.10, 0.30, 0.35], twist: -0.15,
+                        foot_L: [0.14, 0, 0.14], foot_R: [0.14, 0, -0.08]}}
+      - {ms: 200, event: windup,
+         set: {spear_pitch: "1.7 - 0.5*pulse(yaw, 0, 70)", spear_cheat: 0, spear_splay: -0.1, hand_R: [0.20, 0.30, -0.08], hand_L: [0.08, 0.32, 0.18], twist: -0.30, lean: -0.06,
+               squash: 0.97, foot_L: [0.14, 0, 0.16], foot_R: [0.14, 0, -0.10]}}
+      - {ms: 60, set: {spear_pitch: "1.8 - 0.5*pulse(yaw, 0, 70)", spear_cheat: 0, spear_splay: -0.5, root: [0, 0, 0.05], hand_R: [0.14, 0.30, 0.30], hand_L: [0.06, 0.32, 0.55],
+                       twist: 0.10, lean: 0.20, squash: 1.03, foot_L: [0.14, 0, 0.26], foot_R: [0.14, 0, -0.12]}}
+      - {ms: 140, event: hit,
+         set: {spear_pitch: "1.75 - 0.5*pulse(yaw, 0, 70)", spear_cheat: 0, spear_splay: -0.55, root: [0, 0, 0.07], hand_R: [0.12, 0.30, 0.34], hand_L: [0.05, 0.32, 0.58],
+               twist: 0.15, lean: 0.25, foot_L: [0.14, 0, 0.28], foot_R: [0.14, 0, -0.12]}}
+      - {ms: 130, tween: 1, set: {spear_pitch: "1.65 - 0.5*pulse(yaw, 0, 70)", spear_cheat: 0, spear_splay: -0.35, root: [0, 0, 0.06], hand_R: [0.20, 0.28, 0.18], hand_L: [0.10, 0.30, 0.40],
+                        twist: 0.0, lean: 0.10, foot_L: [0.14, 0, 0.16], foot_R: [0.14, 0, -0.06]}}
+      - {ms: 140, set: {spear_pitch: 0.85, spear_splay: -0.3, hand_R: [0.28, 0.16, 0.16], foot_L: [0.13, 0, 0.06]}}

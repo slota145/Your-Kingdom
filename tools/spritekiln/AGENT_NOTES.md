@@ -226,6 +226,15 @@ Never call something visual good without looking at the PNG (or reading `review`
   big ellipsoid `shell` cut by planes. QA "idle slides" on rocking props is fine.
 - Kit cheats in work/attack animations: wire `with: {cheat: <channel>}` and zero it per key; direction-dependent
   angles via `pulse(yaw, c, w)` so weapons never point straight at the camera.
-- Long weapons in a 64 px frame clip in thrusts: shorten the shaft or lunge, never change `camera.scale`.
+- Long weapons in a 64 px frame clip in thrusts (about 1 unit of reach each side). Never change `camera.scale`;
+  give the character a bigger square frame instead (`size: 96`, `camera.center [0, 2.51, 0]`: feet at (48, 90));
+  the game reads the frame size from the sheet height (CharacterSheet.frame_side), export_character.py checks the pivot.
+- A kit's bone rotation can be overridden from the spec (`bones: {bow: {rot: "[bow_x, 0, bow_z]"}}`): a rotation
+  about the hand's x alone cannot raise a weapon upright with the arm stretched out. Find angles numerically:
+  `rig.Ctx(spec, env).frame('<bone>')` + `rig.socket_points` per frame (`anim.frames_of`), e.g. the bow's
+  string (socket `bow_nock`) must be nearer the torso than the grip in every frame (owner 2026-11-10).
+- A weapon built from parts (the crossbow): a bone `{parent: torso_rot, at: wrist_R, rot: "[x, y, z]"}` sits at the
+  fist but turns in the body's frame, so a rest pose is one constant; solve the Euler angles per key from target
+  axes (rig.euler is Ry @ Rz @ Rx; keep one branch, e.g. z near -pi). Script: tools/spritekiln/xbow_angles.py.
 - Export scripts handle pivot offsets and symmetric cropping (game mirrors houses about the image width).
 - After `tools/generate_art.gd`, restore SpriteKiln/PixelLab buildings: `git checkout assets/buildings/hut/` etc.

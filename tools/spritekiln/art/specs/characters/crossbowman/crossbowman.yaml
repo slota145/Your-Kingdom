@@ -1,0 +1,142 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# Soldier rework, batch 1 (owner 2026-11-10, reference: a medieval crossbowman). Game sheets: export_character.py.
+name: crossbowman
+camera: {pitch: 30, scale: 0.05176, center: [0, 1.554, 0]}   # feet at (32, 58) of the 64 px frame
+palette: [../../palettes/kingdom.yaml, ../../palettes/town.yaml]
+shadow: null   # the game draws no shadow under characters
+extends: humanoid
+remove: [use.sword, animations.attack]
+
+brief:
+  summary: "Your Kingdom crossbowman: a steel kettle hat, a quilted tan coat, red hose, a bolt bag on the right hip, a crossbow with a bent steel prod"
+  head: "face open under the kettle hat's brim"
+  must_keep: ["crossbow held level when aiming", "the prod bent forward, the string behind it", "kettle hat brim"]
+  simplify: ["no crank: spanned by hand with a foot in the stirrup"]
+
+use:
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+  - {kit: hair, at: head, with: {fringe: 0.3, part: 0.2, locks: 0.4, length: 0.2, volume: 0.9}}
+  - {kit: helmet, as: kettle, at: head, with: {radius: 0.2, low: 0.26, brow: 0.3, opening: 0.3, nasal: false, crest: 0, trim: false}}
+
+ramps:
+  coat_r: ["#170f08", "#3a2814", "#5e4426", "#82623a", "#a2804f", "#c0a06c"]
+  boot: ["#140a05", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+
+materials:
+  cloth: {ramp: coat_r, bands: [1, 5]}
+  quilt: {ramp: coat_r, bands: [1, 3], outline: false, line: false}
+  trousers: {ramp: tunic}
+  boot: {ramp: boot, bands: [1, 4]}
+  leather: {ramp: boot}
+  wood: {ramp: wood, finish: matte, bands: [1, 3]}   # darker than the tan coat
+  string: {ramp: bone, bands: [3, 4], line: false}
+  hair: {ramp: hair}
+  ink: {ramp: hair, band: 0}
+  steel: {ramp: steel, finish: metal}
+  gold: {ramp: gold}
+  plume: {ramp: tunic}
+  slit: {ramp: hair, band: 0}
+
+channels:
+  xb_x: 1.0          # the crossbow at the right fist (bone xbow): its stock runs along y, the prod across x, the bolt
+  xb_y: 0            # groove on +z; at rest it points down and forward, aimed it lies level at the cheek
+  xb_z: -3.14        # (Euler turns in the body's frame, solved per key: tools/spritekiln/xbow_angles.py)
+  spanned: 1         # 1: the string drawn back to the nut (a V), 0: loosed, straight between the prod's tips
+  bolt: 0            # 1: a bolt in the groove
+
+bones:
+  xbow: {parent: torso_rot, at: wrist_R, rot: "[xb_x, xb_y, xb_z]"}   # at the fist, turned in the body's frame
+
+parts:
+  torso:             # the quilted coat
+    material: cloth
+    paint:
+      - material: quilt
+        stripes: {axis: y, period: 0.08, width: 0.015}
+  coat:              # the coat's skirt to mid-thigh, split for walking
+    material: cloth
+    prims:
+      - cone: {a: [0, 0.05, -0.01], b: [0, -0.22, -0.02], r: [0.2, 0.22]}
+    cut:
+      - box: {c: [0, -0.22, 0], half: [0.03, 0.14, 0.4]}
+  leg_L: {material: trousers}
+  boot_L:
+    material: boot
+  kettle_brim:       # the kettle hat's wide brim
+    material: steel
+    space: kettle
+    prims:
+      - cylinder: {a: [0, 0.235, 0], b: [0, 0.255, 0], r: 0.245}
+  bolt_bag:          # a leather bag of bolts on the right hip, feathers showing
+    material: leather
+    space: pelvis
+    prims:
+      - box: {c: [-0.21, 0.0, -0.04], half: [0.05, 0.1, 0.07], round: 0.02}
+  bolt_bag_flights:
+    material: string
+    space: pelvis
+    prims:
+      - box: {c: [-0.21, 0.12, -0.04], half: [0.035, 0.03, 0.05]}
+  xb_stock:
+    material: wood
+    space: xbow
+    prims:
+      - box: {c: [0, 0.2, 0], half: [0.035, 0.38, 0.04], round: 0.01}
+  xb_prod:           # the steel bow, its tips bent back towards the archer
+    material: steel
+    space: xbow
+    priority: 2
+    prims:
+      - tube: {pts: [[-0.32, 0.44, 0], [-0.17, 0.52, 0], [0, 0.55, 0], [0.17, 0.52, 0], [0.32, 0.44, 0]], r: [0.026, 0.018]}
+  xb_stirrup:        # the foot loop at the front
+    material: steel
+    space: xbow
+    prims:
+      - tube: {pts: [[-0.05, 0.56, 0], [-0.07, 0.63, 0], [0, 0.67, 0], [0.07, 0.63, 0], [0.05, 0.56, 0]], r: 0.013}
+  xb_string_loose:
+    material: string
+    space: xbow
+    when: "spanned < 0.5"
+    priority: 2
+    min_cover: 1
+    prims:
+      - cylinder: {a: [-0.315, 0.44, 0], b: [0.315, 0.44, 0], r: 0.011}
+  xb_string:
+    material: string
+    space: xbow
+    when: "spanned >= 0.5"
+    priority: 2
+    min_cover: 1
+    prims:
+      - cylinder: {a: [-0.315, 0.44, 0], b: [0, 0.18, 0.035], r: 0.011}
+      - cylinder: {a: [0.315, 0.44, 0], b: [0, 0.18, 0.035], r: 0.011}
+  xb_bolt:
+    material: steel
+    space: xbow
+    when: "bolt > 0.5"
+    priority: 2
+    min_cover: 1
+    prims:
+      - cylinder: {a: [0, 0.18, 0.05], b: [0, 0.62, 0.05], r: 0.015}
+
+animations:
+  idle:
+    frames: 4
+    ms: 250
+  walk: {}
+  attack:            # aim, hold, shoot, lower, foot in the stirrup and span, load a bolt, raise (8 frames: the game's work)
+    loop: true
+    keys:
+      - {ms: 140, set: {xb_x: 1.66, xb_y: 0.25, bolt: 1, hand_R: [0.08, 0.54, 0.10], hand_L: [0.02, 0.50, 0.42], twist: -0.25, head_pitch: 0.05}}
+      - {ms: 240, event: windup, set: {xb_x: 1.66, xb_y: 0.3, bolt: 1, hand_R: [0.08, 0.54, 0.08], hand_L: [0.02, 0.50, 0.40], twist: -0.3, head_pitch: 0.08,
+                                        foot_L: [0.14, 0, 0.12], foot_R: [0.14, 0, -0.08]}}
+      - {ms: 100, event: hit, set: {xb_x: 1.67, xb_y: 0.3, bolt: 0, spanned: 0, hand_R: [0.08, 0.56, 0.02], hand_L: [0.02, 0.53, 0.34], twist: -0.3, lean: -0.05,
+                                    foot_L: [0.14, 0, 0.12], foot_R: [0.14, 0, -0.08]}}
+      - {ms: 150, set: {xb_x: 0.99, xb_y: 0.0, spanned: 0, hand_R: [0.16, 0.20, 0.30], hand_L: [0.20, 0.18, 0.30], lean: 0.2}}
+      - {ms: 200, set: {xb_x: -0.71, xb_y: -3.14, spanned: 0, root: [0, -0.06, 0], squash: 0.94, lean: 0.4, hand_R: [0.10, 0.06, 0.34], hand_L: [-0.02, 0.06, 0.32],
+                        foot_L: [0.13, 0.12, 0.30], pitch_foot_L: 0.3}}
+      - {ms: 200, set: {xb_x: -0.56, xb_y: -3.14, spanned: 1, root: [0, -0.04, 0], squash: 0.96, lean: 0.25, hand_R: [0.10, 0.30, 0.20], hand_L: [-0.02, 0.32, 0.18],
+                        foot_L: [0.13, 0.12, 0.30], pitch_foot_L: 0.3}}
+      - {ms: 160, set: {xb_x: 1.47, xb_y: 0.0, bolt: 1, lean: 0.1, hand_R: [0.18, 0.30, 0.26], hand_L: [0.12, 0.36, 0.30]}}
+      - {ms: 140, set: {xb_x: 1.66, xb_y: 0.15, bolt: 1, hand_R: [0.12, 0.42, 0.16], hand_L: [0.05, 0.40, 0.34], twist: -0.15}}
