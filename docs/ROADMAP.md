@@ -26,7 +26,7 @@ M0 Fundament
                 │                        └─► M7 Wojsko, mury i oblężenia
                 │                             └─► B1 Most przez rzekę i łagodniejszy brzeg
                 │                                  └─► W1 Nowe wybrzeże ──► J1 Nowe jednostki i okręty
-                │                                       └─► M8 Przeciwnicy i sandbox ──► M10 Wersja 1.0
+                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► M10 Wersja 1.0
                 └─► M9 Produkcja grafik (równolegle od M4, partiami)
 Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 ```
@@ -1253,6 +1253,60 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Ryzyko:** część 4 jest duża (wojna władców, trudności i 3 scenariusze); jeśli się rozrośnie, scenariusze trafią do osobnej części 5 (ankieta). **Rozstrzygnięte 2026-11-10: scenariusze w części 5.**
 
 **Do ustalenia w trakcie (ankiety):** szczegóły oblężenia miasta gracza przez władcę (część 3), herby i kolory władców, czy władcy mogą zawierać rozejmy (dyplomacja jest [PÓŹNIEJ]).
+
+---
+
+## Z1 — Zagrody ze zwierzętami
+
+> Wybrany w ankiecie 2026-11-10, po M8 (ocena M8 odłożona: właściciel nie ma laptopa). Źródło: IDEAS, „Pola przy pasiece i owczarni”, podpunkt „Przebudowa hodowli zwierząt”. **Plan do akceptacji; decyzje z ankiety niżej.**
+
+**Cel:** hodowla zwierząt staje się widoczna. Chlew, owczarnia i stadnina dostają opcję „Zagroda”: gracz stawia kratki zagrody w zasięgu budynku tak samo jak pola przy farmie. Połączone kratki jednego budynku to jedna zagroda z płotem na obwodzie i furtką. Każda kratka mieści 2 zwierzęta, więc wielkość stada to decyzja gracza. Zwierzęta chodzą po zagrodzie z animacją.
+
+**Zasady (z ankiety 2026-11-10 i oceny w IDEAS):**
+- **Mechanizm raz, użyty trzy razy:** świnie (chlew), owce (owczarnia), konie (stadnina). Różnią się tylko danymi budynku (zwierzę, czas rozmnażania, ile kratek najwyżej).
+- **Pojemność stada = liczba kratek × 2.** Budynek bez kratek nie trzyma zwierząt.
+- **Symulacja liczy tylko sztuki** w budynku (jak dziś „żywy magazyn”), a to, która kratka ma które zwierzę, i spacer zwierząt robi sam widok (bez szukania drogi, bez zapisu). 50–100 zwierząt prawie nic nie kosztuje.
+- **Płot i furtka wynikają z kratek** (obwód zagrody, furtka na kratce najbliżej wejścia budynku), więc nie trzeba ich zapisywać.
+- **Mniejszy chlew** bez wbudowanej zagrody (2×2 zamiast 3×3, z podwórkiem jak inne warsztaty), bo zagroda jest teraz z kratek.
+- **Praca widoczna:** świniarz, pasterz i stajenny chodzą do zagrody (karmienie przy korycie, strzyżenie owiec, czesanie koni) zamiast stać przy budynku.
+
+**Części (ocena właściciela po każdej):**
+- **Część 1: zagrody i świnie.** Kratki zagrody w danych budynku (`max_pens`, zasięg jak pola), komendy „postaw kratkę” i „usuń kratkę” (te same narzędzia co pola, osobny kolor podglądu), łączenie w zagrody (kratki sąsiadujące bokiem), obwód z płotem i furtka; pojemność stada z kratek; rozmnażanie liczone od stada; **suwak „ile zostawić do rozmnażania”** w panelu (zamiast stałych 2 sztuk); para świń na start; kupiec dalej sprzedaje świnie; mniejszy chlew; świniarz pracuje w zagrodzie; świnie chodzą po zagrodzie (świnia ze SpriteKiln jest gotowa: `idle`, `walk`, `root`); płot łączony jak mury i furtka ze SpriteKiln (płot z żerdzi na słupkach, 8 kierunków, narożniki; furtka otwiera się, gdy ktoś przechodzi). Tryb uproszczony (prowincja nieoglądana) liczy stado tak samo. **Zapis v32** z migracją v31 → v32 i fixturą, test.
+- **Część 2: owce i konie.** Owczarnia ze stadem owiec: para owiec na start, wełna tym szybciej, im więcej owiec, pasterz strzyże owce w zagrodzie; stadnina z zagrodą dla koni (start z parą jak dziś, tylko z pastwiskami); owca ze SpriteKiln (nowa: `idle`, `walk`, `graze`) i koń bez jeźdźca z bazy konnych (`mounted.yaml`), prowadzony koń i owca w tym samym stylu. Kupiec sprzedaje też owce i konie (panel targu).
+- **Część 3: pasieka z ulami.** Ule stawiane jak kratki w zasięgu pasieki (limit do ustalenia przy realizacji, np. 8), miód zależy od liczby uli, pszczelarz chodzi od ula do ula; ul ze SpriteKiln (słomiany kosz albo skrzynka, do decyzji przy grafice), pszczoły jako mała animacja w widoku. Zapis bez zmiany formatu, jeśli zmieści się w kratkach z części 1.
+- **Część 4: automatyczni gracze i władcy.** Automatyczny gracz z testów (`slice_bot`, `auto_player`), planista władców (`RulerPlanner`) i osady neutralne (`NeutralTown`) stawiają kratki zagród przy hodowlach; duże miasto (`big_city`) z zagrodami; pomiar ticku z 100 zwierzętami w widoku; długie testy. Zagrody i ule od początku gry; jeśli część wyjdzie mała, łączymy ją z częścią 3.
+
+**Testy:**
+- jednostkowe: łączenie kratek w zagrody (kształt L, dwie osobne zagrody jednego budynku, kratki dwóch budynków obok siebie się nie łączą), obwód płotu i miejsce furtki, kratka tylko w zasięgu i na wolnym gruncie, usunięcie kratki zmniejsza pojemność, a nadmiar zostaje i jest brany najpierw, rozmnażanie do pojemności, suwak rezerwy (rzeźnik i kupiec nie biorą zwierząt poniżej progu),
+- scenariuszowe: łańcuch mięsa z zagrodą (kupno świń, rozmnażanie, rzeźnik), wełna szybsza przy większym stadzie, miód z uli, konie dla lekkiej jazdy, kupno owiec i koni u kupca, tryb uproszczony liczy jak szczegółowy, zapis i wczytanie, migracja starego zapisu (v31 → v32) bez utraty zwierząt,
+- sortowanie: płot, furtka i zwierzęta przed i za płotem (`test_sorting.gd`),
+- długie: automatyczny gracz dochodzi do patrycjuszy w limicie i ma mięso i wełnę z zagród; władcy stawiają zagrody; 2 godziny bez zakleszczeń.
+
+**Grafiki (SpriteKiln, ART_SPEC §10.20):** owca (8 kierunków), koń bez jeźdźca (8 kierunków, z `mounted.yaml`), świnia (gotowa, eksport do gry), płot łączony (słupek, odcinki w 4 kierunkach siatki, jak mury: ART_SPEC §5), furtka (zamknięta i otwarta), mniejszy chlew 2×2 (z koszem paszy), ul (część 3). Podłoże zagrody: wydeptana trawa (kod, jak ziemia pola).
+
+**DoD:**
+- [ ] Chlew, owczarnia i stadnina stawiają kratki zagrody jak pola; połączone kratki jednego budynku to jedna zagroda z płotem na obwodzie i furtką.
+- [ ] Pojemność stada = 2 × liczba kratek; stado rośnie do pojemności, a suwak chroni zwierzęta do rozmnażania.
+- [ ] Zwierzęta chodzą po zagrodzie z animacją (świnie, owce, konie); pracownik pracuje w zagrodzie.
+- [ ] Mniejszy chlew bez wbudowanej zagrody; para zwierząt na start w każdej hodowli; kupiec sprzedaje świnie, owce i konie.
+- [ ] Wełna tym szybsza, im więcej owiec; usunięcie kratek nie zabija zwierząt.
+- [ ] Pasieka stawia ule jak kratki, miód zależy od liczby uli, pszczelarz chodzi od ula do ula.
+- [ ] Stare zapisy (v31) wczytują się po migracji: stary chlew staje się mały, a gra sama stawia kratki dla całego stada; bez utraty zwierząt, fixtura v32.
+- [ ] Automatyczni gracze, władcy i osady stawiają zagrody i ule; automatyczny gracz dalej dochodzi do patrycjuszy w limicie.
+- [ ] Testy szybkie i długie przechodzą; UI w PL i EN.
+- [ ] **Twoja ocena gry** po każdej części.
+
+**Decyzje (ankieta 2026-11-10):**
+- **Pierwsze zwierzęta: para na start w każdej hodowli** (chlew, owczarnia, stadnina): 2 zwierzęta pojawiają się, gdy stanie pierwsza kratka zagrody.
+- **Kupiec zostaje jako dokupienie:** sprzedaje świnie (30 zł), a teraz też owce i konie (ceny do ustalenia przy realizacji), żeby stado rosło szybciej.
+- **Suwak „ile zostawić do rozmnażania”:** od 2 do pojemności zagrody, domyślnie 2. Rzeźnik, kupiec i koszary nie biorą zwierząt poniżej progu.
+- **Wełna: więcej owiec, szybciej.** Pasterz strzyże owce w zagrodzie; cykl jest tym krótszy, im więcej owiec (przy 2 owcach wolniej niż dziś, przy pełnej zagrodzie szybciej). Owce nie idą na mięso.
+- **Limit kratek:** chlew i owczarnia do 12 (24 zwierzęta), stadnina do 6 (12 koni).
+- **Usunięcie kratek przy dużym stadzie: nadmiar zostaje.** Żadne zwierzę nie znika; stado przestaje rosnąć, a rzeźnik, kupiec i koszary biorą najpierw nadmiar.
+- **Stare zapisy: gra sama stawia zagrodę.** Migracja v31 → v32 zmniejsza stary chlew do 2×2, a zwolnione kafle i wolne miejsce obok zamienia w kratki zagrody dla całego stada (tak samo stadnina; owczarnia dostaje parę owiec i kratki). Żadne zwierzę nie przepada.
+- **Pasieka z ulami: tak, jako dodatkowa część** (ule stawiane jak kratki, miód zależy od liczby uli, pszczelarz chodzi od ula do ula).
+
+**Poza zakresem:** owce na mięso, zwierzęta podchodzące do płotu i zbiegające się do koryta (pomysł z IDEAS, bez decyzji), mleko, ser i inne nowe towary ze zwierząt, krowy i kozy, choroby zwierząt, zagrody stawiane bez budynku.
 
 ---
 
