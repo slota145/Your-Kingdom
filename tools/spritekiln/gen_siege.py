@@ -105,14 +105,14 @@ def ram(name, enemy=False):
     EX, EY = 0.95, 1.2  # eave: half width, height
     RY = 2.55          # ridge height
     s["channels"] = {"wheel": 0.0, "bob": 0.0, "logz": 0.0, "logp": 0.0, "lunge": 0.0}
-    men = [(x, z) for z in (-0.62, 0.0, 0.62) for x in (0.5, -0.5)]
+    men = [(x, z) for z in (-0.5, 0.0, 0.5) for x in (0.5, -0.5)]
     for i in range(len(men)):
         s["channels"][f"sw{i}"] = 0.0
     bones = {"cart": {"parent": "root", "pos": "[0, bob, 0]"},
              "log": {"parent": "cart", "pos": "[0, 0.9, logz]", "rot": "[logp, 0, 0]"}}
-    for tag, z in (("f", 1.12), ("b", -1.12)):
+    for tag, z in (("f", 1.02), ("b", -1.02)):
         for sx, sd in ((1, "l"), (-1, "r")):
-            bones[f"wheel_{tag}{sd}"] = {"parent": "cart", "pos": [sx * 1.0, 0.34, z], "rot": "[wheel, 0, 0]"}
+            bones[f"wheel_{tag}{sd}"] = {"parent": "cart", "pos": [sx * 0.93, 0.34, z], "rot": "[wheel, 0, 0]"}
     for i, (x, z) in enumerate(men):
         bones[f"man{i}"] = {"parent": "root", "pos": f"[{x}, 0, {z} + lunge]"}
         for leg, dx, sgn in (("a", 0.075, 1), ("b", -0.075, -1)):
@@ -126,7 +126,7 @@ def ram(name, enemy=False):
     p["posts"] = {"material": "beam", "space": "cart", "prims": [
         {"box": {"c": [sx * 0.9, 0.8, sz * (HL - 0.08)], "half": [0.055, 0.4, 0.055]}} for sx in (1, -1) for sz in (1, -1)]}
     p["axles"] = {"material": "beam", "space": "cart", "prims": [
-        {"cylinder": {"a": [-1.0, 0.34, z], "b": [1.0, 0.34, z], "r": 0.06}} for z in (1.12, -1.12)]}
+        {"cylinder": {"a": [-0.93, 0.34, z], "b": [0.93, 0.34, z], "r": 0.06}} for z in (1.02, -1.02)]}
     for b in bones:
         if b.startswith("wheel_"):
             wheel_parts(s, b, b, 0.32)

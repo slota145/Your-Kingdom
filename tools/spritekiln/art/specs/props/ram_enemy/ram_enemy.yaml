@@ -80,21 +80,21 @@ bones:
   log: {parent: cart, pos: '[0, 0.9, logz]', rot: '[logp, 0, 0]'}
   wheel_fl:
     parent: cart
-    pos: [1.0, 0.34, 1.12]
+    pos: [0.93, 0.34, 1.02]
     rot: '[wheel, 0, 0]'
   wheel_fr:
     parent: cart
-    pos: [-1.0, 0.34, 1.12]
+    pos: [-0.93, 0.34, 1.02]
     rot: '[wheel, 0, 0]'
   wheel_bl:
     parent: cart
-    pos: [1.0, 0.34, -1.12]
+    pos: [0.93, 0.34, -1.02]
     rot: '[wheel, 0, 0]'
   wheel_br:
     parent: cart
-    pos: [-1.0, 0.34, -1.12]
+    pos: [-0.93, 0.34, -1.02]
     rot: '[wheel, 0, 0]'
-  man0: {parent: root, pos: '[0.5, 0, -0.62 + lunge]'}
+  man0: {parent: root, pos: '[0.5, 0, -0.5 + lunge]'}
   leg0a:
     parent: man0
     pos: [0.075, 0.9, 0]
@@ -103,7 +103,7 @@ bones:
     parent: man0
     pos: [-0.075, 0.9, 0]
     rot: '[-1*sw0, 0, 0]'
-  man1: {parent: root, pos: '[-0.5, 0, -0.62 + lunge]'}
+  man1: {parent: root, pos: '[-0.5, 0, -0.5 + lunge]'}
   leg1a:
     parent: man1
     pos: [0.075, 0.9, 0]
@@ -130,7 +130,7 @@ bones:
     parent: man3
     pos: [-0.075, 0.9, 0]
     rot: '[-1*sw3, 0, 0]'
-  man4: {parent: root, pos: '[0.5, 0, 0.62 + lunge]'}
+  man4: {parent: root, pos: '[0.5, 0, 0.5 + lunge]'}
   leg4a:
     parent: man4
     pos: [0.075, 0.9, 0]
@@ -139,7 +139,7 @@ bones:
     parent: man4
     pos: [-0.075, 0.9, 0]
     rot: '[-1*sw4, 0, 0]'
-  man5: {parent: root, pos: '[-0.5, 0, 0.62 + lunge]'}
+  man5: {parent: root, pos: '[-0.5, 0, 0.5 + lunge]'}
   leg5a:
     parent: man5
     pos: [0.075, 0.9, 0]
@@ -186,12 +186,12 @@ parts:
     space: cart
     prims:
     - cylinder:
-        a: [-1.0, 0.34, 1.12]
-        b: [1.0, 0.34, 1.12]
+        a: [-0.93, 0.34, 1.02]
+        b: [0.93, 0.34, 1.02]
         r: 0.06
     - cylinder:
-        a: [-1.0, 0.34, -1.12]
-        b: [1.0, 0.34, -1.12]
+        a: [-0.93, 0.34, -1.02]
+        b: [0.93, 0.34, -1.02]
         r: 0.06
   wheel_fl_rim:
     material: beam

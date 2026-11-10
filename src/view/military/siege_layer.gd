@@ -1,8 +1,8 @@
 class_name SiegeLayer
 extends Node2D
-## Siege engines in the world (M7 part 2), drawn in code: rams (a shed of planks under wet
-## hides on four wheels, an iron-shod log swinging inside, the crew's legs under it) and
-## ladders leaning on walls. Child of the y-sorted world; every engine sorts at its foot.
+## Siege engines in the world (M7 part 2): rams and ballistas from SpriteKiln sheets (8
+## directions, owner's survey 2026-11-10) and ladders leaning on walls, drawn in code. Child of
+## the y-sorted world; every engine sorts at its foot.
 
 var province: ProvinceSim
 var _rams: Dictionary[int, _Ram] = {}
@@ -28,7 +28,7 @@ func update_view(alpha: float, time: float) -> void:
 				ballista = _Ballista.new()
 				_ballistas[agent.id] = ballista
 				add_child(ballista)
-			ballista.position = IsoMath.grid_to_screen(agent.prev_pos.lerp(agent.pos, alpha))
+			ballista.position = IsoMath.grid_to_screen(agent.prev_pos.lerp(agent.pos, alpha)).round()
 			ballista.facing = agent.facing
 			ballista.walking = agent.activity == &"walk"
 			ballista.loaded = agent.combat == null or agent.combat.cooldown <= SimClock.seconds_to_ticks(2.0)
@@ -45,7 +45,7 @@ func update_view(alpha: float, time: float) -> void:
 			_rams[agent.id] = ram
 			add_child(ram)
 		var at := agent.prev_pos.lerp(agent.pos, alpha)
-		ram.position = IsoMath.grid_to_screen(at)
+		ram.position = IsoMath.grid_to_screen(at).round()
 		ram.facing = agent.facing
 		ram.walking = agent.activity == &"walk"
 		ram.striking = agent.activity == &"drill"
@@ -76,16 +76,27 @@ func update_view(alpha: float, time: float) -> void:
 			add_child(ladder)
 
 
-## A battering ram.
+## Draws frame [param frame] of a SpriteKiln sheet facing [param facing] (IsoMath.Dir) with its
+## pivot at [param at] (ART_SPEC §10.20: 8 rows, nothing mirrored).
+static func _draw_sheet(item: CanvasItem, sheet: CharacterSheet, facing: int, frame: int, at: Vector2) -> void:
+	if sheet == null or sheet.texture == null:
+		return
+	var row := sheet.row_for(facing)
+	var side := Vector2(sheet.frame_size)
+	var src := Rect2(Vector2(posmod(frame, sheet.frames), row.x) * side, side)
+	item.draw_texture_rect_region(sheet.texture, Rect2(at - Vector2(sheet.foot), side), src)
+
+
+## A battering ram (SpriteKiln, owner's survey 2026-11-10): a shed of planks under wet hides on
+## four wheels, an iron-headed log hung inside, the legs of six men under the eaves. Sheets
+## characters/ram (ram_enemy: a black pennon) with idle, walk and work (the blow).
 class _Ram:
 	extends Node2D
-	const HIDE := Color(0.47, 0.36, 0.26)
-	const HIDE_DARK := Color(0.32, 0.24, 0.17)
-	const WOOD := Color(0.5, 0.36, 0.22)
-	const WOOD_DARK := Color(0.3, 0.21, 0.13)
-	const IRON := Color(0.36, 0.36, 0.4)
-	const LEG := Color(0.33, 0.27, 0.22)
-	const OUTLINE := Color(0.14, 0.1, 0.07)
+	## Frames per second of rolling: a wheel's quarter turn (its spokes look the same again)
+	## per 8 frames at the ram's pace.
+	const WALK_FPS := 20.0
+	## One blow of the log: drawn back, then swung forward (SiegeLayer plays it while drilling).
+	const STRIKE_SECONDS := 1.5
 	var facing: int = 0
 	var walking: bool = false
 	var striking: bool = false
@@ -93,82 +104,32 @@ class _Ram:
 	var time: float = 0.0
 
 	func _draw() -> void:
-		var step := Vector2(IsoMath.DIR_GRID_STEP[facing])
-		var along := step.normalized()
-		var across := Vector2(-along.y, along.x)
-		var p := func(u: float, v: float, z: float) -> Vector2:
-			return IsoMath.grid_to_screen(along * u + across * v) - Vector2(0, z)
-		var half_l := 0.7
-		var half_w := 0.36
-		var h := 22.0
-		var ridge := 36.0
-		# Wheels and the crew's legs below.
-		for u: float in [-0.5, 0.5]:
-			for v: float in [-half_w, half_w]:
-				var c: Vector2 = p.call(u, v * 1.05, 5.0)
-				draw_circle(c, 5.0, WOOD_DARK)
-				draw_circle(c, 3.5, WOOD)
-				draw_circle(c, 1.2, IRON)
-		for k: int in 4:
-			var u := -0.45 + 0.3 * k
-			var swing := sin(time * 8.0 + k) * 2.0 if walking else 0.0
-			for v: float in [-0.12, 0.12]:
-				var foot: Vector2 = p.call(u + swing * 0.02, v, 0.0)
-				draw_line(foot, foot - Vector2(0, 9), LEG, 2.0)
-				draw_line(foot, foot + Vector2(1.5, 0), OUTLINE, 1.0)
-		# The log inside, swung forward while striking.
-		var reach := 0.25 * (0.5 - 0.5 * cos(time * TAU / 1.5)) if striking else 0.0
-		var log_a: Vector2 = p.call(-0.6 + reach, 0.0, 13.0)
-		var log_b: Vector2 = p.call(0.85 + reach, 0.0, 13.0)
-		draw_line(log_a, log_b, WOOD_DARK, 6.0)
-		draw_line(log_a, log_b, WOOD, 4.0)
-		draw_line(log_b, p.call(0.98 + reach, 0.0, 13.0), IRON, 7.0)
-		# The shed: two sloping roofs of hides over a frame, ends of planks.
-		var corners := [p.call(-half_l, -half_w, h), p.call(half_l, -half_w, h),
-				p.call(half_l, half_w, h), p.call(-half_l, half_w, h)]
-		var ridge_a: Vector2 = p.call(-half_l, 0.0, ridge)
-		var ridge_b: Vector2 = p.call(half_l, 0.0, ridge)
-		var roof_l := PackedVector2Array([corners[0], corners[1], ridge_b, ridge_a])
-		var roof_r := PackedVector2Array([corners[3], corners[2], ridge_b, ridge_a])
-		var lit := across.dot(Vector2(1, 1)) < 0.0
-		for side: int in 2:
-			var roof := roof_l if side == 0 else roof_r
-			var bright := (side == 0) == lit
-			draw_colored_polygon(roof, HIDE if bright else HIDE_DARK)
-			for k: int in range(1, 5):
-				var t := k / 5.0
-				draw_line(roof[0].lerp(roof[1], t), roof[3].lerp(roof[2], t), (HIDE if bright else HIDE_DARK).darkened(0.25), 1.0)
-			draw_polyline(roof + PackedVector2Array([roof[0]]), OUTLINE, 1.0)
-		# Gable ends of planks at both ends of the ridge (the front one drawn last).
-		for u: float in [-half_l, half_l]:
-			var gable := PackedVector2Array([p.call(u, -half_w, h), p.call(u, half_w, h), p.call(u, 0.0, ridge)])
-			draw_colored_polygon(gable, WOOD)
-			draw_polyline(gable + PackedVector2Array([gable[0]]), OUTLINE, 1.0)
-		# Posts at the corners down to the wheels.
-		for k: int in 4:
-			var top: Vector2 = corners[k]
-			draw_line(top, top + Vector2(0, h - 6.0), WOOD_DARK, 2.0)
-		# A small pennon: red for the kingdom, black for bandits.
-		var pole: Vector2 = ridge_b
-		draw_line(pole, pole - Vector2(0, 10), WOOD_DARK, 1.0)
-		draw_colored_polygon(PackedVector2Array([pole - Vector2(0, 10), pole - Vector2(-7, 8),
-				pole - Vector2(0, 6)]), Color(0.15, 0.13, 0.12) if hostile else Color(0.7, 0.12, 0.1))
+		var visual := CharacterVisual.get_visual(&"ram_enemy" if hostile else &"ram")
+		var sheet: CharacterSheet
+		var frame := 0
+		if walking:
+			sheet = visual.get_sheet(&"walk")
+			frame = int(time * WALK_FPS)
+		elif striking:
+			sheet = visual.get_sheet(&"work")
+			frame = int(fposmod(time, STRIKE_SECONDS) / STRIKE_SECONDS * sheet.frames)
+		else:
+			sheet = visual.get_sheet(&"idle")
+		SiegeLayer._draw_sheet(self, sheet, facing, frame, Vector2.ZERO)
 
 
-## A ballista (J1 part 2, drawn in code like the ram): a great crossbow on a wheeled frame,
-## its arms of wood bound with iron, the string drawn back to the winch while loaded and
-## straight after the shot, a bolt in the groove; two crewmen at the winch behind it, pushing
-## while it moves.
+## A ballista (SpriteKiln, owner's survey 2026-11-10): a great crossbow on a two-wheeled cart,
+## drawn with a bolt in the groove while loaded, the arms and the string forward after the shot
+## while the winch turns; two crewmen (characters/siege_crew) behind it push it while it moves
+## and wind the winch after a shot. Sheets characters/ballista (ballista_enemy: a black pennon).
 class _Ballista:
 	extends Node2D
-	const WOOD := Color(0.5, 0.36, 0.22)
-	const WOOD_DARK := Color(0.3, 0.21, 0.13)
-	const IRON := Color(0.36, 0.36, 0.4)
-	const ROPE := Color(0.88, 0.84, 0.72)
-	const SHIRT := Color(0.66, 0.58, 0.44)
-	const LEG := Color(0.33, 0.27, 0.22)
-	const SKIN := Color(0.86, 0.66, 0.5)
-	const OUTLINE := Color(0.14, 0.1, 0.07)
+	## Frames per second of rolling: a sixth of a wheel's turn per 8 frames at its pace.
+	const WALK_FPS := 20.0
+	const RELOAD_FPS := 7.0
+	## Where the crew stand, in tiles: behind the winch, either side of the stock.
+	const CREW_BACK := 0.85
+	const CREW_SIDE := 0.2
 	var facing: int = 0
 	var walking: bool = false
 	var loaded: bool = true
@@ -176,91 +137,38 @@ class _Ballista:
 	var time: float = 0.0
 
 	func _draw() -> void:
-		var step := Vector2(IsoMath.DIR_GRID_STEP[facing])
-		var along := step.normalized()
+		var visual := CharacterVisual.get_visual(&"ballista_enemy" if hostile else &"ballista")
+		var crew := CharacterVisual.get_visual(&"siege_crew")
+		var sheet: CharacterSheet
+		var crew_sheet: CharacterSheet
+		var frame := 0
+		var crew_frame := 0
+		if walking:
+			sheet = visual.get_sheet(&"walk")
+			frame = int(time * WALK_FPS)
+			crew_sheet = crew.get_sheet(&"walk")
+		elif not loaded:
+			sheet = visual.get_sheet(&"work")
+			frame = int(time * RELOAD_FPS)
+			crew_sheet = crew.get_sheet(&"work")
+		else:
+			sheet = visual.get_sheet(&"idle")
+			crew_sheet = crew.get_sheet(&"idle")
+		crew_frame = crew_sheet.frame_at(time)
+		var along := Vector2(IsoMath.DIR_GRID_STEP[facing]).normalized()
 		var across := Vector2(-along.y, along.x)
-		var p := func(u: float, v: float, z: float) -> Vector2:
-			return IsoMath.grid_to_screen(along * u + across * v) - Vector2(0, z)
-		# The crew behind, drawn first when the engine faces the camera.
-		var crew_behind := along.y + along.x > 0.0
-		if not crew_behind:
-			_crew(p)
-		# Two big wheels and the frame on them.
-		for v: float in [-0.34, 0.34]:
-			var c: Vector2 = p.call(-0.2, v, 7.5)
-			draw_circle(c, 7.5, WOOD_DARK)
-			draw_circle(c, 6.0, WOOD)
-			for k: int in 4:
-				var a := k * PI / 4.0 + time * (2.0 if walking else 0.0)
-				draw_line(c - Vector2(cos(a), sin(a)) * 5.5, c + Vector2(cos(a), sin(a)) * 5.5, WOOD_DARK, 1.0)
-			draw_circle(c, 1.6, IRON)
-		var tail: Vector2 = p.call(-0.7, 0.0, 13.0)
-		var nose: Vector2 = p.call(0.7, 0.0, 21.0)
-		# The trestle under the nose and the axle beam.
-		draw_line(p.call(0.42, -0.12, 0.0), p.call(0.42, 0.0, 19.0), WOOD_DARK, 2.5)
-		draw_line(p.call(0.42, 0.12, 0.0), p.call(0.42, 0.0, 19.0), WOOD_DARK, 2.5)
-		draw_line(p.call(-0.2, -0.34, 7.5), p.call(-0.2, 0.34, 7.5), WOOD_DARK, 3.0)
-		draw_line(p.call(-0.2, 0.0, 7.5), p.call(-0.2, 0.0, 15.0), WOOD_DARK, 3.0)
-		# The stock: a long beam with a groove, sloping up to the nose.
-		draw_line(tail, nose, WOOD_DARK, 6.0)
-		draw_line(tail, nose, WOOD, 4.0)
-		draw_line(tail, nose, WOOD.darkened(0.25), 1.0)
-		# The arms: bent back from the nose, bound with iron, the string between their tips.
-		var tip_a: Vector2 = p.call(0.45, -0.62, 23.0)
-		var tip_b: Vector2 = p.call(0.45, 0.62, 23.0)
-		var root_a: Vector2 = p.call(0.66, -0.14, 21.5)
-		var root_b: Vector2 = p.call(0.66, 0.14, 21.5)
-		draw_line(root_a, root_b, IRON, 4.0)
-		for pair: Array in [[root_a, tip_a], [root_b, tip_b]]:
-			draw_line(pair[0], pair[1], WOOD_DARK, 4.0)
-			draw_line(pair[0], pair[1], WOOD.lightened(0.12), 2.0)
-			draw_circle(pair[0].lerp(pair[1], 0.5), 1.6, IRON)
-		var nut: Vector2 = p.call(-0.35, 0.0, 15.0) if loaded else p.call(0.44, 0.0, 20.5)
-		draw_line(tip_a, nut, ROPE, 1.0)
-		draw_line(nut, tip_b, ROPE, 1.0)
-		if loaded:
-			# The bolt in the groove, its iron head at the nose.
-			var dir := (nose - tail).normalized()
-			draw_line(nut, nose + dir * 4.0, WOOD.lightened(0.3), 2.0)
-			draw_line(nose + dir * 2.0, nose + dir * 6.0, IRON, 3.0)
-		# The winch at the back.
-		draw_circle(tail, 2.5, IRON)
-		if crew_behind:
-			_crew(p)
-		# A small pennon on the nose post: red for the kingdom, black for enemies.
-		var pole: Vector2 = p.call(0.42, 0.0, 19.0)
-		draw_line(pole, pole - Vector2(0, 12), WOOD_DARK, 1.0)
-		draw_colored_polygon(PackedVector2Array([pole - Vector2(0, 12), pole - Vector2(-6, 10),
-				pole - Vector2(0, 8)]), Color(0.15, 0.13, 0.12) if hostile else Color(0.7, 0.12, 0.1))
-
-	## Two crewmen at the winch, as tall as the people of the town (pushing while it rolls,
-	## winding the winch after a shot): legs, a quilted coat, arms to the winch, a kettle hat.
-	func _crew(p: Callable) -> void:
-		for v: float in [-0.24, 0.24]:
-			var swing := sin(time * 8.0 + v * 10.0) if walking else 0.0
-			var foot: Vector2 = p.call(-1.0, v, 0.0)
-			var hip := foot - Vector2(0, 14)
-			var shoulder := hip - Vector2(0, 13)
-			for side: float in [-1.0, 1.0]:
-				var f := foot + Vector2(side * 2.0 + swing * side * 1.5, 0)
-				draw_line(f, hip + Vector2(side * 1.5, 0), LEG, 3.0)
-				draw_line(f, f + Vector2(2.0, 0), OUTLINE, 2.0)
-			var body := PackedVector2Array([hip + Vector2(-4.5, 1), hip + Vector2(4.5, 1),
-					shoulder + Vector2(4.0, 0), shoulder + Vector2(-4.0, 0)])
-			draw_colored_polygon(body, SHIRT)
-			draw_line(hip + Vector2(-4.5, -4), hip + Vector2(4.5, -4), SHIRT.darkened(0.2), 1.0)
-			var crank := sin(time * 6.0 + v) * 2.0 if not loaded else 0.0
-			var hand: Vector2 = p.call(-0.72, v * 0.5, 14.0 + crank)
-			draw_line(shoulder + Vector2(-3, 1), hand, SHIRT.darkened(0.12), 2.5)
-			draw_line(shoulder + Vector2(3, 1), hand, SHIRT.darkened(0.12), 2.5)
-			draw_circle(hand, 1.4, SKIN)
-			var head := shoulder - Vector2(0, 4.5)
-			draw_circle(head, 4.0, SKIN)
-			draw_colored_polygon(PackedVector2Array([head + Vector2(-5.5, -0.5), head + Vector2(5.5, -0.5),
-					head + Vector2(3.5, -4.5), head + Vector2(-3.5, -4.5)]), IRON.lightened(0.25))
-			draw_line(head + Vector2(-6, 0), head + Vector2(6, 0), IRON, 1.0)
-			draw_polyline(PackedVector2Array([hip + Vector2(-4.5, 1), shoulder + Vector2(-4.0, 0),
-					shoulder + Vector2(4.0, 0), hip + Vector2(4.5, 1)]), OUTLINE, 1.0)
+		var spots: Array[Vector2] = []
+		for side: float in [-1.0, 1.0]:
+			spots.append(IsoMath.grid_to_screen(-along * CREW_BACK + across * side * CREW_SIDE))
+		spots.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.y < b.y)
+		# Crewmen further from the viewer than the engine's centre are drawn before it.
+		for spot: Vector2 in spots:
+			if spot.y < 0.0:
+				SiegeLayer._draw_sheet(self, crew_sheet, facing, crew_frame, spot.round())
+		SiegeLayer._draw_sheet(self, sheet, facing, frame, Vector2.ZERO)
+		for spot: Vector2 in spots:
+			if spot.y >= 0.0:
+				SiegeLayer._draw_sheet(self, crew_sheet, facing, crew_frame, spot.round())
 
 
 ## A ladder leaning from a ground tile onto the wall.
