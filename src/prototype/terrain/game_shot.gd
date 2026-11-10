@@ -787,13 +787,6 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 			if site != null:
 				site.phase = mini(phase, site.phase_count())
 			continue
-		if _fill_stores and b.stock != null and b.def.storage_slots > 0:
-			var goods: Array[StringName] = [&"wood", &"planks", &"stone", &"bricks", &"grain", &"beer",
-					&"bread", &"cloth", &"fish", &"wood", &"clothes", &"flour", &"planks", &"iron", &"stone"]
-			for s: int in b.stock.slot_count():
-				var good := goods[s % goods.size()]
-				var full := b.stock.stack_size(good)
-				b.stock.add(good, full if s % 3 != 2 else full / 2)
 		b.ensure_yard(sim.data)
 		if b.yard != null:
 			if def.herd_good != &"":
@@ -1113,15 +1106,27 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 		var def := sim.data.get_building(StringName(_yards[k]))
 		var o := k % 2
 		var placed := false
+		var at_origin := Vector2i.ZERO
 		for dy: int in range(0, 12):
 			var origin := Vector2i(x, at.y - 2 + (dy if dy % 2 == 0 else -dy))
 			if sim.province.placement_error(def, origin, o) == &"" 					and sim.execute(PlaceBuildingCommand.new(def.id, origin, true, o)) == &"":
 				placed = true
+				at_origin = origin
 				break
 		x += def.footprint.x + 1
 		if not placed:
 			continue
-		var b := sim.province.buildings.get_building(sim.ids.next_id - 1)
+		var b: BuildingState = null
+		for one: BuildingState in sim.province.buildings.all():
+			if one.origin == at_origin and one.def == def:
+				b = one
+		if _fill_stores and b.stock != null and b.def.storage_slots > 0:
+			var goods: Array[StringName] = [&"wood", &"planks", &"stone", &"bricks", &"grain", &"beer",
+					&"bread", &"cloth", &"fish", &"wood", &"clothes", &"flour", &"planks", &"iron", &"stone"]
+			for s: int in b.stock.slot_count():
+				var good := goods[s % goods.size()]
+				var full := b.stock.stack_size(good)
+				b.stock.add(good, full if s % 3 != 2 else full / 2)
 		b.ensure_yard(sim.data)
 		if b.yard != null:
 			for good: StringName in BuildingState.yard_goods(def, sim.data):
