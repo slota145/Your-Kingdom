@@ -4363,3 +4363,25 @@ msgstr "Pit quarrying"
 
 msgid "recipe.pit_quarrying.desc"
 msgstr "The stonecutter breaks a block out of the pit wall, shapes it, hoists it up with the crane and carries it to the stockpile."
+
+# --- E3 part 2: the deep iron mine ---
+msgid "building.deep_mine.name"
+msgstr "Deep Mine"
+
+msgid "building.deep_mine.desc"
+msgstr "Three miners go down the shaft and a winch hauls up buckets of ore. A deep mine never runs out. It stands by an ore vein, only in a province rich in iron."
+
+msgid "ui.activity.descend"
+msgstr "climbing down the shaft"
+
+msgid "ui.activity.dig_ore"
+msgstr "hewing ore underground"
+
+msgid "ui.activity.wind"
+msgstr "winding up a bucket of ore"
+
+msgid "recipe.deep_mining.name"
+msgstr "Deep mining"
+
+msgid "recipe.deep_mining.desc"
+msgstr "The miner climbs down the shaft, hews ore underground, winds the bucket up, breaks the ore on the heap and carries it to storage."

@@ -600,6 +600,9 @@ const SLICE_BUILDINGS := {
 	# E3 part 1
 	"stone_pit": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 12.0, "roof": 8.0,
 			"wall": Color(0.62, 0.6, 0.56), "roof_color": Color(0.5, 0.48, 0.44), "extra": "blocks"},
+	# E3 part 2
+	"deep_mine": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 40.0, "roof": 20.0,
+			"wall": Color(0.5, 0.36, 0.24), "roof_color": Color(0.4, 0.28, 0.2), "extra": "blocks"},
 	"church": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 46.0, "roof": 34.0,
 			"wall": Color(0.82, 0.8, 0.74), "roof_color": Color(0.3, 0.32, 0.42), "extra": "steeple"},
 	"market": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 14.0, "roof": 12.0,

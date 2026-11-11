@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/produce_step_def.gd" id="5_produce"]
+[ext_resource type="Script" path="res://src/defs/steps/deliver_step_def.gd" id="6_deliver"]
+
+[sub_resource type="Resource" id="goto_shaft"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="descend"]
+script = ExtResource("4_work")
+activity = &"descend"
+duration = 2.0
+spot = &"shaft"
+
+[sub_resource type="Resource" id="dig"]
+script = ExtResource("4_work")
+activity = &"dig_ore"
+duration = 22.0
+spot = &"below"
+
+[sub_resource type="Resource" id="hoist"]
+script = ExtResource("4_work")
+activity = &"wind"
+duration = 3.0
+spot = &"winch"
+
+[sub_resource type="Resource" id="sort"]
+script = ExtResource("4_work")
+activity = &"shape"
+duration = 3.0
+spot = &"heap"
+
+[sub_resource type="Resource" id="produce"]
+script = ExtResource("5_produce")
+output = &"iron_ore"
+amount = 1
+
+[sub_resource type="Resource" id="deliver"]
+script = ExtResource("6_deliver")
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("goto_shaft"), SubResource("descend"), SubResource("dig"), SubResource("hoist"), SubResource("sort"), SubResource("produce"), SubResource("deliver")])
+id = &"deep_mining"
