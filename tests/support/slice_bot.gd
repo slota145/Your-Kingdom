@@ -9,6 +9,11 @@ extends RefCounted
 
 ## Seconds before retrying a building the treasury could not pay for.
 const GOLD_RETRY := 30
+## E2 part 4: the patrician chains (bricks, clothes, mead, the tavern) start this many seconds
+## earlier than before (minute 35, not 45), except on the Coast.
+const PATRICIANS_EARLIER := 600
+## Times of the patrician block's actions (seconds) after the shift.
+const PATRICIAN_TIMES: Array[int] = [2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 3000]
 
 var sim: Simulation
 ## Seconds of game time -> actions still to do, in order.
@@ -105,7 +110,8 @@ func _init(simulation: Simulation) -> void:
 		{"at": 720, "build": &"church", "near": town + Vector2i(-6, 18)},
 		{"at": 1200, "build": &"stockpile", "near": town + Vector2i(-4, -12)},
 		# M4b-1 (while the burghers settle, from minute 35; E2 part 4: 10 minutes earlier than
-		# before, the patricians came late with their 3 kinds of food): patricians (bricks, clothes, mead,
+		# before, the patricians came late with their 3 kinds of food; on the Coast at the old
+		# time, see PATRICIANS_EARLIER): patricians (bricks, clothes, mead,
 		# a tavern) and foresters for the woodcutters.
 		{"at": 2100, "build": &"forester", "near": town + Vector2i(-10, -6)},
 		{"at": 2100, "build": &"forester", "near": town + Vector2i(-10, 6)},
@@ -147,6 +153,11 @@ func _init(simulation: Simulation) -> void:
 		{"at": 1560, "sell": {&"hides": 0, &"planks": 60, &"stone": 60}},
 	]
 	if not start.is_empty():
+		# The Coast keeps the patrician chains at their old time (from minute 45): earlier, the
+		# apiaries, the tavern and the huts took the shore where the harbour bot puts the port.
+		for action: Dictionary in _plan:
+			if int(action["at"]) in PATRICIAN_TIMES:
+				action["at"] = int(action["at"]) + PATRICIANS_EARLIER
 		# Coast: the bread chain, the anglers, the breweries and the bricks stay on the town's
 		# side of the river (the anchors made for
 		# Riverlands would put the mill and the bakery across it, far from the fields).

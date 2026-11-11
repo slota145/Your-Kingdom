@@ -1434,12 +1434,22 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Testy: `test_population.gd` (dieta, podatek, wczytanie), poprawione scenariusze (wyprawa, rejs, szlaki). Pomiar władców: `src/prototype/e2/settle_probe.gd`.
 - Zrzut: `town_shot.tscn -- --shot=<plik> --minutes=40 --select=hut --zoom=1 --moods`.
 
+**Część 4, stan (2026-11-11): gotowa, czeka na ocenę.**
+- Władcy: plan rozwoju ma sad (po pierwszej piekarni i drugi po drugiej farmie) i chatę myśliwego (po leśniku); gdy w magazynach brakuje jedzenia (chleb, ryby, jabłka i mięso razem poniżej 15), najpierw stawiają sad (do 1 na 60 mieszkańców) i myśliwego (gdy w prowincji są stada). Stolice władców startują z sadem (stolice „Podzielonego kontynentu” także z myśliwym). Sad dostaje jabłonie od razu, jak farma pola.
+- Osady neutralne (Żelazny Gród, Końska Przystań i ich kopie w nowych światach) mają sad z 10 jabłoniami i chatę myśliwego.
+- Chata myśliwego staje w połowie drogi między miastem a najbliższym stadem (bez stad: w połowie drogi do lasu).
+- Tryb uproszczony liczy sad i myśliwego jak dotąd (bez zmian).
+- Balans automatycznego gracza testów: myśliwy w 10. minucie, łańcuchy cegieł, ubrań i miodu pitnego z tawerną 10 minut wcześniej (od 35. minuty; na „Wybrzeżu” o dawnej porze, bo zajmowały brzeg pod port). 4 domy patrycjuszy z pełnym zaopatrzeniem (limit 90 minut): Riverlands w 72. minucie (było 87), Pojezierze w 70. (było 89), Wybrzeże w 59.–67. (było 66).
+- Władcy (pomiar `settle_probe.gd`, 90 minut, 3 władców): 6 zasiedleń zamiast 4, razem ok. 1030 mieszkańców zamiast ok. 920; wszystkie domy najedzone; test władców i wojny przechodzi.
+- Zapis bez zmiany formatu (v37).
+- Testy: `test_e2_rulers_food.gd` (sad w stolicach władców, sad i myśliwy w osadach, miejsce chaty myśliwego, sad i myśliwy przy braku jedzenia, plan). Pomiar gracza: `src/prototype/e2/patrician_probe.gd -- --map=<mapa>` (wypisuje minutę 4 domów).
+
 **DoD:**
 - [x] Sad daje jabłka, jabłonie rosną razem; jabłka są jedzeniem wszystkich klas (część 1: jedzenie chłopów; mieszczanie i patrycjusze od części 3).
 - [x] Sarny i dziki żyją na mapie; myśliwy poluje i oprawia zdobycz na mięso i skórę (część 2).
 - [x] Dieta 1/2/3 i punkty z progiem działają; dom pokazuje punkty, próg i dodatek do podatku (część 3).
-- [ ] Stare zapisy wczytują się po migracji.
-- [ ] Automatyczni gracze, władcy i osady grają według nowych zasad; testy szybkie i długie przechodzą; UI w PL i EN.
+- [x] Stare zapisy wczytują się po migracji (v36 jabłka, v37 stada; test migracji).
+- [x] Automatyczni gracze, władcy i osady grają według nowych zasad; testy szybkie i długie przechodzą; UI w PL i EN (część 4).
 - [ ] **Twoja ocena gry** po każdej części.
 
 ## E3 — Cechy prowincji: niewyczerpalne źródła
