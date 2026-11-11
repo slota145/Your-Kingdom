@@ -339,7 +339,9 @@ func cycles_per_second(building: BuildingState) -> float:
 func estimated_cycle_seconds(building: BuildingState) -> float:
 	var cycle := WorkCycle.of(building.def, detail.data)
 	var walk := _walk_to_storage(building)
-	var work := cycle.work_seconds
+	# The owner's research (E4 part 2: forestry, fishing) speeds the work up (a measured rate
+	# has it already).
+	var work := cycle.work_seconds / detail.research.work_speed(detail.data, building.def.id)
 	if building.def.paced_work():
 		# A flock shears faster when bigger, and gives nothing without sheep (Z1 part 2).
 		if not building.has_work_source():
@@ -546,7 +548,8 @@ func _build() -> void:
 		if not building.def.ship_kinds.is_empty() and building.is_complete() \
 				and not building.ship_orders.is_empty() and Ships.build_at(p, building) == null:
 			Ships.open_build(p, building)
-	_carry_budget = minf(_carry_budget + _workers_of(&"porter") * PORTER_RATE * BUILD_EVERY, 40.0)
+	_carry_budget = minf(_carry_budget + _workers_of(&"porter") * PORTER_RATE * BUILD_EVERY
+			* detail.research.porter_load(detail.data), 40.0)
 	var site_ids: Array[int] = []
 	site_ids.assign(p.sites.keys())
 	site_ids.sort()

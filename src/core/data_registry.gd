@@ -87,6 +87,24 @@ func units() -> Array[UnitDef]:
 	return result
 
 
+func get_research(id: StringName) -> ResearchDef:
+	return get_def(&"research", id) as ResearchDef
+
+
+## Every research (E4 part 2), sorted by tier, row and id.
+func researches() -> Array[ResearchDef]:
+	var result: Array[ResearchDef] = []
+	for def: GameDef in all_of(&"research"):
+		result.append(def as ResearchDef)
+	result.sort_custom(func(a: ResearchDef, b: ResearchDef) -> bool:
+		if a.tier != b.tier:
+			return a.tier < b.tier
+		if a.row != b.row:
+			return a.row < b.row
+		return String(a.id) < String(b.id))
+	return result
+
+
 func get_map(id: StringName) -> MapDef:
 	return get_def(&"map", id) as MapDef
 

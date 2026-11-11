@@ -61,7 +61,7 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 		var node := agent.claimed_node
 		if node == Agent.NO_TILE or not province.resources.has_node(node, step.resource):
 			node = province.resources.find_nearest(step.resource, workplace.entrance_tile(),
-					workplace.def.work_radius)
+					province.work_radius(workplace))
 		if node == Agent.NO_TILE:
 			return failed(agent, &"no_resource")
 		var stand := province.approach_tile(node, agent.tile())

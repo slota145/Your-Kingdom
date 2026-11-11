@@ -88,6 +88,10 @@ const PEOPLE := {
 			"hat": "", "beard": true, "apron": Color(0.55, 0.38, 0.22), "tool": "spade"},
 	"innkeeper": {"shirt": Color(0.6, 0.2, 0.2), "legs": Color(0.32, 0.26, 0.22), "hair": Color(0.45, 0.3, 0.18),
 			"hat": "", "beard": true, "apron": Color(0.95, 0.93, 0.88), "tool": "mug"},
+	# E4 part 2: a teacher in a long dark scholar's gown and cap, with a pointer.
+	"teacher": {"shirt": Color(0.22, 0.24, 0.36), "legs": Color(0.2, 0.2, 0.26), "hair": Color(0.55, 0.52, 0.48),
+			"hat": "cap", "hat_colour": Color(0.14, 0.14, 0.2), "beard": true, "dress": true,
+			"cloak": Color(0.2, 0.22, 0.32), "tool": "staff"},
 	# M4b-2 (meat)
 	"swineherd": {"shirt": Color(0.6, 0.52, 0.36), "legs": Color(0.38, 0.3, 0.22), "hair": Color(0.55, 0.38, 0.2),
 			"hat": "straw", "tool": "spade"},
@@ -218,6 +222,8 @@ const WORK := {
 	"hoist": ["stir", ""],
 	# E3 part 2: the deep mine's shaft and winch
 	"descend": ["bend", ""], "wind": ["stir", ""],
+	# E4 part 2: the teacher points at the blackboard, rings the bell
+	"teach": ["throw", "staff"], "ring": ["stir", ""],
 }
 
 ## Activities each profession performs (recipes, fields, building).
@@ -239,7 +245,7 @@ const ACTIVITIES := {
 	"charcoal_burner": ["stack", "tend_fire", "rake"], "miner": ["pick", "shape", "descend", "wind"],
 	"smelter": ["stack", "bellows", "tap"], "blacksmith": ["heat", "forge", "quench"],
 	"armourer": ["heat", "rivet", "polish"], "bowyer": ["carve", "bend", "string"], "groom": ["feed", "groom"],
-	"recruit": [],
+	"recruit": [], "teacher": ["teach", "ring", "rest"],
 }
 
 ## Carry category -> hands (side, front, height) for both hands, the good's anchor and

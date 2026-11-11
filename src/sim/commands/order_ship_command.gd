@@ -20,6 +20,8 @@ func validate(sim: Simulation) -> StringName:
 		return &"ship_not_built_here"
 	if building.ship_orders.size() >= Ships.MAX_ORDERS:
 		return &"orders_full"
+	if not sim.province.research.allows_ship(sim.data, ship):
+		return &"needs_research"   # E4 part 2
 	return &""
 
 

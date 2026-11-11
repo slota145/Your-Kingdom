@@ -10,7 +10,7 @@ signal hide_requested
 
 ## Tab id -> its buildings in order (ids missing from the data are skipped).
 const TABS: Array[Dictionary] = [
-	{"id": &"housing", "buildings": [&"hut", &"well", &"chapel", &"church", &"market", &"tavern"]},
+	{"id": &"housing", "buildings": [&"hut", &"well", &"chapel", &"church", &"market", &"tavern", &"school"]},
 	{"id": &"resources", "buildings": [&"woodcutter", &"forester", &"sawmill", &"quarry", &"stone_pit", &"clay_pit",
 			&"brickworks"]},
 	{"id": &"food", "buildings": [&"farm", &"mill", &"bakery", &"orchard", &"hunter_lodge", &"fishing_hut", &"pigsty",

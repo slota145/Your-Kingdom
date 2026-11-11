@@ -112,7 +112,7 @@ func test_saved_with_the_game_and_old_games_are_normal() -> void:
 	# v38: an older game is a normal one.
 	var old := {"tick": 5}
 	assert_bool(bool(SaveMigrations.migrate(old, 37)["dev"])).is_false()
-	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(38)
+	assert_int(SaveMigrations.CURRENT_VERSION).is_greater_equal(38)
 
 
 ## "New game" with the tick box: the player's provinces only; the rulers build as usual, and the

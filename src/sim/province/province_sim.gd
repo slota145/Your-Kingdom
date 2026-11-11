@@ -59,6 +59,9 @@ var treasury: Treasury = Treasury.new()
 ## without materials, and the start protection never ends. Set by the Simulation on the
 ## player's provinces (Simulation.bind_dev_mode); not saved here.
 var dev_mode: bool = false
+## The owner's research (E4 part 2): what may be built and how much better some buildings
+## work. Set by the Simulation (Simulation.research_of); not saved here.
+var research: ResearchState = ResearchState.opened()
 ## Derived from buildings and the map; not saved.
 var coverage: ServiceCoverage = ServiceCoverage.new()
 
@@ -1061,7 +1064,7 @@ func find_shore(building: BuildingState, from: Vector2i) -> Vector2i:
 	for agent: Agent in agents.all():
 		if agent.task != null and agent.task.bb.has("stand") and agent.workplace_id != 0:
 			taken[SimCodec.to_vec2i(agent.task.bb["stand"])] = true
-	var area := Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius) \
+	var area := Rect2i(building.origin, building.def.footprint).grow(work_radius(building)) \
 			.intersection(Rect2i(Vector2i.ZERO, grid.size))
 	var best := Agent.NO_TILE
 	var best_d := 1 << 30
@@ -1121,8 +1124,28 @@ func find_plant_spot(building: BuildingState, node_id: StringName, from: Vector2
 
 ## Tiles within the work radius of [param building], clipped to the map.
 func _work_area(building: BuildingState) -> Rect2i:
-	return Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius).intersection(
+	return Rect2i(building.origin, building.def.footprint).grow(work_radius(building)).intersection(
 			Rect2i(Vector2i.ZERO, grid.size))
+
+
+## Whether a finished house of [param level] or higher stands here (E4 part 2: the school).
+func has_house_level(level: int) -> bool:
+	for building: BuildingState in buildings.all():
+		if building.house != null and building.house.level >= level:
+			return true
+	return false
+
+
+## The work radius of [param building] with the owner's research (E4 part 2: forestry).
+func work_radius(building: BuildingState) -> int:
+	return building.def.work_radius + research.extra_radius(data, building.def.id)
+
+
+## Field, pen or hive tiles [param building] may have, with the owner's research (E4 part 2:
+## larger fields and pens).
+func field_limit(building: BuildingState) -> int:
+	var limit := building.def.field_limit()
+	return limit + research.extra_fields(data, building.def.id) if limit > 0 else 0
 
 
 ## Whether a sapling may go on [param tile]: a stump of [param node_id] (old saves), or free
@@ -1357,15 +1380,15 @@ func assign_worker(agent: Agent, building: BuildingState) -> void:
 ## building with pens (Z1) places its pen tiles the same way.
 func field_error(farm_id: int, tile: Vector2i) -> StringName:
 	var farm := buildings.get_building(farm_id)
-	if farm == null or farm.def.field_limit() == 0:
+	if farm == null or field_limit(farm) == 0:
 		return &"not_a_farm"
 	if not grid.is_inside(tile):
 		return &"outside_map"
-	if fields.tiles_of(farm_id).size() >= farm.def.field_limit():
+	if fields.tiles_of(farm_id).size() >= field_limit(farm):
 		if farm.def.has_hives():
 			return &"too_many_hives"
 		return &"too_many_pens" if farm.def.has_pens() else &"too_many_fields"
-	var rect := Rect2i(farm.origin, farm.def.footprint).grow(farm.def.work_radius)
+	var rect := Rect2i(farm.origin, farm.def.footprint).grow(work_radius(farm))
 	if not rect.has_point(tile):
 		return &"out_of_range"
 	var terrain := terrain_at(tile)

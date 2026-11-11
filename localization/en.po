@@ -4416,3 +4416,120 @@ msgstr "Developer mode on (F12 turns it off)"
 
 msgid "ui.note.dev_mode_off"
 msgstr "Developer mode off"
+
+msgid "building.school.name"
+msgstr "School"
+
+msgid "building.school.desc"
+msgstr "The teacher rings the bell and teaches children at the blackboard. With a school the kingdom can research. It can be built after the first burghers' house; a second school speeds learning up."
+
+msgid "recipe.teaching.name"
+msgstr "Teaching"
+
+msgid "recipe.teaching.desc"
+msgstr "The teacher rings for the lesson, teaches at the blackboard and rests at the break. While he teaches, research moves on."
+
+msgid "ui.kind.teacher"
+msgstr "Teacher"
+
+msgid "ui.activity.teach"
+msgstr "teaches at the blackboard"
+
+msgid "ui.activity.ring"
+msgstr "rings for the lesson"
+
+msgid "research.butchery.name"
+msgstr "Butchery"
+
+msgid "research.butchery.desc"
+msgstr "Pigsty and slaughterhouse: pigs give meat."
+
+msgid "research.beekeeping.name"
+msgstr "Beekeeping"
+
+msgid "research.beekeeping.desc"
+msgstr "Apiary and meadery: honey and mead."
+
+msgid "research.forestry.name"
+msgstr "Forestry"
+
+msgid "research.forestry.desc"
+msgstr "The forester plants trees 25% faster and farther from his hut (reach +2)."
+
+msgid "research.fishing.name"
+msgstr "Fishing"
+
+msgid "research.fishing.desc"
+msgstr "Fishermen of the fishing hut and the wharf fish 25% faster."
+
+msgid "research.larger_pens.name"
+msgstr "Larger pens"
+
+msgid "research.larger_pens.desc"
+msgstr "Pigsties, sheep farms and stud farms get 2 more pens, apiaries 2 more hives."
+
+msgid "research.tailoring.name"
+msgstr "Tailoring"
+
+msgid "research.tailoring.desc"
+msgstr "The tailor sews clothes from cloth. Patricians need clothes."
+
+msgid "research.brickmaking.name"
+msgstr "Brickmaking"
+
+msgid "research.brickmaking.desc"
+msgstr "Clay pit and brickworks: bricks for the patricians' houses."
+
+msgid "research.larger_fields.name"
+msgstr "Larger fields"
+
+msgid "research.larger_fields.desc"
+msgstr "Farms, orchards, hop farms and vineyards get 4 more field tiles."
+
+msgid "research.better_carrying.name"
+msgstr "Better carrying"
+
+msgid "research.better_carrying.desc"
+msgstr "Porters carry 2 goods at once instead of 1."
+
+msgid "research.winemaking.name"
+msgstr "Winemaking"
+
+msgid "research.winemaking.desc"
+msgstr "Vineyard and wine press: wine."
+
+msgid "research.shipbuilding.name"
+msgstr "Shipbuilding"
+
+msgid "research.shipbuilding.desc"
+msgstr "The shipyard builds warships."
+
+msgid "ui.command_error.needs_research"
+msgstr "This must be researched first"
+
+msgid "ui.command_error.needs_burghers"
+msgstr "Build a burghers' house first"
+
+msgid "ui.command_error.needs_patricians"
+msgstr "Build a patricians' house first"
+
+msgid "ui.command_error.needs_school"
+msgstr "Build a school first"
+
+msgid "ui.command_error.needs_university"
+msgstr "Build a university first"
+
+msgid "ui.command_error.research_open"
+msgstr "Everything is available in this game"
+
+msgid "ui.command_error.research_done"
+msgstr "This is researched already"
+
+msgid "ui.command_error.research_planned"
+msgstr "This research is under way or waits in the queue"
+
+msgid "ui.command_error.research_not_planned"
+msgstr "This research is not in the queue"
+
+msgid "ui.command_error.unknown_research"
+msgstr "No such research"

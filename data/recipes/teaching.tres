@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/go_to_step_def.gd" id="3_goto"]
+[ext_resource type="Script" path="res://src/defs/steps/work_step_def.gd" id="4_work"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="7_stepdef"]
+
+[sub_resource type="Resource" id="go_home"]
+script = ExtResource("3_goto")
+target = &"workplace"
+
+[sub_resource type="Resource" id="ring"]
+script = ExtResource("4_work")
+activity = &"ring"
+duration = 3.0
+spot = &"bell"
+
+[sub_resource type="Resource" id="teach"]
+script = ExtResource("4_work")
+activity = &"teach"
+duration = 40.0
+spot = &"board"
+
+[sub_resource type="Resource" id="rest"]
+script = ExtResource("4_work")
+activity = &"rest"
+duration = 6.0
+spot = &"bell"
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("7_stepdef")]([SubResource("go_home"), SubResource("ring"), SubResource("teach"), SubResource("rest")])
+id = &"teaching"

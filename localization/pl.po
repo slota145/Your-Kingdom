@@ -4456,3 +4456,120 @@ msgstr "Tryb deweloperski włączony (F12 wyłącza)"
 
 msgid "ui.note.dev_mode_off"
 msgstr "Tryb deweloperski wyłączony"
+
+msgid "building.school.name"
+msgstr "Szkoła"
+
+msgid "building.school.desc"
+msgstr "Nauczyciel dzwoni dzwonkiem i uczy dzieci przy tablicy. Dzięki szkole królestwo prowadzi badania. Można ją postawić po pierwszym domu mieszczan; druga szkoła przyspiesza naukę."
+
+msgid "recipe.teaching.name"
+msgstr "Nauczanie"
+
+msgid "recipe.teaching.desc"
+msgstr "Nauczyciel dzwoni na lekcję, uczy przy tablicy i odpoczywa na przerwie. Dopóki uczy, badanie idzie naprzód."
+
+msgid "ui.kind.teacher"
+msgstr "Nauczyciel"
+
+msgid "ui.activity.teach"
+msgstr "uczy przy tablicy"
+
+msgid "ui.activity.ring"
+msgstr "dzwoni na lekcję"
+
+msgid "research.butchery.name"
+msgstr "Rzeźnictwo"
+
+msgid "research.butchery.desc"
+msgstr "Chlew i rzeźnia: świnie dają mięso."
+
+msgid "research.beekeeping.name"
+msgstr "Pszczelarstwo"
+
+msgid "research.beekeeping.desc"
+msgstr "Pasieka i miodosytnia: miód i miód pitny."
+
+msgid "research.forestry.name"
+msgstr "Leśnictwo"
+
+msgid "research.forestry.desc"
+msgstr "Leśnik sadzi drzewa o 25% szybciej i dalej od chaty (zasięg +2)."
+
+msgid "research.fishing.name"
+msgstr "Rybołówstwo"
+
+msgid "research.fishing.desc"
+msgstr "Rybacy z chaty i przystani łowią o 25% szybciej."
+
+msgid "research.larger_pens.name"
+msgstr "Większe zagrody"
+
+msgid "research.larger_pens.desc"
+msgstr "Chlewy, owczarnie i stadniny mają po 2 zagrody więcej, a pasieki po 2 ule więcej."
+
+msgid "research.tailoring.name"
+msgstr "Krawiectwo"
+
+msgid "research.tailoring.desc"
+msgstr "Krawiec szyje ubrania z sukna. Ubrań potrzebują patrycjusze."
+
+msgid "research.brickmaking.name"
+msgstr "Ceglarstwo"
+
+msgid "research.brickmaking.desc"
+msgstr "Glinianka i cegielnia: cegły na kamienice patrycjuszy."
+
+msgid "research.larger_fields.name"
+msgstr "Większe pola"
+
+msgid "research.larger_fields.desc"
+msgstr "Farmy, sady, chmielniki i winnice mają po 4 kratki pola więcej."
+
+msgid "research.better_carrying.name"
+msgstr "Lepsze nosidła"
+
+msgid "research.better_carrying.desc"
+msgstr "Tragarze noszą po 2 sztuki towaru naraz zamiast 1."
+
+msgid "research.winemaking.name"
+msgstr "Winiarstwo"
+
+msgid "research.winemaking.desc"
+msgstr "Winnica i tłocznia: wino."
+
+msgid "research.shipbuilding.name"
+msgstr "Budowa okrętów"
+
+msgid "research.shipbuilding.desc"
+msgstr "Stocznia buduje okręty wojenne."
+
+msgid "ui.command_error.needs_research"
+msgstr "Najpierw trzeba to zbadać"
+
+msgid "ui.command_error.needs_burghers"
+msgstr "Najpierw zbuduj dom mieszczan"
+
+msgid "ui.command_error.needs_patricians"
+msgstr "Najpierw zbuduj kamienicę patrycjuszy"
+
+msgid "ui.command_error.needs_school"
+msgstr "Najpierw zbuduj szkołę"
+
+msgid "ui.command_error.needs_university"
+msgstr "Najpierw zbuduj uniwersytet"
+
+msgid "ui.command_error.research_open"
+msgstr "W tej grze wszystko jest już dostępne"
+
+msgid "ui.command_error.research_done"
+msgstr "To jest już zbadane"
+
+msgid "ui.command_error.research_planned"
+msgstr "To badanie już trwa albo czeka w kolejce"
+
+msgid "ui.command_error.research_not_planned"
+msgstr "Tego badania nie ma w kolejce"
+
+msgid "ui.command_error.unknown_research"
+msgstr "Nie ma takiego badania"

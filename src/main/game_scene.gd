@@ -719,7 +719,7 @@ func _update_preview() -> void:
 		&"field":
 			var farm := sim.province.buildings.get_building(int(_tool["farm"]))
 			if farm != null:
-				var area := Rect2i(farm.origin, farm.def.footprint).grow(farm.def.work_radius)
+				var area := Rect2i(farm.origin, farm.def.footprint).grow(sim.province.work_radius(farm))
 				for y: int in range(area.position.y, area.end.y):
 					for x: int in range(area.position.x, area.end.x):
 						if sim.province.field_error(farm.id, Vector2i(x, y)) == &"":
@@ -729,7 +729,7 @@ func _update_preview() -> void:
 		&"plant":
 			var forester := sim.province.buildings.get_building(int(_tool["building"]))
 			if forester != null:
-				var work := Rect2i(forester.origin, forester.def.footprint).grow(forester.def.work_radius)
+				var work := Rect2i(forester.origin, forester.def.footprint).grow(sim.province.work_radius(forester))
 				for y: int in range(work.position.y, work.end.y):
 					for x: int in range(work.position.x, work.end.x):
 						tiles[Vector2i(x, y)] = "range"
