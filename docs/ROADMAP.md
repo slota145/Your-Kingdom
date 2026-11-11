@@ -1360,7 +1360,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Testy szybkie (597) i długie przechodzą.
 - Zrzut: `game_shot.tscn -- --plain --tile=56,62 --zoom=2 --yards=porters_hut,stockpile,porters_house --fill_stores`.
 
-**Część 2, stan (2026-11-11): gotowa, czeka na ocenę.**
+**Część 2, stan (2026-11-11): gotowa, czeka na ocenę; testy szybkie (602) i długie przechodzą.**
 - Pole rośnie razem: zasiana kratka czeka (`FieldStore.is_waiting`, ujemny czas dojrzewania w zapisie), aż farma nie ma już kratki ugoru ani zaoranej; wtedy wszystkie czekające kratki ruszają naraz i dojrzewają w tej samej chwili (`FieldStore.start_if_ready`, po siewie i po usunięciu kratki). Kratka czeka najwyżej 3 minuty (`WAIT_LIMIT_SECONDS`), żeby pole nie stało, gdy rolnik nie może dojść do reszty. Dotyczy farmy, chmielnika i winnicy (wspólny krok pracy w polu), a sad dostanie to samo. Czekająca kratka wygląda jak świeżo zaorana ziemia, a winorośl jak przycięta.
 - W czasie wzrostu rolnik, chmielarz i winogrodnik pielą motyką kratkę po kratce (nowa praca „weed”, 6 s; ruch nisko z motyką w `tools/generate_characters.gd`).
 - Plon: `FieldStepDef.harvest_extra` = 0,2 (co piąta kratka daje 2 snopy, farma pamięta ułamek w `field_yield_carry`). Pomiar (`src/prototype/e1/farm_yield_probe.gd -- --minutes=60`, pełne pola, magazyn obok): przed zmianą farma 109, chmielnik 96, winnica 92; po zmianie bez większego plonu 94, 84, 79; z plonem 0,2: 112, 100, 94. Pierwsze żniwa ok. 200 s zamiast 106 s.
@@ -1369,12 +1369,12 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Zrzut: `game_shot.tscn -- --shot=<plik> --plain --tile=56,62 --zoom=2 --yards=farm --advance=<s>`.
 
 **DoD:**
-- [ ] Magazyny trzymają więcej w każdym miejscu, a stos widać wyższy.
-- [ ] Chata i dom tragarzy dają tragarzy, którzy noszą w jego zasięgu.
-- [ ] Pole rośnie dopiero po zasianiu wszystkich kratek; rolnik ma zajęcie w czasie wzrostu; farma nie jest słabsza niż dziś.
-- [ ] „Rozbuduj teraz” działa w panelu domu.
-- [ ] Stare zapisy (v34) wczytują się po migracji.
-- [ ] Automatyczny gracz i władcy grają dalej; testy szybkie i długie przechodzą; UI w PL i EN.
+- [x] Magazyny trzymają więcej w każdym miejscu, a stos widać wyższy.
+- [x] Chata i dom tragarzy dają tragarzy, którzy noszą w jego zasięgu.
+- [x] Pole rośnie dopiero po zasianiu wszystkich kratek; rolnik ma zajęcie w czasie wzrostu; farma nie jest słabsza niż dziś.
+- [x] „Rozbuduj teraz” działa w panelu domu.
+- [x] Stare zapisy (v34) wczytują się po migracji.
+- [x] Automatyczny gracz i władcy grają dalej; testy szybkie i długie przechodzą; UI w PL i EN.
 - [ ] **Twoja ocena gry** po każdej części.
 
 ## M9 — Produkcja grafik (równolegle, od M4)
