@@ -1434,7 +1434,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Testy: `test_population.gd` (dieta, podatek, wczytanie), poprawione scenariusze (wyprawa, rejs, szlaki). Pomiar władców: `src/prototype/e2/settle_probe.gd`.
 - Zrzut: `town_shot.tscn -- --shot=<plik> --minutes=40 --select=hut --zoom=1 --moods`.
 
-**Część 4, stan (2026-11-11): gotowa, czeka na ocenę.**
+**Część 4, stan (2026-11-11): gotowa, scalona do `main` 2026-11-11 na prośbę właściciela, przed oceną.**
 - Władcy: plan rozwoju ma sad (po pierwszej piekarni i drugi po drugiej farmie) i chatę myśliwego (po leśniku); gdy w magazynach brakuje jedzenia (chleb, ryby, jabłka i mięso razem poniżej 15), najpierw stawiają sad (do 1 na 60 mieszkańców) i myśliwego (gdy w prowincji są stada). Stolice władców startują z sadem (stolice „Podzielonego kontynentu” także z myśliwym). Sad dostaje jabłonie od razu, jak farma pola.
 - Osady neutralne (Żelazny Gród, Końska Przystań i ich kopie w nowych światach) mają sad z 10 jabłoniami i chatę myśliwego.
 - Chata myśliwego staje w połowie drogi między miastem a najbliższym stadem (bez stad: w połowie drogi do lasu).
