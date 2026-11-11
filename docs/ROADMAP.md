@@ -1492,7 +1492,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **UI:** cechy w losowym świecie widać jak w „Królestwie” (znaczek przy nazwie, linia „Cechy:” w panelu, PL i EN z części 1); nowe teksty nie były potrzebne.
 - Testy: `tests/scenario/test_e3_traits.gd` (część 3 na końcu pliku).
 
-**Część 4, stan (2026-11-11, gotowa do oceny; ocen części 1–3 jeszcze nie ma, właściciel: „brak uwag, rób część 4”):**
+**Część 4, stan (2026-11-11, części 2–4 scalone do `main` na prośbę właściciela, gotowe do oceny; ocen części 1–3 jeszcze nie ma, właściciel: „brak uwag, rób część 4”):**
 - **Decyzje z ankiety 2026-11-11 (część 4):** siła średnia (+50% plonu; o połowę więcej stad, odradzanie 2× szybsze), w „Królestwie” żyzna Wierzbowa Dolina i bogate w zwierzynę Lustrzane Jeziora, w widoku prowincji tylko linijka w panelu (bez zmiany grafiki pól).
 - **Żyzna ziemia** (`ProvinceDef.FERTILE`, `FERTILE_YIELD` 1,5): kratka pola daje 1,5× plonu razem z dodatkiem z E1 (1,8 zamiast 1,2 snopka z kratki). Rolnik pracuje tak samo. Działa przy zbożu, chmielu, sadzie i winnicy, w trybie szczegółowym i uproszczonym (ta sama „reszta” ułamków, `field_yield_carry`). Panel farmy: „Żyzna ziemia: plon pól +50%”.
 - **Bogata w zwierzynę** (`ProvinceDef.RICH_GAME`, `GAME_HERDS` 1,5, `GAME_BREEDING` 2): las karmi 1,5× stad (do 12 zamiast 8), stado przybiera i nowe wychodzi z lasu 2× częściej. Panel myśliwego: „Prowincja bogata w zwierzynę…”.
