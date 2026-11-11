@@ -11,8 +11,8 @@ signal command_requested(command: Command)
 signal closed
 
 const REFRESH := 0.5
-const CARD := Vector2(214, 74)
-const COL_W := 262.0
+const CARD := Vector2(176, 74)
+const COL_W := 198.0
 const ROW_H := 84.0
 ## Room for the headings over the school's and the university's columns.
 const HEAD_H := 30.0
@@ -42,10 +42,10 @@ func _init() -> void:
 	head.add_child(title)
 	head.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
 	_status = UiKit.label("")
-	_status.custom_minimum_size.x = 760.0
+	_status.custom_minimum_size.x = 1150.0
 	box.add_child(_status)
 	_progress = ProgressBar.new()
-	_progress.custom_minimum_size = Vector2(760, 14)
+	_progress.custom_minimum_size = Vector2(1150, 14)
 	_progress.show_percentage = false
 	box.add_child(_progress)
 	_queue = UiKit.label("")
@@ -55,7 +55,7 @@ func _init() -> void:
 	hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
 	box.add_child(hint)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(800, 330)
+	scroll.custom_minimum_size = Vector2(1196, 330)
 	box.add_child(scroll)
 	_tree = Control.new()
 	_tree.draw.connect(_draw_arrows)
@@ -210,7 +210,8 @@ func _draw_arrows() -> void:
 				continue
 			var a := _card_pos(from_def) + Vector2(CARD.x, CARD.y / 2)
 			var b := _card_pos(def) + Vector2(0, CARD.y / 2)
-			var mid := (a.x + b.x) / 2
+			# Down the gap just left of the target card, so a long arrow crosses no card.
+			var mid := b.x - (COL_W - CARD.x) / 2
 			var colour := UiKit.INK if sim.research.is_planned(need) else UiKit.INK_SOFT
 			var line := PackedVector2Array([a, Vector2(mid, a.y), Vector2(mid, b.y), b])
 			_tree.draw_polyline(line, colour, 3.0)
