@@ -1,10 +1,11 @@
 extends SceneTree
 ## How the automatic player and the AI rulers use the province traits (E3 part 3): every 10
 ## minutes, for each owner, quarries and stone pits with the stone per minute they make (the
-## simplified mode's estimate), deep mines and the stone and iron ore in store.
-## "$GODOT" --headless --path . -s res://src/prototype/e3/traits_probe.gd -- [--seed=5] [--minutes=120] [--provinces=22] [--scenario=colonization] [--all_rich] [--all_iron]
-## --all_rich, --all_iron: every province rich in stone, in iron (to see the most the new
-## buildings can take over).
+## simplified mode's estimate), deep mines and the stone and iron ore in store. Part 4: farms,
+## hunters, herds and the grain, apples and meat made so far.
+## "$GODOT" --headless --path . -s res://src/prototype/e3/traits_probe.gd -- [--seed=5] [--minutes=120] [--provinces=22] [--scenario=colonization] [--all_rich] [--all_iron] [--all_fertile] [--all_game]
+## --all_rich, --all_iron, --all_fertile, --all_game: every province with that trait (to see the
+## most the new buildings or the richer land can give; run once with and once without).
 
 
 func _init() -> void:
@@ -21,10 +22,12 @@ func _init() -> void:
 	var r := DataRegistry.new()
 	r.load_from("res://data")
 	var sim := Simulation.from_settings(r, s, 1)
-	for flag: String in ["all_rich", "all_iron"]:
+	var flags := {"all_rich": ProvinceDef.RICH_STONE, "all_iron": ProvinceDef.RICH_IRON,
+			"all_fertile": ProvinceDef.FERTILE, "all_game": ProvinceDef.RICH_GAME}
+	for flag: String in flags:
 		if not args.has(flag):
 			continue
-		var t := ProvinceDef.RICH_STONE if flag == "all_rich" else ProvinceDef.RICH_IRON
+		var t: StringName = flags[flag]
 		for id: int in sim.world.ids():
 			var def := sim.world.def_of(id, r)
 			if not def.traits.has(t):
@@ -56,7 +59,7 @@ func _init() -> void:
 				var rate := {}
 				var abstract := sim.runtimes.get(id) as ProvinceAbstract
 				for b: BuildingState in town.buildings.all():
-					if b.def.id in [&"quarry", &"stone_pit", &"mine", &"deep_mine"]:
+					if b.def.id in [&"quarry", &"stone_pit", &"mine", &"deep_mine", &"farm", &"orchard", &"hunter_lodge"]:
 						n[b.def.id] = int(n.get(b.def.id, 0)) + (1 if b.is_complete() else 0)
 						if abstract != null and b.is_complete():
 							rate[b.def.id] = float(rate.get(b.def.id, 0.0)) + abstract.cycles_per_second(b) * 60.0
@@ -65,9 +68,12 @@ func _init() -> void:
 				var rates := ""
 				for k: StringName in rate:
 					rates += " %s %.1f/min" % [k, float(rate[k])]
-				print("    %s %d %s: %s%s | stone %d ore %d ppl %d plan %s" % [owner, id, town.traits, n, rates,
+				var made := town.ledger.made_total
+				print("    %s %d %s: %s%s | stone %d ore %d ppl %d plan %s | made grain %d apples %d meat %d, herds %d (%d animals)" % [
+						owner, id, town.traits, n, rates,
 						town.stored(&"stone"), town.stored(&"iron_ore"), RulerPlanner.residents(town),
-						RulerPlanner.plan_progress(town)]))
+						RulerPlanner.plan_progress(town), made.get(&"grain", 0), made.get(&"apples", 0),
+						made.get(&"meat", 0), town.wild.herds.size(), town.wild.animals()]))
 	for line: String in bot.log:
 		print(line)
 	quit()

@@ -11,7 +11,16 @@ const OWNER_NEUTRAL := &"neutral"
 ## apart from the rare resource. A province with iron ore as its rare resource is rich in iron.
 const RICH_STONE := &"rich_stone"
 const RICH_IRON := &"rich_iron"
-const TRAITS: Array[StringName] = [RICH_STONE, RICH_IRON]
+## E3 part 4 (owner's survey 2026-11-11): fields yield more, the woods keep more game.
+const FERTILE := &"fertile"
+const RICH_GAME := &"rich_game"
+const TRAITS: Array[StringName] = [RICH_STONE, RICH_IRON, FERTILE, RICH_GAME]
+## Fertile land: a field tile yields this many times its harvest (+50%).
+const FERTILE_YIELD := 1.5
+## Rich in game: this many times the herds the woods feed, and they breed and come out of the
+## woods this many times faster.
+const GAME_HERDS := 1.5
+const GAME_BREEDING := 2.0
 
 ## Province map template (a MapDef id): riverlands, lakeland, coast (islands in part 2).
 @export var template: StringName = &""

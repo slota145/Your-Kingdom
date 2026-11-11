@@ -314,7 +314,7 @@ static func assign(data: DataRegistry, world: WorldDef, settings: GameSettings) 
 	var camp := _farthest_def(empty, only_player, func(d: ProvinceDef) -> bool: return not d.island)
 	# (No camp in the Invasion from the sea: the waves are the danger there.)
 	world.bandit_camp = camp.id if camp != null and settings.scenario != GameSettings.INVASION else &""
-	_rich_in_stone(data, defs, player, settings)
+	_traits(data, defs, player, settings)
 
 
 ## Gives the trait "rich in stone" (ROADMAP E3 part 3, owner's survey 2026-11-11) to about one
@@ -322,19 +322,34 @@ static func assign(data: DataRegistry, world: WorldDef, settings: GameSettings) 
 ## neighbour, else a neighbour's neighbour), the rest anywhere. A die of its own, so the rest of
 ## the world comes out as before (a save from before part 3 loads with the trait from its seed).
 ## A neutral town there quarries in a stone pit instead of a quarry.
-static func _rich_in_stone(data: DataRegistry, defs: Array[ProvinceDef], player: ProvinceDef,
+static func _traits(data: DataRegistry, defs: Array[ProvinceDef], player: ProvinceDef,
 		settings: GameSettings) -> void:
+	for d: ProvinceDef in _give_trait(data, defs, player, settings, ProvinceDef.RICH_STONE, "stone", true):
+		if d.owner == ProvinceDef.OWNER_NEUTRAL:
+			d.town_buildings.erase(&"quarry")
+			d.town_buildings[&"stone_pit"] = 1
+	# E3 part 4 (owner's survey 2026-11-11): fertile land as often, one near the player too;
+	# rich in game anywhere. Each with a die of its own (old saves get theirs from the seed).
+	_give_trait(data, defs, player, settings, ProvinceDef.FERTILE, "fertile", true)
+	_give_trait(data, defs, player, settings, ProvinceDef.RICH_GAME, "game", false)
+
+
+## Gives [param t] to about one province in [constant STONE_EVERY], never the player's start;
+## with [param near_player] the first one is near him. Returns the provinces chosen.
+static func _give_trait(data: DataRegistry, defs: Array[ProvinceDef], player: ProvinceDef,
+		settings: GameSettings, t: StringName, die: String, near_player: bool) -> Array[ProvinceDef]:
 	var rng := RandomNumberGenerator.new()
-	rng.seed = hash(["stone", settings.world_seed, settings.province_count, settings.islands,
+	rng.seed = hash([die, settings.world_seed, settings.province_count, settings.islands,
 			settings.rulers, settings.start])
 	var count := maxi(1, roundi(defs.size() / float(STONE_EVERY)))
 	var chosen: Array[ProvinceDef] = []
 	var near: Array[ProvinceDef] = []
-	for id: StringName in player.neighbours:
-		var d := data.get_province(id)
-		if d != null and d != player:
-			near.append(d)
-	if near.is_empty():
+	if near_player:
+		for id: StringName in player.neighbours:
+			var d := data.get_province(id)
+			if d != null and d != player:
+				near.append(d)
+	if near_player and near.is_empty():
 		for id: StringName in player.neighbours:
 			var d := data.get_province(id)
 			if d == null:
@@ -357,11 +372,9 @@ static func _rich_in_stone(data: DataRegistry, defs: Array[ProvinceDef], player:
 		chosen.append(rest.pop_at(rng.randi_range(0, rest.size() - 1)))
 	for d: ProvinceDef in chosen:
 		var own := d.traits.duplicate()
-		own.append(ProvinceDef.RICH_STONE)
+		own.append(t)
 		d.traits = own
-		if d.owner == ProvinceDef.OWNER_NEUTRAL:
-			d.town_buildings.erase(&"quarry")
-			d.town_buildings[&"stone_pit"] = 1
+	return chosen
 
 
 ## The Divided continent: each ruler's capital gets the provinces nearest it (land neighbours of

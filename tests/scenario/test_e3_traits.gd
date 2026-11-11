@@ -366,3 +366,163 @@ func test_iron_wold_has_a_deep_mine() -> void:
 			mines += 1
 			assert_bool(building.is_complete()).is_true()
 	assert_int(mines).is_equal(1)
+
+
+# --- E3 part 4: fertile land and rich in game ---
+
+## In the Kingdom Willow Vale is fertile and Mirror Lakes are rich in game (owner's survey
+## 2026-11-11); a town there has the trait.
+func test_the_kingdom_has_fertile_land_and_game() -> void:
+	assert_array(Array(_registry().get_province(&"willow_vale").all_traits())).contains_exactly([ProvinceDef.FERTILE])
+	assert_array(Array(_registry().get_province(&"mirror_lakes").all_traits())).contains_exactly([ProvinceDef.RICH_GAME])
+	var sim := Simulation.from_world(_registry(), _registry().get_world(&"kingdom"))
+	var vale := sim.world.id_of(&"willow_vale")
+	sim.open_province(vale, _registry().get_map(&"riverlands"))
+	assert_float(sim.province_state(vale).field_yield()).is_equal_approx(ProvinceDef.FERTILE_YIELD, 0.0001)
+	assert_bool(sim.province_state(vale).rich_in_game()).is_false()
+
+
+## A field tile on fertile land yields half as much again, the extra yield included: ten
+## harvests of 1 + 0.2 give 18 instead of 12; the simplified mode adds the same half.
+func test_fertile_land_yields_half_again() -> void:
+	var data := _registry()
+	var farm := BuildingState.new(1, data.get_building(&"farm"), Vector2i.ZERO)
+	var step := farm.def.recipe.steps[0] as FieldStepDef
+	var total := 0
+	for i: int in 10:
+		total += farm.take_field_yield(step, ProvinceDef.FERTILE_YIELD)
+	assert_int(total).is_equal(18)
+	assert_float(farm.field_yield_carry).is_equal_approx(0.0, 0.0001)
+	var extra := 0
+	for i: int in 10:
+		extra += farm.fertile_extra(1, ProvinceDef.FERTILE_YIELD)
+	assert_int(extra).is_equal(5)
+	assert_int(farm.fertile_extra(1, 1.0)).is_equal(0)
+
+
+func _farm(fertile: bool) -> Dictionary:
+	var sim := SimFixture.make_sim(Vector2i(32, 32))
+	if fertile:
+		sim.province.traits = [ProvinceDef.FERTILE]
+	var stock := SimFixture.place(sim, &"stockpile", Vector2i(2, 2))
+	var farm := SimFixture.place(sim, &"farm", Vector2i(12, 12))
+	for tile: Vector2i in [Vector2i(14, 12), Vector2i(15, 12), Vector2i(14, 13), Vector2i(15, 13),
+			Vector2i(14, 14), Vector2i(15, 14), Vector2i(16, 12), Vector2i(16, 13)]:
+		assert_str(String(sim.execute(PlaceFieldCommand.new(farm.id, tile)))).is_empty()
+	var farmer := SimFixture.spawn(sim, &"farmer", farm.entrance_tile())
+	sim.execute(AssignWorkerCommand.new(farmer.id, farm.id))
+	return {"sim": sim, "stock": stock, "farm": farm}
+
+
+func _grain(sim: Simulation) -> int:
+	return int(sim.province.ledger.made_total.get(&"grain", 0))
+
+
+## A farmer on fertile land works as fast and brings in about half as much again.
+func test_a_farmer_on_fertile_land_brings_in_more() -> void:
+	var plain: Simulation = _farm(false)["sim"]
+	var rich: Simulation = _farm(true)["sim"]
+	plain.run_ticks(SimFixture.ticks(480))
+	rich.run_ticks(SimFixture.ticks(480))
+	var a := _grain(plain)
+	var b := _grain(rich)
+	assert_int(a).is_greater(0)
+	assert_float(float(b) / a).override_failure_message("plain %d, fertile %d" % [a, b]).is_between(1.3, 1.7)
+
+
+## The simplified mode harvests half as much again on fertile land too.
+func test_the_simplified_mode_harvests_more_on_fertile_land() -> void:
+	var made: Array[int] = []
+	for fertile: bool in [false, true]:
+		var sim: Simulation = _farm(fertile)["sim"]
+		sim.run_ticks(2)
+		var abstract := ProvinceAbstract.freeze(sim.province, sim.clock.tick)
+		var start := sim.clock.tick / ProvinceAbstract.STEP_TICKS * ProvinceAbstract.STEP_TICKS
+		for t: int in range(0, SimFixture.ticks(1200), ProvinceAbstract.STEP_TICKS):
+			abstract.step(start + t)
+		made.append(int(abstract.detail.ledger.made_total.get(&"grain", 0)))
+	assert_int(made[0]).is_greater(0)
+	assert_float(float(made[1]) / made[0]).override_failure_message("plain %d, fertile %d" % made) \
+			.is_between(1.3, 1.7)
+
+
+func _woods(rich: bool) -> Simulation:
+	var sim := SimFixture.make_sim(Vector2i(48, 48))
+	if rich:
+		sim.province.traits = [ProvinceDef.RICH_GAME]
+	var forest := _registry().get_terrain(&"forest")
+	for y: int in range(20, 46):
+		for x: int in range(20, 46):
+			sim.province.grid.set_terrain(Vector2i(x, y), forest.index)
+	return sim
+
+
+## Woods rich in game feed half as many herds again, and a herd grows back twice as fast.
+func test_woods_rich_in_game_keep_more_herds_breeding_faster() -> void:
+	var plain := _woods(false)
+	var rich := _woods(true)
+	plain.run_ticks(SimFixture.ticks(2))
+	rich.run_ticks(SimFixture.ticks(2))
+	var base := plain.province.wild.herds.size()
+	assert_int(base).is_greater_equal(WildHerds.MIN_HERDS)
+	assert_int(rich.province.wild.herds.size()).is_equal(roundi(base * ProvinceDef.GAME_HERDS))
+	assert_int(rich.province.wild.herds.size()).is_greater(base)
+	# One breeding time of the plain woods: a herd rich in game has had two young.
+	var herd: WildHerds.Herd = rich.province.wild.all()[0]
+	var start := herd.count
+	rich.run_ticks(SimFixture.ticks(WildHerds.BREED_SECONDS + 1))
+	assert_int(herd.count).is_equal(mini(start + 2, WildHerds.size_of(herd.kind)))
+
+
+## Random worlds give out fertile land and game like stone: about one province in ten each,
+## never the start, fertile land once near the player; the same number gives the same, and
+## rich in stone falls where it fell before part 4 (a die of its own each).
+func test_random_worlds_give_out_fertile_land_and_game() -> void:
+	for seed_value: int in [3, 7, 21]:
+		for count: int in [9, 22, 40]:
+			var data := _registry()
+			var world := WorldGenerator.generate(data, _world_settings(seed_value, count))
+			var label := "seed %d, %d provinces" % [seed_value, count]
+			var start := data.get_province(world.start_province)
+			var expected := maxi(1, roundi(world.provinces.size() / float(WorldGenerator.STONE_EVERY)))
+			for t: StringName in [ProvinceDef.FERTILE, ProvinceDef.RICH_GAME]:
+				var with_trait: Array[StringName] = []
+				for id: StringName in world.provinces:
+					if data.get_province(id).traits.has(t):
+						with_trait.append(id)
+				assert_int(with_trait.size()).override_failure_message(label + " " + t).is_equal(expected)
+				assert_bool(with_trait.has(start.id)).override_failure_message(label + " " + t).is_false()
+				if t == ProvinceDef.FERTILE and not start.neighbours.is_empty():
+					var near := false
+					for id: StringName in with_trait:
+						near = near or start.neighbours.has(id)
+						for n: StringName in data.get_province(id).neighbours:
+							near = near or start.neighbours.has(n)
+					assert_bool(near).override_failure_message(label).is_true()
+			var again_data := _registry()
+			var again := WorldGenerator.generate(again_data, _world_settings(seed_value, count))
+			for id: StringName in again.provinces:
+				assert_array(Array(again_data.get_province(id).traits)) \
+						.override_failure_message(label).is_equal(Array(data.get_province(id).traits))
+
+
+## A ruler in a province rich in game keeps a second hunter once the town has people; in a
+## fertile one the second farm comes as soon as a mill grinds, before food runs short.
+func test_rulers_use_fertile_land_and_game() -> void:
+	var sim := Simulation.from_settings(_registry(), _world_settings(5, 18), 1, PackedStringArray())
+	sim.run_ticks(SimClock.TICKS_PER_SECOND * 2)
+	var town := sim.province_state(Rulers.provinces_of(sim.world, Rulers.alive(sim.world)[0])[0])
+	assert_int(RulerPlanner.residents(town)).is_greater_equal(RulerPlanner.GAME_PEOPLE)
+	assert_bool(town.wild.all().is_empty()).is_false()
+	var one_hunter: Dictionary[StringName, int] = {&"hunter_lodge": 1}
+	var two_hunters: Dictionary[StringName, int] = {&"hunter_lodge": 2}
+	var one_farm: Dictionary[StringName, int] = {&"mill": 1, &"farm": 1, &"hunter_lodge": 2}
+	var two_farms: Dictionary[StringName, int] = {&"mill": 1, &"farm": 2, &"hunter_lodge": 2}
+	town.traits = []
+	assert_array(Array(RulerPlanner.shortages(town, one_hunter))).not_contains([&"hunter_lodge"])
+	town.traits = [ProvinceDef.RICH_GAME]
+	assert_array(Array(RulerPlanner.shortages(town, one_hunter))).contains([&"hunter_lodge"])
+	assert_array(Array(RulerPlanner.shortages(town, two_hunters))).not_contains([&"hunter_lodge"])
+	town.traits = [ProvinceDef.FERTILE]
+	assert_array(Array(RulerPlanner.shortages(town, one_farm))).contains([&"farm"])
+	assert_array(Array(RulerPlanner.shortages(town, two_farms))).not_contains([&"farm"])

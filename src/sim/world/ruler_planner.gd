@@ -54,6 +54,8 @@ const LOW_STONE := 6
 ## Below this much stone a province rich in stone with a quarry opens its stone pit (E3).
 const PIT_STONE := 20
 const LOW_FOOD := 15
+## From this many people a province rich in game keeps a second hunter (E3 part 4).
+const GAME_PEOPLE := 20
 ## An input piled up this high means the next link of its chain needs another building.
 const PILED_UP := 25
 ## After the plan the town keeps growing: a new hut whenever every house is full, up to this.
@@ -215,8 +217,15 @@ static func shortages(town: ProvinceSim, counts: Dictionary[StringName, int], sa
 			result.append(&"bakery")
 		elif mills < mini(1 + people / 50, 4):
 			result.append(&"mill")
-	# A link of the bread chain that cannot keep up: its input piles up.
+	# E3 part 4 (owner's survey 2026-11-11): a province rich in game keeps a second hunter, a
+	# fertile one its second farm as soon as a mill grinds (before the food runs short).
+	var hunters := int(counts.get(&"hunter_lodge", 0))
+	if town.rich_in_game() and hunters == 1 and people >= GAME_PEOPLE and not town.wild.all().is_empty():
+		result.append(&"hunter_lodge")
 	var mills_now := int(counts.get(&"mill", 0))
+	if town.field_yield() > 1.0 and mills_now >= 1 and int(counts.get(&"farm", 0)) < 2:
+		result.append(&"farm")
+	# A link of the bread chain that cannot keep up: its input piles up.
 	if town.stored(&"grain") > PILED_UP and mills_now < 4 and mills_now > 0:
 		result.append(&"mill")
 	if town.stored(&"flour") > PILED_UP and int(counts.get(&"bakery", 0)) < mills_now + 1:

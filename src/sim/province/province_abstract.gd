@@ -459,6 +459,8 @@ func _cycle(building: BuildingState, cycle: WorkCycle) -> bool:
 		building.serving_until = p.tick + SimClock.seconds_to_ticks(cycle.serve_hold)
 	for good: StringName in cycle.outputs:
 		var amount := cycle.outputs[good]
+		if cycle.fields:
+			amount += building.fertile_extra(amount, p.field_yield())   # E3 part 4
 		p.ledger.made(good, amount, p.tick)
 		var left := _store(good, amount)
 		if left > 0 and building.yard != null:
