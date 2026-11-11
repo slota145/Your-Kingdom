@@ -985,8 +985,11 @@ msgstr "Warzenie piwa"
 msgid "recipe.brewing.desc"
 msgstr "Piwowar zaciera zboże w kadzi, warzy z chmielem w kotle i wynosi beczki."
 
+msgid "ui.house.upgrade_food"
+msgstr "jedzenie w %d rodzajach"
+
 msgid "ui.house.upgrade_waits"
-msgstr "Awans czeka, aż w magazynach będzie po %d sztuk każdego towaru mieszczan (chleb, ryby, piwo)."
+msgstr "Awans czeka, aż w magazynach będzie po %d sztuk towarów następnej klasy: %s."
 
 msgid "ui.doing.kept_for_building"
 msgstr "czeka: %s zostaje na budowy"

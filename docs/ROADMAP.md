@@ -1414,7 +1414,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Automatyczni gracze i władcy jeszcze nie stawiają sadu (część 4).
 - Zrzut: `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=44,56 --zoom=2 --yards=orchard,farm --fields_seconds=175|240`.
 
-**Część 2, stan (2026-11-11): gotowa, czeka na ocenę.**
+**Część 2, stan (2026-11-11): zaakceptowana („Jest super!”).**
 - Dzikie stada (`WildHerds`, `src/sim/nature/`): sarny (do 5, nowe stado 3) i dziki (do 4, nowe 2) na łąkach przy skraju lasu (las najwyżej 3 kafle dalej; na otwartym, żeby gracz je widział i myśliwy dochodził). Co 30–50 s stado przechodzi o kilka kafli, co 2 minuty przybywa zwierzę, co minutę wychodzi nowe stado, jeśli jest ich mniej, niż las wykarmi (1 na 150 kafli lasu i łąk, 2–8). Trzyma się 5 kafli od budynków (rosnące miasto je odpędza). Żadnych zapisanych losowań: wybory z haszu czasu i numeru stada.
 - Chata myśliwego (`hunter_lodge`, 2×2, 6 drewna, zasięg 20) i krok „poluj” (`HuntStep`): myśliwy wybiera najbliższe stado (rezerwuje je, żeby nie odeszło), podchodzi na 3 kafle, celuje 2 s, strzela (zdarzenie `hunt_shot`, strzała w widoku), reszta stada ucieka 7 kafli dalej, myśliwy podnosi tuszę (towar „zdobycz”, `game`), w chacie oprawia ją na 2 mięsa i zdejmuje skórę (jak rzeźnik). Sarna i dzik dają tyle samo (prościej, do zmiany przy ocenie). Tryb uproszczony też poluje na stada.
 - Widok `WildLayer`: zwierzęta kręcą się wokół miejsca stada (stoją, skubią trawę albo ryją), idą za stadem, a po strzale biegną; strzała leci łukiem.
@@ -1423,10 +1423,21 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Koszt: stada liczą się też w prowincjach władców (tryb uproszczony). Test władców 90 minut: 1,57 ms na tick, test wojny: 1,85 ms (osobno; limit 4 ms). Przy równoległym biegu wszystkich długich testów pomiar potrafi przekroczyć 4 ms (4,02–4,24), bo testy dzielą procesor; położenie budynków stada zapamiętują i odświeżają tylko po zmianie budynków. Testy szybkie (615) i długie przechodzą (pomiary czasu osobno).
 - Zrzut: `game_shot.tscn -- --shot=<plik> --map=lakeland --tile=26,56 --zoom=3 --yards=hunter_lodge --fields_seconds=3|22` (kamera na najbliższe stado), stada mapy `src/prototype/e2/herd_probe.gd -- --map=lakeland`.
 
+**Część 3, stan (2026-11-11): gotowa, czeka na ocenę.**
+- Dieta: jedna potrzeba „jedzenie” (chleb, ryby, mięso, jabłka; 0,1 na mieszkańca na minutę) zamiast „żywność”, „chleb” i „ryby lub mięso”. Minimum rodzajów: chłopi 1, mieszczanie 2, patrycjusze 3. Dom zjada rodzaje po kolei, a ostatnią sztukę rodzaju dopiero wtedy, gdy nie ma nic innego (najpierw jadł ten, którego miał najwięcej, ale chleb był zawsze pełny, więc jedli prawie sam chleb i władcom brakowało go na wyprawy; samo „po kolei” zjadało ostatnie jabłko i dom tracił rodzaj).
+- Punkty z progiem: wagi w GDD §3.2; spokój od 60 (bez głodu), awans od 85 i bez głodu, do tego w magazynach jedzenie w liczbie rodzajów następnej klasy i jej towary podstawowe. Kara tylko za głód (odejmuje punkty jedzenia); inne braki tylko nie dają punktów.
+- Podatek: +10% za każdy rodzaj jedzenia ponad minimum, +5% za każde pełne 10 punktów ponad 60.
+- Wskaźnik zadowolenia (prośba właściciela, ankieta „Buźka nad domem + pasek”): buźka nad domem (czerwona, żółta, zielona), czerwone zawsze widać, wszystkie po przycisku „Zadowolenie” na górnym pasku; w panelu domu pasek punktów z kreskami przy 60 i 85, punkty, rodzaje jedzenia, dodatek do podatku i lista towarów, na które czeka awans.
+- Tryb uproszczony: przybysze tylko wtedy, gdy wejście prowincji jest na lądzie (jak w trybie szczegółowym).
+- Automatyczny gracz (testy): patrycjusze potrzebują 3 rodzajów jedzenia, a mięso z chlewa przychodziło dopiero ok. 70. minuty, więc gracz stawia 2 sady (15. i 28. minuta) i od 15. minuty trzyma 15 drewna na budowy (tartak zjadał całe drewno, a sad i chlew czekały na kilka bali 40 minut). 4 domy patrycjuszy z pełnym zaopatrzeniem (długi test, limit 90 minut): Riverlands w 87. minucie, Pojezierze w 89., Wybrzeże w 66. Zapas jest mały, więc w części 4 (balans) trzeba go zwiększyć. Władcy wysyłają wyprawy jak dotąd (pomiar `settle_probe.gd`), a ich sad i myśliwy przyjdą w części 4.
+- Zapis bez zmiany formatu (v37): punkty i rodzaje jedzenia liczą się na nowo po wczytaniu.
+- Testy: `test_population.gd` (dieta, podatek, wczytanie), poprawione scenariusze (wyprawa, rejs, szlaki). Pomiar władców: `src/prototype/e2/settle_probe.gd`.
+- Zrzut: `town_shot.tscn -- --shot=<plik> --minutes=40 --select=hut --zoom=1 --moods`.
+
 **DoD:**
-- [ ] Sad daje jabłka, jabłonie rosną razem; jabłka są jedzeniem wszystkich klas (część 1: jedzenie chłopów; mieszczanie i patrycjusze w części 3).
+- [x] Sad daje jabłka, jabłonie rosną razem; jabłka są jedzeniem wszystkich klas (część 1: jedzenie chłopów; mieszczanie i patrycjusze od części 3).
 - [x] Sarny i dziki żyją na mapie; myśliwy poluje i oprawia zdobycz na mięso i skórę (część 2).
-- [ ] Dieta 1/2/3 i punkty z progiem działają; dom pokazuje punkty, próg i dodatek do podatku.
+- [x] Dieta 1/2/3 i punkty z progiem działają; dom pokazuje punkty, próg i dodatek do podatku (część 3).
 - [ ] Stare zapisy wczytują się po migracji.
 - [ ] Automatyczni gracze, władcy i osady grają według nowych zasad; testy szybkie i długie przechodzą; UI w PL i EN.
 - [ ] **Twoja ocena gry** po każdej części.

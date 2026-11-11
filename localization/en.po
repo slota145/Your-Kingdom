@@ -975,8 +975,11 @@ msgstr "Brewing"
 msgid "recipe.brewing.desc"
 msgstr "The brewer mashes grain in the vat, brews it with hops in the kettle and carries out the barrels."
 
+msgid "ui.house.upgrade_food"
+msgstr "food of %d kinds"
+
 msgid "ui.house.upgrade_waits"
-msgstr "The upgrade waits until the stockpiles hold %d of each burgher good (bread, fish, beer)."
+msgstr "The upgrade waits until the stockpiles hold %d of each good of the next class: %s."
 
 msgid "ui.doing.kept_for_building"
 msgstr "waiting: %s is kept for building"

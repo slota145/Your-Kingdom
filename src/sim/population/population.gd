@@ -291,20 +291,29 @@ static func _need_met(province: ProvinceSim, building: BuildingState, need: Need
 	return house.residents == 0
 
 
-## The diet (E2 part 3): the household eats the kind of food it has most of, so the kinds go
-## down together; met while it is fed and keeps at least the level's diet_min kinds.
+## The diet (E2 part 3): the household eats its kinds of food in turn, so they go down
+## together, but the last unit of a kind only when nothing else is left; met while it is fed and keeps at least the level's diet_min kinds.
 static func _diet_met(province: ProvinceSim, building: BuildingState, need: NeedDef) -> bool:
 	var house := building.house
 	var hunger: float = house.hunger.get(need.id, 0.0) + house.residents * need.per_resident_per_minute / 60.0
 	hunger = SimCodec.savable(hunger)
+	# The kinds take turns by the clock (nothing to save): bread is fetched first and would
+	# always be the fullest, so "the kind it has most of" ate almost only bread and left none
+	# for the rulers' expeditions.
+	var turn := int(province.tick / SimClock.TICKS_PER_SECOND) + building.id
 	while hunger >= 1.0:
 		var best := &""
-		var most := 0
-		for good: StringName in need.goods:
-			var have := building.supply.total(good)
-			if have > most:
-				best = good
-				most = have
+		var count := need.goods.size()
+		# The last unit of a kind is eaten only when nothing else is left (keeps the kinds).
+		for least: int in [2, 1]:
+			for i: int in count:
+				var good: StringName = need.goods[(turn + i) % count]
+				if building.supply.total(good) >= least:
+					best = good
+					break
+			if best != &"":
+				break
+		turn += 1
 		if best == &"" or building.supply.remove(best, 1) != 1:
 			break
 		hunger -= 1.0

@@ -60,10 +60,17 @@ func test_householder_fetches_bread_when_pantry_runs_low() -> void:
 func test_households_eat_their_pantry() -> void:
 	var sim := SimFixture.make_sim()
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 4)
-	var bread := hut.supply.total(&"bread")
-	# 4 residents x 0.1 bread per minute: 1 loaf in 2.5 minutes.
+	var food := _food(hut)
+	# 4 residents x 0.1 food per minute: 1 unit in 2.5 minutes (the kinds take turns).
 	sim.run_ticks(SimFixture.ticks(160))
-	assert_int(hut.supply.total(&"bread")).is_equal(bread - 1)
+	assert_int(_food(hut)).is_equal(food - 1)
+
+
+func _food(hut: BuildingState) -> int:
+	var n := 0
+	for good: StringName in [&"bread", &"fish", &"meat", &"apples"]:
+		n += hut.supply.total(good)
+	return n
 
 
 func test_happiness_follows_satisfied_needs() -> void:

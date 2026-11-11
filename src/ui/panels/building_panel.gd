@@ -596,7 +596,14 @@ func _house_lines(b: BuildingState) -> PackedStringArray:
 		lines.append(tr("ui.house.declining") % roundi(Population.LEAVE_BELOW))
 	elif house.level < b.def.house_levels.size() and house.met_seconds > 0 and b.site_id == 0:
 		if house.met_seconds >= Population.UPGRADE_AFTER and not Population.next_level_available(province, b):
-			lines.append(tr("ui.house.upgrade_waits") % b.def.house_levels[house.level].supply_units)
+			var next := b.def.house_levels[house.level]
+			var wanted := PackedStringArray()
+			for need: NeedDef in next.needs:
+				if need.is_diet():
+					wanted.append(tr("ui.house.upgrade_food") % next.diet_min)
+				elif need.is_basic and not need.is_service():
+					wanted.append(tr("need.%s.name" % need.id).to_lower())
+			lines.append(tr("ui.house.upgrade_waits") % [next.supply_units, ", ".join(wanted)])
 		else:
 			lines.append(tr("ui.house.upgrade_in") % maxi(Population.UPGRADE_AFTER - house.met_seconds, 0))
 	return lines

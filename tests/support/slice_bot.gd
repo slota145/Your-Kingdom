@@ -129,6 +129,13 @@ func _init(simulation: Simulation) -> void:
 		# E1: a third farm for the long game (after the patrician tests' 90 minutes): the bread
 		# of two farms ran short at about 2 hours already before E1 (6 supplied houses, the limit).
 		{"at": 5460, "build": &"farm", "near": town + Vector2i(18, 12), "fields": 16},
+		# E2 part 3: patricians eat 3 kinds of food; meat comes late (pigs), so apples are the
+		# third kind (and the burghers' second next to bread and fish).
+		# Keep some wood from the sawmill for the sites (the orchard and the pigsty waited
+		# 40 minutes for their few logs while the planks piled up).
+		{"at": 900, "keep": {&"wood": 15}},
+		{"at": 900, "build": &"orchard", "near": town + Vector2i(20, 16), "fields": 12},
+		{"at": 1680, "build": &"orchard", "near": town + Vector2i(-16, -16), "fields": 12},
 		# M4b-2: meat (pigs bought from the travelling merchant) and selling surplus to him.
 		{"at": 1500, "build": &"pigsty", "near": town + Vector2i(-14, 22), "fields": 6},
 		{"at": 1560, "build": &"slaughterhouse", "near": town + Vector2i(-9, 23)},
@@ -235,6 +242,11 @@ func _do(action: Dictionary) -> void:
 		var sell: Dictionary = action["sell"]
 		for good: StringName in sell:
 			sim.execute(SetSellAboveCommand.new(good, int(sell[good])))
+		return
+	if action.has("keep"):
+		var keep: Dictionary = action["keep"]
+		for good: StringName in keep:
+			sim.execute(SetKeepForBuildingCommand.new(good, int(keep[good])))
 		return
 	if action.has("buy_pigs"):
 		var left := int(action["buy_pigs"])
