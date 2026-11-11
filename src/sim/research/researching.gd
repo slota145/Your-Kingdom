@@ -17,7 +17,7 @@ static func update(sim: Simulation) -> void:
 	if def == null:
 		research.current = &""
 		return
-	research.progress += teachers(sim, def.institution)
+	research.progress += study_rate(sim, def.institution)
 	if research.progress >= def.time:
 		var id := research.current
 		research.complete(id)
@@ -49,10 +49,27 @@ static func cancel(sim: Simulation, id: StringName) -> void:
 	sim.events.emit(&"research_cancelled", {"research": id})
 
 
-## Teachers at work in the player's schools (or scholars at universities): one per staffed
-## building of [param institution].
+## Teachers at work in the player's schools (or scholars at universities, two each, E4 part 3).
 static func teachers(sim: Simulation, institution: StringName) -> int:
 	var count := 0
+	for pair: Array in _at_work(sim, institution):
+		count += int(pair[1])
+	return count
+
+
+## Seconds of study a second: a second for each teacher or scholar at work, faster with research
+## that speeds the institution up (E4 part 3: "Deep learning" doubles the schools).
+static func study_rate(sim: Simulation, institution: StringName) -> float:
+	var rate := 0.0
+	for pair: Array in _at_work(sim, institution):
+		var building := pair[0] as BuildingState
+		rate += int(pair[1]) * sim.research.work_speed(sim.data, building.def.id)
+	return rate
+
+
+## [building, its workers at work] of every player's building of [param institution].
+static func _at_work(sim: Simulation, institution: StringName) -> Array[Array]:
+	var result: Array[Array] = []
 	for id: int in sim.runtimes:
 		if sim.world.owner_of(id) != ProvinceDef.OWNER_PLAYER:
 			continue
@@ -62,11 +79,11 @@ static func teachers(sim: Simulation, institution: StringName) -> int:
 			if building.def.research_institution != institution or not building.is_complete() \
 					or building.paused:
 				continue
-			var staffed := int(abstract.staff.get(building.id, 0)) > 0 if abstract != null \
-					else _teacher_at_work(state, building)
-			if staffed:
-				count += 1
-	return count
+			var working := int(abstract.staff.get(building.id, 0)) if abstract != null \
+					else _teachers_at_work(state, building)
+			if working > 0:
+				result.append([building, working])
+	return result
 
 
 ## Schools (or universities) the player has built.
@@ -81,15 +98,16 @@ static func has_institution(sim: Simulation, institution: StringName) -> bool:
 	return false
 
 
-## A teacher works when he is assigned and stands at his school (not on his way).
-static func _teacher_at_work(province: ProvinceSim, building: BuildingState) -> bool:
+## Teachers who are assigned and stand at their school (not on their way).
+static func _teachers_at_work(province: ProvinceSim, building: BuildingState) -> int:
 	var area := Rect2i(building.origin, building.def.footprint).grow(1)
+	var count := 0
 	for worker: int in building.workers:
 		var agent := province.agents.get_agent(worker)
 		if agent != null and agent.workplace_id == building.id and agent.path_state != Agent.PathState.MOVING \
 				and area.has_point(agent.tile()):
-			return true
-	return false
+			count += 1
+	return count
 
 
 static func _start_next(sim: Simulation) -> void:

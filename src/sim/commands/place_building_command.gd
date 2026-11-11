@@ -44,6 +44,8 @@ static func research_error(province: ProvinceSim, def: BuildingDef) -> StringNam
 		return &"needs_research"
 	if def.needs_house_level > 1 and not province.has_house_level(def.needs_house_level):
 		return &"needs_burghers" if def.needs_house_level == 2 else &"needs_patricians"
+	if def.needs_building != &"" and not province.has_finished(def.needs_building):
+		return StringName("needs_" + String(def.needs_building))
 	return &""
 
 

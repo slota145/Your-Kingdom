@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ResearchDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/research_def.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+institution = &"university"
+tier = 1
+row = 2
+gold_cost = 300
+time = 240.0
+affects = Array[StringName]([&"school"])
+work_speed = 2.0
+id = &"deep_learning"

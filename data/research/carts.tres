@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ResearchDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/research_def.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+institution = &"university"
+tier = 1
+row = 4
+gold_cost = 300
+time = 240.0
+cart_load = 1
+id = &"carts"

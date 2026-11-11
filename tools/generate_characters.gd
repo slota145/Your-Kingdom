@@ -92,6 +92,10 @@ const PEOPLE := {
 	"teacher": {"shirt": Color(0.22, 0.24, 0.36), "legs": Color(0.2, 0.2, 0.26), "hair": Color(0.55, 0.52, 0.48),
 			"hat": "cap", "hat_colour": Color(0.14, 0.14, 0.2), "beard": true, "dress": true,
 			"cloak": Color(0.2, 0.22, 0.32), "tool": "staff"},
+	# E4 part 3: a scholar in a red academic gown with a black cap, a book in hand.
+	"scholar": {"shirt": Color(0.55, 0.14, 0.12), "legs": Color(0.25, 0.12, 0.1), "hair": Color(0.4, 0.3, 0.2),
+			"hat": "cap", "hat_colour": Color(0.1, 0.1, 0.12), "dress": true,
+			"cloak": Color(0.5, 0.12, 0.1), "tool": ""},
 	# M4b-2 (meat)
 	"swineherd": {"shirt": Color(0.6, 0.52, 0.36), "legs": Color(0.38, 0.3, 0.22), "hair": Color(0.55, 0.38, 0.2),
 			"hat": "straw", "tool": "spade"},
@@ -224,6 +228,8 @@ const WORK := {
 	"descend": ["bend", ""], "wind": ["stir", ""],
 	# E4 part 2: the teacher points at the blackboard, rings the bell
 	"teach": ["throw", "staff"], "ring": ["stir", ""],
+	# E4 part 3: the scholar reads and writes at a lectern
+	"read": ["hold", ""], "write": ["stir", ""],
 }
 
 ## Activities each profession performs (recipes, fields, building).
@@ -246,6 +252,7 @@ const ACTIVITIES := {
 	"smelter": ["stack", "bellows", "tap"], "blacksmith": ["heat", "forge", "quench"],
 	"armourer": ["heat", "rivet", "polish"], "bowyer": ["carve", "bend", "string"], "groom": ["feed", "groom"],
 	"recruit": [], "teacher": ["teach", "ring", "rest"],
+	"scholar": ["read", "write", "rest"],
 }
 
 ## Carry category -> hands (side, front, height) for both hands, the good's anchor and

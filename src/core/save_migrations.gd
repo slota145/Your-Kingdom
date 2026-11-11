@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 39
+const CURRENT_VERSION := 40
 ## Hive tiles an old apiary gets on its first second after loading a save before v34.
 const AUTO_HIVES := 4
 ## Horses one pen tile of a stud farm holds (data/buildings/stud_farm.tres, pen_animals).
@@ -133,6 +133,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 39:
 		result = migrate_v38_to_v39(result)
 		version = 39
+	if version < 40:
+		result = migrate_v39_to_v40(result)
+		version = 40
 	return result
 
 
@@ -420,6 +423,33 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
 ## target, the Invasion from the sea with the clock of its waves). A game from before is a
 ## Colonization game: its settings name the scenario and get the default gold target.
+## v40 (E4 part 3): the university's research, the stone wall behind "Defensive masonry" and
+## the charter of farms and herds (a building's "charter", optional). A game that had all research
+## (an older one) gets the new ones too; a game started with research keeps its stone walls
+## (they were free in it) and studies the rest.
+const V40_RESEARCH: Array[String] = ["armouring", "carts", "charter", "chivalry", "crossbows",
+		"deep_learning", "defensive_masonry", "large_shipyard", "larger_fields_2", "larger_pens_2",
+		"siege_engines"]
+
+
+static func migrate_v39_to_v40(state: Dictionary) -> Dictionary:
+	var research: Dictionary = state.get("research", {})
+	if research.is_empty() or bool(research.get("open", false)):
+		return state
+	var done: Array = research.get("done", [])
+	var everything := true
+	for id: String in V39_RESEARCH:
+		if not done.has(id):
+			everything = false
+	var added: Array = V40_RESEARCH.duplicate() if everything else ["defensive_masonry"]
+	for id: Variant in added:
+		if not done.has(id):
+			done.append(id)
+	done.sort()
+	research["done"] = done
+	return state
+
+
 ## v39 (E4 part 2): the kingdom's research ("research": done, current, progress, queue). An
 ## older game has every research of the school done (owner's survey 2026-11-11: old saves get
 ## all research), so nothing it has built is locked.

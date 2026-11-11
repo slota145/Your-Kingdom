@@ -22,6 +22,10 @@ const UNIVERSITY := &"university"
 ## Buildings and ships it unlocks (none of them can be built before).
 @export var buildings: Array[StringName] = []
 @export var ships: Array[StringName] = []
+## Units recruited in barracks (E4 part 3: swordsmen, knights...) and building tools (the stone
+## wall: &"stone_wall") it unlocks.
+@export var units: Array[StringName] = []
+@export var tools: Array[StringName] = []
 ## Buildings whose work it improves, and how.
 @export var affects: Array[StringName] = []
 ## More field, pen or hive tiles (BuildingDef.field_limit).
@@ -32,6 +36,11 @@ const UNIVERSITY := &"university"
 @export_range(1.0, 4.0) var work_speed: float = 1.0
 ## Units a porter carries more (all porters, not [member affects]).
 @export_range(0, 4) var porter_load: int = 0
+## Units a handcart carries more (E4 part 3).
+@export_range(0, 4) var cart_load: int = 0
+## Unlocks the charter of farms and herds (E4 part 3, "Nadanie": fields and pens ×2, a second
+## worker; switched per building).
+@export var charter: bool = false
 
 
 func get_kind() -> StringName:
@@ -40,4 +49,5 @@ func get_kind() -> StringName:
 
 ## An improvement (porters, fields, speed) rather than an unlock.
 func is_upgrade() -> bool:
-	return extra_fields > 0 or extra_radius > 0 or work_speed > 1.0 or porter_load > 0
+	return extra_fields > 0 or extra_radius > 0 or work_speed > 1.0 or porter_load > 0 or cart_load > 0 \
+			or charter

@@ -12,7 +12,7 @@ signal hide_requested
 
 ## Tab id -> its buildings in order (ids missing from the data are skipped).
 const TABS: Array[Dictionary] = [
-	{"id": &"housing", "buildings": [&"hut", &"well", &"chapel", &"church", &"market", &"tavern", &"school"]},
+	{"id": &"housing", "buildings": [&"hut", &"well", &"chapel", &"church", &"market", &"tavern", &"school", &"university"]},
 	{"id": &"resources", "buildings": [&"woodcutter", &"forester", &"sawmill", &"quarry", &"stone_pit", &"clay_pit",
 			&"brickworks"]},
 	{"id": &"food", "buildings": [&"farm", &"mill", &"bakery", &"orchard", &"hunter_lodge", &"fishing_hut", &"pigsty",
@@ -39,6 +39,9 @@ var _buttons: Dictionary[StringName, Button] = {}
 ## Padlocks and the reasons of locked buildings (E4 part 2), by building id.
 var _locks: Dictionary[StringName, TextureRect] = {}
 var _lock_text: Dictionary[StringName, String] = {}
+## The stone wall's padlock (E4 part 3).
+var _wall_lock: TextureRect
+var _wall_lock_button: Button
 ## The only building allowed now (a start from a ship: the pioneer camp first, M5 part 3).
 var _locked_to: StringName = &""
 
@@ -127,6 +130,12 @@ func lock_to(only: StringName) -> void:
 ## Padlocks on the buildings [param province] may not build yet (E4 part 2): a research it
 ## needs, or the house level the school waits for. Cheap enough to call twice a second.
 func refresh_locks(province: ProvinceSim) -> void:
+	if _wall_lock != null:
+		var research := province.research.needed_for_tool(province.data, BuildWallCommand.STONE_TOOL)
+		_wall_lock.visible = research != &""
+		_wall_lock_button.modulate = Color(0.6, 0.6, 0.6) if research != &"" else Color.WHITE
+		_wall_lock_button.tooltip_text = (tr("ui.build.needs_research") % tr("research.%s.name" % research) + "\n" \
+				if research != &"" else "") + tr("ui.build.stone_wall_tip")
 	for id: StringName in _buttons:
 		var def := province.data.get_building(id)
 		var reason := PlaceBuildingCommand.research_error(province, def)
@@ -221,6 +230,17 @@ func _wall_button(tool: StringName) -> Button:
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(name)
 	b.tooltip_text = key + "_tip"
+	if tool == BuildWallCommand.STONE_TOOL:
+		# E4 part 3: the stone wall waits for "Defensive masonry".
+		var lock := UiKit.icon("lock")
+		lock.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE, 4)
+		lock.scale = Vector2(2, 2)
+		lock.position.x -= 16
+		lock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		lock.visible = false
+		b.add_child(lock)
+		_wall_lock = lock
+		_wall_lock_button = b
 	return b
 
 

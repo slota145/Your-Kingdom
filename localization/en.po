@@ -4599,3 +4599,114 @@ msgstr "Needs research: %s"
 
 msgid "ui.note.research_finished"
 msgstr "Researched: %s"
+
+msgid "building.university.name"
+msgstr "University"
+
+msgid "building.university.desc"
+msgstr "Two scholars read books, write and debate in the cloister. At the university the kingdom researches the army, great ships and improvements. It can be built after the first patricians' house, when a school stands in the province."
+
+msgid "recipe.studying.name"
+msgstr "Studies"
+
+msgid "recipe.studying.desc"
+msgstr "The scholar reads at a lectern, writes down his findings and walks in the cloister. Every scholar at work moves research on."
+
+msgid "ui.kind.scholar"
+msgstr "Scholar"
+
+msgid "ui.activity.read"
+msgstr "reads a book"
+
+msgid "ui.activity.write"
+msgstr "writes down findings"
+
+msgid "research.defensive_masonry.name"
+msgstr "Defensive masonry"
+
+msgid "research.defensive_masonry.desc"
+msgstr "Stone walls, towers and gatehouses. The palisade and stairs are there from the start."
+
+msgid "research.armouring.name"
+msgstr "Armouring"
+
+msgid "research.armouring.desc"
+msgstr "The armourer makes chainmail; swordsmen, men-at-arms and halberdiers in the barracks."
+
+msgid "research.crossbows.name"
+msgstr "Crossbows"
+
+msgid "research.crossbows.desc"
+msgstr "Crossbowmen in the barracks (the bowyer makes crossbows)."
+
+msgid "research.deep_learning.name"
+msgstr "Deep learning"
+
+msgid "research.deep_learning.desc"
+msgstr "Scholars write textbooks: schools teach twice as fast."
+
+msgid "research.carts.name"
+msgstr "Better carts"
+
+msgid "research.carts.desc"
+msgstr "A porter's handcart takes 1 more."
+
+msgid "research.larger_fields_2.name"
+msgstr "Larger fields II"
+
+msgid "research.larger_fields_2.desc"
+msgstr "Farms, orchards, hop farms and vineyards get another 4 field tiles."
+
+msgid "research.larger_pens_2.name"
+msgstr "Larger pens II"
+
+msgid "research.larger_pens_2.desc"
+msgstr "Pigsties, sheep farms and stud farms get another 2 pens, apiaries 2 hives."
+
+msgid "research.chivalry.name"
+msgstr "Chivalry"
+
+msgid "research.chivalry.desc"
+msgstr "The stud farm; knights and light cavalry in the barracks."
+
+msgid "research.siege_engines.name"
+msgstr "Siege engines"
+
+msgid "research.siege_engines.desc"
+msgstr "The siege workshop: rams, ladders and ballistas."
+
+msgid "research.large_shipyard.name"
+msgstr "Large shipyard"
+
+msgid "research.large_shipyard.desc"
+msgstr "The large shipyard: caravels, carracks and galleons, merchant and war."
+
+msgid "research.charter.name"
+msgstr "Charter"
+
+msgid "research.charter.desc"
+msgstr "A farm, orchard, vineyard, pigsty, sheep farm, stud farm or apiary can get a charter (a button in its panel): twice the fields, pens or hives, but it employs a second worker."
+
+msgid "ui.command_error.no_charter_here"
+msgstr "This building cannot get a charter"
+
+msgid "ui.research.school"
+msgstr "School"
+
+msgid "ui.research.university"
+msgstr "University"
+
+msgid "ui.research.no_scholar"
+msgstr "Learning has stopped: no scholar works at the university."
+
+msgid "ui.research.no_university"
+msgstr "The university studies this: build one (after the first patricians' house, beside a school)."
+
+msgid "ui.charter.give"
+msgstr "Give a charter"
+
+msgid "ui.charter.take_back"
+msgstr "Take the charter back"
+
+msgid "ui.charter.hint"
+msgstr "Charter: twice the fields, pens or hives, but the building employs a second worker. Taking it back keeps the fields and sends the second worker home."

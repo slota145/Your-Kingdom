@@ -149,7 +149,10 @@ func _refresh_barracks(province: ProvinceSim, b: BuildingState) -> void:
 		for good: StringName in Barracks.gear_goods(unit):
 			have.append(LocFormat.good_count(good, _available(province, good)))
 		tip.append(tr("ui.barracks.in_stock") % ", ".join(have))
-		if why != &"":
+		if why == &"needs_research":
+			var research := province.research.needed_for_unit(province.data, unit.id)
+			tip.append(tr("ui.build.needs_research") % tr("research.%s.name" % research))   # E4 part 3
+		elif why != &"":
 			tip.append(tr("ui.command_error.%s" % why))
 		button.tooltip_text = "\n".join(tip)
 

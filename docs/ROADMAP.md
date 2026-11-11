@@ -1570,6 +1570,13 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Dzwon w mieście po skończonym badaniu: gra nie ma jeszcze dźwięków (M10), na razie tylko powiadomienie.
 - Testy `tests/scenario/test_e4_research.gd`; zrzuty w ART_SPEC §10.24.
 
+**Część 3, decyzje z ankiety 2026-11-11 (uniwersytet; poprawek z oceny części 2 brak, „Super wygląda ta szkoła”):**
+- **Uniwersytet 4×4 ze SpriteKiln,** średniowieczne kolegium (kamień, krużganek, wieża biblioteki), 2 uczonych; każdy przy pracy to sekunda nauki na sekundę. Koszt ok. 16 desek, 20 kamieni, 8 cegieł, 500 złota. Stawia się go po pierwszej kamienicy patrycjuszy, gdy w prowincji stoi szkoła.
+- **Badania wojskowe blokują jednostki i budynki:** płatnerstwo (płatnerz; miecznicy, zbrojni, halabardnicy), kusze (kusznicy), rycerstwo (stadnina; rycerze, lekka jazda), machiny oblężnicze (warsztat machin). Kowal i łuczarz dalej robią wszystko.
+- **Kamienne mury, baszty i bramy za tanim badaniem w szkole** („Kamieniarstwo obronne”); palisada, brama w palisadzie i schody od startu.
+- **Koszty drożej niż szkoła:** ok. 4 min i 300 złota, 6 min i 450, 8 min i 650 (czas z jednym uczonym).
+- **Badania uniwersytetu:** płatnerstwo, kusze, rycerstwo, machiny oblężnicze, duża stocznia (z karawelą, karaką i galeonem), wózki +1, większe pola II (+4), większe zagrody II (+2), „Nadanie” (przycisk w panelu: pola i zagrody ×2, drugi pracownik), głęboka nauka (szkoły uczą 2× szybciej). Duże koszary dojdą w części 4.
+
 **Kryteria ukończenia:**
 - [x] Tryb deweloperski działa z menu nowej gry (część 1).
 - [x] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).

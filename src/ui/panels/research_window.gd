@@ -14,6 +14,8 @@ const REFRESH := 0.5
 const CARD := Vector2(214, 74)
 const COL_W := 262.0
 const ROW_H := 84.0
+## Room for the headings over the school's and the university's columns.
+const HEAD_H := 30.0
 const DONE := Color(0.62, 0.86, 0.55)
 const NOW := Color(1.0, 0.9, 0.5)
 const QUEUED := Color(0.95, 0.82, 0.6)
@@ -58,6 +60,10 @@ func _init() -> void:
 	_tree = Control.new()
 	_tree.draw.connect(_draw_arrows)
 	scroll.add_child(_tree)
+	for i: int in 2:
+		var heading := UiKit.title("ui.research.school" if i == 0 else "ui.research.university")
+		heading.position = Vector2(i * 3 * COL_W + 4, 0)
+		_tree.add_child(heading)
 
 
 func open(simulation: Simulation) -> void:
@@ -97,8 +103,10 @@ func _build_cards() -> void:
 	_tree.custom_minimum_size = size + Vector2(8, 8)
 
 
+## School research in the first three columns, the university's in the next three (E4 part 3).
 func _card_pos(def: ResearchDef) -> Vector2:
-	return Vector2((def.tier - 1) * COL_W + 4, def.row * ROW_H + 4)
+	var column := def.tier - 1 + (3 if def.institution == ResearchDef.UNIVERSITY else 0)
+	return Vector2(column * COL_W + 4, def.row * ROW_H + HEAD_H + 4)
 
 
 func _clicked(id: StringName) -> void:
@@ -117,11 +125,15 @@ func _refresh() -> void:
 	elif research.current != &"":
 		var def := sim.data.get_research(research.current)
 		var left := maxf(def.time - research.progress, 0.0)
+		var rate := Researching.study_rate(sim, def.institution)
+		teachers = Researching.teachers(sim, def.institution)
 		_status.text = tr("ui.research.current") % [tr(def.name_key()),
-				_time_text(left / maxi(teachers, 1)), teachers]
+				_time_text(left / maxf(rate, 1.0)), teachers]
 		if teachers == 0:
-			_status.text += "\n" + tr("ui.research.no_teacher" if Researching.has_institution(sim, def.institution)
-					else "ui.research.no_school")
+			var uni := def.institution == ResearchDef.UNIVERSITY
+			var built := Researching.has_institution(sim, def.institution)
+			_status.text += "\n" + tr(("ui.research.no_scholar" if uni else "ui.research.no_teacher") if built
+					else ("ui.research.no_university" if uni else "ui.research.no_school"))
 	elif not research.queue.is_empty():
 		_status.text = tr("ui.research.waiting_gold") % tr(sim.data.get_research(research.queue[0]).name_key())
 	elif not Researching.has_institution(sim, ResearchDef.SCHOOL):
@@ -170,18 +182,17 @@ func _refresh_card(def: ResearchDef) -> void:
 		else:
 			state = tr("ui.research.cost") % [def.gold_cost, _time_text(def.time)]
 			tip.append(tr("ui.research.click_start"))
-	if not def.buildings.is_empty():
-		var unlocks := PackedStringArray()
-		for b: StringName in def.buildings:
-			unlocks.append(tr("building.%s.name" % b))
-		for s: StringName in def.ships:
-			unlocks.append(tr("ship.%s.name" % s))
+	var unlocks := PackedStringArray()
+	for b: StringName in def.buildings:
+		unlocks.append(tr("building.%s.name" % b))
+	for s: StringName in def.ships:
+		unlocks.append(tr("ship.%s.name" % s))
+	for u: StringName in def.units:
+		unlocks.append(tr("unit.%s.name" % u))
+	for t: StringName in def.tools:
+		unlocks.append(tr("ui.build.%s" % t))
+	if not unlocks.is_empty():
 		tip.append(tr("ui.research.unlocks") % ", ".join(unlocks))
-	elif not def.ships.is_empty():
-		var ships := PackedStringArray()
-		for s: StringName in def.ships:
-			ships.append(tr("ship.%s.name" % s))
-		tip.append(tr("ui.research.unlocks") % ", ".join(ships))
 	card.text = tr(def.name_key()) + "\n" + state
 	card.modulate = colour
 	card.tooltip_text = "\n".join(tip)

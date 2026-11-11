@@ -63,6 +63,8 @@ var herd_keep: int = 2
 var field_yield_carry: float = 0.0
 ## Herd with pens (Z1): the starting pair has come (with the first pen tile).
 var herd_given: bool = false
+## The charter (E4 part 3, "Nadanie"): fields, pens or hives ×2 and a second worker.
+var charter: bool = false
 ## Herd with pens (Z1): pen tiles the building owns. Not saved: counted from the field tiles
 ## (ProvinceSim.update_herd_room).
 var pens: int = 0
@@ -223,6 +225,25 @@ func ensure_yard(data: DataRegistry) -> void:
 
 ## A herd in pens gets its starting pair once (Z1, owner's survey 2026-11-10): when the first
 ## pen has room for it next to a finished building. Returns the animals given.
+## Kinds of the workers this building employs: its def's, twice over with a charter (E4 part 3).
+func worker_kinds() -> Array[StringName]:
+	if not charter:
+		return def.worker_kinds
+	var kinds: Array[StringName] = def.worker_kinds.duplicate()
+	kinds.append_array(def.worker_kinds)
+	return kinds
+
+
+func worker_count() -> int:
+	return def.worker_count() * (2 if charter else 1)
+
+
+## Whether a charter may be given: a farm, an orchard, a vineyard or a herd with fields, pens or
+## hives (E4 part 3).
+func can_have_charter() -> bool:
+	return def.field_limit() > 0 and def.worker_count() > 0 and not def.plants_trees()
+
+
 func give_pair() -> int:
 	# Once the pen has room for the pair (a stud farm: its second tile, one horse a tile).
 	if not def.has_pens() or herd_given or yard == null or pens == 0 or herd_room() < def.herd_start:
@@ -420,6 +441,8 @@ func to_dict() -> Dictionary:
 		d["yield_carry"] = field_yield_carry
 	if herd_given:
 		d["herd_given"] = true
+	if charter:
+		d["charter"] = true
 	if pens_due != 0:
 		d["pens_due"] = pens_due
 	if carts != 0:
@@ -490,6 +513,7 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	b.herd_keep = int(d.get("herd_keep", b.def.herd_keep))
 	b.field_yield_carry = float(d.get("yield_carry", 0.0))
 	b.herd_given = bool(d.get("herd_given", false))
+	b.charter = bool(d.get("charter", false))
 	b.pens_due = int(d.get("pens_due", 0))
 	b.carts = int(d.get("carts", 0))
 	b.lent = int(d.get("lent", 0))

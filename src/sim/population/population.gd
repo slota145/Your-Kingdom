@@ -542,13 +542,13 @@ static func staffing(province: ProvinceSim, homeless: Dictionary[int, int]) -> D
 			free += building.house.workforce()
 	var workplaces: Array[BuildingState] = []
 	for building: BuildingState in province.buildings.all():
-		if building.is_complete() and building.def.worker_count() > 0:
+		if building.is_complete() and building.worker_count() > 0:
 			workplaces.append(building)
 	workplaces.sort_custom(_staffed_before)
 	var result: Dictionary[int, int] = {}
 	for workplace: BuildingState in workplaces:
-		var have: int = mini(homeless.get(workplace.id, 0), workplace.def.worker_count())
-		var hired := mini(workplace.def.worker_count() - have, free)
+		var have: int = mini(homeless.get(workplace.id, 0), workplace.worker_count())
+		var hired := mini(workplace.worker_count() - have, free)
 		free -= hired
 		if have + hired > 0:
 			result[workplace.id] = have + hired
@@ -598,7 +598,7 @@ static func _balance_workforce(province: ProvinceSim, at_workplace: bool = false
 	# A workplace that needs fewer workers than it has (the port warehouses lost their porters
 	# in P2 part 1: an older game's go home).
 	for building: BuildingState in province.buildings.all():
-		while building.workers.size() > building.def.worker_count():
+		while building.workers.size() > building.worker_count():
 			var extra := province.agents.get_agent(building.workers.back())
 			if extra == null:
 				building.workers.pop_back()
@@ -606,7 +606,7 @@ static func _balance_workforce(province: ProvinceSim, at_workplace: bool = false
 				province.remove_agent(extra)
 	var workplaces: Array[BuildingState] = []
 	for building: BuildingState in province.buildings.all():
-		if building.is_complete() and building.workers.size() < building.def.worker_count():
+		if building.is_complete() and building.workers.size() < building.worker_count():
 			workplaces.append(building)
 	workplaces.sort_custom(_staffed_before)
 	for workplace: BuildingState in workplaces:
@@ -659,7 +659,7 @@ static func missing_kinds(province: ProvinceSim, workplace: BuildingState) -> Ar
 
 
 static func _missing_kinds(province: ProvinceSim, workplace: BuildingState) -> Array[StringName]:
-	var missing: Array[StringName] = workplace.def.worker_kinds.duplicate()
+	var missing: Array[StringName] = workplace.worker_kinds().duplicate()
 	for id: int in workplace.workers:
 		var agent := province.agents.get_agent(id)
 		if agent != null:

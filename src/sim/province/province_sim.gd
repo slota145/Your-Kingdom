@@ -1128,6 +1128,14 @@ func _work_area(building: BuildingState) -> Rect2i:
 			Rect2i(Vector2i.ZERO, grid.size))
 
 
+## Whether a finished building of [param def_id] stands here (E4 part 3: the university's school).
+func has_finished(def_id: StringName) -> bool:
+	for building: BuildingState in buildings.all():
+		if building.def.id == def_id and building.is_complete():
+			return true
+	return false
+
+
 ## Whether a finished house of [param level] or higher stands here (E4 part 2: the school).
 func has_house_level(level: int) -> bool:
 	for building: BuildingState in buildings.all():
@@ -1145,7 +1153,10 @@ func work_radius(building: BuildingState) -> int:
 ## larger fields and pens).
 func field_limit(building: BuildingState) -> int:
 	var limit := building.def.field_limit()
-	return limit + research.extra_fields(data, building.def.id) if limit > 0 else 0
+	if limit == 0:
+		return 0
+	limit += research.extra_fields(data, building.def.id)
+	return limit * 2 if building.charter else limit   # the charter (E4 part 3)
 
 
 ## Whether a sapling may go on [param tile]: a stump of [param node_id] (old saves), or free

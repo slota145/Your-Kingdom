@@ -102,6 +102,11 @@ const BUILDINGS := {
 	"school": [{"volumes": [
 		{"kind": "house", "rect": [0.1, 0.15, 2.15, 1.4], "h": 44.0, "rh": 30.0, "ridge": "x", "ends": ["gable", "gable"], "walls": "timber", "roof": "tile", "shutters": Color(0.3, 0.4, 0.6)}],
 		"props": []}],
+	# E4 part 3: the university's base art is from SpriteKiln (tools/spritekiln/gen_university.py);
+	# this look gives its construction sites (restore base.* after running this script).
+	"university": [{"volumes": [
+		{"kind": "house", "rect": [0.2, 0.2, 3.0, 1.4], "h": 46.0, "rh": 32.0, "ridge": "x", "ends": ["gable", "gable"], "walls": "stone", "roof": "tile", "shutters": Color(0.3, 0.4, 0.6)}],
+		"props": []}],
 	"farm": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.86], "h": 42.0, "rh": 26.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2), "chimney": [0.55, 0.6]}],
 		"props": [["sheaves", 1.3, 1.78], ["cart_wheel", 0.55, 1.98]]}],

@@ -180,6 +180,9 @@ const PEN_ANIMALS := 2
 ## The player builds it only when a house of this level stands in the province (E4 part 2:
 ## the school after the first burghers' house); 0 = always.
 @export_range(0, 3) var needs_house_level: int = 0
+## The player builds it only when this building stands finished in the province (E4 part 3: the
+## university after a school); empty = always.
+@export var needs_building: StringName = &""
 
 
 func is_fort() -> bool:

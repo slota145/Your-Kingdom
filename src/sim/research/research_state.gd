@@ -23,6 +23,7 @@ var _cache_version: int = -1
 ## Building id -> [extra fields, extra radius, work speed].
 var _bonus: Dictionary[StringName, Array] = {}
 var _porter_load: int = 1
+var _cart_extra: int = 0
 ## Building or ship id -> the research that unlocks it.
 var _unlocks: Dictionary[StringName, StringName] = {}
 
@@ -58,10 +59,32 @@ func allows_building(data: DataRegistry, building: StringName) -> bool:
 
 ## As [method needed_for_building], for a ship ("ship:" keys keep them apart from buildings).
 func needed_for_ship(data: DataRegistry, ship: StringName) -> StringName:
+	return _needed(data, "ship:", ship)
+
+
+## As [method needed_for_building], for a unit recruited in barracks (E4 part 3).
+func needed_for_unit(data: DataRegistry, unit: StringName) -> StringName:
+	return _needed(data, "unit:", unit)
+
+
+func allows_unit(data: DataRegistry, unit: StringName) -> bool:
+	return needed_for_unit(data, unit) == &""
+
+
+## As [method needed_for_building], for a building tool (E4 part 3: &"stone_wall").
+func needed_for_tool(data: DataRegistry, tool: StringName) -> StringName:
+	return _needed(data, "tool:", tool)
+
+
+func allows_tool(data: DataRegistry, tool: StringName) -> bool:
+	return needed_for_tool(data, tool) == &""
+
+
+func _needed(data: DataRegistry, prefix: String, id: StringName) -> StringName:
 	if open:
 		return &""
 	_refresh(data)
-	var research: StringName = _unlocks.get(StringName("ship:" + String(ship)), &"")
+	var research: StringName = _unlocks.get(StringName(prefix + String(id)), &"")
 	return &"" if research == &"" or done.has(research) else research
 
 
@@ -87,6 +110,20 @@ func work_speed(data: DataRegistry, building: StringName) -> float:
 	_refresh(data)
 	var bonus: Array = _bonus.get(building, [])
 	return float(bonus[2]) if not bonus.is_empty() else 1.0
+
+
+## Units a handcart carries more than its own load (E4 part 3: "Carts").
+func cart_extra(data: DataRegistry) -> int:
+	_refresh(data)
+	return _cart_extra
+
+
+## Whether farms and herds may take a charter (E4 part 3, "Nadanie").
+func allows_charter(data: DataRegistry) -> bool:
+	for def: ResearchDef in data.researches():
+		if def.charter and done.has(def.id):
+			return true
+	return false
 
 
 ## Units a porter carries at once (1, 2 with "Better carrying").
@@ -154,14 +191,20 @@ func _refresh(data: DataRegistry) -> void:
 	_bonus.clear()
 	_unlocks.clear()
 	_porter_load = 1
+	_cart_extra = 0
 	for def: ResearchDef in data.researches():
 		for building: StringName in def.buildings:
 			_unlocks[building] = def.id
 		for ship: StringName in def.ships:
 			_unlocks[StringName("ship:" + String(ship))] = def.id
+		for unit: StringName in def.units:
+			_unlocks[StringName("unit:" + String(unit))] = def.id
+		for tool: StringName in def.tools:
+			_unlocks[StringName("tool:" + String(tool))] = def.id
 		if not done.has(def.id):
 			continue
 		_porter_load += def.porter_load
+		_cart_extra += def.cart_load
 		for building: StringName in def.affects:
 			var bonus: Array = _bonus.get(building, [0, 0, 1.0])
 			bonus[0] = int(bonus[0]) + def.extra_fields

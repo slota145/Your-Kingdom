@@ -129,6 +129,8 @@ static func recruit_error(province: ProvinceSim, barracks: BuildingState, unit: 
 		return &"unknown_unit"
 	if unit.siege != &"":
 		return &"built_in_workshop"
+	if not province.research.allows_unit(province.data, unit.id):
+		return &"needs_research"   # E4 part 3
 	if not barracks.is_complete():
 		return &"not_finished"
 	if beds_taken(barracks) >= barracks.def.soldier_beds:

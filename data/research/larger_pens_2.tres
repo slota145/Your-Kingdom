@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ResearchDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/research_def.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+institution = &"university"
+tier = 1
+row = 6
+gold_cost = 300
+time = 240.0
+requires = Array[StringName]([&"larger_pens"])
+affects = Array[StringName]([&"pigsty", &"sheep_farm", &"stud_farm", &"apiary"])
+extra_fields = 2
+id = &"larger_pens_2"
