@@ -1511,7 +1511,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; części 3 i 4 gotowe, czekają na ocenę („Część 1, stan” … „Część 4, stan”).**
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; części 3 i 4 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę („Część 1, stan” … „Część 4, stan”).**
 
 **Decyzje z ankiet 2026-11-11:**
 - **Szkoła po pierwszym domu mieszczan, uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
@@ -1577,7 +1577,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Koszty drożej niż szkoła:** ok. 4 min i 300 złota, 6 min i 450, 8 min i 650 (czas z jednym uczonym).
 - **Badania uniwersytetu:** płatnerstwo, kusze, rycerstwo, machiny oblężnicze, duża stocznia (z karawelą, karaką i galeonem), wózki +1, większe pola II (+4), większe zagrody II (+2), „Nadanie” (przycisk w panelu: pola i zagrody ×2, drugi pracownik), głęboka nauka (szkoły uczą 2× szybciej). Duże koszary dojdą w części 4.
 
-**Część 3, stan (2026-11-11):** gotowa na gałęzi roboczej, czeka na ocenę.
+**Część 3, stan (2026-11-11):** scalona do `main` 2026-11-11 (razem z częścią 4), czeka na ocenę.
 - Uniwersytet 4×4 ze SpriteKiln (ART_SPEC §10.25) po pierwszej kamienicy patrycjuszy, gdy w prowincji stoi szkoła; dwaj uczeni (czytają przy pulpitach w krużganku, piszą, przechadzają się); każdy uczony przy pracy to sekunda nauki na sekundę.
 - 11 badań uniwersytetu i „Kamieniarstwo obronne” w szkole (dane w `data/research/`). Blokady: jednostki w koszarach (podpowiedź „Wymaga badania: …”), płatnerz, stadnina, warsztat machin, duża stocznia, kamienny mur (kłódka na narzędziu), baszta i brama.
 - „Nadanie”: przycisk „Daj nadanie” / „Cofnij nadanie” w panelu farmy, sadu, chmielnika, winnicy, chlewu, owczarni, stadniny i pasieki (pola, zagrody albo ule ×2, drugi pracownik; po cofnięciu pola zostają, drugi pracownik wraca do domu). Wózki +1, głęboka nauka (szkoły 2×), większe pola i zagrody II.
@@ -1593,7 +1593,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Ocena grafiki 2026-11-11:** blanki donżonu jako prawdziwe przedpiersie na wspornikach (nie kwadraty na płaskim dachu), wieże według zdjęcia referencyjnego właściciela (ganek z blankami, węższa górna kondygnacja, ostry stożek). Dachy skrzydeł czerwone jak wieże, szkoła i uniwersytet (Claude, do potwierdzenia przy ocenie).
 - **Koszt dużych koszar bez cegieł** (Claude): 35 kamieni, 25 desek, 250 złota, bo władcy nie mają cegielni i nigdy by ich nie postawili.
 
-**Część 4, stan (2026-11-11):** gotowa, czeka na ocenę.
+**Część 4, stan (2026-11-11):** scalona do `main` 2026-11-11 na prośbę właściciela (razem z częścią 3), czeka na ocenę; grafika: „koszary wyglądają wspaniale” (właściciel 2026-11-11). Długie testy przechodzą.
 - Małe koszary 2×2 od startu i duże 5×5 za badaniem `large_barracks` (ART_SPEC §10.26). Panel koszar pokazuje tylko jednostki, które dane koszary przyjmują; błąd „Te koszary szkolą tylko łuczników i włóczników”.
 - Dziedziniec: żołnierze idą do bramy (kafel wejścia), stamtąd prosto przez dziedziniec na swoje miejsce (16 miejsc na 8 kaflach, przód zapełnia się pierwszy), wracają do bramy przed odpoczynkiem; żołnierz wysłany z szeregu wychodzi bramą. Reszta odpoczywa w środku.
 - Dawne koszary 3×3: poza menu budowy, gracz z badaniami ich nie postawi (błąd „Tych koszar już się nie stawia”); stojące działają. Władcy liczą każde koszary jako „koszary planu” (stare miasta nie stawiają drugich).
