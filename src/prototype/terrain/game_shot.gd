@@ -79,6 +79,8 @@ var _yards: PackedStringArray = PackedStringArray()
 ## --fields_seconds=<s> (E1 part 2): farms placed by --yards get all their fields and a worker,
 ## then the game runs that long (the field sown, waiting, growing together, weeded).
 var _fields_seconds: int = -1
+## The hunter's lodge placed by --yards (E2 part 2), to aim the camera.
+var _lodge: BuildingState = null
 ## --fill_stores (E1): storages placed by --yards get stacks of many goods, some full, some not.
 var _fill_stores: bool = false
 ## --g1=finished|sites (G1): which half of the pioneer set to lay out; "" = none.
@@ -1132,6 +1134,12 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 				var good := goods[s % goods.size()]
 				var full := b.stock.stack_size(good)
 				b.stock.add(good, full if s % 3 != 2 else full / 2)
+		if _fields_seconds >= 0 and def.recipe != null and def.recipe.steps[0] is HuntStepDef:
+			# E2 part 2: a hunter for the lodge; the camera follows him to the herd below.
+			sim.execute(SpawnAgentCommand.new(def.worker_kinds[0], b.entrance_tile()))
+			sim.execute(AssignWorkerCommand.new(sim.ids.next_id - 1, b.id))
+			_lodge = b
+			continue
 		if _fields_seconds >= 0 and def.recipe != null and def.recipe.steps[0] is FieldStepDef:
 			for r: int in range(1, 6):
 				for fy: int in range(b.origin.y - r, b.origin.y + def.footprint.y + r):
@@ -1150,6 +1158,12 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 	var view: ProvinceView = _game.get("view")
 	if _fields_seconds >= 0:
 		view.vines.refresh()
+	if _lodge != null:
+		var herd := sim.province.wild.nearest(_lodge.entrance_tile(), 40)
+		if herd != null:
+			var mid := Vector2(herd.tile) + Vector2(0.5, 0.5)
+			(_game.get("camera") as GameCamera).position = IsoMath.grid_to_screen(mid)
+			print("hunt shot: lodge ", _lodge.origin, " herd ", herd.tile, " ", herd.kind, " x", herd.count)
 	view.piles.update_yards(sim.province.buildings)
 
 

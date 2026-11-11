@@ -350,6 +350,24 @@ msgstr "Happiness: %d"
 msgid "ui.house.declining"
 msgstr "Warning: basic needs are missing! Happiness is falling and people work slower. Below %d residents slowly start moving out, but half of them stay."
 
+msgid "ui.house.points"
+msgstr "Needs: %d of 100 points (calm from %d, upgrade from %d)"
+
+msgid "ui.house.diet"
+msgstr "Kinds of food: %d (needs %d)"
+
+msgid "ui.house.tax_bonus"
+msgstr "Tax %d%% higher for more than they need"
+
+msgid "ui.house.mood_bar_tip"
+msgstr "Points of the needs met. From %d the house is calm (nobody leaves, newcomers come), from %d it can upgrade. A hungry house (too few kinds of food) is always unhappy."
+
+msgid "ui.hud.moods"
+msgstr "Contentment"
+
+msgid "ui.hud.moods_tip"
+msgstr "Show faces over every house (green: can upgrade, yellow: calm, red: hungry or restless). Unhappy houses always show theirs."
+
 msgid "ui.house.upgrade_in"
 msgstr "Upgrade in %d s if nothing runs out"
 
@@ -957,8 +975,11 @@ msgstr "Brewing"
 msgid "recipe.brewing.desc"
 msgstr "The brewer mashes grain in the vat, brews it with hops in the kettle and carries out the barrels."
 
+msgid "ui.house.upgrade_food"
+msgstr "food of %d kinds"
+
 msgid "ui.house.upgrade_waits"
-msgstr "The upgrade waits until the stockpiles hold %d of each burgher good (bread, fish, beer)."
+msgstr "The upgrade waits until the stockpiles hold %d of each good of the next class: %s."
 
 msgid "ui.doing.kept_for_building"
 msgstr "waiting: %s is kept for building"
@@ -2333,6 +2354,66 @@ msgstr "%s has new demands."
 
 # --- M6 part 3: wine ---
 
+msgid "good.apples.name"
+msgstr "Apples"
+
+msgid "good.apples.desc"
+msgstr "Fruit from the orchard. Food for the residents; apple trees need no water, so an orchard gives food at the start on any map."
+
+msgid "building.orchard.name"
+msgstr "Orchard"
+
+msgid "building.orchard.desc"
+msgstr "The orchardist plants apple trees on the tiles around, tends them and picks the apples. All the trees blossom and bear fruit together."
+
+msgid "ui.kind.orchardist"
+msgstr "Orchardist"
+
+msgid "recipe.orcharding.name"
+msgstr "Apple growing"
+
+msgid "recipe.orcharding.desc"
+msgstr "The orchardist tends the apple trees and picks the ripe apples into a basket."
+
+msgid "ui.activity.weed"
+msgstr "weeding"
+
+msgid "need.diet.name"
+msgstr "Food"
+
+msgid "need.diet.desc"
+msgstr "Bread, fish, meat or apples. Peasants need 1 kind, burghers 2 different kinds, patricians 3. Each kind more raises the tax by 10%."
+
+msgid "good.game.name"
+msgstr "Game"
+
+msgid "good.game.desc"
+msgstr "A deer or boar shot by the hunter. He dresses it in his lodge into 2 meat and a hide."
+
+msgid "building.hunter_lodge.name"
+msgstr "Hunter's lodge"
+
+msgid "building.hunter_lodge.desc"
+msgstr "The hunter creeps up on deer and boar in the woods (up to 20 tiles from the lodge), shoots with his bow and brings the game home. In the lodge he dresses it into 2 meat and a hide. The rest of the herd flees; herds slowly grow back."
+
+msgid "ui.kind.hunter"
+msgstr "Hunter"
+
+msgid "recipe.hunting.name"
+msgstr "Hunting"
+
+msgid "recipe.hunting.desc"
+msgstr "The hunter hunts deer and boar, dresses the game into meat and takes off the hide."
+
+msgid "ui.activity.aim"
+msgstr "aiming his bow"
+
+msgid "ui.reason.no_game"
+msgstr "no game nearby"
+
+msgid "ui.reason.game_gone"
+msgstr "the game fled"
+
 msgid "good.grapes.name"
 msgstr "Grapes"
 
@@ -2391,6 +2472,16 @@ msgid "ui.activity.press"
 msgstr "presses grapes"
 
 
+
+msgid "good.game.count"
+msgid_plural "good.game.count_plural"
+msgstr[0] "%s carcass"
+msgstr[1] "%s carcasses"
+
+msgid "good.apples.count"
+msgid_plural "good.apples.count_plural"
+msgstr[0] "%s basket of apples"
+msgstr[1] "%s baskets of apples"
 
 msgid "good.grapes.count"
 msgid_plural "good.grapes.count_plural"

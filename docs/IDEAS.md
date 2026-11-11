@@ -195,9 +195,10 @@ Pomysły właściciela z rozmowy 2026-11-10, z oceną Claude. Ankieta 2026-11-10
 4. **Alternatywne źródła jedzenia na start** (mapa bez wody nie ma dziś jedzenia na start).
    - Właściciel: farma rzepy, myśliwy i dzikie zwierzęta.
    - Ocena (Claude): sad jabłoni (jabłka są w GDD jako jedzenie chłopów „później”, mechanizm jak winnica, tanio) + myśliwy z sarnami i dzikami (dużo klimatu, najwięcej pracy; zwierzęta ze SpriteKiln jak w Z1). Rzepa to prawie to samo co zboże. Pomysł Claude: zbieracz jagód i grzybów w lesie (tani, mało daje, na pierwsze minuty).
-   - Kiedy: etap 2, razem z punktem 5.
+   - Kiedy: etap 2, razem z punktem 5. **Ankieta 2026-11-11: sad + myśliwy (bez zbieracza), polowanie daje mięso i skórę** → ROADMAP, E2.
 5. **Nowe potrzeby mieszkańców: zróżnicowana dieta i „kilka z wielu”.**
    - Właściciel: więcej rodzajów jedzenia na poziom; do spokoju wystarczy spełnić kilka potrzeb (bez jedzenia i tak niezadowoleni); potrzeby ponad minimum dają trochę więcej podatku.
+   - **Ankieta 2026-11-11: dieta 1/2/3, pozostałe potrzeby jako punkty z progiem** → ROADMAP, E2.
    - Ocena (Claude): dobre i pasuje do punktu 4. Szkic: jedzenie zawsze obowiązkowe, minimum kilku potrzeb do spokoju, każda ponad minimum (też kolejny rodzaj jedzenia) to +podatek, awans wymaga więcej (np. 2 rodzaje jedzenia). Ryzyko: przebudowa serca ekonomii, trzeba poprawić władców (`RulerPlanner`), automatycznego gracza i scenariusze. Osobny etap.
 6. **Cechy prowincji: niewyczerpalne źródła.**
    - Właściciel: prowincja bogata w kamień z odkrywką, która się nie kończy; głęboka kopalnia żelaza, która nigdy się nie kończy.

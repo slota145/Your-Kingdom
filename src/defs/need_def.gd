@@ -2,8 +2,10 @@ class_name NeedDef
 extends GameDef
 ## Something a household needs (GDD §3.2): a good it consumes or a service in range.
 
-## &"good": consumed from the house supply; &"service": a building of [member service] in range.
-@export_enum("good", "service") var kind: String = "good"
+## &"good": consumed from the house supply; &"service": a building of [member service] in range;
+## &"diet" (E2 part 3): food of several kinds, eaten from the house supply, met while the house
+## has at least its level's HouseLevelDef.diet_min different kinds of [member goods].
+@export_enum("good", "service", "diet") var kind: String = "good"
 ## Any of these goods satisfies the need (kind good).
 @export var goods: Array[StringName] = []
 ## Building id providing the service (kind service), e.g. &"well".
@@ -26,3 +28,7 @@ func get_kind() -> StringName:
 
 func is_service() -> bool:
 	return kind == "service"
+
+
+func is_diet() -> bool:
+	return kind == "diet"

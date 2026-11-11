@@ -26,7 +26,7 @@ M0 Fundament
                 │                        └─► M7 Wojsko, mury i oblężenia
                 │                             └─► B1 Most przez rzekę i łagodniejszy brzeg
                 │                                  └─► W1 Nowe wybrzeże ──► J1 Nowe jednostki i okręty
-                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► E1 Magazyny, farmy i awans ──► G3 Stare grafiki ze SpriteKiln ──► M10 Wersja 1.0
+                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► E1 Magazyny, farmy i awans ──► E2 Jedzenie i potrzeby ──► E3 Cechy prowincji ──► E4 Badania i koszary ──► G3 Stare grafiki ze SpriteKiln ──► M10 Wersja 1.0
                 └─► M9 Produkcja grafik (równolegle od M4, partiami)
 Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 ```
@@ -1378,6 +1378,87 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Stare zapisy (v34) wczytują się po migracji.
 - [x] Automatyczny gracz i władcy grają dalej; testy szybkie i długie przechodzą; UI w PL i EN.
 - [x] **Twoja ocena gry** po każdej części (2026-11-11: „Super to wygląda”, ocena w chmurze ze zrzutów; gra na laptopie przy najbliższej okazji).
+
+## E2 — Jedzenie na start i nowe potrzeby mieszkańców
+
+> Pomysły właściciela z 2026-11-10 (IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 4–5). Kolejność (właściciel 2026-11-11): najpierw cały pakiet ekonomii (E2, E3, E4), grafiki G3 po nim. **Decyzje z ankiety 2026-11-11 niżej; plan czeka na akceptację startu.**
+
+**Cel:** mapa bez wody też ma jedzenie na start, a mieszkańcy chcą różnorodnego jedzenia: do spokoju wystarczy część potrzeb, a każda potrzeba ponad minimum daje trochę więcej podatku.
+
+**Decyzje (ankieta 2026-11-11):**
+- nowe źródła jedzenia: **sad jabłoni i myśliwy z dzikimi zwierzętami** (bez zbieracza jagód),
+- polowanie daje **mięso i skórę** (te same towary co z rzeźni),
+- minimum różnych rodzajów jedzenia: **chłopi 1, mieszczanie 2, patrycjusze 3**; każdy rodzaj ponad minimum to dodatek do podatku,
+- pozostałe potrzeby: **punkty z progiem**: każda potrzeba daje punkty, powyżej progu dom jest spokojny i nikt nie odchodzi, awans wymaga prawie wszystkiego, a co ponad próg, to więcej podatku.
+
+**Zasady (propozycja Claude do akceptacji):**
+- **Jedzenie:** chłopi jedzą chleb, ryby, jabłka albo mięso; mieszczanie i patrycjusze to samo. Zjadany jest rodzaj, którego dom ma najwięcej, więc różne rodzaje schodzą po równo. Za mało rodzajów (np. mieszczanie z samym chlebem) albo brak jedzenia: dom jest głodny, czyli jak dziś brak potrzeby podstawowej (spadek zadowolenia, wolniejsza praca, wyprowadzki po 5 minutach).
+- **Punkty:** jedzenie w minimum daje stałą część punktów; pozostałe potrzeby (opał, studnia, kaplica, kościół, targ, piwo, ubrania, miód pitny, tawerna) dzielą resztę według wag. Próg spokoju ok. 60 na 100: powyżej nikt nie odchodzi i przychodzą nowi; awans wymaga ok. 90 i jedzenia w minimum następnej klasy. Dokładne wagi i progi dobierzemy pomiarem automatycznym graczem.
+- **Podatek:** każdy rodzaj jedzenia ponad minimum +10% podatku domu; każde 10 punktów ponad próg +5% (np. dom z 90 punktami płaci o 15% więcej niż dom z 60). Wino zostaje dodatkiem jak dziś (+25%).
+- **Sad:** 2×2, sadownik; kratki drzew w zasięgu jak w winnicy (do 12), jabłonie dojrzewają razem jak łan (E1), zrywanie do kosza, nowy towar „jabłka” (stos, ikona i drzewka ze SpriteKiln w 4 fazach jak zboże).
+- **Myśliwy:** chata 2×2 przy lesie; sarny i dziki chodzą stadkami (3–5) po lesie i łąkach mapy, powoli się rozmnażają do limitu na mapę i uciekają przed ludźmi; myśliwy podchodzi, strzela z łuku (strzała jak u łuczników), niesie zdobycz do chaty i oprawia ją (1 zwierzę = 2 mięsa + 1 skóra, sarna mniej niż dzik do decyzji przy realizacji). Zwierzęta i chata ze SpriteKiln.
+- **Tryb uproszczony, władcy i osady:** liczą nowe potrzeby tak samo; władcy stawiają sad i myśliwego.
+- **Zapis gry** (nowa wersja): stada dzikich zwierząt, kratki sadu, migracja starych zapisów (zwierzęta pojawiają się w lasach przy wczytaniu).
+
+**Części (ocena właściciela po każdej):**
+1. **Sad i jabłka** (budynek, kratki drzew, sadownik, towar, grafiki).
+2. **Myśliwy i dzikie zwierzęta** (stada, ruch i ucieczka, polowanie, oprawianie, grafiki).
+3. **Nowe potrzeby i podatek za nadwyżkę** (dieta 1/2/3, punkty z progiem, panel domu pokazuje punkty i dodatek do podatku).
+4. **Automatyczni gracze, władcy, osady i balans** (długie testy: automatyczny gracz dochodzi do patrycjuszy w limicie, władcy rosną jak dotąd).
+
+**Część 1, stan (2026-11-11): zaakceptowana („Jest super!”).**
+- Sad (`orchard`, 2×2, 6 drewna, sadownik, do 12 kratek jabłoni w zasięgu 4, wzrost 120 s, plon +0,2 jak pola E1); wspólny krok pracy w polu, więc jabłonie rosną razem, sadownik pieli i zrywa jabłka. Towar „jabłka” (jedzenie, 20 w stosie, cena 3): jedzenie chłopów, kramy targu, spiżarnie koszar, władcy liczą je do zapasu jedzenia.
+- Grafiki ze SpriteKiln: jabłoń w 5 fazach (`gen_crops.py`: gołe gałęzie, liście, kwiaty, zielone jabłka, czerwone jabłka ze spadami; `nature/crops/apples`, 64×88, środek kafla (32, 72)), trawa pod drzewami (ziemia winnicy), budynek sadu (`gen_farmsteads.py`: żółta chatka pod czerwoną dachówką, ziemna piwniczka na owoce, drabina, skrzynki i kosz jabłek), ikona jabłek (`gen_icons.py`); stos i niesiony kosz z koszy winogron przemalowanych na czerwono; sadownik rysowany kodem (zielona koszula, słomkowy kapelusz).
+- **Zapis v36**: spiżarnie domów (9 miejsc), kramy targu (8) i spiżarnie koszar (4) dostają miejsce na jabłka; test migracji.
+- Przy okazji: brakujące tłumaczenie czynności „pieli” (od E1).
+- Automatyczni gracze i władcy jeszcze nie stawiają sadu (część 4).
+- Zrzut: `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=44,56 --zoom=2 --yards=orchard,farm --fields_seconds=175|240`.
+
+**Część 2, stan (2026-11-11): zaakceptowana („Jest super!”).**
+- Dzikie stada (`WildHerds`, `src/sim/nature/`): sarny (do 5, nowe stado 3) i dziki (do 4, nowe 2) na łąkach przy skraju lasu (las najwyżej 3 kafle dalej; na otwartym, żeby gracz je widział i myśliwy dochodził). Co 30–50 s stado przechodzi o kilka kafli, co 2 minuty przybywa zwierzę, co minutę wychodzi nowe stado, jeśli jest ich mniej, niż las wykarmi (1 na 150 kafli lasu i łąk, 2–8). Trzyma się 5 kafli od budynków (rosnące miasto je odpędza). Żadnych zapisanych losowań: wybory z haszu czasu i numeru stada.
+- Chata myśliwego (`hunter_lodge`, 2×2, 6 drewna, zasięg 20) i krok „poluj” (`HuntStep`): myśliwy wybiera najbliższe stado (rezerwuje je, żeby nie odeszło), podchodzi na 3 kafle, celuje 2 s, strzela (zdarzenie `hunt_shot`, strzała w widoku), reszta stada ucieka 7 kafli dalej, myśliwy podnosi tuszę (towar „zdobycz”, `game`), w chacie oprawia ją na 2 mięsa i zdejmuje skórę (jak rzeźnik). Sarna i dzik dają tyle samo (prościej, do zmiany przy ocenie). Tryb uproszczony też poluje na stada.
+- Widok `WildLayer`: zwierzęta kręcą się wokół miejsca stada (stoją, skubią trawę albo ryją), idą za stadem, a po strzale biegną; strzała leci łukiem.
+- Grafiki: sarna i dzik ze SpriteKiln (`art/specs/props/{deer,boar}`, 8 kierunków; sarna `idle`, `walk`, `graze`, dzik `idle`, `walk`, `root`; `export_animal.py`), chata myśliwego (`gen_farmsteads.py`: ciemne bale, dach z darni, poroże, skóra na ramie, zdobycz na haku, drwa), ikona zdobyczy (`gen_icons.py`), tusza na plecach (`goods/carried/sack/game.png`), myśliwy rysowany kodem (kaptur, łuk, kołczan, nóż; celowanie jak łucznik).
+- **Zapis v37**: stada w prowincji; starsze gry dostają je w pierwszej sekundzie po wczytaniu.
+- Koszt: stada liczą się też w prowincjach władców (tryb uproszczony). Test władców 90 minut: 1,57 ms na tick, test wojny: 1,85 ms (osobno; limit 4 ms). Przy równoległym biegu wszystkich długich testów pomiar potrafi przekroczyć 4 ms (4,02–4,24), bo testy dzielą procesor; położenie budynków stada zapamiętują i odświeżają tylko po zmianie budynków. Testy szybkie (615) i długie przechodzą (pomiary czasu osobno).
+- Zrzut: `game_shot.tscn -- --shot=<plik> --map=lakeland --tile=26,56 --zoom=3 --yards=hunter_lodge --fields_seconds=3|22` (kamera na najbliższe stado), stada mapy `src/prototype/e2/herd_probe.gd -- --map=lakeland`.
+
+**Część 3, stan (2026-11-11): zaakceptowana („Jest super!”).**
+- Dieta: jedna potrzeba „jedzenie” (chleb, ryby, mięso, jabłka; 0,1 na mieszkańca na minutę) zamiast „żywność”, „chleb” i „ryby lub mięso”. Minimum rodzajów: chłopi 1, mieszczanie 2, patrycjusze 3. Dom zjada rodzaje po kolei, a ostatnią sztukę rodzaju dopiero wtedy, gdy nie ma nic innego (najpierw jadł ten, którego miał najwięcej, ale chleb był zawsze pełny, więc jedli prawie sam chleb i władcom brakowało go na wyprawy; samo „po kolei” zjadało ostatnie jabłko i dom tracił rodzaj).
+- Punkty z progiem: wagi w GDD §3.2; spokój od 60 (bez głodu), awans od 85 i bez głodu, do tego w magazynach jedzenie w liczbie rodzajów następnej klasy i jej towary podstawowe. Kara tylko za głód (odejmuje punkty jedzenia); inne braki tylko nie dają punktów.
+- Podatek: +10% za każdy rodzaj jedzenia ponad minimum, +5% za każde pełne 10 punktów ponad 60.
+- Wskaźnik zadowolenia (prośba właściciela, ankieta „Buźka nad domem + pasek”): buźka nad domem (czerwona, żółta, zielona), czerwone zawsze widać, wszystkie po przycisku „Zadowolenie” na górnym pasku; w panelu domu pasek punktów z kreskami przy 60 i 85, punkty, rodzaje jedzenia, dodatek do podatku i lista towarów, na które czeka awans.
+- Tryb uproszczony: przybysze tylko wtedy, gdy wejście prowincji jest na lądzie (jak w trybie szczegółowym).
+- Automatyczny gracz (testy): patrycjusze potrzebują 3 rodzajów jedzenia, a mięso z chlewa przychodziło dopiero ok. 70. minuty, więc gracz stawia 2 sady (15. i 28. minuta) i od 15. minuty trzyma 15 drewna na budowy (tartak zjadał całe drewno, a sad i chlew czekały na kilka bali 40 minut). 4 domy patrycjuszy z pełnym zaopatrzeniem (długi test, limit 90 minut): Riverlands w 87. minucie, Pojezierze w 89., Wybrzeże w 66. Zapas jest mały, więc w części 4 (balans) trzeba go zwiększyć. Test władców (90 minut, osobno): każdy zasiedla 1–2 prowincje i ma szlak, 1,9 ms na tick (limit 4 ms; przy równoległym biegu wszystkich długich testów pomiar przekracza 4 ms, bo testy dzielą procesor). Władcy wysyłają wyprawy jak dotąd (pomiar `settle_probe.gd`), a ich sad i myśliwy przyjdą w części 4.
+- Zapis bez zmiany formatu (v37): punkty i rodzaje jedzenia liczą się na nowo po wczytaniu.
+- Testy: `test_population.gd` (dieta, podatek, wczytanie), poprawione scenariusze (wyprawa, rejs, szlaki). Pomiar władców: `src/prototype/e2/settle_probe.gd`.
+- Zrzut: `town_shot.tscn -- --shot=<plik> --minutes=40 --select=hut --zoom=1 --moods`.
+
+**Część 4, stan (2026-11-11): gotowa, scalona do `main` 2026-11-11 na prośbę właściciela, przed oceną.**
+- Władcy: plan rozwoju ma sad (po pierwszej piekarni i drugi po drugiej farmie) i chatę myśliwego (po leśniku); gdy w magazynach brakuje jedzenia (chleb, ryby, jabłka i mięso razem poniżej 15), najpierw stawiają sad (do 1 na 60 mieszkańców) i myśliwego (gdy w prowincji są stada). Stolice władców startują z sadem (stolice „Podzielonego kontynentu” także z myśliwym). Sad dostaje jabłonie od razu, jak farma pola.
+- Osady neutralne (Żelazny Gród, Końska Przystań i ich kopie w nowych światach) mają sad z 10 jabłoniami i chatę myśliwego.
+- Chata myśliwego staje w połowie drogi między miastem a najbliższym stadem (bez stad: w połowie drogi do lasu).
+- Tryb uproszczony liczy sad i myśliwego jak dotąd (bez zmian).
+- Balans automatycznego gracza testów: myśliwy w 10. minucie, łańcuchy cegieł, ubrań i miodu pitnego z tawerną 10 minut wcześniej (od 35. minuty; na „Wybrzeżu” o dawnej porze, bo zajmowały brzeg pod port). 4 domy patrycjuszy z pełnym zaopatrzeniem (limit 90 minut): Riverlands w 72. minucie (było 87), Pojezierze w 70. (było 89), Wybrzeże w 67. (było 66).
+- Władcy (pomiar `settle_probe.gd`, 90 minut, 3 władców): 6 zasiedleń zamiast 4, razem ok. 1030 mieszkańców zamiast ok. 920; wszystkie domy najedzone; test władców i wojny przechodzi.
+- Zapis bez zmiany formatu (v37).
+- Testy: `test_e2_rulers_food.gd` (sad w stolicach władców, sad i myśliwy w osadach, miejsce chaty myśliwego, sad i myśliwy przy braku jedzenia, plan). Pomiar gracza: `src/prototype/e2/patrician_probe.gd -- --map=<mapa>` (wypisuje minutę 4 domów).
+
+**DoD:**
+- [x] Sad daje jabłka, jabłonie rosną razem; jabłka są jedzeniem wszystkich klas (część 1: jedzenie chłopów; mieszczanie i patrycjusze od części 3).
+- [x] Sarny i dziki żyją na mapie; myśliwy poluje i oprawia zdobycz na mięso i skórę (część 2).
+- [x] Dieta 1/2/3 i punkty z progiem działają; dom pokazuje punkty, próg i dodatek do podatku (część 3).
+- [x] Stare zapisy wczytują się po migracji (v36 jabłka, v37 stada; test migracji).
+- [x] Automatyczni gracze, władcy i osady grają według nowych zasad; testy szybkie i długie przechodzą; UI w PL i EN (część 4).
+- [ ] **Twoja ocena gry** po każdej części.
+
+## E3 — Cechy prowincji: niewyczerpalne źródła
+
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Do zaplanowania po E2: prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą (droższe, wolniejsze albo z większą obsadą); dalsze cechy do decyzji (żyzna ziemia, bogata w zwierzynę).
+
+## E4 — Uniwersytet, badania oraz małe i duże koszary
+
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8. Do zaplanowania po E3: uniwersytet i drzewko 15–20 badań (złoto i czas), część budynków za badaniami (start bez zmian), ulepszenia (tragarze i wózki niosą +1, więcej pól i zagród); małe tanie koszary od startu (łucznicy, włócznicy), duże „zamkowe” 5×5 z dziedzińcem za badaniem; władcy też badają.
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 

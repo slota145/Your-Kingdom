@@ -73,6 +73,13 @@ const PEOPLE := {
 	# M6 part 3 (wine): a winegrower with a pruning knife, a vintner in a wine-stained apron.
 	"winegrower": {"shirt": Color(0.55, 0.42, 0.62), "legs": Color(0.38, 0.32, 0.24), "hair": Color(0.3, 0.2, 0.12),
 			"hat": "straw", "tool": "hook"},
+	# E2 part 2: a hunter in a green hood with a bow and a quiver, a knife to dress the game.
+	"hunter": {"shirt": Color(0.4, 0.36, 0.24), "legs": Color(0.3, 0.26, 0.2), "hair": Color(0.3, 0.2, 0.12),
+			"hat": "archer_hood", "hat_colour": Color(0.26, 0.34, 0.2), "weapon": "bow", "quiver": true,
+			"aim": "draw", "tool": "knife"},
+	# E2 part 1: an orchardist in a green smock with a pruning hook.
+	"orchardist": {"shirt": Color(0.42, 0.56, 0.3), "legs": Color(0.4, 0.33, 0.24), "hair": Color(0.45, 0.3, 0.16),
+			"hat": "straw", "tool": "hook"},
 	"vintner": {"shirt": Color(0.86, 0.8, 0.68), "legs": Color(0.4, 0.3, 0.24), "hair": Color(0.2, 0.14, 0.1),
 			"hat": "cap", "hat_colour": Color(0.5, 0.12, 0.18), "apron": Color(0.48, 0.14, 0.2), "tool": "paddle"},
 	"clay_digger": {"shirt": Color(0.66, 0.5, 0.4), "legs": Color(0.45, 0.35, 0.28), "hair": Color(0.25, 0.18, 0.12),
@@ -218,6 +225,8 @@ const ACTIVITIES := {
 	"forester": ["dig", "plant", "rest"], "shepherd": ["herd", "shear"], "weaver": ["spin", "weave"],
 	"tailor": ["cut", "sew"], "beekeeper": ["tend_hives", "collect_honey"], "mead_maker": ["mix", "ferment"],
 	"winegrower": ["plow", "sow", "harvest", "bind", "weed"], "vintner": ["press", "ferment"],
+	"orchardist": ["plow", "sow", "harvest", "bind", "weed"],
+	"hunter": ["carve", "skin", "bend"],
 	"clay_digger": ["dig"], "brickmaker": ["mould", "fire"], "innkeeper": ["serve"],
 	"swineherd": ["feed", "muck"], "butcher": ["slaughter", "skin"], "stallholder": ["sell"],
 	"merchant": [], "porter": ["load"], "carter": ["load"],
@@ -276,6 +285,10 @@ func _init() -> void:
 				tool = ""
 			_save(_sheet(8, func(_f: int, t: float) -> Dictionary: return {"work": w[0], "t": t, "tool": tool}),
 					kind, "work_" + activity)
+		if _look.has("aim"):
+			# E2 part 2: the hunter draws his bow like an archer's drill.
+			var aim := String(_look["aim"])
+			_save(_sheet(8, func(_f: int, t: float) -> Dictionary: return {"drill": aim, "t": t}), kind, "work_aim")
 	var fighters := SOLDIERS.duplicate()
 	fighters.merge(BANDITS)
 	for kind: String in fighters:

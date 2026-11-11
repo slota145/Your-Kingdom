@@ -139,6 +139,8 @@ func step(tick: int) -> void:
 	detail._grow_saplings()
 	detail._regrow_nodes()
 	detail._breed_herds()
+	if tick % (SimClock.TICKS_PER_SECOND) == 0:
+		detail.wild.update(detail)
 	Population.update_abstract(detail, _doors)
 	Barracks.update_abstract(detail)
 	_trade()
@@ -341,6 +343,9 @@ func estimated_cycle_seconds(building: BuildingState) -> float:
 			return INF
 		work *= building.work_factor()
 	var seconds := work + cycle.trips * 2.0 * walk / Movement.BASE_SPEED
+	if cycle.hunts:
+		# Out to a herd and back with the carcass: about half the hunting radius each way.
+		seconds += 2.0 * maxf(building.def.work_radius / 2.0, 1.0) / Movement.BASE_SPEED
 	if cycle.gather != &"" and not cycle.by_sea:
 		seconds += 2.0 * maxf(building.def.work_radius / 2.0, 1.0) / Movement.BASE_SPEED
 	if cycle.by_sea:
@@ -398,6 +403,11 @@ func _cycle(building: BuildingState, cycle: WorkCycle) -> bool:
 		return false
 	if cycle.fields and _fields.get(building.id, 0) == 0:
 		return false
+	var herd: WildHerds.Herd = null
+	if cycle.hunts:
+		herd = p.wild.nearest(near, building.def.work_radius)
+		if herd == null:
+			return false
 	for good: StringName in cycle.outputs:
 		if _sink(good) == null and (building.yard == null \
 				or not building.yard.can_accept(good, cycle.outputs[good])):
@@ -415,6 +425,8 @@ func _cycle(building: BuildingState, cycle: WorkCycle) -> bool:
 		if spot == Agent.NO_TILE:
 			return false
 	# Everything is there: the cycle happens.
+	if herd != null:
+		p.wild.take_one(p, herd, near)
 	for good: StringName in cycle.inputs:
 		var need := cycle.inputs[good]
 		if building.supply != null and building.house == null:

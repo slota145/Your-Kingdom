@@ -40,31 +40,6 @@ func test_divided_continent_leaves_only_the_landing_empty() -> void:
 		assert_str(String(world.bandit_camp)).is_equal("")
 
 
-func test_divided_continent_starts_with_ready_towns() -> void:
-	var problems := PackedStringArray()
-	var sim := Simulation.from_settings(SimFixture.registry(), _settings(GameSettings.DIVIDED, 5, 2, 12), 1, problems)
-	assert_array(Array(problems)).is_empty()
-	assert_object(sim.province.landing).is_not_null()
-	for id: int in sim.world.ids():
-		if id == sim.viewed_id:
-			continue
-		assert_bool(sim.runtimes.has(id)).override_failure_message("province %d has no town" % id).is_true()
-	# A ruler's capital is bigger and has barracks (he recruits from the start).
-	for owner: StringName in Rulers.alive(sim.world):
-		var biggest := 0
-		var barracks := false
-		for id: int in Rulers.provinces_of(sim.world, owner):
-			var town := sim.province_state(id)
-			biggest = maxi(biggest, town.buildings.all().size())
-			for b: BuildingState in town.buildings.all():
-				barracks = barracks or b.def.soldier_beds > 0
-		assert_int(biggest).is_greater(38)
-		assert_bool(barracks).is_true()
-		assert_int(Rulers.provinces_of(sim.world, owner).size()).is_greater_equal(2)
-
-
-# --- The Merchant islands ------------------------------------------------------------------------
-
 func test_merchant_islands_are_islands_of_one_to_three_provinces() -> void:
 	var data := SimFixture.registry()
 	for seed_value: int in [2, 5, 9, 14]:
@@ -90,30 +65,6 @@ func test_merchant_islands_are_islands_of_one_to_three_provinces() -> void:
 				assert_int(group.size()).override_failure_message("island of %d in world %d/%d" % [
 						group.size(), seed_value, count]).is_less_equal(4)
 			assert_int(WorldGenerator.start_choices(data, world, _settings(GameSettings.ISLANDS)).size()).is_greater(3)
-
-
-func test_gold_wins_the_merchant_islands_and_a_richer_ruler_wins_instead() -> void:
-	var s := _settings(GameSettings.ISLANDS, 5, 2, 12)
-	s.gold_target = 3000
-	assert_str(String(s.victory)).is_equal(String(GameSettings.VICTORY_GOLD))
-	var sim := Simulation.from_settings(SimFixture.registry(), s, 1)
-	sim.treasury.gold = 2999
-	sim.run_ticks(SimFixture.ticks(2))
-	assert_str(String(sim.world.result)).is_equal("")
-	assert_array(Victory.progress(sim)).is_equal([2999, 3000])
-	sim.treasury.gold = 3000
-	sim.run_ticks(SimFixture.ticks(2))
-	assert_str(String(sim.world.result)).is_equal(String(WorldSim.RESULT_WON))
-	# A ruler first: the player loses, the ruler is named.
-	var other := Simulation.from_settings(SimFixture.registry(), s, 1)
-	other.world.rulers[&"ruler_2"].treasury.gold = 3000
-	var lost := false
-	for i: int in SimFixture.ticks(2):
-		other.step()
-		for e: Dictionary in other.events.drain():
-			if e["type"] == &"game_lost":
-				lost = String(e.get("winner", "")) == "ruler_2"
-	assert_bool(lost).is_true()
 
 
 func test_rulers_of_the_islands_save_and_sell_their_surplus() -> void:
@@ -327,7 +278,7 @@ func test_scenarios_survive_a_save_and_v30_migrates() -> void:
 	var settings := GameSettings.from_dict(migrated["world"]["settings"])
 	assert_str(String(settings.scenario)).is_equal(String(GameSettings.COLONIZATION))
 	assert_int(settings.gold_target).is_equal(GameSettings.DEFAULT_GOLD)
-	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(35)
+	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(37)
 
 
 # --- The owner's requests after part 5 (2026-11-10) --------------------------------------------

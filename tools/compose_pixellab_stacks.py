@@ -70,6 +70,8 @@ LAYOUTS.update({
 })
 # J1 part 1: the new weapons, their pieces drawn by code (tools/draw_weapon_pieces.py).
 LAYOUTS.update({"halberd": PLANKS, "crossbow": BOWS, "morning_star": PILE})
+# E2 part 1: apples, baskets like the grapes (the grapes' basket recoloured red).
+LAYOUTS.update({"apples": PILE})
 
 
 # E1 (owner 2026-11-10): the stockpile and harbour stores hold twice a stack, so each good

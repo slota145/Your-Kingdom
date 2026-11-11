@@ -69,9 +69,12 @@ func test_butcher_leads_a_pig_and_makes_meat_and_hides() -> void:
 	var meat_before := sim.province.goods_total(&"meat")
 	var led := false
 	var counts := {}
+	var eaten := 0
 	for i: int in SimFixture.ticks(240):
 		sim.step()
 		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"good_consumed" and e["good"] == &"meat":
+				eaten += int(e["amount"])
 			if e["type"] == &"good_produced":
 				var key := "produced:%s" % e["good"]
 				counts[key] = int(counts.get(key, 0)) + int(e["amount"])
@@ -85,7 +88,7 @@ func test_butcher_leads_a_pig_and_makes_meat_and_hides() -> void:
 	assert_int(meat).is_greater_equal(4)
 	assert_int(meat % 2).is_equal(0)
 	assert_int(hides).is_between(meat / 2 - 1, meat / 2)
-	assert_int(sim.province.goods_total(&"meat")).is_equal(meat_before + meat)
+	assert_int(sim.province.goods_total(&"meat")).is_equal(meat_before + meat - eaten)
 	assert_int(sim.province.goods_total(&"hides")).is_equal(hides)
 	assert_int(stock.stock.total(&"meat")).is_greater(0)
 	assert_array(Array(sim.province.dangling_holds())).is_empty()

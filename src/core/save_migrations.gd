@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 35
+const CURRENT_VERSION := 37
 ## Hive tiles an old apiary gets on its first second after loading a save before v34.
 const AUTO_HIVES := 4
 ## Horses one pen tile of a stud farm holds (data/buildings/stud_farm.tres, pen_animals).
@@ -121,6 +121,12 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 35:
 		result = migrate_v34_to_v35(result)
 		version = 35
+	if version < 36:
+		result = migrate_v35_to_v36(result)
+		version = 36
+	if version < 37:
+		result = migrate_v36_to_v37(result)
+		version = 37
 	return result
 
 
@@ -408,6 +414,30 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
 ## target, the Invasion from the sea with the clock of its waves). A game from before is a
 ## Colonization game: its settings name the scenario and get the default gold target.
+## v37 (E2 part 2, hunting): a province keeps its wild herds under "wild" (once its woods were
+## filled). An older game has none: its woods fill on the first second after loading, like a
+## new map's. A hunter's task keeps the herd it stalks in its blackboard. Nothing to change.
+static func migrate_v36_to_v37(state: Dictionary) -> Dictionary:
+	return state
+
+
+## v36 (E2 part 1, the orchard): apples are a new food of every house: every hut's pantry gets
+## a slot more for them (9), a market's stalls one more (8) and a barracks' pantry one more (4).
+static func migrate_v35_to_v36(state: Dictionary) -> Dictionary:
+	for entry: Variant in state.get("provinces", []):
+		var province: Dictionary = (entry as Dictionary)["state"]
+		if province.has("province"):
+			province = province["province"]   # the simplified mode keeps its detail inside
+		for building: Variant in province.get("buildings", []):
+			var b := building as Dictionary
+			var size: int = {"hut": 9, "market": 8, "barracks": 4}.get(String(b["def"]), 0)
+			if size > 0 and b.has("supply"):
+				var slots: Array = (b["supply"] as Dictionary)["slots"]
+				while slots.size() < size:
+					slots.append(["", 0])
+	return state
+
+
 ## v35 (E1 part 2, the whole field grows together): a sown field tile may wait for the rest of
 ## its field (a negative ripe tick: minus its grow time); a farm keeps the fraction of its
 ## extra yield ("yield_carry"). Tiles sown before grow on (their ripe ticks are times), farms

@@ -18,9 +18,11 @@ extends RefCounted
 const PLAN: Array[Array] = [
 	[&"woodcutter", 2], [&"hut", 3], [&"stockpile", 1], [&"quarry", 1], [&"sawmill", 1],
 	[&"fishing_hut", 1], [&"well", 1], [&"hut", 6], [&"farm", 1], [&"mill", 1], [&"bakery", 1],
-	[&"forester", 1], [&"hut", 9], [&"town_hall", 1], [&"woodcutter", 3], [&"chapel", 1],
+	# E2 part 4: apples and game, the second and third kinds of food (burghers eat 2 kinds,
+	# patricians 3), and food on a map without water.
+	[&"orchard", 1], [&"forester", 1], [&"hunter_lodge", 1], [&"hut", 9], [&"town_hall", 1], [&"woodcutter", 3], [&"chapel", 1],
 	[&"market", 1], [&"well", 2], [&"hut", 12], [&"stockpile", 2], [&"hop_farm", 1],
-	[&"brewery", 1], [&"farm", 2], [&"hut", 15], [&"barracks", 1], [&"trading_post", 1], [&"builders_hut", 1],
+	[&"brewery", 1], [&"farm", 2], [&"orchard", 2], [&"hut", 15], [&"barracks", 1], [&"trading_post", 1], [&"builders_hut", 1],
 	[&"sheep_farm", 1], [&"weaver", 1], [&"tar_kiln", 1], [&"port", 1], [&"shipyard", 1],
 	[&"hut", 18], [&"tailor", 1], [&"fishing_hut", 2], [&"tavern", 1], [&"bakery", 2],
 	[&"mill", 2], [&"farm", 3], [&"hut", 22], [&"church", 1],
@@ -185,9 +187,14 @@ static func shortages(town: ProvinceSim, counts: Dictionary[StringName, int], sa
 		result.append(&"forester")
 	if town.stored(&"stone") < LOW_STONE and int(counts.get(&"quarry", 0)) < 2:
 		result.append(&"quarry")
-	if town.stored(&"bread") + town.stored(&"fish") < LOW_FOOD and people > 0:
+	if food(town) < LOW_FOOD and people > 0:
 		if int(counts.get(&"fishing_hut", 0)) < 1 + people / 40:
 			result.append(&"fishing_hut")
+		# (E2 part 4: an orchard needs no water and no mill; a hunter while the herds last.)
+		if int(counts.get(&"orchard", 0)) < 1 + people / 60:
+			result.append(&"orchard")
+		if int(counts.get(&"hunter_lodge", 0)) < 1 and not town.wild.all().is_empty():
+			result.append(&"hunter_lodge")
 		var mills := int(counts.get(&"mill", 0))
 		if int(counts.get(&"farm", 0)) < 2 * maxi(mills, 1):
 			result.append(&"farm")
@@ -205,6 +212,11 @@ static func shortages(town: ProvinceSim, counts: Dictionary[StringName, int], sa
 			and plan_progress(town).x >= PLAN.size():
 		result.append(&"hut")
 	return result
+
+
+## Food in the province's stores: every kind people eat (E2 part 3).
+static func food(town: ProvinceSim) -> int:
+	return town.stored(&"bread") + town.stored(&"fish") + town.stored(&"apples") + town.stored(&"meat")
 
 
 static func _houses_full(town: ProvinceSim) -> bool:

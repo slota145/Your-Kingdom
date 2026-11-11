@@ -60,23 +60,31 @@ func test_householder_fetches_bread_when_pantry_runs_low() -> void:
 func test_households_eat_their_pantry() -> void:
 	var sim := SimFixture.make_sim()
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 4)
-	var bread := hut.supply.total(&"bread")
-	# 4 residents x 0.1 bread per minute: 1 loaf in 2.5 minutes.
+	var food := _food(hut)
+	# 4 residents x 0.1 food per minute: 1 unit in 2.5 minutes (the kinds take turns).
 	sim.run_ticks(SimFixture.ticks(160))
-	assert_int(hut.supply.total(&"bread")).is_equal(bread - 1)
+	assert_int(_food(hut)).is_equal(food - 1)
+
+
+func _food(hut: BuildingState) -> int:
+	var n := 0
+	for good: StringName in [&"bread", &"fish", &"meat", &"apples"]:
+		n += hut.supply.total(good)
+	return n
 
 
 func test_happiness_follows_satisfied_needs() -> void:
 	var sim := SimFixture.make_sim()
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 4)
 	sim.run_ticks(SimFixture.ticks(60))
-	# Food and firewood but no well, a basic need: it counts against the house,
-	# 35 + 25 - 25.
-	assert_float(hut.house.happiness).is_equal_approx(35.0, 0.01)
+	# E2 part 3: food and firewood but no well: 40 + 25 points, calm (a few needs of many).
+	assert_float(hut.house.happiness).is_equal_approx(65.0, 0.01)
+	assert_float(hut.house.points).is_greater_equal(Population.CALM_POINTS)
 	SimFixture.place(sim, &"well", Vector2i(16, 12))
 	sim.run_ticks(SimFixture.ticks(40))
-	# Food, firewood and the well, no chapel: 35 + 25 + 25.
+	# Food, firewood and the well, no chapel: 40 + 25 + 20, enough to upgrade.
 	assert_float(hut.house.happiness).is_equal_approx(85.0, 0.01)
+	assert_float(hut.house.points).is_greater_equal(Population.UPGRADE_POINTS)
 	assert_bool(hut.house.satisfied[&"well_water"]).is_true()
 	# The chapel is an extra need: it adds happiness but does not block upgrades.
 	SimFixture.place(sim, &"chapel", Vector2i(12, 16))
@@ -195,8 +203,10 @@ func test_house_keeps_its_level_but_loses_residents_in_a_shortage() -> void:
 func test_house_with_a_shortage_fills_up_to_half() -> void:
 	var sim := SimFixture.make_sim()
 	sim.province.entry_tile = Vector2i(0, 20)
-	# Food and firewood, no well: 35 happiness, enough for newcomers up to half of the hut.
-	var hut := SimFixture.house(sim, Vector2i(12, 12), 1)
+	# E2 part 3: food only, no firewood, no well: 40 points, below calm but enough for
+	# newcomers up to half of the hut.
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 1, false)
+	hut.supply.add(&"bread", 3)
 	hut.house.happiness = 35.0
 	sim.run_ticks(SimFixture.ticks(120))
 	assert_float(hut.house.happiness).is_less(Population.IMMIGRATION_MIN_HAPPINESS)
@@ -257,3 +267,35 @@ func test_upgrade_now_skips_the_wait() -> void:
 	var upgraded := SimFixture.run_until(sim, func() -> bool: return hut.house.level == 2, 120)
 	assert_bool(upgraded).is_true()
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## E2 part 3: burghers want 2 kinds of food; with one kind they are hungry, with three they pay
+## more tax; a house below the calm points is restless though fed.
+func test_diet_kinds_and_tax_bonus() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.house(sim, Vector2i(12, 12), 8, false)
+	hut.house.level = 2
+	hut.supply.stack_limit = hut.level_def().supply_units
+	hut.supply.add(&"bread", 4)
+	hut.supply.add(&"wood", 4)
+	SimFixture.place(sim, &"well", Vector2i(16, 12))
+	sim.run_ticks(SimFixture.ticks(3))
+	assert_bool(Population.is_fed(hut)).is_false()
+	assert_int(hut.house.diet_kinds).is_equal(1)
+	hut.supply.add(&"fish", 4)
+	sim.run_ticks(SimFixture.ticks(2))
+	assert_bool(Population.is_fed(hut)).is_true()
+	# Diet 35 + firewood 15 + well 15 = 65: calm, but no upgrade yet and no points bonus.
+	assert_float(hut.house.points).is_equal_approx(65.0, 0.01)
+	assert_float(Population.tax_bonus(hut)).is_equal_approx(0.0, 0.001)
+	hut.supply.add(&"apples", 4)
+	hut.supply.add(&"beer", 4)
+	sim.run_ticks(SimFixture.ticks(2))
+	# A third kind (+10%) and beer: 80 points, two full 10s above calm (+2 x 5%).
+	assert_int(hut.house.diet_kinds).is_equal(3)
+	assert_float(hut.house.points).is_equal_approx(80.0, 0.01)
+	assert_float(Population.tax_bonus(hut)).override_failure_message("kinds %d points %.1f bonus %.3f" % [hut.house.diet_kinds, hut.house.points, Population.tax_bonus(hut)]).is_equal_approx(0.2, 0.001)
+	# A loaded game shows the same points and kinds of food before it runs (faces, panel).
+	var loaded := BuildingState.from_dict(hut.to_dict(), sim.data)
+	assert_int(loaded.house.diet_kinds).is_equal(3)
+	assert_float(loaded.house.points).is_equal_approx(80.0, 0.01)

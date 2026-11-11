@@ -17,6 +17,10 @@ var hunger: Dictionary[StringName, float] = {}
 var satisfied: Dictionary[StringName, bool] = {}
 ## Seconds all basic needs have been met in a row / unmet in a row.
 var met_seconds: int = 0
+## Points of the needs met this second, 0..100 before the tax rate's mood (E2 part 3), and
+## the different kinds of food in the pantry; derived every second, not saved.
+var points: float = 0.0
+var diet_kinds: int = 0
 var unmet_seconds: int = 0
 ## Good -> householder agent id out to fetch it.
 var errands: Dictionary[StringName, int] = {}

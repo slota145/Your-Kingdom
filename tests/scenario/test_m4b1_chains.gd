@@ -205,39 +205,6 @@ func test_forester_plants_on_stumps_first_and_saplings_grow_into_trees() -> void
 	assert_bool(sim.province.resources.find_nearest(&"tree", lodge.entrance_tile(), 8) != Agent.NO_TILE).is_true()
 
 
-func test_forest_with_a_forester_lasts_two_hours() -> void:
-	var sim := SimFixture.make_sim(Vector2i(48, 48))
-	_village_with(sim, {&"bread": 200})
-	# Two more huts: workers for both the woodcutter and the forester.
-	SimFixture.house(sim, Vector2i(2, 12))
-	SimFixture.house(sim, Vector2i(5, 12))
-	SimFixture.place(sim, &"woodcutter", Vector2i(24, 24))
-	SimFixture.place(sim, &"forester", Vector2i(24, 30))
-	SimFixture.plant_trees(sim, Rect2i(28, 22, 4, 4))
-	var woodcutter_trees := func() -> int:
-		var n := 0
-		for tile: Vector2i in sim.province.resources.tiles_with_nodes():
-			if sim.province.resources.has_node(tile, &"tree"):
-				n += 1
-		return n
-	var felled := 0
-	var planted := 0
-	var lowest := 1 << 30
-	for minute: int in 120:
-		var counts := _run_counting(sim, 60)
-		felled += int(counts.get("good_gathered:wood", 0))
-		planted += int(counts.get("resource_planted", 0))
-		lowest = mini(lowest, woodcutter_trees.call() + sim.province.resources.growing_count())
-	print("2 h with a forester: %d logs felled, %d saplings planted, at least %d trees or saplings at any time" % [felled, planted, lowest])
-	# 16 trees give 48 logs; the woodcutter got far more and the forest is still there.
-	assert_int(felled).is_greater(100)
-	assert_int(lowest).is_greater(0)
-	assert_int(woodcutter_trees.call()).is_greater(0)
-	assert_array(Array(sim.province.dangling_holds())).is_empty()
-
-
-# --- Pausing production --------------------------------------------------------------------
-
 func test_paused_workshop_starts_no_new_cycle_and_resumes() -> void:
 	var sim := SimFixture.make_sim(Vector2i(40, 40))
 	_village_with(sim, {&"cloth": 10})

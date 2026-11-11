@@ -20,6 +20,7 @@ const CROPS: Dictionary[StringName, Array] = {
 	&"grapes": ["nature/vines", STATE_FALLOW, STATE_SOWN, STATE_RIPE, FOOT],
 	&"grain": ["nature/crops/grain", "", ["", "sprout", "young", "green"], "ripe", Vector2(32, 48)],
 	&"hops": ["nature/crops/hops", "poles", ["poles", "shoot", "half", "full"], "ripe", Vector2(32, 96)],
+	&"apples": ["nature/crops/apples", "bare", ["bare", "leaf", "blossom", "green"], "ripe", Vector2(32, 72)],
 }
 
 var province: ProvinceSim

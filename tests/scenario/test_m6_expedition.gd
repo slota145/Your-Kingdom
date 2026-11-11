@@ -22,6 +22,9 @@ func _land_town() -> Simulation:
 			b.stock.add(&"wood", 100)
 			b.stock.add(&"bread", 30)
 	sim.treasury.gold = 500
+	# E2 part 3: fed and warm houses are calm and take newcomers; none here, so the settlers
+	# can be counted.
+	sim.province.entry_tile = Vector2i(-1, -1)
 	# Porters without a house: the settlers leaving do not take them away mid-test.
 	for i: int in 4:
 		SimFixture.spawn(sim, JobBoard.PORTER_KIND, sim.province.seat().entrance_tile())
@@ -159,6 +162,7 @@ func _sea_town() -> Dictionary:
 	for i: int in 4:
 		SimFixture.house(sim, Vector2i(2 + 3 * i, 12))
 	sim.treasury.gold = 500
+	sim.province.entry_tile = Vector2i(-1, -1)   # no newcomers (E2 part 3): settlers are counted
 	var port := SimFixture.place(sim, &"port", Vector2i(20, 28))
 	var shipyard := SimFixture.place(sim, &"shipyard", Vector2i(30, 28))
 	for kind: StringName in [Harbour.DOCKER_KIND, Harbour.DOCKER_KIND]:

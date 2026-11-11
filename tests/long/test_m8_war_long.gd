@@ -60,4 +60,4 @@ func test_three_rulers_at_war_for_90_minutes() -> void:
 	assert_int(taken).is_greater_equal(1)
 	assert_array(Array(stuck)).is_empty()
 	assert_bool(Rulers.alive(sim.world).is_empty()).is_false()
-	assert_float(ms_per_tick).is_less(4.0)
+	assert_float(ms_per_tick).is_less(SimFixture.speed_limit(4.0))

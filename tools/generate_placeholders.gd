@@ -149,6 +149,9 @@ func _terrain() -> void:
 	for stage: int in 4:
 		var name := "ripe" if stage == 3 else "sown_%d" % (stage + 1)
 		_save(_hop_poles(soil, furrow, stage), "terrain/field_hops/%s.png" % name)
+	# Orchard (E2 part 1): grass under the apple trees (the trees stand as sprites).
+	for name: String in ["fallow", "plowed", "sown_1", "sown_2", "sown_3", "ripe"]:
+		_save(_diamond(Color(0.4, 0.5, 0.24), Color(0.36, 0.45, 0.22)), "terrain/field_apples/%s.png" % name)
 	# Hives (Z1 part 3): flowery grass.
 	_save(_diamond(Color(0.4, 0.52, 0.24), Color(0.36, 0.48, 0.22)), "terrain/hive/ground.png")
 	# Animal pens (Z1): trampled earth.
@@ -503,6 +506,18 @@ func _nature() -> void:
 			if k == 4:
 				_ellipse(img, Vector2(x, 70), Vector2(2, 2), Color(0.8, 0.85, 0.45))
 		_save(img, "nature/crops/hops/%s.png" % ["poles", "shoot", "half", "full", "ripe"][k])
+	# Apple trees (E2 part 1): 64x88, the tile centre at (32, 72).
+	for k: int in 5:
+		var img := _blank(Vector2i(64, 88))
+		_line(img, Vector2(32, 72), Vector2(32, 52), Color(0.4, 0.28, 0.18), 3)
+		if k > 0:
+			_ellipse(img, Vector2(32, 40), Vector2(14, 12), Color(0.28, 0.5, 0.2))
+		var dot: Color = [Color.TRANSPARENT, Color.TRANSPARENT, Color(0.95, 0.85, 0.88),
+				Color(0.6, 0.75, 0.25), Color(0.85, 0.25, 0.15)][k]
+		if k >= 2:
+			for p: Vector2 in [Vector2(26, 36), Vector2(36, 34), Vector2(30, 44), Vector2(39, 42)]:
+				_ellipse(img, p, Vector2(1.5, 1.5), dot)
+		_save(img, "nature/crops/apples/%s.png" % ["bare", "leaf", "blossom", "green", "ripe"][k])
 
 
 # --- Buildings -------------------------------------------------------------------------
@@ -633,6 +648,12 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.55, 0.42, 0.28), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
 	"port_warehouse_small": {"footprint": Vector2i(2, 2), "entrance": Vector2i(0, 1), "walls": 0.0, "roof": 0.0,
 			"wall": Color(0.55, 0.42, 0.28), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
+	# E2 part 2
+	"hunter_lodge": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 18.0,
+			"wall": Color(0.36, 0.26, 0.18), "roof_color": Color(0.3, 0.42, 0.22), "extra": "barrels"},
+	# E2 part 1
+	"orchard": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 28.0, "roof": 18.0,
+			"wall": Color(0.82, 0.68, 0.4), "roof_color": Color(0.66, 0.28, 0.2), "extra": "barrels"},
 	# E1 part 1
 	"porters_hut": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 20.0,
 			"wall": Color(0.62, 0.5, 0.34), "roof_color": Color(0.55, 0.45, 0.28), "extra": "barrels"},
@@ -1077,10 +1098,12 @@ func _vehicles() -> void:
 ## Animals in pens (Z1): an oval body in 8 rows (directions) of 8 frames, 32 px, the ground
 ## point at (16, 21), like tools/spritekiln/export_animal.py writes them.
 func _animals() -> void:
-	var colours := {"pig": Color(0.85, 0.55, 0.52), "sheep": Color(0.9, 0.87, 0.78), "horse": Color(0.55, 0.33, 0.2)}
+	# E2 part 2: the wild deer (graze) and boar (root) too.
+	var colours := {"pig": Color(0.85, 0.55, 0.52), "sheep": Color(0.9, 0.87, 0.78), "horse": Color(0.55, 0.33, 0.2),
+			"deer": Color(0.7, 0.48, 0.28), "boar": Color(0.35, 0.3, 0.25)}
 	for good: String in colours:
 		var info := {"frame": 32, "foot": [16, 21], "anims": {}}
-		for anim: String in ["idle", "walk", "graze" if good != "pig" else "root"]:
+		for anim: String in ["idle", "walk", "root" if good in ["pig", "boar"] else "graze"]:
 			var img := Image.create(32 * 8, 32 * 8, false, Image.FORMAT_RGBA8)
 			for row: int in 8:
 				for f: int in 8:

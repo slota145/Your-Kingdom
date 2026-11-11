@@ -34,6 +34,8 @@ const SHIP_PICK_HEIGHT := 90.0
 
 var sim: Simulation
 var view: ProvinceView
+## Faces over every house (the top bar's "Contentment" button, E2 part 3).
+var _moods_all: bool = false
 var camera: GameCamera
 
 var _ui: CanvasLayer
@@ -157,6 +159,7 @@ func _show_province() -> void:
 	add_child(view)
 	move_child(view, 0)
 	view.setup(sim.province)
+	view.moods.show_all = _moods_all
 	camera = GameCamera.new()
 	add_child(camera)
 	var size := sim.province.grid.size
@@ -222,6 +225,10 @@ func _build_ui() -> void:
 	_top.stocks_requested.connect(_toggle_stocks)
 	_top.world_requested.connect(_toggle_world_map)
 	_top.routes_requested.connect(_toggle_routes)
+	_top.moods_toggled.connect(func(on: bool) -> void:
+		_moods_all = on
+		if view != null:
+			view.moods.show_all = on)
 	root.add_child(_top)
 	_build = BuildMenu.new()
 	_build.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)

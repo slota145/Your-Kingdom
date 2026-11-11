@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/recipe_def.gd" id="1_recipe"]
+[ext_resource type="Script" path="res://src/defs/steps/field_step_def.gd" id="2_field"]
+[ext_resource type="Script" path="res://src/defs/steps/deliver_step_def.gd" id="3_deliver"]
+[ext_resource type="Script" path="res://src/defs/steps/step_def.gd" id="4_stepdef"]
+
+[sub_resource type="Resource" id="field"]
+script = ExtResource("2_field")
+harvest_good = &"apples"
+harvest_extra = 0.2
+
+[sub_resource type="Resource" id="deliver"]
+script = ExtResource("3_deliver")
+
+[resource]
+script = ExtResource("1_recipe")
+steps = Array[ExtResource("4_stepdef")]([SubResource("field"), SubResource("deliver")])
+id = &"orcharding"

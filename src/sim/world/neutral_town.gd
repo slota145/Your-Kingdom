@@ -101,7 +101,8 @@ static func place(town: ProvinceSim, def: BuildingDef, near: Vector2i, instant: 
 						continue
 					town.add_building(def, origin, instant, o)
 					var building := town.buildings.get_building(town.grid.occupant(origin))
-					if def.id == &"farm" or def.id == &"hop_farm":
+					if def.max_fields > 0:
+						# Fields of a farm, vines or apple trees of an orchard (E2 part 4).
 						_fields(town, building, FIELDS if instant else def.max_fields)
 					elif def.has_pens():
 						# A herd gets its pen at once (Z1).
@@ -150,6 +151,8 @@ static func near_its_work(town: ProvinceSim, def: BuildingDef, near: Vector2i) -
 		for step: StepDef in def.recipe.steps:
 			if step is GoToStepDef and (step as GoToStepDef).target == &"resource":
 				node = (step as GoToStepDef).resource
+	if _hunts(def):
+		return hunting_ground(town, near)
 	if node == &"" and def.needs_terrain_near == &"":
 		return near
 	var reach := maxi(def.work_radius, 3)
@@ -174,6 +177,46 @@ static func near_its_work(town: ProvinceSim, def: BuildingDef, near: Vector2i) -
 				best_d = d
 				best = t
 	return best
+
+
+const FOREST := &"tree"
+
+
+static func _hunts(def: BuildingDef) -> bool:
+	if def.recipe == null:
+		return false
+	for step: StepDef in def.recipe.steps:
+		if step is HuntStepDef:
+			return true
+	return false
+
+
+## Where a hunter's lodge goes (E2 part 4): by the herd nearest [param near], else by the
+## forest nearest it (the herds graze on the meadows at its edge), else [param near]. Halfway,
+## so the lodge stays near the town and the herds in reach.
+static func hunting_ground(town: ProvinceSim, near: Vector2i) -> Vector2i:
+	var best := Agent.NO_TILE
+	var best_d := 1 << 30
+	if town.wild != null:
+		for herd: WildHerds.Herd in town.wild.all():
+			var d := (herd.tile - near).length_squared()
+			if d < best_d:
+				best_d = d
+				best = herd.tile
+	if best == Agent.NO_TILE:
+		var size := town.grid.size
+		for y: int in size.y:
+			for x: int in size.x:
+				var t := Vector2i(x, y)
+				if not town.resources.has_node(t, FOREST) or town.resources.is_depleted(t):
+					continue
+				var d := (t - near).length_squared()
+				if d < best_d:
+					best_d = d
+					best = t
+	if best == Agent.NO_TILE:
+		return near
+	return (near + best) / 2
 
 
 # --- Defences (M7 part 3) -----------------------------------------------------------------------

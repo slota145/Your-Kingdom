@@ -14,6 +14,9 @@ extends GameDef
 ## Need id -> happiness points on this level, overriding NeedDef.weight (needs are shared
 ## between levels, but each level's weights sum to 100).
 @export var need_weights: Dictionary[StringName, int] = {}
+## Different kinds of food the diet need asks for (E2 part 3: peasants 1, burghers 2,
+## patricians 3); each kind more adds DIET_TAX_BONUS to the house's tax.
+@export_range(0, 9) var diet_min: int = 1
 ## Gold per resident per minute at full happiness and the normal tax rate (GDD §3.5).
 @export_range(0.0, 100.0) var tax_per_minute: float = 0.0
 

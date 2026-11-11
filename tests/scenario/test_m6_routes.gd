@@ -231,7 +231,6 @@ func test_voyage_to_my_province() -> void:
 	var coast: int = scene["coast"]
 	var b := sim.province_state(coast)
 	var cloth_b := b.kingdom_stock(&"cloth")
-	var gold := sim.treasury.gold
 	assert_str(String(sim.execute(StartVoyageCommand.new(cog.id, false, coast)))).is_equal("no_goods")
 	cog.voyage.sell = {&"cloth": 10}
 	assert_str(String(sim.execute(StartVoyageCommand.new(cog.id, false, sim.world.id_of(&"willow_vale"))))).is_equal("not_your_province")
@@ -240,7 +239,8 @@ func test_voyage_to_my_province() -> void:
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
 		return sim.world.routes.is_empty(), 1500)).is_true()
 	assert_int(b.kingdom_stock(&"cloth")).is_equal(cloth_b + 10)
-	assert_int(sim.treasury.gold).is_less(gold + 10)   # taxes only, nothing sold
+	# Nothing sold (taxes come in meanwhile: E2 part 3 houses calm on food and firewood pay more).
+	assert_int(cog.voyage.last_earned).is_equal(0)
 	assert_int(cog.voyage.route).is_equal(0)
 	assert_bool(SimFixture.run_until(sim, func() -> bool:
 		return cog.voyage.state == Voyage.State.IDLE, 600)).is_true()

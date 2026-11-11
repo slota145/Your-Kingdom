@@ -6,6 +6,13 @@ static var _registry: DataRegistry
 
 
 ## The real game data, loaded once per test run.
+## The limit [param alone_ms] of a speed check, doubled while tools/run_tests.sh runs several
+## Godots at once: they share the processor and the check failed by itself (4.2-4.8 ms against
+## 4) although a suite alone took 1.9 ms (speed-up 2026-11-11). Big slow-downs still fail.
+static func speed_limit(alone_ms: float) -> float:
+	return alone_ms * (2.0 if OS.get_environment("YK_SHARED_CPU") == "1" else 1.0)
+
+
 static func registry() -> DataRegistry:
 	if _registry == null:
 		_registry = DataRegistry.new()

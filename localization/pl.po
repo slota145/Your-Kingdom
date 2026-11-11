@@ -355,6 +355,24 @@ msgstr "Zadowolenie: %d"
 msgid "ui.house.declining"
 msgstr "Uwaga: brakuje podstawowych rzeczy! Zadowolenie spada i ludzie pracują wolniej. Gdy spadnie poniżej %d, mieszkańcy zaczną się powoli wyprowadzać, ale połowa zostanie."
 
+msgid "ui.house.points"
+msgstr "Potrzeby: %d z 100 pkt (spokój od %d, awans od %d)"
+
+msgid "ui.house.diet"
+msgstr "Rodzaje jedzenia: %d (potrzeba %d)"
+
+msgid "ui.house.tax_bonus"
+msgstr "Podatek większy o %d%% za to, co ponad potrzebę"
+
+msgid "ui.house.mood_bar_tip"
+msgstr "Punkty spełnionych potrzeb. Od %d dom jest spokojny (nikt nie odchodzi, przychodzą nowi), od %d może się rozbudować. Głodny dom (za mało rodzajów jedzenia) jest zawsze niezadowolony."
+
+msgid "ui.hud.moods"
+msgstr "Zadowolenie"
+
+msgid "ui.hud.moods_tip"
+msgstr "Pokaż buźki nad wszystkimi domami (zielona: może awansować, żółta: spokojny, czerwona: głodny albo niespokojny). Niezadowolone domy pokazują buźkę zawsze."
+
 msgid "ui.house.upgrade_in"
 msgstr "Awans za %d s, jeśli nic nie zabraknie"
 
@@ -967,8 +985,11 @@ msgstr "Warzenie piwa"
 msgid "recipe.brewing.desc"
 msgstr "Piwowar zaciera zboże w kadzi, warzy z chmielem w kotle i wynosi beczki."
 
+msgid "ui.house.upgrade_food"
+msgstr "jedzenie w %d rodzajach"
+
 msgid "ui.house.upgrade_waits"
-msgstr "Awans czeka, aż w magazynach będzie po %d sztuk każdego towaru mieszczan (chleb, ryby, piwo)."
+msgstr "Awans czeka, aż w magazynach będzie po %d sztuk towarów następnej klasy: %s."
 
 msgid "ui.doing.kept_for_building"
 msgstr "czeka: %s zostaje na budowy"
@@ -2352,6 +2373,66 @@ msgstr "%s: czas minął, osada odrzuca ofertę."
 msgid "ui.note.settlement_asks"
 msgstr "%s ma nowe żądania."
 
+msgid "good.apples.name"
+msgstr "Jabłka"
+
+msgid "good.apples.desc"
+msgstr "Owoce z sadu. Jedzenie mieszkańców; jabłonie rosną bez wody, więc sad daje jedzenie na start na każdej mapie."
+
+msgid "building.orchard.name"
+msgstr "Sad"
+
+msgid "building.orchard.desc"
+msgstr "Sadownik sadzi jabłonie na kratkach wokół, dogląda ich i zbiera jabłka. Wszystkie drzewa kwitną i owocują razem."
+
+msgid "ui.kind.orchardist"
+msgstr "Sadownik"
+
+msgid "recipe.orcharding.name"
+msgstr "Uprawa jabłoni"
+
+msgid "recipe.orcharding.desc"
+msgstr "Sadownik dogląda jabłoni i zbiera dojrzałe jabłka do kosza."
+
+msgid "ui.activity.weed"
+msgstr "pieli"
+
+msgid "need.diet.name"
+msgstr "Jedzenie"
+
+msgid "need.diet.desc"
+msgstr "Chleb, ryby, mięso albo jabłka. Chłopom wystarczy 1 rodzaj, mieszczanom trzeba 2 różnych, patrycjuszom 3. Każdy rodzaj ponad to podnosi podatek o 10%."
+
+msgid "good.game.name"
+msgstr "Zdobycz"
+
+msgid "good.game.desc"
+msgstr "Upolowana sarna albo dzik. Myśliwy oprawia ją w swojej chacie na 2 mięsa i skórę."
+
+msgid "building.hunter_lodge.name"
+msgstr "Chata myśliwego"
+
+msgid "building.hunter_lodge.desc"
+msgstr "Myśliwy podchodzi do saren i dzików w lesie (do 20 kafli od chaty), strzela z łuku i przynosi zdobycz. W chacie oprawia ją na 2 mięsa i skórę. Reszta stada ucieka, a stada powoli odrastają."
+
+msgid "ui.kind.hunter"
+msgstr "Myśliwy"
+
+msgid "recipe.hunting.name"
+msgstr "Polowanie"
+
+msgid "recipe.hunting.desc"
+msgstr "Myśliwy poluje na sarny i dziki, oprawia zdobycz na mięso i zdejmuje skórę."
+
+msgid "ui.activity.aim"
+msgstr "celuje z łuku"
+
+msgid "ui.reason.no_game"
+msgstr "brak zwierzyny w okolicy"
+
+msgid "ui.reason.game_gone"
+msgstr "zwierzyna uciekła"
+
 # --- M6 part 3: wine ---
 
 msgid "good.grapes.name"
@@ -2412,6 +2493,18 @@ msgid "ui.activity.press"
 msgstr "tłoczy winogrona"
 
 
+
+msgid "good.game.count"
+msgid_plural "good.game.count_plural"
+msgstr[0] "%s zdobycz"
+msgstr[1] "%s zdobycze"
+msgstr[2] "%s zdobyczy"
+
+msgid "good.apples.count"
+msgid_plural "good.apples.count_plural"
+msgstr[0] "%s kosz jabłek"
+msgstr[1] "%s kosze jabłek"
+msgstr[2] "%s koszy jabłek"
 
 msgid "good.grapes.count"
 msgid_plural "good.grapes.count_plural"

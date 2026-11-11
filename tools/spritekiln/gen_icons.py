@@ -42,6 +42,7 @@ RAMPS = {
     "pig": ["#1e0c0c", "#5a2a2c", "#965052", "#c87a78", "#e4a09a", "#f6c6be"],
     "tar": ["#040404", "#0c0c0e", "#16161a", "#222228", "#303038", "#44444e"],
     "wool": ["#1e1c18", "#56524a", "#908a7c", "#c4beae", "#e2ddd0", "#f8f6ee"],
+    "apple": ["#2a0806", "#5e1410", "#8e2418", "#ba3a22", "#d85a34", "#ec8a50"],
 }
 
 MAT = {
@@ -82,6 +83,7 @@ MAT = {
     "pig": {"ramp": "pig", "bands": [2, 5]},
     "tar": {"ramp": "tar", "bands": [1, 5], "finish": "glossy"},
     "wool": {"ramp": "wool", "bands": [2, 5]},
+    "apple": {"ramp": "apple", "bands": [2, 5], "finish": "glossy"},
     "brick": {"ramp": "brick", "bands": [2, 5]},
     "mortar": {"ramp": "stone", "bands": [4, 5], "outline": False, "line": False},
     "rust": {"ramp": "clay", "bands": [2, 4], "outline": False, "line": False},
@@ -277,6 +279,22 @@ ICONS.update({
         "tunic": {"material": "bluecloth", "prims": [ext([0, 0.08, 0], [[-0.2, -0.45], [0.2, -0.45], [0.2, 0.15], [0.55, 0.3],
                                                                         [0.5, 0.45], [-0.5, 0.45], [-0.55, 0.3], [-0.2, 0.15]], 0.14, FLAT)]},
         "belt": {"material": "grip", "prims": [box([0, 0.16, -0.05], [0.22, 0.02, 0.05])]},
+    },
+    "game": {  # a roe deer carcass lying on its side, the legs stretched out (E2 part 2)
+        "body": {"material": "hide", "prims": [ell([-0.05, 0.3, 0.0], [0.42, 0.2, 0.2])]},
+        "neck": {"material": "hide", "prims": [cyl([0.3, 0.32, 0.0], [0.55, 0.3, -0.12], 0.08)]},
+        "head": {"material": "hide", "prims": [ell([0.62, 0.28, -0.16], [0.12, 0.09, 0.1])]},
+        "ears": {"material": "hide", "prims": [ell([0.6, 0.38, -0.08], [0.04, 0.09, 0.03])]},
+        "legs": {"material": "hide", "prims": [cyl([x, 0.22, 0.1], [x + dx, 0.12, 0.62], 0.04)
+                                               for x, dx in ((-0.35, -0.15), (-0.22, -0.05), (0.15, 0.05), (0.27, 0.15))]},
+        "hooves": {"material": "grip", "prims": [sph([x + dx, 0.12, 0.64], 0.045)
+                                                 for x, dx in ((-0.35, -0.15), (-0.22, -0.05), (0.15, 0.05), (0.27, 0.15))]},
+        "rump": {"material": "wool", "prims": [ell([-0.45, 0.32, 0.0], [0.08, 0.12, 0.12])]},
+    },
+    "apples": {  # two red apples, a stem and a leaf (E2 part 1)
+        "apples": {"material": "apple", "prims": [sph([-0.3, 0.3, -0.28], 0.3), sph([0.3, 0.27, 0.28], 0.28)]},
+        "stem": {"material": "grip", "prims": [cyl([-0.3, 0.56, -0.28], [-0.26, 0.74, -0.3], 0.035)]},
+        "leaf": {"material": "leaf", "prims": [ext([-0.24, 0.7, -0.3], [[0, 0], [0.3, 0.08], [0.34, 0.24], [0.1, 0.22]], 0.04, [0.6, 0, 0])]},
     },
     "grapes": {  # a bunch of grapes with a leaf
         "berries": {"material": "grape", "prims": [sph([round(0.13 * (i - (3 - k) / 2 * 1.0) * 1.0, 3), round(0.7 - 0.17 * k, 3),

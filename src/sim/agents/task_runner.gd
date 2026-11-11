@@ -64,6 +64,7 @@ static func executor(kind: StringName) -> TaskStep:
 			&"park": ParkStep.new(), &"sail": SailStep.new(), &"ship_build": ShipBuildStep.new(),
 			&"land": LandStep.new(), &"travel": TravelStep.new(), &"crane": CraneStep.new(),
 			&"enlist": EnlistStep.new(), &"soldier": SoldierStep.new(), &"shelter": ShelterStep.new(),
+			&"hunt": HuntStep.new(),
 		}
 	return _executors[kind]
 
