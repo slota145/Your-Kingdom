@@ -2357,6 +2357,36 @@ msgstr "The orchardist tends the apple trees and picks the ripe apples into a ba
 msgid "ui.activity.weed"
 msgstr "weeding"
 
+msgid "good.game.name"
+msgstr "Game"
+
+msgid "good.game.desc"
+msgstr "A deer or boar shot by the hunter. He dresses it in his lodge into 2 meat and a hide."
+
+msgid "building.hunter_lodge.name"
+msgstr "Hunter's lodge"
+
+msgid "building.hunter_lodge.desc"
+msgstr "The hunter creeps up on deer and boar in the woods (up to 16 tiles from the lodge), shoots with his bow and brings the game home. In the lodge he dresses it into 2 meat and a hide. The rest of the herd flees; herds slowly grow back."
+
+msgid "ui.kind.hunter"
+msgstr "Hunter"
+
+msgid "recipe.hunting.name"
+msgstr "Hunting"
+
+msgid "recipe.hunting.desc"
+msgstr "The hunter hunts deer and boar, dresses the game into meat and takes off the hide."
+
+msgid "ui.activity.aim"
+msgstr "aiming his bow"
+
+msgid "ui.reason.no_game"
+msgstr "no game nearby"
+
+msgid "ui.reason.game_gone"
+msgstr "the game fled"
+
 msgid "good.grapes.name"
 msgstr "Grapes"
 
@@ -2415,6 +2445,11 @@ msgid "ui.activity.press"
 msgstr "presses grapes"
 
 
+
+msgid "good.game.count"
+msgid_plural "good.game.count_plural"
+msgstr[0] "%s carcass"
+msgstr[1] "%s carcasses"
 
 msgid "good.apples.count"
 msgid_plural "good.apples.count_plural"

@@ -33,6 +33,8 @@ var sites: Dictionary[int, ConstructionSite] = {}
 ## Road tiles waiting for cobbles, by entity id (M4b-3).
 var paving: Dictionary[int, PavingSite] = {}
 var fields: FieldStore = FieldStore.new()
+## Wild deer and boar on the forest and meadows (E2 part 2).
+var wild: WildHerds = WildHerds.new()
 ## Palisades, stone walls and stairs; gatehouse and tower tiles (M7 part 2).
 var walls: Walls
 ## Gatehouse passage tiles -> gatehouse id (M7 part 2). Not saved: rebuilt from buildings.
@@ -188,6 +190,7 @@ func step() -> void:
 			wagon.update(self)
 		Ships.update(self)
 		_breed_herds()
+		wild.update(self)
 		_update_markets()
 		merchant.update(self)
 		sea_merchant.update(self)
@@ -2637,6 +2640,7 @@ func release_agent(agent: Agent) -> void:
 	for wagon: RouteWagon in route_wagons.values():
 		wagon.store.release_owner(agent.id)
 	fields.release_owner(agent.id)
+	wild.release_hunter(agent.id)
 	if agent.claimed_node != Agent.NO_TILE:
 		resources.release(agent.claimed_node, agent.id)
 		agent.claimed_node = Agent.NO_TILE
@@ -3137,6 +3141,8 @@ func to_dict() -> Dictionary:
 		"jobs": jobs.to_dict(),
 		"path_queue": paths.to_dict(),
 	}
+	if wild.populated or not wild.herds.is_empty():
+		d["wild"] = wild.to_dict()
 	if not production.is_empty():
 		d["production"] = production.to_dict()
 	if landing != null:
@@ -3212,6 +3218,8 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 		province.raids = Raids.from_dict(d["raids"])
 	for ad: Variant in d.get("arrows", []):
 		province.arrows.append(Troops.Arrow.from_dict(ad))
+	if d.has("wild"):
+		province.wild = WildHerds.from_dict(d["wild"])
 	for pd: Variant in d.get("piles", []):
 		var pile := GroundPile.from_dict(pd, registry)
 		province.piles[pile.id] = pile

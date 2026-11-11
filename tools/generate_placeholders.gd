@@ -648,6 +648,9 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.55, 0.42, 0.28), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
 	"port_warehouse_small": {"footprint": Vector2i(2, 2), "entrance": Vector2i(0, 1), "walls": 0.0, "roof": 0.0,
 			"wall": Color(0.55, 0.42, 0.28), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
+	# E2 part 2
+	"hunter_lodge": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 26.0, "roof": 18.0,
+			"wall": Color(0.36, 0.26, 0.18), "roof_color": Color(0.3, 0.42, 0.22), "extra": "barrels"},
 	# E2 part 1
 	"orchard": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 28.0, "roof": 18.0,
 			"wall": Color(0.82, 0.68, 0.4), "roof_color": Color(0.66, 0.28, 0.2), "extra": "barrels"},

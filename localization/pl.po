@@ -2376,6 +2376,36 @@ msgstr "Sadownik dogląda jabłoni i zbiera dojrzałe jabłka do kosza."
 msgid "ui.activity.weed"
 msgstr "pieli"
 
+msgid "good.game.name"
+msgstr "Zdobycz"
+
+msgid "good.game.desc"
+msgstr "Upolowana sarna albo dzik. Myśliwy oprawia ją w swojej chacie na 2 mięsa i skórę."
+
+msgid "building.hunter_lodge.name"
+msgstr "Chata myśliwego"
+
+msgid "building.hunter_lodge.desc"
+msgstr "Myśliwy podchodzi do saren i dzików w lesie (do 16 kafli od chaty), strzela z łuku i przynosi zdobycz. W chacie oprawia ją na 2 mięsa i skórę. Reszta stada ucieka, a stada powoli odrastają."
+
+msgid "ui.kind.hunter"
+msgstr "Myśliwy"
+
+msgid "recipe.hunting.name"
+msgstr "Polowanie"
+
+msgid "recipe.hunting.desc"
+msgstr "Myśliwy poluje na sarny i dziki, oprawia zdobycz na mięso i zdejmuje skórę."
+
+msgid "ui.activity.aim"
+msgstr "celuje z łuku"
+
+msgid "ui.reason.no_game"
+msgstr "brak zwierzyny w okolicy"
+
+msgid "ui.reason.game_gone"
+msgstr "zwierzyna uciekła"
+
 # --- M6 part 3: wine ---
 
 msgid "good.grapes.name"
@@ -2436,6 +2466,12 @@ msgid "ui.activity.press"
 msgstr "tłoczy winogrona"
 
 
+
+msgid "good.game.count"
+msgid_plural "good.game.count_plural"
+msgstr[0] "%s zdobycz"
+msgstr[1] "%s zdobycze"
+msgstr[2] "%s zdobyczy"
 
 msgid "good.apples.count"
 msgid_plural "good.apples.count_plural"

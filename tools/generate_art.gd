@@ -257,6 +257,11 @@ const BUILDINGS := {
 		"props": [["crane_mast", 1.15, 0.85], ["treadwheel", 0.5, 1.5], ["barrels", 1.7, 1.8],
 			["bollard", 1.85, 0.25]]}],
 	"port_warehouse": [{"special": "yard"}],
+	# E2 part 2: the hunter's lodge (2x2); final art from SpriteKiln (gen_farmsteads.py).
+	"hunter_lodge": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.86], "h": 30.0, "rh": 18.0, "ridge": "x",
+			"ends": ["gable", "gable"], "walls": "logs", "roof": "thatch", "shutters": Color(0.3, 0.25, 0.2)}],
+		"props": [["log_stack", 0.4, 1.7]]}],
 	# E2 part 1: the orchard (2x2); final art from SpriteKiln (tools/spritekiln/gen_farmsteads.py),
 	# this drawing gives the construction stages.
 	"orchard": [{"volumes": [

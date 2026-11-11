@@ -29,6 +29,8 @@ var by_sea: bool = false
 var plants: StringName = &""
 ## Works fields (a farm).
 var fields: bool = false
+## Hunting (E2 part 2): each cycle takes one animal of a wild herd in the work radius.
+var hunts: bool = false
 ## A service: goods it uses up per round and seconds a round keeps the service going.
 var serves: Dictionary[StringName, int] = {}
 var serve_hold: float = 0.0
@@ -65,6 +67,10 @@ func _read(def: BuildingDef, data: DataRegistry) -> void:
 			fields = true
 			work_seconds += field.plow_time + field.sow_time + field.harvest_time + field.bind_time
 			_add_output(field.harvest_good, field.harvest_amount)
+		elif step is HuntStepDef:
+			var hunt := step as HuntStepDef
+			hunts = true
+			work_seconds += hunt.aim_time + hunt.pick_time
 		elif step is GoToStepDef and (step as GoToStepDef).target == &"resource":
 			_gather_from((step as GoToStepDef).resource, data)
 		elif step is SailStepDef and (step as SailStepDef).target == &"shoal":
