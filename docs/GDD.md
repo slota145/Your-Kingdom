@@ -227,7 +227,7 @@ deski + smoła ──► stocznia ──► łódź rybacka (6 desek, 2 smoły)
 
 | Budynek | Etapy cyklu |
 |---|---|
-| Farma zbożowa | rolnik orze pole (kafel po kaflu) → sieje → zboże rośnie (zmiana wyglądu kafli w 3 fazach) → żniwa sierpem → wiąże snop → niesie snopy do magazynu |
+| Farma zbożowa | rolnik orze pole (kafel po kaflu) → sieje → **całe pole zaczyna rosnąć dopiero po zasianiu ostatniej kratki** (E1, 2026-11-10; tak samo chmiel, winnica i przyszły sad; kratka czeka najwyżej 3 minuty, gdyby rolnik nie mógł dojść do reszty) → zboże rośnie razem (zmiana wyglądu kafli w 3 fazach), a rolnik w tym czasie pieli motyką kratkę po kratce → żniwa sierpem → wiąże snop → niesie snopy do magazynu. Większy plon na wyrównanie: średnio 0,2 jednostki więcej z kratki (co piąta kratka daje 2 snopy), więc farma daje tyle co przed zmianą albo trochę więcej |
 | Młyn | młynarz bierze zboże z magazynu i niesie worek → wsypuje do kosza (śmigło się kręci) → napełnia worek mąki → niesie mąkę do magazynu |
 | Piekarnia | piekarz przynosi mąkę → zagniata ciasto przy stole → wsadza je łopatą do pieca (dym z komina) → wyjmuje chleb → niesie kosz chleba do magazynu |
 | Wędkarz | idzie na pomost lub brzeg rzeki → zarzuca wędkę → czeka na branie → wyciąga rybę → po kilku rybach niesie kosz do magazynu |

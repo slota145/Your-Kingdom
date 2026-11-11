@@ -29,6 +29,8 @@ var by_sea: bool = false
 var plants: StringName = &""
 ## Works fields (a farm).
 var fields: bool = false
+## Field work (E1 part 2): units per harvested tile on average beyond the cycle's output.
+var field_extra: float = 0.0
 ## A service: goods it uses up per round and seconds a round keeps the service going.
 var serves: Dictionary[StringName, int] = {}
 var serve_hold: float = 0.0
@@ -63,6 +65,7 @@ func _read(def: BuildingDef, data: DataRegistry) -> void:
 		elif step is FieldStepDef:
 			var field := step as FieldStepDef
 			fields = true
+			field_extra = field.harvest_extra
 			work_seconds += field.plow_time + field.sow_time + field.harvest_time + field.bind_time
 			_add_output(field.harvest_good, field.harvest_amount)
 		elif step is GoToStepDef and (step as GoToStepDef).target == &"resource":

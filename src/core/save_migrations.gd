@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 34
+const CURRENT_VERSION := 35
 ## Hive tiles an old apiary gets on its first second after loading a save before v34.
 const AUTO_HIVES := 4
 ## Horses one pen tile of a stud farm holds (data/buildings/stud_farm.tres, pen_animals).
@@ -118,6 +118,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 34:
 		result = migrate_v33_to_v34(result)
 		version = 34
+	if version < 35:
+		result = migrate_v34_to_v35(result)
+		version = 35
 	return result
 
 
@@ -405,6 +408,14 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
 ## target, the Invasion from the sea with the clock of its waves). A game from before is a
 ## Colonization game: its settings name the scenario and get the default gold target.
+## v35 (E1 part 2, the whole field grows together): a sown field tile may wait for the rest of
+## its field (a negative ripe tick: minus its grow time); a farm keeps the fraction of its
+## extra yield ("yield_carry"). Tiles sown before grow on (their ripe ticks are times), farms
+## start with no fraction: nothing to change.
+static func migrate_v34_to_v35(state: Dictionary) -> Dictionary:
+	return state
+
+
 ## v34 (Z1 part 3, hives): an apiary keeps hives on hive tiles (field tiles of the apiary). An
 ## old apiary gets "pens_due" (AUTO_HIVES hive tiles), placed by the game on its first second
 ## beside it. The beekeeper walks to a hive before tending and before collecting: saved tasks

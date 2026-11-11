@@ -58,6 +58,9 @@ var breed_ticks: int = 0
 ## Herd: animals nobody takes, kept for breeding (Z1: the player's slider, from 2 up to the
 ## herd's room; starts at def.herd_keep).
 var herd_keep: int = 2
+## Farm (E1 part 2): the part of a unit harvested so far beyond FieldStepDef.harvest_amount
+## (harvest_extra per tile adds up here; a whole unit goes into the next sheaf).
+var field_yield_carry: float = 0.0
 ## Herd with pens (Z1): the starting pair has come (with the first pen tile).
 var herd_given: bool = false
 ## Herd with pens (Z1): pen tiles the building owns. Not saved: counted from the field tiles
@@ -106,6 +109,15 @@ func _init(entity_id: int, building_def: BuildingDef, at: Vector2i, turned: int 
 	orientation = turned
 	hp = def.max_hp if def != null else 0
 	herd_keep = def.herd_keep if def != null else 2
+
+
+## Units one harvested field tile gives (E1 part 2): the step's amount plus a whole unit each
+## time the extra yield has added up to one.
+func take_field_yield(step: FieldStepDef) -> int:
+	field_yield_carry += step.harvest_extra
+	var extra := floori(field_yield_carry + 0.000001)
+	field_yield_carry = maxf(field_yield_carry - extra, 0.0)
+	return step.harvest_amount + extra
 
 
 ## Makes a finished building usable: storage, pantry, household.
@@ -387,6 +399,8 @@ func to_dict() -> Dictionary:
 		d["breed"] = breed_ticks
 	if herd_keep != def.herd_keep:
 		d["herd_keep"] = herd_keep
+	if field_yield_carry > 0.0:
+		d["yield_carry"] = field_yield_carry
 	if herd_given:
 		d["herd_given"] = true
 	if pens_due != 0:
@@ -457,6 +471,7 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 	b.serving_until = int(d.get("serving_until", 0))
 	b.breed_ticks = int(d.get("breed", 0))
 	b.herd_keep = int(d.get("herd_keep", b.def.herd_keep))
+	b.field_yield_carry = float(d.get("yield_carry", 0.0))
 	b.herd_given = bool(d.get("herd_given", false))
 	b.pens_due = int(d.get("pens_due", 0))
 	b.carts = int(d.get("carts", 0))

@@ -320,7 +320,10 @@ func _work() -> void:
 ## (ProductionLog), else estimated from the work and the walks (ARCHITECTURE §7.1).
 func cycles_per_second(building: BuildingState) -> float:
 	var cycle := WorkCycle.of(building.def, detail.data)
-	var measured := detail.production.rate(building.id) if not building.def.paced_work() else 0.0
+	# A farm works in rounds (E1 part 2: sow the whole field, wait, reap it): the intervals the
+	# log keeps are the quick ones of the harvest, so a farm is always estimated.
+	var measured := detail.production.rate(building.id) \
+			if not building.def.paced_work() and not cycle.fields else 0.0
 	if measured > 0.0:
 		return measured / maxf(cycle.primary_amount, 1.0)
 	return 1.0 / estimated_cycle_seconds(building)
@@ -345,15 +348,15 @@ func estimated_cycle_seconds(building: BuildingState) -> float:
 	if cycle.plants != &"":
 		seconds += 2.0 * maxf(building.def.work_radius / 2.0, 1.0) / Movement.BASE_SPEED
 	if cycle.fields:
-		# One field gives a harvest every grow time plus its three jobs; a farmer works one at
-		# a time.
+		# E1 part 2: a round is the farmer's work on every tile, then the whole field grows
+		# once; each tile gives its amount and the extra yield on average.
 		if _fields.is_empty():
 			_fields = detail.fields.counts()
 		var count: int = _fields.get(building.id, 0)
 		if count == 0:
 			return INF
-		var per_field := building.def.field_grow_time + cycle.work_seconds
-		seconds = maxf(seconds, per_field / count)
+		var round := count * seconds + building.def.field_grow_time
+		seconds = round / (count * (1.0 + cycle.field_extra / maxf(cycle.primary_amount, 1.0)))
 	return maxf(seconds, 1.0)
 
 

@@ -1382,6 +1382,10 @@ func remove_field(tile: Vector2i) -> void:
 		TaskRunner.fail(self, agent)
 	if holder != null and holder.def.has_tiles():
 		update_herd_room(holder)
+	elif holder != null:
+		# The last unsown tile gone: the rest of the field starts growing (E1 part 2).
+		for started: Vector2i in fields.start_if_ready(holder.id, tick):
+			events.emit(&"field_changed", {"tile": started})
 	events.emit(&"field_changed", {"tile": tile, "farm": 0})
 
 

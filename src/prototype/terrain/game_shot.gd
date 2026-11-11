@@ -76,6 +76,9 @@ var _vineyard: bool = false
 ## their pigs; the swineherd walks in (not paused).
 var _pens: bool = false
 var _yards: PackedStringArray = PackedStringArray()
+## --fields_seconds=<s> (E1 part 2): farms placed by --yards get all their fields and a worker,
+## then the game runs that long (the field sown, waiting, growing together, weeded).
+var _fields_seconds: int = -1
 ## --fill_stores (E1): storages placed by --yards get stacks of many goods, some full, some not.
 var _fill_stores: bool = false
 ## --g1=finished|sites (G1): which half of the pioneer set to lay out; "" = none.
@@ -156,6 +159,8 @@ func _ready() -> void:
 			_vineyard = true
 		elif arg == "--pens":
 			_pens = true
+		elif arg.begins_with("--fields_seconds="):
+			_fields_seconds = int(arg.trim_prefix("--fields_seconds="))
 		elif arg == "--fill_stores":
 			_fill_stores = true
 		elif arg.begins_with("--yards="):
@@ -619,7 +624,7 @@ func _place_vineyard(sim: Simulation, at: Vector2i) -> void:
 					province.fields.set_stage(tile, FieldStore.Stage.RIPE)
 				_:
 					# Sown so that the growth stage is row (1..3) now.
-					province.fields.sow(tile, province.tick - grow * (row * 2 - 1) / 6, grow)
+					province.fields.sow(tile, province.tick - grow * (row * 2 - 1) / 6, grow, true)
 			view.terrain.refresh_tile(tile)
 	view.vines.refresh()
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(vineyard.origin + Vector2i(0, 5))
@@ -1127,10 +1132,21 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 				var good := goods[s % goods.size()]
 				var full := b.stock.stack_size(good)
 				b.stock.add(good, full if s % 3 != 2 else full / 2)
+		if _fields_seconds >= 0 and def.recipe != null and def.recipe.steps[0] is FieldStepDef:
+			for r: int in range(1, 6):
+				for y: int in range(b.origin.y - r, b.origin.y + def.footprint.y + r):
+					for x: int in range(b.origin.x - r, b.origin.x + def.footprint.x + r):
+						if sim.province.fields.tiles_of(b.id).size() < def.max_fields:
+							sim.execute(PlaceFieldCommand.new(b.id, Vector2i(x, y)))
+			sim.execute(SpawnAgentCommand.new(def.worker_kinds[0], b.entrance_tile()))
+			sim.execute(AssignWorkerCommand.new(sim.ids.next_id - 1, b.id))
+			continue
 		b.ensure_yard(sim.data)
 		if b.yard != null:
 			for good: StringName in BuildingState.yard_goods(def, sim.data):
 				b.yard.add(good, 999)
+	if _fields_seconds > 0:
+		sim.run_ticks(SimClock.seconds_to_ticks(_fields_seconds))
 	var view: ProvinceView = _game.get("view")
 	view.piles.update_yards(sim.province.buildings)
 

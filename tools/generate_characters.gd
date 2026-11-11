@@ -191,7 +191,7 @@ const HORSE := {"coat": Color(0.48, 0.3, 0.17), "mane": Color(0.18, 0.12, 0.09),
 ## Activity -> motion and the tool it uses (empty = the profession's own).
 const WORK := {
 	"chop": ["overhead", "axe"], "hew": ["overhead", "pick"], "build": ["overhead", "hammer"],
-	"plow": ["overhead", "hoe"], "harvest": ["low", "sickle"], "shape": ["low", "hammer"],
+	"plow": ["overhead", "hoe"], "weed": ["low", "hoe"], "harvest": ["low", "sickle"], "shape": ["low", "hammer"],
 	"saw": ["push", "saw"], "knead": ["push", ""], "bake": ["push", "peel"], "grind": ["stir", ""],
 	"mash": ["stir", "paddle"], "brew": ["stir", "paddle"], "sow": ["throw", ""], "bind": ["bend", ""],
 	"cast": ["cast", "rod"], "wait_bite": ["hold", "rod"], "reel": ["reel", "rod"],
@@ -211,13 +211,13 @@ const WORK := {
 
 ## Activities each profession performs (recipes, fields, building).
 const ACTIVITIES := {
-	"farmer": ["plow", "sow", "harvest", "bind"], "hop_grower": ["plow", "sow", "harvest", "bind"],
+	"farmer": ["plow", "sow", "harvest", "bind", "weed"], "hop_grower": ["plow", "sow", "harvest", "bind", "weed"],
 	"miller": ["grind"], "baker": ["knead", "bake"], "woodcutter": ["chop", "bind"],
 	"builder": ["build"], "sawyer": ["saw"], "stonecutter": ["hew", "shape"],
 	"angler": ["cast", "wait_bite", "reel"], "brewer": ["mash", "brew"],
 	"forester": ["dig", "plant", "rest"], "shepherd": ["herd", "shear"], "weaver": ["spin", "weave"],
 	"tailor": ["cut", "sew"], "beekeeper": ["tend_hives", "collect_honey"], "mead_maker": ["mix", "ferment"],
-	"winegrower": ["plow", "sow", "harvest", "bind"], "vintner": ["press", "ferment"],
+	"winegrower": ["plow", "sow", "harvest", "bind", "weed"], "vintner": ["press", "ferment"],
 	"clay_digger": ["dig"], "brickmaker": ["mould", "fire"], "innkeeper": ["serve"],
 	"swineherd": ["feed", "muck"], "butcher": ["slaughter", "skin"], "stallholder": ["sell"],
 	"merchant": [], "porter": ["load"], "carter": ["load"],

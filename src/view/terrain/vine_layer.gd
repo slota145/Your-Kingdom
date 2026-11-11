@@ -5,9 +5,10 @@ extends Node2D
 ## tools/generate_goods.gd). Child of the y-sorted world, one sprite per field tile sorted
 ## at the tile centre, so people walking between the rows are drawn in front or behind.
 
-## Vine art by field stage; sown fields by their growth stage (1..3).
+## Vine art by field stage; sown fields by their growth stage (1..3); a field waiting for the
+## rest of the vineyard to be tended (E1 part 2, growth stage 0) stays pruned.
 const STATE_FALLOW := "pruned"
-const STATE_SOWN: Array[String] = ["bud", "bud", "leaf", "full"]
+const STATE_SOWN: Array[String] = ["pruned", "bud", "leaf", "full"]
 const STATE_RIPE := "ripe"
 ## The tile centre on the ground in the vine images.
 const FOOT := Vector2(32, 44)

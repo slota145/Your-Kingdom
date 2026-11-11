@@ -8,6 +8,7 @@
 [sub_resource type="Resource" id="field"]
 script = ExtResource("2_field")
 harvest_good = &"grain"
+harvest_extra = 0.2
 
 [sub_resource type="Resource" id="deliver"]
 script = ExtResource("3_deliver")
