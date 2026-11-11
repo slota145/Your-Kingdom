@@ -203,7 +203,7 @@ Pomysły właściciela z rozmowy 2026-11-10, z oceną Claude. Ankieta 2026-11-10
 6. **Cechy prowincji: niewyczerpalne źródła.**
    - Właściciel: prowincja bogata w kamień z odkrywką, która się nie kończy; głęboka kopalnia żelaza, która nigdy się nie kończy.
    - Ocena (Claude): bardzo dobre, rozwija rzadkie surowce (winorośl, sól, ruda★). Tylko w prowincji z cechą; droższe, wolniejsze albo z większą obsadą, żeby nie zastąpiły zwykłych. Dalsze cechy: żyzna ziemia (plon), bogata w zwierzynę (myśliwy).
-   - Kiedy: etap 3.
+   - Kiedy: etap 3. **Ankieta 2026-11-11: osobna cecha prowincji, budynek przy skałach lub żyłach, większa obsada i droższa budowa; żyzna ziemia i zwierzyna w części 4** → ROADMAP, E3.
 7. **Uniwersytet i badania.**
    - Właściciel: badania odblokowują budynki i ulepszają gospodarkę (tragarze i wózki niosą +1, farmy więcej pól, hodowle więcej zagród); dużą część obecnych budynków schować za badaniami.
    - Ocena (Claude): największa zmiana z listy. Dotyka menu budowy, zapisu, władców (muszą badać, inaczej będą silniejsi), automatycznego gracza i scenariuszy. Za dużo schowane = nudny start. Pierwsza wersja: 15–20 badań za złoto i czas, uniwersytet wymaga mieszczan albo patrycjuszy; uczeni z księgami w środku, dzwon w mieście po badaniu.

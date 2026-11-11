@@ -1454,7 +1454,26 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E3 — Cechy prowincji: niewyczerpalne źródła
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Do zaplanowania po E2: prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą (droższe, wolniejsze albo z większą obsadą); dalsze cechy do decyzji (żyzna ziemia, bogata w zwierzynę).
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą. **Decyzje z ankiety 2026-11-11 niżej; plan czeka na akceptację startu.** Poprawki z oceny E2, część 4, mają pierwszeństwo.
+
+**Decyzje z ankiety 2026-11-11:**
+- **Osobna cecha prowincji**, niezależna od rzadkiego surowca (prowincja może mieć np. winorośl i być bogata w kamień). Dzisiejsza ruda★ staje się automatycznie cechą „bogata w żelazo”.
+- **Budynek stoi gdziekolwiek przy skałach** (odkrywka) albo żyłach rudy (głęboka kopalnia) w prowincji z cechą, bez osobnych złóż. Budynek sam jest źródłem: nie zużywa skał ani żył wokół siebie. Ryzyko (Claude): bez limitu łatwo przesadzić z wydajnością. Jeśli pomiary to pokażą, zaproponuję limit w ankiecie.
+- **Balans: większa obsada i droższa budowa** (np. 3 robotników; kamień, deski i złoto). Wydajność na robotnika jak w zwykłym budynku.
+- **Dalsze cechy w części 4:** żyzna ziemia (większy plon pól) i bogata w zwierzynę (więcej stad dla myśliwego).
+
+**Plan (ocena po każdej części):**
+1. **Cecha „bogata w kamień” i odkrywka kamienia.** Cecha w danych prowincji i w zapisie; znaczek i opis na mapie świata i w panelu prowincji. Odkrywka: wyrobisko ze stopniami, kamieniarze tłuką bloki, drewniany żuraw wciąga je na górę; podpowiedź „tylko w prowincji bogatej w kamień”. Grafika ze SpriteKiln. Zwykły kamieniołom bez zmian.
+2. **Głęboka kopalnia żelaza.** Wieża szybu z kołowrotem: górnicy schodzą pod ziemię, kubły z rudą wyjeżdżają na górę. Ruda★ = cecha „bogata w żelazo”. Zwykłe kopalnie przy małych żyłach bez zmian. Grafika ze SpriteKiln.
+3. **Reszta świata nadąża.** Losowe światy (M8) rozdają cechy; władcy, osady neutralne i automatyczny gracz stawiają nowe budynki; liczby z pomiarów automatycznym graczem (cel: wygodne na długą metę, ale nie wypierają zwykłych źródeł); zapis v38 z migracją i testem; testy szybkie i długie, UI w PL i EN.
+4. **Żyzna ziemia i bogata w zwierzynę.** Pola w żyznej prowincji dają większy plon; w prowincji bogatej w zwierzynę więcej stad, które szybciej się odradzają. Cechy w losowych światach, na mapie świata i u władców.
+
+**Kryteria ukończenia:**
+- [ ] Cecha prowincji w danych, zapisie i na mapie świata; odkrywka działa tylko w prowincji bogatej w kamień (część 1).
+- [ ] Głęboka kopalnia działa tylko w prowincji bogatej w żelazo i się nie kończy (część 2).
+- [ ] Losowe światy, władcy, osady i automatyczny gracz korzystają z cech; stare zapisy wczytują się po migracji (test); testy szybkie i długie przechodzą; UI w PL i EN (część 3).
+- [ ] Żyzna ziemia i bogata w zwierzynę działają i są widoczne na mapie świata (część 4).
+- [ ] **Twoja ocena gry** po każdej części.
 
 ## E4 — Uniwersytet, badania oraz małe i duże koszary
 
