@@ -1134,10 +1134,10 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 				b.stock.add(good, full if s % 3 != 2 else full / 2)
 		if _fields_seconds >= 0 and def.recipe != null and def.recipe.steps[0] is FieldStepDef:
 			for r: int in range(1, 6):
-				for y: int in range(b.origin.y - r, b.origin.y + def.footprint.y + r):
-					for x: int in range(b.origin.x - r, b.origin.x + def.footprint.x + r):
+				for fy: int in range(b.origin.y - r, b.origin.y + def.footprint.y + r):
+					for fx: int in range(b.origin.x - r, b.origin.x + def.footprint.x + r):
 						if sim.province.fields.tiles_of(b.id).size() < def.max_fields:
-							sim.execute(PlaceFieldCommand.new(b.id, Vector2i(x, y)))
+							sim.execute(PlaceFieldCommand.new(b.id, Vector2i(fx, fy)))
 			sim.execute(SpawnAgentCommand.new(def.worker_kinds[0], b.entrance_tile()))
 			sim.execute(AssignWorkerCommand.new(sim.ids.next_id - 1, b.id))
 			continue

@@ -348,15 +348,17 @@ func estimated_cycle_seconds(building: BuildingState) -> float:
 	if cycle.plants != &"":
 		seconds += 2.0 * maxf(building.def.work_radius / 2.0, 1.0) / Movement.BASE_SPEED
 	if cycle.fields:
-		# E1 part 2: a round is the farmer's work on every tile, then the whole field grows
-		# once; each tile gives its amount and the extra yield on average.
+		# One field gives a harvest every grow time plus its three jobs; a farmer works one at
+		# a time. E1 part 2: the whole field now waits for its last tile and grows once, and
+		# the extra yield makes up for it (measured in the detailed mode: a farm harvests as
+		# much an hour as before, farm_yield_probe), so the estimate stays as it was.
 		if _fields.is_empty():
 			_fields = detail.fields.counts()
 		var count: int = _fields.get(building.id, 0)
 		if count == 0:
 			return INF
-		var round := count * seconds + building.def.field_grow_time
-		seconds = round / (count * (1.0 + cycle.field_extra / maxf(cycle.primary_amount, 1.0)))
+		var per_field := building.def.field_grow_time + cycle.work_seconds
+		seconds = maxf(seconds, per_field / count)
 	return maxf(seconds, 1.0)
 
 
