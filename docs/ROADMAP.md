@@ -26,7 +26,7 @@ M0 Fundament
                 │                        └─► M7 Wojsko, mury i oblężenia
                 │                             └─► B1 Most przez rzekę i łagodniejszy brzeg
                 │                                  └─► W1 Nowe wybrzeże ──► J1 Nowe jednostki i okręty
-                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► E1 Magazyny, farmy i awans ──► G3 Stare grafiki ze SpriteKiln ──► M10 Wersja 1.0
+                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► E1 Magazyny, farmy i awans ──► E2 Jedzenie i potrzeby ──► E3 Cechy prowincji ──► E4 Badania i koszary ──► G3 Stare grafiki ze SpriteKiln ──► M10 Wersja 1.0
                 └─► M9 Produkcja grafik (równolegle od M4, partiami)
 Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 ```
@@ -1378,6 +1378,29 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Stare zapisy (v34) wczytują się po migracji.
 - [x] Automatyczny gracz i władcy grają dalej; testy szybkie i długie przechodzą; UI w PL i EN.
 - [x] **Twoja ocena gry** po każdej części (2026-11-11: „Super to wygląda”, ocena w chmurze ze zrzutów; gra na laptopie przy najbliższej okazji).
+
+## E2 — Jedzenie na start i nowe potrzeby mieszkańców
+
+> Pomysły właściciela z 2026-11-10 (IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 4–5). Kolejność (właściciel 2026-11-11): najpierw cały pakiet ekonomii (E2, E3, E4), grafiki G3 po nim. **Szkic planu; decyzje w ankiecie przed startem.**
+
+**Cel:** mapa bez wody też ma jedzenie na start, a mieszkańcy chcą różnorodnego jedzenia: do spokoju wystarczy kilka potrzeb, a każda ponad minimum daje trochę więcej podatku.
+
+**Szkic zakresu (propozycja Claude):**
+- **Sad jabłoni:** budynek z kratkami drzew jak winnica (jabłonie rosną razem jak łan, E1), sadownik zrywa jabłka do kosza; nowy towar „jabłka” (jedzenie chłopów, w GDD od dawna „jabłka później”).
+- **Myśliwy i dzikie zwierzęta:** sarny i dziki chodzą stadkami po lesie i łąkach, rozmnażają się powoli do limitu; myśliwy z łukiem podchodzi, strzela, niesie zdobycz do chaty, oprawia ją na mięso i skórę. Zwierzęta, chata myśliwego i sad ze SpriteKiln.
+- **Potrzeby „kilka z wielu”:** jedzenie zawsze obowiązkowe; każda klasa ma listę rodzajów jedzenia i minimum różnych rodzajów; pozostałe potrzeby liczą się punktami, do spokoju wystarczy część z nich; awans wymaga więcej. Każda potrzeba albo rodzaj jedzenia ponad minimum daje dodatek do podatku.
+- **Automatyczni gracze, władcy i osady** przestawieni na nowe zasady; balans sprawdzony długimi testami (automatyczny gracz dochodzi do patrycjuszy w limicie).
+- Zapis gry (nowa wersja) z migracją.
+
+**Części (propozycja, ocena po każdej):** 1) sad i jabłka; 2) myśliwy i dzikie zwierzęta; 3) nowe potrzeby i podatek za nadwyżkę; 4) automatyczni gracze, władcy i balans (może się połączyć z 3).
+
+## E3 — Cechy prowincji: niewyczerpalne źródła
+
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Do zaplanowania po E2: prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą (droższe, wolniejsze albo z większą obsadą); dalsze cechy do decyzji (żyzna ziemia, bogata w zwierzynę).
+
+## E4 — Uniwersytet, badania oraz małe i duże koszary
+
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8. Do zaplanowania po E3: uniwersytet i drzewko 15–20 badań (złoto i czas), część budynków za badaniami (start bez zmian), ulepszenia (tragarze i wózki niosą +1, więcej pól i zagród); małe tanie koszary od startu (łucznicy, włócznicy), duże „zamkowe” 5×5 z dziedzińcem za badaniem; władcy też badają.
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 
