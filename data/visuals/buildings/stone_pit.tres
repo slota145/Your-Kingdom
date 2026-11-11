@@ -7,8 +7,10 @@ script = ExtResource("1_vis")
 art_id = "stone_pit"
 open_ground = true
 spot_offsets = Dictionary[StringName, Vector2]({
-&"crane": Vector2(45, 6),
-&"face_1": Vector2(32, -35),
-&"face_2": Vector2(70, -22),
-&"face_3": Vector2(3, -27)
+&"crane_1": Vector2(-10, -2),
+&"crane_2": Vector2(54, -11),
+&"crane_3": Vector2(-50, -9),
+&"face_1": Vector2(5, -23),
+&"face_2": Vector2(30, -23),
+&"face_3": Vector2(56, -23)
 })

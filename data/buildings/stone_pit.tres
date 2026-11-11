@@ -20,5 +20,6 @@ work_radius = 4
 needs_node_near = &"rock"
 needs_trait = &"rich_stone"
 parallel_work = true
+door_sides = &"one"
 recipe = ExtResource("2_recipe")
 id = &"stone_pit"

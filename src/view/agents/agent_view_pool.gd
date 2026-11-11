@@ -210,6 +210,9 @@ func _spot_offset(agent: Agent) -> Vector2:
 	# A spot per worker ("face_1", "face_2"...: the stone pit's three stonecutters, E3) when
 	# the building has them, else the shared one.
 	var own := StringName("%s_%d" % [step.spot, workplace.workers.find(agent.id) + 1])
-	if visual.spot_offsets.has(own):
-		return visual.spot_offsets[own]
-	return visual.spot_offsets.get(step.spot, Vector2.ZERO)
+	var offset: Vector2 = visual.spot_offsets[own] if visual.spot_offsets.has(own) \
+			else visual.spot_offsets.get(step.spot, Vector2.ZERO)
+	# A mirrored building (orientations 1 and 3) has its spots on the other side (E3 fix).
+	if workplace.orientation % 2 == 1:
+		offset.x = -offset.x
+	return offset

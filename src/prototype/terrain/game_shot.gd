@@ -1112,6 +1112,15 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 	for k: int in _yards.size():
 		var def := sim.data.get_building(StringName(_yards[k]))
 		var o := k % 2
+		if def.needs_trait != &"":
+			sim.province.traits = [def.needs_trait]   # E3: the stone pit's province is rich in stone
+		if def.needs_node_near != &"" and def.parallel_work:
+			# E3: rocks behind the stone pit, in its reach.
+			var rock := sim.data.get_resource_node(def.needs_node_near)
+			for rx: int in range(x - 1, x + def.footprint.x + 1):
+				for ry: int in [at.y - 6, at.y - 7]:
+					sim.province.resources.place(Vector2i(rx, ry), rock)
+					sim.province.refresh_tile(Vector2i(rx, ry))
 		var placed := false
 		var at_origin := Vector2i.ZERO
 		for dy: int in range(0, 12):
@@ -1139,6 +1148,13 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 			sim.execute(SpawnAgentCommand.new(def.worker_kinds[0], b.entrance_tile()))
 			sim.execute(AssignWorkerCommand.new(sim.ids.next_id - 1, b.id))
 			_lodge = b
+			continue
+		if _fields_seconds >= 0 and def.parallel_work:
+			# E3: the stone pit with all its stonecutters at work.
+			print("stone pit at ", b.origin, " turned ", b.orientation, " entrance ", b.entrance_tile())
+			for kind: StringName in def.worker_kinds:
+				sim.execute(SpawnAgentCommand.new(kind, b.entrance_tile()))
+				sim.execute(AssignWorkerCommand.new(sim.ids.next_id - 1, b.id))
 			continue
 		if _fields_seconds >= 0 and def.recipe != null and def.recipe.steps[0] is FieldStepDef:
 			for r: int in range(1, 6):
