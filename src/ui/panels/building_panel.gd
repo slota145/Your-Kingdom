@@ -281,12 +281,17 @@ func _refresh() -> void:
 			lines.append(tr("ui.building.no_workers") % missing)
 		if b.def.max_fields > 0:
 			lines.append(tr("ui.building.fields") % [province.fields.tiles_of(b.id).size(), b.def.max_fields])
+			if province.field_yield() > 1.0:
+				# E3 part 4: fertile land.
+				lines.append(tr("ui.building.fertile") % roundi((province.field_yield() - 1.0) * 100.0))
 		elif b.def.has_pens():
 			lines.append(tr("ui.building.pens") % [b.pens, b.def.max_pens, b.herd_room()])
 		elif b.def.has_hives():
 			lines.append(tr("ui.building.hives") % [b.hives, b.def.max_hives])
 			if b.hives == 0:
 				lines.append(tr("ui.building.no_hives"))
+		if province.rich_in_game() and WorkCycle.of(b.def, province.data).hunts:
+			lines.append(tr("ui.building.rich_game"))
 		if b.paused:
 			lines.append(tr("ui.building.paused"))
 		if b.def.service_radius > 0:

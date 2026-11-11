@@ -8,6 +8,9 @@ extends RefCounted
 ##
 ## No random numbers are kept: every choice hashes the tick with the herd's id, so a province
 ## replays the same after a save.
+##
+## A province rich in game (E3 part 4) feeds ProvinceDef.GAME_HERDS times the herds, which breed
+## and come out of the woods ProvinceDef.GAME_BREEDING times faster.
 
 ## Kind -> [herd size limit, animals of a new herd].
 const KINDS: Dictionary[StringName, Array] = {&"deer": [5, 3], &"boar": [4, 2]}
@@ -100,7 +103,11 @@ func target(province: ProvinceSim) -> int:
 					_homes += 1
 	if _homes < TILES_PER_HERD / 2:
 		return 0
-	return clampi(_homes / TILES_PER_HERD, MIN_HERDS, MAX_HERDS)
+	var herds_fed := clampi(_homes / TILES_PER_HERD, MIN_HERDS, MAX_HERDS)
+	if province.rich_in_game():
+		# E3 part 4: the woods of a province rich in game keep half as many herds again.
+		return roundi(herds_fed * ProvinceDef.GAME_HERDS)
+	return herds_fed
 
 
 ## Once a second: herds wander, grow and come out of the woods.
@@ -108,13 +115,14 @@ func update(province: ProvinceSim) -> void:
 	if not populated:
 		populate(province)
 	var tick := province.tick
+	var pace := ProvinceDef.GAME_BREEDING if province.rich_in_game() else 1.0
 	if tick >= spawn_at:
-		spawn_at = tick + SimClock.seconds_to_ticks(SPAWN_SECONDS)
+		spawn_at = tick + SimClock.seconds_to_ticks(SPAWN_SECONDS / pace)
 		if herds.size() < target(province):
 			_spawn(province, tick)
 	for herd: Herd in all():
 		if tick >= herd.breed_at:
-			herd.breed_at = tick + SimClock.seconds_to_ticks(BREED_SECONDS)
+			herd.breed_at = tick + SimClock.seconds_to_ticks(BREED_SECONDS / pace)
 			if herd.count < size_of(herd.kind):
 				herd.count += 1
 		if tick >= herd.move_at and herd.hunter == 0:
@@ -210,7 +218,8 @@ func _spawn(province: ProvinceSim, tick: int) -> void:
 		herd.tile = tile
 		herd.count = int(KINDS[herd.kind][1])
 		herd.move_at = tick + SimClock.seconds_to_ticks(WANDER_SECONDS + (h % 97) / 97.0 * WANDER_SPREAD)
-		herd.breed_at = tick + SimClock.seconds_to_ticks(BREED_SECONDS)
+		var pace := ProvinceDef.GAME_BREEDING if province.rich_in_game() else 1.0
+		herd.breed_at = tick + SimClock.seconds_to_ticks(BREED_SECONDS / pace)
 		herds[herd.id] = herd
 		province.events.emit(&"herd_changed", {"herd": herd.id})
 		return

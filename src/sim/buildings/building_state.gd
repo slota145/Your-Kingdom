@@ -112,12 +112,29 @@ func _init(entity_id: int, building_def: BuildingDef, at: Vector2i, turned: int 
 
 
 ## Units one harvested field tile gives (E1 part 2): the step's amount plus a whole unit each
-## time the extra yield has added up to one.
-func take_field_yield(step: FieldStepDef) -> int:
-	field_yield_carry += step.harvest_extra
+## time the extra yield has added up to one. On fertile land (E3 part 4) the whole yield is
+## [param factor] times bigger (ProvinceSim.field_yield).
+func take_field_yield(step: FieldStepDef, factor: float = 1.0) -> int:
+	if factor == 1.0:
+		field_yield_carry += step.harvest_extra
+	else:
+		field_yield_carry += (step.harvest_amount + step.harvest_extra) * factor - step.harvest_amount
+	return step.harvest_amount + _whole_carry()
+
+
+## Units added to [param amount] harvested in the simplified mode (E3 part 4: fertile land,
+## [param factor] times the harvest; the fraction waits in the same carry as in the detail).
+func fertile_extra(amount: int, factor: float) -> int:
+	if factor == 1.0:
+		return 0
+	field_yield_carry += amount * (factor - 1.0)
+	return _whole_carry()
+
+
+func _whole_carry() -> int:
 	var extra := floori(field_yield_carry + 0.000001)
 	field_yield_carry = maxf(field_yield_carry - extra, 0.0)
-	return step.harvest_amount + extra
+	return extra
 
 
 ## Makes a finished building usable: storage, pantry, household.

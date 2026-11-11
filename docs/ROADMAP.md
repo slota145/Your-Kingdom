@@ -1454,7 +1454,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E3 — Cechy prowincji: niewyczerpalne źródła
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą. **Decyzje z ankiety 2026-11-11 niżej; plan czeka na akceptację startu.** Poprawki z oceny E2, część 4, mają pierwszeństwo.
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą. **Decyzje z ankiety 2026-11-11 niżej; plan zaakceptowany 2026-11-11; część 1 scalona do `main` (czeka na ocenę), części 2 i 3 gotowe do oceny.** Poprawki z oceny E2, część 4, mają pierwszeństwo.
 
 **Decyzje z ankiety 2026-11-11:**
 - **Osobna cecha prowincji**, niezależna od rzadkiego surowca (prowincja może mieć np. winorośl i być bogata w kamień). Dzisiejsza ruda★ staje się automatycznie cechą „bogata w żelazo”.
@@ -1476,11 +1476,37 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Tryb uproszczony liczy cykl na każdego kamieniarza (`parallel_work`). Władcy, osady i automatyczny gracz jeszcze nie stawiają odkrywki (część 3).
 - Testy: `tests/scenario/test_e3_traits.gd`.
 
+**Część 2, stan (2026-11-11, gotowa do oceny; ocena części 1 jeszcze nie przyszła):**
+- **Decyzje z ankiety 2026-11-11 (część 2):** 3 górników i koszt jak przy odkrywce, wieża szybu z kołem linowym i kołowrotem na dwie korby, budynek 3×3.
+- **Głęboka kopalnia** (zakładka „Wojsko”, za kopalnią rudy): 3×3, stoi przy żyle rudy (zasięg 4) tylko w prowincji bogatej w żelazo, czyli z rudą★ (w „Królestwie” Żelazny Gród); 10 drewna, 6 desek, 6 kamienia, 60 złota; 3 górników. Każdy schodzi do szybu (2 s), kuje rudę pod ziemią, gdzie go nie widać (22 s), wyciąga kubeł kołowrotem (3 s), rozbija rudę na hałdzie (3 s) i niesie ją do magazynu. Żył nie zużywa. Na górnika tyle co zwykła kopalnia (pomiar w teście: 9 wobec 9 sztuk w 10 minut przy dalekim magazynie). Jedno wejście.
+- **Grafika ze SpriteKiln** (ART_SPEC §10.23): wieża szybu z kołem linowym, lina w dół szybu z kubłem i lina do kołowrotu, hałda rudy, taczka, stemple. Górnicy mają swoje miejsca przy szybie, przy korbach i przy hałdzie. Nowe ruchy „schodzi do szybu” i „kręci kołowrotem”. Pod ziemią górnik znika z widoku (nowe w widoku: miejsca pracy poza wzrokiem).
+- Tryb uproszczony liczy cykl na każdego górnika (`parallel_work`). Władcy, osady i automatyczny gracz jeszcze nie stawiają głębokiej kopalni (część 3).
+- Testy: `tests/scenario/test_e3_traits.gd` (część 2 na końcu pliku).
+
+**Część 3, stan (2026-11-11, gotowa do oceny; ocen części 1 i 2 jeszcze nie ma):**
+- **Decyzje z ankiety 2026-11-11 (część 3):** w losowym świecie bogata w kamień jest ok. co dziesiąta prowincja, a jedna zawsze blisko gracza; władcy i automatyczny gracz stawiają odkrywkę zamiast drugiego kamieniołomu; głęboką kopalnię budują późno, a rudę sprzedają.
+- **Losowe światy** (`WorldGenerator._traits`): `max(1, round(prowincje / 10))` prowincji bogatych w kamień, nigdy start gracza; pierwsza to losowy sąsiad startu (najchętniej pusta prowincja), a gdy start nie ma sąsiadów lądowych, sąsiad sąsiada; reszta gdziekolwiek. Osobna „kostka”, więc właściciele, ruda★ i obóz bandytów wychodzą jak przedtem, a stary zapis losowego świata po wczytaniu dostaje cechy ze swojego numeru (bez nowej wersji zapisu). „Bogata w żelazo” jak dotąd z rudy★ (ok. 2 na 20 prowincji).
+- **Władcy i automatyczny gracz** (ten sam plan, `RulerPlanner`): w prowincji bogatej w kamień z jednym kamieniołomem odkrywka, gdy kamienia jest mniej niż 20 (`PIT_STONE`; przy progu braku 6 nie byłoby ich stać, bo odkrywka sama kosztuje 6 kamienia), i wtedy nie ma drugiego kamieniołomu. Głęboka kopalnia to ostatnia pozycja planu, tylko w prowincji bogatej w żelazo. Ruda żelaza jest wśród nadwyżek, które władcy sprzedają (Kupieckie wyspy). Miejsce: odkrywka przy skałach, głęboka kopalnia przy żyle (`NeutralTown.near_its_work` patrzy też na `needs_node_near`).
+- **Osady neutralne:** Żelazny Gród (i wzorowane na nim osady losowych światów) stoi z gotową głęboką kopalnią. Osada w prowincji bogatej w kamień ma odkrywkę zamiast kamieniołomu. Stare zapisy mają już zbudowane osady, więc tam się nic nie zmienia.
+- **Pomiary automatycznym graczem** (`src/prototype/e3/traits_probe.gd`, świat nr 5, 22 prowincje, 90 minut, wszystkie prowincje bogate w kamień): odkrywka staje w 15.–20. minucie i daje 3,3–5,1 kamienia na minutę, kamieniołom obok 1,5–1,7 (bez cechy dwa kamieniołomy: 3,1). Kamieniołom zostaje, odkrywka go nie wypiera. Kamień władców rośnie do 250–540 sztuk w 90. minucie (bez cechy 80–160): wygodnie, ale bez limitu, bo władcy i tak mają tylko jedną odkrywkę na prowincję. Głęboka kopalnia (`--all_iron`, 150 minut): władcy stawiają ją na koniec planu, w 80.–150. minucie, 2,2–4,7 rudy na minutę; w Kolonizacji ruda leży w magazynie (do ok. 136 sztuk), w Kupieckich wyspach nadwyżkę ponad 30 sprzedają (cena 4 zł), ale wyścig o złoto kończy się ok. 90. minuty, więc to drobny dodatek. Uwaga z pomiarów, sprzed części 3: automatyczny gracz w świecie nr 5 zostaje w jednej prowincji z 24 mieszkańcami (do zbadania osobno, nie dotyczy cech).
+- **UI:** cechy w losowym świecie widać jak w „Królestwie” (znaczek przy nazwie, linia „Cechy:” w panelu, PL i EN z części 1); nowe teksty nie były potrzebne.
+- Testy: `tests/scenario/test_e3_traits.gd` (część 3 na końcu pliku).
+
+**Część 4, stan (2026-11-11, części 2–4 scalone do `main` na prośbę właściciela, gotowe do oceny; ocen części 1–3 jeszcze nie ma, właściciel: „brak uwag, rób część 4”):**
+- **Decyzje z ankiety 2026-11-11 (część 4):** siła średnia (+50% plonu; o połowę więcej stad, odradzanie 2× szybsze), w „Królestwie” żyzna Wierzbowa Dolina i bogate w zwierzynę Lustrzane Jeziora, w widoku prowincji tylko linijka w panelu (bez zmiany grafiki pól).
+- **Żyzna ziemia** (`ProvinceDef.FERTILE`, `FERTILE_YIELD` 1,5): kratka pola daje 1,5× plonu razem z dodatkiem z E1 (1,8 zamiast 1,2 snopka z kratki). Rolnik pracuje tak samo. Działa przy zbożu, chmielu, sadzie i winnicy, w trybie szczegółowym i uproszczonym (ta sama „reszta” ułamków, `field_yield_carry`). Panel farmy: „Żyzna ziemia: plon pól +50%”.
+- **Bogata w zwierzynę** (`ProvinceDef.RICH_GAME`, `GAME_HERDS` 1,5, `GAME_BREEDING` 2): las karmi 1,5× stad (do 12 zamiast 8), stado przybiera i nowe wychodzi z lasu 2× częściej. Panel myśliwego: „Prowincja bogata w zwierzynę…”.
+- **Mapa świata:** znaczek snopka i poroża przy nazwie, linia „Cechy:” (PL i EN).
+- **Losowe światy** (`WorldGenerator._give_trait`): obie cechy tak często jak kamień (`max(1, round(prowincje / 10))`), nigdy start gracza; żyzna raz blisko gracza, zwierzyna gdziekolwiek. Każda cecha ma własną kostkę, więc kamień, właściciele i reszta świata wypadają jak przedtem, a stare zapisy dostają nowe cechy po wczytaniu (bez nowej wersji zapisu).
+- **Władcy i automatyczny gracz:** w prowincji bogatej w zwierzynę drugi myśliwy od 20 mieszkańców (`GAME_PEOPLE`), w żyznej druga farma zaraz po pierwszym młynie (zanim zabraknie jedzenia). Osady neutralne bez zmian (myśliwego mają od E2).
+- **Pomiary** (`traits_probe.gd -- --minutes=90 [--all_fertile|--all_game]`, świat nr 5, 22 prowincje): żyzna ziemia: stolice władców zebrały w 90 minut 809 i 964 zboża (bez cechy 539 i 700, czyli +38–50%) i o ok. 50% więcej jabłek. Zwierzyna: 12 stad i ok. 58 zwierząt (bez cechy 8 i 39), mięso stolic 136 i 152 (bez cechy 92 i 52; drugi myśliwy). Cechy nie zmieniają tempa budowy władców. Prowincja automatycznego gracza w tym świecie stoi na 24 mieszkańcach (znana sprawa z części 3), więc jej zboże zależy od popytu i z cechą wychodzi tak samo. Plon w trybie szczegółowym sprawdza test z prawdziwym rolnikiem (1,3–1,7×).
+- Testy: `tests/scenario/test_e3_traits.gd` (część 4 na końcu pliku).
+
 **Kryteria ukończenia:**
 - [x] Cecha prowincji w danych i na mapie świata (z zapisu: z definicji); odkrywka działa tylko w prowincji bogatej w kamień (część 1).
-- [ ] Głęboka kopalnia działa tylko w prowincji bogatej w żelazo i się nie kończy (część 2).
-- [ ] Losowe światy, władcy, osady i automatyczny gracz korzystają z cech; stare zapisy wczytują się (test); testy szybkie i długie przechodzą; UI w PL i EN (część 3).
-- [ ] Żyzna ziemia i bogata w zwierzynę działają i są widoczne na mapie świata (część 4).
+- [x] Głęboka kopalnia działa tylko w prowincji bogatej w żelazo i się nie kończy (część 2).
+- [x] Losowe światy, władcy, osady i automatyczny gracz korzystają z cech; stare zapisy wczytują się (test); testy szybkie i długie przechodzą; UI w PL i EN (część 3).
+- [x] Żyzna ziemia i bogata w zwierzynę działają i są widoczne na mapie świata (część 4).
 - [ ] **Twoja ocena gry** po każdej części.
 
 ## E4 — Uniwersytet, badania oraz małe i duże koszary

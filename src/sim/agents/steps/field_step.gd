@@ -47,7 +47,7 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 		"harvest":
 			if _work(agent, &"harvest", step.harvest_time / speed) == Status.DONE:
 				province.fields.set_stage(tile, FieldStore.Stage.FALLOW)
-				var amount := farm.take_field_yield(step)
+				var amount := farm.take_field_yield(step, province.field_yield())
 				agent.carry_good = step.harvest_good
 				agent.carry_amount = amount
 				province.ledger.made(step.harvest_good, amount, province.tick)

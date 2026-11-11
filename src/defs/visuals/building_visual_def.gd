@@ -34,6 +34,8 @@ extends Resource
 ## Work spot name -> pixel offset from the entrance tile centre where the worker is drawn.
 ## "<spot>_<n>" is the spot of the building's n-th worker (from 1), used before "<spot>".
 @export var spot_offsets: Dictionary[StringName, Vector2] = {}
+## Work spots out of sight (the deep mine's "below", E3 part 2): a worker there is not drawn.
+@export var hidden_spots: Array[StringName] = []
 
 
 ## Art name of the variant of [param name] for a building at [param origin] ("base" only).

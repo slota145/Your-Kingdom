@@ -4398,8 +4398,43 @@ msgstr "bogata w kamień"
 msgid "trait.rich_iron.name"
 msgstr "bogata w żelazo"
 
+# --- E3 part 4: fertile land, rich in game ---
+msgid "ui.building.fertile"
+msgstr "Żyzna ziemia: plon pól +%d%%"
+
+msgid "ui.building.rich_game"
+msgstr "Prowincja bogata w zwierzynę: więcej stad, szybciej się odradzają"
+
+msgid "trait.fertile.name"
+msgstr "żyzna ziemia"
+
+msgid "trait.rich_game.name"
+msgstr "bogata w zwierzynę"
+
 msgid "recipe.pit_quarrying.name"
 msgstr "Praca w odkrywce"
 
 msgid "recipe.pit_quarrying.desc"
 msgstr "Kamieniarz tłucze blok w ścianie wyrobiska, ociosuje go, wciąga żurawiem na górę i niesie do magazynu."
+
+# --- E3 part 2: the deep iron mine ---
+msgid "building.deep_mine.name"
+msgstr "Głęboka kopalnia"
+
+msgid "building.deep_mine.desc"
+msgstr "Trzej górnicy zjeżdżają szybem pod ziemię, a kołowrót wyciąga kubły z rudą. Głęboka kopalnia nigdy się nie kończy. Stawia się ją przy żyle rudy, tylko w prowincji bogatej w żelazo."
+
+msgid "ui.activity.descend"
+msgstr "schodzi do szybu"
+
+msgid "ui.activity.dig_ore"
+msgstr "kuje rudę pod ziemią"
+
+msgid "ui.activity.wind"
+msgstr "wyciąga kubeł z rudą kołowrotem"
+
+msgid "recipe.deep_mining.name"
+msgstr "Praca w głębokiej kopalni"
+
+msgid "recipe.deep_mining.desc"
+msgstr "Górnik schodzi do szybu, kuje rudę pod ziemią, wyciąga kubeł kołowrotem, rozbija rudę na hałdzie i niesie ją do magazynu."

@@ -92,6 +92,11 @@ const BUILDINGS := {
 	"stone_pit": [{"volumes": [
 		{"kind": "lean", "rect": [0.2, 0.2, 1.2, 1.2], "low": "y", "h": 22.0, "hh": 30.0, "roof": "shingle", "walls": "planks", "open": true, "inside": []}],
 		"props": [["stone_blocks", 1.6, 2.6], ["crane", 2.4, 2.2]]}],
+	# E3 part 2: the deep mine's base art is from SpriteKiln (tools/spritekiln/gen_deep_mine.py);
+	# this look gives its construction sites (restore base.* after running this script).
+	"deep_mine": [{"volumes": [
+		{"kind": "lean", "rect": [0.5, 0.5, 1.5, 1.5], "low": "y", "h": 40.0, "hh": 52.0, "roof": "shingle", "walls": "planks", "open": true, "inside": []}],
+		"props": [["log_pile", 2.4, 0.8], ["crane", 2.4, 2.2]]}],
 	"farm": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.86], "h": 42.0, "rh": 26.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2), "chimney": [0.55, 0.6]}],
 		"props": [["sheaves", 1.3, 1.78], ["cart_wheel", 0.55, 1.98]]}],

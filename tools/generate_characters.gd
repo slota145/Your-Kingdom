@@ -216,6 +216,8 @@ const WORK := {
 	"carve": ["push", "knife"], "bend": ["bend", ""], "string": ["stir", ""], "groom": ["push", "brush"],
 	# E3 part 1: the stone pit's crane winch
 	"hoist": ["stir", ""],
+	# E3 part 2: the deep mine's shaft and winch
+	"descend": ["bend", ""], "wind": ["stir", ""],
 }
 
 ## Activities each profession performs (recipes, fields, building).
@@ -234,7 +236,7 @@ const ACTIVITIES := {
 	"merchant": [], "porter": ["load"], "carter": ["load"],
 	"shipwright": ["hammer"], "tar_burner": ["stack", "tend_fire", "tap"], "fisher": [],
 	"docker": ["hand_over"],
-	"charcoal_burner": ["stack", "tend_fire", "rake"], "miner": ["pick", "shape"],
+	"charcoal_burner": ["stack", "tend_fire", "rake"], "miner": ["pick", "shape", "descend", "wind"],
 	"smelter": ["stack", "bellows", "tap"], "blacksmith": ["heat", "forge", "quench"],
 	"armourer": ["heat", "rivet", "polish"], "bowyer": ["carve", "bend", "string"], "groom": ["feed", "groom"],
 	"recruit": [],

@@ -596,7 +596,7 @@ func _draw_rare(at: Vector2, rare: StringName) -> void:
 
 
 ## The mark of a province trait (ROADMAP E3) beside its name: a stack of cut stone blocks
-## for rich in stone, an ore rock for rich in iron.
+## for rich in stone, an ore rock for rich in iron, a sheaf for fertile land, antlers for game.
 func _draw_trait(at: Vector2, t: StringName) -> void:
 	match t:
 		ProvinceDef.RICH_STONE:
@@ -606,6 +606,24 @@ func _draw_trait(at: Vector2, t: StringName) -> void:
 				draw_rect(Rect2(at + block.position, block.size), INK, false, 1.0)
 		ProvinceDef.RICH_IRON:
 			_draw_rare(at, &"iron_ore")
+		ProvinceDef.FERTILE:
+			# A sheaf of grain (E3 part 4): stalks fanning out, ears on top, a band round it.
+			var straw := Color(0.80, 0.62, 0.22)
+			for i: int in 5:
+				var top := at + Vector2(-7.0 + i * 3.5, -8.0)
+				draw_line(at + Vector2(-2.0 + i * 1.0, 7.0), top, straw, 2.0)
+				draw_circle(top, 2.0, Color(0.62, 0.42, 0.12))
+			draw_line(at + Vector2(-4, 1), at + Vector2(4, 1), INK, 2.0)
+		ProvinceDef.RICH_GAME:
+			# A stag's antlers (E3 part 4).
+			var horn := Color(0.36, 0.24, 0.13)
+			draw_circle(at + Vector2(0, 7), 2.5, horn)
+			for side: float in [-1.0, 1.0]:
+				var base := at + Vector2(side * 2.0, 6.0)
+				var tip := at + Vector2(side * 8.0, -8.0)
+				draw_line(base, tip, horn, 2.5)
+				draw_line(base.lerp(tip, 0.4), base.lerp(tip, 0.4) + Vector2(side * 5.0, -1.0), horn, 2.0)
+				draw_line(base.lerp(tip, 0.7), base.lerp(tip, 0.7) + Vector2(-side * 2.0, -4.0), horn, 2.0)
 		_:
 			draw_circle(at, 4.0, INK)
 

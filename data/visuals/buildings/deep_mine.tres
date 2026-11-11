@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="BuildingVisualDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/visuals/building_visual_def.gd" id="1_vis"]
+
+[resource]
+script = ExtResource("1_vis")
+art_id = "deep_mine"
+open_ground = true
+spot_offsets = Dictionary[StringName, Vector2]({
+&"heap_1": Vector2(-2, -16),
+&"heap_2": Vector2(-28, -4),
+&"heap_3": Vector2(-54, -14),
+&"shaft_1": Vector2(-3, -24),
+&"shaft_2": Vector2(11, -17),
+&"shaft_3": Vector2(48, -14),
+&"winch_1": Vector2(101, -20),
+&"winch_2": Vector2(54, 3),
+&"winch_3": Vector2(66, -22)
+})
+hidden_spots = Array[StringName]([&"below"])

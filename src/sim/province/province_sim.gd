@@ -2838,6 +2838,16 @@ func take_from_storages(good: StringName, amount: int, near: Vector2i, used: boo
 	return taken
 
 
+## How many times its harvest a field tile yields here (E3 part 4: more on fertile land).
+func field_yield() -> float:
+	return ProvinceDef.FERTILE_YIELD if traits.has(ProvinceDef.FERTILE) else 1.0
+
+
+## Whether the woods here keep more game (E3 part 4: more herds, breeding faster).
+func rich_in_game() -> bool:
+	return traits.has(ProvinceDef.RICH_GAME)
+
+
 ## Units of [param good] in storage buildings and production yards that can still be taken.
 func stored(good: StringName) -> int:
 	var sum := 0

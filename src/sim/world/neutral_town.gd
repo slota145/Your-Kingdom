@@ -154,6 +154,8 @@ static func near_its_work(town: ProvinceSim, def: BuildingDef, near: Vector2i) -
 				node = (step as GoToStepDef).resource
 	if _hunts(def):
 		return hunting_ground(town, near)
+	if node == &"":
+		node = def.needs_node_near   # a stone pit by rocks, a deep mine by ore veins (E3)
 	if node == &"" and def.needs_terrain_near == &"":
 		return near
 	var reach := maxi(def.work_radius, 3)

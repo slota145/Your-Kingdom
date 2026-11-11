@@ -6,6 +6,7 @@
 script = ExtResource("1_province")
 template = &"lakeland"
 richness = 2
+traits = Array[StringName]([&"rich_game"])
 neighbours = Array[StringName]([&"amber_coast", &"willow_vale", &"iron_wold"])
 world_pos = Vector2(900, 170)
 outline = PackedVector2Array(640, 60, 1150, 60, 1150, 282, 1010, 302, 872, 284, 630, 282, 662, 170)

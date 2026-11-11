@@ -64,6 +64,8 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 			# Drawn by the SiegeLayer (M7 part 2, J1 part 2).
 			heads[agent.id] = screen - Vector2(0, 46.0 if agent.kind == &"ram" else 34.0)
 			continue
+		if _out_of_sight(agent):
+			continue   # down the deep mine's shaft (E3 part 2)
 		var spot := _spot_offset(agent)
 		# Going in through a door: the last step fades out (owner's decision 2026-11-05), and
 		# people resting inside are not drawn. Workers at a work spot stay visible.
@@ -192,6 +194,21 @@ func _tint(kind: StringName) -> Color:
 		var visual := AgentVisualDef.for_kind(kind)
 		_tints[kind] = visual.tint if visual != null else Color.WHITE
 	return _tints[kind]
+
+
+## Whether [param agent] works at a spot of his workplace that is out of sight
+## (BuildingVisualDef.hidden_spots: under the ground in the deep mine, E3 part 2).
+func _out_of_sight(agent: Agent) -> bool:
+	if province == null or agent.task == null or agent.path_state == Agent.PathState.MOVING:
+		return false
+	var step := agent.task.current_step() as WorkStepDef
+	if step == null or step.spot == &"":
+		return false
+	var workplace := province.buildings.get_building(agent.workplace_id)
+	if workplace == null:
+		return false
+	var visual := _visual_of(workplace.def.id)
+	return visual != null and visual.hidden_spots.has(step.spot)
 
 
 ## Pixel offset of the named work spot (oven, table...) while the agent works there.
