@@ -67,7 +67,7 @@ func test_three_rulers_grow_settle_and_trade_for_90_minutes() -> void:
 	for id: StringName in [&"sheep_farm", &"pigsty", &"apiary"]:
 		assert_int(int(herds.get(id, 0))).override_failure_message("no ruler keeps a %s" % id).is_greater_equal(2)
 	# Every ruler's province is in the simplified mode and cheap (the player's landing is viewed).
-	assert_float(ms_per_tick).is_less(4.0)
+	assert_float(ms_per_tick).is_less(SimFixture.speed_limit(4.0))
 
 
 func _buildings(sim: Simulation, owner: StringName) -> int:

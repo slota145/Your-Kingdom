@@ -719,10 +719,11 @@ Zasady:
 | Wydajność | benchmark 500 postaci (ręcznie lub w nocnym przebiegu, nie blokuje commitów) | scena benchmarkowa + log |
 
 **Dwa poziomy testów (decyzja właściciela 2026-11-07):**
-- **Szybkie** (`tests/unit`, `tests/data`, `tests/scenario`; ok. 395 testów, ok. 2 minuty z przygotowaniem): `tools/run_tests.sh`. Muszą przechodzić przed **każdym commitem**.
+- **Szybkie** (`tests/unit`, `tests/data`, `tests/scenario`; ok. 610 testów): `tools/run_tests.sh`, w 4 Godotach naraz (przyspieszenie 2026-11-11, ankieta właściciela: jeden Godot liczył je 6,5 minuty, 4 naraz ok. 1 min 50 s w chmurze; najpierw rozdawane są po kolei wolne zestawy świata M6–M8, potem reszta). `tools/run_tests.sh --serial` liczy je w jednym Godocie. Muszą przechodzić przed **każdym commitem**.
 - **Długie** (`tests/long`: automatyczni gracze na trzech mapach i w świecie, 3 pełne partie scenariuszy M8 (`test_m8_game_*_long.gd`), port automatycznego gracza na „Wybrzeżu” (N1), duże miasto przez 2 godziny gry, spójność trybów na dużym mieście; 10 testów): `tools/run_tests.sh --long`, każdy plik w osobnym Godocie naraz (ok. 5 minut zamiast 11 po kolei). Muszą przechodzić przed **scaleniem do `main`** i na koniec części etapu. Wyłapują rzadkie rzeczy (zakleszczenia po godzinie gry, balans, wydajność), które rzadko psuje pojedyncza zmiana.
 - `tools/run_tests.sh --all` puszcza oba poziomy naraz. Logi i raporty przebiegów równoległych: `reports/<nazwa>.log`.
-- Nowy test trafia do `tests/long` tylko wtedy, gdy trwa dłużej niż ok. 20 sekund.
+- Nowy test trafia do `tests/long`, gdy trwa dłużej niż ok. 8 sekund (2026-11-11: 7 najwolniejszych testów świata, 9–16 s każdy, przeniesiono do `tests/long/*_slow.gd`).
+- **Pomiary szybkości w testach** (`SimFixture.speed_limit`): przy równoległym biegu (`YK_SHARED_CPU=1` z `run_tests.sh`) limit jest 2 razy większy, bo Godoty dzielą procesor i test władców przekraczał 4 ms, choć sam liczył 1,9 ms. Dokładny pomiar: zestaw osobno (`tools/run_tests.sh -a res://tests/long/<suite>.gd`).
 
 **Zasada:** każda zmiana w `src/sim` ma test.
 
