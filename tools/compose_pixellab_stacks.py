@@ -72,6 +72,26 @@ LAYOUTS.update({
 LAYOUTS.update({"halberd": PLANKS, "crossbow": BOWS, "morning_star": PILE})
 
 
+# E1 (owner 2026-11-10): the stockpile and harbour stores hold twice a stack, so each good
+# also gets a taller sheet <good>_x2.png with 2 x stack_size frames: the same pieces in more
+# layers, growing upwards on the same tile. Frames are TALL_H high.
+TALL_H = 128
+TALL = {
+    id(PILE): ([(3, 3), (3, 3), (3, 3), (3, 3), (2, 2)], 0.27, 0.5),          # 40
+    id(PILE_LOW): ([(3, 3), (3, 3), (3, 3), (3, 3), (2, 2)], 0.27, 0.35),     # 40
+    id(BARRELS): ([(3, 2), (2, 2), (3, 2), (2, 2), (2, 2)], 0.3, 0.72),       # 24
+    id(BOLTS): ([(3, 3), (3, 3), (2, 2), (2, 2), (2, 2), (2, 1)], 0.27, 0.45),  # 32
+    id(SHEAVES): ([(4, 3), (4, 3), (3, 2), (3, 2), (2, 1), (2, 1)], 0.22, 0.45),  # 40
+    # Logs two deep along their length (a layer of 2 rows lying end to end).
+    id(LOGS): ([(6, 2, 0.13, 0.42, False), (5, 2, 0.13, 0.42, False), (4, 2, 0.13, 0.42, False),
+                (3, 2, 0.13, 0.42, False), (2, 2, 0.13, 0.42, False)], 0.0, 0.3),  # 40
+    id(PLANKS): ([(2, 4, 0.5, 0.2, False), (4, 2, 0.2, 0.5, True), (2, 4, 0.5, 0.2, False),
+                  (4, 2, 0.2, 0.5, True), (2, 2, 0.5, 0.2, False), (2, 2, 0.2, 0.5, True)],
+                 0.0, 0.3),  # 40
+    id(BOWS): ([(2, 4, 0.5, 0.2, False)] * 4 + [(2, 2, 0.5, 0.2, False)] * 2, 0.0, 0.35),  # 40
+}
+
+
 def stack_size(good):
     text = open(os.path.join(DATA, good + ".tres")).read()
     return int(re.search(r"stack_size = (\d+)", text).group(1))
@@ -98,17 +118,17 @@ def spots(layout, count, piece_h):
     return result[:count]
 
 
-def sheet(piece, count, layout):
+def sheet(piece, count, layout, frame_h=FRAME_H):
     piece = piece.crop(piece.getbbox())
     flipped = piece.transpose(Image.FLIP_LEFT_RIGHT)
     places = spots(layout, count, piece.height)
-    out = Image.new("RGBA", (FRAME_W * count, FRAME_H), (0, 0, 0, 0))
+    out = Image.new("RGBA", (FRAME_W * count, frame_h), (0, 0, 0, 0))
     for k in range(count):
-        frame = Image.new("RGBA", (FRAME_W, FRAME_H), (0, 0, 0, 0))
+        frame = Image.new("RGBA", (FRAME_W, frame_h), (0, 0, 0, 0))
         laid = places[:k + 1]
         for layer, gx, gy, lift, mirrored in sorted(laid, key=lambda p: (p[0], p[1] + p[2], p[1] - p[2])):
             fx = FRAME_W / 2 + (gx - gy) * 32
-            fy = FRAME_H - 16 + (gx + gy) * 16 - lift
+            fy = frame_h - 16 + (gx + gy) * 16 - lift
             img = flipped if mirrored else piece
             frame.alpha_composite(img, (round(fx - img.width / 2), round(fy - img.height + 3)))
         out.paste(frame, (FRAME_W * k, 0))
@@ -130,7 +150,11 @@ def main():
             piece = brighten(piece, GAMMA[good], 1.0)
         sheet(piece, count, layout).save(
             os.path.join(OUT, good + ".png"))
-        print(good, count)
+        tall = sheet(piece, count * 2, TALL[id(layout)], TALL_H)
+        if tall.getbbox() is not None and tall.crop((0, 0, FRAME_W * count * 2, 2)).getbbox():
+            raise SystemExit("tall stack of %s is cut at the top" % good)
+        tall.save(os.path.join(OUT, good + "_x2.png"))
+        print(good, count, count * 2)
 
 
 if __name__ == "__main__":

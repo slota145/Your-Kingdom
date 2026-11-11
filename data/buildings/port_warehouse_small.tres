@@ -13,6 +13,7 @@ build_cost = Dictionary[StringName, int]({
 })
 build_time = 18.0
 storage_slots = 4
+stack_multiplier = 2
 on_quay = true
 stilts_row = true
 id = &"port_warehouse_small"

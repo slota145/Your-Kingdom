@@ -315,7 +315,11 @@ func _field(tile: Vector2i) -> Texture2D:
 	var stage := province.fields.stage(tile, province.tick)
 	var folder := _crop_folder(province.fields.farm_of(tile))
 	if stage == FieldStore.Stage.SOWN:
-		return _fields["%s/sown_%d" % [folder, province.fields.growth_stage(tile, province.tick)]]
+		var growth := province.fields.growth_stage(tile, province.tick)
+		if growth == 0:
+			# Sown, waiting for the rest of the field (E1 part 2): fresh dark soil.
+			return _fields["%s/plowed" % folder]
+		return _fields["%s/sown_%d" % [folder, growth]]
 	return _fields["%s/%s" % [folder, FIELD_ART[stage]]]
 
 

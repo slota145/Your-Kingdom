@@ -3,12 +3,22 @@ extends RefCounted
 ## Field tiles of farms (GDD §4.4): each 1x1 tile belongs to one farm and goes
 ## fallow -> ploughed -> sown (3 growth stages) -> ripe -> harvested (fallow again).
 ## A tile can be claimed by one farmer at a time.
+##
+## E1 part 2 (owner 2026-11-10): the whole field grows together. A sown tile waits (sown, not
+## growing yet) until the farm has no fallow or ploughed tile left, then all its waiting tiles
+## start growing at once; so the crop ripens together and is reaped together. A waiting tile
+## keeps its grow time as a negative ripe tick (-ticks) until it starts.
 
 enum Stage { FALLOW, PLOWED, SOWN, RIPE }
 ## Growth stages shown while a tile is SOWN (view).
 const GROWTH_STAGES := 3
 
-## tile -> [farm_id, stage, sown_tick, ripe_tick, claimant]
+## A waiting tile starts after this long even if the farm still has unsown tiles (a farmer who
+## cannot reach a tile, a farm without a farmer for its last tiles): no field waits forever.
+const WAIT_LIMIT_SECONDS := 180.0
+
+## tile -> [farm_id, stage, sown_tick (growth start once growing), ripe_tick (-grow ticks while
+## waiting), claimant]
 var _tiles: Dictionary[Vector2i, PackedInt64Array] = {}
 
 
@@ -58,14 +68,24 @@ func stage(tile: Vector2i, tick: int) -> Stage:
 	if not _tiles.has(tile):
 		return Stage.FALLOW
 	var f := _tiles[tile]
-	if f[1] == Stage.SOWN and tick >= f[3]:
+	if f[1] == Stage.SOWN and f[3] >= 0 and tick >= f[3]:
 		return Stage.RIPE
 	return int(f[1]) as Stage
 
 
-## 1..GROWTH_STAGES while growing, 0 otherwise (view).
+## Whether [param tile] is sown and waits for the rest of its field before it grows.
+func is_waiting(tile: Vector2i) -> bool:
+	return _tiles.has(tile) and _tiles[tile][1] == Stage.SOWN and _tiles[tile][3] < 0
+
+
+## Whether [param tile] is sown and growing (not waiting, not ripe yet).
+func is_growing(tile: Vector2i, tick: int) -> bool:
+	return stage(tile, tick) == Stage.SOWN and not is_waiting(tile)
+
+
+## 1..GROWTH_STAGES while growing, 0 otherwise (also while waiting: freshly sown soil, view).
 func growth_stage(tile: Vector2i, tick: int) -> int:
-	if stage(tile, tick) != Stage.SOWN:
+	if stage(tile, tick) != Stage.SOWN or is_waiting(tile):
 		return 0
 	var f := _tiles[tile]
 	var total := maxi(int(f[3] - f[2]), 1)
@@ -77,13 +97,40 @@ func set_stage(tile: Vector2i, new_stage: Stage) -> void:
 		_tiles[tile][1] = new_stage
 
 
-func sow(tile: Vector2i, tick: int, grow_ticks: int) -> void:
+## Sows [param tile]: it waits for the rest of the field (E1), then grows [param grow_ticks];
+## [param growing] starts it growing at [param tick] at once (map setup, screenshots).
+func sow(tile: Vector2i, tick: int, grow_ticks: int, growing: bool = false) -> void:
 	if _tiles.has(tile):
 		var f := _tiles[tile]
 		f[1] = Stage.SOWN
 		f[2] = tick
-		f[3] = tick + grow_ticks
+		f[3] = tick + grow_ticks if growing else -maxi(grow_ticks, 1)
 		_tiles[tile] = f
+
+
+## Starts the waiting tiles of [param farm_id] growing when none of its tiles is fallow or
+## ploughed any more, or when one has waited WAIT_LIMIT_SECONDS. Returns the tiles started.
+func start_if_ready(farm_id: int, tick: int) -> Array[Vector2i]:
+	var waiting: Array[Vector2i] = []
+	var unsown := false
+	var oldest := tick
+	for tile: Vector2i in tiles_of(farm_id):
+		var f := _tiles[tile]
+		if f[1] == Stage.FALLOW or f[1] == Stage.PLOWED:
+			unsown = true
+		elif f[1] == Stage.SOWN and f[3] < 0:
+			waiting.append(tile)
+			oldest = mini(oldest, int(f[2]))
+	if waiting.is_empty():
+		return waiting
+	if unsown and tick - oldest < SimClock.seconds_to_ticks(WAIT_LIMIT_SECONDS):
+		return [] as Array[Vector2i]
+	for tile: Vector2i in waiting:
+		var f := _tiles[tile]
+		f[3] = tick - f[3]
+		f[2] = tick
+		_tiles[tile] = f
+	return waiting
 
 
 func claimant(tile: Vector2i) -> int:

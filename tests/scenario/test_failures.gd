@@ -35,9 +35,10 @@ func test_full_stockpile_puts_wood_on_its_yard_then_porters_store_it() -> void:
 	var scene := SimFixture.woodcutter_scene(sim)
 	var stock: BuildingState = scene["stock"]
 	var hut: BuildingState = scene["hut"]
+	var full := stock.stock.stack_size(&"bread")   # 40 since E1 (twice a stack)
 	for slot: int in stock.stock.slot_count():
-		stock.stock.add(&"bread", 20)
-	var bread := stock.stock.slot_count() * 20
+		stock.stock.add(&"bread", full)
+	var bread := stock.stock.slot_count() * full
 	var cut := _wood_cut(sim)
 	_run_checked(sim, SimFixture.ticks(90), &"wood", cut)
 	assert_int(stock.stock.total(&"wood")).is_equal(0)

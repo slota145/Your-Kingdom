@@ -234,3 +234,26 @@ func test_house_with_needs_met_stops_losing_residents() -> void:
 	assert_int(hut.house.residents).is_greater_equal(residents)
 	assert_int(hut.house.unmet_seconds).is_equal(0)
 	assert_float(hut.house.happiness).is_greater(Population.LEAVE_BELOW)
+
+
+## E1: "Upgrade now" opens the upgrade site as soon as the needs are met, without the wait.
+func test_upgrade_now_skips_the_wait() -> void:
+	var sim := SimFixture.make_sim()
+	var village := SimFixture.village(sim, 40, 40)
+	var hut: BuildingState = (village["houses"] as Array)[0]
+	var stock: BuildingState = village["stock"]
+	stock.stock.add(&"planks", 8)
+	SimFixture.place(sim, &"well", Vector2i(9, 9))
+	assert_str(String(sim.execute(UpgradeHouseCommand.new(hut.id)))).is_not_empty()
+	# Needs met, but no burgher goods yet: the button stays blocked with a reason.
+	var met := SimFixture.run_until(sim, func() -> bool: return hut.house.met_seconds > 2, 60)
+	assert_bool(met).is_true()
+	assert_str(String(Population.upgrade_blocker(sim.province, hut))).is_equal("house_next_goods_missing")
+	_stock_burgher_goods(stock)
+	assert_int(hut.house.met_seconds).is_less(Population.UPGRADE_AFTER)
+	assert_str(String(sim.execute(UpgradeHouseCommand.new(hut.id)))).is_empty()
+	assert_int(hut.site_id).is_not_equal(0)
+	assert_str(String(Population.upgrade_blocker(sim.province, hut))).is_equal("upgrade_running")
+	var upgraded := SimFixture.run_until(sim, func() -> bool: return hut.house.level == 2, 120)
+	assert_bool(upgraded).is_true()
+	assert_array(Array(sim.province.dangling_holds())).is_empty()

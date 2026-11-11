@@ -26,7 +26,7 @@ M0 Fundament
                 │                        └─► M7 Wojsko, mury i oblężenia
                 │                             └─► B1 Most przez rzekę i łagodniejszy brzeg
                 │                                  └─► W1 Nowe wybrzeże ──► J1 Nowe jednostki i okręty
-                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► E1 Magazyny, farmy i awans ──► M10 Wersja 1.0
+                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► E1 Magazyny, farmy i awans ──► G3 Stare grafiki ze SpriteKiln ──► M10 Wersja 1.0
                 └─► M9 Produkcja grafik (równolegle od M4, partiami)
 Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 ```
@@ -1332,7 +1332,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Zakres (propozycja Claude):**
 - **Większe stosy w magazynach.** Plac składowy i magazyny portowe trzymają **2 × więcej** w każdym miejscu (np. drewno 20 → 40). Zmienia się tylko pojemność miejsc w magazynach; podwórka warsztatów, ładownie statków, kramy i place budów zostają jak dziś. Stos rośnie w górę (więcej faz wyglądu), a nie wszerz.
-- **Chata tragarzy** (2×2, 4 tragarzy) i **dom tragarzy** (3×3, 6 tragarzy), z drewna i desek. Tragarze biorą zlecenia przenoszenia w zasięgu (np. 12 kafli, jak chata portowców). Plac składowy zostawia swoich 2 tragarzy.
+- **Chata tragarzy** (2×2, 4 tragarzy) i **dom tragarzy** (3×3, 6 tragarzy), z drewna i desek. Tragarze biorą zlecenia przenoszenia w całej prowincji, jak tragarze magazynów (zmiana przy realizacji: tragarze w grze nigdy nie mieli zasięgu, więc zasięg tylko by komplikował). Plac składowy zostawia swoich 2 tragarzy.
 - **„Cały łan rośnie razem”.** Rolnik (także przy chmielu i winnicy, a później w sadzie) orze i sieje albo sadzi wszystkie kratki, a uprawa zaczyna rosnąć dopiero po ostatniej. Całe pole zielenieje i złoci się razem; żniwa jak dziś, kratka po kratce. W czasie wzrostu rolnik pieli i przegania ptaki (krótka animacja), zamiast stać. Wydajność wyrównana większym plonem z kratki (czas wzrostu bez zmian), zmierzona automatycznym graczem (cel: tyle co dziś albo trochę więcej). Dotyczy też trybu uproszczonego i władców.
 - **„Rozbuduj teraz”** w panelu domu: gdy dom spełnia warunki awansu (potrzeby podstawowe i towary nowej klasy w magazynach), gracz pomija czekanie 60 s. Materiały na awans dalej muszą dojechać.
 - **Zapis v35** (stan pola „czeka na resztę siewu”), migracja v34 → v35 z fixturą, test.
@@ -1347,18 +1347,55 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Część 1:** większe stosy, chata i dom tragarzy, „Rozbuduj teraz”.
 - **Część 2:** „cały łan rośnie razem”, animacja rolnika przy rosnącym polu, wyrównanie wydajności, zapis v35.
 
-**Testy:** jednostkowe (pojemność miejsc magazynu, tragarze z domu tragarzy biorą zlecenia tylko w zasięgu, pole rośnie dopiero po ostatnim siewie, „Rozbuduj teraz” tylko przy spełnionych warunkach); scenariuszowe (łańcuch chleba z nowym polem, zapis i wczytanie, migracja v34 → v35, tryb uproszczony liczy jak szczegółowy); długie (automatyczny gracz dochodzi do patrycjuszy w limicie, władcy dalej rosną, 2 godziny bez zakleszczeń).
+**Testy:** jednostkowe (pojemność miejsc magazynu, tragarze z chaty tragarzy noszą między magazynami, pole rośnie dopiero po ostatnim siewie, „Rozbuduj teraz” tylko przy spełnionych warunkach); scenariuszowe (łańcuch chleba z nowym polem, zapis i wczytanie, migracja v34 → v35, tryb uproszczony liczy jak szczegółowy); długie (automatyczny gracz dochodzi do patrycjuszy w limicie, władcy dalej rosną, 2 godziny bez zakleszczeń).
+
+**Dodatkowo (prośby właściciela w trakcie):** własne wyglądy chlewa, owczarni, stadniny, pasieki i chaty tragarzy (`tools/spritekiln/gen_farmsteads.py`), stojąca pszenica i chmiel ze SpriteKiln jak winorośl (`gen_crops.py`, `export_crops.py`; ART_SPEC §10.21).
 
 **Grafiki:** wyższe fazy stosów (`tools/compose_pixellab_stacks.py`), chata i dom tragarzy ze SpriteKiln, animacja pielenia rolnika.
 
+**Część 1, stan (2026-11-10): zaakceptowana i scalona do `main` 2026-11-11.**
+- Stosy: `BuildingDef.stack_multiplier` (plac składowy, skład, mały i duży magazyn portowy: 2; zbrojownia 1). Mnożnik pochodzi z danych, więc zapis gry bez zmian (v34), a stare zapisy od razu mają większe magazyny. Wyższe arkusze stosów `assets/goods/stacks/<towar>_x2.png` (2 × więcej klatek, ramka 64×128) ze skryptu `tools/compose_pixellab_stacks.py`; widok bierze wyższy arkusz, gdy miejsce mieści więcej niż zwykły stos.
+- Chata tragarzy (`porters_hut`, 2×2, 4 tragarzy, 2 wózki; 6 drewna i 4 deski) i dom tragarzy (`porters_house`, 3×3, 6 tragarzy, 3 wózki; 6 drewna, 10 desek, 6 kamieni), zakładka „Magazyny”. Grafika ze SpriteKiln: chata z własnym wyglądem (poprawka 2026-11-11 na prośbę właściciela, razem z nowymi wyglądami chlewa, owczarni, stadniny i pasieki: `tools/spritekiln/gen_farmsteads.py`, ART_SPEC §10.21; bielona chałupka w ramie z belek pod łupkiem, szopa z wózkiem, skrzynie, beczki, nosidło), dom pisany ręcznie (`art/specs/props/porters_house/`: kamienny parter z szeroką bramą, piętro w kratownicy, dachówka, wciągarka z workiem w szczycie, wiata z beczkami, podwórko z wózkiem i skrzyniami). Etapy budowy rysowane kodem (`tools/generate_art.gd`).
+- „Rozbuduj teraz”: `UpgradeHouseCommand`, `Population.upgrade_blocker` (te same warunki co awans sam z siebie, bez czekania 60 s; przycisk wyszarzony z powodem w podpowiedzi).
+- Automatyczni gracze i władcy stawiają magazyny jak dotąd (mieszczą one teraz więcej). Automatyczny gracz z testów dostaje trzecią farmę po 91. minucie 2-godzinnej gry: chleba z 2 farm brakowało tam już przed E1 (dokładnie 6 zaopatrzonych domów, czyli granica testu), a po E1 wyszło 5; z trzecią farmą jest 8.
+- Wniosek z długich testów: test zgodności trybów (M6) kalibrował tryb uproszczony w pierwszych 10 minutach dużego miasta, kiedy młyny i piekarnie pracowały szybciej niż później (904 zamiast ok. 700 mąki na 30 minut). Dotąd zasłaniały to pełne magazyny (tryb uproszczony stawał na pełnym magazynie). Kalibracja w teście trwa teraz 20 minut, tolerancja ±15% bez zmian (chleb 1442 i 1412). Pomiary: `src/prototype/e1/coherence_probe.gd -- --mult=1|2 [--detailed_only]`, `roundtrip_probe.gd`.
+- Testy szybkie (597) i długie przechodzą.
+- Zrzut: `game_shot.tscn -- --plain --tile=56,62 --zoom=2 --yards=porters_hut,stockpile,porters_house --fill_stores`.
+
+**Część 2, stan (2026-11-11): zaakceptowana („Super to wygląda”) i scalona do `main` 2026-11-11 razem z częścią 1, nowymi wyglądami budynków 2×2 i stojącym zbożem i chmielem; testy szybkie i długie przechodzą.**
+- Pole rośnie razem: zasiana kratka czeka (`FieldStore.is_waiting`, ujemny czas dojrzewania w zapisie), aż farma nie ma już kratki ugoru ani zaoranej; wtedy wszystkie czekające kratki ruszają naraz i dojrzewają w tej samej chwili (`FieldStore.start_if_ready`, po siewie i po usunięciu kratki). Kratka czeka najwyżej 3 minuty (`WAIT_LIMIT_SECONDS`), żeby pole nie stało, gdy rolnik nie może dojść do reszty. Dotyczy farmy, chmielnika i winnicy (wspólny krok pracy w polu), a sad dostanie to samo. Czekająca kratka wygląda jak świeżo zaorana ziemia, a winorośl jak przycięta.
+- W czasie wzrostu rolnik, chmielarz i winogrodnik pielą motyką kratkę po kratce (nowa praca „weed”, 6 s; ruch nisko z motyką w `tools/generate_characters.gd`).
+- Plon: `FieldStepDef.harvest_extra` = 0,2 (co piąta kratka daje 2 snopy, farma pamięta ułamek w `field_yield_carry`). Pomiar (`src/prototype/e1/farm_yield_probe.gd -- --minutes=60`, pełne pola, magazyn obok): przed zmianą farma 109, chmielnik 96, winnica 92; po zmianie bez większego plonu 94, 84, 79; z plonem 0,2: 112, 100, 94. Pierwsze żniwa ok. 200 s zamiast 106 s.
+- Tryb uproszczony liczy farmę jak dawniej (szacunek z pracy i wzrostu), bo w trybie szczegółowym farma daje na godzinę tyle co przed zmianą; nie bierze już tempa farmy z pomiaru (pomiar z żniw, gdy snopy lecą szybko jeden po drugim, zawyżałby tempo). Pierwsza próba z liczeniem w rundach była zbyt pesymistyczna: władcy rośli wolniej (test 90 minut władców: 1 chlew ze stadem zamiast 2, mniej budynków).
+- **Zapis v35** (czekające kratki, ułamek plonu), migracja v34 → v35 bez zmian w danych (stare kratki rosną dalej), fixtura `tests/fixtures/saves/v35_fields.json` ze skryptu `tools/build_field_fixture.gd`.
+- Zrzut: `game_shot.tscn -- --shot=<plik> --plain --tile=56,62 --zoom=2 --yards=farm --advance=<s>`.
+
 **DoD:**
-- [ ] Magazyny trzymają więcej w każdym miejscu, a stos widać wyższy.
-- [ ] Chata i dom tragarzy dają tragarzy, którzy noszą w jego zasięgu.
-- [ ] Pole rośnie dopiero po zasianiu wszystkich kratek; rolnik ma zajęcie w czasie wzrostu; farma nie jest słabsza niż dziś.
-- [ ] „Rozbuduj teraz” działa w panelu domu.
-- [ ] Stare zapisy (v34) wczytują się po migracji.
-- [ ] Automatyczny gracz i władcy grają dalej; testy szybkie i długie przechodzą; UI w PL i EN.
-- [ ] **Twoja ocena gry** po każdej części.
+- [x] Magazyny trzymają więcej w każdym miejscu, a stos widać wyższy.
+- [x] Chata i dom tragarzy dają tragarzy, którzy noszą w jego zasięgu.
+- [x] Pole rośnie dopiero po zasianiu wszystkich kratek; rolnik ma zajęcie w czasie wzrostu; farma nie jest słabsza niż dziś.
+- [x] „Rozbuduj teraz” działa w panelu domu.
+- [x] Stare zapisy (v34) wczytują się po migracji.
+- [x] Automatyczny gracz i władcy grają dalej; testy szybkie i długie przechodzą; UI w PL i EN.
+- [x] **Twoja ocena gry** po każdej części (2026-11-11: „Super to wygląda”, ocena w chmurze ze zrzutów; gra na laptopie przy najbliższej okazji).
+
+## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
+
+> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Do zaplanowania: szczegółowy plan i ankieta przed startem.** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.21).
+
+**Cel:** cała gra w jednym stylu. Budynki i mieszkańcy rysowani dziś kodem (`tools/generate_art.gd`, `tools/generate_characters.gd`) albo z PixelLab dostają modele ze SpriteKiln, tak jak żołnierze, okręty i zagrody.
+
+**Co zostało do zamiany (stan 2026-11-11):**
+- **Mieszkańcy:** ok. 35 zawodów (drwal, rolnik, młynarz, piekarz, tragarz, budowniczy, rybak, pszczelarz, kowal…), każdy z chodzeniem, noszeniem 7 rodzajów towarów (worek, kłoda, skrzynia, beczka, kamień, kosz, snop) i własnymi ruchami pracy; do tego domownik, osadnik, kupiec, straganiarz i bandyci. Drwal ze SpriteKiln jest już gotowy jako próba.
+- **Budynki:** ok. 45 rysowanych kodem albo z PixelLab: warsztaty (młyn, piekarnia, browar, tartak, kuźnia…), usługi (studnia, kaplica, kościół, targowisko, tawerna, ratusz), port i nabrzeża, wojsko i mury, chaty mieszkańców (poziom 1) i kamienice patrycjuszy (poziom 3). Etapy budowy (rusztowania) też.
+
+**Propozycja podziału (do potwierdzenia w ankiecie, ocena po każdej paczce):**
+1. **Mieszkańcy:** wspólny model człowieka (jak żołnierze), ubrania i narzędzia według zawodu, chodzenie, noszenie towarów (punkty zaczepienia z SpriteKiln zamiast dzisiejszych map), ruchy pracy. Najpierw pilot 3 zawodów (np. tragarz, rolnik, budowniczy) do oceny.
+2. **Warsztaty i surowce:** drwal, kamieniołom, tartak, młyn, piekarnia, browar, rybak, glinianka, cegielnia, tkacz, krawiec, rzeźnia i podobne.
+3. **Miasto i usługi:** chaty (poziom 1) i kamienice patrycjuszy (poziom 3), studnia, kaplica, kościół, targowisko, tawerna, ratusz, magazyny.
+4. **Port, wojsko i mury:** port, dźwig, stocznie, kuźnia, płatnerz, koszary, zbrojownia, wieże i bramy (mury rysowane kodem zostają albo dostają nową skórę).
+
+**Ryzyka:** dużo pracy (dziesiątki modeli i setki animacji), czas renderowania w chmurze (bez karty graficznej), punkty noszenia towarów muszą pasować do dzisiejszych stosów i wózków, wydajność przy 400+ postaciach do sprawdzenia na laptopie. Przy każdej paczce zostaje możliwość powrotu do starej grafiki.
 
 ## M9 — Produkcja grafik (równolegle, od M4)
 

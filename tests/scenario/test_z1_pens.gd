@@ -450,3 +450,33 @@ func test_v34_fixture_loads_and_continues() -> void:
 				honey += int(e["amount"])
 	assert_int(honey).is_greater(0)
 	assert_array(Array(sim.province.dangling_holds())).is_empty()
+
+
+## E1 part 2 (save v35): a farm saved while part of its field waits for the rest loads, keeps
+## its waiting tiles and its yield fraction, and goes on to harvest.
+func test_v35_fixture_loads_and_continues() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v35_fields.json"))
+	assert_int(int(document["header"]["save_version"])).is_equal(35)
+	var state := SaveMigrations.migrate(document["state"], 35)
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	var farm: BuildingState = null
+	for b: BuildingState in sim.province.buildings.all():
+		if b.def.id == &"farm" and sim.province.fields.tiles_of(b.id).size() == 12:
+			farm = b
+	assert_object(farm).is_not_null()
+	assert_float(farm.field_yield_carry).is_greater(0.0)
+	var waiting := 0
+	for tile: Vector2i in sim.province.fields.tiles_of(farm.id):
+		if sim.province.fields.is_waiting(tile):
+			waiting += 1
+	assert_int(waiting).is_greater_equal(5)
+	var grain := 0
+	for i: int in SimFixture.ticks(300):
+		sim.step()
+		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"good_harvested" and e["good"] == &"grain":
+				grain += int(e["amount"])
+	assert_int(grain).is_greater(0)
+	assert_array(Array(sim.province.dangling_holds())).is_empty()

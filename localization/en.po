@@ -96,6 +96,18 @@ msgstr "Stockpile"
 msgid "building.stockpile.desc"
 msgstr "A storage yard. Goods lie here in stacks; porters bring them in and take them out."
 
+msgid "building.porters_hut.name"
+msgstr "Porters' hut"
+
+msgid "building.porters_hut.desc"
+msgstr "A small hut of 4 porters. They carry goods all over the province, like the porters of the stockpiles. Up to 2 handcarts can be bought for it."
+
+msgid "building.porters_house.name"
+msgstr "Porters' house"
+
+msgid "building.porters_house.desc"
+msgstr "A large house of 6 porters. They carry goods all over the province, like the porters of the stockpiles. Up to 3 handcarts can be bought for it."
+
 # --- Recipes ---
 
 msgid "recipe.woodcutting.name"
@@ -340,6 +352,30 @@ msgstr "Warning: basic needs are missing! Happiness is falling and people work s
 
 msgid "ui.house.upgrade_in"
 msgstr "Upgrade in %d s if nothing runs out"
+
+msgid "ui.house.upgrade_now"
+msgstr "Upgrade now"
+
+msgid "ui.house.upgrade_now_hint"
+msgstr "Starts the upgrade of the house at once, without waiting. Porters still have to bring the materials."
+
+msgid "ui.command_error.not_a_house"
+msgstr "This is not a house."
+
+msgid "ui.command_error.house_top_level"
+msgstr "This house is at the top level already."
+
+msgid "ui.command_error.upgrade_running"
+msgstr "This house is being upgraded already."
+
+msgid "ui.command_error.house_empty"
+msgstr "Nobody lives in this house."
+
+msgid "ui.command_error.house_needs_unmet"
+msgstr "Meet all basic needs of the house first."
+
+msgid "ui.command_error.house_next_goods_missing"
+msgstr "The storages lack goods for the residents of the next level."
 
 msgid "ui.need.ok"
 msgstr "met"

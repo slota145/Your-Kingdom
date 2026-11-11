@@ -14,6 +14,9 @@ var slot_out: PackedInt32Array = PackedInt32Array()
 
 ## When > 0, no slot holds more than this (a house pantry), whatever the good's stack size.
 var stack_limit: int = 0
+## Each slot holds the good's stack size times this (E1: stockpile and harbour stores, x2).
+## Set from the building's data, not saved.
+var stack_multiplier: int = 1
 ## Each slot holds the good's stack size divided by this (rounded up): a production yard
 ## holds half a storage slot (M4b-2).
 var stack_divisor: int = 1
@@ -57,7 +60,7 @@ func grow_to(slots: int) -> void:
 
 func stack_size(good: StringName) -> int:
 	var def := _data.get_good(good)
-	var size := def.stack_size if def != null else 1
+	var size := (def.stack_size if def != null else 1) * maxi(stack_multiplier, 1)
 	if stack_divisor > 1:
 		size = maxi(ceili(float(size) / stack_divisor), 1)
 	return mini(size, stack_limit) if stack_limit > 0 else size

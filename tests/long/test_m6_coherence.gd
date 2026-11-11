@@ -4,7 +4,7 @@ extends GdUnitTestSuite
 ## within ±15%. The big city is viewed for 10 minutes first, so the simplified mode has its
 ## calibration (ProductionLog).
 
-const CALIBRATE_MINUTES := 10
+const CALIBRATE_MINUTES := 20
 const MINUTES := 30
 const TOLERANCE := 0.15
 const GOODS: Array[StringName] = [&"bread", &"planks", &"beer"]
