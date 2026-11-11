@@ -1381,18 +1381,38 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E2 — Jedzenie na start i nowe potrzeby mieszkańców
 
-> Pomysły właściciela z 2026-11-10 (IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 4–5). Kolejność (właściciel 2026-11-11): najpierw cały pakiet ekonomii (E2, E3, E4), grafiki G3 po nim. **Szkic planu; decyzje w ankiecie przed startem.**
+> Pomysły właściciela z 2026-11-10 (IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 4–5). Kolejność (właściciel 2026-11-11): najpierw cały pakiet ekonomii (E2, E3, E4), grafiki G3 po nim. **Decyzje z ankiety 2026-11-11 niżej; plan czeka na akceptację startu.**
 
-**Cel:** mapa bez wody też ma jedzenie na start, a mieszkańcy chcą różnorodnego jedzenia: do spokoju wystarczy kilka potrzeb, a każda ponad minimum daje trochę więcej podatku.
+**Cel:** mapa bez wody też ma jedzenie na start, a mieszkańcy chcą różnorodnego jedzenia: do spokoju wystarczy część potrzeb, a każda potrzeba ponad minimum daje trochę więcej podatku.
 
-**Szkic zakresu (propozycja Claude):**
-- **Sad jabłoni:** budynek z kratkami drzew jak winnica (jabłonie rosną razem jak łan, E1), sadownik zrywa jabłka do kosza; nowy towar „jabłka” (jedzenie chłopów, w GDD od dawna „jabłka później”).
-- **Myśliwy i dzikie zwierzęta:** sarny i dziki chodzą stadkami po lesie i łąkach, rozmnażają się powoli do limitu; myśliwy z łukiem podchodzi, strzela, niesie zdobycz do chaty, oprawia ją na mięso i skórę. Zwierzęta, chata myśliwego i sad ze SpriteKiln.
-- **Potrzeby „kilka z wielu”:** jedzenie zawsze obowiązkowe; każda klasa ma listę rodzajów jedzenia i minimum różnych rodzajów; pozostałe potrzeby liczą się punktami, do spokoju wystarczy część z nich; awans wymaga więcej. Każda potrzeba albo rodzaj jedzenia ponad minimum daje dodatek do podatku.
-- **Automatyczni gracze, władcy i osady** przestawieni na nowe zasady; balans sprawdzony długimi testami (automatyczny gracz dochodzi do patrycjuszy w limicie).
-- Zapis gry (nowa wersja) z migracją.
+**Decyzje (ankieta 2026-11-11):**
+- nowe źródła jedzenia: **sad jabłoni i myśliwy z dzikimi zwierzętami** (bez zbieracza jagód),
+- polowanie daje **mięso i skórę** (te same towary co z rzeźni),
+- minimum różnych rodzajów jedzenia: **chłopi 1, mieszczanie 2, patrycjusze 3**; każdy rodzaj ponad minimum to dodatek do podatku,
+- pozostałe potrzeby: **punkty z progiem**: każda potrzeba daje punkty, powyżej progu dom jest spokojny i nikt nie odchodzi, awans wymaga prawie wszystkiego, a co ponad próg, to więcej podatku.
 
-**Części (propozycja, ocena po każdej):** 1) sad i jabłka; 2) myśliwy i dzikie zwierzęta; 3) nowe potrzeby i podatek za nadwyżkę; 4) automatyczni gracze, władcy i balans (może się połączyć z 3).
+**Zasady (propozycja Claude do akceptacji):**
+- **Jedzenie:** chłopi jedzą chleb, ryby, jabłka albo mięso; mieszczanie i patrycjusze to samo. Zjadany jest rodzaj, którego dom ma najwięcej, więc różne rodzaje schodzą po równo. Za mało rodzajów (np. mieszczanie z samym chlebem) albo brak jedzenia: dom jest głodny, czyli jak dziś brak potrzeby podstawowej (spadek zadowolenia, wolniejsza praca, wyprowadzki po 5 minutach).
+- **Punkty:** jedzenie w minimum daje stałą część punktów; pozostałe potrzeby (opał, studnia, kaplica, kościół, targ, piwo, ubrania, miód pitny, tawerna) dzielą resztę według wag. Próg spokoju ok. 60 na 100: powyżej nikt nie odchodzi i przychodzą nowi; awans wymaga ok. 90 i jedzenia w minimum następnej klasy. Dokładne wagi i progi dobierzemy pomiarem automatycznym graczem.
+- **Podatek:** każdy rodzaj jedzenia ponad minimum +10% podatku domu; każde 10 punktów ponad próg +5% (np. dom z 90 punktami płaci o 15% więcej niż dom z 60). Wino zostaje dodatkiem jak dziś (+25%).
+- **Sad:** 2×2, sadownik; kratki drzew w zasięgu jak w winnicy (do 12), jabłonie dojrzewają razem jak łan (E1), zrywanie do kosza, nowy towar „jabłka” (stos, ikona i drzewka ze SpriteKiln w 4 fazach jak zboże).
+- **Myśliwy:** chata 2×2 przy lesie; sarny i dziki chodzą stadkami (3–5) po lesie i łąkach mapy, powoli się rozmnażają do limitu na mapę i uciekają przed ludźmi; myśliwy podchodzi, strzela z łuku (strzała jak u łuczników), niesie zdobycz do chaty i oprawia ją (1 zwierzę = 2 mięsa + 1 skóra, sarna mniej niż dzik do decyzji przy realizacji). Zwierzęta i chata ze SpriteKiln.
+- **Tryb uproszczony, władcy i osady:** liczą nowe potrzeby tak samo; władcy stawiają sad i myśliwego.
+- **Zapis gry** (nowa wersja): stada dzikich zwierząt, kratki sadu, migracja starych zapisów (zwierzęta pojawiają się w lasach przy wczytaniu).
+
+**Części (ocena właściciela po każdej):**
+1. **Sad i jabłka** (budynek, kratki drzew, sadownik, towar, grafiki).
+2. **Myśliwy i dzikie zwierzęta** (stada, ruch i ucieczka, polowanie, oprawianie, grafiki).
+3. **Nowe potrzeby i podatek za nadwyżkę** (dieta 1/2/3, punkty z progiem, panel domu pokazuje punkty i dodatek do podatku).
+4. **Automatyczni gracze, władcy, osady i balans** (długie testy: automatyczny gracz dochodzi do patrycjuszy w limicie, władcy rosną jak dotąd).
+
+**DoD:**
+- [ ] Sad daje jabłka, jabłonie rosną razem; jabłka są jedzeniem wszystkich klas.
+- [ ] Sarny i dziki żyją na mapie; myśliwy poluje i oprawia zdobycz na mięso i skórę.
+- [ ] Dieta 1/2/3 i punkty z progiem działają; dom pokazuje punkty, próg i dodatek do podatku.
+- [ ] Stare zapisy wczytują się po migracji.
+- [ ] Automatyczni gracze, władcy i osady grają według nowych zasad; testy szybkie i długie przechodzą; UI w PL i EN.
+- [ ] **Twoja ocena gry** po każdej części.
 
 ## E3 — Cechy prowincji: niewyczerpalne źródła
 
