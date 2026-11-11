@@ -1454,7 +1454,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E3 — Cechy prowincji: niewyczerpalne źródła
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą. **Decyzje z ankiety 2026-11-11 niżej; plan zaakceptowany 2026-11-11; część 1 scalona do `main` (czeka na ocenę), część 2 gotowa do oceny.** Poprawki z oceny E2, część 4, mają pierwszeństwo.
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą. **Decyzje z ankiety 2026-11-11 niżej; plan zaakceptowany 2026-11-11; część 1 scalona do `main` (czeka na ocenę), części 2 i 3 gotowe do oceny.** Poprawki z oceny E2, część 4, mają pierwszeństwo.
 
 **Decyzje z ankiety 2026-11-11:**
 - **Osobna cecha prowincji**, niezależna od rzadkiego surowca (prowincja może mieć np. winorośl i być bogata w kamień). Dzisiejsza ruda★ staje się automatycznie cechą „bogata w żelazo”.
@@ -1483,10 +1483,19 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Tryb uproszczony liczy cykl na każdego górnika (`parallel_work`). Władcy, osady i automatyczny gracz jeszcze nie stawiają głębokiej kopalni (część 3).
 - Testy: `tests/scenario/test_e3_traits.gd` (część 2 na końcu pliku).
 
+**Część 3, stan (2026-11-11, gotowa do oceny; ocen części 1 i 2 jeszcze nie ma):**
+- **Decyzje z ankiety 2026-11-11 (część 3):** w losowym świecie bogata w kamień jest ok. co dziesiąta prowincja, a jedna zawsze blisko gracza; władcy i automatyczny gracz stawiają odkrywkę zamiast drugiego kamieniołomu; głęboką kopalnię budują późno, a rudę sprzedają.
+- **Losowe światy** (`WorldGenerator._rich_in_stone`): `max(1, round(prowincje / 10))` prowincji bogatych w kamień, nigdy start gracza; pierwsza to losowy sąsiad startu (najchętniej pusta prowincja), a gdy start nie ma sąsiadów lądowych, sąsiad sąsiada; reszta gdziekolwiek. Osobna „kostka”, więc właściciele, ruda★ i obóz bandytów wychodzą jak przedtem, a stary zapis losowego świata po wczytaniu dostaje cechy ze swojego numeru (bez nowej wersji zapisu). „Bogata w żelazo” jak dotąd z rudy★ (ok. 2 na 20 prowincji).
+- **Władcy i automatyczny gracz** (ten sam plan, `RulerPlanner`): w prowincji bogatej w kamień z jednym kamieniołomem odkrywka, gdy kamienia jest mniej niż 20 (`PIT_STONE`; przy progu braku 6 nie byłoby ich stać, bo odkrywka sama kosztuje 6 kamienia), i wtedy nie ma drugiego kamieniołomu. Głęboka kopalnia to ostatnia pozycja planu, tylko w prowincji bogatej w żelazo. Ruda żelaza jest wśród nadwyżek, które władcy sprzedają (Kupieckie wyspy). Miejsce: odkrywka przy skałach, głęboka kopalnia przy żyle (`NeutralTown.near_its_work` patrzy też na `needs_node_near`).
+- **Osady neutralne:** Żelazny Gród (i wzorowane na nim osady losowych światów) stoi z gotową głęboką kopalnią. Osada w prowincji bogatej w kamień ma odkrywkę zamiast kamieniołomu. Stare zapisy mają już zbudowane osady, więc tam się nic nie zmienia.
+- **Pomiary automatycznym graczem** (`src/prototype/e3/traits_probe.gd`, świat nr 5, 22 prowincje, 90 minut, wszystkie prowincje bogate w kamień): odkrywka staje w 15.–20. minucie i daje 3,3–5,1 kamienia na minutę, kamieniołom obok 1,5–1,7 (bez cechy dwa kamieniołomy: 3,1). Kamieniołom zostaje, odkrywka go nie wypiera. Kamień władców rośnie do 250–540 sztuk w 90. minucie (bez cechy 80–160): wygodnie, ale bez limitu, bo władcy i tak mają tylko jedną odkrywkę na prowincję. Głęboka kopalnia (`--all_iron`, 150 minut): władcy stawiają ją na koniec planu, w 80.–150. minucie, 2,2–4,7 rudy na minutę; w Kolonizacji ruda leży w magazynie (do ok. 136 sztuk), w Kupieckich wyspach nadwyżkę ponad 30 sprzedają (cena 4 zł), ale wyścig o złoto kończy się ok. 90. minuty, więc to drobny dodatek. Uwaga z pomiarów, sprzed części 3: automatyczny gracz w świecie nr 5 zostaje w jednej prowincji z 24 mieszkańcami (do zbadania osobno, nie dotyczy cech).
+- **UI:** cechy w losowym świecie widać jak w „Królestwie” (znaczek przy nazwie, linia „Cechy:” w panelu, PL i EN z części 1); nowe teksty nie były potrzebne.
+- Testy: `tests/scenario/test_e3_traits.gd` (część 3 na końcu pliku).
+
 **Kryteria ukończenia:**
 - [x] Cecha prowincji w danych i na mapie świata (z zapisu: z definicji); odkrywka działa tylko w prowincji bogatej w kamień (część 1).
 - [x] Głęboka kopalnia działa tylko w prowincji bogatej w żelazo i się nie kończy (część 2).
-- [ ] Losowe światy, władcy, osady i automatyczny gracz korzystają z cech; stare zapisy wczytują się (test); testy szybkie i długie przechodzą; UI w PL i EN (część 3).
+- [x] Losowe światy, władcy, osady i automatyczny gracz korzystają z cech; stare zapisy wczytują się (test); testy szybkie i długie przechodzą; UI w PL i EN (część 3).
 - [ ] Żyzna ziemia i bogata w zwierzynę działają i są widoczne na mapie świata (część 4).
 - [ ] **Twoja ocena gry** po każdej części.
 

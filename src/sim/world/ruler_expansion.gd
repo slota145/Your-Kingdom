@@ -30,7 +30,8 @@ const FOUNDED: Array[StringName] = [&"pioneer_camp", &"stockpile"]
 ## [constant SURPLUS_KEEP] of these goods (at most [constant SURPLUS_UNITS] each) at their base
 ## price, as the player sells to the merchants.
 const SURPLUS_GOODS: Array[StringName] = [&"beer", &"bread", &"cloth", &"clothes", &"fish", &"flour",
-		&"planks", &"tar", &"wool", &"meat", &"hides", &"wine", &"mead", &"honey"]
+		&"planks", &"tar", &"wool", &"meat", &"hides", &"wine", &"mead", &"honey",
+		&"iron_ore"]
 const SURPLUS_KEEP := 30
 const SURPLUS_UNITS := 20
 

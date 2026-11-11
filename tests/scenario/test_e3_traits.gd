@@ -234,3 +234,135 @@ func _node_amount(source: Variant, node: StringName) -> int:
 		if def != null and def.id == node:
 			total += province.resources.amount(tile)
 	return total
+
+
+# --- E3 part 3: the rest of the world keeps up ---
+
+func _world_settings(seed_value: int, count: int, rulers: int = 2) -> GameSettings:
+	var s := GameSettings.new()
+	s.world_seed = seed_value
+	s.rulers = rulers
+	s.province_count = count
+	return s
+
+
+## A random world gives "rich in stone" to about one province in ten, never the player's start,
+## one of them his neighbour (or a neighbour's neighbour); the same number gives the same.
+## A neutral town there quarries in a stone pit.
+func test_random_worlds_give_out_rich_stone() -> void:
+	for seed_value: int in [3, 7, 21]:
+		for count: int in [9, 22, 40]:
+			var data := _registry()
+			var world := WorldGenerator.generate(data, _world_settings(seed_value, count))
+			var rich: Array[StringName] = []
+			for id: StringName in world.provinces:
+				var def := data.get_province(id)
+				if def.traits.has(ProvinceDef.RICH_STONE):
+					rich.append(id)
+					if def.owner == ProvinceDef.OWNER_NEUTRAL:
+						assert_bool(def.town_buildings.has(&"stone_pit")).is_true()
+						assert_bool(def.town_buildings.has(&"quarry")).is_false()
+			var label := "seed %d, %d provinces" % [seed_value, count]
+			assert_int(rich.size()).override_failure_message(label).is_equal(
+					maxi(1, roundi(world.provinces.size() / float(WorldGenerator.STONE_EVERY))))
+			var start := data.get_province(world.start_province)
+			assert_bool(rich.has(start.id)).override_failure_message(label).is_false()
+			var near := false
+			for id: StringName in rich:
+				var def := data.get_province(id)
+				if start.neighbours.has(id):
+					near = true
+				for n: StringName in def.neighbours:
+					if start.neighbours.has(n):
+						near = true
+			if not start.neighbours.is_empty():
+				assert_bool(near).override_failure_message(label).is_true()
+			# The same number again: the same provinces.
+			var again_data := _registry()
+			var again := WorldGenerator.generate(again_data, _world_settings(seed_value, count))
+			for id: StringName in again.provinces:
+				assert_bool(again_data.get_province(id).traits.has(ProvinceDef.RICH_STONE)) \
+						.override_failure_message(label).is_equal(rich.has(id))
+
+
+## A save of a random world (traits are never in it, so a save from before part 3 is alike)
+## loads with the traits of its seed in every town.
+func test_a_random_world_save_loads_with_its_traits() -> void:
+	var problems := PackedStringArray()
+	var sim := Simulation.from_settings(_registry(), _world_settings(5, 18), 1, problems)
+	assert_array(Array(problems)).is_empty()
+	sim.run_ticks(SimFixture.ticks(5))
+	var saved := sim.to_dict()
+	assert_str(JSON.stringify(saved)).not_contains("rich_stone")
+	var data := _registry()
+	var loaded := Simulation.from_dict(saved, data)
+	var rich := 0
+	for id: int in loaded.runtime_ids():
+		var def := loaded.world.def_of(id, data)
+		var town := loaded.province_state(id)
+		assert_array(Array(town.traits)).is_equal(Array(def.all_traits()))
+	for id: int in loaded.world.ids():
+		if loaded.world.def_of(id, data).traits.has(ProvinceDef.RICH_STONE):
+			rich += 1
+	assert_int(rich).is_greater_equal(1)
+	assert_str(SimCodec.canonical(loaded.to_dict())).is_equal(SimCodec.canonical(saved))
+
+
+## A ruler (and the automatic player) short of stone in a province rich in stone builds a stone
+## pit instead of the second quarry (owner's survey 2026-11-11); elsewhere two quarries.
+func test_rulers_build_a_stone_pit_instead_of_a_second_quarry() -> void:
+	var town := SimFixture.make_sim(Vector2i(16, 16)).province
+	var none: Dictionary[StringName, int] = {}
+	var one: Dictionary[StringName, int] = {&"quarry": 1}
+	var with_pit: Dictionary[StringName, int] = {&"quarry": 1, &"stone_pit": 1}
+	assert_array(Array(RulerPlanner.shortages(town, none))).contains([&"quarry"])
+	assert_array(Array(RulerPlanner.shortages(town, one))).contains([&"quarry"])
+	assert_array(Array(RulerPlanner.shortages(town, one))).not_contains([&"stone_pit"])
+	town.traits = [ProvinceDef.RICH_STONE]
+	assert_array(Array(RulerPlanner.shortages(town, none))).contains([&"quarry"])
+	assert_array(Array(RulerPlanner.shortages(town, one))).contains([&"stone_pit"])
+	assert_array(Array(RulerPlanner.shortages(town, one))).not_contains([&"quarry"])
+	assert_array(Array(RulerPlanner.shortages(town, with_pit))).not_contains([&"quarry", &"stone_pit"])
+
+
+## The planner finds a spot by the rocks for a stone pit and by a vein for a deep mine, though
+## neither works on them (their place is chosen like a quarry's or a mine's).
+func test_the_planner_places_a_pit_and_a_deep_mine_by_their_work() -> void:
+	var sim := SimFixture.make_sim(Vector2i(48, 48))
+	sim.province.traits = [ProvinceDef.RICH_STONE, ProvinceDef.RICH_IRON]
+	SimFixture.place(sim, &"stockpile", Vector2i(4, 4))
+	SimFixture.place_nodes(sim, Rect2i(36, 36, 3, 2), &"rock")
+	SimFixture.place_nodes(sim, Rect2i(36, 8, 3, 2), &"ore_vein")
+	for id: StringName in [&"stone_pit", &"deep_mine"]:
+		var placed := RulerPlanner.place(sim.province, _registry().get_building(id))
+		assert_object(placed).override_failure_message(String(id)).is_not_null()
+		assert_bool(sim.province.has_node_near(placed.def, placed.origin)).override_failure_message(String(id)).is_true()
+
+
+## The deep mine is the last entry of the plan and only in a province rich in iron; its ore is
+## sold where the rulers trade.
+func test_the_deep_mine_comes_late_and_only_where_iron_is_rich() -> void:
+	var last: Array = RulerPlanner.PLAN[RulerPlanner.PLAN.size() - 1]
+	assert_str(String(last[0])).is_equal("deep_mine")
+	var town := SimFixture.make_sim(Vector2i(16, 16)).province
+	var def := _registry().get_building(&"deep_mine")
+	assert_bool(RulerPlanner._allowed(town, def)).is_false()
+	town.traits = [ProvinceDef.RICH_IRON]
+	assert_bool(RulerPlanner._allowed(town, def)).is_true()
+	assert_bool(RulerExpansion.SURPLUS_GOODS.has(&"iron_ore")).is_true()
+
+
+## Iron Wold (the Kingdom's neutral settlement rich in iron, and a layout of the random worlds'
+## settlements) stands with a deep mine for whoever takes it.
+func test_iron_wold_has_a_deep_mine() -> void:
+	var problems := PackedStringArray()
+	var sim := Simulation.from_world(_registry(), _registry().get_world(&"kingdom"), 1, problems)
+	assert_array(Array(problems)).is_empty()
+	var wold := sim.province_state(sim.world.id_of(&"iron_wold"))
+	assert_object(wold).is_not_null()
+	var mines := 0
+	for building: BuildingState in wold.buildings.all():
+		if building.def.id == &"deep_mine":
+			mines += 1
+			assert_bool(building.is_complete()).is_true()
+	assert_int(mines).is_equal(1)

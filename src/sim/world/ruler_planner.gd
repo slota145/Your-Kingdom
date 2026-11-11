@@ -29,6 +29,9 @@ const PLAN: Array[Array] = [
 	[&"stockpile", 3], [&"hut", 26], [&"pigsty", 1], [&"slaughterhouse", 1], [&"hut", 30],
 	# Z1 part 4: an apiary with its hives (NeutralTown.place gives it 4) and mead for the tavern.
 	[&"apiary", 1], [&"meadery", 1],
+	# E3 part 3: a deep mine late, in a province rich in iron only (its ore is sold where the
+	# rulers trade, RulerExpansion.SURPLUS_GOODS; a conquered one is ready for the player).
+	[&"deep_mine", 1],
 ]
 ## Plan entries looked at each time (the first ones the province lacks).
 const LOOK_AHEAD := 3
@@ -48,6 +51,8 @@ const EVERY := 5
 ## what makes it (woodcutters, stone, food), up to a limit that grows with its people.
 const LOW_WOOD := 20
 const LOW_STONE := 6
+## Below this much stone a province rich in stone with a quarry opens its stone pit (E3).
+const PIT_STONE := 20
 const LOW_FOOD := 15
 ## An input piled up this high means the next link of its chain needs another building.
 const PILED_UP := 25
@@ -185,7 +190,15 @@ static func shortages(town: ProvinceSim, counts: Dictionary[StringName, int], sa
 		result.append(&"woodcutter")
 	if cutters >= 4 and int(counts.get(&"forester", 0)) * 2 < cutters:
 		result.append(&"forester")
-	if town.stored(&"stone") < LOW_STONE and int(counts.get(&"quarry", 0)) < 2:
+	# E3 part 3 (owner's survey 2026-11-11): in a province rich in stone the second source of
+	# stone is a stone pit, which never runs out (the first quarry is cheaper to start). It is
+	# opened while stone runs short, not out: it costs stone itself.
+	var quarries := int(counts.get(&"quarry", 0))
+	var rich := town.traits.has(ProvinceDef.RICH_STONE)
+	if rich and quarries >= 1 and int(counts.get(&"stone_pit", 0)) < 1 \
+			and town.stored(&"stone") < PIT_STONE:
+		result.append(&"stone_pit")
+	elif town.stored(&"stone") < LOW_STONE and quarries < (1 if rich else 2):
 		result.append(&"quarry")
 	if food(town) < LOW_FOOD and people > 0:
 		if int(counts.get(&"fishing_hut", 0)) < 1 + people / 40:
