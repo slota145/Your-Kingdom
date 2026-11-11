@@ -2386,7 +2386,7 @@ msgid "building.hunter_lodge.name"
 msgstr "Chata myśliwego"
 
 msgid "building.hunter_lodge.desc"
-msgstr "Myśliwy podchodzi do saren i dzików w lesie (do 16 kafli od chaty), strzela z łuku i przynosi zdobycz. W chacie oprawia ją na 2 mięsa i skórę. Reszta stada ucieka, a stada powoli odrastają."
+msgstr "Myśliwy podchodzi do saren i dzików w lesie (do 20 kafli od chaty), strzela z łuku i przynosi zdobycz. W chacie oprawia ją na 2 mięsa i skórę. Reszta stada ucieka, a stada powoli odrastają."
 
 msgid "ui.kind.hunter"
 msgstr "Myśliwy"

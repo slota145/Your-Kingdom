@@ -73,3 +73,18 @@ func test_the_simplified_mode_hunts_the_herds() -> void:
 	assert_int(int(abstract.detail.ledger.made_total.get(&"hides", 0))).is_greater_equal(1)
 	# Herds breed and come out of the woods meanwhile; one hunter does not empty them.
 	assert_int(abstract.detail.wild.animals()).is_greater(0)
+
+
+## Save v37: a game from before hunting fills its woods with herds on the first second.
+func test_an_old_save_gets_its_herds() -> void:
+	var document: Dictionary = JSON.parse_string(
+			FileAccess.get_file_as_string("res://tests/fixtures/saves/v35_fields.json"))
+	var version := int(document["header"]["save_version"])
+	var state := SaveMigrations.migrate(document["state"], version)
+	assert_bool((state["provinces"][0]["state"] as Dictionary).has("wild")).is_false()
+	var sim := Simulation.from_dict(state, SimFixture.registry())
+	assert_str(SimCodec.canonical(sim.to_dict())).is_equal(SimCodec.canonical(state))
+	sim.run_ticks(SimFixture.ticks(2))
+	assert_bool(sim.province.wild.populated).is_true()
+	var saved := sim.to_dict()
+	assert_bool((saved["provinces"][0]["state"] as Dictionary).has("wild")).is_true()

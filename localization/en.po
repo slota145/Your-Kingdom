@@ -2367,7 +2367,7 @@ msgid "building.hunter_lodge.name"
 msgstr "Hunter's lodge"
 
 msgid "building.hunter_lodge.desc"
-msgstr "The hunter creeps up on deer and boar in the woods (up to 16 tiles from the lodge), shoots with his bow and brings the game home. In the lodge he dresses it into 2 meat and a hide. The rest of the herd flees; herds slowly grow back."
+msgstr "The hunter creeps up on deer and boar in the woods (up to 20 tiles from the lodge), shoots with his bow and brings the game home. In the lodge he dresses it into 2 meat and a hide. The rest of the herd flees; herds slowly grow back."
 
 msgid "ui.kind.hunter"
 msgstr "Hunter"

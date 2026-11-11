@@ -43,6 +43,8 @@ var corpses: CorpseLayer
 var siege: SiegeLayer
 ## Animal pens: fences, gates and the animals walking inside (Z1).
 var pens: PenLayer
+## Wild deer and boar and the hunters' arrows (E2 part 2).
+var wild: WildLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 
@@ -98,6 +100,9 @@ func setup(source: ProvinceSim) -> void:
 	pens = PenLayer.new()
 	world.add_child(pens)
 	pens.setup(province)
+	wild = WildLayer.new()
+	world.add_child(wild)
+	wild.setup(province)
 	forts = FortLayer.new()
 	world.add_child(forts)
 	forts.setup(province)
@@ -144,6 +149,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 	piles.update_view(province.piles)
 	piles.update_yards(province.buildings)
 	pens.update_view(delta)
+	wild.update_view(delta)
 	buildings.update_view()
 	forts.update_view()
 	var merchant := province.merchant
@@ -163,6 +169,7 @@ func on_sim_event(event: Dictionary) -> void:
 	forts.on_sim_event(event)
 	corpses.on_sim_event(event)
 	pens.on_sim_event(event)
+	wild.on_sim_event(event)
 	match event["type"]:
 		&"building_placed", &"building_removed", &"building_completed", &"site_opened", \
 				&"site_phase_started", &"site_phase_finished", &"house_upgraded", &"building_turned", \

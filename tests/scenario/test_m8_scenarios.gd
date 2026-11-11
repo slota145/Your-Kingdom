@@ -327,7 +327,7 @@ func test_scenarios_survive_a_save_and_v30_migrates() -> void:
 	var settings := GameSettings.from_dict(migrated["world"]["settings"])
 	assert_str(String(settings.scenario)).is_equal(String(GameSettings.COLONIZATION))
 	assert_int(settings.gold_target).is_equal(GameSettings.DEFAULT_GOLD)
-	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(36)
+	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(37)
 
 
 # --- The owner's requests after part 5 (2026-11-10) --------------------------------------------

@@ -27,6 +27,8 @@ const MIN_HERDS := 2
 const MAX_HERDS := 8
 ## A herd keeps this many tiles away from buildings (it moves off when the town grows to it).
 const SHY_TILES := 5
+## Herds keep to the forest's edge: a forest this near.
+const EDGE_TILES := 3
 ## Terrain the herds live on.
 const HOMES: Array[StringName] = [&"forest", &"grass", &"meadow"]
 
@@ -191,11 +193,12 @@ static func from_dict(d: Dictionary) -> WildHerds:
 
 func _spawn(province: ProvinceSim, tick: int) -> void:
 	var size := province.grid.size
-	for attempt: int in 40:
+	for attempt: int in 80:
 		var h := _hash(next_id, tick, attempt)
 		var tile := Vector2i(h % size.x, (h / size.x) % size.y)
-		if not _is_free(province, tile) or province.terrain_at(tile).id != &"forest" \
-				or _near_buildings(province, tile, SHY_TILES * 2):
+		# In the open by the edge of a forest: where deer graze, seen and reached by a hunter.
+		if not _is_free(province, tile) or not _is_open(province, tile) \
+				or not _by_forest(province, tile) or _near_buildings(province, tile, SHY_TILES * 2):
 			continue
 		var herd := Herd.new()
 		herd.id = next_id
@@ -225,21 +228,41 @@ func _wander(province: ProvinceSim, herd: Herd, tick: int) -> void:
 		province.events.emit(&"herd_changed", {"herd": herd.id})
 
 
-## A free home tile within [param radius] of [param goal] (forest first), NO_TILE if none.
+## A free home tile within [param radius] of [param goal] by a forest (open ground first: the
+## herd grazes where it is seen, owner 2026-11-11), NO_TILE if none.
 func _free_spot_near(province: ProvinceSim, goal: Vector2i, radius: int, salt: int) -> Vector2i:
 	var best := Agent.NO_TILE
 	var best_score := -1
 	for dy: int in range(-radius, radius + 1):
 		for dx: int in range(-radius, radius + 1):
 			var tile := goal + Vector2i(dx, dy)
-			if not _is_free(province, tile) or _near_buildings(province, tile, SHY_TILES):
+			if not _is_free(province, tile) or not _by_forest(province, tile) \
+					or _near_buildings(province, tile, SHY_TILES):
 				continue
-			var score := (2 if province.terrain_at(tile).id == &"forest" else 1) * 100 \
+			var score := (2 if _is_open(province, tile) else 1) * 100 \
 					- (dx * dx + dy * dy) * 10 + _hash(salt, tile.x, tile.y) % 7
 			if score > best_score:
 				best = tile
 				best_score = score
 	return best
+
+
+## Whether a forest lies within EDGE_TILES of [param tile] (or under it).
+static func _by_forest(province: ProvinceSim, tile: Vector2i) -> bool:
+	for dy: int in range(-EDGE_TILES, EDGE_TILES + 1):
+		for dx: int in range(-EDGE_TILES, EDGE_TILES + 1):
+			var t := tile + Vector2i(dx, dy)
+			if province.grid.is_inside(t):
+				var terrain := province.terrain_at(t)
+				if terrain != null and terrain.id == &"forest":
+					return true
+	return false
+
+
+## Grass or a meadow without a tree: the herd is seen there.
+static func _is_open(province: ProvinceSim, tile: Vector2i) -> bool:
+	var terrain := province.terrain_at(tile)
+	return terrain != null and terrain.id != &"forest" and province.resources.def_at(tile) == null
 
 
 func _is_free(province: ProvinceSim, tile: Vector2i) -> bool:

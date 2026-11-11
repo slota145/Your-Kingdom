@@ -1098,10 +1098,12 @@ func _vehicles() -> void:
 ## Animals in pens (Z1): an oval body in 8 rows (directions) of 8 frames, 32 px, the ground
 ## point at (16, 21), like tools/spritekiln/export_animal.py writes them.
 func _animals() -> void:
-	var colours := {"pig": Color(0.85, 0.55, 0.52), "sheep": Color(0.9, 0.87, 0.78), "horse": Color(0.55, 0.33, 0.2)}
+	# E2 part 2: the wild deer (graze) and boar (root) too.
+	var colours := {"pig": Color(0.85, 0.55, 0.52), "sheep": Color(0.9, 0.87, 0.78), "horse": Color(0.55, 0.33, 0.2),
+			"deer": Color(0.7, 0.48, 0.28), "boar": Color(0.35, 0.3, 0.25)}
 	for good: String in colours:
 		var info := {"frame": 32, "foot": [16, 21], "anims": {}}
-		for anim: String in ["idle", "walk", "graze" if good != "pig" else "root"]:
+		for anim: String in ["idle", "walk", "root" if good in ["pig", "boar"] else "graze"]:
 			var img := Image.create(32 * 8, 32 * 8, false, Image.FORMAT_RGBA8)
 			for row: int in 8:
 				for f: int in 8:

@@ -20,7 +20,7 @@ func test_herds_come_out_of_the_woods_and_wander() -> void:
 	assert_int(wild.herds.size()).is_greater_equal(WildHerds.MIN_HERDS)
 	var start: Dictionary = {}
 	for herd: WildHerds.Herd in wild.all():
-		assert_str(String(sim.province.terrain_at(herd.tile).id)).is_equal("forest")
+		assert_bool(WildHerds._by_forest(sim.province, herd.tile)).is_true()
 		start[herd.id] = herd.tile
 	sim.run_ticks(SimFixture.ticks(WildHerds.WANDER_SECONDS + WildHerds.WANDER_SPREAD + 2))
 	var moved := 0

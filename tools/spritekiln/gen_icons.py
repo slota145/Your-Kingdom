@@ -280,6 +280,17 @@ ICONS.update({
                                                                         [0.5, 0.45], [-0.5, 0.45], [-0.55, 0.3], [-0.2, 0.15]], 0.14, FLAT)]},
         "belt": {"material": "grip", "prims": [box([0, 0.16, -0.05], [0.22, 0.02, 0.05])]},
     },
+    "game": {  # a roe deer carcass lying on its side, the legs stretched out (E2 part 2)
+        "body": {"material": "hide", "prims": [ell([-0.05, 0.3, 0.0], [0.42, 0.2, 0.2])]},
+        "neck": {"material": "hide", "prims": [cyl([0.3, 0.32, 0.0], [0.55, 0.3, -0.12], 0.08)]},
+        "head": {"material": "hide", "prims": [ell([0.62, 0.28, -0.16], [0.12, 0.09, 0.1])]},
+        "ears": {"material": "hide", "prims": [ell([0.6, 0.38, -0.08], [0.04, 0.09, 0.03])]},
+        "legs": {"material": "hide", "prims": [cyl([x, 0.22, 0.1], [x + dx, 0.12, 0.62], 0.04)
+                                               for x, dx in ((-0.35, -0.15), (-0.22, -0.05), (0.15, 0.05), (0.27, 0.15))]},
+        "hooves": {"material": "grip", "prims": [sph([x + dx, 0.12, 0.64], 0.045)
+                                                 for x, dx in ((-0.35, -0.15), (-0.22, -0.05), (0.15, 0.05), (0.27, 0.15))]},
+        "rump": {"material": "wool", "prims": [ell([-0.45, 0.32, 0.0], [0.08, 0.12, 0.12])]},
+    },
     "apples": {  # two red apples, a stem and a leaf (E2 part 1)
         "apples": {"material": "apple", "prims": [sph([-0.3, 0.3, -0.28], 0.3), sph([0.3, 0.27, 0.28], 0.28)]},
         "stem": {"material": "grip", "prims": [cyl([-0.3, 0.56, -0.28], [-0.26, 0.74, -0.3], 0.035)]},
