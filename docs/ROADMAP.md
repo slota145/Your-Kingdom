@@ -1511,7 +1511,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); część 1 scalona do `main` 2026-11-11 na prośbę właściciela, czeka na ocenę („Część 1, stan”).**
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę („Część 1, stan”, „Część 2, stan”).**
 
 **Decyzje z ankiet 2026-11-11:**
 - **Szkoła po pierwszym domu mieszczan, uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
@@ -1562,7 +1562,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Grafika szkoły (ocena podglądu 2026-11-11):** pierwsza wersja „za bardzo jak współczesny budynek”: przebudowana na średniowieczną według referencji właściciela (kamienny parter, mur pruski, strome dachy, wieża z dzwonnicą); bez widocznych uczniów.
 - **Do części 3 (uniwersytet, pomysły właściciela):** większe pola II (+4), większe zagrody II (+2), **„Nadanie”**: pola i zagrody ×2, ale budynek zatrudnia drugiego pracownika; gracz włącza je osobno przyciskiem w panelu budynku. Duża stocznia i pozostałe okręty też na uniwersytecie.
 
-**Część 2, stan (2026-11-11):** gotowa na gałęzi roboczej, czeka na ocenę.
+**Część 2, stan (2026-11-11):** scalona do `main` 2026-11-11 na prośbę właściciela, czeka na ocenę.
 - Badania jako dane (`data/research/`, 11 badań szkoły w trzech stopniach), stan badań królestwa w zapisie (**v39**, stare gry mają wszystko zbadane; test migracji), kolejka, zwrot złota przy cofnięciu.
 - Szkoła 3×3 ze SpriteKiln (ART_SPEC §10.24) po pierwszym domu mieszczan, nauczyciel (dzwoni, uczy przy tablicy); nauka tylko z nauczycielem przy szkole, dwie szkoły 2×.
 - Kłódki w menu budowy z podpowiedzią „Wymaga badania: …” (szkoła: „Najpierw zbuduj dom mieszczan”), zablokowany okręt wojenny w stoczni, okno „Badania” (drzewko ze strzałkami, karty z kosztem, postępem i kolejką; przycisk w górnym pasku i w panelu szkoły), powiadomienie „Zbadano: …”. Teksty PL i EN.
