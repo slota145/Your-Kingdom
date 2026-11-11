@@ -1406,8 +1406,16 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 3. **Nowe potrzeby i podatek za nadwyżkę** (dieta 1/2/3, punkty z progiem, panel domu pokazuje punkty i dodatek do podatku).
 4. **Automatyczni gracze, władcy, osady i balans** (długie testy: automatyczny gracz dochodzi do patrycjuszy w limicie, władcy rosną jak dotąd).
 
+**Część 1, stan (2026-11-11): gotowa, czeka na ocenę.**
+- Sad (`orchard`, 2×2, 6 drewna, sadownik, do 12 kratek jabłoni w zasięgu 4, wzrost 120 s, plon +0,2 jak pola E1); wspólny krok pracy w polu, więc jabłonie rosną razem, sadownik pieli i zrywa jabłka. Towar „jabłka” (jedzenie, 20 w stosie, cena 3): jedzenie chłopów, kramy targu, spiżarnie koszar, władcy liczą je do zapasu jedzenia.
+- Grafiki ze SpriteKiln: jabłoń w 5 fazach (`gen_crops.py`: gołe gałęzie, liście, kwiaty, zielone jabłka, czerwone jabłka ze spadami; `nature/crops/apples`, 64×88, środek kafla (32, 72)), trawa pod drzewami (ziemia winnicy), budynek sadu (`gen_farmsteads.py`: żółta chatka pod czerwoną dachówką, ziemna piwniczka na owoce, drabina, skrzynki i kosz jabłek), ikona jabłek (`gen_icons.py`); stos i niesiony kosz z koszy winogron przemalowanych na czerwono; sadownik rysowany kodem (zielona koszula, słomkowy kapelusz).
+- **Zapis v36**: spiżarnie domów (9 miejsc), kramy targu (8) i spiżarnie koszar (4) dostają miejsce na jabłka; test migracji.
+- Przy okazji: brakujące tłumaczenie czynności „pieli” (od E1).
+- Automatyczni gracze i władcy jeszcze nie stawiają sadu (część 4).
+- Zrzut: `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=44,56 --zoom=2 --yards=orchard,farm --fields_seconds=175|240`.
+
 **DoD:**
-- [ ] Sad daje jabłka, jabłonie rosną razem; jabłka są jedzeniem wszystkich klas.
+- [ ] Sad daje jabłka, jabłonie rosną razem; jabłka są jedzeniem wszystkich klas (część 1: jedzenie chłopów; mieszczanie i patrycjusze w części 3).
 - [ ] Sarny i dziki żyją na mapie; myśliwy poluje i oprawia zdobycz na mięso i skórę.
 - [ ] Dieta 1/2/3 i punkty z progiem działają; dom pokazuje punkty, próg i dodatek do podatku.
 - [ ] Stare zapisy wczytują się po migracji.

@@ -107,6 +107,7 @@ Zasady:
 - **Usługi** (studnia, kaplica, kościół, tawerna) działają przez **zasięg** liczony długością ścieżki od budynku usługowego.
 - **Stan w M4a (2026-11-05):** chłopi jedzą chleb albo ryby (jabłka później). Wagi: chłopi żywność 35, opał 25, studnia 25, kaplica 15. Mieszczanie chleb 20, ryby 15, piwo 15, opał 15, studnia 15, kościół 10, targowisko 10. Mięso dojdzie w M4b. Targowisko w M4a to usługa z zasięgiem, bez straganiarzy.
 - **Stan w M4b-2 (decyzje 2026-11-05):** mieszczanie i patrycjusze jedzą mięso albo ryby (jedna potrzeba „ryby lub mięso”).
+- **Stan w E2, część 1 (2026-11-11):** chłopi jedzą chleb, ryby albo jabłka z sadu (zapis v36: spiżarnie, kramy targu i spiżarnie koszar mają miejsce na jabłka). Dieta 1/2/3 i punkty z progiem przyjdą w części 3 (ROADMAP, E2).
 - **Stan w M4b-1 (decyzje 2026-11-05):** tawerna zamiast łaźni. Karczmarz przynosi piwo i miód pitny, a tawerna działa w zasięgu tylko wtedy, gdy niedawno podawała napitki. Wagi patrycjuszy: chleb 15, ubrania 15, ryby 10, piwo 10, miód pitny 10, opał 10, studnia 10, tawerna 10, kościół 5, targowisko 5. Awans do kamienicy kosztuje 6 cegieł i 4 deski.
 - **Stan w M6, część 3 (2026-11-06):** wino to dodatkowa potrzeba patrycjuszy poza 100 punktami poziomu: gdy dom ma wino, dostaje +10 zadowolenia (najwyżej do 100) i płaci o 25% większy podatek; bez wina nic się nie zmienia (stare mapy bez winorośli działają jak dotąd).
 - **Zadowolenie** domu (0–100) wynika ze spełnienia potrzeb (proste punkty: każda spełniona potrzeba daje swoją część, w slice’ie chleb 40, opał 30, studnia 30; zadowolenie dochodzi do celu płynnie, decyzja 2026-11-05) i wpływa na:
@@ -332,6 +333,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Studnia | 1×1 | usługa w zasięgu |
 | Drwal | 2×2 | drewno (ścina drzewa, wiąże kłody, niesie) |
 | Farma zbożowa | 2×2 + do 16 kafli pola 1×1 stawianych osobno w zasięgu farmy (decyzja 2026-11-05) | zboże |
+| Sad [E2] | 2×2 + do 12 kratek jabłoni w zasięgu 4 kafli, 6 drewna, sadownik | jabłonie rosną razem jak łan (E1), sadownik pieli i zrywa jabłka do kosza (śr. 1,2 kosza z drzewa); jabłka to jedzenie chłopów (obok chleba i ryb), są na targu i w koszarach; jedzenie na start na mapie bez wody |
 | Młyn | 2×2 | mąka |
 | Piekarnia | 2×2 | chleb |
 | Tartak [M4a] | 2×2 | deski |
