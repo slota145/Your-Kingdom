@@ -7,5 +7,5 @@ script = ExtResource("1_vis")
 art_id = "school"
 spot_offsets = Dictionary[StringName, Vector2]({
 &"bell": Vector2(64, -2),
-&"board": Vector2(-11, -26)
+&"board": Vector2(4, -20)
 })

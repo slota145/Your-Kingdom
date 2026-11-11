@@ -2,7 +2,9 @@ class_name BuildMenu
 extends PanelContainer
 ## The build bar: tabs by kind of building (owner feedback 2026-11-05: finding buildings by
 ## their names alone got tiring), each tab a row of picture buttons; roads and demolition
-## always on the right. Tooltips name the building, what it does and what it costs.
+## always on the right. Tooltips name the building, what it does and what it costs. E4 part 2:
+## a building that needs research (or the school before the first burghers) shows a padlock and
+## why in its tooltip ([method refresh_locks]).
 
 signal tool_selected(tool: Dictionary)
 ## The player hides the build bar (owner's request 2026-11-07); the "Build" button or B shows it.
@@ -34,6 +36,9 @@ var _rows: Array[Control] = []
 var _rotate_hint: Label
 ## Building buttons by building id.
 var _buttons: Dictionary[StringName, Button] = {}
+## Padlocks and the reasons of locked buildings (E4 part 2), by building id.
+var _locks: Dictionary[StringName, TextureRect] = {}
+var _lock_text: Dictionary[StringName, String] = {}
 ## The only building allowed now (a start from a ship: the pioneer camp first, M5 part 3).
 var _locked_to: StringName = &""
 
@@ -119,6 +124,24 @@ func lock_to(only: StringName) -> void:
 			_show_tab(i)
 
 
+## Padlocks on the buildings [param province] may not build yet (E4 part 2): a research it
+## needs, or the house level the school waits for. Cheap enough to call twice a second.
+func refresh_locks(province: ProvinceSim) -> void:
+	for id: StringName in _buttons:
+		var def := province.data.get_building(id)
+		var reason := PlaceBuildingCommand.research_error(province, def)
+		var locked := reason != &""
+		_locks[id].visible = locked
+		_buttons[id].modulate = Color(0.6, 0.6, 0.6) if locked else Color.WHITE
+		if not locked:
+			_lock_text.erase(id)
+		elif reason == &"needs_research":
+			var research := province.research.needed_for_building(province.data, id)
+			_lock_text[id] = tr("ui.build.needs_research") % tr("research.%s.name" % research)
+		else:
+			_lock_text[id] = tr("ui.command_error.%s" % reason)
+
+
 ## Shows the hint about turning buildings with R while one is being placed (M4b-1.5).
 func show_rotate_hint(on: bool) -> void:
 	_rotate_hint.visible = on
@@ -154,9 +177,19 @@ func _building_button(def: BuildingDef) -> Button:
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(name)
 	b.custom_minimum_size.y = ICON_SIZE.y + 30
+	var lock := UiKit.icon("lock")
+	lock.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE, 4)
+	lock.scale = Vector2(2, 2)
+	lock.position.x -= 16
+	lock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lock.visible = false
+	b.add_child(lock)
+	_locks[def.id] = lock
 	b.tooltip_text = def.desc_key()
 	b.mouse_entered.connect(func() -> void:
 		var lines := PackedStringArray([tr(def.desc_key()), tr("ui.build.cost") % UiKit.goods_list(def.build_cost)])
+		if _lock_text.has(def.id):
+			lines.insert(0, _lock_text[def.id])
 		if def.gold_cost > 0:
 			lines.append(tr("ui.build.gold_cost") % def.gold_cost)
 		b.tooltip_text = "\n".join(lines))

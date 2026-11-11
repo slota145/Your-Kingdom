@@ -37,6 +37,7 @@ func _init() -> void:
 	_save(_hammer(), "icon_workers.png")
 	_save(_hourglass(), "icon_time.png")
 	_save(_pause_icon(), "icon_pause.png")
+	_save(_lock(), "icon_lock.png")
 	for speed: int in [1, 2, 3]:
 		_save(_play_icon(speed), "icon_speed_%d.png" % speed)
 	print("UI art written to ", OUT)
@@ -214,6 +215,30 @@ func _coin() -> Image:
 	for y: int in range(3, 7):
 		img.set_pixel(5, y, GOLD_DARK)
 	img.set_pixel(3, 3, Color(1, 0.95, 0.7))
+	return img
+
+
+## A padlock (E4 part 2: a building that needs research).
+func _lock() -> Image:
+	var img := _blank(10, 12)
+	for y: int in range(0, 6):
+		for x: int in range(2, 8):
+			var ring := (y == 0 and x > 2 and x < 7) or ((x == 2 or x == 7) and y > 0) \
+					or (y == 1 and (x == 3 or x == 6))
+			if ring:
+				img.set_pixel(x, y, OUTLINE)
+	for y: int in range(1, 6):
+		img.set_pixel(3, y, Color(0.75, 0.75, 0.78) if y > 1 else OUTLINE)
+		img.set_pixel(6, y, Color(0.75, 0.75, 0.78) if y > 1 else OUTLINE)
+	for y: int in range(5, 12):
+		for x: int in range(0, 10):
+			var edge := y == 5 or y == 11 or x == 0 or x == 9
+			img.set_pixel(x, y, OUTLINE if edge else (GOLD if y < 8 else GOLD_DARK))
+	img.set_pixel(4, 7, OUTLINE)
+	img.set_pixel(5, 7, OUTLINE)
+	img.set_pixel(4, 8, OUTLINE)
+	img.set_pixel(5, 8, OUTLINE)
+	img.set_pixel(5, 9, OUTLINE)
 	return img
 
 

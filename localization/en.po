@@ -4533,3 +4533,69 @@ msgstr "This research is not in the queue"
 
 msgid "ui.command_error.unknown_research"
 msgstr "No such research"
+
+msgid "ui.hud.research"
+msgstr "Research"
+
+msgid "ui.research.open"
+msgstr "Research"
+
+msgid "ui.research.title"
+msgstr "Research of the kingdom"
+
+msgid "ui.research.hint"
+msgstr "Click a research to start it or add it to the queue (gold is paid at the start). Click again to take it back. Learning goes on while a teacher works at a school; a second school speeds it up."
+
+msgid "ui.research.all_open"
+msgstr "In this game every building is available without research."
+
+msgid "ui.research.current"
+msgstr "Now: %s, about %s left (teachers at work: %d)"
+
+msgid "ui.research.no_teacher"
+msgstr "Learning has stopped: no teacher works at the school."
+
+msgid "ui.research.no_school"
+msgstr "Build a school to research (after the first burghers' house)."
+
+msgid "ui.research.waiting_gold"
+msgstr "Waiting for gold: %s"
+
+msgid "ui.research.idle"
+msgstr "Nothing is being researched. Choose a research below."
+
+msgid "ui.research.queue"
+msgstr "Queue: %s"
+
+msgid "ui.research.queue_empty"
+msgstr "empty"
+
+msgid "ui.research.done"
+msgstr "Researched"
+
+msgid "ui.research.studying"
+msgstr "Under way: %d%%"
+
+msgid "ui.research.queued"
+msgstr "Queued (%d.)"
+
+msgid "ui.research.needs"
+msgstr "Needs: %s"
+
+msgid "ui.research.cost"
+msgstr "%d gold, %s"
+
+msgid "ui.research.click_cancel"
+msgstr "Click to take it back (the gold returns)."
+
+msgid "ui.research.click_start"
+msgstr "Click to research."
+
+msgid "ui.research.unlocks"
+msgstr "Unlocks: %s"
+
+msgid "ui.build.needs_research"
+msgstr "Needs research: %s"
+
+msgid "ui.note.research_finished"
+msgstr "Researched: %s"

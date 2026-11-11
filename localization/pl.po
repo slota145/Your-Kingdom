@@ -4573,3 +4573,69 @@ msgstr "Tego badania nie ma w kolejce"
 
 msgid "ui.command_error.unknown_research"
 msgstr "Nie ma takiego badania"
+
+msgid "ui.hud.research"
+msgstr "Badania"
+
+msgid "ui.research.open"
+msgstr "Badania"
+
+msgid "ui.research.title"
+msgstr "Badania królestwa"
+
+msgid "ui.research.hint"
+msgstr "Kliknij badanie, aby je zacząć albo dodać do kolejki (złoto płacisz na starcie). Kliknij jeszcze raz, aby je cofnąć. Nauka idzie, gdy w szkole pracuje nauczyciel; druga szkoła przyspiesza."
+
+msgid "ui.research.all_open"
+msgstr "W tej grze wszystkie budynki są dostępne bez badań."
+
+msgid "ui.research.current"
+msgstr "Teraz: %s, zostało ok. %s (nauczyciele przy pracy: %d)"
+
+msgid "ui.research.no_teacher"
+msgstr "Nauka stoi: w szkole nie pracuje nauczyciel."
+
+msgid "ui.research.no_school"
+msgstr "Zbuduj szkołę, żeby prowadzić badania (po pierwszym domu mieszczan)."
+
+msgid "ui.research.waiting_gold"
+msgstr "Czeka na złoto: %s"
+
+msgid "ui.research.idle"
+msgstr "Nic nie jest badane. Wybierz badanie poniżej."
+
+msgid "ui.research.queue"
+msgstr "Kolejka: %s"
+
+msgid "ui.research.queue_empty"
+msgstr "pusta"
+
+msgid "ui.research.done"
+msgstr "Zbadane"
+
+msgid "ui.research.studying"
+msgstr "Trwa: %d%%"
+
+msgid "ui.research.queued"
+msgstr "W kolejce (%d.)"
+
+msgid "ui.research.needs"
+msgstr "Wymaga: %s"
+
+msgid "ui.research.cost"
+msgstr "%d zł, %s"
+
+msgid "ui.research.click_cancel"
+msgstr "Kliknij, aby cofnąć (złoto wraca)."
+
+msgid "ui.research.click_start"
+msgstr "Kliknij, aby badać."
+
+msgid "ui.research.unlocks"
+msgstr "Odblokowuje: %s"
+
+msgid "ui.build.needs_research"
+msgstr "Wymaga badania: %s"
+
+msgid "ui.note.research_finished"
+msgstr "Zbadano: %s"
