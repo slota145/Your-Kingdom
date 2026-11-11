@@ -321,6 +321,28 @@ static func _diet_met(province: ProvinceSim, building: BuildingState, need: Need
 	return hunger < 1.0 and kinds >= building.level_def().diet_min
 
 
+## Fills in the house's points and kinds of food (derived, not saved) from the needs met at
+## its last update and its pantry, without eating: right after loading a game, so a paused
+## loaded game shows the faces and the panel as they were (E2 part 3).
+static func refresh_derived(building: BuildingState) -> void:
+	var house := building.house
+	var level := building.level_def()
+	var target := 0.0
+	for need: NeedDef in level.needs:
+		var ok := bool(house.satisfied.get(need.id, false))
+		if ok:
+			target += level.weight_of(need)
+		elif need.is_diet() and house.residents > 0:
+			target -= level.weight_of(need)
+		if need.is_diet():
+			var kinds := 0
+			for good: StringName in need.goods:
+				if building.supply.total(good) > 0:
+					kinds += 1
+			house.diet_kinds = kinds
+	house.points = maxf(target, 0.0)
+
+
 ## Whether [param building]'s household has enough kinds of food (its diet need met).
 static func is_fed(building: BuildingState) -> bool:
 	for need: NeedDef in building.level_def().needs:

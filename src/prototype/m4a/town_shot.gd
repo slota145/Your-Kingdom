@@ -4,7 +4,7 @@ extends Node
 ## screenshot. For checking the new buildings and panels in the cloud.
 ##
 ## Run: godot --path . res://src/prototype/m4a/town_shot.tscn -- --shot=<png>
-##      [--minutes=N] [--select=<building id>] [--zoom=N] [--layout] [--focus=<block>] [--stocks] [--hide_build]
+##      [--minutes=N] [--select=<building id>] [--zoom=N] [--layout] [--focus=<block>] [--stocks] [--hide_build] [--moods]
 ##
 ## --layout (M4b-1.5) adds a street quarter next to the bot's town: burgher and patrician
 ## houses in a straight row, rows meeting at corners and two rows back to back, each facing
@@ -20,6 +20,8 @@ var _game: Node2D
 var _frames: int = 0
 var _shot_path: String = ""
 var _select: StringName = &""
+## --moods (E2 part 3): faces over every house, as with the "Contentment" button.
+var _moods: bool = false
 var _zoom: int = 1
 var _layout: bool = false
 var _focus: String = "all"
@@ -72,6 +74,8 @@ func _ready() -> void:
 			_layout = true
 		elif arg == "--stocks":
 			_stocks = true
+		elif arg == "--moods":
+			_moods = true
 		elif arg == "--hide_build":
 			_hide_build = true
 		elif arg.begins_with("--focus="):
@@ -104,6 +108,8 @@ func _arrange() -> void:
 		_game.call("_toggle_stocks")
 	if _hide_build:
 		_game.call("_show_build_menu", false)
+	if _moods:
+		(_game.get("view") as ProvinceView).moods.show_all = true
 	if _layout and _blocks.has(_focus):
 		camera.position = IsoMath.grid_to_screen(_blocks[_focus])
 	for b: BuildingState in sim.province.buildings.all():

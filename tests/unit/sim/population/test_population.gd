@@ -288,3 +288,7 @@ func test_diet_kinds_and_tax_bonus() -> void:
 	assert_int(hut.house.diet_kinds).is_equal(3)
 	assert_float(hut.house.points).is_equal_approx(80.0, 0.01)
 	assert_float(Population.tax_bonus(hut)).override_failure_message("kinds %d points %.1f bonus %.3f" % [hut.house.diet_kinds, hut.house.points, Population.tax_bonus(hut)]).is_equal_approx(0.2, 0.001)
+	# A loaded game shows the same points and kinds of food before it runs (faces, panel).
+	var loaded := BuildingState.from_dict(hut.to_dict(), sim.data)
+	assert_int(loaded.house.diet_kinds).is_equal(3)
+	assert_float(loaded.house.points).is_equal_approx(80.0, 0.01)

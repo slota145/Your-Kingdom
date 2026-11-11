@@ -490,4 +490,6 @@ static func from_dict(d: Dictionary, data: DataRegistry) -> BuildingState:
 		b.siege_orders.append(StringName(String(unit)))
 	b.siege_work = int(d.get("siege_work", 0))
 	b.priority = clampi(int(d.get("priority", Priority.NORMAL)), Priority.HIGH, Priority.LOW) as Priority
+	if b.house != null and b.supply != null:
+		Population.refresh_derived(b)
 	return b
