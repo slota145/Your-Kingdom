@@ -258,7 +258,7 @@ const BUILDINGS := {
 			["bollard", 1.85, 0.25]]}],
 	"port_warehouse": [{"special": "yard"}],
 	# E1 part 1: the porters' hut (2x2) and house (3x3); final art from SpriteKiln
-	# (tools/spritekiln/gen_porters.py), these drawings give the construction stages.
+	# (tools/spritekiln/gen_farmsteads.py and porters_house.yaml), these drawings give the construction stages.
 	"porters_hut": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.25, 1.86], "h": 34.0, "rh": 22.0, "ridge": "y",
 			"ends": ["gable", "gable"], "walls": "planks", "roof": "thatch", "shutters": Color(0.35, 0.3, 0.25)}],
