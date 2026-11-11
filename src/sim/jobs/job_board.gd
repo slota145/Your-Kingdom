@@ -241,7 +241,9 @@ func _assign_one(province: ProvinceSim, request: TransportRequest, idle: Array[A
 	idle.remove_at(best)
 	var vehicle := &""
 	if request.unassigned() >= Carriers.HANDCART_MIN and Carriers.has_free_handcart(province, porter):
-		var big := _largest_load(province, request, src, mini(Carriers.HANDCART_LOAD,
+		# E4 part 3: "Carts" research loads a handcart with one more.
+		var cart := Carriers.HANDCART_LOAD + province.research.cart_extra(province.data)
+		var big := _largest_load(province, request, src, mini(cart,
 				request.unassigned()), keep_reserve)
 		if big >= Carriers.HANDCART_MIN:
 			load = big

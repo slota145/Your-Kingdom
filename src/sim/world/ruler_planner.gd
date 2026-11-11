@@ -15,6 +15,9 @@ extends RefCounted
 ## The plan of growth: {building, how many the province should have}, in order. The first
 ## entries a province lacks are what it builds next (a few are tried, the first one it can pay
 ## for and find room for goes up). Entries the map cannot take (a port inland) are skipped.
+## The rulers' barracks (E4 part 4): the large ones, the small ones where those do not fit.
+const LARGE_BARRACKS := &"barracks_large"
+const SMALL_BARRACKS := &"barracks_small"
 const PLAN: Array[Array] = [
 	[&"woodcutter", 2], [&"hut", 3], [&"stockpile", 1], [&"quarry", 1], [&"sawmill", 1],
 	[&"fishing_hut", 1], [&"well", 1], [&"hut", 6], [&"farm", 1], [&"mill", 1], [&"bakery", 1],
@@ -22,7 +25,7 @@ const PLAN: Array[Array] = [
 	# patricians 3), and food on a map without water.
 	[&"orchard", 1], [&"forester", 1], [&"hunter_lodge", 1], [&"hut", 9], [&"town_hall", 1], [&"woodcutter", 3], [&"chapel", 1],
 	[&"market", 1], [&"well", 2], [&"hut", 12], [&"stockpile", 2], [&"hop_farm", 1],
-	[&"brewery", 1], [&"farm", 2], [&"orchard", 2], [&"hut", 15], [&"barracks", 1], [&"trading_post", 1], [&"builders_hut", 1],
+	[&"brewery", 1], [&"farm", 2], [&"orchard", 2], [&"hut", 15], [&"barracks_large", 1], [&"trading_post", 1], [&"builders_hut", 1],
 	[&"sheep_farm", 1], [&"weaver", 1], [&"tar_kiln", 1], [&"port", 1], [&"shipyard", 1],
 	[&"hut", 18], [&"tailor", 1], [&"fishing_hut", 2], [&"tavern", 1], [&"bakery", 2],
 	[&"mill", 2], [&"farm", 3], [&"hut", 22], [&"church", 1],
@@ -166,6 +169,11 @@ static func try_next(sim: Simulation, ruler: RulerState, id: int) -> BuildingSta
 			var placed := _open(sim, ruler, id, town, def)
 			if placed != null:
 				return placed
+			if building_id == LARGE_BARRACKS:
+				# No room for the 5x5 barracks: the small ones (E4 part 4).
+				placed = _open_small_barracks(sim, ruler, id, town)
+				if placed != null:
+					return placed
 		if looked >= LOOK_AHEAD:
 			break
 	return null
@@ -294,12 +302,24 @@ static func plan_progress(town: ProvinceSim) -> Vector2i:
 	return Vector2i(done, PLAN.size())
 
 
-## Buildings of the province by kind, construction sites included.
+## Buildings of the province by kind, construction sites included. Barracks of any kind (the
+## old 3x3 ones of older towns, the small ones where the large did not fit) count as large
+## barracks too (E4 part 4), so a town has one barracks of the plan.
 static func counts_of(town: ProvinceSim) -> Dictionary[StringName, int]:
 	var counts: Dictionary[StringName, int] = {}
 	for building: BuildingState in town.buildings.all():
 		counts[building.def.id] = counts.get(building.def.id, 0) + 1
+		if building.def.soldier_beds > 0 and building.def.id != LARGE_BARRACKS:
+			counts[LARGE_BARRACKS] = counts.get(LARGE_BARRACKS, 0) + 1
 	return counts
+
+
+static func _open_small_barracks(sim: Simulation, ruler: RulerState, id: int, town: ProvinceSim) -> BuildingState:
+	var small := sim.data.get_building(SMALL_BARRACKS)
+	if small == null or _no_room(ruler, id, SMALL_BARRACKS, sim.clock.tick) \
+			or not _affordable(town, ruler, small):
+		return null
+	return _open(sim, ruler, id, town, small)
 
 
 static func _allowed(town: ProvinceSim, def: BuildingDef) -> bool:

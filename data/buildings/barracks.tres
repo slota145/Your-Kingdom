@@ -14,5 +14,6 @@ build_cost = Dictionary[StringName, int]({
 build_time = 40.0
 gold_cost = 60
 soldier_beds = 24
+retired = true
 door_sides = &"one"
 id = &"barracks"

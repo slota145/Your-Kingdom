@@ -5,6 +5,9 @@ extends Command
 ## order_walls). Tiles that cannot take a wall are skipped; the command is rejected only when
 ## none can.
 
+## The research tool id of the stone wall (ResearchDef.tools, E4 part 3).
+const STONE_TOOL := &"stone_wall"
+
 var tiles: Array[Vector2i]
 ## Walls.PALISADE, Walls.STONE or Walls.STAIRS.
 var wall: int
@@ -18,6 +21,8 @@ func _init(wall_tiles: Array[Vector2i], kind: int = Walls.STONE) -> void:
 func validate(sim: Simulation) -> StringName:
 	if wall != Walls.PALISADE and wall != Walls.STONE and wall != Walls.STAIRS:
 		return &"bad_wall"
+	if wall == Walls.STONE and not sim.province.research.allows_tool(sim.data, STONE_TOOL):
+		return &"needs_research"   # E4 part 3: "Defensive masonry"
 	var plan := sim.province.wall_plan(tiles, wall)
 	if not (plan["tiles"] as Array).is_empty():
 		return &""

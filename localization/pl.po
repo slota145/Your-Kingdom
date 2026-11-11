@@ -4639,3 +4639,139 @@ msgstr "Wymaga badania: %s"
 
 msgid "ui.note.research_finished"
 msgstr "Zbadano: %s"
+
+msgid "building.university.name"
+msgstr "Uniwersytet"
+
+msgid "building.university.desc"
+msgstr "Dwaj uczeni czytają księgi, piszą i rozprawiają w krużganku. Na uniwersytecie królestwo bada wojsko, wielkie statki i ulepszenia. Stawia się go po pierwszej kamienicy patrycjuszy, gdy w prowincji stoi szkoła."
+
+msgid "recipe.studying.name"
+msgstr "Studia"
+
+msgid "recipe.studying.desc"
+msgstr "Uczony czyta przy pulpicie, spisuje wnioski i przechadza się po krużganku. Każdy uczony przy pracy posuwa badanie naprzód."
+
+msgid "ui.kind.scholar"
+msgstr "Uczony"
+
+msgid "ui.activity.read"
+msgstr "czyta księgę"
+
+msgid "ui.activity.write"
+msgstr "spisuje wnioski"
+
+msgid "research.defensive_masonry.name"
+msgstr "Kamieniarstwo obronne"
+
+msgid "research.defensive_masonry.desc"
+msgstr "Kamienne mury, baszty i bramy. Palisada i schody są od początku."
+
+msgid "research.armouring.name"
+msgstr "Płatnerstwo"
+
+msgid "research.armouring.desc"
+msgstr "Płatnerz robi kolczugi; w koszarach miecznicy, zbrojni i halabardnicy."
+
+msgid "research.crossbows.name"
+msgstr "Kusze"
+
+msgid "research.crossbows.desc"
+msgstr "W koszarach kusznicy (kusze robi łuczarz)."
+
+msgid "research.deep_learning.name"
+msgstr "Głęboka nauka"
+
+msgid "research.deep_learning.desc"
+msgstr "Uczeni piszą podręczniki: szkoły uczą 2 razy szybciej."
+
+msgid "research.carts.name"
+msgstr "Lepsze wózki"
+
+msgid "research.carts.desc"
+msgstr "Wózek tragarza wiezie o 1 sztukę więcej."
+
+msgid "research.larger_fields_2.name"
+msgstr "Większe pola II"
+
+msgid "research.larger_fields_2.desc"
+msgstr "Farmy, sady, chmielniki i winnice mają po kolejne 4 kratki pola."
+
+msgid "research.larger_pens_2.name"
+msgstr "Większe zagrody II"
+
+msgid "research.larger_pens_2.desc"
+msgstr "Chlewy, owczarnie i stadniny mają po kolejne 2 zagrody, a pasieki 2 ule."
+
+msgid "research.chivalry.name"
+msgstr "Rycerstwo"
+
+msgid "research.chivalry.desc"
+msgstr "Stadnina; w koszarach rycerze i lekka jazda."
+
+msgid "research.siege_engines.name"
+msgstr "Machiny oblężnicze"
+
+msgid "research.siege_engines.desc"
+msgstr "Warsztat machin: tarany, drabiny i balisty."
+
+msgid "research.large_shipyard.name"
+msgstr "Duża stocznia"
+
+msgid "research.large_shipyard.desc"
+msgstr "Duża stocznia: karawele, karaki i galeony, kupieckie i wojenne."
+
+msgid "research.charter.name"
+msgstr "Nadanie"
+
+msgid "research.charter.desc"
+msgstr "Farma, sad, winnica, chlew, owczarnia, stadnina albo pasieka może dostać nadanie (przycisk w panelu budynku): 2 razy więcej pól, zagród albo uli, ale zatrudnia drugiego pracownika."
+
+msgid "ui.command_error.no_charter_here"
+msgstr "Ten budynek nie może dostać nadania"
+
+msgid "ui.research.school"
+msgstr "Szkoła"
+
+msgid "ui.research.university"
+msgstr "Uniwersytet"
+
+msgid "ui.research.no_scholar"
+msgstr "Nauka stoi: na uniwersytecie nie pracuje żaden uczony."
+
+msgid "ui.research.no_university"
+msgstr "To badanie prowadzi uniwersytet: zbuduj go (po pierwszej kamienicy patrycjuszy, obok szkoły)."
+
+msgid "ui.charter.give"
+msgstr "Daj nadanie"
+
+msgid "ui.charter.take_back"
+msgstr "Cofnij nadanie"
+
+msgid "ui.charter.hint"
+msgstr "Nadanie: 2 razy więcej pól, zagród albo uli, ale budynek zatrudnia drugiego pracownika. Cofnięcie zostawia pola, a drugi pracownik wraca do domu."
+
+# --- E4 part 4: small and large barracks ---
+msgid "building.barracks_small.name"
+msgstr "Małe koszary"
+
+msgid "building.barracks_small.desc"
+msgstr "Drewniana strażnica: 10 łóżek. Tu rekrutujesz łuczników i włóczników. Żołnierze jedzą z magazynu i odpoczywają w środku."
+
+msgid "building.barracks_large.name"
+msgstr "Duże koszary"
+
+msgid "building.barracks_large.desc"
+msgstr "Kamienne koszary z dziedzińcem: 30 łóżek i wszystkie rodzaje wojska. Żołnierze ćwiczą na dziedzińcu."
+
+msgid "research.large_barracks.name"
+msgstr "Duże koszary"
+
+msgid "research.large_barracks.desc"
+msgstr "Kamienne koszary z dziedzińcem: 30 łóżek, wszystkie rodzaje wojska i musztra na dziedzińcu."
+
+msgid "ui.command_error.not_in_these_barracks"
+msgstr "Te koszary szkolą tylko łuczników i włóczników."
+
+msgid "ui.command_error.retired"
+msgstr "Tych koszar już się nie stawia."

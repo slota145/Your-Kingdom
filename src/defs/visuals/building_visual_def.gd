@@ -17,6 +17,9 @@ extends Resource
 ## building's art and do not fade out as at a door (owner feedback 2026-11-06: swineherds
 ## and porters vanished under the pigsty's pens).
 @export var open_ground: bool = false
+## With [member open_ground]: only these footprint tiles (as drawn) are open ground (the large
+## barracks' courtyard, E4 part 4); empty = the whole footprint.
+@export var open_tiles: Array[Vector2i] = []
 ## Number of looks of the "base" art: "base", "base_2", "base_3"... Each building picks one
 ## by its position, so a village of huts is not a row of copies.
 @export_range(1, 8) var base_variants: int = 1

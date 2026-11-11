@@ -47,6 +47,7 @@ var _plant_clear_button: Button
 var _animal_buttons: Dictionary[StringName, Button] = {}
 var _trade_button: Button
 var _research_button: Button
+var _charter_button: Button
 var _expedition: ExpeditionBox
 var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
@@ -129,6 +130,11 @@ func _init() -> void:
 	buttons.add_child(_trade_button)
 	_research_button = UiKit.button("ui.research.open", func() -> void: research_requested.emit())
 	buttons.add_child(_research_button)
+	_charter_button = UiKit.button("ui.charter.give", func() -> void:
+		var b := province.buildings.get_building(building_id)
+		if b != null:
+			command_requested.emit(SetCharterCommand.new(building_id, not b.charter)))
+	buttons.add_child(_charter_button)
 	_pause_button = UiKit.button("ui.building.pause", func() -> void:
 		var b := province.buildings.get_building(building_id)
 		if b != null:
@@ -281,7 +287,7 @@ func _refresh() -> void:
 			var agent := province.agents.get_agent(id)
 			if agent != null:
 				lines.append(AgentDescriber.describe(province, agent))
-		var missing := b.def.worker_count() - b.workers.size()
+		var missing := b.worker_count() - b.workers.size()
 		if missing > 0:
 			lines.append(tr("ui.building.no_workers") % missing)
 		if b.def.max_fields > 0:
@@ -348,6 +354,11 @@ func _refresh() -> void:
 	var market := b.is_complete() and not b.def.stall_goods.is_empty()
 	_trade_button.visible = market
 	_research_button.visible = b.def.research_institution != &""
+	# E4 part 3: the charter, once researched (or to take back one given).
+	_charter_button.visible = b.is_complete() and b.can_have_charter() \
+			and (b.charter or province.research.allows_charter(province.data))
+	_charter_button.text = tr("ui.charter.take_back" if b.charter else "ui.charter.give")
+	_charter_button.tooltip_text = tr("ui.charter.hint")
 	for animal: StringName in _animal_buttons:
 		var button := _animal_buttons[animal]
 		# Pigs always (as before); sheep and horses once the town keeps them.

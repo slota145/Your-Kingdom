@@ -221,3 +221,9 @@ Pomysły właściciela z rozmowy 2026-11-10, z oceną Claude. Ankieta 2026-11-10
 - Pomysł: z domów mieszczan rano wychodzą dzieci, idą do szkoły, siedzą w ławkach na lekcji i po dzwonku wracają do domów.
 - Ocena (Claude): piękna immersja, ale to nowe małe postacie ze SpriteKiln, ławki z siedzącymi dziećmi (pierwsza próba na podwórku szkoły „nie wyglądała najlepiej”, właściciel 2026-11-11) i ruch w mieście. Najlepiej razem z G3 (nowe postacie). W ankiecie części 2 E4 właściciel wybrał uczniów tylko na grafice, potem bez uczniów.
 
+
+## Baraki i garnizon (właściciel, 2026-11-11)
+- **Baraki:** prosty budynek wojskowy, który daje tylko łóżka dla żołnierzy (bez rekrutacji). Więcej wojska bez stawiania kolejnych koszar.
+- **Garnizon:** budynek, w którym rekrutujemy żołnierzy trochę taniej, ale gracz nie może nimi dowodzić. Sami pilnują miasta: piechota patroluje ulice i obsadza bramy, a łucznicy i kusznicy patrolują mury i stoją na bramach i basztach.
+- Ocena (Claude): dobre, zwłaszcza garnizon, bo daje dużo immersji (strażnicy chodzą po murach) i realną obronę przed bandytami bez klikania. Ryzyka: patrole to nowe zachowanie żołnierzy (trasy po murach i ulicach, zmiany warty), a obsadzanie wież i bram trzeba połączyć z dzisiejszą walką na murach. Baraki są proste (budynek z łóżkami, jak koszary bez rekrutacji), ale ich sens trzeba sprawdzić przy balansie łóżek dużych koszar (30). Grafiki ze SpriteKiln w stylu nowych koszar.
+- Kiedy: do decyzji właściciela, najwcześniej po E4 (np. osobny mały etap wojskowy przed M10).

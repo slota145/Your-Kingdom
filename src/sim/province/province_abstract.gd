@@ -247,7 +247,7 @@ func _workers_of(kind: StringName) -> int:
 		var building := detail.buildings.get_building(id)
 		if building == null:
 			continue
-		var kinds := building.def.worker_kinds
+		var kinds := building.worker_kinds()
 		var homeless_kinds: Array = homeless.get(id, [])
 		for i: int in mini(staff[id], kinds.size()):
 			if kinds[i] == kind:
@@ -310,7 +310,7 @@ func _work() -> void:
 		var per_second: float = _rates[building.id]
 		if per_second <= 0.0:
 			continue
-		var share := workers / float(maxi(building.def.worker_count(), 1))
+		var share := workers / float(maxi(building.worker_count(), 1))
 		var done: float = progress.get(building.id, 0.0) + per_second * share * speed
 		if done >= 1.0 and detail.tick >= _wait_until.get(building.id, 0):
 			if _cycle(building, cycle):
@@ -330,7 +330,8 @@ func cycles_per_second(building: BuildingState) -> float:
 			if not building.def.paced_work() and not cycle.fields else 0.0
 	if measured > 0.0:
 		return measured / maxf(cycle.primary_amount, 1.0)
-	var parallel := building.def.worker_count() if building.def.parallel_work else 1
+	# A charter's second worker works his own fields or pens (E4 part 3).
+	var parallel := building.worker_count() if building.def.parallel_work or building.charter else 1
 	return parallel / estimated_cycle_seconds(building)
 
 

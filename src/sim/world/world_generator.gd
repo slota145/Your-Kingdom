@@ -31,7 +31,7 @@ const NEUTRAL_TOWNS: Array[StringName] = [&"iron_wold", &"horse_haven"]
 ## first part of his plan of growth with barracks; the town hall comes by itself).
 const CAPITAL_TOWN: Dictionary[StringName, int] = {&"hut": 16, &"well": 3, &"stockpile": 3, &"woodcutter": 3,
 		&"forester": 1, &"quarry": 1, &"sawmill": 1, &"farm": 3, &"mill": 1, &"bakery": 1, &"fishing_hut": 2,
-		&"market": 1, &"chapel": 1, &"hop_farm": 1, &"brewery": 1, &"trading_post": 1, &"barracks": 1,
+		&"market": 1, &"chapel": 1, &"hop_farm": 1, &"brewery": 1, &"trading_post": 1, &"barracks_large": 1,
 		&"orchard": 1, &"hunter_lodge": 1}
 ## Share of the provinces of the Divided continent the rulers hold together (each at least 2,
 ## at most [constant MAX_REALM]); the rest are neutral settlements.

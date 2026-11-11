@@ -139,7 +139,12 @@ func _on_open_ground(at: Vector2) -> bool:
 	if building == null:
 		return false
 	var visual := _visual_of(building.def.id)
-	return visual != null and visual.open_ground
+	if visual == null or not visual.open_ground:
+		return false
+	if visual.open_tiles.is_empty():
+		return true
+	# Only part of it is open (a courtyard, E4 part 4).
+	return visual.open_tiles.has(building.def.turned(tile - building.origin, building.orientation))
 
 
 func _visual_of(def_id: StringName) -> BuildingVisualDef:

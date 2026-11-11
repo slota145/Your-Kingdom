@@ -81,9 +81,9 @@ func _barracks_first() -> bool:
 		if town == null or RulerPlanner.residents(town) < BARRACKS_PEOPLE:
 			continue
 		var counts := RulerPlanner.counts_of(town)
-		if counts.has(&"barracks"):
+		if counts.has(RulerPlanner.LARGE_BARRACKS):
 			continue
-		var def := sim.data.get_building(&"barracks")
+		var def := sim.data.get_building(RulerPlanner.LARGE_BARRACKS)
 		if RulerPlanner._affordable(town, state, def):
 			RulerPlanner._open(sim, state, id, town, def)
 		else:

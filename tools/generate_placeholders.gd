@@ -694,6 +694,11 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.62, 0.62, 0.64), "roof_color": Color(0.35, 0.36, 0.42), "extra": "barrels"},
 	"barracks": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 40.0, "roof": 26.0,
 			"wall": Color(0.86, 0.8, 0.68), "roof_color": Color(0.66, 0.28, 0.2), "extra": "barrels"},
+	# E4 part 4: the small and large barracks
+	"barracks_small": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 22.0,
+			"wall": Color(0.55, 0.4, 0.26), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
+	"barracks_large": {"footprint": Vector2i(5, 5), "entrance": Vector2i(3, 4), "walls": 44.0, "roof": 26.0,
+			"wall": Color(0.62, 0.62, 0.64), "roof_color": Color(0.35, 0.36, 0.42), "extra": "barrels"},
 }
 
 

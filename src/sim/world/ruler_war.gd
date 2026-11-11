@@ -132,20 +132,22 @@ static func recruit(sim: Simulation, ruler: RulerState, id: int) -> StringName:
 	var town := sim.province_state(id)
 	if town == null:
 		return &""
-	var barracks: BuildingState = null
-	for building: BuildingState in town.buildings.all():
-		if building.def.soldier_beds > 0 and building.is_complete() \
-				and Barracks.beds_taken(building) < building.def.soldier_beds:
-			barracks = building
-			break
-	if barracks == null:
-		return &""
 	var have := strength(sim, ruler.owner)
 	if have >= wanted(sim, ruler.owner):
 		return &""
 	var mix: Array = MIX[level(sim)]
 	var unit := sim.data.get_unit(mix[have % mix.size()])
 	if unit == null:
+		return &""
+	# A bed for him (E4 part 4: the small barracks house archers and spearmen only); else any
+	# unit a barracks with a bed takes, in the order of the mix.
+	var barracks := Barracks.with_bed_for(town, unit.id)
+	var k := 1
+	while barracks == null and k < mix.size():
+		unit = sim.data.get_unit(mix[(have + k) % mix.size()])
+		barracks = Barracks.with_bed_for(town, unit.id) if unit != null else null
+		k += 1
+	if barracks == null:
 		return &""
 	var cost := unit.gold_cost * COST_FACTOR
 	if ruler.treasury.gold < cost + RESERVE_GOLD:
@@ -659,11 +661,18 @@ static func guards_out(sim: Simulation, id: int) -> Dictionary[StringName, int]:
 
 ## A guard of a ruler's town (no home) goes back into a barracks as the province is folded.
 static func guard_home(town: ProvinceSim, unit: StringName) -> bool:
+	var home: BuildingState = null
 	for building: BuildingState in town.buildings.all():
 		if building.def.soldier_beds > 0 and building.is_complete():
-			building.garrison.append(unit)
-			return true
-	return false
+			if building.def.houses_unit(unit):
+				home = building
+				break
+			if home == null:
+				home = building   # no barracks of his kind: any (he must not be lost)
+	if home == null:
+		return false
+	home.garrison.append(unit)
+	return true
 
 
 ## Soldiers of the barracks of the province just viewed fight for its owner (a ruler's town:

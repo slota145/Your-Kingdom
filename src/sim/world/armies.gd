@@ -782,6 +782,8 @@ static func join_barracks(sim: Simulation, army: Army) -> bool:
 			var def := sim.data.get_unit(unit)
 			if def == null or def.siege != &"":
 				continue
+			if not building.def.houses_unit(unit):
+				continue   # E4 part 4: knights do not fit in the small barracks
 			while army.units.get(unit, 0) > 0 and Barracks.beds_taken(building) < building.def.soldier_beds:
 				army.add(unit, -1)
 				if viewed and entry != Agent.NO_TILE:

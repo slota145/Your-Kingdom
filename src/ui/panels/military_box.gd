@@ -141,6 +141,8 @@ func _refresh_barracks(province: ProvinceSim, b: BuildingState) -> void:
 				command_requested.emit(RecruitCommand.new(_building_id, unit_id)))
 			_recruit_row.add_child(button)
 			_recruit_buttons[unit.id] = button
+		# The small barracks train archers and spearmen only (E4 part 4).
+		button.visible = b.def.houses_unit(unit.id)
 		var why := Barracks.recruit_error(province, b, unit)
 		button.disabled = why != &""
 		var tip := PackedStringArray([tr(unit.desc_key()),
@@ -149,7 +151,10 @@ func _refresh_barracks(province: ProvinceSim, b: BuildingState) -> void:
 		for good: StringName in Barracks.gear_goods(unit):
 			have.append(LocFormat.good_count(good, _available(province, good)))
 		tip.append(tr("ui.barracks.in_stock") % ", ".join(have))
-		if why != &"":
+		if why == &"needs_research":
+			var research := province.research.needed_for_unit(province.data, unit.id)
+			tip.append(tr("ui.build.needs_research") % tr("research.%s.name" % research))   # E4 part 3
+		elif why != &"":
 			tip.append(tr("ui.command_error.%s" % why))
 		button.tooltip_text = "\n".join(tip)
 
