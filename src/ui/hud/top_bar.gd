@@ -10,6 +10,8 @@ signal menu_requested
 signal stocks_requested
 signal world_requested
 signal routes_requested
+## The "Contentment" button: faces over every house on or off (E2 part 3).
+signal moods_toggled(on: bool)
 
 var province: ProvinceSim
 var clock: SimClock
@@ -53,6 +55,11 @@ func _init() -> void:
 	row.add_child(UiKit.button("ui.hud.world", func() -> void: world_requested.emit()))
 	row.add_child(UiKit.button("ui.hud.stocks", func() -> void: stocks_requested.emit()))
 	row.add_child(UiKit.button("ui.hud.routes", func() -> void: routes_requested.emit()))
+	var moods := UiKit.button("ui.hud.moods", func() -> void: pass)
+	moods.toggle_mode = true
+	moods.tooltip_text = "ui.hud.moods_tip"
+	moods.toggled.connect(func(on: bool) -> void: moods_toggled.emit(on))
+	row.add_child(moods)
 	row.add_child(UiKit.button("ui.hud.save", func() -> void: save_requested.emit()))
 	row.add_child(UiKit.button("ui.hud.load", func() -> void: load_requested.emit()))
 	row.add_child(UiKit.button("ui.hud.language", Loc.cycle_locale))

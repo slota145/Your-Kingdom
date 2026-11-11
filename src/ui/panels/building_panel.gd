@@ -34,6 +34,8 @@ var _fields_button: Button
 var _priority_row: Container
 var _pause_button: Button
 var _look_button: Button
+## A house's points of needs met, with the calm and upgrade marks (E2 part 3).
+var _mood_bar: MoodBar
 ## "Upgrade now" on a house (E1).
 var _upgrade_button: Button
 var _turn_button: Button
@@ -98,6 +100,8 @@ func _init() -> void:
 	box.add_child(_title)
 	_body = UiKit.label()
 	box.add_child(_body)
+	_mood_bar = MoodBar.new()
+	box.add_child(_mood_bar)
 	_icons = VBoxContainer.new()
 	box.add_child(_icons)
 	_stock = StockpilePanel.new()
@@ -361,6 +365,9 @@ func _refresh() -> void:
 				else tr("ui.house.upgrade_now_hint")
 	_refresh_settings(b)
 	_refresh_icons(b)
+	_mood_bar.visible = b.house != null and b.is_complete()
+	if _mood_bar.visible:
+		_mood_bar.show_house(b)
 
 
 ## The icon rows (P2 part 3): a workshop's goods in and out, a house's needs met or not.
@@ -572,10 +579,17 @@ func _house_lines(b: BuildingState) -> PackedStringArray:
 	var house := b.house
 	lines.append(tr("ui.house.residents") % [house.residents, b.capacity()])
 	lines.append(tr("ui.house.happiness") % roundi(house.happiness))
+	# E2 part 3: points of the needs met, kinds of food, the tax bonus for more than needed.
+	lines.append(tr("ui.house.points") % [roundi(house.points), roundi(Population.CALM_POINTS),
+			roundi(Population.UPGRADE_POINTS)])
+	lines.append(tr("ui.house.diet") % [house.diet_kinds, b.level_def().diet_min])
+	var bonus := Population.tax_bonus(b)
 	if treasury != null:
 		var per_minute := house.residents * Population.tax_per_minute(province, b) * house.happiness / 100.0 \
-				* treasury.rate_factor()
+				* treasury.rate_factor() * (1.0 + bonus)
 		lines.append(tr("ui.house.tax") % per_minute)
+		if bonus > 0.0:
+			lines.append(tr("ui.house.tax_bonus") % roundi(bonus * 100.0))
 		if house.level > 1 and not province.has_seat():
 			lines.append(tr("ui.house.no_seat"))
 	if house.unmet_seconds >= Population.WARN_AFTER:

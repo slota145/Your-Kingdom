@@ -350,6 +350,24 @@ msgstr "Happiness: %d"
 msgid "ui.house.declining"
 msgstr "Warning: basic needs are missing! Happiness is falling and people work slower. Below %d residents slowly start moving out, but half of them stay."
 
+msgid "ui.house.points"
+msgstr "Needs: %d of 100 points (calm from %d, upgrade from %d)"
+
+msgid "ui.house.diet"
+msgstr "Kinds of food: %d (needs %d)"
+
+msgid "ui.house.tax_bonus"
+msgstr "Tax %d%% higher for more than they need"
+
+msgid "ui.house.mood_bar_tip"
+msgstr "Points of the needs met. From %d the house is calm (nobody leaves, newcomers come), from %d it can upgrade. A hungry house (too few kinds of food) is always unhappy."
+
+msgid "ui.hud.moods"
+msgstr "Contentment"
+
+msgid "ui.hud.moods_tip"
+msgstr "Show faces over every house (green: can upgrade, yellow: calm, red: hungry or restless). Unhappy houses always show theirs."
+
 msgid "ui.house.upgrade_in"
 msgstr "Upgrade in %d s if nothing runs out"
 

@@ -355,6 +355,24 @@ msgstr "Zadowolenie: %d"
 msgid "ui.house.declining"
 msgstr "Uwaga: brakuje podstawowych rzeczy! Zadowolenie spada i ludzie pracują wolniej. Gdy spadnie poniżej %d, mieszkańcy zaczną się powoli wyprowadzać, ale połowa zostanie."
 
+msgid "ui.house.points"
+msgstr "Potrzeby: %d z 100 pkt (spokój od %d, awans od %d)"
+
+msgid "ui.house.diet"
+msgstr "Rodzaje jedzenia: %d (potrzeba %d)"
+
+msgid "ui.house.tax_bonus"
+msgstr "Podatek większy o %d%% za to, co ponad potrzebę"
+
+msgid "ui.house.mood_bar_tip"
+msgstr "Punkty spełnionych potrzeb. Od %d dom jest spokojny (nikt nie odchodzi, przychodzą nowi), od %d może się rozbudować. Głodny dom (za mało rodzajów jedzenia) jest zawsze niezadowolony."
+
+msgid "ui.hud.moods"
+msgstr "Zadowolenie"
+
+msgid "ui.hud.moods_tip"
+msgstr "Pokaż buźki nad wszystkimi domami (zielona: może awansować, żółta: spokojny, czerwona: głodny albo niespokojny). Niezadowolone domy pokazują buźkę zawsze."
+
 msgid "ui.house.upgrade_in"
 msgstr "Awans za %d s, jeśli nic nie zabraknie"
 

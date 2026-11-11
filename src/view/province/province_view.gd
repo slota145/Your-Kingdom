@@ -45,6 +45,8 @@ var siege: SiegeLayer
 var pens: PenLayer
 ## Wild deer and boar and the hunters' arrows (E2 part 2).
 var wild: WildLayer
+## Faces over the houses: how content they are (E2 part 3).
+var moods: MoodLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 
@@ -103,6 +105,9 @@ func setup(source: ProvinceSim) -> void:
 	wild = WildLayer.new()
 	world.add_child(wild)
 	wild.setup(province)
+	moods = MoodLayer.new()
+	add_child(moods)
+	moods.setup(province)
 	forts = FortLayer.new()
 	world.add_child(forts)
 	forts.setup(province)
@@ -150,6 +155,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 	piles.update_yards(province.buildings)
 	pens.update_view(delta)
 	wild.update_view(delta)
+	moods.update_view(delta)
 	buildings.update_view()
 	forts.update_view()
 	var merchant := province.merchant
