@@ -1511,7 +1511,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę („Część 1, stan”, „Część 2, stan”).**
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; część 3 gotowa na gałęzi roboczej, czeka na ocenę („Część 1, stan”, „Część 2, stan”, „Część 3, stan”).**
 
 **Decyzje z ankiet 2026-11-11:**
 - **Szkoła po pierwszym domu mieszczan, uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
@@ -1577,10 +1577,18 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Koszty drożej niż szkoła:** ok. 4 min i 300 złota, 6 min i 450, 8 min i 650 (czas z jednym uczonym).
 - **Badania uniwersytetu:** płatnerstwo, kusze, rycerstwo, machiny oblężnicze, duża stocznia (z karawelą, karaką i galeonem), wózki +1, większe pola II (+4), większe zagrody II (+2), „Nadanie” (przycisk w panelu: pola i zagrody ×2, drugi pracownik), głęboka nauka (szkoły uczą 2× szybciej). Duże koszary dojdą w części 4.
 
+**Część 3, stan (2026-11-11):** gotowa na gałęzi roboczej, czeka na ocenę.
+- Uniwersytet 4×4 ze SpriteKiln (ART_SPEC §10.25) po pierwszej kamienicy patrycjuszy, gdy w prowincji stoi szkoła; dwaj uczeni (czytają przy pulpitach w krużganku, piszą, przechadzają się); każdy uczony przy pracy to sekunda nauki na sekundę.
+- 11 badań uniwersytetu i „Kamieniarstwo obronne” w szkole (dane w `data/research/`). Blokady: jednostki w koszarach (podpowiedź „Wymaga badania: …”), płatnerz, stadnina, warsztat machin, duża stocznia, kamienny mur (kłódka na narzędziu), baszta i brama.
+- „Nadanie”: przycisk „Daj nadanie” / „Cofnij nadanie” w panelu farmy, sadu, chmielnika, winnicy, chlewu, owczarni, stadniny i pasieki (pola, zagrody albo ule ×2, drugi pracownik; po cofnięciu pola zostają, drugi pracownik wraca do domu). Wózki +1, głęboka nauka (szkoły 2×), większe pola i zagrody II.
+- Okno „Badania”: szkoła i uniwersytet obok siebie (6 kolumn), strzałki także między nimi.
+- **Zapis v40:** stare gry (wszystko zbadane) dostają nowe badania; gry zaczęte z badaniami dostają „Kamieniarstwo obronne” (mury były w nich wolne); nadanie budynku w zapisie (test migracji).
+- Testy `tests/scenario/test_e4_university.gd`; zrzut uniwersytetu `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=45,54 --zoom=2 --yards=university --fields_seconds=30`.
+
 **Kryteria ukończenia:**
 - [x] Tryb deweloperski działa z menu nowej gry (część 1).
 - [x] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).
-- [ ] Uniwersytet bada drugą połowę drzewka (część 3).
+- [x] Uniwersytet bada drugą połowę drzewka (część 3).
 - [ ] Małe koszary od startu, duże 5×5 za badaniem; stare koszary działają (część 4).
 - [ ] Władcy, osady, automatyczny gracz i scenariusze badają i rozwijają się w podobnym tempie co przed E4 (pomiar); testy szybkie i długie przechodzą; UI w PL i EN (część 5).
 - [ ] **Twoja ocena gry** po każdej części.

@@ -629,3 +629,9 @@ Powód: kredyty PixelLab skończyły się po ok. 2 tygodniach. Szukamy darmowych
 - Kłódka w menu budowy: `assets/ui/icon_lock.png` (`tools/generate_ui.gd`).
 - Zrzuty: szkoła `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=43,53 --zoom=3 --yards=school --fields_seconds=25`, okno badań `game_shot.tscn -- --shot=<plik> --research`.
 
+### 10.25 Uniwersytet (E4, część 3, 2026-11-11)
+
+- **Budynek 4×4 ze SpriteKiln w stylu szkoły** (`tools/spritekiln/gen_university.py` korzysta z pomocników `gen_school.py`; widok `[se]`, `toon`, ramka 384, `camera.center` y 3,8): z tyłu kamienna sala z ostrołukowymi oknami na obu kondygnacjach i stromym dachem z dachówki, z przodu po lewej skrzydło z muru pruskiego (ochrowy tynk) szczytem do ulicy z łukowymi drzwiami i schodkami (x gry 1,5), po prawej wirydarz: trawa, studnia, krużganek z kolumnami pod daszkiem wzdłuż sali i skrzydła, dwa pulpity z otwartymi księgami, niski mur z przejściem. Z tyłu po prawej wysoka kamienna wieża biblioteki z zegarem i łupkowym hełmem z iglicą. Kafel wejścia (1, 3) wolny.
+- `cd tools/spritekiln && python3 gen_university.py`, potem `cd art/specs/props/university && spritekiln render university.yaml` i `python3 tools/spritekiln/export_building.py university`. Etapy budowy: `tools/generate_art.gd --only=university`. **Po `tools/generate_art.gd` przywróć `git checkout assets/buildings/university/base.*`.**
+- **Uczony** (kodem, `tools/generate_characters.gd --only=scholar`): czerwona toga, czarny biret; ruchy `work_read`, `work_write`, `work_rest`. Miejsca (`data/visuals/buildings/university.tres`): `desk_1`, `desk_2` przy pulpitach, `cloister_1`, `cloister_2` w krużganku.
+
