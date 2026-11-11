@@ -1148,6 +1148,8 @@ func _place_yards(sim: Simulation, at: Vector2i) -> void:
 	if _fields_seconds > 0:
 		sim.run_ticks(SimClock.seconds_to_ticks(_fields_seconds))
 	var view: ProvinceView = _game.get("view")
+	if _fields_seconds >= 0:
+		view.vines.refresh()
 	view.piles.update_yards(sim.province.buildings)
 
 

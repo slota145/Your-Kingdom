@@ -477,6 +477,32 @@ func _nature() -> void:
 				if v == 4:
 					_ellipse(vine, at + Vector2(0, 4), Vector2(1.5, 2), Color(0.36, 0.14, 0.38))
 		_save(vine, "nature/vines/%s.png" % ["pruned", "bud", "leaf", "full", "ripe"][v])
+	# Standing crops (owner 2026-11-11): wheat 64x64 with the tile centre at (32, 48), hops
+	# 64x112 at (32, 96) (final art: tools/spritekiln/gen_crops.py).
+	var wheat: Array[Color] = [Color(0.4, 0.62, 0.2), Color(0.42, 0.6, 0.22), Color(0.55, 0.62, 0.26),
+			Color(0.86, 0.72, 0.3)]
+	for w: int in 4:
+		var img := _blank(Vector2i(64, 64))
+		var h: int = [4, 9, 14, 14][w]
+		for i: int in 5:
+			for j: int in 4:
+				var at := Vector2(32, 48) + Vector2((i - j) * 7 - 3, (i + j) * 3.5 - 12)
+				_line(img, at, at - Vector2(0, h), wheat[w], 2)
+		_save(img, "nature/crops/grain/%s.png" % ["sprout", "young", "green", "ripe"][w])
+	for k: int in 5:
+		var img := _blank(Vector2i(64, 112))
+		var a := Vector2(14, 96)
+		var b := Vector2(50, 96)
+		for p: Vector2 in [a, b]:
+			_line(img, p, p - Vector2(0, 46), Color(0.45, 0.32, 0.18), 2)
+		_line(img, a - Vector2(0, 44), b - Vector2(0, 44), Color(0.55, 0.52, 0.46), 1)
+		var reach: int = [0, 6, 22, 40, 40][k]
+		for x: int in [24, 40]:
+			if reach > 0:
+				_line(img, Vector2(x, 96), Vector2(x, 96 - reach), Color(0.3, 0.52, 0.2), 4)
+			if k == 4:
+				_ellipse(img, Vector2(x, 70), Vector2(2, 2), Color(0.8, 0.85, 0.45))
+		_save(img, "nature/crops/hops/%s.png" % ["poles", "shoot", "half", "full", "ripe"][k])
 
 
 # --- Buildings -------------------------------------------------------------------------

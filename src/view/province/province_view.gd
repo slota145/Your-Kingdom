@@ -179,8 +179,10 @@ func on_sim_event(event: Dictionary) -> void:
 			_buildings_dirty = true   # a road beside houses can make a corner
 		&"field_changed", &"resource_depleted":
 			terrain.refresh_tile(event["tile"])
+			vines.refresh_tile(event["tile"])
 		&"good_harvested":
 			terrain.refresh_tile(event["tile"])
+			vines.refresh_tile(event["tile"])
 
 
 ## Screen position of the tile under a world-space point.
