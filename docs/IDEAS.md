@@ -211,3 +211,8 @@ Pomysły właściciela z rozmowy 2026-11-10, z oceną Claude. Ankieta 2026-11-10
 8. **Małe i duże koszary.**
    - Właściciel: małe, tanie koszary (łucznicy i włócznicy) od startu; duże, „zamkowe” na planie kwadratu 4×4 albo 5×5 zastępują obecne i działają jak one, ale trzeba je zbadać (tak samo jak ich jednostki).
    - Ocena (Claude): za. Rekomendacja 5×5 z dziedzińcem, na którym żołnierze ćwiczą (musztra już jest). Grafika ze SpriteKiln. Ma sens razem z badaniami.
+
+## Wyższe kłosy na żyznej ziemi (Claude, 2026-11-11)
+- Pomysł: na polach w prowincji z żyzną ziemią (E3, część 4) zboże, chmiel i krzewy rosną wyżej i gęściej, a ziemia jest ciemniejsza. Gracz widzi cechę od razu, bez zaglądania do panelu farmy.
+- Ocena (Claude): mała, przyjemna immersja. Logika już jest (żyzna ziemia daje +50% plonu), więc to tylko wygląd: drugi zestaw grafik faz wzrostu albo przyciemnienie i powiększenie obecnych. Najtaniej przy G3 (nowe grafiki ze SpriteKiln), żeby nie rysować pól dwa razy.
+- Kiedy: do decyzji właściciela, najlepiej razem z G3. W ankiecie części 4 (2026-11-11) właściciel wybrał na razie tylko linijkę w panelu.
