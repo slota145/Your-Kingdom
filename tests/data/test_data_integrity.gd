@@ -227,8 +227,9 @@ func test_every_building_is_in_the_build_menu() -> void:
 		for id: StringName in tab["buildings"]:
 			listed.append(id)
 	for building: BuildingDef in _registry.buildings():
-		assert_bool(listed.has(building.id)).override_failure_message(
-				"%s is in no build menu tab" % building.id).is_true()
+		# A retired building (the old barracks, E4 part 4) is in none.
+		assert_bool(listed.has(building.id) != building.retired).override_failure_message(
+				"%s is in no build menu tab (or retired and listed)" % building.id).is_true()
 
 
 ## Every resource node drawn on the map has its states in the art (an ore vein, M7).

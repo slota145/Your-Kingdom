@@ -107,6 +107,15 @@ const BUILDINGS := {
 	"university": [{"volumes": [
 		{"kind": "house", "rect": [0.2, 0.2, 3.0, 1.4], "h": 46.0, "rh": 32.0, "ridge": "x", "ends": ["gable", "gable"], "walls": "stone", "roof": "tile", "shutters": Color(0.3, 0.4, 0.6)}],
 		"props": []}],
+	# E4 part 4: the barracks' base art is from SpriteKiln (tools/spritekiln/gen_barracks.py);
+	# these looks give their construction sites (restore base.* after running this script).
+	"barracks_small": [{"volumes": [
+		{"kind": "house", "rect": [0.14, 0.14, 1.4, 1.86], "h": 36.0, "rh": 22.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "logs", "roof": "shingle", "shutters": Color(0.45, 0.3, 0.18)}],
+		"props": []}],
+	"barracks_large": [{"volumes": [
+		{"kind": "house", "rect": [0.1, 0.1, 4.9, 1.7], "h": 46.0, "rh": 30.0, "ridge": "x", "ends": ["gable", "gable"], "walls": "stone", "roof": "slate", "shutters": Color(0.4, 0.38, 0.36)},
+		{"kind": "house", "rect": [0.1, 1.7, 1.7, 4.9], "h": 46.0, "rh": 30.0, "ridge": "y", "ends": ["open", "gable"], "walls": "stone", "roof": "slate", "shutters": Color(0.4, 0.38, 0.36)}],
+		"props": []}],
 	"farm": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.86], "h": 42.0, "rh": 26.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2), "chimney": [0.55, 0.6]}],
 		"props": [["sheaves", 1.3, 1.78], ["cart_wheel", 0.55, 1.98]]}],

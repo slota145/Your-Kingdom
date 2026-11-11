@@ -843,6 +843,8 @@ func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 	var head := Agent.NO_TILE
 	var tail := Agent.NO_TILE
 	var leaving := building_entered_at(from)
+	if leaving == null:
+		leaving = Barracks.courtyard_at(self, from)   # a soldier in the ranks (E4 part 4)
 	if leaving != null:
 		var pair := _nearest_door(leaving, to)
 		if not pair.is_empty():
@@ -873,6 +875,8 @@ func find_road_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 	var start := from
 	var head := Agent.NO_TILE
 	var leaving := building_entered_at(from)
+	if leaving == null:
+		leaving = Barracks.courtyard_at(self, from)   # a soldier in the ranks (E4 part 4)
 	if leaving != null:
 		var best_d := 1 << 30
 		for pair: Array in door_pairs(leaving):

@@ -4710,3 +4710,28 @@ msgstr "Take the charter back"
 
 msgid "ui.charter.hint"
 msgstr "Charter: twice the fields, pens or hives, but the building employs a second worker. Taking it back keeps the fields and sends the second worker home."
+
+# --- E4 part 4: small and large barracks ---
+msgid "building.barracks_small.name"
+msgstr "Small barracks"
+
+msgid "building.barracks_small.desc"
+msgstr "A wooden guardhouse: 10 beds. Recruit archers and spearmen here. Soldiers eat from the stores and rest inside."
+
+msgid "building.barracks_large.name"
+msgstr "Large barracks"
+
+msgid "building.barracks_large.desc"
+msgstr "Stone barracks with a courtyard: 30 beds and every kind of soldier. Soldiers drill in the courtyard."
+
+msgid "research.large_barracks.name"
+msgstr "Large barracks"
+
+msgid "research.large_barracks.desc"
+msgstr "Stone barracks with a courtyard: 30 beds, every kind of soldier and drill in the courtyard."
+
+msgid "ui.command_error.not_in_these_barracks"
+msgstr "These barracks train only archers and spearmen."
+
+msgid "ui.command_error.retired"
+msgstr "These barracks are no longer built."

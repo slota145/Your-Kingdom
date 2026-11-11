@@ -40,6 +40,8 @@ func apply(sim: Simulation) -> void:
 static func research_error(province: ProvinceSim, def: BuildingDef) -> StringName:
 	if def == null:
 		return &""
+	if def.retired and not province.research.open:
+		return &"retired"   # E4 part 4: the old barracks (the AI and tests may still build them)
 	if not province.research.allows_building(province.data, def.id):
 		return &"needs_research"
 	if def.needs_house_level > 1 and not province.has_house_level(def.needs_house_level):

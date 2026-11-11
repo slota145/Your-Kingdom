@@ -4750,3 +4750,28 @@ msgstr "Cofnij nadanie"
 
 msgid "ui.charter.hint"
 msgstr "Nadanie: 2 razy więcej pól, zagród albo uli, ale budynek zatrudnia drugiego pracownika. Cofnięcie zostawia pola, a drugi pracownik wraca do domu."
+
+# --- E4 part 4: small and large barracks ---
+msgid "building.barracks_small.name"
+msgstr "Małe koszary"
+
+msgid "building.barracks_small.desc"
+msgstr "Drewniana strażnica: 10 łóżek. Tu rekrutujesz łuczników i włóczników. Żołnierze jedzą z magazynu i odpoczywają w środku."
+
+msgid "building.barracks_large.name"
+msgstr "Duże koszary"
+
+msgid "building.barracks_large.desc"
+msgstr "Kamienne koszary z dziedzińcem: 30 łóżek i wszystkie rodzaje wojska. Żołnierze ćwiczą na dziedzińcu."
+
+msgid "research.large_barracks.name"
+msgstr "Duże koszary"
+
+msgid "research.large_barracks.desc"
+msgstr "Kamienne koszary z dziedzińcem: 30 łóżek, wszystkie rodzaje wojska i musztra na dziedzińcu."
+
+msgid "ui.command_error.not_in_these_barracks"
+msgstr "Te koszary szkolą tylko łuczników i włóczników."
+
+msgid "ui.command_error.retired"
+msgstr "Tych koszar już się nie stawia."

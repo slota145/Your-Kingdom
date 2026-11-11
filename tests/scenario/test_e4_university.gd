@@ -116,7 +116,8 @@ func test_the_charter_doubles_the_fields_and_takes_a_second_worker() -> void:
 func test_v39_saves_get_the_new_research() -> void:
 	var old_all := {"research": {"open": false, "done": SaveMigrations.V39_RESEARCH.duplicate(), "current": "",
 			"progress": 0.0, "queue": []}}
-	var everything := ResearchState.from_dict(SaveMigrations.migrate_v39_to_v40(old_all)["research"])
+	var everything := ResearchState.from_dict(SaveMigrations.migrate_v40_to_v41(
+			SaveMigrations.migrate_v39_to_v40(old_all))["research"])
 	for def: ResearchDef in SimFixture.registry().researches():
 		assert_bool(everything.is_done(def.id)).override_failure_message("missing %s" % def.id).is_true()
 	var started := {"research": {"open": false, "done": ["butchery"], "current": "", "progress": 0.0, "queue": []}}

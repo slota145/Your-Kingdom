@@ -164,6 +164,18 @@ const PEN_ANIMALS := 2
 @export var storage_accepts: Array[StringName] = []
 ## Barracks (M7): beds for soldiers; > 0 makes the building a barracks.
 @export_range(0, 99) var soldier_beds: int = 0
+## Barracks (E4 part 4): the units recruited and housed here; empty = every unit (the small
+## barracks: archers and spearmen only).
+@export var soldier_units: Array[StringName] = []
+## Barracks: soldiers drilling in the ranks at a time (the rest rest inside); 0 = nobody drills
+## (the small barracks, owner's survey 2026-11-11).
+@export_range(0, 64) var parade_slots: int = 16
+## Barracks: footprint tiles (as drawn) of a courtyard inside the building where the ranks drill
+## (the large barracks, E4 part 4); empty = the open ground in front of the door.
+@export var parade_tiles: Array[Vector2i] = []
+## No longer built (E4 part 4: the old 3x3 barracks): left out of the build menu, the player
+## cannot place it; the ones standing in old saves and towns work on.
+@export var retired: bool = false
 ## Fortification (M7 part 2): &"gatehouse" (a passage through its middle column, along its
 ## doors, open to its owner) or &"tower". Its tiles join stone walls and carry a wall-walk.
 ## &"palisade_gate" (M7 part 3, owner's request): a wooden gate in a palisade, a passage like
@@ -183,6 +195,11 @@ const PEN_ANIMALS := 2
 ## The player builds it only when this building stands finished in the province (E4 part 3: the
 ## university after a school); empty = always.
 @export var needs_building: StringName = &""
+
+
+## Whether a barracks of this kind recruits and houses [param unit] (E4 part 4).
+func houses_unit(unit: StringName) -> bool:
+	return soldier_beds > 0 and (soldier_units.is_empty() or soldier_units.has(unit))
 
 
 func is_fort() -> bool:

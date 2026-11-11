@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="BuildingVisualDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/visuals/building_visual_def.gd" id="1_vis"]
+
+[resource]
+script = ExtResource("1_vis")
+art_id = "barracks_large"
+open_ground = true
+open_tiles = Array[Vector2i]([Vector2i(2, 2), Vector2i(3, 2), Vector2i(4, 2), Vector2i(2, 3), Vector2i(3, 3), Vector2i(4, 3), Vector2i(2, 4), Vector2i(4, 4)])

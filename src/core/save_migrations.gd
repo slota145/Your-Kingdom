@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 40
+const CURRENT_VERSION := 41
 ## Hive tiles an old apiary gets on its first second after loading a save before v34.
 const AUTO_HIVES := 4
 ## Horses one pen tile of a stud farm holds (data/buildings/stud_farm.tres, pen_animals).
@@ -136,6 +136,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 40:
 		result = migrate_v39_to_v40(result)
 		version = 40
+	if version < 41:
+		result = migrate_v40_to_v41(result)
+		version = 41
 	return result
 
 
@@ -423,6 +426,24 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
 ## target, the Invasion from the sea with the clock of its waves). A game from before is a
 ## Colonization game: its settings name the scenario and get the default gold target.
+## v41 (E4 part 4): the small and large barracks; the old 3x3 barracks are no longer built (those
+## standing work on). A game that had all research (an older one) gets "Large barracks" too; a
+## game started with research studies it.
+static func migrate_v40_to_v41(state: Dictionary) -> Dictionary:
+	var research: Dictionary = state.get("research", {})
+	if research.is_empty() or bool(research.get("open", false)):
+		return state
+	var done: Array = research.get("done", [])
+	for id: String in V39_RESEARCH + V40_RESEARCH:
+		if not done.has(id):
+			return state
+	if not done.has("large_barracks"):
+		done.append("large_barracks")
+		done.sort()
+	research["done"] = done
+	return state
+
+
 ## v40 (E4 part 3): the university's research, the stone wall behind "Defensive masonry" and
 ## the charter of farms and herds (a building's "charter", optional). A game that had all research
 ## (an older one) gets the new ones too; a game started with research keeps its stone walls

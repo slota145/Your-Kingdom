@@ -141,6 +141,8 @@ func _refresh_barracks(province: ProvinceSim, b: BuildingState) -> void:
 				command_requested.emit(RecruitCommand.new(_building_id, unit_id)))
 			_recruit_row.add_child(button)
 			_recruit_buttons[unit.id] = button
+		# The small barracks train archers and spearmen only (E4 part 4).
+		button.visible = b.def.houses_unit(unit.id)
 		var why := Barracks.recruit_error(province, b, unit)
 		button.disabled = why != &""
 		var tip := PackedStringArray([tr(unit.desc_key()),

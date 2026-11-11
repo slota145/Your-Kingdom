@@ -19,7 +19,8 @@ const FOOD: Array[StringName] = [&"bread", &"fish", &"meat", &"apples"]
 const PANTRY_UNITS := 6
 ## Food a soldier eats per minute (like a resident's bread, data/needs/bread.tres).
 const FOOD_PER_MINUTE := 0.06
-## Soldiers drilling in the ranks in front of a barracks; the rest rest inside.
+## Soldiers drilling in the ranks in front of the old barracks; the rest rest inside. Each kind
+## of barracks has its own number (BuildingDef.parade_slots, E4 part 4).
 const PARADE_SLOTS := 16
 ## Soldiers per parade tile (side by side in a rank).
 const PER_TILE := 2
@@ -33,7 +34,7 @@ const RECHECK_TICKS := 20
 ## How often a recruit missing his gear looks again (2 s).
 const WAIT_TICKS := 20
 
-## Barracks id -> [blocking version, parade posts]: positions in grid space.
+## Barracks id -> [blocking version, parade posts, origin, orientation]: positions in grid space.
 static var _posts: Dictionary[int, Array] = {}
 
 
@@ -129,6 +130,8 @@ static func recruit_error(province: ProvinceSim, barracks: BuildingState, unit: 
 		return &"unknown_unit"
 	if unit.siege != &"":
 		return &"built_in_workshop"
+	if not barracks.def.houses_unit(unit.id):
+		return &"not_in_these_barracks"   # E4 part 4: the small barracks
 	if not province.research.allows_unit(province.data, unit.id):
 		return &"needs_research"   # E4 part 3
 	if not barracks.is_complete():
@@ -247,26 +250,33 @@ static func is_military(province: ProvinceSim, agent: Agent) -> bool:
 ## Where the soldier at [param index] of the barracks' soldiers stands: a position on the
 ## parade ground (grid space), or Agent.NO_TILE's centre-less marker (-1, -1) to rest inside.
 static func post_of(province: ProvinceSim, barracks: BuildingState, index: int) -> Vector2:
-	if index < 0 or index >= PARADE_SLOTS:
+	if index < 0 or index >= barracks.def.parade_slots:
 		return Vector2(-1, -1)
 	var posts := parade_posts(province, barracks)
 	return posts[index] if index < posts.size() else Vector2(-1, -1)
 
 
-## The parade ground of [param barracks]: up to PARADE_SLOTS places, PER_TILE side by side on
-## each free walkable tile, nearest the door first (a breadth-first walk from the door).
+## The parade ground of [param barracks]: up to BuildingDef.parade_slots places, PER_TILE side
+## by side on each free walkable tile, nearest the door first (a breadth-first walk from the
+## door); in a barracks with a courtyard (E4 part 4) on the courtyard's tiles.
 static func parade_posts(province: ProvinceSim, barracks: BuildingState) -> Array:
 	var version := province.blocking_version()
 	var cached: Array = _posts.get(barracks.id, [])
-	if not cached.is_empty() and int(cached[0]) == version:
+	if not cached.is_empty() and int(cached[0]) == version and cached[2] == barracks.origin \
+			and int(cached[3]) == barracks.orientation:
 		return cached[1]
 	var posts: Array = []
+	var slots := barracks.def.parade_slots
 	var start := province.door_tile(barracks)
-	if start != Agent.NO_TILE:
+	if not barracks.def.parade_tiles.is_empty():
+		for tile: Vector2i in courtyard_tiles(barracks):
+			posts.append(Vector2(tile) + Vector2(0.3, 0.7))
+			posts.append(Vector2(tile) + Vector2(0.7, 0.3))
+	elif start != Agent.NO_TILE and slots > 0:
 		var seen: Dictionary[Vector2i, int] = {start: 0}
 		var queue: Array[Vector2i] = [start]
 		var head := 0
-		while head < queue.size() and posts.size() < PARADE_SLOTS:
+		while head < queue.size() and posts.size() < slots:
 			var tile := queue[head]
 			head += 1
 			if _parade_tile(province, tile):
@@ -281,9 +291,42 @@ static func parade_posts(province: ProvinceSim, barracks: BuildingState) -> Arra
 					continue
 				seen[next] = seen[tile] + 1
 				queue.append(next)
-	posts.resize(mini(posts.size(), PARADE_SLOTS))
-	_posts[barracks.id] = [version, posts]
+	posts.resize(mini(posts.size(), slots))
+	_posts[barracks.id] = [version, posts, barracks.origin, barracks.orientation]
 	return posts
+
+
+## The courtyard tiles of [param barracks] in grid space (E4 part 4), nearest the entrance first
+## (the front ranks fill first); empty for a barracks without one.
+static func courtyard_tiles(barracks: BuildingState) -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for tile: Vector2i in barracks.def.parade_tiles:
+		tiles.append(barracks.origin + barracks.def.turned(tile, barracks.orientation))
+	var door := barracks.entrance_tile()
+	tiles.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		var da := (a - door).length_squared()
+		var db := (b - door).length_squared()
+		return da < db if da != db else (a.x < b.x if a.x != b.x else a.y < b.y))
+	return tiles
+
+
+## The barracks whose courtyard holds [param tile], or null (E4 part 4).
+static func courtyard_at(province: ProvinceSim, tile: Vector2i) -> BuildingState:
+	if not province.grid.is_inside(tile):
+		return null
+	var building := province.buildings.get_building(province.grid.occupant(tile))
+	if building == null or building.def.parade_tiles.is_empty():
+		return null
+	return building if courtyard_tiles(building).has(tile) else null
+
+
+## The first barracks of [param province] with a free bed that houses [param unit], or null.
+static func with_bed_for(province: ProvinceSim, unit: StringName) -> BuildingState:
+	for building: BuildingState in province.buildings.all():
+		if building.def.houses_unit(unit) and building.is_complete() \
+				and beds_taken(building) < building.def.soldier_beds:
+			return building
+	return null
 
 
 ## Open ground for drilling: walkable, no building, road, field or pile on it.

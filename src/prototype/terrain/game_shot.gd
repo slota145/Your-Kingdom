@@ -750,7 +750,7 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	if _m7 == "ballista":
 		_place_ballistas(sim, at)
 		return
-	if _m7 == "army" or _m7 == "army2" or _m7 == "army3":
+	if _m7 == "army" or _m7 == "army2" or _m7 == "army3" or _m7 == "barracks":
 		_place_army(sim, at)
 		return
 	if _m7 == "siege":
@@ -831,7 +831,15 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 
 ## A barracks with 16 soldiers in the ranks and an armoury beside it (--m7=army).
 func _place_army(sim: Simulation, at: Vector2i) -> void:
-	var barracks := _place_near(sim, &"barracks", at)
+	# --m7=barracks (E4 part 4): the large barracks with its ranks in the courtyard and the small
+	# barracks beside it (its soldiers rest inside).
+	var large := _m7 == "barracks"
+	var barracks := _place_near(sim, &"barracks_large" if large else &"barracks", at)
+	if large:
+		var small := _place_near(sim, &"barracks_small", at + Vector2i(6, 1))
+		if small != null:
+			print("small barracks at ", small.origin, " turned ", small.orientation)
+		print("large barracks at ", barracks.origin if barracks != null else Vector2i(-1, -1))
 	var armoury := _place_near(sim, &"armoury", at + Vector2i(-5, 0))
 	if barracks == null:
 		return
@@ -845,8 +853,8 @@ func _place_army(sim: Simulation, at: Vector2i) -> void:
 	# --m7=army3 (soldier rework, batch 2): the riders and the ladderman beside foot soldiers.
 	if _m7 == "army3":
 		kinds = [&"knight", &"light_cavalry", &"ladderman", &"halberdier"]
-	for k: int in 16:
-		var unit_id: StringName = kinds[k / 4]
+	for k: int in (20 if large else 16):
+		var unit_id: StringName = kinds[(k / 4) % kinds.size()]
 		var unit := sim.data.get_unit(unit_id)
 		var agent := sim.province.spawn_agent(unit_id, barracks.entrance_tile())
 		agent.home_id = barracks.id

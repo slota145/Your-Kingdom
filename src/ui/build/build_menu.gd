@@ -23,7 +23,7 @@ const TABS: Array[Dictionary] = [
 	{"id": &"harbour", "buildings": [&"tar_kiln", &"shipyard", &"large_shipyard", &"fishing_wharf", &"port", &"mooring",
 		&"bollard", &"crane", &"port_store", &"port_warehouse_small", &"port_warehouse", &"docker_hut", &"docker_house"]},
 	{"id": &"military", "buildings": [&"charcoal_burner", &"mine", &"deep_mine", &"smelter", &"blacksmith",
-		&"armourer", &"bowyer", &"stud_farm", &"armoury", &"barracks"]},
+		&"armourer", &"bowyer", &"stud_farm", &"armoury", &"barracks_small", &"barracks_large"]},
 	{"id": &"defence", "buildings": [&"gatehouse", &"tower", &"palisade_gate", &"siege_workshop"],
 		"tools": [&"palisade", &"stone_wall", &"stairs"]},
 ]
