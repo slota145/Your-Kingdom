@@ -10,7 +10,7 @@ extends Node2D
 ## Soldiers (M7 part 2, as in Stronghold): left click or drag a box selects them, right click
 ## sends them (onto a wall when clicked on its crown) or attacks the enemy under the cursor,
 ## Ctrl+1..9 remembers the selection as a group, 1..9 selects the group again. F7 sends a
-## bandit raid now.
+## bandit raid now. F12 switches the developer mode (E4 part 1).
 
 const START_MAP := &"riverlands"
 
@@ -58,6 +58,8 @@ var _stocks: KingdomStockWindow
 var _routes: RoutesWindow
 var _world_map: WorldMapScreen
 var _notes: Notifications
+## "Developer mode" in the corner while it is on (E4 part 1; F12 switches it).
+var _dev_label: Label
 var _tool: Dictionary = {}
 var _hover: Vector2i = Vector2i(-999, -999)
 var _drag_tiles: Array[Vector2i] = []
@@ -139,6 +141,7 @@ func _start(simulation: Simulation) -> void:
 	_top.treasury = sim.treasury
 	_building_panel.treasury = sim.treasury
 	_building_panel.sim = sim
+	_dev_label.visible = sim.dev_mode
 	Game.start(sim)
 	# A battle in the field still waiting for the player's choice (a loaded game, M8 part 2).
 	for battle: FieldBattle in sim.world.battles.values():
@@ -340,6 +343,17 @@ func _build_ui() -> void:
 	_report_window.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_report_window.visible = false
 	top_root.add_child(_report_window)
+	_dev_label = UiKit.title("ui.dev_mode.on")
+	_dev_label.add_theme_color_override(&"font_color", Color(1.0, 0.45, 0.3))
+	_dev_label.add_theme_color_override(&"font_outline_color", Color.BLACK)
+	_dev_label.add_theme_constant_override(&"outline_size", 4)
+	_dev_label.tooltip_text = "ui.dev_mode.hint"
+	_dev_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_dev_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE, 12)
+	_dev_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_dev_label.position.y = 40
+	_dev_label.visible = false
+	top_root.add_child(_dev_label)
 	_field_bar = PanelContainer.new()
 	_field_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_field_bar.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -609,6 +623,9 @@ func _on_sim_event(event: Dictionary) -> void:
 					if record else tr("ui.result.endless_record") % [best[0], best[1]])
 		_result.show_result(event["type"] == &"game_won", StringName(String(event.get("victory", ""))),
 				StringName(String(event.get("winner", ""))), detail)
+	if event["type"] == &"dev_mode_changed":
+		_dev_label.visible = bool(event["on"])
+		_notes.push(tr("ui.note.dev_mode_on" if bool(event["on"]) else "ui.note.dev_mode_off"))
 	_on_battle_event(event)
 	_note_world_event(event)
 	view.on_sim_event(event)
@@ -890,6 +907,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_F9: _quick_load()
 			KEY_F11: _toggle_pseudolocalization()
 			KEY_F7: _execute(StartRaidCommand.new())   # a bandit raid now (M7 part 2, to try the defence)
+			KEY_F12: _execute(SetDevModeCommand.new(not sim.dev_mode))   # the developer mode (E4 part 1)
 
 
 func _on_left_press() -> void:

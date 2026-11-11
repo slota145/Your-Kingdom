@@ -55,6 +55,10 @@ var jobs: JobBoard = JobBoard.new()
 var paths: PathRequestQueue = PathRequestQueue.new()
 ## The kingdom's gold. Owned by the Simulation (it is global), shared here for convenience.
 var treasury: Treasury = Treasury.new()
+## Developer mode (ROADMAP E4 part 1): every construction and paving site is done at once
+## without materials, and the start protection never ends. Set by the Simulation on the
+## player's provinces (Simulation.bind_dev_mode); not saved here.
+var dev_mode: bool = false
 ## Derived from buildings and the map; not saved.
 var coverage: ServiceCoverage = ServiceCoverage.new()
 
@@ -162,6 +166,8 @@ func _init(registry: DataRegistry, size: Vector2i, event_queue: SimEvents, entit
 
 
 func step() -> void:
+	if dev_mode:
+		finish_works_now()
 	jobs.update(self)
 	for agent: Agent in agents.all():
 		# Someone walking to the next step has nothing to decide (TaskRunner.tick_agent would
@@ -234,7 +240,7 @@ func start_grace(now: int) -> void:
 
 
 func in_grace() -> bool:
-	return tick < grace_until
+	return dev_mode or tick < grace_until
 
 
 ## Seconds of start protection left (0 when over).
@@ -1519,6 +1525,39 @@ func pave_next(paving_site: PavingSite) -> void:
 	paving_site.stock.remove(paving_site.good(), paving_site.per_tile())
 	ledger.used(paving_site.good(), paving_site.per_tile(), tick)
 	paving_site.work_left = paving_site.tile_ticks()
+	_lay_paving_tile(paving_site, tile)
+	if paving_site.tiles.is_empty():
+		_close_paving(paving_site, tile)
+
+
+## Developer mode (E4 part 1): every construction, upgrade, paving, wall, bridge and quay site
+## is done at once, without materials or builders. Materials already brought stay on the ground.
+func finish_works_now() -> void:
+	if not sites.is_empty():
+		var ids_now: Array[int] = []
+		ids_now.assign(sites.keys())
+		ids_now.sort()
+		for id: int in ids_now:
+			var site := sites.get(id) as ConstructionSite
+			if site != null:
+				Construction.finish_now(self, site)
+	if not paving.is_empty():
+		var paving_ids: Array[int] = []
+		paving_ids.assign(paving.keys())
+		paving_ids.sort()
+		for id: int in paving_ids:
+			var paving_site := paving.get(id) as PavingSite
+			if paving_site == null:
+				continue
+			var last := Agent.NO_TILE
+			while not paving_site.tiles.is_empty():
+				last = paving_site.tiles.pop_front() as Vector2i
+				_lay_paving_tile(paving_site, last)
+			_close_paving(paving_site, last)
+
+
+## Lays [param tile] of [param paving_site]: a wall, a bridge, a quay or cobbles.
+func _lay_paving_tile(paving_site: PavingSite, tile: Vector2i) -> void:
 	if paving_site.is_wall():
 		lay_wall(tile, paving_site.wall_value())
 	elif paving_site.is_bridge():
@@ -1539,8 +1578,6 @@ func pave_next(paving_site: PavingSite) -> void:
 		grid.set_paved(tile, true)
 		refresh_tile(tile)
 		events.emit(&"road_changed", {"tile": tile, "road": true, "paved": true})
-	if paving_site.tiles.is_empty():
-		_close_paving(paving_site, tile)
 
 
 ## Once a second: each paving or quay site asks for exactly the material it still lacks. A

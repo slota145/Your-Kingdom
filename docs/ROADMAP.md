@@ -1511,7 +1511,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej; plan czeka na akceptację startu.** Poprawki z ocen E3 mają pierwszeństwo.
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); część 1 gotowa na gałęzi roboczej, czeka na ocenę („Część 1, stan”).**
 
 **Decyzje z ankiet 2026-11-11:**
 - **Szkoła po pierwszym domu mieszczan, uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
@@ -1537,8 +1537,20 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 4. **Małe i duże koszary.** Małe 2×2 od startu (łucznicy, włócznicy), duże 5×5 z dziedzińcem i musztrą (ze SpriteKiln) za badaniem; dzisiejsze koszary znikają z menu budowy.
 5. **Reszta świata nadąża.** Władcy (plan rozwoju ze szkołą i uniwersytetem, kolejność badań, złoto), osady neutralne i miasta władców na starcie z badaniami tego, co już mają, automatyczny gracz, scenariusze M8; pomiary automatycznym graczem (cel: patrycjusze i wojsko w podobnym czasie co dziś, najwyżej kilka minut później); testy szybkie i długie, UI w PL i EN.
 
+**Część 1, decyzje z ankiety 2026-11-11 (wszystkie według rekomendacji):**
+- **Całe budowanie od razu i za darmo:** budynki, drogi, bruk, mury, mosty, nabrzeża, pola i awanse domów. Okręty i żołnierze po staremu (broń, złoto i czas), żeby dało się sprawdzać łańcuchy wojska.
+- **Wieczna ochrona mieszkańców:** jak ochrona na starcie gry, ale bez końca (zadowolenie tylko rośnie, nikt nie odchodzi, braki nie szkodzą). Domy jedzą i awansują po staremu, gdy mają towary.
+- **Pełny skarbiec, F12 wł/wył:** skarbiec ma zawsze co najmniej 100 000 złota; F12 przełącza tryb w każdej grze, także wczytanej; tryb zapisuje się z grą. Wygrana złotem (Kupieckie wyspy) w trybie deweloperskim się nie liczy.
+
+**Część 1, stan (2026-11-11):** gotowa na gałęzi roboczej, czeka na ocenę.
+- Pole „Tryb deweloperski” w oknie „Nowa gra” (z podpowiedzią), F12 w grze, czerwony napis „Tryb deweloperski” w prawym górnym rogu i powiadomienie przy przełączeniu. Teksty PL i EN.
+- Tylko prowincje gracza: władcy i osady neutralne budują i płacą po staremu (test).
+- Otwarte budowy (także sprzed włączenia trybu i automatyczne awanse domów) kończą się w następnym kroku gry; materiały już przyniesione zostają na ziemi.
+- **Zapis v38:** tryb deweloperski zapisuje się z grą; starsze gry są zwykłe (test migracji).
+- Testy `tests/scenario/test_e4_dev_mode.gd`; zrzut `game_shot.tscn -- --shot=<plik> --dev` (menu: `menu_shot.tscn -- --out=<plik> --open=new_game_panel`).
+
 **Kryteria ukończenia:**
-- [ ] Tryb deweloperski działa z menu nowej gry (część 1).
+- [x] Tryb deweloperski działa z menu nowej gry (część 1).
 - [ ] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).
 - [ ] Uniwersytet bada drugą połowę drzewka (część 3).
 - [ ] Małe koszary od startu, duże 5×5 za badaniem; stare koszary działają (część 4).

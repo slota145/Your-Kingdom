@@ -65,6 +65,11 @@ static func finish_phase(province: ProvinceSim, site: ConstructionSite) -> void:
 	_close(province, site, true)
 
 
+## Developer mode (E4 part 1): [param site] is done at once, without materials or builders.
+static func finish_now(province: ProvinceSim, site: ConstructionSite) -> void:
+	_close(province, site, true)
+
+
 ## Removes a site; [param finished] completes the building or the upgrade.
 static func _close(province: ProvinceSim, site: ConstructionSite, finished: bool) -> void:
 	var building := province.buildings.get_building(site.building_id)

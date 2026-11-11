@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 37
+const CURRENT_VERSION := 38
 ## Hive tiles an old apiary gets on its first second after loading a save before v34.
 const AUTO_HIVES := 4
 ## Horses one pen tile of a stud farm holds (data/buildings/stud_farm.tres, pen_animals).
@@ -127,6 +127,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 37:
 		result = migrate_v36_to_v37(result)
 		version = 37
+	if version < 38:
+		result = migrate_v37_to_v38(result)
+		version = 38
 	return result
 
 
@@ -414,6 +417,13 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
 ## target, the Invasion from the sea with the clock of its waves). A game from before is a
 ## Colonization game: its settings name the scenario and get the default gold target.
+## v38 (E4 part 1): the developer mode is saved with the game ("dev"); an older game is a
+## normal one.
+static func migrate_v37_to_v38(state: Dictionary) -> Dictionary:
+	state["dev"] = false
+	return state
+
+
 ## v37 (E2 part 2, hunting): a province keeps its wild herds under "wild" (once its woods were
 ## filled). An older game has none: its woods fill on the first second after loading, like a
 ## new map's. A hunter's task keeps the herd it stalks in its blackboard. Nothing to change.

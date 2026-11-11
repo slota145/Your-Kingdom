@@ -1,7 +1,7 @@
 class_name PlaceBuildingCommand
 extends Command
 ## Opens a construction site for a building (GDD §5.1). [member instant] skips construction
-## (map start, tests, prototypes).
+## (map start, tests, prototypes), and so does the developer mode (E4 part 1).
 
 var def_id: StringName
 var origin: Vector2i
@@ -24,13 +24,18 @@ func _init(building_id: StringName, at: Vector2i, finished: bool = false, turned
 func validate(sim: Simulation) -> StringName:
 	var def := sim.data.get_building(def_id)
 	var error := sim.province.placement_error(def, origin, orientation)
-	if error == &"" and not instant and not sim.treasury.can_pay(def.gold_cost):
+	if error == &"" and not _instant(sim) and not sim.treasury.can_pay(def.gold_cost):
 		return &"not_enough_gold"
 	return error
 
 
 func apply(sim: Simulation) -> void:
-	sim.province.add_building(sim.data.get_building(def_id), origin, instant, orientation, look)
+	sim.province.add_building(sim.data.get_building(def_id), origin, _instant(sim), orientation, look)
+
+
+## Instant also in the developer mode in the player's province (E4 part 1): free, no site.
+func _instant(sim: Simulation) -> bool:
+	return instant or sim.province.dev_mode
 
 
 func get_name() -> StringName:
