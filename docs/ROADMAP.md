@@ -1420,6 +1420,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Widok `WildLayer`: zwierzęta kręcą się wokół miejsca stada (stoją, skubią trawę albo ryją), idą za stadem, a po strzale biegną; strzała leci łukiem.
 - Grafiki: sarna i dzik ze SpriteKiln (`art/specs/props/{deer,boar}`, 8 kierunków; sarna `idle`, `walk`, `graze`, dzik `idle`, `walk`, `root`; `export_animal.py`), chata myśliwego (`gen_farmsteads.py`: ciemne bale, dach z darni, poroże, skóra na ramie, zdobycz na haku, drwa), ikona zdobyczy (`gen_icons.py`), tusza na plecach (`goods/carried/sack/game.png`), myśliwy rysowany kodem (kaptur, łuk, kołczan, nóż; celowanie jak łucznik).
 - **Zapis v37**: stada w prowincji; starsze gry dostają je w pierwszej sekundzie po wczytaniu.
+- Koszt: stada liczą się też w prowincjach władców (tryb uproszczony). Test władców 90 minut: 1,57 ms na tick, test wojny: 1,85 ms (osobno; limit 4 ms). Przy równoległym biegu wszystkich długich testów pomiar potrafi przekroczyć 4 ms (4,02–4,24), bo testy dzielą procesor; położenie budynków stada zapamiętują i odświeżają tylko po zmianie budynków. Testy szybkie (615) i długie przechodzą (pomiary czasu osobno).
 - Zrzut: `game_shot.tscn -- --shot=<plik> --map=lakeland --tile=26,56 --zoom=3 --yards=hunter_lodge --fields_seconds=3|22` (kamera na najbliższe stado), stada mapy `src/prototype/e2/herd_probe.gd -- --map=lakeland`.
 
 **DoD:**

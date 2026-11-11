@@ -68,6 +68,9 @@ var spawn_at: int = 0
 var populated: bool = false
 ## Forest and meadow tiles of the map, counted once (derived, not saved).
 var _homes: int = -1
+## Centres of the province's buildings, refreshed when they change (derived, not saved).
+var _centres: PackedInt32Array = PackedInt32Array()
+var _centres_version: int = -1
 
 
 func all() -> Array[Herd]:
@@ -277,20 +280,35 @@ static func _is_home(province: ProvinceSim, tile: Vector2i) -> bool:
 
 
 func _near_buildings(province: ProvinceSim, tile: Vector2i, radius: int) -> bool:
-	var nearest := _nearest_building(province, tile)
-	return nearest != Agent.NO_TILE and maxi(absi(nearest.x - tile.x), absi(nearest.y - tile.y)) <= radius
+	_refresh_centres(province)
+	for i: int in range(0, _centres.size(), 2):
+		if absi(_centres[i] - tile.x) <= radius and absi(_centres[i + 1] - tile.y) <= radius:
+			return true
+	return false
 
 
-static func _nearest_building(province: ProvinceSim, tile: Vector2i) -> Vector2i:
+func _nearest_building(province: ProvinceSim, tile: Vector2i) -> Vector2i:
+	_refresh_centres(province)
 	var best := Agent.NO_TILE
 	var best_d := 1 << 30
-	for building: BuildingState in province.buildings.all():
-		var c := building.origin + building.def.footprint / 2
+	for i: int in range(0, _centres.size(), 2):
+		var c := Vector2i(_centres[i], _centres[i + 1])
 		var d := (c - tile).length_squared()
 		if d < best_d:
 			best = c
 			best_d = d
 	return best
+
+
+func _refresh_centres(province: ProvinceSim) -> void:
+	if _centres_version == province.buildings.version:
+		return
+	_centres_version = province.buildings.version
+	_centres.clear()
+	for building: BuildingState in province.buildings.all():
+		var c := building.origin + building.def.footprint / 2
+		_centres.append(c.x)
+		_centres.append(c.y)
 
 
 static func _hash(a: int, b: int, c: int) -> int:
