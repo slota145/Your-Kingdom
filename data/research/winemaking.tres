@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ResearchDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/research_def.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+tier = 3
+row = 1
+gold_cost = 400
+time = 300.0
+requires = Array[StringName]([&"beekeeping"])
+buildings = Array[StringName]([&"vineyard", &"wine_press"])
+id = &"winemaking"

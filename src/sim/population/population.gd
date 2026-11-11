@@ -497,11 +497,17 @@ static func average_work_speed(province: ProvinceSim) -> float:
 	return sum / residents if residents > 0 else 1.0
 
 
-## [method work_speed_of] for [param agent].
+## [method work_speed_of] for [param agent], with the owner's research for his workplace (E4
+## part 2: forestry, fishing).
 static func work_speed(province: ProvinceSim, agent: Agent) -> float:
+	var speed := 1.0
+	if agent.workplace_id != 0:
+		var workplace := province.buildings.get_building(agent.workplace_id)
+		if workplace != null:
+			speed = province.research.work_speed(province.data, workplace.def.id)
 	if agent.home_id == 0:
-		return 1.0
-	return work_speed_of(province.buildings.get_building(agent.home_id))
+		return speed
+	return speed * work_speed_of(province.buildings.get_building(agent.home_id))
 
 
 static func _immigrate(province: ProvinceSim) -> void:

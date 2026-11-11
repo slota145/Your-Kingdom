@@ -1511,7 +1511,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); część 1 scalona do `main` 2026-11-11 na prośbę właściciela, czeka na ocenę („Część 1, stan”).**
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę („Część 1, stan”, „Część 2, stan”).**
 
 **Decyzje z ankiet 2026-11-11:**
 - **Szkoła po pierwszym domu mieszczan, uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
@@ -1549,9 +1549,30 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Zapis v38:** tryb deweloperski zapisuje się z grą; starsze gry są zwykłe (test migracji).
 - Testy `tests/scenario/test_e4_dev_mode.gd`; zrzut `game_shot.tscn -- --shot=<plik> --dev` (menu: `menu_shot.tscn -- --out=<plik> --open=new_game_panel`).
 
+**Część 2, decyzje z ankiet 2026-11-11 (szkoła i badania):**
+- **Koszt i czas „średnio”, stopniowane (pomysł właściciela):** badania podstawowe tańsze i krótsze, zaawansowane droższe i dłuższe. Trzy stopnie: ok. 2 min i 150 złota, ok. 3,5 min i 250 złota, ok. 5 min i 400 złota (czas z jednym nauczycielem; liczby do pomiarów w części 5).
+- **Dowolna kolejność z kolejką:** jedno badanie naraz w królestwie, kolejka następnych; złoto płaci się przy starcie każdego. Kilka badań wymaga wcześniejszego (strzałki w drzewku).
+- **Tylko gracz bada w części 2.** Władcy, osady neutralne i automatyczny gracz testów mają do części 5 wszystkie budynki, ale **bez ulepszeń** (grają jak dziś).
+- **Tryb deweloperski wpisuje wszystkie badania na stałe;** po wyłączeniu nic nie znika.
+- **Szkoła 3×3 ze SpriteKiln,** 1 nauczyciel, dzwonek na daszku, uczniowie w ławkach na podwórku (tylko na grafice; dzieci chodzące do szkoły to pomysł do IDEAS). Koszt ok. 10 desek, 8 kamieni, 200 złota; stawia się ją po pierwszym domu mieszczan.
+- **Okno „Badania” jako drzewko ze strzałkami** (przycisk w górnym pasku i w panelu szkoły).
+- **Jedna ocena na koniec całej części 2** (bez dzielenia).
+- **Koga zostaje od startu** (wyprawy morskie jak dziś). Skutek (Claude): koga potrzebuje płótna na żagle, więc **tkactwo (owczarnia, tkalnia) też zostaje od startu**.
+- **Badania szkoły (11):** krawiectwo (krawiec), ceglarstwo (glinianka, cegielnia), pszczelarstwo (pasieka, miodosytnia), winiarstwo (winnica, tłocznia), rzeźnictwo (chlew, rzeźnia), budowa okrętów (okręt wojenny); ulepszenia: lepsze nosidła (tragarz niesie 2), większe pola I (farmy, sady, chmielniki, winnice +4 kratki), większe zagrody I (chlewy, owczarnie, stadniny +2 zagrody, pasieki +2 ule), leśnictwo (leśnik sadzi 25% szybciej, zasięg 8 → 10), rybołówstwo (rybacy łowią 25% szybciej).
+- **Grafika szkoły (ocena podglądu 2026-11-11):** pierwsza wersja „za bardzo jak współczesny budynek”: przebudowana na średniowieczną według referencji właściciela (kamienny parter, mur pruski, strome dachy, wieża z dzwonnicą); bez widocznych uczniów.
+- **Do części 3 (uniwersytet, pomysły właściciela):** większe pola II (+4), większe zagrody II (+2), **„Nadanie”**: pola i zagrody ×2, ale budynek zatrudnia drugiego pracownika; gracz włącza je osobno przyciskiem w panelu budynku. Duża stocznia i pozostałe okręty też na uniwersytecie.
+
+**Część 2, stan (2026-11-11):** scalona do `main` 2026-11-11 na prośbę właściciela, czeka na ocenę.
+- Badania jako dane (`data/research/`, 11 badań szkoły w trzech stopniach), stan badań królestwa w zapisie (**v39**, stare gry mają wszystko zbadane; test migracji), kolejka, zwrot złota przy cofnięciu.
+- Szkoła 3×3 ze SpriteKiln (ART_SPEC §10.24) po pierwszym domu mieszczan, nauczyciel (dzwoni, uczy przy tablicy); nauka tylko z nauczycielem przy szkole, dwie szkoły 2×.
+- Kłódki w menu budowy z podpowiedzią „Wymaga badania: …” (szkoła: „Najpierw zbuduj dom mieszczan”), zablokowany okręt wojenny w stoczni, okno „Badania” (drzewko ze strzałkami, karty z kosztem, postępem i kolejką; przycisk w górnym pasku i w panelu szkoły), powiadomienie „Zbadano: …”. Teksty PL i EN.
+- Ulepszenia działają w trybie szczegółowym i uproszczonym (prowincje, których nie oglądasz).
+- Dzwon w mieście po skończonym badaniu: gra nie ma jeszcze dźwięków (M10), na razie tylko powiadomienie.
+- Testy `tests/scenario/test_e4_research.gd`; zrzuty w ART_SPEC §10.24.
+
 **Kryteria ukończenia:**
 - [x] Tryb deweloperski działa z menu nowej gry (część 1).
-- [ ] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).
+- [x] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).
 - [ ] Uniwersytet bada drugą połowę drzewka (część 3).
 - [ ] Małe koszary od startu, duże 5×5 za badaniem; stare koszary działają (część 4).
 - [ ] Władcy, osady, automatyczny gracz i scenariusze badają i rozwijają się w podobnym tempie co przed E4 (pomiar); testy szybkie i długie przechodzą; UI w PL i EN (część 5).

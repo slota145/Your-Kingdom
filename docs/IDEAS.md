@@ -216,3 +216,8 @@ Pomysły właściciela z rozmowy 2026-11-10, z oceną Claude. Ankieta 2026-11-10
 - Pomysł: na polach w prowincji z żyzną ziemią (E3, część 4) zboże, chmiel i krzewy rosną wyżej i gęściej, a ziemia jest ciemniejsza. Gracz widzi cechę od razu, bez zaglądania do panelu farmy.
 - Ocena (Claude): mała, przyjemna immersja. Logika już jest (żyzna ziemia daje +50% plonu), więc to tylko wygląd: drugi zestaw grafik faz wzrostu albo przyciemnienie i powiększenie obecnych. Najtaniej przy G3 (nowe grafiki ze SpriteKiln), żeby nie rysować pól dwa razy.
 - Kiedy: do decyzji właściciela, najlepiej razem z G3. W ankiecie części 4 (2026-11-11) właściciel wybrał na razie tylko linijkę w panelu.
+
+## Dzieci chodzą do szkoły (Claude, 2026-11-11)
+- Pomysł: z domów mieszczan rano wychodzą dzieci, idą do szkoły, siedzą w ławkach na lekcji i po dzwonku wracają do domów.
+- Ocena (Claude): piękna immersja, ale to nowe małe postacie ze SpriteKiln, ławki z siedzącymi dziećmi (pierwsza próba na podwórku szkoły „nie wyglądała najlepiej”, właściciel 2026-11-11) i ruch w mieście. Najlepiej razem z G3 (nowe postacie). W ankiecie części 2 E4 właściciel wybrał uczniów tylko na grafice, potem bez uczniów.
+

@@ -56,6 +56,10 @@ var _visit_bar: PanelContainer
 var _visit_title: Label
 var _stocks: KingdomStockWindow
 var _routes: RoutesWindow
+## "Research" (E4 part 2): the tree of the kingdom's research.
+var _research: ResearchWindow
+## Seconds since the build bar's padlocks were refreshed.
+var _locks_time: float = 0.0
 var _world_map: WorldMapScreen
 var _notes: Notifications
 ## "Developer mode" in the corner while it is on (E4 part 1; F12 switches it).
@@ -174,6 +178,7 @@ func _show_province() -> void:
 	_notes.province = sim.province
 	_stocks.visible = false
 	_routes.visible = false
+	_research.visible = false
 	_close_panels()
 	_set_tool({})
 	# On the battlefield (M8 part 2) nothing is built; the bar offers the retreat.
@@ -228,6 +233,7 @@ func _build_ui() -> void:
 	_top.stocks_requested.connect(_toggle_stocks)
 	_top.world_requested.connect(_toggle_world_map)
 	_top.routes_requested.connect(_toggle_routes)
+	_top.research_requested.connect(_toggle_research)
 	_top.moods_toggled.connect(func(on: bool) -> void:
 		_moods_all = on
 		if view != null:
@@ -261,6 +267,7 @@ func _build_ui() -> void:
 	_building_panel.plant_area_requested.connect(func(id: int) -> void:
 		_set_tool({"kind": &"plant", "building": id}))
 	_building_panel.stocks_requested.connect(_toggle_stocks)
+	_building_panel.research_requested.connect(_toggle_research)
 	root.add_child(_building_panel)
 	_stocks = KingdomStockWindow.new()
 	_stocks.set_anchors_preset(Control.PRESET_CENTER_TOP)
@@ -400,6 +407,17 @@ func _build_ui() -> void:
 	root.add_child(_world_map)
 	# Over the world map too (opened from its panel).
 	root.add_child(_routes)
+	_research = ResearchWindow.new()
+	_research.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_research.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_research.position.y = 56
+	_research.visible = false
+	_research.closed.connect(func() -> void: _research.visible = false)
+	_research.command_requested.connect(func(command: Command) -> void:
+		var error := _execute(command)
+		if error != &"":
+			_notes.push(tr("ui.command_error.%s" % error)))
+	root.add_child(_research)
 	_notes = Notifications.new()
 	_notes.position = Vector2(12, 64)
 	_notes.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -564,6 +582,14 @@ func _toggle_routes() -> void:
 		_routes.open(sim)
 
 
+func _toggle_research() -> void:
+	if _research.visible:
+		_research.visible = false
+	else:
+		_research.open(sim)
+		_research.move_to_front()
+
+
 func _toggle_stocks() -> void:
 	if _stocks.visible:
 		_stocks.visible = false
@@ -591,6 +617,10 @@ func _process(delta: float) -> void:
 		return
 	_time += delta
 	_build.lock_to(sim.province.first_building)
+	_locks_time += delta
+	if _locks_time >= 0.5:
+		_locks_time = 0.0
+		_build.refresh_locks(sim.province)
 	view.update_view(Game.alpha(), camera.visible_world_rect(), _time, delta)
 	if _follow_id != 0:
 		var agent := sim.province.agents.get_agent(_follow_id)
@@ -623,6 +653,8 @@ func _on_sim_event(event: Dictionary) -> void:
 					if record else tr("ui.result.endless_record") % [best[0], best[1]])
 		_result.show_result(event["type"] == &"game_won", StringName(String(event.get("victory", ""))),
 				StringName(String(event.get("winner", ""))), detail)
+	if event["type"] == &"research_finished":
+		_notes.push(tr("ui.note.research_finished") % tr("research.%s.name" % event["research"]))
 	if event["type"] == &"dev_mode_changed":
 		_dev_label.visible = bool(event["on"])
 		_notes.push(tr("ui.note.dev_mode_on" if bool(event["on"]) else "ui.note.dev_mode_off"))
@@ -719,7 +751,7 @@ func _update_preview() -> void:
 		&"field":
 			var farm := sim.province.buildings.get_building(int(_tool["farm"]))
 			if farm != null:
-				var area := Rect2i(farm.origin, farm.def.footprint).grow(farm.def.work_radius)
+				var area := Rect2i(farm.origin, farm.def.footprint).grow(sim.province.work_radius(farm))
 				for y: int in range(area.position.y, area.end.y):
 					for x: int in range(area.position.x, area.end.x):
 						if sim.province.field_error(farm.id, Vector2i(x, y)) == &"":
@@ -729,7 +761,7 @@ func _update_preview() -> void:
 		&"plant":
 			var forester := sim.province.buildings.get_building(int(_tool["building"]))
 			if forester != null:
-				var work := Rect2i(forester.origin, forester.def.footprint).grow(forester.def.work_radius)
+				var work := Rect2i(forester.origin, forester.def.footprint).grow(sim.province.work_radius(forester))
 				for y: int in range(work.position.y, work.end.y):
 					for x: int in range(work.position.x, work.end.x):
 						tiles[Vector2i(x, y)] = "range"

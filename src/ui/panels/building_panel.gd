@@ -10,6 +10,8 @@ signal add_fields_requested(farm_id: int)
 signal plant_area_requested(building_id: int)
 ## The market's "Kingdom stocks and trade" button.
 signal stocks_requested
+## The school's "Research" button (E4 part 2).
+signal research_requested
 ## A setting changed by the player; the game scene executes the command.
 signal command_requested(command: Command)
 signal closed
@@ -44,6 +46,7 @@ var _plant_clear_button: Button
 ## Market: a "buy" button per animal the merchant sells (Merchant.ANIMALS, Z1 part 2).
 var _animal_buttons: Dictionary[StringName, Button] = {}
 var _trade_button: Button
+var _research_button: Button
 var _expedition: ExpeditionBox
 var _priority_buttons: Array[Button] = []
 var _reserve_box: Container
@@ -124,6 +127,8 @@ func _init() -> void:
 		_animal_buttons[animal] = button
 	_trade_button = UiKit.button("ui.market.trade", func() -> void: stocks_requested.emit())
 	buttons.add_child(_trade_button)
+	_research_button = UiKit.button("ui.research.open", func() -> void: research_requested.emit())
+	buttons.add_child(_research_button)
 	_pause_button = UiKit.button("ui.building.pause", func() -> void:
 		var b := province.buildings.get_building(building_id)
 		if b != null:
@@ -280,14 +285,14 @@ func _refresh() -> void:
 		if missing > 0:
 			lines.append(tr("ui.building.no_workers") % missing)
 		if b.def.max_fields > 0:
-			lines.append(tr("ui.building.fields") % [province.fields.tiles_of(b.id).size(), b.def.max_fields])
+			lines.append(tr("ui.building.fields") % [province.fields.tiles_of(b.id).size(), province.field_limit(b)])
 			if province.field_yield() > 1.0:
 				# E3 part 4: fertile land.
 				lines.append(tr("ui.building.fertile") % roundi((province.field_yield() - 1.0) * 100.0))
 		elif b.def.has_pens():
-			lines.append(tr("ui.building.pens") % [b.pens, b.def.max_pens, b.herd_room()])
+			lines.append(tr("ui.building.pens") % [b.pens, province.field_limit(b), b.herd_room()])
 		elif b.def.has_hives():
-			lines.append(tr("ui.building.hives") % [b.hives, b.def.max_hives])
+			lines.append(tr("ui.building.hives") % [b.hives, province.field_limit(b)])
 			if b.hives == 0:
 				lines.append(tr("ui.building.no_hives"))
 		if province.rich_in_game() and WorkCycle.of(b.def, province.data).hunts:
@@ -342,6 +347,7 @@ func _refresh() -> void:
 		_herd_label.text = tr("ui.herd.keep") % int(_herd_slider.value)
 	var market := b.is_complete() and not b.def.stall_goods.is_empty()
 	_trade_button.visible = market
+	_research_button.visible = b.def.research_institution != &""
 	for animal: StringName in _animal_buttons:
 		var button := _animal_buttons[animal]
 		# Pigs always (as before); sheep and horses once the town keeps them.
@@ -701,7 +707,9 @@ func _refresh_ships(b: BuildingState) -> void:
 		_build_ship_rows(b)
 	for child: Node in _ship_orders.get_children():
 		if child is Button:
-			(child as Button).disabled = b.ship_orders.size() >= Ships.MAX_ORDERS
+			var kind := StringName(String(child.get_meta(&"ship", "")))
+			(child as Button).disabled = b.ship_orders.size() >= Ships.MAX_ORDERS \
+					or not province.research.allows_ship(province.data, kind)
 
 
 func _build_ship_rows(b: BuildingState) -> void:
@@ -716,7 +724,12 @@ func _build_ship_rows(b: BuildingState) -> void:
 		var def := province.data.get_ship(kind)
 		var button := UiKit.button(def.name_key(), func() -> void:
 			command_requested.emit(OrderShipCommand.new(building_id, kind)))
-		button.tooltip_text = "\n".join([tr(def.desc_key()), tr("ui.build.cost") % UiKit.goods_list(def.build_cost)])
+		button.set_meta(&"ship", String(kind))
+		var tip := PackedStringArray([tr(def.desc_key()), tr("ui.build.cost") % UiKit.goods_list(def.build_cost)])
+		var research := province.research.needed_for_ship(province.data, kind)
+		if research != &"":
+			tip.insert(0, tr("ui.build.needs_research") % tr("research.%s.name" % research))   # E4 part 2
+		button.tooltip_text = "\n".join(tip)
 		_ship_orders.add_child(button)
 	if b.ship_orders.is_empty():
 		_ship_queue.add_child(UiKit.label("ui.shipyard.queue_empty"))

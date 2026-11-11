@@ -32,6 +32,8 @@ var _idle_since: Dictionary[int, int] = {}
 func _init(simulation: Simulation) -> void:
 	sim = simulation
 	sim.autopilot = true
+	# Until E4 part 5 the automatic player studies nothing: every building, no improvement.
+	sim.research.open = true
 	var level := RulerPlanner.difficulty(sim)
 	state = RulerState.create(ProvinceDef.OWNER_PLAYER, 0, sim.clock.tick)
 	state.treasury = sim.treasury

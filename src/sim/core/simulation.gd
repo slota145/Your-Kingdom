@@ -38,6 +38,14 @@ var autopilot: bool = false
 ## Saved with the game; switched in "New game" and with F12 (SetDevModeCommand).
 var dev_mode: bool = false
 
+## The player's kingdom's research (E4 part 2): one for all his provinces. Open (everything
+## may be built, nothing improved) in a game made without "New game" (tests, tools); locked in
+## a new game from "New game"; all done in an old save.
+var research: ResearchState = ResearchState.opened()
+## What the AI rulers' and the neutral towns' provinces know until E4 part 5: every building,
+## no improvement. Not saved.
+var _open_research: ResearchState = ResearchState.opened()
+
 ## Gold the treasury is topped up to in the developer mode.
 const DEV_GOLD := 100000
 
@@ -101,11 +109,14 @@ static func from_settings(registry: DataRegistry, settings: GameSettings, seed_v
 	if sim == null:
 		return null
 	sim.world.settings = settings
+	# The player's new game starts without research (E4 part 2).
+	sim.research = ResearchState.new()
 	problems.append_array(sim._open_ruler_towns())
 	if settings.scenario == GameSettings.INVASION:
 		Invasion.start(sim)
 	RulerPlanner.ensure_rulers(sim)
 	sim.bind_treasuries()
+	sim.bind_research()
 	if settings.dev_mode:
 		sim.set_dev_mode(true)
 	sim.events.drain()
@@ -153,6 +164,9 @@ func step() -> void:
 	if dev_mode:
 		_top_up_dev_gold()
 	province.dev_mode = dev_mode and world.owner_of(viewed_id) == ProvinceDef.OWNER_PLAYER
+	province.research = research_of(viewed_id)
+	if clock.tick % SimClock.TICKS_PER_SECOND == 0:
+		Researching.update(self)
 	province.step()
 	if not province.marched.is_empty():
 		Armies.absorb(self)
@@ -171,6 +185,7 @@ func step() -> void:
 			if abstract != null and (world.owner_of(id) == ProvinceDef.OWNER_PLAYER
 					or Rulers.is_ruler(world.owner_of(id))):
 				abstract.detail.dev_mode = dev_mode and world.owner_of(id) == ProvinceDef.OWNER_PLAYER
+				abstract.detail.research = research_of(id)
 				abstract.step(clock.tick - slot)
 	if slot == 0:
 		_update_world()
@@ -187,7 +202,22 @@ func set_dev_mode(on: bool) -> void:
 			state.dev_mode = on and world.owner_of(id) == ProvinceDef.OWNER_PLAYER
 	if on:
 		_top_up_dev_gold()
+		# Every research at once, for good (owner's survey 2026-11-11).
+		research.complete_all(data)
 	events.emit(&"dev_mode_changed", {"on": on})
+
+
+## The research province [param id] builds and works by: the player's, else the open one.
+func research_of(id: int) -> ResearchState:
+	return research if world.owner_of(id) == ProvinceDef.OWNER_PLAYER else _open_research
+
+
+## Gives every settled province its owner's research (after loading, a new game).
+func bind_research() -> void:
+	for id: int in runtimes:
+		var state := province_state(id)
+		if state != null:
+			state.research = research_of(id)
 
 
 func _top_up_dev_gold() -> void:
@@ -544,6 +574,7 @@ func to_dict() -> Dictionary:
 		"viewed": viewed_id,
 		"provinces": list,
 		"dev": dev_mode,
+		"research": research.to_dict(),
 	}.merged({"battlefield": province.to_dict()} if viewed_id == BATTLEFIELD else {})
 
 
@@ -563,6 +594,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 	sim.world = WorldSim.from_dict(d.get("world", {}))
 	sim.viewed_id = int(d.get("viewed", WorldSim.FIRST_ID))
 	sim.dev_mode = bool(d.get("dev", false))
+	sim.research = ResearchState.from_dict(d.get("research", {"open": true}))
 	sim.runtimes.clear()
 	for entry: Variant in d.get("provinces", []):
 		var e := entry as Dictionary
@@ -589,6 +621,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 			if pdef != null:
 				state.traits = ProvinceDef.traits_of(pdef.traits, state.rare_resource)
 	sim.bind_treasuries()
+	sim.bind_research()
 	if sim.dev_mode:
 		for id: int in sim.runtimes:
 			var state := sim.province_state(id)

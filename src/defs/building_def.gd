@@ -174,6 +174,12 @@ const PEN_ANIMALS := 2
 @export_range(0, 99999) var max_hp: int = 0
 ## Siege workshop (M7 part 2): the engines (unit ids) it builds on order.
 @export var siege_engines: Array[StringName] = []
+## A place of study (E4 part 2): ResearchDef.SCHOOL or UNIVERSITY; its teacher's work moves
+## the kingdom's research on (Researching).
+@export var research_institution: StringName = &""
+## The player builds it only when a house of this level stands in the province (E4 part 2:
+## the school after the first burghers' house); 0 = always.
+@export_range(0, 3) var needs_house_level: int = 0
 
 
 func is_fort() -> bool:

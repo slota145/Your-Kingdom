@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ResearchDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/research_def.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+tier = 2
+row = 2
+gold_cost = 250
+time = 210.0
+buildings = Array[StringName]([&"tailor"])
+id = &"tailoring"

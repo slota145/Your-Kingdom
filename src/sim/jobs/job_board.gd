@@ -211,7 +211,8 @@ static func _take_from_crews(dockers: Dictionary[int, Array], crews: Array, pool
 
 
 func _assign_one(province: ProvinceSim, request: TransportRequest, idle: Array[Agent]) -> bool:
-	var load := mini(PORTER_LOAD, request.unassigned())
+	# E4 part 2: "Better carrying" lets a porter take 2.
+	var load := mini(PORTER_LOAD * province.research.porter_load(province.data), request.unassigned())
 	if (request.source_id != 0 and province.storage(request.source_id) == null) \
 			or (request.dest_id != 0 and not province.accepts_deliveries(request.dest_id)):
 		_requests.erase(request.id)

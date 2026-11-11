@@ -20,6 +20,7 @@ extends Node
 ## the middle of a lift (--lift=<0..1>, default 0.35), and a port warehouse with goods.
 ## --select=<building id> opens the panel of that building.
 ## --dev (E4 part 1) switches the developer mode on.
+## --research (E4 part 2) opens the research window over a locked research half done.
 ## --advance=<seconds> runs the simulation that long first (M5 part 3: the landing on Coast).
 ## --cog_stage=<0..3> (M5 part 3, map coast) puts a shipyard with the player's cog on its
 ## slipway in that stage (3 = halfway down the slipway at the launch) and the player's cog
@@ -48,6 +49,9 @@ const SHOT_FRAMES := 30
 var _game: Node2D
 ## --dev (E4 part 1): the developer mode on (its label in the corner, a full treasury).
 var _dev: bool = false
+## --research (E4 part 2): a locked research with some done, one under way and a queue, and the
+## research window open.
+var _research: bool = false
 var _frames: int = 0
 var _shot_path: String = ""
 var _tile: Vector2i = Vector2i(-1, -1)
@@ -205,6 +209,8 @@ func _ready() -> void:
 			_select = StringName(arg.trim_prefix("--select="))
 		elif arg == "--dev":
 			_dev = true
+		elif arg == "--research":
+			_research = true
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--map="):
 			Game.start_request = {"map": arg.trim_prefix("--map=")}
@@ -233,6 +239,15 @@ func _arrange() -> void:
 	view.terrain.organic = not _plain
 	if _dev:
 		_game.call("_execute", SetDevModeCommand.new(true))
+	if _research:
+		sim.research = ResearchState.new()
+		for id: StringName in [&"butchery", &"forestry", &"tailoring"]:
+			sim.research.complete(id)
+		sim.research.current = &"beekeeping"
+		sim.research.progress = 70.0
+		sim.research.queue.assign([&"larger_fields", &"winemaking"])
+		sim.bind_research()
+		_game.call("_toggle_research")
 	if _hard_shore:
 		(view.terrain.get("_material") as ShaderMaterial).set_shader_parameter("soft_shore", false)
 	if _advance > 0:

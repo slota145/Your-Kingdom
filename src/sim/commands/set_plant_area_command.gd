@@ -27,7 +27,7 @@ func apply(sim: Simulation) -> void:
 	if tiles.is_empty():
 		building.plant_area.clear()
 	else:
-		var area := Rect2i(building.origin, building.def.footprint).grow(building.def.work_radius)
+		var area := Rect2i(building.origin, building.def.footprint).grow(sim.province.work_radius(building))
 		for t: Vector2i in tiles:
 			if area.has_point(t) and sim.province.grid.is_inside(t) and not building.plant_area.has(t):
 				building.plant_area.append(t)
