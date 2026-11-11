@@ -1439,7 +1439,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Osady neutralne (Żelazny Gród, Końska Przystań i ich kopie w nowych światach) mają sad z 10 jabłoniami i chatę myśliwego.
 - Chata myśliwego staje w połowie drogi między miastem a najbliższym stadem (bez stad: w połowie drogi do lasu).
 - Tryb uproszczony liczy sad i myśliwego jak dotąd (bez zmian).
-- Balans automatycznego gracza testów: myśliwy w 10. minucie, łańcuchy cegieł, ubrań i miodu pitnego z tawerną 10 minut wcześniej (od 35. minuty; na „Wybrzeżu” o dawnej porze, bo zajmowały brzeg pod port). 4 domy patrycjuszy z pełnym zaopatrzeniem (limit 90 minut): Riverlands w 72. minucie (było 87), Pojezierze w 70. (było 89), Wybrzeże w 59.–67. (było 66).
+- Balans automatycznego gracza testów: myśliwy w 10. minucie, łańcuchy cegieł, ubrań i miodu pitnego z tawerną 10 minut wcześniej (od 35. minuty; na „Wybrzeżu” o dawnej porze, bo zajmowały brzeg pod port). 4 domy patrycjuszy z pełnym zaopatrzeniem (limit 90 minut): Riverlands w 72. minucie (było 87), Pojezierze w 70. (było 89), Wybrzeże w 67. (było 66).
 - Władcy (pomiar `settle_probe.gd`, 90 minut, 3 władców): 6 zasiedleń zamiast 4, razem ok. 1030 mieszkańców zamiast ok. 920; wszystkie domy najedzone; test władców i wojny przechodzi.
 - Zapis bez zmiany formatu (v37).
 - Testy: `test_e2_rulers_food.gd` (sad w stolicach władców, sad i myśliwy w osadach, miejsce chaty myśliwego, sad i myśliwy przy braku jedzenia, plan). Pomiar gracza: `src/prototype/e2/patrician_probe.gd -- --map=<mapa>` (wypisuje minutę 4 domów).
