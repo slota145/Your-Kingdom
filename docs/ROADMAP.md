@@ -1511,7 +1511,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; część 3 gotowa na gałęzi roboczej, czeka na ocenę („Część 1, stan”, „Część 2, stan”, „Część 3, stan”).**
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; części 3 i 4 gotowe, czekają na ocenę („Część 1, stan” … „Część 4, stan”).**
 
 **Decyzje z ankiet 2026-11-11:**
 - **Szkoła po pierwszym domu mieszczan, uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
@@ -1585,11 +1585,28 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Zapis v40:** stare gry (wszystko zbadane) dostają nowe badania; gry zaczęte z badaniami dostają „Kamieniarstwo obronne” (mury były w nich wolne); nadanie budynku w zapisie (test migracji).
 - Testy `tests/scenario/test_e4_university.gd`; zrzut uniwersytetu `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=45,54 --zoom=2 --yards=university --fields_seconds=30`.
 
+**Część 4, decyzje z ankiet 2026-11-11 (poprawek z oceny części 3 jeszcze nie ma: właściciel nie oceniał):**
+- **Małe koszary: drewniana strażnica** (ganek, stojak z włóczniami, tarcza strzelnicza), ze SpriteKiln. **10 łóżek** (wbrew rekomendacji 8), tylko łucznicy i włócznicy; **nikt nie ćwiczy, żołnierze odpoczywają w środku** (wbrew rekomendacji „plac przed drzwiami”). 8 desek, 4 kamienie, 30 złota.
+- **Duże koszary: „podkowa” otwarta do przodu,** dziedziniec z musztrą widoczny w całości; 30 łóżek, wszystkie jednostki.
+- **Badanie „Duże koszary”: najtańszy stopień uniwersytetu, bez warunków** (ok. 4 min, 300 złota).
+- **Władcy, osady i automatyczny gracz do części 5 stawiają duże koszary** (małe, gdy duże się nie mieszczą).
+- **Ocena grafiki 2026-11-11:** blanki donżonu jako prawdziwe przedpiersie na wspornikach (nie kwadraty na płaskim dachu), wieże według zdjęcia referencyjnego właściciela (ganek z blankami, węższa górna kondygnacja, ostry stożek). Dachy skrzydeł czerwone jak wieże, szkoła i uniwersytet (Claude, do potwierdzenia przy ocenie).
+- **Koszt dużych koszar bez cegieł** (Claude): 35 kamieni, 25 desek, 250 złota, bo władcy nie mają cegielni i nigdy by ich nie postawili.
+
+**Część 4, stan (2026-11-11):** gotowa, czeka na ocenę.
+- Małe koszary 2×2 od startu i duże 5×5 za badaniem `large_barracks` (ART_SPEC §10.26). Panel koszar pokazuje tylko jednostki, które dane koszary przyjmują; błąd „Te koszary szkolą tylko łuczników i włóczników”.
+- Dziedziniec: żołnierze idą do bramy (kafel wejścia), stamtąd prosto przez dziedziniec na swoje miejsce (16 miejsc na 8 kaflach, przód zapełnia się pierwszy), wracają do bramy przed odpoczynkiem; żołnierz wysłany z szeregu wychodzi bramą. Reszta odpoczywa w środku.
+- Dawne koszary 3×3: poza menu budowy, gracz z badaniami ich nie postawi (błąd „Tych koszar już się nie stawia”); stojące działają. Władcy liczą każde koszary jako „koszary planu” (stare miasta nie stawiają drugich).
+- Władcy werbują jednostkę, która ma wolne łóżko w swoim rodzaju koszar; armia wracająca do domu nie wkłada rycerzy do małych koszar.
+- **Zapis v41:** stare gry (wszystko zbadane) dostają „Duże koszary”; gry z badaniami badają je (test migracji).
+- Testy `tests/scenario/test_e4_barracks.gd`; zrzut `game_shot.tscn -- --shot=<plik> --m7=barracks [--drill] --zoom=2`.
+- Do części 5: duże koszary są droższe niż dawne (250 zamiast 60 złota), więc władcy mogą stawiać je później; pomiar tempa w części 5.
+
 **Kryteria ukończenia:**
 - [x] Tryb deweloperski działa z menu nowej gry (część 1).
 - [x] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).
 - [x] Uniwersytet bada drugą połowę drzewka (część 3).
-- [ ] Małe koszary od startu, duże 5×5 za badaniem; stare koszary działają (część 4).
+- [x] Małe koszary od startu, duże 5×5 za badaniem; stare koszary działają (część 4).
 - [ ] Władcy, osady, automatyczny gracz i scenariusze badają i rozwijają się w podobnym tempie co przed E4 (pomiar); testy szybkie i długie przechodzą; UI w PL i EN (część 5).
 - [ ] **Twoja ocena gry** po każdej części.
 

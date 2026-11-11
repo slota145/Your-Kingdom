@@ -274,6 +274,7 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 - **Stopnie:** podstawowe ok. 2 min i 150 złota, średnie 3,5 min i 250, zaawansowane 5 min i 400 (dane w `data/research/`).
 - **Uniwersytet (4×4, część 3, ankieta 2026-11-11):** stoi po pierwszej kamienicy patrycjuszy, gdy w prowincji jest szkoła; dwaj uczeni. Bada (drożej: ok. 4/6/8 min i 300/450/650 złota): płatnerstwo (płatnerz; miecznicy, zbrojni, halabardnicy), kusze (kusznicy), rycerstwo (stadnina; rycerze, lekka jazda), machiny oblężnicze (warsztat machin), dużą stocznię (karawele, karaki, galeony), lepsze wózki (+1), większe pola II (+4), większe zagrody II (+2), głęboką naukę (szkoły 2×) i „Nadanie” (farma albo hodowla z przyciskiem w panelu: pola, zagrody lub ule ×2, drugi pracownik). Kowal i łuczarz robią wszystko, blokady są na jednostkach i budynkach.
 - **Kamieniarstwo obronne (szkoła):** kamienne mury, baszty i bramy; palisada, brama w palisadzie i schody od startu.
+- **Małe i duże koszary (część 4, ankiety 2026-11-11):** od startu **małe koszary 2×2** (drewniana strażnica: 10 łóżek, tylko łucznicy i włócznicy, nikt nie ćwiczy, żołnierze odpoczywają w środku; 8 desek, 4 kamienie, 30 złota). Za tanim badaniem uniwersytetu „Duże koszary” (ok. 4 min, 300 złota, bez wcześniejszych badań) **duże koszary 5×5**: kamienny zamek w kształcie litery L z dziedzińcem otwartym do przodu (30 łóżek, wszystkie jednostki; 35 kamieni, 25 desek, 250 złota, bez cegieł, bo władcy nie mają cegielni). Do 16 żołnierzy wychodzi bramą na dziedziniec i ćwiczy musztrę, reszta odpoczywa w środku. Dawne koszary 3×3 znikają z menu budowy; te, które stoją, działają. Władcy, osady i automatyczny gracz stawiają duże koszary (małe, gdy duże się nie mieszczą); rycerz nie wejdzie do małych koszar (ani przy rekrutacji, ani po powrocie armii).
 - **Kto bada:** gracz w nowej grze z menu. Stare zapisy mają wszystko zbadane. Władcy, osady neutralne i automatyczny gracz testów do części 5 mają wszystkie budynki, ale bez ulepszeń. Tryb deweloperski wpisuje wszystkie badania na stałe.
 
 ## 5. Budowanie
@@ -394,7 +395,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 
 ### 6.1 Rekrutacja
 
-- Jednostkę rekrutuje się w **koszarach**. Potrzebny jest wolny mieszkaniec z puli siły roboczej, broń i pancerz ze zbrojowni oraz złoto.
+- Jednostkę rekrutuje się w **koszarach** (od E4, część 4: małe koszary tylko łuczników i włóczników, duże wszystkich; § 4.7). Potrzebny jest wolny mieszkaniec z puli siły roboczej, broń i pancerz ze zbrojowni oraz złoto.
 - Rekrut fizycznie przychodzi do koszar, odbiera broń i zmienia wygląd.
 - **Plan M7 (ankieta 2026-11-07):** rekrut wyprowadza się z domu i mieszka w koszarach (dom przyjmuje przybysza), je z magazynu. Żołdu nie ma (zmiana 2026-11-08, jak w Twierdzy i Anno), za to rekrutacja jest droższa. Ruda żelaza ma małe żyły na każdej mapie, a dużo w prowincji z rudą; konie tylko ze stadniny w prowincji z pastwiskami. Wartości: ROADMAP, M7.
 
