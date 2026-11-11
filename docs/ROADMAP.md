@@ -1511,7 +1511,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); część 1 gotowa na gałęzi roboczej, czeka na ocenę („Część 1, stan”).**
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); część 1 scalona do `main` 2026-11-11 na prośbę właściciela, czeka na ocenę („Część 1, stan”).**
 
 **Decyzje z ankiet 2026-11-11:**
 - **Szkoła po pierwszym domu mieszczan, uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
@@ -1542,7 +1542,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Wieczna ochrona mieszkańców:** jak ochrona na starcie gry, ale bez końca (zadowolenie tylko rośnie, nikt nie odchodzi, braki nie szkodzą). Domy jedzą i awansują po staremu, gdy mają towary.
 - **Pełny skarbiec, F12 wł/wył:** skarbiec ma zawsze co najmniej 100 000 złota; F12 przełącza tryb w każdej grze, także wczytanej; tryb zapisuje się z grą. Wygrana złotem (Kupieckie wyspy) w trybie deweloperskim się nie liczy.
 
-**Część 1, stan (2026-11-11):** gotowa na gałęzi roboczej, czeka na ocenę.
+**Część 1, stan (2026-11-11):** scalona do `main` 2026-11-11 na prośbę właściciela, czeka na ocenę.
 - Pole „Tryb deweloperski” w oknie „Nowa gra” (z podpowiedzią), F12 w grze, czerwony napis „Tryb deweloperski” w prawym górnym rogu i powiadomienie przy przełączeniu. Teksty PL i EN.
 - Tylko prowincje gracza: władcy i osady neutralne budują i płacą po staremu (test).
 - Otwarte budowy (także sprzed włączenia trybu i automatyczne awanse domów) kończą się w następnym kroku gry; materiały już przyniesione zostają na ziemi.
