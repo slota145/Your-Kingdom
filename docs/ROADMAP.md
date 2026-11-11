@@ -1509,9 +1509,41 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - [x] Żyzna ziemia i bogata w zwierzynę działają i są widoczne na mapie świata (część 4).
 - [ ] **Twoja ocena gry** po każdej części.
 
-## E4 — Uniwersytet, badania oraz małe i duże koszary
+## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8. Do zaplanowania po E3: uniwersytet i drzewko 15–20 badań (złoto i czas), część budynków za badaniami (start bez zmian), ulepszenia (tragarze i wózki niosą +1, więcej pól i zagród); małe tanie koszary od startu (łucznicy, włócznicy), duże „zamkowe” 5×5 z dziedzińcem za badaniem; władcy też badają.
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej; plan czeka na akceptację startu.** Poprawki z ocen E3 mają pierwszeństwo.
+
+**Decyzje z ankiet 2026-11-11:**
+- **Szkoła po pierwszym domu mieszczan, uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
+- **Średnio dużo za badaniami** (wbrew rekomendacji „mało”, decyzja właściciela): warsztaty środka gry też są za badaniami. Ryzyko (Claude): władcy, automatyczny gracz i scenariusze muszą badać, inaczej staną w rozwoju; to osobna część planu i pomiary.
+- **Badanie kosztuje złoto i czas.** Złoto płaci się na starcie badania. Nauka idzie tylko wtedy, gdy w szkole (na uniwersytecie) pracuje nauczyciel (uczony).
+- **Badania działają w całym królestwie.** Badanie z jednej prowincji działa we wszystkich prowincjach gracza. Druga szkoła przyspiesza naukę.
+- **Szkoła: rzemiosło, uniwersytet: reszta.** Szkoła ma ok. 8 badań (warsztaty środka gry i proste ulepszenia), uniwersytet ok. 10 (duże koszary, lepsze jednostki, machiny, stadnina, duża stocznia, wózki +1, więcej zagród).
+- **Małe koszary 2×2 od startu** (tanie, ok. 8 łóżek, tylko łucznicy i włócznicy). **Duże „zamkowe” koszary 5×5** z dziedzińcem, na którym żołnierze ćwiczą (wszystkie jednostki, ok. 30 łóżek), za badaniem uniwersytetu, zastępują dzisiejsze 3×3. Dzisiejsze koszary w starych zapisach i miastach stoją i działają dalej, ale nowych się nie stawia.
+- **Władcy badają naprawdę:** stawiają szkołę i uniwersytet według planu, płacą złotem i badają w ustalonej kolejności.
+- **Stare zapisy dostają wszystkie badania** (migracja zapisu).
+- **Tryb deweloperski do testów (prośba właściciela):** wszystkie badania od razu, dużo złota, mieszkańcy nie odchodzą i nie głodują itp.
+
+**Szkic badań (liczby i ostateczna lista w części 2 i 3, po pomiarach):**
+- Zostaje od startu wszystko, czego potrzeba chłopom i mieszczanom do pierwszego awansu (m.in. browar i chmielnik, bo piwo jest potrzebne do awansu na mieszczan), oraz to, czego potrzebują małe koszary: łuczarz, kopalnia, węglarz, huta i kowal (włócznie z żelaza).
+- **Szkoła (ok. 8):** tkactwo (owczarnia, tkalnia), krawiectwo (krawiec), ceglarstwo (glinianka, cegielnia), pszczelarstwo (pasieka, miodosytnia), winiarstwo (winnica, tłocznia), garbarstwo i rzeźnictwo (chlew, rzeźnia), lepsze nosidła (tragarze niosą +1), większe pola (farmy i sady +4 kratki).
+- **Uniwersytet (ok. 10):** duże koszary, płatnerstwo (płatnerz: miecznicy, zbrojni, halabardnicy), kusze (kusznicy), rycerstwo (stadnina, rycerze, lekka jazda), machiny oblężnicze (warsztat, taran, balista), duża stocznia i okręt wojenny, wózki niosą +1, większe zagrody (+4 kratki), głęboka nauka (badania szkoły 2× szybciej), kamienne mury i baszty (do decyzji w części 3: dziś są od startu).
+- Uwaga (Claude): patrycjusze potrzebują ubrań, miodu i cegieł do awansu, a to wszystko jest w szkole, czyli przed uniwersytetem. Kolejność się więc zgadza.
+
+**Plan (ocena po każdej części):**
+1. **Tryb deweloperski.** Przełącznik w menu nowej gry (i skrót w grze, np. F12): wszystkie badania od razu (gdy już będą), dużo złota, budowa bez kosztów i od razu, mieszkańcy nie odchodzą, nie głodują i nie tracą zadowolenia. W rogu ekranu napis „Tryb deweloperski”. Pierwszy, bo przyda się do testów wszystkich kolejnych części.
+2. **Szkoła i badania.** Badania jako dane (`data/research/`): koszt w złocie, czas, szkoła albo uniwersytet, co odblokowuje. Stan badań królestwa w zapisie (nowa wersja z migracją: stare gry dostają wszystko). Szkoła (budynek z nauczycielem, grafika ze SpriteKiln: uczniowie w ławkach, nauczyciel przy tablicy, dzwonek), okno „Badania” (przycisk w pasku i w panelu szkoły), kłódka i podpowiedź „wymaga badania…” w menu budowy, powiadomienie i dzwon w mieście po skończonym badaniu. Badania szkoły i ulepszenia (tragarze +1, większe pola).
+3. **Uniwersytet.** Budynek (uczeni z księgami, ze SpriteKiln), badania uniwersytetu, jednostki za badaniami w panelu koszar, wózki +1 i większe zagrody.
+4. **Małe i duże koszary.** Małe 2×2 od startu (łucznicy, włócznicy), duże 5×5 z dziedzińcem i musztrą (ze SpriteKiln) za badaniem; dzisiejsze koszary znikają z menu budowy.
+5. **Reszta świata nadąża.** Władcy (plan rozwoju ze szkołą i uniwersytetem, kolejność badań, złoto), osady neutralne i miasta władców na starcie z badaniami tego, co już mają, automatyczny gracz, scenariusze M8; pomiary automatycznym graczem (cel: patrycjusze i wojsko w podobnym czasie co dziś, najwyżej kilka minut później); testy szybkie i długie, UI w PL i EN.
+
+**Kryteria ukończenia:**
+- [ ] Tryb deweloperski działa z menu nowej gry (część 1).
+- [ ] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).
+- [ ] Uniwersytet bada drugą połowę drzewka (część 3).
+- [ ] Małe koszary od startu, duże 5×5 za badaniem; stare koszary działają (część 4).
+- [ ] Władcy, osady, automatyczny gracz i scenariusze badają i rozwijają się w podobnym tempie co przed E4 (pomiar); testy szybkie i długie przechodzą; UI w PL i EN (część 5).
+- [ ] **Twoja ocena gry** po każdej części.
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 

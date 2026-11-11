@@ -207,7 +207,7 @@ Pomysły właściciela z rozmowy 2026-11-10, z oceną Claude. Ankieta 2026-11-10
 7. **Uniwersytet i badania.**
    - Właściciel: badania odblokowują budynki i ulepszają gospodarkę (tragarze i wózki niosą +1, farmy więcej pól, hodowle więcej zagród); dużą część obecnych budynków schować za badaniami.
    - Ocena (Claude): największa zmiana z listy. Dotyka menu budowy, zapisu, władców (muszą badać, inaczej będą silniejsi), automatycznego gracza i scenariuszy. Za dużo schowane = nudny start. Pierwsza wersja: 15–20 badań za złoto i czas, uniwersytet wymaga mieszczan albo patrycjuszy; uczeni z księgami w środku, dzwon w mieście po badaniu.
-   - Kiedy: etap 4, razem z punktem 8.
+   - Kiedy: etap 4, razem z punktem 8. **Właściciel 2026-11-11: najpierw szkoła (część badań), później uniwersytet; ankiety 2026-11-11** → ROADMAP, E4.
 8. **Małe i duże koszary.**
    - Właściciel: małe, tanie koszary (łucznicy i włócznicy) od startu; duże, „zamkowe” na planie kwadratu 4×4 albo 5×5 zastępują obecne i działają jak one, ale trzeba je zbadać (tak samo jak ich jednostki).
    - Ocena (Claude): za. Rekomendacja 5×5 z dziedzińcem, na którym żołnierze ćwiczą (musztra już jest). Grafika ze SpriteKiln. Ma sens razem z badaniami.
