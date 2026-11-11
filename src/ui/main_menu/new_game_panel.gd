@@ -5,6 +5,7 @@ extends VBoxContainer
 ## their difficulty, the victory condition (with its target). "Start" sends GameSettings to the
 ## game scene. M8 part 5: four scenarios with a line about each; the Merchant islands take a
 ## gold target instead of a victory condition, the Invasion from the sea has neither (nor rulers).
+## E4 part 1: a tick box for the developer mode.
 
 signal start_requested(settings: GameSettings)
 signal back_requested
@@ -34,6 +35,8 @@ var _target_row: Control
 var _rulers_row: Control
 var _generated_rows: Array[Control] = []
 var _next: Button
+## The developer mode (E4 part 1): to try the game out.
+var _dev: CheckBox
 
 
 func _init() -> void:
@@ -100,6 +103,10 @@ func _init() -> void:
 	_target.max_value = 2000
 	_target_row.add_child(_target)
 	add_child(_target_row)
+	_dev = CheckBox.new()
+	_dev.text = "ui.new_game.dev_mode"
+	_dev.tooltip_text = "ui.new_game.dev_mode_hint"
+	add_child(_dev)
 	var buttons := HBoxContainer.new()
 	_next = UiKit.button("ui.new_game.next", func() -> void: start_requested.emit(settings()))
 	buttons.add_child(_next)
@@ -161,6 +168,7 @@ func settings() -> GameSettings:
 		s.rulers = _rulers.selected + 1
 		s.victory = GameSettings.VICTORIES[_victory.selected]
 	s.difficulty = _difficulty.selected
+	s.dev_mode = _dev.button_pressed
 	if s.victory == GameSettings.VICTORY_PROVINCES or s.victory == GameSettings.VICTORY_PATRICIANS:
 		s.victory_target = int(_target.value)
 	if _world.selected == 0:

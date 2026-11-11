@@ -4398,3 +4398,21 @@ msgstr "Deep mining"
 
 msgid "recipe.deep_mining.desc"
 msgstr "The miner climbs down the shaft, hews ore underground, winds the bucket up, breaks the ore on the heap and carries it to storage."
+
+msgid "ui.new_game.dev_mode"
+msgstr "Developer mode"
+
+msgid "ui.new_game.dev_mode_hint"
+msgstr "For trying the game out: plenty of gold, everything is built at once and for free, residents never leave. F12 switches it in the game."
+
+msgid "ui.dev_mode.on"
+msgstr "Developer mode"
+
+msgid "ui.dev_mode.hint"
+msgstr "Plenty of gold, everything is built at once and for free, residents never leave. F12 turns it off."
+
+msgid "ui.note.dev_mode_on"
+msgstr "Developer mode on (F12 turns it off)"
+
+msgid "ui.note.dev_mode_off"
+msgstr "Developer mode off"

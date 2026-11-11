@@ -31,6 +31,15 @@ var raids_enabled: bool = false
 ## player's expeditions land at once, like an AI ruler's (nobody is there to enter the
 ## province). Off in a game; not saved.
 var autopilot: bool = false
+## Developer mode (ROADMAP E4 part 1, owner's survey 2026-11-11): for trying the game out. The
+## treasury never holds less than [constant DEV_GOLD]; in the player's provinces buildings,
+## roads, walls, bridges, quays and house upgrades are done at once and for free, and the start
+## protection never ends (nobody leaves, happiness only rises). Ships and soldiers as usual.
+## Saved with the game; switched in "New game" and with F12 (SetDevModeCommand).
+var dev_mode: bool = false
+
+## Gold the treasury is topped up to in the developer mode.
+const DEV_GOLD := 100000
 
 
 func _init(registry: DataRegistry, map_size: Vector2i = Vector2i(64, 64), seed_value: int = 1) -> void:
@@ -97,6 +106,8 @@ static func from_settings(registry: DataRegistry, settings: GameSettings, seed_v
 		Invasion.start(sim)
 	RulerPlanner.ensure_rulers(sim)
 	sim.bind_treasuries()
+	if settings.dev_mode:
+		sim.set_dev_mode(true)
 	sim.events.drain()
 	return sim
 
@@ -139,6 +150,9 @@ func step() -> void:
 	for command: Command in commands:
 		execute(command)
 	province.tick = clock.tick
+	if dev_mode:
+		_top_up_dev_gold()
+	province.dev_mode = dev_mode and world.owner_of(viewed_id) == ProvinceDef.OWNER_PLAYER
 	province.step()
 	if not province.marched.is_empty():
 		Armies.absorb(self)
@@ -156,10 +170,29 @@ func step() -> void:
 			# rulers' towns live like the player's (M8 part 3).
 			if abstract != null and (world.owner_of(id) == ProvinceDef.OWNER_PLAYER
 					or Rulers.is_ruler(world.owner_of(id))):
+				abstract.detail.dev_mode = dev_mode and world.owner_of(id) == ProvinceDef.OWNER_PLAYER
 				abstract.step(clock.tick - slot)
 	if slot == 0:
 		_update_world()
 	clock.tick += 1
+
+
+## Switches the developer mode (E4 part 1; SetDevModeCommand). The player's provinces follow
+## at once: the treasury is filled and the open sites are done on their next step.
+func set_dev_mode(on: bool) -> void:
+	dev_mode = on
+	for id: int in runtimes:
+		var state := province_state(id)
+		if state != null:
+			state.dev_mode = on and world.owner_of(id) == ProvinceDef.OWNER_PLAYER
+	if on:
+		_top_up_dev_gold()
+	events.emit(&"dev_mode_changed", {"on": on})
+
+
+func _top_up_dev_gold() -> void:
+	if treasury.gold < DEV_GOLD:
+		treasury.gold = DEV_GOLD
 
 
 func run_ticks(count: int) -> void:
@@ -510,6 +543,7 @@ func to_dict() -> Dictionary:
 		"world": world.to_dict(),
 		"viewed": viewed_id,
 		"provinces": list,
+		"dev": dev_mode,
 	}.merged({"battlefield": province.to_dict()} if viewed_id == BATTLEFIELD else {})
 
 
@@ -528,6 +562,7 @@ static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 	sim.treasury = Treasury.from_dict(d.get("treasury", {}))
 	sim.world = WorldSim.from_dict(d.get("world", {}))
 	sim.viewed_id = int(d.get("viewed", WorldSim.FIRST_ID))
+	sim.dev_mode = bool(d.get("dev", false))
 	sim.runtimes.clear()
 	for entry: Variant in d.get("provinces", []):
 		var e := entry as Dictionary
@@ -554,4 +589,9 @@ static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 			if pdef != null:
 				state.traits = ProvinceDef.traits_of(pdef.traits, state.rare_resource)
 	sim.bind_treasuries()
+	if sim.dev_mode:
+		for id: int in sim.runtimes:
+			var state := sim.province_state(id)
+			if state != null:
+				state.dev_mode = sim.world.owner_of(id) == ProvinceDef.OWNER_PLAYER
 	return sim

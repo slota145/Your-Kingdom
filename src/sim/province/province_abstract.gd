@@ -129,6 +129,8 @@ func thaw(tick: int, events: SimEvents) -> ProvinceSim:
 ## One second of the province without people.
 func step(tick: int) -> void:
 	detail.tick = tick
+	if detail.dev_mode:
+		detail.finish_works_now()   # developer mode (E4 part 1)
 	if tick % (STAFF_EVERY * STEP_TICKS) == 0 or not wanderers.is_empty():
 		_count_staff()
 	_settle_wanderers()

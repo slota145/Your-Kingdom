@@ -72,6 +72,9 @@ var gold_target: int = DEFAULT_GOLD
 ## The Invasion: the first waves that only plunder (PLUNDER_ALL: all), and the survival mode.
 var plunder_waves: int = DEFAULT_PLUNDER
 var endless: bool = false
+## Started in the developer mode (E4 part 1, the "New game" tick box). Only how the game began:
+## the mode itself is Simulation.dev_mode (F12 switches it).
+var dev_mode: bool = false
 
 
 ## Makes the settings fit the scenario: the Merchant islands are won by gold, the Invasion from
@@ -130,7 +133,7 @@ func to_dict() -> Dictionary:
 	return {"scenario": String(scenario), "seed": world_seed, "world": String(world_def),
 			"provinces": province_count, "islands": islands, "start": start, "rulers": rulers, "difficulty": difficulty,
 			"victory": String(victory), "target": victory_target, "gold": gold_target,
-			"plunder": plunder_waves, "endless": endless}
+			"plunder": plunder_waves, "endless": endless}.merged({"dev": true} if dev_mode else {})
 
 
 static func from_dict(d: Dictionary) -> GameSettings:
@@ -148,4 +151,5 @@ static func from_dict(d: Dictionary) -> GameSettings:
 	s.gold_target = int(d.get("gold", DEFAULT_GOLD))
 	s.plunder_waves = int(d.get("plunder", DEFAULT_PLUNDER))
 	s.endless = bool(d.get("endless", false))
+	s.dev_mode = bool(d.get("dev", false))
 	return s

@@ -36,7 +36,8 @@ static func is_won(sim: Simulation) -> bool:
 		GameSettings.VICTORY_PATRICIANS:
 			return patricians(sim) >= settings.target()
 		GameSettings.VICTORY_GOLD:
-			return sim.treasury.gold >= settings.gold_target
+			# The developer mode's full treasury wins nothing (E4 part 1).
+			return not sim.dev_mode and sim.treasury.gold >= settings.gold_target
 		GameSettings.VICTORY_SURVIVE:
 			return elapsed_minutes(sim) >= GameSettings.SURVIVE_MINUTES
 	return false

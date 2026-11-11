@@ -4438,3 +4438,21 @@ msgstr "Praca w głębokiej kopalni"
 
 msgid "recipe.deep_mining.desc"
 msgstr "Górnik schodzi do szybu, kuje rudę pod ziemią, wyciąga kubeł kołowrotem, rozbija rudę na hałdzie i niesie ją do magazynu."
+
+msgid "ui.new_game.dev_mode"
+msgstr "Tryb deweloperski"
+
+msgid "ui.new_game.dev_mode_hint"
+msgstr "Do testów: dużo złota, wszystko staje od razu i za darmo, mieszkańcy nie odchodzą. W grze przełącza go F12."
+
+msgid "ui.dev_mode.on"
+msgstr "Tryb deweloperski"
+
+msgid "ui.dev_mode.hint"
+msgstr "Dużo złota, wszystko staje od razu i za darmo, mieszkańcy nie odchodzą. F12 go wyłącza."
+
+msgid "ui.note.dev_mode_on"
+msgstr "Tryb deweloperski włączony (F12 wyłącza)"
+
+msgid "ui.note.dev_mode_off"
+msgstr "Tryb deweloperski wyłączony"
