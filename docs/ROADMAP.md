@@ -1454,7 +1454,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E3 — Cechy prowincji: niewyczerpalne źródła
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą. **Decyzje z ankiety 2026-11-11 niżej; plan czeka na akceptację startu.** Poprawki z oceny E2, część 4, mają pierwszeństwo.
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą. **Decyzje z ankiety 2026-11-11 niżej; plan zaakceptowany 2026-11-11; część 1 scalona do `main` (czeka na ocenę), część 2 gotowa do oceny.** Poprawki z oceny E2, część 4, mają pierwszeństwo.
 
 **Decyzje z ankiety 2026-11-11:**
 - **Osobna cecha prowincji**, niezależna od rzadkiego surowca (prowincja może mieć np. winorośl i być bogata w kamień). Dzisiejsza ruda★ staje się automatycznie cechą „bogata w żelazo”.
@@ -1476,9 +1476,16 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Tryb uproszczony liczy cykl na każdego kamieniarza (`parallel_work`). Władcy, osady i automatyczny gracz jeszcze nie stawiają odkrywki (część 3).
 - Testy: `tests/scenario/test_e3_traits.gd`.
 
+**Część 2, stan (2026-11-11, gotowa do oceny; ocena części 1 jeszcze nie przyszła):**
+- **Decyzje z ankiety 2026-11-11 (część 2):** 3 górników i koszt jak przy odkrywce, wieża szybu z kołem linowym i kołowrotem na dwie korby, budynek 3×3.
+- **Głęboka kopalnia** (zakładka „Wojsko”, za kopalnią rudy): 3×3, stoi przy żyle rudy (zasięg 4) tylko w prowincji bogatej w żelazo, czyli z rudą★ (w „Królestwie” Żelazny Gród); 10 drewna, 6 desek, 6 kamienia, 60 złota; 3 górników. Każdy schodzi do szybu (2 s), kuje rudę pod ziemią, gdzie go nie widać (22 s), wyciąga kubeł kołowrotem (3 s), rozbija rudę na hałdzie (3 s) i niesie ją do magazynu. Żył nie zużywa. Na górnika tyle co zwykła kopalnia (pomiar w teście: 9 wobec 9 sztuk w 10 minut przy dalekim magazynie). Jedno wejście.
+- **Grafika ze SpriteKiln** (ART_SPEC §10.23): wieża szybu z kołem linowym, lina w dół szybu z kubłem i lina do kołowrotu, hałda rudy, taczka, stemple. Górnicy mają swoje miejsca przy szybie, przy korbach i przy hałdzie. Nowe ruchy „schodzi do szybu” i „kręci kołowrotem”. Pod ziemią górnik znika z widoku (nowe w widoku: miejsca pracy poza wzrokiem).
+- Tryb uproszczony liczy cykl na każdego górnika (`parallel_work`). Władcy, osady i automatyczny gracz jeszcze nie stawiają głębokiej kopalni (część 3).
+- Testy: `tests/scenario/test_e3_traits.gd` (część 2 na końcu pliku).
+
 **Kryteria ukończenia:**
 - [x] Cecha prowincji w danych i na mapie świata (z zapisu: z definicji); odkrywka działa tylko w prowincji bogatej w kamień (część 1).
-- [ ] Głęboka kopalnia działa tylko w prowincji bogatej w żelazo i się nie kończy (część 2).
+- [x] Głęboka kopalnia działa tylko w prowincji bogatej w żelazo i się nie kończy (część 2).
 - [ ] Losowe światy, władcy, osady i automatyczny gracz korzystają z cech; stare zapisy wczytują się (test); testy szybkie i długie przechodzą; UI w PL i EN (część 3).
 - [ ] Żyzna ziemia i bogata w zwierzynę działają i są widoczne na mapie świata (część 4).
 - [ ] **Twoja ocena gry** po każdej części.
