@@ -1381,7 +1381,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E2 — Jedzenie na start i nowe potrzeby mieszkańców
 
-> Pomysły właściciela z 2026-11-10 (IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 4–5). Kolejność (właściciel 2026-11-11): najpierw cały pakiet ekonomii (E2, E3, E4), grafiki G3 po nim. **Decyzje z ankiety 2026-11-11 niżej; plan czeka na akceptację startu.**
+> Pomysły właściciela z 2026-11-10 (IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 4–5). Kolejność (właściciel 2026-11-11): najpierw cały pakiet ekonomii (E2, E3, E4), grafiki G3 po nim. **Decyzje z ankiety 2026-11-11 niżej; plan zaakceptowany 2026-11-11, część 1 gotowa do oceny.**
 
 **Cel:** mapa bez wody też ma jedzenie na start, a mieszkańcy chcą różnorodnego jedzenia: do spokoju wystarczy część potrzeb, a każda potrzeba ponad minimum daje trochę więcej podatku.
 
@@ -1454,7 +1454,34 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E3 — Cechy prowincji: niewyczerpalne źródła
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Do zaplanowania po E2: prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą (droższe, wolniejsze albo z większą obsadą); dalsze cechy do decyzji (żyzna ziemia, bogata w zwierzynę).
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkt 6. Prowincje z cechą (np. „bogata w kamień”, „bogata w żelazo”) dostają odkrywkę kamienia i głęboką kopalnię żelaza, które się nie kończą. **Decyzje z ankiety 2026-11-11 niżej; plan czeka na akceptację startu.** Poprawki z oceny E2, część 4, mają pierwszeństwo.
+
+**Decyzje z ankiety 2026-11-11:**
+- **Osobna cecha prowincji**, niezależna od rzadkiego surowca (prowincja może mieć np. winorośl i być bogata w kamień). Dzisiejsza ruda★ staje się automatycznie cechą „bogata w żelazo”.
+- **Budynek stoi gdziekolwiek przy skałach** (odkrywka) albo żyłach rudy (głęboka kopalnia) w prowincji z cechą, bez osobnych złóż. Budynek sam jest źródłem: nie zużywa skał ani żył wokół siebie. Ryzyko (Claude): bez limitu łatwo przesadzić z wydajnością. Jeśli pomiary to pokażą, zaproponuję limit w ankiecie.
+- **Balans: większa obsada i droższa budowa** (np. 3 robotników; kamień, deski i złoto). Wydajność na robotnika jak w zwykłym budynku.
+- **Dalsze cechy w części 4:** żyzna ziemia (większy plon pól) i bogata w zwierzynę (więcej stad dla myśliwego).
+
+**Plan (ocena po każdej części):**
+1. **Cecha „bogata w kamień” i odkrywka kamienia.** Cecha w danych prowincji i w zapisie; znaczek i opis na mapie świata i w panelu prowincji. Odkrywka: wyrobisko ze stopniami, kamieniarze tłuką bloki, drewniany żuraw wciąga je na górę; podpowiedź „tylko w prowincji bogatej w kamień”. Grafika ze SpriteKiln. Zwykły kamieniołom bez zmian.
+2. **Głęboka kopalnia żelaza.** Wieża szybu z kołowrotem: górnicy schodzą pod ziemię, kubły z rudą wyjeżdżają na górę. Ruda★ = cecha „bogata w żelazo”. Zwykłe kopalnie przy małych żyłach bez zmian. Grafika ze SpriteKiln.
+3. **Reszta świata nadąża.** Losowe światy (M8) rozdają cechy; władcy, osady neutralne i automatyczny gracz stawiają nowe budynki; liczby z pomiarów automatycznym graczem (cel: wygodne na długą metę, ale nie wypierają zwykłych źródeł); stare zapisy z cechami z definicji (test; cechy nie są zapisywane, więc bez nowej wersji zapisu, zmiana planu 2026-11-11); testy szybkie i długie, UI w PL i EN.
+4. **Żyzna ziemia i bogata w zwierzynę.** Pola w żyznej prowincji dają większy plon; w prowincji bogatej w zwierzynę więcej stad, które szybciej się odradzają. Cechy w losowych światach, na mapie świata i u władców.
+
+**Część 1, stan (2026-11-11, scalona do `main` na prośbę właściciela, czeka na ocenę):**
+- **Cecha prowincji** to dane (`ProvinceDef.traits`; „bogata w żelazo” wynika z rudy★). Nie trafia do zapisu: po wczytaniu gra bierze ją z definicji prowincji, więc stare zapisy działają bez migracji (ARCHITECTURE §8). W „Królestwie” bogate w kamień jest **Bursztynowe Wybrzeże** (sąsiad Zatoki Lądowania, pusta prowincja do zasiedlenia). Na mapie świata znaczek ciętych bloków przy nazwie i linia „Cechy: …” w panelu.
+- **Odkrywka** (zakładka „Surowce”, za kamieniołomem): 3×3, stoi przy skale (zasięg 4) tylko w prowincji bogatej w kamień; 8 drewna, 6 desek, 6 kamienia, 50 złota; 3 kamieniarzy. Każdy tłucze blok w ścianie (9 s), ociosuje go (3 s), wciąga żurawiem (3 s) i niesie do magazynu. Skał nie zużywa. Na kamieniarza tyle co kamieniołom (pomiar w teście: 13 wobec 15 sztuk w 10 minut), czyli odkrywka to ok. 3 kamieniołomy, które nigdy się nie kończą. Jedno wejście (z tyłu skała).
+- **Grafika ze SpriteKiln** (ART_SPEC §10.22): stopnie z blokami, żuraw z kołowrotem na dwie korby, sanie z blokami. Kamieniarze mają swoje miejsca: trzech przy ścianie, przy żurawiu dwóch przy korbach i jeden pod hakiem. Nowy ruch „kręci korbą”.
+- Poprawka przy okazji: w budynku odbitym punkty pracy też się odbijają (dotąd np. przy cegielni robotnik stał po złej stronie).
+- Tryb uproszczony liczy cykl na każdego kamieniarza (`parallel_work`). Władcy, osady i automatyczny gracz jeszcze nie stawiają odkrywki (część 3).
+- Testy: `tests/scenario/test_e3_traits.gd`.
+
+**Kryteria ukończenia:**
+- [x] Cecha prowincji w danych i na mapie świata (z zapisu: z definicji); odkrywka działa tylko w prowincji bogatej w kamień (część 1).
+- [ ] Głęboka kopalnia działa tylko w prowincji bogatej w żelazo i się nie kończy (część 2).
+- [ ] Losowe światy, władcy, osady i automatyczny gracz korzystają z cech; stare zapisy wczytują się (test); testy szybkie i długie przechodzą; UI w PL i EN (część 3).
+- [ ] Żyzna ziemia i bogata w zwierzynę działają i są widoczne na mapie świata (część 4).
+- [ ] **Twoja ocena gry** po każdej części.
 
 ## E4 — Uniwersytet, badania oraz małe i duże koszary
 

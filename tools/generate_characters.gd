@@ -214,13 +214,15 @@ const WORK := {
 	"rake": ["low", "rake"], "pick": ["overhead", "pick"], "bellows": ["push", ""], "heat": ["push", "tongs"],
 	"forge": ["overhead", "hammer"], "quench": ["bend", "tongs"], "rivet": ["low", "hammer"], "polish": ["stir", ""],
 	"carve": ["push", "knife"], "bend": ["bend", ""], "string": ["stir", ""], "groom": ["push", "brush"],
+	# E3 part 1: the stone pit's crane winch
+	"hoist": ["stir", ""],
 }
 
 ## Activities each profession performs (recipes, fields, building).
 const ACTIVITIES := {
 	"farmer": ["plow", "sow", "harvest", "bind", "weed"], "hop_grower": ["plow", "sow", "harvest", "bind", "weed"],
 	"miller": ["grind"], "baker": ["knead", "bake"], "woodcutter": ["chop", "bind"],
-	"builder": ["build"], "sawyer": ["saw"], "stonecutter": ["hew", "shape"],
+	"builder": ["build"], "sawyer": ["saw"], "stonecutter": ["hew", "shape", "hoist"],
 	"angler": ["cast", "wait_bite", "reel"], "brewer": ["mash", "brew"],
 	"forester": ["dig", "plant", "rest"], "shepherd": ["herd", "shear"], "weaver": ["spin", "weave"],
 	"tailor": ["cut", "sew"], "beekeeper": ["tend_hives", "collect_honey"], "mead_maker": ["mix", "ferment"],

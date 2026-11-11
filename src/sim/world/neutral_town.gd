@@ -37,7 +37,8 @@ static func build(sim: Simulation, id: int, layout: ProvinceDef = null) -> Packe
 	var town := ProvinceSim.new(sim.data, map.size_for(def.mirrored), SimEvents.new(), sim.ids)
 	town.treasury = Treasury.new()
 	town.tick = sim.clock.tick
-	problems.append_array(town.load_map(map, def.mirrored, def.richness, false, def.rare_resource))
+	problems.append_array(town.load_map(map, def.mirrored, def.richness, false, def.rare_resource,
+			def.traits))
 	# A map started from a ship (the Coast) has no town yet: no landing, no first building;
 	# the town hall goes up first, inland from the beach.
 	town.landing = null

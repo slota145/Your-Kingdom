@@ -84,6 +84,10 @@ var route_wagons: Dictionary[int, RouteWagon] = {}
 var first_building: StringName = &""
 ## The province's rare resource (M6 part 3: vines let vineyards be built), from its ProvinceDef.
 var rare_resource: StringName = &""
+## The province's traits (ROADMAP E3: rich_stone lets a stone pit be built), from its ProvinceDef
+## (ProvinceDef.traits_of: rich_iron comes with iron ore as the rare resource). Not saved: data,
+## not state; Simulation.from_dict sets them again from the world's ProvinceDefs.
+var traits: Array[StringName] = []
 ## Start protection (review fix 2026-11-07): until this tick residents neither lose happiness
 ## nor move out, and a short supply raises no warning (0: no protection; old saves).
 var grace_until: int = 0
@@ -322,11 +326,13 @@ func refresh_fairways() -> void:
 ## enriches (3) its forests, rocks and shoals, and [param settled] leaves the start layout
 ## out (settlers bring their own, Expedition). A province with vines as its rare resource
 ## ([param rare], M6 part 3) gets patches of vine soil (the only ground a vineyard tends).
+## [param own_traits] are the province's traits (ProvinceDef.traits, ROADMAP E3).
 func load_map(map: MapDef, mirrored: bool = false, richness: int = 2, settled: bool = false,
-		rare: StringName = &"") -> PackedStringArray:
+		rare: StringName = &"", own_traits: Array[StringName] = []) -> PackedStringArray:
 	var problems := _load_terrain(map, mirrored)
 	_apply_richness(richness)
 	rare_resource = rare
+	traits = ProvinceDef.traits_of(own_traits, rare)
 	lay_ore_veins()
 	if rare == VINES:
 		_lay_vine_soil()
@@ -539,6 +545,8 @@ func placement_error(def: BuildingDef, origin: Vector2i, orientation: int = 0) -
 		return &"unknown_building"
 	if def.needs_rare != &"" and rare_resource != def.needs_rare:
 		return StringName("needs_%s" % def.needs_rare)
+	if def.needs_trait != &"" and not traits.has(def.needs_trait):
+		return StringName("needs_%s" % def.needs_trait)
 	if orientation < 0 or orientation >= def.orientation_count():
 		return &"bad_orientation"
 	if first_building != &"" and def.id != first_building:

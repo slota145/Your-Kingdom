@@ -87,6 +87,11 @@ const BUILDINGS := {
 	"quarry": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.86], "h": 34.0, "rh": 18.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "stone", "roof": "slate", "shutters": Color(0.4, 0.38, 0.36)}],
 		"props": [["stone_blocks", 1.3, 1.78], ["crane", 0.3, 1.95]]}],
+	# E3 part 1: the stone pit's base art is from SpriteKiln (tools/spritekiln/gen_stone_pit.py);
+	# this look gives its construction sites (restore base.* after running this script).
+	"stone_pit": [{"volumes": [
+		{"kind": "lean", "rect": [0.2, 0.2, 1.2, 1.2], "low": "y", "h": 22.0, "hh": 30.0, "roof": "shingle", "walls": "planks", "open": true, "inside": []}],
+		"props": [["stone_blocks", 1.6, 2.6], ["crane", 2.4, 2.2]]}],
 	"farm": [{"volumes": [
 		{"kind": "house", "rect": [0.14, 0.14, 1.0, 1.86], "h": 42.0, "rh": 26.0, "ridge": "y", "ends": ["gable", "gable"], "walls": "timber", "roof": "thatch", "shutters": Color(0.6, 0.25, 0.2), "chimney": [0.55, 0.6]}],
 		"props": [["sheaves", 1.3, 1.78], ["cart_wheel", 0.55, 1.98]]}],

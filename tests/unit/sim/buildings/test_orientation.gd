@@ -57,9 +57,13 @@ func test_people_go_in_and_out_through_the_door() -> void:
 		for o: int in def.orientation_count():
 			var sim := SimFixture.make_sim(Vector2i(24, 24))
 			sim.province.rare_resource = def.needs_rare   # a vineyard: a province with vines (M6)
+			if def.needs_trait != &"":
+				sim.province.traits = [def.needs_trait]   # a stone pit: rich in stone (E3)
 			if def.needs_node_near != &"":
 				# A mine needs an ore vein in reach (M7), out of everybody's way.
-				SimFixture.place_nodes(sim, Rect2i(17, 5, 1, 1), def.needs_node_near)
+				# A stone pit reaches less far (E3): its rock lies nearer.
+				var node := Vector2i(17, 5) if def.work_radius >= 6 else Vector2i(15, 8)
+				SimFixture.place_nodes(sim, Rect2i(node, Vector2i.ONE), def.needs_node_near)
 			var origin := Vector2i(10, 10)
 			if def.is_on_water():
 				# A pier or a slipway (M5): sea under it and at its berth.

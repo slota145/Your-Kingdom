@@ -32,6 +32,7 @@ extends Resource
 ## owner's request 2026-11-09).
 @export var stone_strip: bool = false
 ## Work spot name -> pixel offset from the entrance tile centre where the worker is drawn.
+## "<spot>_<n>" is the spot of the building's n-th worker (from 1), used before "<spot>".
 @export var spot_offsets: Dictionary[StringName, Vector2] = {}
 
 

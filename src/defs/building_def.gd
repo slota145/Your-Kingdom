@@ -45,6 +45,11 @@ const PEN_ANIMALS := 2
 @export_range(0, 64) var max_fields: int = 0
 ## Built only in a province with this rare resource (a vineyard: vines, M6 part 3).
 @export var needs_rare: StringName = &""
+## Stands only in a province with this trait (ProvinceDef.TRAITS, ROADMAP E3); empty = anywhere.
+@export var needs_trait: StringName = &""
+## Each worker runs the recipe on his own (the stone pit's three stonecutters, E3): the
+## simplified mode's estimate counts a cycle per worker, not one for the whole building.
+@export var parallel_work: bool = false
 ## Fields on this terrain grow [member field_bonus] times as fast (vines on vine soil).
 @export var field_bonus_terrain: StringName = &""
 @export_range(1.0, 4.0) var field_bonus: float = 1.0

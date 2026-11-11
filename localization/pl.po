@@ -4369,3 +4369,37 @@ msgstr "brak uli (postaw ule obok pasieki)"
 
 msgid "ui.command_error.too_many_hives"
 msgstr "Pasieka ma już wszystkie ule."
+
+# --- E3 part 1: province traits, the stone pit ---
+msgid "building.stone_pit.name"
+msgstr "Odkrywka"
+
+msgid "building.stone_pit.desc"
+msgstr "Trzej kamieniarze tłuką bloki w wyrobisku, a żuraw wciąga je na górę. Odkrywka nigdy się nie kończy. Stawia się ją przy skałach, tylko w prowincji bogatej w kamień."
+
+msgid "ui.command_error.needs_rich_stone"
+msgstr "Odkrywkę stawia się tylko w prowincji bogatej w kamień."
+
+msgid "ui.command_error.needs_rich_iron"
+msgstr "Tylko w prowincji bogatej w żelazo."
+
+msgid "ui.command_error.no_rock_nearby"
+msgstr "W pobliżu nie ma skał."
+
+msgid "ui.activity.hoist"
+msgstr "wciąga kamień żurawiem"
+
+msgid "ui.world.traits"
+msgstr "Cechy: %s"
+
+msgid "trait.rich_stone.name"
+msgstr "bogata w kamień"
+
+msgid "trait.rich_iron.name"
+msgstr "bogata w żelazo"
+
+msgid "recipe.pit_quarrying.name"
+msgstr "Praca w odkrywce"
+
+msgid "recipe.pit_quarrying.desc"
+msgstr "Kamieniarz tłucze blok w ścianie wyrobiska, ociosuje go, wciąga żurawiem na górę i niesie do magazynu."

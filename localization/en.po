@@ -4329,3 +4329,37 @@ msgstr "no hives (place hives beside the apiary)"
 
 msgid "ui.command_error.too_many_hives"
 msgstr "The apiary has all its hives."
+
+# --- E3 part 1: province traits, the stone pit ---
+msgid "building.stone_pit.name"
+msgstr "Stone Pit"
+
+msgid "building.stone_pit.desc"
+msgstr "Three stonecutters break blocks in the pit and a crane hoists them up. A stone pit never runs out. It stands by rocks, only in a province rich in stone."
+
+msgid "ui.command_error.needs_rich_stone"
+msgstr "A stone pit stands only in a province rich in stone."
+
+msgid "ui.command_error.needs_rich_iron"
+msgstr "Only in a province rich in iron."
+
+msgid "ui.command_error.no_rock_nearby"
+msgstr "There are no rocks nearby."
+
+msgid "ui.activity.hoist"
+msgstr "hoisting stone with the crane"
+
+msgid "ui.world.traits"
+msgstr "Traits: %s"
+
+msgid "trait.rich_stone.name"
+msgstr "rich in stone"
+
+msgid "trait.rich_iron.name"
+msgstr "rich in iron"
+
+msgid "recipe.pit_quarrying.name"
+msgstr "Pit quarrying"
+
+msgid "recipe.pit_quarrying.desc"
+msgstr "The stonecutter breaks a block out of the pit wall, shapes it, hoists it up with the crane and carries it to the stockpile."

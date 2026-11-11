@@ -48,6 +48,7 @@ Strategia ekonomiczno-wojskowa w izometrycznym 2D, inspirowana Twierdzą (Strong
   - **typ mapy**: kontynentalna (opcjonalnie z rzeką lub jeziorem), przybrzeżna, wyspowa,
   - **bogactwo surowców** (np. żyzność gleby, lasy, kamień, ryby): wartości 1–3 wpływające na liczbę i wydajność złóż w widoku prowincji,
   - opcjonalnie **surowiec rzadki**: ruda żelaza, sól, winorośl lub pastwiska koni,
+  - opcjonalnie **cechy** (E3, ankieta 2026-11-11), niezależne od rzadkiego surowca: **bogata w kamień** (odkrywka, która się nie kończy), **bogata w żelazo** (każda prowincja z rudą★; głęboka kopalnia w części 2), w części 4 żyzna ziemia i bogata w zwierzynę. W świecie „Królestwo” bogate w kamień jest Bursztynowe Wybrzeże. Cechy widać na mapie świata (znaczek przy nazwie, linia „Cechy:” w panelu prowincji),
   - **właściciela**: gracz, władca AI, osada neutralna albo prowincja pusta.
 - Na mapie świata poruszają się **armie** (lądem), **floty** (strefami morskimi) i **konwoje handlowe** (wozy lub statki).
 - Ruch odbywa się w czasie rzeczywistym, po krawędziach grafu, a czas przejścia zależy od dystansu i rodzaju jednostki.
@@ -191,6 +192,7 @@ studnia (usługa, bez towaru)
 [M4a]
 drewno ──► tartak ──► deski (1 kłoda = 2 deski)
 skały na mapie ──► kamieniołom ──► kamień
+[E3] prowincja bogata w kamień: odkrywka przy skałach (3 kamieniarzy, nie zużywa skał) ──► kamień
 wędkarz (nad rzeką) ──► ryby (później kutry na morzu, IDEAS)
 chmielnik + pola ──► chmiel
 zboże + chmiel ──► browar ──► piwo (1 + 1 = 2 beczki)
@@ -345,6 +347,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Piekarnia | 2×2 | chleb |
 | Tartak [M4a] | 2×2 | deski |
 | Kamieniołom [M4a] | 2×2, skały w zasięgu 12 | kamień |
+| Odkrywka [E3] | 3×3, skała w zasięgu 4, tylko w prowincji bogatej w kamień; 8 drewna, 6 desek, 6 kamienia, 50 złota; 3 kamieniarzy | kamień bez końca (na kamieniarza tyle co kamieniołom: 13 wobec 15 sztuk w 10 minut) |
 | Chata wędkarza [M4a] | 2×2, woda w zasięgu 5 | ryby |
 | Chmielnik [M4a] | 2×2 + do 12 kafli pola | chmiel |
 | Browar [M4a] | 2×2, 30 złota | piwo |
