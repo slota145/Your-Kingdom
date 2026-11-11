@@ -13,7 +13,7 @@ const TABS: Array[Dictionary] = [
 	{"id": &"housing", "buildings": [&"hut", &"well", &"chapel", &"church", &"market", &"tavern"]},
 	{"id": &"resources", "buildings": [&"woodcutter", &"forester", &"sawmill", &"quarry", &"clay_pit",
 			&"brickworks"]},
-	{"id": &"food", "buildings": [&"farm", &"mill", &"bakery", &"fishing_hut", &"pigsty",
+	{"id": &"food", "buildings": [&"farm", &"mill", &"bakery", &"orchard", &"fishing_hut", &"pigsty",
 			&"slaughterhouse"]},
 	{"id": &"drink", "buildings": [&"hop_farm", &"brewery", &"apiary", &"meadery", &"vineyard", &"wine_press"]},
 	{"id": &"textiles", "buildings": [&"sheep_farm", &"weaver", &"tailor"]},

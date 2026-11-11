@@ -2333,6 +2333,30 @@ msgstr "%s has new demands."
 
 # --- M6 part 3: wine ---
 
+msgid "good.apples.name"
+msgstr "Apples"
+
+msgid "good.apples.desc"
+msgstr "Fruit from the orchard. Food for the residents; apple trees need no water, so an orchard gives food at the start on any map."
+
+msgid "building.orchard.name"
+msgstr "Orchard"
+
+msgid "building.orchard.desc"
+msgstr "The orchardist plants apple trees on the tiles around, tends them and picks the apples. All the trees blossom and bear fruit together."
+
+msgid "ui.kind.orchardist"
+msgstr "Orchardist"
+
+msgid "recipe.orcharding.name"
+msgstr "Apple growing"
+
+msgid "recipe.orcharding.desc"
+msgstr "The orchardist tends the apple trees and picks the ripe apples into a basket."
+
+msgid "ui.activity.weed"
+msgstr "weeding"
+
 msgid "good.grapes.name"
 msgstr "Grapes"
 
@@ -2391,6 +2415,11 @@ msgid "ui.activity.press"
 msgstr "presses grapes"
 
 
+
+msgid "good.apples.count"
+msgid_plural "good.apples.count_plural"
+msgstr[0] "%s basket of apples"
+msgstr[1] "%s baskets of apples"
 
 msgid "good.grapes.count"
 msgid_plural "good.grapes.count_plural"

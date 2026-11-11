@@ -14,7 +14,7 @@ extends RefCounted
 
 const RECRUIT_KIND := &"recruit"
 ## What soldiers eat, in order of preference when the stores hold the same.
-const FOOD: Array[StringName] = [&"bread", &"fish", &"meat"]
+const FOOD: Array[StringName] = [&"bread", &"fish", &"meat", &"apples"]
 ## Units of each food the pantry holds.
 const PANTRY_UNITS := 6
 ## Food a soldier eats per minute (like a resident's bread, data/needs/bread.tres).

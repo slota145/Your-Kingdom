@@ -38,6 +38,7 @@ ramps:
   wool:   ['#2a241c', '#6e6452', '#a39784', '#c8bea8', '#e2dac6', '#f4efe2']
   grass:  ['#14200c', '#26381a', '#34481e', '#3e5424', '#4a602a']
   honey:  ['#2a1404', '#6a3a08', '#a8640e', '#d8901c', '#f0b83a', '#fcd870']
+  apple:  ['#2a0806', '#5e1410', '#8e2418', '#ba3a22', '#d85a34', '#ec8a50']
   bloom:  ['#1a0a20', '#4a2058', '#7a3a8a', '#a058b4', '#c886d6']
   petal:  ['#2a1a04', '#6a4a08', '#b08a14', '#e0c030', '#f8e070']
 
@@ -58,6 +59,10 @@ materials:
   slate: {{ramp: slate, bands: [2, 5]}}
   slate_dark: {{ramp: slate, bands: [0, 1], outline: false}}
   daub: {{ramp: plaster_cream, bands: [2, 5]}}
+  ochre: {{ramp: plaster_ochre, bands: [2, 5]}}
+  tile: {{ramp: tile, bands: [2, 4]}}
+  tile_dark: {{ramp: tile, bands: [0, 1], outline: false}}
+  apple: {{ramp: apple, bands: [2, 5], outline: false}}
   stone: {{ramp: stone, bands: [2, 5]}}
   dirt: {{ramp: dirt, outline: false}}
   mud: {{ramp: mud, outline: false}}
@@ -651,11 +656,132 @@ PORTERS = """  plinth:
       - box: {c: [0.07, 0.95, 0.07], half: [0.16, 0.03, 0.03]}
 """
 
+# --- orchard (E2 part 1): an ochre cottage under red tiles and an earth fruit cellar ---------
+ORCHARD = """  grass_patches:
+    material: grass
+    prims:
+      - ellipsoid: {c: [1.2, 0.014, -1.0], r: [0.9, 0.013, 0.9]}
+      - ellipsoid: {c: [-1.0, 0.014, 1.6], r: [0.6, 0.013, 0.35]}
+  plinth:
+    material: stone
+    prims:
+      - box: {c: [-1.1, 0.08, -1.1], half: [1.05, 0.08, 1.05], round: 0.02}
+  walls:             # ochre daub on a small cottage on the left tile
+    material: ochre
+    prims:
+      - box: {c: [-1.1, 0.98, -1.1], half: [0.98, 0.9, 0.98]}
+  frame:
+    material: timber
+    prims:
+      - box: {c: [-0.12, 0.98, -0.12], half: [0.07, 0.92, 0.07]}
+      - box: {c: [-2.08, 0.98, -0.12], half: [0.07, 0.92, 0.07]}
+      - box: {c: [-0.12, 0.98, -2.08], half: [0.07, 0.92, 0.07]}
+      - box: {c: [-1.1, 1.86, -0.12], half: [1.02, 0.07, 0.06]}
+      - box: {c: [-0.12, 1.86, -1.1], half: [0.06, 0.07, 1.02]}
+  gables:
+    material: ochre
+    prims:
+      - extrude: {c: [-1.1, 1.88, -0.13], depth: 0.1, profile: {polygon: [[-0.98, 0], [0.98, 0], [0, 1.0]]}}
+      - extrude: {c: [-1.1, 1.88, -2.07], depth: 0.1, profile: {polygon: [[-0.98, 0], [0.98, 0], [0, 1.0]]}}
+  roof_left:
+    material: tile
+    prims:
+      - box: {c: [-1.72, 2.4, -1.1], half: [0.85, 0.07, 1.22], rot: [0, 0, 0.8]}
+    paint:
+      - material: tile_dark
+        stripes: {axis: z, period: 0.2, width: 0.055}
+  roof_right:
+    material: tile
+    prims:
+      - box: {c: [-0.48, 2.4, -1.1], half: [0.85, 0.07, 1.22], rot: [0, 0, -0.8]}
+    paint:
+      - material: tile_dark
+        stripes: {axis: z, period: 0.2, width: 0.055}
+  ridge:
+    material: tile_dark
+    prims:
+      - box: {c: [-1.1, 2.98, -1.1], half: [0.09, 0.07, 1.24]}
+  door:
+    material: plank
+    prims:
+      - box: {c: [-0.59, 0.82, -0.1], half: [0.3, 0.68, 0.035]}
+    paint:
+      - material: ink
+        stripes: {axis: x, period: 0.15, width: 0.055}
+  window:
+    material: ink
+    prims:
+      - box: {c: [-1.55, 1.15, -0.11], half: [0.2, 0.2, 0.03]}
+  loft:              # a round window in the gable
+    material: ink
+    prims:
+      - cylinder: {a: [-1.1, 2.3, -0.08], b: [-1.1, 2.3, -0.14], r: 0.14}
+  cellar:            # an earth fruit cellar on the back tile, grass on top
+    material: grass
+    blend: 0.1
+    prims:
+      - ellipsoid: {c: [1.15, 0.2, -1.2], r: [0.95, 0.75, 0.85]}
+    cut:
+      - plane: {n: [0, -1, 0], c: [0, 0.02, 0]}
+  cellar_front:      # its stone front wall and door, facing the yard
+    material: stone
+    prims:
+      - extrude: {c: [1.15, 0.0, -0.42], depth: 0.16, profile: {polygon: [[-0.62, 0], [0.62, 0], [0.5, 0.62], [0, 0.82], [-0.5, 0.62]]}}
+    paint:
+      - material: ink
+        spots: {scale: 0.08, density: 0.2, seed: 9}
+  cellar_door:
+    material: plank
+    prims:
+      - box: {c: [1.15, 0.33, -0.32], half: [0.24, 0.33, 0.03]}
+    paint:
+      - material: ink
+        stripes: {axis: x, period: 0.12, width: 0.055}
+  ladder:            # a picking ladder leaning on the cottage
+    material: post
+    priority: 2
+    prims:
+      - cylinder: {a: [-2.2, 0.0, 0.35], b: [-2.15, 1.75, -0.0], r: 0.035}
+      - cylinder: {a: [-1.85, 0.0, 0.35], b: [-1.8, 1.75, -0.0], r: 0.035}
+      - box: {c: [-2.02, 0.45, 0.26], half: [0.18, 0.025, 0.025]}
+      - box: {c: [-2.01, 0.85, 0.18], half: [0.18, 0.025, 0.025]}
+      - box: {c: [-2.0, 1.25, 0.1], half: [0.18, 0.025, 0.025]}
+  crates:            # crates of apples by the door
+    material: plank
+    prims:
+      - box: {c: [-1.3, 0.18, 0.4], half: [0.26, 0.18, 0.2]}
+      - box: {c: [-1.35, 0.5, 0.42], half: [0.24, 0.14, 0.19], rot: [0, 0.2, 0]}
+      - box: {c: [0.15, 0.18, 0.3], half: [0.22, 0.18, 0.2], rot: [0, -0.3, 0]}
+    cut:
+      - box: {c: [-1.3, 0.3, 0.4], half: [0.22, 0.1, 0.16]}
+  crate_apples:
+    material: apple
+    prims:
+      - sphere: {c: [-1.4, 0.68, 0.38], r: 0.08}
+      - sphere: {c: [-1.25, 0.68, 0.46], r: 0.08}
+      - sphere: {c: [-1.32, 0.7, 0.32], r: 0.08}
+      - sphere: {c: [0.1, 0.38, 0.3], r: 0.08}
+      - sphere: {c: [0.24, 0.38, 0.26], r: 0.08}
+  basket:
+    material: wicker
+    prims:
+      - cylinder: {a: [-0.1, 0.0, 0.85], b: [-0.1, 0.24, 0.85], r: 0.22}
+    paint:
+      - material: ink
+        rings: {axis: y, period: 0.09, width: 0.055}
+  basket_apples:
+    material: apple
+    prims:
+      - sphere: {c: [-0.16, 0.27, 0.82], r: 0.08}
+      - sphere: {c: [-0.02, 0.28, 0.88], r: 0.08}
+"""
+
 BUILDINGS = {
     "pigsty": ("dirt", "Your Kingdom pigsty (Z1, look of its own 2026-11-11), 2x2 tiles, the pens on tiles beside it: a low fieldstone sty under a board lean-to roof falling to the yard, a low door with a plank half-door, a pig hatch, bedding straw heaped by the side, a trough with slop, a bucket and a pitchfork in the muddy yard", PIGSTY),
     "sheep_farm": ("dirt", "Your Kingdom sheep farm (Z1 part 2, look of its own 2026-11-11), 2x2 tiles, the flock in pens beside it: a low wattle hut on stakes under a steep hipped thatched roof, fleece sacks by the wall, a shearing bench with a fleece and shears in the grassy yard, a hay rack and a shepherd's crook", SHEEP),
     "stud_farm": ("dirt", "Your Kingdom stud farm (Z1 part 2, look of its own 2026-11-11), 2x2 tiles, the horses in pens beside it: a tall plank stable with its gable to the yard, a steep shingle roof with a weather vane, a wide braced double door with a horseshoe over it, hay in the loft opening, an open tack shed with a saddle on a rack and hay bales, a stone water trough", STUD),
     "apiary": ("dirt", "Your Kingdom apiary (Z1 part 3, look of its own 2026-11-11), 2x2 tiles, the hives on tiles beside it: a small log cabin under a shingle roof on the left tile, a bee shelter with a shelf of straw skeps on the back tile (the honey stack stays on the right tile), a bench with honey jars, violet and yellow flowers in the grass", APIARY),
+    "orchard": ("dirt", "Your Kingdom orchard (E2 part 1), 2x2 tiles, the apple trees on tiles beside it: a small ochre cottage in a dark timber frame under red tiles on the left tile, an earth fruit cellar with a stone front and a plank door on the back tile, a picking ladder, crates and a basket of red apples by the door; the right tile stays free for the apple stack", ORCHARD),
     "porters_hut": ("dirt", "Your Kingdom porters' hut (E1, look of its own 2026-11-11), 2x2 tiles: a whitewashed cottage in a dark timber frame under a slate hip roof with a chimney, an open cart shed with a handcart loaded with sacks, crates, barrels and sacks waiting by the door, a carrying frame leaning on the wall", PORTERS),
 }
 

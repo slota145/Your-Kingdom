@@ -74,6 +74,10 @@ const GOODS := {
 	# M6 part 3 (wine)
 	"grapes": {"item": "grape_basket", "carry": "basket"},
 	"wine": {"item": "wine_barrel", "carry": "barrel"},
+	# E2 part 1: apples; the final carried basket, stack and icon are made outside this script
+	# (carried basket: the grapes' recoloured; stacks: tools/compose_pixellab_stacks.py;
+	# icon: tools/spritekiln/gen_icons.py).
+	"apples": {"item": "grape_basket", "carry": "basket"},
 }
 
 ## Item -> positions [grid x, grid y, z] in fill order (a quarter of them per stage).

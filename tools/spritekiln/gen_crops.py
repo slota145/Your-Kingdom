@@ -36,6 +36,11 @@ ramps:
   leaf:   ['#0e1e08', '#1c3a0e', '#2c5414', '#3e6e1c', '#548a26', '#6ea434']
   cone:   ['#202a0c', '#44561a', '#6a8226', '#94aa3a', '#bccc5a', '#dce48a']
   twine:  ['#1a140c', '#3e3220', '#625036', '#86704e', '#a89068']
+  bark:   ['#140c08', '#2e1e14', '#4a3222', '#644632', '#7e5c44']
+  crown:  ['#0c1a08', '#18320e', '#264a16', '#36621e', '#4a7c28', '#62963a']
+  bloom:  ['#3a2a30', '#8a6a74', '#c8a4ae', '#e8ccd2', '#f8ecee']
+  apple_g: ['#1e2a08', '#3e5410', '#62801c', '#86a42c', '#a8c040']
+  apple_r: ['#2a0806', '#5e1410', '#8e2418', '#ba3a22', '#d85a34', '#ec8a50']
 
 brief:
   summary: "{summary}"
@@ -52,6 +57,11 @@ materials:
   twine: {{ramp: twine, bands: [1, 3], outline: false}}
   post: {{ramp: log, bands: [1, 4]}}
   wire: {{ramp: steel, bands: [1, 3], outline: false}}
+  bark: {{ramp: bark, bands: [1, 4]}}
+  crown: {{ramp: crown, bands: [1, 5]}}
+  bloom: {{ramp: bloom, bands: [2, 4], outline: false}}
+  apple_g: {{ramp: apple_g, bands: [2, 4], outline: false}}
+  apple_r: {{ramp: apple_r, bands: [2, 5], outline: false}}
 
 channels: {{}}
 bones: {{}}
@@ -148,11 +158,53 @@ def hops(state):
     return "".join(parts), 128, 1.6
 
 
+def apples(state):
+    """An apple tree on the tile: a short trunk forking into branches, a round crown of leaf
+    clusters; white-pink blossom, then green apples, then red ones."""
+    rnd = random.Random(23)
+    parts = ["  trunk:\n    material: bark\n    prims:\n"
+             "      - cone: {a: [0.0, 0.0, 0.0], b: [0.05, 0.85, -0.03], r: [0.13, 0.1]}\n"
+             "      - cone: {a: [0.05, 0.8, -0.03], b: [-0.45, 1.45, 0.15], r: [0.08, 0.04]}\n"
+             "      - cone: {a: [0.05, 0.8, -0.03], b: [0.5, 1.5, -0.1], r: [0.08, 0.04]}\n"
+             "      - cone: {a: [0.05, 0.85, -0.03], b: [0.1, 1.75, 0.35], r: [0.07, 0.035]}\n"
+             "      - cone: {a: [0.05, 0.85, -0.03], b: [-0.05, 1.7, -0.45], r: [0.07, 0.035]}\n"]
+    if state != "bare":
+        full = state != "leaf"
+        size = 0.42 if full else 0.3
+        leaves = []
+        for k in range(14 if full else 9):
+            a = rnd.random() * math.tau
+            r = rnd.uniform(0.15, 0.6)
+            y = rnd.uniform(1.25, 1.95)
+            leaves.append("      - ellipsoid: {c: [%.3f, %.3f, %.3f], r: [%.3f, %.3f, %.3f]}"
+                          % (r * math.cos(a), y, r * math.sin(a), size, size * 0.8, size))
+        parts.append("  crown:\n    material: crown\n    blend: 0.06\n    prims:\n" + "\n".join(leaves) + "\n"
+                     "    paint:\n      - material: crown\n        spots: {scale: 0.1, density: 0.2, seed: 5}\n")
+        dots = {"blossom": ("bloom", 0.075, 40), "green": ("apple_g", 0.08, 26), "ripe": ("apple_r", 0.09, 28)}.get(state)
+        if dots:
+            mat, r, n = dots
+            fruit = []
+            for k in range(n):
+                # On the surface of the crown (centre about (0, 1.6, 0), radius about 0.85).
+                u = rnd.uniform(-0.55, 0.85)
+                a = rnd.random() * math.tau
+                ring = math.sqrt(1.0 - u * u)
+                fruit.append("      - sphere: {c: [%.3f, %.3f, %.3f], r: %.3f}"
+                             % (0.88 * ring * math.cos(a), 1.6 + 0.62 * u, 0.88 * ring * math.sin(a), r))
+            parts.append("  fruit:\n    material: %s\n    priority: 2\n    prims:\n%s\n" % (mat, "\n".join(fruit)))
+    if state == "ripe":
+        parts.append("  windfalls:\n    material: apple_r\n    prims:\n"
+                     "      - sphere: {c: [0.5, 0.06, 0.35], r: 0.07}\n      - sphere: {c: [-0.4, 0.06, 0.55], r: 0.07}\n")
+    return "".join(parts), 128, 1.4
+
+
 CROPS = {
     "grain": (grain, ["sprout", "young", "green", "ripe"], "none",
               "Your Kingdom wheat on one field tile, {state}: rows of wheat clumps"),
     "hops": (hops, ["poles", "shoot", "half", "full", "ripe"], "dark",
              "Your Kingdom hop garden on one field tile, {state}: two tall poles with a top wire, two strings, bines climbing them"),
+    "apples": (apples, ["bare", "leaf", "blossom", "green", "ripe"], "dark",
+               "Your Kingdom apple tree on one orchard tile, {state}: a short trunk, forked branches, a round crown"),
 }
 
 

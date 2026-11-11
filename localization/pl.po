@@ -2352,6 +2352,30 @@ msgstr "%s: czas minął, osada odrzuca ofertę."
 msgid "ui.note.settlement_asks"
 msgstr "%s ma nowe żądania."
 
+msgid "good.apples.name"
+msgstr "Jabłka"
+
+msgid "good.apples.desc"
+msgstr "Owoce z sadu. Jedzenie mieszkańców; jabłonie rosną bez wody, więc sad daje jedzenie na start na każdej mapie."
+
+msgid "building.orchard.name"
+msgstr "Sad"
+
+msgid "building.orchard.desc"
+msgstr "Sadownik sadzi jabłonie na kratkach wokół, dogląda ich i zbiera jabłka. Wszystkie drzewa kwitną i owocują razem."
+
+msgid "ui.kind.orchardist"
+msgstr "Sadownik"
+
+msgid "recipe.orcharding.name"
+msgstr "Uprawa jabłoni"
+
+msgid "recipe.orcharding.desc"
+msgstr "Sadownik dogląda jabłoni i zbiera dojrzałe jabłka do kosza."
+
+msgid "ui.activity.weed"
+msgstr "pieli"
+
 # --- M6 part 3: wine ---
 
 msgid "good.grapes.name"
@@ -2412,6 +2436,12 @@ msgid "ui.activity.press"
 msgstr "tłoczy winogrona"
 
 
+
+msgid "good.apples.count"
+msgid_plural "good.apples.count_plural"
+msgstr[0] "%s kosz jabłek"
+msgstr[1] "%s kosze jabłek"
+msgstr[2] "%s koszy jabłek"
 
 msgid "good.grapes.count"
 msgid_plural "good.grapes.count_plural"

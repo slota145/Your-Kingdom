@@ -185,7 +185,7 @@ static func shortages(town: ProvinceSim, counts: Dictionary[StringName, int], sa
 		result.append(&"forester")
 	if town.stored(&"stone") < LOW_STONE and int(counts.get(&"quarry", 0)) < 2:
 		result.append(&"quarry")
-	if town.stored(&"bread") + town.stored(&"fish") < LOW_FOOD and people > 0:
+	if town.stored(&"bread") + town.stored(&"fish") + town.stored(&"apples") < LOW_FOOD and people > 0:
 		if int(counts.get(&"fishing_hut", 0)) < 1 + people / 40:
 			result.append(&"fishing_hut")
 		var mills := int(counts.get(&"mill", 0))

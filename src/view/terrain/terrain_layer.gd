@@ -150,7 +150,7 @@ func setup_province(source: ProvinceSim) -> void:
 	province = source
 	_slot_by_index = slot_table(province.terrains)
 	_map_image = build_map_image(province.grid, _slot_by_index)
-	for folder: String in ["field", "field_hops", "field_grapes"]:
+	for folder: String in ["field", "field_hops", "field_grapes", "field_apples"]:
 		for name: String in ["fallow", "plowed", "sown_1", "sown_2", "sown_3", "ripe"]:
 			_fields["%s/%s" % [folder, name]] = ArtPaths.texture("terrain/%s/%s.png" % [folder, name])
 	# Animal pens (Z1): trampled earth, two looks.
