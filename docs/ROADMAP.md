@@ -1559,11 +1559,20 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Jedna ocena na koniec całej części 2** (bez dzielenia).
 - **Koga zostaje od startu** (wyprawy morskie jak dziś). Skutek (Claude): koga potrzebuje płótna na żagle, więc **tkactwo (owczarnia, tkalnia) też zostaje od startu**.
 - **Badania szkoły (11):** krawiectwo (krawiec), ceglarstwo (glinianka, cegielnia), pszczelarstwo (pasieka, miodosytnia), winiarstwo (winnica, tłocznia), rzeźnictwo (chlew, rzeźnia), budowa okrętów (okręt wojenny); ulepszenia: lepsze nosidła (tragarz niesie 2), większe pola I (farmy, sady, chmielniki, winnice +4 kratki), większe zagrody I (chlewy, owczarnie, stadniny +2 zagrody, pasieki +2 ule), leśnictwo (leśnik sadzi 25% szybciej, zasięg 8 → 10), rybołówstwo (rybacy łowią 25% szybciej).
+- **Grafika szkoły (ocena podglądu 2026-11-11):** pierwsza wersja „za bardzo jak współczesny budynek”: przebudowana na średniowieczną według referencji właściciela (kamienny parter, mur pruski, strome dachy, wieża z dzwonnicą); bez widocznych uczniów.
 - **Do części 3 (uniwersytet, pomysły właściciela):** większe pola II (+4), większe zagrody II (+2), **„Nadanie”**: pola i zagrody ×2, ale budynek zatrudnia drugiego pracownika; gracz włącza je osobno przyciskiem w panelu budynku. Duża stocznia i pozostałe okręty też na uniwersytecie.
+
+**Część 2, stan (2026-11-11):** gotowa na gałęzi roboczej, czeka na ocenę.
+- Badania jako dane (`data/research/`, 11 badań szkoły w trzech stopniach), stan badań królestwa w zapisie (**v39**, stare gry mają wszystko zbadane; test migracji), kolejka, zwrot złota przy cofnięciu.
+- Szkoła 3×3 ze SpriteKiln (ART_SPEC §10.24) po pierwszym domu mieszczan, nauczyciel (dzwoni, uczy przy tablicy); nauka tylko z nauczycielem przy szkole, dwie szkoły 2×.
+- Kłódki w menu budowy z podpowiedzią „Wymaga badania: …” (szkoła: „Najpierw zbuduj dom mieszczan”), zablokowany okręt wojenny w stoczni, okno „Badania” (drzewko ze strzałkami, karty z kosztem, postępem i kolejką; przycisk w górnym pasku i w panelu szkoły), powiadomienie „Zbadano: …”. Teksty PL i EN.
+- Ulepszenia działają w trybie szczegółowym i uproszczonym (prowincje, których nie oglądasz).
+- Dzwon w mieście po skończonym badaniu: gra nie ma jeszcze dźwięków (M10), na razie tylko powiadomienie.
+- Testy `tests/scenario/test_e4_research.gd`; zrzuty w ART_SPEC §10.24.
 
 **Kryteria ukończenia:**
 - [x] Tryb deweloperski działa z menu nowej gry (część 1).
-- [ ] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).
+- [x] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).
 - [ ] Uniwersytet bada drugą połowę drzewka (część 3).
 - [ ] Małe koszary od startu, duże 5×5 za badaniem; stare koszary działają (część 4).
 - [ ] Władcy, osady, automatyczny gracz i scenariusze badają i rozwijają się w podobnym tempie co przed E4 (pomiar); testy szybkie i długie przechodzą; UI w PL i EN (część 5).

@@ -265,6 +265,15 @@ Ikona nad budynkiem i panel budynku pokazują, co aktualnie się dzieje, np. „
 
 ---
 
+### 4.7 Szkoła i badania (E4, część 2, ankiety 2026-11-11)
+
+- **Badania należą do królestwa:** zbadane raz działa we wszystkich prowincjach gracza. Badanie kosztuje złoto (płatne na starcie) i czas. Jedno badanie naraz, z kolejką następnych; kliknięcie zaplanowanego cofa je i złoto wraca.
+- **Nauka idzie tylko wtedy, gdy w szkole pracuje nauczyciel** (dzwoni na lekcję, uczy przy tablicy). Każda szkoła z nauczycielem to sekunda nauki na sekundę; druga szkoła przyspiesza 2×.
+- **Szkoła (3×3) stoi dopiero po pierwszym domu mieszczan.** Uniwersytet (część 3) po pierwszej kamienicy patrycjuszy.
+- **Badania szkoły (11):** krawiectwo, ceglarstwo, pszczelarstwo, winiarstwo, rzeźnictwo, budowa okrętów (okręt wojenny) oraz ulepszenia: lepsze nosidła (tragarz niesie 2), większe pola (+4 kratki), większe zagrody (+2 zagrody lub ule), leśnictwo (leśnik +25% szybciej, zasięg +2), rybołówstwo (+25% szybciej). Od startu zostaje to, czego trzeba do awansu na mieszczan, małym koszarom i kodze (także tkactwo, bo koga ma płócienne żagle).
+- **Stopnie:** podstawowe ok. 2 min i 150 złota, średnie 3,5 min i 250, zaawansowane 5 min i 400 (dane w `data/research/`).
+- **Kto bada:** gracz w nowej grze z menu. Stare zapisy mają wszystko zbadane. Władcy, osady neutralne i automatyczny gracz testów do części 5 mają wszystkie budynki, ale bez ulepszeń. Tryb deweloperski wpisuje wszystkie badania na stałe.
+
 ## 5. Budowanie
 
 ### 5.1 Zasady ogólne
