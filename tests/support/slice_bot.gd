@@ -104,28 +104,29 @@ func _init(simulation: Simulation) -> void:
 		{"at": 690, "build": &"stockpile", "near": town + Vector2i(18, -6)},
 		{"at": 720, "build": &"church", "near": town + Vector2i(-6, 18)},
 		{"at": 1200, "build": &"stockpile", "near": town + Vector2i(-4, -12)},
-		# M4b-1 (after the burghers are settled, minute 45): patricians (bricks, clothes, mead,
+		# M4b-1 (while the burghers settle, from minute 35; E2 part 4: 10 minutes earlier than
+		# before, the patricians came late with their 3 kinds of food): patricians (bricks, clothes, mead,
 		# a tavern) and foresters for the woodcutters.
-		{"at": 2700, "build": &"forester", "near": town + Vector2i(-10, -6)},
-		{"at": 2700, "build": &"forester", "near": town + Vector2i(-10, 6)},
-		{"at": 2760, "build": &"clay_pit", "near": town + Vector2i(21, 3)},
-		{"at": 2820, "build": &"brickworks", "near": town + Vector2i(16, -2)},
-		{"at": 2880, "build": &"sheep_farm", "near": town + Vector2i(-12, 12), "fields": 4},
-		{"at": 2880, "build": &"apiary", "near": town + Vector2i(18, 24), "fields": 4},
-		{"at": 2940, "build": &"weaver", "near": town + Vector2i(-6, 12)},
-		{"at": 2940, "build": &"apiary", "near": town + Vector2i(12, 25), "fields": 4},
-		{"at": 3000, "build": &"tailor", "near": town + Vector2i(-3, 12)},
-		{"at": 3000, "build": &"sheep_farm", "near": town + Vector2i(-14, 17), "fields": 4},
-		{"at": 3060, "build": &"meadery", "near": town + Vector2i(8, -14)},
-		{"at": 3120, "build": &"tavern", "near": town + Vector2i(8, 21)},
-		{"at": 3180, "build": &"hut", "near": town + Vector2i(-2, 19)},
-		{"at": 3180, "build": &"hut", "near": town + Vector2i(1, 19)},
-		{"at": 3240, "build": &"hut", "near": town + Vector2i(4, 19)},
-		{"at": 3240, "build": &"hut", "near": town + Vector2i(7, 19)},
-		{"at": 3300, "build": &"hop_farm", "near": town + Vector2i(-4, 26), "fields": 12},
-		{"at": 3360, "build": &"brewery", "near": town + Vector2i(-2, -14)},
-		{"at": 3600, "build": &"meadery", "near": town + Vector2i(12, -14)},
-		{"at": 3600, "build": &"apiary", "near": town + Vector2i(22, 24), "fields": 4},
+		{"at": 2100, "build": &"forester", "near": town + Vector2i(-10, -6)},
+		{"at": 2100, "build": &"forester", "near": town + Vector2i(-10, 6)},
+		{"at": 2160, "build": &"clay_pit", "near": town + Vector2i(21, 3)},
+		{"at": 2220, "build": &"brickworks", "near": town + Vector2i(16, -2)},
+		{"at": 2280, "build": &"sheep_farm", "near": town + Vector2i(-12, 12), "fields": 4},
+		{"at": 2280, "build": &"apiary", "near": town + Vector2i(18, 24), "fields": 4},
+		{"at": 2340, "build": &"weaver", "near": town + Vector2i(-6, 12)},
+		{"at": 2340, "build": &"apiary", "near": town + Vector2i(12, 25), "fields": 4},
+		{"at": 2400, "build": &"tailor", "near": town + Vector2i(-3, 12)},
+		{"at": 2400, "build": &"sheep_farm", "near": town + Vector2i(-14, 17), "fields": 4},
+		{"at": 2460, "build": &"meadery", "near": town + Vector2i(8, -14)},
+		{"at": 2520, "build": &"tavern", "near": town + Vector2i(8, 21)},
+		{"at": 2580, "build": &"hut", "near": town + Vector2i(-2, 19)},
+		{"at": 2580, "build": &"hut", "near": town + Vector2i(1, 19)},
+		{"at": 2640, "build": &"hut", "near": town + Vector2i(4, 19)},
+		{"at": 2640, "build": &"hut", "near": town + Vector2i(7, 19)},
+		{"at": 2700, "build": &"hop_farm", "near": town + Vector2i(-4, 26), "fields": 12},
+		{"at": 2760, "build": &"brewery", "near": town + Vector2i(-2, -14)},
+		{"at": 3000, "build": &"meadery", "near": town + Vector2i(12, -14)},
+		{"at": 3000, "build": &"apiary", "near": town + Vector2i(22, 24), "fields": 4},
 		# E1: a third farm for the long game (after the patrician tests' 90 minutes): the bread
 		# of two farms ran short at about 2 hours already before E1 (6 supplied houses, the limit).
 		{"at": 5460, "build": &"farm", "near": town + Vector2i(18, 12), "fields": 16},
@@ -136,6 +137,9 @@ func _init(simulation: Simulation) -> void:
 		{"at": 900, "keep": {&"wood": 15}},
 		{"at": 900, "build": &"orchard", "near": town + Vector2i(20, 16), "fields": 12},
 		{"at": 1680, "build": &"orchard", "near": town + Vector2i(-16, -16), "fields": 12},
+		# E2 part 4: a hunter by the herds nearest the town: meat (a kind of food) long before
+		# the pigs.
+		{"at": 600, "build": &"hunter_lodge", "near": town + Vector2i(-10, 10)},
 		# M4b-2: meat (pigs bought from the travelling merchant) and selling surplus to him.
 		{"at": 1500, "build": &"pigsty", "near": town + Vector2i(-14, 22), "fields": 6},
 		{"at": 1560, "build": &"slaughterhouse", "near": town + Vector2i(-9, 23)},
@@ -292,6 +296,8 @@ func _near_its_work(def: BuildingDef, near: Vector2i) -> Vector2i:
 			if step is GoToStepDef and (step as GoToStepDef).target == &"resource":
 				node = (step as GoToStepDef).resource
 	var reach := def.work_radius
+	if def.id == &"hunter_lodge":
+		return NeutralTown.hunting_ground(sim.province, near)
 	if node == &"" and def.needs_terrain_near == &"":
 		return near
 	var best := near

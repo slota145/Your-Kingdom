@@ -17,9 +17,21 @@ func _init() -> void:
 	var sim := Simulation.from_map(reg, reg.get_map(map_id), 1)
 	sim.province.grace_until = 0
 	var bot: RefCounted = load("res://tests/support/slice_bot.gd").new(sim)
+	var first := {"minute": -1}
 	bot.call("run", minutes * 60, func(minute: int) -> void:
+		if first["minute"] == -1 and int(bot.call("supplied_houses", 3)) >= 4:
+			first["minute"] = minute
+			print("FIRST 4 supplied patrician houses at minute %d" % minute)
 		if minute % 5 != 0:
 			return
+		var unmet := {}
+		for b: BuildingState in sim.province.buildings.all():
+			if b.house != null and b.house.level == 3 and b.house.residents > 0:
+				for need: NeedDef in b.level_def().needs:
+					if need.is_basic and not b.house.satisfied.get(need.id, false):
+						unmet[need.id] = int(unmet.get(need.id, 0)) + 1
+		if not unmet.is_empty():
+			print("  L3 unmet: %s" % unmet)
 		var hungry := 0
 		var pts := [0.0, 0.0, 0.0, 0.0]
 		var n := [0, 0, 0, 0]
@@ -45,4 +57,5 @@ func _init() -> void:
 		print("min %d: houses %s pts %s hungry %d L3 supplied %d |%s" % [minute, n,
 				[roundi(pts[1] / maxi(n[1], 1)), roundi(pts[2] / maxi(n[2], 1)), roundi(pts[3] / maxi(n[3], 1))],
 				hungry, bot.call("supplied_houses", 3), food] + " | work %d%s log %s" % [Population.workforce(sim.province), extra, bot.get("log")]))
+	print("RESULT %s first 4 at minute %d" % [map_id, first["minute"]])
 	quit()
