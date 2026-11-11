@@ -1492,11 +1492,21 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **UI:** cechy w losowym świecie widać jak w „Królestwie” (znaczek przy nazwie, linia „Cechy:” w panelu, PL i EN z części 1); nowe teksty nie były potrzebne.
 - Testy: `tests/scenario/test_e3_traits.gd` (część 3 na końcu pliku).
 
+**Część 4, stan (2026-11-11, gotowa do oceny; ocen części 1–3 jeszcze nie ma, właściciel: „brak uwag, rób część 4”):**
+- **Decyzje z ankiety 2026-11-11 (część 4):** siła średnia (+50% plonu; o połowę więcej stad, odradzanie 2× szybsze), w „Królestwie” żyzna Wierzbowa Dolina i bogate w zwierzynę Lustrzane Jeziora, w widoku prowincji tylko linijka w panelu (bez zmiany grafiki pól).
+- **Żyzna ziemia** (`ProvinceDef.FERTILE`, `FERTILE_YIELD` 1,5): kratka pola daje 1,5× plonu razem z dodatkiem z E1 (1,8 zamiast 1,2 snopka z kratki). Rolnik pracuje tak samo. Działa przy zbożu, chmielu, sadzie i winnicy, w trybie szczegółowym i uproszczonym (ta sama „reszta” ułamków, `field_yield_carry`). Panel farmy: „Żyzna ziemia: plon pól +50%”.
+- **Bogata w zwierzynę** (`ProvinceDef.RICH_GAME`, `GAME_HERDS` 1,5, `GAME_BREEDING` 2): las karmi 1,5× stad (do 12 zamiast 8), stado przybiera i nowe wychodzi z lasu 2× częściej. Panel myśliwego: „Prowincja bogata w zwierzynę…”.
+- **Mapa świata:** znaczek snopka i poroża przy nazwie, linia „Cechy:” (PL i EN).
+- **Losowe światy** (`WorldGenerator._give_trait`): obie cechy tak często jak kamień (`max(1, round(prowincje / 10))`), nigdy start gracza; żyzna raz blisko gracza, zwierzyna gdziekolwiek. Każda cecha ma własną kostkę, więc kamień, właściciele i reszta świata wypadają jak przedtem, a stare zapisy dostają nowe cechy po wczytaniu (bez nowej wersji zapisu).
+- **Władcy i automatyczny gracz:** w prowincji bogatej w zwierzynę drugi myśliwy od 20 mieszkańców (`GAME_PEOPLE`), w żyznej druga farma zaraz po pierwszym młynie (zanim zabraknie jedzenia). Osady neutralne bez zmian (myśliwego mają od E2).
+- **Pomiary** (`traits_probe.gd -- --minutes=90 [--all_fertile|--all_game]`, świat nr 5, 22 prowincje): żyzna ziemia: stolice władców zebrały w 90 minut 809 i 964 zboża (bez cechy 539 i 700, czyli +38–50%) i o ok. 50% więcej jabłek. Zwierzyna: 12 stad i ok. 58 zwierząt (bez cechy 8 i 39), mięso stolic 136 i 152 (bez cechy 92 i 52; drugi myśliwy). Cechy nie zmieniają tempa budowy władców. Prowincja automatycznego gracza w tym świecie stoi na 24 mieszkańcach (znana sprawa z części 3), więc jej zboże zależy od popytu i z cechą wychodzi tak samo. Plon w trybie szczegółowym sprawdza test z prawdziwym rolnikiem (1,3–1,7×).
+- Testy: `tests/scenario/test_e3_traits.gd` (część 4 na końcu pliku).
+
 **Kryteria ukończenia:**
 - [x] Cecha prowincji w danych i na mapie świata (z zapisu: z definicji); odkrywka działa tylko w prowincji bogatej w kamień (część 1).
 - [x] Głęboka kopalnia działa tylko w prowincji bogatej w żelazo i się nie kończy (część 2).
 - [x] Losowe światy, władcy, osady i automatyczny gracz korzystają z cech; stare zapisy wczytują się (test); testy szybkie i długie przechodzą; UI w PL i EN (część 3).
-- [ ] Żyzna ziemia i bogata w zwierzynę działają i są widoczne na mapie świata (część 4).
+- [x] Żyzna ziemia i bogata w zwierzynę działają i są widoczne na mapie świata (część 4).
 - [ ] **Twoja ocena gry** po każdej części.
 
 ## E4 — Uniwersytet, badania oraz małe i duże koszary
