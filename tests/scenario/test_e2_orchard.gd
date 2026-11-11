@@ -22,7 +22,7 @@ func test_apples_are_food_for_peasants() -> void:
 	stock.stock.add(&"apples", 20)
 	stock.stock.add(&"wood", 20)
 	var hut := SimFixture.house(sim, Vector2i(12, 12), 4, false)
-	var fed := SimFixture.run_until(sim, func() -> bool: return bool(hut.house.satisfied.get(&"food", false)), 90)
+	var fed := SimFixture.run_until(sim, func() -> bool: return bool(hut.house.satisfied.get(&"diet", false)), 90)
 	assert_bool(fed).override_failure_message("apples did not feed the house").is_true()
 	assert_int(hut.supply.total(&"apples")).is_greater(0)
 

@@ -2357,6 +2357,12 @@ msgstr "The orchardist tends the apple trees and picks the ripe apples into a ba
 msgid "ui.activity.weed"
 msgstr "weeding"
 
+msgid "need.diet.name"
+msgstr "Food"
+
+msgid "need.diet.desc"
+msgstr "Bread, fish, meat or apples. Peasants need 1 kind, burghers 2 different kinds, patricians 3. Each kind more raises the tax by 10%."
+
 msgid "good.game.name"
 msgstr "Game"
 

@@ -20,6 +20,15 @@ const UPDATE_TICKS := 10
 const HAPPINESS_SPEED := 2.0
 ## Seconds with all basic needs met before a house starts upgrading (GDD §3.3).
 const UPGRADE_AFTER := 60
+## E2 part 3 (owner 2026-11-11, "a few of many"): each need met gives its points (a level's
+## sum is 100). A fed house with at least CALM_POINTS is calm: nobody leaves and newcomers come.
+## Upgrading asks for UPGRADE_POINTS and the next level's food and goods in the storages.
+const CALM_POINTS := 60.0
+const UPGRADE_POINTS := 85.0
+## Tax: each kind of food above the level's minimum adds this share, and each full 10 points
+## above CALM_POINTS adds POINTS_TAX_BONUS.
+const DIET_TAX_BONUS := 0.10
+const POINTS_TAX_BONUS := 0.05
 ## Seconds with unmet basic needs before a warning (GDD §3.3).
 const WARN_AFTER := 60
 ## While a basic need is unmet, happiness sinks at this (gentler) speed.
@@ -76,7 +85,9 @@ static func update_abstract(province: ProvinceSim, doors: Dictionary[int, Array]
 	for building: BuildingState in province.buildings.all():
 		if building.house != null:
 			_update_house(province, building, stored, true, doors)
-	if province.tick % (IMMIGRATION_EVERY * UPDATE_TICKS) < UPDATE_TICKS:
+	# Newcomers come by the province's entry, as in the detailed mode (none without one).
+	if province.tick % (IMMIGRATION_EVERY * UPDATE_TICKS) < UPDATE_TICKS \
+			and province.nav.is_walkable(province.entry_tile):
 		for building: BuildingState in province.buildings.all():
 			var house := building.house
 			if house != null and accepts_newcomer(building, province):
@@ -92,7 +103,7 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 	var house := building.house
 	var level := building.level_def()
 	var target := 0.0
-	var basic_met := true
+	var hungry := false
 	var doors: Array[Vector2i] = []
 	for need: NeedDef in level.needs:
 		if need.is_service() and doors.is_empty():
@@ -106,16 +117,17 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 		house.satisfied[need.id] = ok
 		if ok:
 			target += level.weight_of(need)
-		elif need.is_basic:
-			basic_met = false
-			# A missing basic need counts against the house: the more is short, the lower.
-			if house.residents > 0:
-				target -= level.weight_of(need)
+		elif need.is_diet() and house.residents > 0:
+			# Hungry (too few kinds of food): it counts against the house (E2 part 3).
+			hungry = true
+			target -= level.weight_of(need)
+	house.points = maxf(target, 0.0)
+	var calm := not hungry and target >= CALM_POINTS
 	if province.raids.mood_until > province.tick:
 		target -= Raids.MOOD_PENALTY   # looted by bandits (M7 part 2)
 	target = clampf(target + province.treasury.rate_happiness(), 0.0, 100.0)
 	var speed := HAPPINESS_SPEED
-	if not basic_met and house.residents > 0:
+	if not calm and house.residents > 0:
 		speed = SHORTAGE_SPEED
 	var happiness := move_toward(house.happiness, target, speed)
 	var grace := province.in_grace()
@@ -132,18 +144,19 @@ static func _update_house(province: ProvinceSim, building: BuildingState,
 		house.met_seconds = 0
 		house.unmet_seconds = 0
 		return
-	if basic_met:
+	if not hungry and house.points >= UPGRADE_POINTS:
 		house.met_seconds += 1
-		house.unmet_seconds = 0
 		if house.met_seconds >= UPGRADE_AFTER and building.site_id == 0 \
 				and house.level < building.def.house_levels.size() \
 				and _next_level_ready(province, building, stored):
 			Construction.open_upgrade_site(province, building, building.def.house_levels[house.level])
-	elif grace:
-		house.met_seconds = 0
-		house.unmet_seconds = 0
 	else:
 		house.met_seconds = 0
+	if calm:
+		house.unmet_seconds = 0
+	elif grace:
+		house.unmet_seconds = 0
+	else:
 		house.unmet_seconds += 1
 		if house.unmet_seconds == WARN_AFTER:
 			province.events.emit(&"house_warning", {"building": building.id})
@@ -167,9 +180,8 @@ static func upgrade_blocker(province: ProvinceSim, building: BuildingState) -> S
 		return &"upgrade_running"
 	if house.residents == 0:
 		return &"house_empty"
-	for need: NeedDef in building.level_def().needs:
-		if need.is_basic and not bool(house.satisfied.get(need.id, false)):
-			return &"house_needs_unmet"
+	if not is_fed(building) or house.points < UPGRADE_POINTS:
+		return &"house_needs_unmet"
 	if not next_level_available(province, building):
 		return &"house_next_goods_missing"
 	return &""
@@ -197,6 +209,15 @@ static func _next_level_ready(province: ProvinceSim, building: BuildingState,
 		stored: Dictionary[StringName, int]) -> bool:
 	var next := building.def.house_levels[building.house.level]
 	for need: NeedDef in next.needs:
+		if need.is_diet():
+			# The next level's number of food kinds, each a full pantry (E2 part 3).
+			var kinds := 0
+			for good: StringName in need.goods:
+				if building.supply.total(good) + _stored(province, good, stored) >= next.supply_units:
+					kinds += 1
+			if kinds < next.diet_min:
+				return false
+			continue
 		if not need.is_basic or need.is_service():
 			continue
 		var found := 0
@@ -205,6 +226,17 @@ static func _next_level_ready(province: ProvinceSim, building: BuildingState,
 		if found < next.supply_units:
 			return false
 	return true
+
+
+## The extra share of tax [param building] pays for more than it needs (E2 part 3): each kind of
+## food above the level's minimum and each full 10 points above CALM_POINTS.
+static func tax_bonus(building: BuildingState) -> float:
+	var house := building.house
+	if house == null or house.residents == 0 or not is_fed(building):
+		return 0.0
+	var extra_kinds := maxi(house.diet_kinds - building.level_def().diet_min, 0)
+	var extra_points := maxi(floori((house.points - CALM_POINTS) / 10.0), 0)
+	return extra_kinds * DIET_TAX_BONUS + extra_points * POINTS_TAX_BONUS
 
 
 ## Gold a resident of [param building] pays per minute at full happiness and the normal rate:
@@ -225,6 +257,7 @@ static func _pay_taxes(province: ProvinceSim, building: BuildingState) -> void:
 	for need: NeedDef in building.level_def().needs:
 		if need.extra and house.satisfied.get(need.id, false):
 			per_second *= 1.0 + need.tax_bonus
+	per_second *= 1.0 + tax_bonus(building)
 	province.treasury.add(per_second * house.happiness / 100.0 * province.treasury.rate_factor())
 
 
@@ -232,6 +265,8 @@ static func _pay_taxes(province: ProvinceSim, building: BuildingState) -> void:
 static func _need_met(province: ProvinceSim, building: BuildingState, need: NeedDef,
 		doors: Array[Vector2i]) -> bool:
 	var house := building.house
+	if need.is_diet():
+		return _diet_met(province, building, need)
 	if need.is_service():
 		for door: Vector2i in doors:
 			if province.coverage.covers(need.service, door, province.grid.size):
@@ -254,6 +289,44 @@ static func _need_met(province: ProvinceSim, building: BuildingState, need: Need
 		if building.supply.total(good) > 0:
 			return true
 	return house.residents == 0
+
+
+## The diet (E2 part 3): the household eats the kind of food it has most of, so the kinds go
+## down together; met while it is fed and keeps at least the level's diet_min kinds.
+static func _diet_met(province: ProvinceSim, building: BuildingState, need: NeedDef) -> bool:
+	var house := building.house
+	var hunger: float = house.hunger.get(need.id, 0.0) + house.residents * need.per_resident_per_minute / 60.0
+	hunger = SimCodec.savable(hunger)
+	while hunger >= 1.0:
+		var best := &""
+		var most := 0
+		for good: StringName in need.goods:
+			var have := building.supply.total(good)
+			if have > most:
+				best = good
+				most = have
+		if best == &"" or building.supply.remove(best, 1) != 1:
+			break
+		hunger -= 1.0
+		province.ledger.used(best, 1, province.tick)
+		province.events.emit(&"good_consumed", {"building": building.id, "good": best, "amount": 1})
+	house.hunger[need.id] = minf(hunger, 1.0)
+	var kinds := 0
+	for good: StringName in need.goods:
+		if building.supply.total(good) > 0:
+			kinds += 1
+	house.diet_kinds = kinds
+	if house.residents == 0:
+		return true
+	return hunger < 1.0 and kinds >= building.level_def().diet_min
+
+
+## Whether [param building]'s household has enough kinds of food (its diet need met).
+static func is_fed(building: BuildingState) -> bool:
+	for need: NeedDef in building.level_def().needs:
+		if need.is_diet() and not bool(building.house.satisfied.get(need.id, false)):
+			return false
+	return true
 
 
 ## Units of [param good] in storages, stalls and ground piles: what the searches for a source
@@ -367,7 +440,7 @@ static func target_happiness(province: ProvinceSim, building: BuildingState) -> 
 	for need: NeedDef in level.needs:
 		if house.satisfied.get(need.id, false):
 			target += level.weight_of(need)
-		elif need.is_basic and house.residents > 0:
+		elif need.is_diet() and house.residents > 0:
 			target -= level.weight_of(need)
 	return clampf(target + province.treasury.rate_happiness(), 0.0, 100.0)
 

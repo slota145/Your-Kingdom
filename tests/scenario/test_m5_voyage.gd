@@ -14,6 +14,7 @@ func _scene(seed_value: int = 1) -> Dictionary:
 	SimFixture.village(sim, 10, 40)
 	for i: int in 4:
 		SimFixture.house(sim, Vector2i(2 + 3 * i, 12))
+	sim.province.entry_tile = Vector2i(-1, -1)   # no newcomers burning the firewood (E2 part 3)
 	var stock := SimFixture.place(sim, &"stockpile", Vector2i(14, 22))
 	stock.stock.add(&"wood", 60)
 	stock.stock.add(&"planks", 20)
@@ -98,6 +99,7 @@ func test_voyage_sells_over_the_horizon_and_brings_the_order() -> void:
 	var province := sim.province
 	var quay: Array[Vector2i] = port.def.water_tiles_at(port.origin, port.orientation)
 	var times := {}
+	var burnt := 0   # firewood the households burn meanwhile (E2 part 3: calm houses keep their people)
 	for i: int in SimFixture.ticks(1500):
 		if not times.has(cog.voyage.state):
 			times[cog.voyage.state] = i / SimClock.TICKS_PER_SECOND
@@ -107,6 +109,8 @@ func test_voyage_sells_over_the_horizon_and_brings_the_order() -> void:
 				seen["loaded"] = int(seen["loaded"]) + int(e["amount"])
 			if e["type"] == &"voyage_departed":
 				gold_before_away = sim.treasury.gold
+			if e["type"] == &"good_consumed" and e["good"] == &"wood":
+				burnt += int(e["amount"])
 		for agent: Agent in province.agents.all():
 			if agent.kind == Harbour.DOCKER_KIND and quay.has(agent.tile()) and agent.activity == &"walk":
 				seen["gangway"] = true
@@ -128,8 +132,12 @@ func test_voyage_sells_over_the_horizon_and_brings_the_order() -> void:
 	assert_int(v.last_spent).is_equal(10 * SeaMerchant.sell_price(province, &"tar"))
 	assert_int(v.last_bought).is_equal(10)
 	# Wood is gone, tar arrived and porters take it to a storage; the cog is back at anchor.
-	sim.run_ticks(SimFixture.ticks(90))
-	assert_int(province.goods_total(&"wood")).is_equal(wood - 30)
+	for i: int in SimFixture.ticks(90):
+		sim.step()
+		for e: Dictionary in sim.events.drain():
+			if e["type"] == &"good_consumed" and e["good"] == &"wood":
+				burnt += int(e["amount"])
+	assert_int(province.goods_total(&"wood")).is_equal(wood - 30 - burnt)
 	assert_int(province.goods_total(&"tar")).is_equal(tar + 10)
 	assert_int(port.stock.total(&"tar")).is_equal(0)
 	assert_bool(cog.hold.is_empty()).is_true()

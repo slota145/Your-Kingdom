@@ -2376,6 +2376,12 @@ msgstr "Sadownik dogląda jabłoni i zbiera dojrzałe jabłka do kosza."
 msgid "ui.activity.weed"
 msgstr "pieli"
 
+msgid "need.diet.name"
+msgstr "Jedzenie"
+
+msgid "need.diet.desc"
+msgstr "Chleb, ryby, mięso albo jabłka. Chłopom wystarczy 1 rodzaj, mieszczanom trzeba 2 różnych, patrycjuszom 3. Każdy rodzaj ponad to podnosi podatek o 10%."
+
 msgid "good.game.name"
 msgstr "Zdobycz"
 
