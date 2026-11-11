@@ -283,6 +283,8 @@ static func counts_of(town: ProvinceSim) -> Dictionary[StringName, int]:
 static func _allowed(town: ProvinceSim, def: BuildingDef) -> bool:
 	if def.needs_rare != &"" and town.rare_resource != def.needs_rare:
 		return false
+	if def.needs_trait != &"" and not town.traits.has(def.needs_trait):
+		return false
 	return true
 
 

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BuildingVisualDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/visuals/building_visual_def.gd" id="1_vis"]
+
+[resource]
+script = ExtResource("1_vis")
+art_id = "stone_pit"
+open_ground = true
+spot_offsets = Dictionary[StringName, Vector2]({
+&"crane": Vector2(45, 6),
+&"face_1": Vector2(32, -35),
+&"face_2": Vector2(70, -22),
+&"face_3": Vector2(3, -27)
+})

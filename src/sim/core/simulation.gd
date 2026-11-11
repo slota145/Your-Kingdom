@@ -71,7 +71,8 @@ static func from_world(registry: DataRegistry, def: WorldDef, seed_value: int = 
 	sim.runtimes[start] = sim.province
 	sim.viewed_id = start
 	sim.world.get_province(start).owner = ProvinceDef.OWNER_PLAYER
-	problems.append_array(sim.province.load_map(map, pdef.mirrored, pdef.richness, false, pdef.rare_resource))
+	problems.append_array(sim.province.load_map(map, pdef.mirrored, pdef.richness, false, pdef.rare_resource,
+			pdef.traits))
 	sim.province.start_grace(sim.clock.tick)
 	problems.append_array(sim._open_neutral_towns())
 	sim.events.drain()
@@ -215,7 +216,7 @@ func open_province(id: int, map: MapDef, owner: StringName = ProvinceDef.OWNER_P
 	opened.treasury = Treasury.new()
 	opened.tick = clock.tick
 	var problems := opened.load_map(map, mirrored, pdef.richness if pdef != null else 2, false,
-			pdef.rare_resource if pdef != null else &"")
+			pdef.rare_resource if pdef != null else &"", ProvinceDef.own_traits(pdef))
 	opened.treasury = treasury
 	runtimes[id] = ProvinceAbstract.freeze(opened, clock.tick)
 	if world.get_province(id) == null:
@@ -418,7 +419,7 @@ func _settle(e: Expedition) -> ProvinceSim:
 	settled.treasury = treasury
 	settled.tick = clock.tick
 	settled.load_map(map, mirrored, def.richness if def != null else 2, true,
-			def.rare_resource if def != null else &"")
+			def.rare_resource if def != null else &"", ProvinceDef.own_traits(def))
 	if e.by_sea and map.landing_tile != Agent.NO_TILE:
 		settled.landing = Landing.arrive_by_sea(settled, map, mirrored, e.settlers, e.kit, e.id)
 	else:
@@ -548,5 +549,9 @@ static func from_dict(d: Dictionary, registry: DataRegistry) -> Simulation:
 		var state := sim.province_state(id)
 		if state != null:
 			state.home_faction = sim.faction_of(id)
+			# Traits are data (ROADMAP E3): an old save gets those its province has now.
+			var pdef := sim.world.def_of(id, registry)
+			if pdef != null:
+				state.traits = ProvinceDef.traits_of(pdef.traits, state.rare_resource)
 	sim.bind_treasuries()
 	return sim

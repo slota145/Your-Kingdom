@@ -248,6 +248,11 @@ func _refresh() -> void:
 			lines.append(tr("ui.world.stocks") % _stocks(province))
 	lines.append(tr("ui.world.rare") % (tr("rare.%s.name" % def.rare_resource)
 			if def.rare_resource != &"" else tr("ui.world.rare_none")))
+	var traits := PackedStringArray()
+	for t: StringName in def.all_traits():
+		traits.append(tr("trait.%s.name" % t))
+	if not traits.is_empty():
+		lines.append(tr("ui.world.traits") % ", ".join(traits))
 	if def.island:
 		lines.append(tr("ui.world.island"))
 	if Rulers.is_ruler(owner) and province != null:

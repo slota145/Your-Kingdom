@@ -146,7 +146,8 @@ static func go_live(sim: Simulation, battle: FieldBattle) -> void:
 	var field := ProvinceSim.new(sim.data, map.size_for(mirrored), sim.events, sim.ids)
 	field.treasury = sim.treasury
 	field.tick = sim.clock.tick
-	field.load_map(map, mirrored, def.richness if def != null else 2, true, def.rare_resource if def != null else &"")
+	field.load_map(map, mirrored, def.richness if def != null else 2, true, def.rare_resource if def != null else &"",
+			ProvinceDef.own_traits(def))
 	field.first_building = &""
 	field.landing = null
 	battle.prev_view = sim.viewed_id

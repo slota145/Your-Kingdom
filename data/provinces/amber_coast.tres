@@ -7,6 +7,7 @@ script = ExtResource("1_province")
 template = &"coast"
 mirrored = true
 richness = 2
+traits = Array[StringName]([&"rich_stone"])
 neighbours = Array[StringName]([&"landing_bay", &"mirror_lakes"])
 coastal = true
 world_pos = Vector2(535, 180)

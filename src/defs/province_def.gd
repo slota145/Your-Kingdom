@@ -7,6 +7,11 @@ extends GameDef
 const OWNER_NONE := &""
 const OWNER_PLAYER := &"player"
 const OWNER_NEUTRAL := &"neutral"
+## Province traits (ROADMAP E3, owner's survey 2026-11-11): endless sources and richer land,
+## apart from the rare resource. A province with iron ore as its rare resource is rich in iron.
+const RICH_STONE := &"rich_stone"
+const RICH_IRON := &"rich_iron"
+const TRAITS: Array[StringName] = [RICH_STONE, RICH_IRON]
 
 ## Province map template (a MapDef id): riverlands, lakeland, coast (islands in part 2).
 @export var template: StringName = &""
@@ -16,6 +21,8 @@ const OWNER_NEUTRAL := &"neutral"
 @export_range(1, 3) var richness: int = 2
 ## Rare resource marked on the world map (iron_ore, salt, vines, horses); empty = none.
 @export var rare_resource: StringName = &""
+## Traits of the province (TRAITS) besides the one its rare resource gives (all_traits()).
+@export var traits: Array[StringName] = []
 ## Owner at the start of a new game: OWNER_NONE, OWNER_PLAYER or OWNER_NEUTRAL.
 @export var owner: StringName = &""
 ## Provinces sharing a land border (wagons and settlers on foot go only there).
@@ -48,6 +55,26 @@ const OWNER_NEUTRAL := &"neutral"
 @export_range(0, 2) var town_wall: int = 0
 @export_range(0, 4) var town_towers: int = 0
 @export var town_guards: Dictionary[StringName, int] = {}
+
+
+## The traits of the province: its own and rich_iron where iron ore is its rare resource.
+func all_traits() -> Array[StringName]:
+	return traits_of(traits, rare_resource)
+
+
+## [param own] traits and the one rare resource [param rare] gives, in TRAITS order.
+static func traits_of(own: Array[StringName], rare: StringName) -> Array[StringName]:
+	var result: Array[StringName] = []
+	for t: StringName in TRAITS:
+		if own.has(t) or (t == RICH_IRON and rare == &"iron_ore"):
+			result.append(t)
+	return result
+
+
+## The own traits of [param def]; none without a def (a single-province game).
+static func own_traits(def: ProvinceDef) -> Array[StringName]:
+	var none: Array[StringName] = []
+	return def.traits if def != null else none
 
 
 func get_kind() -> StringName:

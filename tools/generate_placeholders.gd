@@ -597,6 +597,9 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.74, 0.6, 0.46), "roof_color": Color(0.5, 0.28, 0.16), "extra": "barrels"},
 	"chapel": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 30.0, "roof": 26.0,
 			"wall": Color(0.88, 0.86, 0.8), "roof_color": Color(0.42, 0.3, 0.24), "extra": "cross"},
+	# E3 part 1
+	"stone_pit": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 12.0, "roof": 8.0,
+			"wall": Color(0.62, 0.6, 0.56), "roof_color": Color(0.5, 0.48, 0.44), "extra": "blocks"},
 	"church": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 46.0, "roof": 34.0,
 			"wall": Color(0.82, 0.8, 0.74), "roof_color": Color(0.3, 0.32, 0.42), "extra": "steeple"},
 	"market": {"footprint": Vector2i(3, 3), "entrance": Vector2i(1, 2), "walls": 14.0, "roof": 12.0,

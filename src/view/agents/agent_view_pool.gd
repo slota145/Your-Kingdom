@@ -205,4 +205,11 @@ func _spot_offset(agent: Agent) -> Vector2:
 	if workplace == null:
 		return Vector2.ZERO
 	var visual := _visual_of(workplace.def.id)
-	return visual.spot_offsets.get(step.spot, Vector2.ZERO) if visual != null else Vector2.ZERO
+	if visual == null:
+		return Vector2.ZERO
+	# A spot per worker ("face_1", "face_2"...: the stone pit's three stonecutters, E3) when
+	# the building has them, else the shared one.
+	var own := StringName("%s_%d" % [step.spot, workplace.workers.find(agent.id) + 1])
+	if visual.spot_offsets.has(own):
+		return visual.spot_offsets[own]
+	return visual.spot_offsets.get(step.spot, Vector2.ZERO)

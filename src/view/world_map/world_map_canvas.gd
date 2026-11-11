@@ -398,8 +398,16 @@ func _draw_label(id: int, fit: Transform2D) -> void:
 	var owner := sim.world.owner_of(id)
 	if OWNER_ARMS.has(owner):
 		_draw_arms(at + Vector2(-width / 2.0 - 16.0, 4.0), OWNER_ARMS[owner])
+	var right := width / 2.0 + 16.0
 	if def.rare_resource != &"":
-		_draw_rare(at + Vector2(width / 2.0 + 16.0, 6.0), def.rare_resource)
+		_draw_rare(at + Vector2(right, 6.0), def.rare_resource)
+		right += 20.0
+	for t: StringName in def.all_traits():
+		# Rich in iron is the iron ore's mark already (ROADMAP E3).
+		if t == ProvinceDef.RICH_IRON and def.rare_resource == &"iron_ore":
+			continue
+		_draw_trait(at + Vector2(right, 6.0), t)
+		right += 20.0
 
 
 ## Where an expedition is on its way (parchment pixels): straight to a land neighbour, by
@@ -583,6 +591,21 @@ func _draw_rare(at: Vector2, rare: StringName) -> void:
 			draw_circle(at + Vector2(3, 2), 1.5, Color(0.70, 0.35, 0.15))
 		&"horses":
 			draw_arc(at, 7.0, PI * 0.15, PI * 1.85, 16, Color(0.30, 0.28, 0.26), 3.0)
+		_:
+			draw_circle(at, 4.0, INK)
+
+
+## The mark of a province trait (ROADMAP E3) beside its name: a stack of cut stone blocks
+## for rich in stone, an ore rock for rich in iron.
+func _draw_trait(at: Vector2, t: StringName) -> void:
+	match t:
+		ProvinceDef.RICH_STONE:
+			var stone := Color(0.66, 0.64, 0.60)
+			for block: Rect2 in [Rect2(-9, 0, 8, 6), Rect2(1, 0, 8, 6), Rect2(-4, -6, 8, 6)]:
+				draw_rect(Rect2(at + block.position, block.size), stone)
+				draw_rect(Rect2(at + block.position, block.size), INK, false, 1.0)
+		ProvinceDef.RICH_IRON:
+			_draw_rare(at, &"iron_ore")
 		_:
 			draw_circle(at, 4.0, INK)
 

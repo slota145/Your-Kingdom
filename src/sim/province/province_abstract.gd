@@ -328,7 +328,8 @@ func cycles_per_second(building: BuildingState) -> float:
 			if not building.def.paced_work() and not cycle.fields else 0.0
 	if measured > 0.0:
 		return measured / maxf(cycle.primary_amount, 1.0)
-	return 1.0 / estimated_cycle_seconds(building)
+	var parallel := building.def.worker_count() if building.def.parallel_work else 1
+	return parallel / estimated_cycle_seconds(building)
 
 
 ## Seconds of one cycle without a measurement: the work, the walks to the nearest storage and
