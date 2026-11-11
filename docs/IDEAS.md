@@ -1,229 +1,107 @@
 # Poczekalnia pomysłów
 
-Tu trafiają pomysły, które **nie są jeszcze ustalone**. Do [ROADMAP.md](ROADMAP.md) przenosimy je wyłącznie za zgodą właściciela projektu, wskazując etap.
+Tu trafiają pomysły, które **nie są jeszcze ustalone**. Do [ROADMAP.md](ROADMAP.md) przenosimy je wyłącznie za zgodą właściciela projektu, wskazując etap. Gdy pomysł wejdzie do gry, przenosimy go krótko do sekcji „Zrealizowane” na końcu (szczegóły są w ROADMAP).
 
 Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt, ryzyko, dopasowanie`
 
-## Mechaniki
+Porządki 2026-11-11: zrealizowane pomysły przeniesione na koniec pliku, w poczekalni zostały tylko otwarte.
 
-- [gracz, ocena M5 2026-11-07] **Most przez rzekę i mniej kanciaste wybrzeże:** most, po którym chodzą ludzie i jeżdżą wozy (na „Wybrzeżu” rzeka odcina wschód mapy), oraz łagodniejsza linia brzegu, na której budynki nadmorskie mogą leżeć częściowo na wodzie.
-  - Ocena (Claude): mocno poprawi grę na mapach z rzeką. Most zmienia siatkę ruchu (kafel przejezdny dla ludzi, a pod nim woda dla łodzi albo blokada), sortowanie i budowanie; brzeg to zmiana terenu i reguł stawiania. **Decyzja właściciela (ankieta 2026-11-07): osobny mały etap po M7**, jak N1. **Ankieta 2026-11-08: wybrany jako następny etap po M7 (ROADMAP, B1).**
-- [gracz, ocena M5 2026-11-07] **Rejsy za horyzont w oknie mapy świata**, obok szlaków handlowych: gracz ustawia rejs, a gra sama wybiera wolną kogę i magazyn.
-  - Ocena (Claude): wygodne przy wielu portach i prowincjach, mało ryzykowne (okno szlaków już istnieje). **Decyzja właściciela (ankieta 2026-11-07): na później, po M7.**
+## Zamek i wojsko
 
-- [gracz] **Grube mury jak w Twierdzy:** dwa lub więcej równoległych rzędów muru zlewa się w jeden gruby, jednolity mur. Do tego wyższy typ muru z **blankami**, później **hurdycje**. Jednostki mogą wchodzić na mury.
-  - Ocena (Claude):
-    - **Wykonalne bez zmniejszania kratki.** Dla muru kamiennego trzeba przejść z obecnego modelu „linii” (filar + półsegmenty) na model **bryłowy**: każdy kafel muru to pełny blok, a ściany rysujemy tylko tam, gdzie sąsiad nie jest murem. Sąsiednie bloki same zlewają się w jedną masę dowolnej grubości. Sortowanie to po prostu bloki 1×1, które M1 już sprawdził testem.
-    - Blanki i hurdycje to **ulepszenie kafla muru** rysowane na odsłoniętych krawędziach korony, z premią obronną dla łuczników.
-    - Chodzenie po murach to osobna warstwa nawigacji na koronie, z wejściem przez schody i baszty (już przewidziane w ARCHITECTURE §6.3).
-    - Koszt: średni. Ryzyko: mury ukośne w modelu bryłowym wychodzą „schodkowe”. Pomóc mogą trójkątne kawałki wypełniające narożniki, do sprawdzenia w prototypie.
-    - Odradzam zmniejszanie kratki: 4× więcej komórek nawigacji, zmiana rozmiarów budynków i grafik, a zysk niewielki, bo przy kaflu 64 px i postaci 42 px na koronie szerokości 1 kafla mieszczą się 1–2 osoby, a przy 2 rzędach ok. 3–4.
-    - Propozycja: palisada zostaje w obecnym modelu „linii” (pasuje do drewnianego płotu), a mury kamienne przechodzą na model bryłowy.
-  - **Zatwierdzone 2026-11-04:** model bryłowy z przekątnymi „prosto”. Zapisane w ARCHITECTURE §6.3, ART_SPEC §6 i GDD §5.3. Blanki na koronie są w prototypie. Hurdycje i chodzenie po murach czekają na M7.
-  - Prototyp (2026-11-04, `src/prototype/walls/`, do oceny przez właściciela):
-    - Model bryłowy działa: 2 i 3 rzędy zlewają się w jedną masę, narożniki i trójniki bez szczelin, blanki tylko na odsłoniętych krawędziach korony.
-    - Sortowanie postaci na ziemi: 0 błędów w 15 układach × 3 warianty przekątnych (`sort_check.gd`, ta sama metoda co `test_sorting.gd`).
-    - Strażnicy na koronie sortują się przez regułę „rysuj po kaflu, na którym stoisz” (`crown_sort_key`). Sprawdzone tylko na zrzutach.
-    - Przekątne, trzy warianty (klawisz V):
-      - **schodki:** rząd „baszt”, najprostsze,
-      - **ścięcie ½:** kliny o przyprostokątnej ½ kafla, wychodzi poszarpane,
-      - **prosto:** kliny o przyprostokątnej 1 kafla. Wygląda najczyściej, ale mur ukośny jest √2 grubszy i blokuje połówki sąsiednich kafli.
-    - Brama w modelu bryłowym to tunel: dwa filary i pomost niosący koronę. Postać w przejściu jest zasłonięta pomostem. Słabo widać, że to brama, więc przy grafikach docelowych przyda się wyraźny portal.
-    - Blanki (2026-11-05, według zdjęcia makiety od właściciela projektu): przedpiersie 16 px będące przedłużeniem lica muru, na nim blanki 14 px, trzy na krawędź kafla, tak szerokie jak przerwy, a w każdym zewnętrznym narożniku blanka narożna w kształcie litery L. Strażnik chowa się do ramion.
-    - Grafiki docelowe dałoby się składać z kawałków: wierzch bloku, 2 przednie ściany, 4 krawędzie korony z blankami i kliny.
+- [gracz] **Hurdycje na murach:** drewniane galerie na koronie muru kamiennego, następny stopień po blankach (pomysł z „Grubych murów jak w Twierdzy”, których reszta weszła w M7).
+  - Ocena (Claude): ulepszenie kafla muru rysowane na odsłoniętych krawędziach korony, z premią obronną dla łuczników. W M7 świadomie odłożone („hurdycje później”).
 
-- [gracz] **Bramy większe od muru (wieża bramna):** brama to masywny budynek wyższy i szerszy od muru, jak w średniowieczu i w Twierdzy. Ma dwie flankujące wieże i portal z broną.
-  - Ocena (Claude): pasuje i rozwiązuje słaby punkt z prototypu, w którym brama w grubym murze była słabo widoczna. Technicznie to budynek wielokaflowy, np. 3×2 lub 4×3, z przejściem przez środek. Wieże tniemy przez `BuildingSlicer`, a przejście i pomost działają jak w prototypie. Koszt: średni (grafika + sortowanie przejścia). Kiedy: M7, razem z basztami.
-  - Prototyp kodem (2026-11-04, klawisz H w piaskownicy murów), według zrzutu z Twierdzy podesłanego przez właściciela projektu:
-    - bryła 3×3 kafle, o 32 px wyższa od muru, drewniany dach z blankami dookoła, łukowe przejście z podniesioną broną i krzyżowe strzelnice,
-    - bez wieżyczek: baszty gracz stawia sam, jako osobne budynki (decyzja właściciela projektu),
-    - tylko 2 orientacje, przejście wzdłuż osi siatki, jak w Twierdzy,
-    - mury dowolnej grubości dochodzą do boków bez szczelin; sortowanie ze sprawdzeniem automatycznym: 0 błędów, także w przejściu.
+- [Claude] **Życie przy bramie:** strażnik obsługuje kołowrót przy podnoszeniu brony, a wozy zatrzymują się czasem do kontroli. Właściciel projektu jest na tak (2026-11-04). Wieża bramna weszła w M7, ten detal jeszcze nie.
 
-- [gracz] **Wysokość terenu (wysokie klify, płaskowyże, wodospady):** mapa nie powinna być płaska. Teren ma kilka poziomów oddzielonych skalnymi ścianami, a rzeka spada z wyższego poziomu wodospadem. Właściciel projektu uważa, że kiedyś trzeba to dodać (2026-11-05).
+- [Claude, 2026-11-09] **Barwy wojsk władców:** żołnierze władców i straż osad wyglądają tak samo jak żołnierze gracza, więc na mapie pola trudno odróżnić swoich od wrogów. Tarcze, proporce albo pasy na ubraniu w kolorze właściciela (gracz czerwony, władcy niebieski, zielony, fioletowy).
+  - Ocena: grafika postaci w kilku kolorach (podmiana palety przy wczytaniu, bez nowych rysunków), mało pracy w kodzie. W ROADMAP (M8) „herby i kolory władców” są dalej do ustalenia.
+
+- [właściciel, 2026-11-10] **Katapulta:** nowa machina oblężnicza (zasięg, amunicja, koszt). Taran i balista ze SpriteKiln już są. W ROADMAP katapulty i trebusze są w „Po wersji 1.0” (P6).
+
+- [właściciel, 2026-11-11] **Baraki i garnizon:**
+  - **Baraki:** prosty budynek wojskowy, który daje tylko łóżka dla żołnierzy (bez rekrutacji). Więcej wojska bez stawiania kolejnych koszar.
+  - **Garnizon:** budynek, w którym rekrutujemy żołnierzy trochę taniej, ale gracz nie może nimi dowodzić. Sami pilnują miasta: piechota patroluje ulice i obsadza bramy, a łucznicy i kusznicy patrolują mury i stoją na bramach i basztach.
+  - Ocena (Claude): dobre, zwłaszcza garnizon, bo daje dużo immersji (strażnicy chodzą po murach) i realną obronę przed bandytami bez klikania. Ryzyka: patrole to nowe zachowanie żołnierzy (trasy po murach i ulicach, zmiany warty), a obsadzanie wież i bram trzeba połączyć z dzisiejszą walką na murach. Baraki są proste (budynek z łóżkami, jak koszary bez rekrutacji), ale ich sens trzeba sprawdzić przy balansie łóżek dużych koszar (30). Grafiki ze SpriteKiln w stylu nowych koszar.
+  - Kiedy: do decyzji właściciela, najwcześniej po E4 (np. osobny mały etap wojskowy przed M10).
+
+## Morze i statki
+
+- [właściciel, 2026-11-09] **Bitwa morska na żywo:** po przechwyceniu wrogiej floty bitwa rozgrywa się na mapie pustego oceanu: okręty manewrują, strzelają i idą do abordażu.
+  - Ocena (Claude): nowy system walki statków. Ankieta 2026-11-09: w M8 bitwa morska automatyczna z animacją i raportem (jest), bitwa na żywo jako osobny etap po M8.
+
+- [gracz, 2026-11-06] **Sterowanie statkiem w prowincji:** zaznacz kogę, kliknij prawym na wodę, a koga tam płynie i rzuca kotwicę (np. żeby przestawić ją w inne miejsce). Dziś prawy przycisk działa tylko przy załadunku wojska na okręt (P2).
+  - Ocena (Claude): koszt średnio-mały (siatka ruchu po wodzie i kotwiczenie już są).
+
+- [gracz, ocena M5 2026-11-07] **Rejsy za horyzont w oknie mapy świata**, obok szlaków handlowych: gracz ustawia rejs, a gra sama wybiera wolny statek i magazyn.
+  - Ocena (Claude): wygodne przy wielu portach i prowincjach, mało ryzykowne (okno szlaków już istnieje). Decyzja właściciela (2026-11-07): na później.
+
+- [gracz, 2026-11-06] **Reszta portu z pomysłu na nabrzeża:** kuter z większą chatą rybacką (wypływa daleko w morze), latarnia morska (na razie ozdoba), dźwig naprawczy (naprawa statków po bitwach), balisty i wieże portowe.
+
+- [Claude, 2026-11-07] **Drobiazgi w porcie:**
+  - **Dźwig wybiera statek:** przy dwóch miejscach w zasięgu obraca się do tego, przy którym jest więcej ładunku.
+  - **Obracające się koło deptakowe:** 4 klatki obrotu, gdy dźwigowy w nim idzie. Koszt mały (grafika i widok).
+  - **Skrzynie i beczki na linie:** zamiast ikon towaru osobne rysunki ładunku (skrzynia, beczka, wiązka desek).
+
+## Teren i mapa
+
+- [gracz, 2026-11-05] **Wysokość terenu (wysokie klify, płaskowyże, wodospady):** mapa nie powinna być płaska. Teren ma kilka poziomów oddzielonych skalnymi ścianami, a rzeka spada z wyższego poziomu wodospadem. Właściciel projektu uważa, że kiedyś trzeba to dodać.
   - Ocena (Claude):
     - Pasuje do gry z oblężeniami: obrona na wzgórzu, wąskie przejścia, naturalne mury. Daje też dużo klimatu.
     - To osobna mechanika, nie sam tileset. Klif blokuje ruch, więc postacie i tragarze muszą go obchodzić albo wchodzić po zboczach i schodach. Budynki nie mogą stać na krawędzi. Dochodzą zasłanianie postaci przez wyższy teren, sortowanie głębi na kilku poziomach i generator mapy, który układa płaskowyże z sensem.
-    - Grafika jest tania: ściana klifu w kawałkach (proste w obu skosach, narożniki wypukłe i wklęsłe) i animowany wodospad to ok. 60–100 generacji PixelLab.
-    - Koszt: duży (nawigacja, sortowanie, generator). Ryzyko: średnie. Kiedy: osobny etap po rdzeniu symulacji, przed generatorem map.
+    - Grafika jest tania: ściana klifu w kawałkach i animowany wodospad.
+    - Koszt: duży (nawigacja, sortowanie, generator). Ryzyko: średnie.
   - Niski brzeg rzeki (woda kilka pikseli poniżej trawy, ziemna skarpa wzdłuż brzegu) to **tylko grafika** i nie wymaga tej mechaniki. ART_SPEC §3.1 już przewiduje takie kafle (64×48).
 
-- [gracz] **Scenariusz kolonizacji:** podstawowy start gry to lądowanie statkiem na dziewiczym kontynencie z zamiarem jego skolonizowania (fikcyjne średniowiecze, więc wolno). Statek przypływa do brzegu i wyładowuje osadników z zestawem startowym (2026-11-05).
-  - Ocena (Claude):
-    - Pasuje do inspiracji Anno i do istniejącego zasiedlania pustych prowincji (GDD §2.1): kolejne prowincje zasiedlamy tak samo, tylko pierwsza przychodzi z morza.
-    - Wymaga mapy przybrzeżnej i statku na starcie. Dziś pierwszy grywalny kawałek ma mapę śródlądową z rzeką, a morze i statki są w M5.
-    - Najtańsza wersja: statek przy brzegu tylko wyładowuje osadników (animacja), bez portu i handlu. Pełna wersja przychodzi razem z M5.
-    - Do przemyślenia: czy kontynent jest zupełnie pusty, czy są na nim osady neutralne i władcy AI, którzy przybyli wcześniej.
-    - Koszt: mały do średniego (zależy od tego, kiedy). Ryzyko: małe.
-  - Decyzja właściciela projektu (2026-11-05): na razie tylko pomysł, bez zmian w planie.
-  - **Przyjęte częściowo do M5 (ankieta 2026-11-06):** prosty start ze statku na mapie „Wybrzeże” (koga wyładowuje osadników i zestaw, gracz stawia ratusz). Kolonizacja kolejnych prowincji w M6.
+- [właściciel, 2026-11-10] **Dalej z mieszanym lasem** (5 gatunków drzew już jest): gatunki zależne od terenu (iglaste wyżej i na kamienistym gruncie, liściaste przy wodzie), skupiska jednego gatunku zamiast losowej mieszanki, różne drewno z różnych drzew (np. sosna na smołę), pora roku (jesienne liście).
 
-- [gracz] **Fikcyjne okręty w stylu Anno i drzewko rozwoju okrętów:** zamiast samej kogi mamy okręty fikcyjne, inspirowane prawdziwymi okresami: od kogi przez karawelę i karakę aż po duży okręt podobny do galeonu. Zamiast armat ma balisty i skorpiony. Na koniec drzewka mógłby się pojawić galeon z armatami (2026-11-05). Bez decyzji.
-  - Ocena (Claude):
-    - Fikcyjne okręty pasują: świat jest fikcyjny, a karawele i karaki to XV wiek, czyli jeszcze średniowiecze. Do tego właśnie takimi statkami kolonizowano nowe lądy, więc dobrze łączą się ze scenariuszem kolonizacji.
-    - Drzewko rozwoju daje graczowi cel na długą grę. Propozycja: łódź rybacka → koga (tania, na start) → karawela (szybka, do zwiadu i zasiedlania) → karaka (duża, handel i wojsko) → wielki okręt z balistami i skorpionami.
-    - **Uwaga na armaty:** jeśli są na okręcie, gracz zapyta, czemu nie ma ich w zamku. Proch zmienia też sens murów i oblężeń, czyli serca gry. Bezpieczniej zakończyć drzewko wielkim okrętem z ciężkimi balistami, a armaty potraktować jako osobną, późną decyzję dla całej gry (ląd i morze razem).
-    - Koszt: średni (każdy okręt to grafika z animacją kołysania, budowa w stoczni etapami i dane jednostki). Kiedy: M5.
-    - Zmieni GDD §5.4 (rodzaje statków), gdy właściciel projektu zdecyduje.
-  - **M5 (ankieta 2026-11-06):** tylko łódź rybacka i koga. Karawela, karaka i wielki okręt czekają na decyzję o kolejnym etapie.
-  - Prototyp (2026-11-05, `src/prototype/ships/`): koga narysowana kodem w 8 kierunkach (bryły 3D „fotografowane” w rzucie izometrycznym), z kasztelem z blankami, tarczami i pasiastym żaglem w kolorze frakcji (magenta). Wszystkie kierunki są spójne, a kolejne okręty drzewka da się zrobić, zmieniając wymiary i części w skrypcie.
+## Ekonomia i miasto
 
-- [gracz] **Nabrzeża budowane w głąb morza i budynki portowe na nich (2026-11-06):** drewniane pomosty i kamienne nabrzeża stawiane kafel po kaflu w głąb morza, działające jak dzisiejsze mury (rysowanie linią, łączenie się w ciągi, pogrubianie rzędami). Na nabrzeżach stawiamy miejsca cumowania statków i inne budynki portowe: dźwig przeładunkowy, dźwig naprawczy, dodatkowe magazyny portowe, stanowiska balist portowych, wieże portowe, może latarnię morską (gracz nie jest pewien). Do tego większa chata rybaka nadmorskiego z dużym kutrem, który wypływa daleko w morze. Budynki nabrzeżne mogą stać w 2/3 albo w całości na wodzie, co rozwiązuje problem krzywych brzegów. Bez decyzji.
-  - Opinia Claude:
-    - Bardzo dobry kierunek: to rozwiązuje najsłabsze miejsce M5 (przystań, stocznia i port mieszczą się tylko na prostym brzegu) i daje graczowi własny, rosnący port zamiast gotowego budynku. Pasuje do immersji jak mury.
-    - Dobra wiadomość: mamy już prawie wszystko pod spodem. Mury w 8 kierunkach (łączenie, rzędy), budynki częściowo na wodzie, rezerwacja miejsca przy nabrzeżu, portowcy i trap. Nabrzeże to „mur, po którym się chodzi, stawiany na wodzie”.
-    - Ryzyka: (1) chodzenie po wodzie: kafle nabrzeża muszą być przejezdne dla ludzi, a zamknięte dla statków, i nie mogą odciąć statkom drogi do morza (to sprawdzenie przy stawianiu, jak dziś dla murów i dróg); (2) sortowanie głębi dużych statków przy długich pomostach (R1); (3) budynek „cały na wodzie” musi mieć dojście po nabrzeżu, więc reguła stawiania zmienia się z „część kafli na lądzie” na „wejście od lądu albo od nabrzeża”.
-    - Propozycja kolejności: najpierw pomost drewniany i kamienne nabrzeże (stawianie linią, chodzenie, blokada dla statków) oraz „miejsce cumowania” jako mały budynek na nabrzeżu; port z placem zostaje jako budynek lądowy. Potem dźwigi (przeładunek szybszy niż portowcy na plecach, naprawa uszkodzonych statków po bitwach P1), magazyn portowy, większa chata rybacka z kutrem (kuter: nowy statek, dalsze ławice). Balisty i wieże portowe razem z walką okrętów (M7, P1). Latarnia: tani, ładny detal; mogłaby pozwalać statkom pływać nocą albo przy mgle, jeśli kiedyś będzie pogoda, więc na razie tylko jako ozdoba.
-    - Koszt: duży (to osobny etap, wielkości M4b-3). Kiedy: po M5, najlepiej przed M7 (walka okrętów i oblężenia od morza).
-  - **Przyjęte jako etap N1 „Nabrzeża i port” przed M7 (ankieta 2026-11-07), wersja średnia:** pomost, nabrzeże kamienne, miejsce cumowania, budynki nad wodą na nabrzeżu i wtopione w nie jak w Anno (pomysł właściciela), potem dźwig przeładunkowy i magazyn portowy. Kuter, latarnia, dźwig naprawczy, balisty i wieże portowe czekają tutaj. Szczegóły w ROADMAP (N1).
-- [Claude] **Port po N1, część 2 (pomysły z realizacji, 2026-11-07):**
-  - **Koga szuka wolnego miejsca:** dziś koga gracza czeka na kotwicy, gdy kupiec zajął jej port, nawet jeśli obok stoi wolne miejsce cumowania. Mogłaby cumować przy dowolnym wolnym miejscu swojego portu. Koszt mały, ryzyko: rejs zaczyna się wtedy z innego placu.
-  - **Dźwig wybiera statek:** dźwig dziś obsługuje jedno najbliższe miejsce; przy dwóch miejscach w zasięgu mógłby obracać się do tego, przy którym jest więcej ładunku.
-  - **Obracające się koło:** koło deptakowe w grafice stoi; mogłoby mieć 4 klatki obrotu, gdy dźwigowy w nim idzie. Koszt mały (grafika i widok).
-  - **Skrzynie i beczki na linie:** zamiast ikon towaru w siatce osobne rysunki ładunku (skrzynia, beczka, wiązka desek).
+- [gracz, 2026-11-05] **Skąd biorą się nowi mieszkańcy:** docelowo przybywają do miasta razem z okresami handlowymi (np. z kupcami) oraz przez symulowany przyrost naturalny. Dziś po prostu przychodzą pieszo z krawędzi mapy, gdy w domu jest wolne miejsce.
+  - Ocena (Claude): pasuje do klimatu i daje graczowi rytm („przyjechała karawana, przybyło 6 osób”). Przyrost naturalny łatwo policzyć na domach (np. szansa na dziecko zależna od zadowolenia), a dzieci dorastają w siłę roboczą po czasie.
 
-- [gracz] **Stopnie transportu:** tragarz niesie 1 sztukę, mały wózek ręczny 3, duży wóz konny 5–6.
-  - **Zatwierdzone 2026-11-05 (ładowności):** zapisane w GDD §5.2. Szybkości, czas załadunku i reguły dyspozytora z oceny poniżej czekają na decyzję (M4).
-  - **Przyjęte do M4b-3 (ankieta 2026-11-05):** wózek jako sprzęt tragarza magazynu (kupowany za deski), wóz konny ze stajnią i woźnicą (koń bez hodowli), wozy do dużych zleceń tragarzy, załadunek ok. 1 s na sztukę. Szczegóły w ROADMAP (M4b-3).
-  - Ocena (Claude):
-    - Dobre stopniowanie, widać postęp i pasuje do klimatu. Wózek ręczny to fajny etap pośredni, którego w GDD brakuje.
-    - Sama ładowność wozu (6 przy tragarzu 1) to niewielki zysk wobec kosztu (drogi, koń, stajnia). Wóz zarabia na długich trasach, więc warto mu dać szybkość na drodze (np. 1,5× tragarza), a wózkowi ręcznemu odrobinę mniejszą niż pieszemu (np. 0,9×).
-    - Załadunek i rozładunek powinny trwać widocznie (np. 1 s na sztukę), bo to immersja, a przy okazji uczciwy koszt.
-    - Dyspozytor musi wiedzieć, kogo wysłać: wóz do zleceń od ~4 sztuk na dalsze trasy, tragarz do małych i krótkich. Inaczej wozy jeżdżą z jedną kłodą.
-    - Technicznie to niedrogie: `TransportRequest` już dzieli zlecenie na ładunki, więc dochodzi pojemność i prędkość nośnika oraz ograniczenie wozów do dróg. Naturalny etap to M4 (drogi i wozy są tam w zakresie).
+- [Claude, 2026-11-05] **Utrzymanie budynków:** złota dalej przybywa szybciej, niż jest na co je wydać. Kupiec i podatki już działają, utrzymanie budynków (koszt co minutę) czeka.
 
-- [Claude] **Leśnik i odrastanie lasu:** pniak po czasie zamienia się w sadzonkę, a ta w drzewo (fazy `growing_1..3` z ART_SPEC §8). Leśnik sadzi drzewa w promieniu chaty. W M2 drzewa nie odrastają (3 kłody, potem pniak).
-  - Ocena: koszt mały (`ResourceField` ma już stan węzła, potrzebny jest licznik wzrostu w systemie „czas i wzrost” z §4.2). Bez tego las w długiej grze się kończy, więc warto to mieć najpóźniej w M4.
-
-- [gracz] **Skąd biorą się nowi mieszkańcy:** docelowo przybywają do miasta razem z okresami handlowymi (np. z kupcami) oraz przez symulowany przyrost naturalny. W M3 po prostu przychodzą pieszo z krawędzi mapy, gdy w domu jest wolne miejsce (decyzja 2026-11-05).
-  - Ocena (Claude): pasuje do klimatu i daje graczowi rytm („przyjechała karawana, przybyło 6 osób”). Przyrost naturalny łatwo policzyć na domach (np. szansa na dziecko zależna od zadowolenia), a dzieci dorastają w siłę roboczą po czasie. Naturalny etap: M4 (kupiec wędrowny) i M6 (ruch między prowincjami).
-
-- [Claude] **Opał przed budową:** automatyczny gracz pokazał, że przy jednym drwalu place budowy wyciągają z magazynu całe drewno, a domy marzną i podupadają. Pomysł: domownicy mają pierwszeństwo przy ostatnich sztukach drewna (np. budowy nie biorą ostatnich 5 kłód), albo gracz ustawia rezerwę w panelu magazynu.
-  - **Przyjęte do M4a (2026-11-05):** rezerwa 5 sztuk drewna i suwak w panelu magazynu (ROADMAP, M4).
-- [Claude] **Tragarze także w magazynach:** dziś tragarze pracują tylko w ratuszu (2 osoby). Przy kilku placach budowy naraz to wąskie gardło. GDD §4.1 mówi o „tragarzach magazynów”, więc każdy magazyn mógłby mieć 1–2 miejsca dla tragarzy.
-  - **Przyjęte do M4a (2026-11-05):** 2 tragarzy na magazyn (ROADMAP, M4).
-- [gracz] **Kutry rybackie na morzu:** w M4a ryby łowi wędkarz przy rzece. Później chcę też kutry na morzu, wydajniejsze od wędkarza (2026-11-05).
-  - Ocena (Claude): dobra ścieżka rozwoju: tani wędkarz na start, droższy kuter z portem i stocznią dla większego miasta. Naturalny etap: M5 (woda, porty i statki). Zmieni GDD §5.4 (dziś jest tam „łódź rybacka” przypisana do rybaka).
-  - **Przyjęte do M5 (ankieta 2026-11-06):** przystań rybacka nad morzem z łodzią ze stoczni; wędkarz zostaje.
-
-- [Claude] **Leśniczy (sadzenie drzew):** automatyczny gracz w M4a pokazał, że lasy przy mieście znikają po ok. 45 minutach, a drwale stoją („brak drzew”). Leśniczy sadzi sadzonki w zasięgu, które po kilku minutach rosną w drzewa.
-  - Ocena: koszt średni (nowy krok „sadź”, wzrost węzła jak pole). Bardzo pasuje do immersji i daje graczowi decyzję o lesie.
-  - **Przyjęte do M4b (2026-11-05).**
-- [Claude] **Wstrzymanie produkcji:** dziś budynek pracuje zawsze. Tartak i kamieniołom zapełniają magazyny deskami i kamieniem, aż zabraknie miejsca na inne towary. Przycisk „wstrzymaj” w panelu budynku (pracownik zostaje, ale nie zaczyna cyklu) albo limit („pracuj, gdy w magazynie mniej niż N”).
-  - Ocena: koszt mały. Ważne przy większym mieście.
-  - **Przyjęte do M4b (2026-11-05).**
-- [Claude] **Straganiarze na targowisku:** w M4a targowisko jest tylko usługą z zasięgiem. Docelowo (GDD §3.2) straganiarze przynoszą towary z magazynu na kramy, a domownicy kupują na targu zamiast chodzić do magazynu.
-  - Ocena: koszt średni. Dużo życia na ulicach.
-  - **Przyjęte do M4b (2026-11-05).** Zrobione w M4b-2: 2 straganiarzy, kramy z jedzeniem, napitkami, ubraniami i opałem.
-- [Claude] **Na co wydawać złoto:** w M4a złota szybko przybywa (po godzinie ok. 1000), a wydaje się je tylko na 4 budynki. Kupiec wędrowny (M4b) i utrzymanie budynków dadzą mu sens.
-  - Ocena: do strojenia razem z kupcem w M4b.
-  - M4b-2: kupiec kupuje nadwyżki (złoto przybywa) i sprzedaje świnie po 30 złota (złoto ubywa). Utrzymanie budynków nadal czeka.
-- [Właściciel] **Pola przy pasiece i owczarni** (2026-11-05): tak jak farma, pasieka i owczarnia stawiają kafelki 1×1 w swoim zasięgu. Pasieka stawia ule, a owczarnia kawałki zagrody z owcami. Sąsiednie kafelki owczarni łączą się w jedną zagrodę z płotem tylko na obwodzie.
-  - Otwarte: czy owce pojawiają się same, czy trzeba je kupić od kupca wędrownego (M4b-2).
-  - [Właściciel] **Świnie w zagrodach** (2026-11-05): świnie żyją w zagrodach jak owce. Na start kupujemy od kupca co najmniej 2 świnie, potem się rozmnażają; więcej świń = szybsze rozmnażanie, można dokupić. Suwak „ile świń zostawiamy do rozmnażania”. Rzeźnik albo kupiec zabiera dorosłą świnię.
-    - **Przyjęte częściowo do M4b-2 (ankieta 2026-11-05):** wersja prosta (chlew jako żywy magazyn świń, rozmnażanie do pojemności chlewu, kupno od kupca, ostatnie 2 świnie zostają, rzeźnik prowadzi świnię). Zagrody kafelkami z płotem, zwierzęta chodzące po zagrodzie i suwak stada: osobny etap razem z owcami.
-    - Ocena (Claude): suwak stada to zabezpieczenie przed wybiciem stada, a rozmnażanie musi mieć górną granicę (pojemność zagrody). Zagrody wspólne dla świń i owiec: robimy raz, używamy dwa razy.
-  - Ocena (Claude): dobrze pasuje do „widocznej pracy”. Pasterz chodzi między owcami w zagrodzie, a pszczelarz od ula do ula. Kafelki to te same pola co przy farmie, więc reszta logiki jest gotowa. Nowe są grafiki ula i zagrody (płot łączony jak mury) oraz owce jako małe postacie, które chodzą po zagrodzie. Koszt średni. Propozycja do decyzji: owce rozmnażają się same w zagrodzie, a pierwsze 2 owce przynosi kupiec. Wtedy kupiec ma sens, a gracz nie musi ich ciągle dokupywać. Kiedy: razem z M4b-2 (kupiec) albo zaraz po M4b-1.5.
-  - [Właściciel, 2026-11-10] **Przebudowa hodowli zwierząt:** w budynku hodowli (chlew, owczarnia, stadnina) gracz wybiera opcję „zagroda” i stawia kratki zagrody dokładnie tak jak pola. Połączone kratki zagród tego samego budynku tworzą jedną dużą zagrodę. Każda kratka mieści np. 2 zwierzęta, a zwierzęta mają animacje i chodzą po zagrodzie.
-    - **Ankieta 2026-11-10: osobny etap po części 3 M8; świnie, owce i konie** (chlew, owczarnia, stadnina; mechanizm raz, użyty trzy razy; 2–3 części z oceną po każdej). Ule przy pasiece zostają tutaj.
-    - **Plan etapu Z1 (ROADMAP, Z1) i ankieta 2026-11-10:** para zwierząt na start w każdej hodowli, kupiec dalej sprzedaje (też owce i konie), suwak rezerwy od 2, wełna szybsza przy większym stadzie, limit 12/12/6 kratek, nadmiar po usunięciu kratek zostaje, stare zapisy same dostają zagrodę, **pasieka z ulami jednak w tym etapie** (część 3).
-    - Ocena (Claude): pojemność stada = liczba kratek × 2, więc wielkość zagrody to decyzja gracza. Wydajność: symulacja pamięta tylko liczbę zwierząt w zagrodzie, a spacer zwierząt to sama animacja w widoku (bez szukania drogi), więc 50–100 zwierząt prawie nic nie kosztuje. Grafika: świnia ze SpriteKiln już jest (próba 2026-11-10: `idle`, `walk`, `root`), koń z bazy konnych bez jeźdźca, nowa tylko owca; płot łączony jak mury i furtka. Do zrobienia przy okazji: mniejszy chlew bez wbudowanej zagrody, migracja zapisu, automatyczny gracz stawiający zagrody. Pomysł na detal (bez decyzji): zwierzęta podchodzą do płotu, świnie zbiegają się do koryta, gdy świniarz niesie paszę.
-
-- [Claude] **Obracanie budynków (np. klawisz R):** gracz sam wybiera, z której strony budynek ma wejście. Pomysł powstał po błędzie z chatą rybaka, która stała drzwiami do rzeki (2026-11-05). Właściciel projektu chce go zapisać.
-  - Ocena (Claude): wygodne, ale kosztowne. Każdy budynek potrzebuje grafik z 2 albo 4 stron, a do tego trzeba obrócić obrys i wejście w danych, w zapisie gry i w cięciu do sortowania (`BuildingSlicer`). Na razie wystarcza komunikat „Wejście wychodzi na wodę” i przesunięcie budynku. Tańszy wariant: tylko 2 orientacje (odbicie lustrzane), bo grafikę da się wtedy odwrócić bez rysowania nowej. Kiedy: najwcześniej przy grafikach docelowych budynków.
-  - **Przyjęte do M4b-1.5 (2026-11-05):** domy 4 orientacje, reszta 2 lustrzane, automatyczny wybór strony do drogi i klawisz R. Szczegóły w ROADMAP (M4b-1.5).
-
-- [gracz] **Ratusz jako budynek na później, obóz pionierów na start (2026-11-06):** ratusz przesuwa się na późniejszą część gry i dostaje nowe funkcje, a jego dzisiejsze zadanie (budowniczy i tragarze) przejmuje obóz pionierów albo dom pionierów.
-  - **Przyjęte częściowo do M5, część 3 (ankieta 2026-11-06):** obóz pionierów (budowniczy + 2 tragarzy, 10 drewna, najwyżej jeden na prowincję, w menu na każdej mapie) jest pierwszym budynkiem po starcie ze statku na „Wybrzeżu”. Ratusz na razie działa jak dawniej; jego przesunięcie i nowe funkcje czekają na wspólne ustalenie.
-  - **Przyjęte do M6 (ankieta 2026-11-06):** ratusz = siedziba prowincji (podatki mieszczan i patrycjuszy tylko przy ratuszu, wymóg wysłania wyprawy osadników, jeden na prowincję). Szczegóły w ROADMAP (M6).
-  - Propozycje funkcji ratusza (Claude, do wyboru): podatki tylko z ratuszem (obóz daje niższą stawkę albo tylko ryczałt), awans domów do patrycjuszy wymaga ratusza w zasięgu, ratusz odblokowuje okno „Zapasy królestwa” i progi kupców, a później (M6) jest siedzibą zarządcy prowincji i wymogiem do kolonizacji następnej. Ocena: najprostsza i czytelna dla gracza jest para „ratusz = podatki od mieszczan i patrycjuszy + siedziba prowincji w M6”.
-- [gracz] **Dom budowniczych (2026-11-06):** budynek, który zwiększa liczbę budowniczych (np. +2), żeby duże miasto nie czekało na jednego budowniczego z obozu.
-  - Ocena (Claude): mały koszt (nowy budynek z pracownikami `builder`, cała logika budowy już działa dla wielu budowniczych). Pasuje razem z przesunięciem ratusza. Warto rozważyć limit (np. jeden na 20 domów), żeby nie zastępował planowania.
-- [Claude] **Rejsy w kółko (M5, część 3):** przełącznik „powtarzaj rejs” w panelu portu: koga po rozładunku od razu ładuje ten sam plan i znów wypływa. Ocena: koszt mały, wygoda duża, gdy gracz ma stałą nadwyżkę (np. desek do sprzedania). Do decyzji po ocenie części 3.
-  - **Przyjęte do M6 (ankieta 2026-11-06) jako część szlaków handlowych:** szlak to rejs (albo kurs wozu) powtarzany w kółko według progu.
-- [gracz] **Sterowanie kogą w prowincji (2026-11-06):** zaznacz kogę, kliknij prawym na wodę, a koga tam płynie i rzuca kotwicę (np. żeby przestawić ją w inne miejsce). Ocena (Claude): koszt średnio-mały (siatka ruchu po wodzie i kotwiczenie już są). Decyzja właściciela: później, po części 3 M6.
-- [gracz] **Natychmiastowa budowa jak w Anno (2026-11-06):** pomysł, żeby oszczędzić grafik budowy na PixelLabie. Ocena (Claude): odradzam, bo widoczna budowa z tragarzami to filar immersji; grafiki budowy i tak rysuje kod dla każdego budynku i rozmiaru, więc PixelLab potrzebny jest tylko do gotowych budynków. Budowa zostaje, grafikę budowy można później upiększyć (stosy desek, więcej rusztowań).
-  - **Wersja z przełącznikiem (gracz, ankieta 2026-11-06): decyzja „natychmiastowa budowa” jako opcja gry, zrobić dużo później, przed 1.0** (razem z innymi ustawieniami gry). W opcjach gry jest przełącznik „tryb immersyjny” (jak dziś) albo „tryb uproszczony”. W trybie uproszczonym budynek stoi od razu po kliknięciu, a materiały znikają z magazynów w tej samej chwili (gdy ich brak, budynku nie da się postawić). Tryb immersyjny zostaje domyślny.
-  - Ocena (Claude): koszt mały do średniego (jedna ścieżka w stawianiu budynku i dróg). Ryzyka: dwie wersje gry do testowania przy każdym nowym budynku, balans (automatyczny gracz i czasy z ROADMAP liczone są dla budowy z tragarzami), ustawienie musi trafić do zapisu gry. Rekomendowana wcześniej łagodniejsza wersja „szybka budowa” (widoczna budowa, ale np. 5× szybciej) zostaje jako możliwy wariant do rozważenia przy realizacji.
+- [gracz, 2026-11-06] **Natychmiastowa budowa jako opcja gry:** w opcjach przełącznik „tryb immersyjny” (jak dziś, domyślny) albo „tryb uproszczony”, w którym budynek stoi od razu po kliknięciu, a materiały znikają z magazynów w tej samej chwili. Ankieta 2026-11-06: zrobić dużo później, przed 1.0 (razem z innymi ustawieniami gry).
+  - Ocena (Claude): koszt mały do średniego. Ryzyka: dwie wersje gry do testowania przy każdym nowym budynku, balans (automatyczny gracz liczy czasy dla budowy z tragarzami), ustawienie musi trafić do zapisu gry. Łagodniejszy wariant: „szybka budowa” (widoczna, ale np. 5× szybciej). Tryb deweloperski z E4 buduje od razu, ale to narzędzie do testów, nie opcja gry.
 
 ## Klimat i immersja
 
 - [Claude] **Efekty przy pracy:** dym z komina piekarni tylko wtedy, gdy piekarz piecze, śmigło młyna kręci się tylko przy mieleniu, a z pola przy żniwach lecą źdźbła. Widok ma już czynność postaci, więc efekt można włączać po `activity`. Koszt mały, a dużo daje dla „żywego” miasta.
 
-- [Właściciel] **Obracanie kamery** (2026-11-05): żeby zobaczyć, co jest za budynkami. Najpierw wersja bez obróconych grafik, tylko żeby działało. Ocena (Claude): w izometrii 2D każdy budynek i postać potrzebuje wtedy grafik z 4 stron, czyli ok. 4× więcej rysowania. Tańsza alternatywa: przezroczyste budynki przy kursorze albo przycisk „ukryj budynki”. Kiedy: po M4b-1.5, gdy ustalimy nowy wygląd miasta.
+- [właściciel, 2026-11-05] **Obracanie kamery:** żeby zobaczyć, co jest za budynkami.
+  - Ocena (Claude): w izometrii 2D każdy budynek i postać potrzebuje wtedy grafik z 4 stron, czyli ok. 4× więcej rysowania. Tańsza alternatywa: przezroczyste budynki przy kursorze albo przycisk „ukryj budynki”.
 
-- [Claude] **Życie przy bramie:** strażnik obsługuje kołowrót przy podnoszeniu brony, a wozy zatrzymują się czasem do kontroli. Właściciel projektu jest na tak (2026-11-04). Kiedy: razem z wieżą bramną w M7.
+- [Claude, 2026-11-11] **Wyższe kłosy na żyznej ziemi:** na polach w prowincji z żyzną ziemią zboże, chmiel i krzewy rosną wyżej i gęściej, a ziemia jest ciemniejsza. Gracz widzi cechę od razu, bez zaglądania do panelu farmy.
+  - Ocena (Claude): logika już jest (+50% plonu), więc to tylko wygląd. Najtaniej przy G3 (nowe grafiki ze SpriteKiln), żeby nie rysować pól dwa razy. W ankiecie części 4 E3 właściciel wybrał na razie tylko linijkę w panelu.
 
-## Animacje i detale
+- [Claude, 2026-11-11] **Dzieci chodzą do szkoły:** z domów mieszczan rano wychodzą dzieci, idą do szkoły, siedzą w ławkach na lekcji i po dzwonku wracają do domów.
+  - Ocena (Claude): piękna immersja, ale to nowe małe postacie ze SpriteKiln, ławki z siedzącymi dziećmi (pierwsza próba na podwórku szkoły „nie wyglądała najlepiej”, właściciel 2026-11-11) i ruch w mieście. Najlepiej razem z G3. W ankiecie części 2 E4 właściciel wybrał szkołę bez uczniów.
 
-- [właściciel, 2026-11-08] **Nowe jednostki i okręty:** halabardnik w zbroi płytowej, kusznik, ciężki zbrojny z morgensternem, lekka jazda, ruchoma balista; 3 nowe okręty (każdy w wersji cywilnej i wojennej, każdy większy od poprzedniego) i duża stocznia; bardziej naturalne „Wybrzeże” z szerszą i krótszą zatoką.
-  - Ocena (Claude): jednostki i okręty najlepiej po ocenie M7 (zasady walki), ale przed M8 (AI od razu z pełnym wojskiem); wybrzeże jest małe i niezależne. **Decyzja właściciela (ankieta 2026-11-08): oba teraz** — najpierw W1 (wybrzeże), potem J1 (jednostki i okręty), przed oceną M7 (ROADMAP, W1 i J1).
+- [Claude, 2026-11-10] **Detal w zagrodach:** zwierzęta podchodzą do płotu, świnie zbiegają się do koryta, gdy świniarz niesie paszę.
 
-## Bitwa morska na żywo (właściciel, 2026-11-09)
+## Zrealizowane
 
-- Pomysł właściciela: po przechwyceniu wrogiej floty bitwa rozgrywa się na mapie pustego oceanu: okręty manewrują, strzelają i idą do abordażu.
-- Ocena (Claude): nowy system walki statków (dziś statki w widoku prowincji nie walczą). Ankieta 2026-11-09: w M8 bitwa morska automatyczna z animacją i raportem, bitwa na żywo jako osobny etap po M8.
+Krótka lista pomysłów z tej poczekalni, które weszły do gry. Szczegóły w ROADMAP przy podanym etapie.
 
-
-## Barwy wojsk władców (Claude, 2026-11-09)
-
-- Pomysł (Claude, przy M8 część 2): żołnierze władców i straż osad wyglądają dziś tak samo jak żołnierze gracza (te same postacie), więc na mapie pola trudno odróżnić swoich od wrogów. Tarcze, proporce albo pasy na ubraniu w kolorze właściciela (gracz czerwony, władcy niebieski, zielony, fioletowy). Ocena: grafika postaci w kilku kolorach (podmiana palety przy wczytaniu, bez nowych rysunków), mało pracy w kodzie. Kiedy: razem z częścią 4 (wojna władców) albo wcześniej, jeśli przeszkadza przy ocenie.
-
-## Mieszany las i więcej gatunków drzew (właściciel, 2026-11-10)
-
-- Pomysł właściciela: kilka gatunków drzew naraz zamiast jednego wyglądu (dęby, lipy, świerki, sosny).
-- **Zrobione 2026-11-10 (ankieta: „mieszany las teraz”):** 5 wyglądów ze SpriteKiln (dąb, jaśniejszy dąb, świerk, sosna, jasny świerk), każdy w 3 stanach (`nature/tree/{grown,felled,stump}[_2.._5].png`). Wygląd wybiera tylko widok (`NatureLayer.variant_suffix`) ze współrzędnych kafla, więc drzewo zachowuje gatunek przy ścinaniu i po wczytaniu gry; symulacja i zapis bez zmian.
-- Dalej (do decyzji): gatunki zależne od terenu (iglaste wyżej i na kamienistym gruncie, liściaste przy wodzie), skupiska jednego gatunku zamiast losowej mieszanki, różne drewno z różnych drzew (np. sosna na smołę), pora roku (jesienne liście).
-
-## Machiny oblężnicze ze SpriteKiln i katapulta (właściciel, 2026-11-10)
-
-- Właściciel podesłał referencje: balista na kołach, taran pod dachem ze skór (wóz z daszkiem), katapulta.
-- Ankieta 2026-11-10: **osobny etap później** (po reworku żołnierzy). Balista i taran są dziś rysowane kreskami w kodzie (`SiegeLayer`), więc podmiana na obrazki ze SpriteKiln to też zmiana w widoku. Katapulty w grze nie ma: to nowa jednostka (zasięg, amunicja, koszt), do zaplanowania razem z tym etapem.
-- **Zrobione 2026-11-10 (taran i balista ze SpriteKiln, 8 kierunków, ramka 128 px; ankieta: taran z dachem ze skór i nogami ludzi pod dachem, balista z 2 ludźmi przy kołowrocie):** ART_SPEC §10.20, „Machiny oblężnicze”. Zaakceptowane i scalone do `main` 2026-11-10. Katapulta dalej czeka (nowa jednostka do zaplanowania).
-
-## Pakiet zmian w ekonomii i rozwoju (właściciel, 2026-11-10)
-
-Pomysły właściciela z rozmowy 2026-11-10, z oceną Claude. Ankieta 2026-11-10: **zapisać wszystko i zaplanować pierwszą paczkę** (ROADMAP, E1: magazyny, farmy i ręczny awans). Reszta czeka na kolejne etapy, w kolejności niżej.
-
-1. **Większe stosy w magazynach + dom tragarzy** → ROADMAP, E1.
-   - Właściciel: magazynów trzeba „pierdylion” i źle to wygląda; mniej tragarzy zrekompensować nowym budynkiem z tragarzami.
-   - Ocena (Claude): za. Plac ma 15 miejsc po 12–20 sztuk. Mniej placów to mniej tragarzy (2 na plac), więc osobny dom tragarzy jest potrzebny, inaczej logistyka zwolni. Stos wyższy, nie szerszy (więcej faz).
-2. **Pole rośnie dopiero po zasianiu wszystkich kratek** → ROADMAP, E1.
-   - Właściciel: rolnik kończy siać ostatnią kratkę, a pierwsza jest już do zbioru; może większy plon na wyrównanie.
-   - Ocena (Claude): 16 kratek i 90 s wzrostu, siew całego pola trwa mniej więcej tyle samo. „Cały łan rośnie razem”, rolnik w czasie wzrostu pieli albo przegania wrony; spadek wydajności oddać plonem albo krótszym wzrostem, zmierzone automatycznym graczem (cel: farma daje tyle co dziś albo trochę więcej).
-3. **Ręczny awans domu** („Rozbuduj teraz”, bez czekania) → ROADMAP, E1.
-4. **Alternatywne źródła jedzenia na start** (mapa bez wody nie ma dziś jedzenia na start).
-   - Właściciel: farma rzepy, myśliwy i dzikie zwierzęta.
-   - Ocena (Claude): sad jabłoni (jabłka są w GDD jako jedzenie chłopów „później”, mechanizm jak winnica, tanio) + myśliwy z sarnami i dzikami (dużo klimatu, najwięcej pracy; zwierzęta ze SpriteKiln jak w Z1). Rzepa to prawie to samo co zboże. Pomysł Claude: zbieracz jagód i grzybów w lesie (tani, mało daje, na pierwsze minuty).
-   - Kiedy: etap 2, razem z punktem 5. **Ankieta 2026-11-11: sad + myśliwy (bez zbieracza), polowanie daje mięso i skórę** → ROADMAP, E2.
-5. **Nowe potrzeby mieszkańców: zróżnicowana dieta i „kilka z wielu”.**
-   - Właściciel: więcej rodzajów jedzenia na poziom; do spokoju wystarczy spełnić kilka potrzeb (bez jedzenia i tak niezadowoleni); potrzeby ponad minimum dają trochę więcej podatku.
-   - **Ankieta 2026-11-11: dieta 1/2/3, pozostałe potrzeby jako punkty z progiem** → ROADMAP, E2.
-   - Ocena (Claude): dobre i pasuje do punktu 4. Szkic: jedzenie zawsze obowiązkowe, minimum kilku potrzeb do spokoju, każda ponad minimum (też kolejny rodzaj jedzenia) to +podatek, awans wymaga więcej (np. 2 rodzaje jedzenia). Ryzyko: przebudowa serca ekonomii, trzeba poprawić władców (`RulerPlanner`), automatycznego gracza i scenariusze. Osobny etap.
-6. **Cechy prowincji: niewyczerpalne źródła.**
-   - Właściciel: prowincja bogata w kamień z odkrywką, która się nie kończy; głęboka kopalnia żelaza, która nigdy się nie kończy.
-   - Ocena (Claude): bardzo dobre, rozwija rzadkie surowce (winorośl, sól, ruda★). Tylko w prowincji z cechą; droższe, wolniejsze albo z większą obsadą, żeby nie zastąpiły zwykłych. Dalsze cechy: żyzna ziemia (plon), bogata w zwierzynę (myśliwy).
-   - Kiedy: etap 3. **Ankieta 2026-11-11: osobna cecha prowincji, budynek przy skałach lub żyłach, większa obsada i droższa budowa; żyzna ziemia i zwierzyna w części 4** → ROADMAP, E3.
-7. **Uniwersytet i badania.**
-   - Właściciel: badania odblokowują budynki i ulepszają gospodarkę (tragarze i wózki niosą +1, farmy więcej pól, hodowle więcej zagród); dużą część obecnych budynków schować za badaniami.
-   - Ocena (Claude): największa zmiana z listy. Dotyka menu budowy, zapisu, władców (muszą badać, inaczej będą silniejsi), automatycznego gracza i scenariuszy. Za dużo schowane = nudny start. Pierwsza wersja: 15–20 badań za złoto i czas, uniwersytet wymaga mieszczan albo patrycjuszy; uczeni z księgami w środku, dzwon w mieście po badaniu.
-   - Kiedy: etap 4, razem z punktem 8. **Właściciel 2026-11-11: najpierw szkoła (część badań), później uniwersytet; ankiety 2026-11-11** → ROADMAP, E4.
-8. **Małe i duże koszary.**
-   - Właściciel: małe, tanie koszary (łucznicy i włócznicy) od startu; duże, „zamkowe” na planie kwadratu 4×4 albo 5×5 zastępują obecne i działają jak one, ale trzeba je zbadać (tak samo jak ich jednostki).
-   - Ocena (Claude): za. Rekomendacja 5×5 z dziedzińcem, na którym żołnierze ćwiczą (musztra już jest). Grafika ze SpriteKiln. Ma sens razem z badaniami.
-
-## Wyższe kłosy na żyznej ziemi (Claude, 2026-11-11)
-- Pomysł: na polach w prowincji z żyzną ziemią (E3, część 4) zboże, chmiel i krzewy rosną wyżej i gęściej, a ziemia jest ciemniejsza. Gracz widzi cechę od razu, bez zaglądania do panelu farmy.
-- Ocena (Claude): mała, przyjemna immersja. Logika już jest (żyzna ziemia daje +50% plonu), więc to tylko wygląd: drugi zestaw grafik faz wzrostu albo przyciemnienie i powiększenie obecnych. Najtaniej przy G3 (nowe grafiki ze SpriteKiln), żeby nie rysować pól dwa razy.
-- Kiedy: do decyzji właściciela, najlepiej razem z G3. W ankiecie części 4 (2026-11-11) właściciel wybrał na razie tylko linijkę w panelu.
-
-## Dzieci chodzą do szkoły (Claude, 2026-11-11)
-- Pomysł: z domów mieszczan rano wychodzą dzieci, idą do szkoły, siedzą w ławkach na lekcji i po dzwonku wracają do domów.
-- Ocena (Claude): piękna immersja, ale to nowe małe postacie ze SpriteKiln, ławki z siedzącymi dziećmi (pierwsza próba na podwórku szkoły „nie wyglądała najlepiej”, właściciel 2026-11-11) i ruch w mieście. Najlepiej razem z G3 (nowe postacie). W ankiecie części 2 E4 właściciel wybrał uczniów tylko na grafice, potem bez uczniów.
-
-
-## Baraki i garnizon (właściciel, 2026-11-11)
-- **Baraki:** prosty budynek wojskowy, który daje tylko łóżka dla żołnierzy (bez rekrutacji). Więcej wojska bez stawiania kolejnych koszar.
-- **Garnizon:** budynek, w którym rekrutujemy żołnierzy trochę taniej, ale gracz nie może nimi dowodzić. Sami pilnują miasta: piechota patroluje ulice i obsadza bramy, a łucznicy i kusznicy patrolują mury i stoją na bramach i basztach.
-- Ocena (Claude): dobre, zwłaszcza garnizon, bo daje dużo immersji (strażnicy chodzą po murach) i realną obronę przed bandytami bez klikania. Ryzyka: patrole to nowe zachowanie żołnierzy (trasy po murach i ulicach, zmiany warty), a obsadzanie wież i bram trzeba połączyć z dzisiejszą walką na murach. Baraki są proste (budynek z łóżkami, jak koszary bez rekrutacji), ale ich sens trzeba sprawdzić przy balansie łóżek dużych koszar (30). Grafiki ze SpriteKiln w stylu nowych koszar.
-- Kiedy: do decyzji właściciela, najwcześniej po E4 (np. osobny mały etap wojskowy przed M10).
+- **Grube mury jak w Twierdzy** (model bryłowy, blanki, chodzenie po murach) → prototyp 2026-11-04, M7. Hurdycje czekają wyżej.
+- **Wieża bramna** (bryła 3×3, brona, przejście) → M7.
+- **Scenariusz kolonizacji** (start ze statku na „Wybrzeżu”, zasiedlanie kolejnych prowincji) → M5 i M6.
+- **Fikcyjne okręty** (łódź, koga, karawela, karaka, galeon, wersje wojenne) → M5 i J1.
+- **Nabrzeża w głąb morza** (pomost, nabrzeże, miejsce cumowania, dźwig, magazyn portowy) → N1; słupki, dokerzy, statek sam szuka wolnego miejsca → P2.
+- **Stopnie transportu** (tragarz, wózek, wóz konny) → M4b-3.
+- **Leśniczy i odrastanie lasu** → M4b-1.
+- **Opał przed budową** (rezerwa drewna) i **tragarze w magazynach** → M4a (tragarze magazynów później zastąpieni w P2).
+- **Kutry rybackie** (przystań rybacka z łodzią) → M5.
+- **Wstrzymanie produkcji** → M4b-1.
+- **Straganiarze na targowisku** i **kupiec wędrowny** → M4b-2.
+- **Zagrody kratkami** (świnie, owce, konie, ule przy pasiece) → Z1.
+- **Obracanie budynków** (klawisz R) → M4b-1.5.
+- **Obóz pionierów na start, ratusz jako siedziba prowincji** → M5 i M6.
+- **Dom budowniczych** (chata budowniczych) → P2.
+- **Rejsy w kółko** (szlaki handlowe) → M6.
+- **Most przez rzekę i łagodniejszy brzeg** → B1.
+- **Nowe jednostki i okręty** oraz nowe „Wybrzeże” → W1 i J1.
+- **Bitwa morska automatyczna z raportem** → M8 (wersja na żywo czeka wyżej).
+- **Mieszany las** (5 gatunków ze SpriteKiln) → 2026-11-10.
+- **Taran i balista ze SpriteKiln** → 2026-11-10 (katapulta czeka wyżej).
+- **Pakiet ekonomii z 2026-11-10:** większe stosy i dom tragarzy, pole rośnie po zasianiu całości, ręczny awans → E1; sad, myśliwy, dieta i nowe potrzeby → E2; cechy prowincji → E3; szkoła, uniwersytet, badania, małe i duże koszary → E4.
