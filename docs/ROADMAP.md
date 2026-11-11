@@ -1406,7 +1406,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 3. **Nowe potrzeby i podatek za nadwyżkę** (dieta 1/2/3, punkty z progiem, panel domu pokazuje punkty i dodatek do podatku).
 4. **Automatyczni gracze, władcy, osady i balans** (długie testy: automatyczny gracz dochodzi do patrycjuszy w limicie, władcy rosną jak dotąd).
 
-**Część 1, stan (2026-11-11): gotowa, czeka na ocenę.**
+**Część 1, stan (2026-11-11): zaakceptowana („Jest super!”).**
 - Sad (`orchard`, 2×2, 6 drewna, sadownik, do 12 kratek jabłoni w zasięgu 4, wzrost 120 s, plon +0,2 jak pola E1); wspólny krok pracy w polu, więc jabłonie rosną razem, sadownik pieli i zrywa jabłka. Towar „jabłka” (jedzenie, 20 w stosie, cena 3): jedzenie chłopów, kramy targu, spiżarnie koszar, władcy liczą je do zapasu jedzenia.
 - Grafiki ze SpriteKiln: jabłoń w 5 fazach (`gen_crops.py`: gołe gałęzie, liście, kwiaty, zielone jabłka, czerwone jabłka ze spadami; `nature/crops/apples`, 64×88, środek kafla (32, 72)), trawa pod drzewami (ziemia winnicy), budynek sadu (`gen_farmsteads.py`: żółta chatka pod czerwoną dachówką, ziemna piwniczka na owoce, drabina, skrzynki i kosz jabłek), ikona jabłek (`gen_icons.py`); stos i niesiony kosz z koszy winogron przemalowanych na czerwono; sadownik rysowany kodem (zielona koszula, słomkowy kapelusz).
 - **Zapis v36**: spiżarnie domów (9 miejsc), kramy targu (8) i spiżarnie koszar (4) dostają miejsce na jabłka; test migracji.
@@ -1414,9 +1414,17 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Automatyczni gracze i władcy jeszcze nie stawiają sadu (część 4).
 - Zrzut: `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=44,56 --zoom=2 --yards=orchard,farm --fields_seconds=175|240`.
 
+**Część 2, stan (2026-11-11): gotowa, czeka na ocenę.**
+- Dzikie stada (`WildHerds`, `src/sim/nature/`): sarny (do 5, nowe stado 3) i dziki (do 4, nowe 2) na łąkach przy skraju lasu (las najwyżej 3 kafle dalej; na otwartym, żeby gracz je widział i myśliwy dochodził). Co 30–50 s stado przechodzi o kilka kafli, co 2 minuty przybywa zwierzę, co minutę wychodzi nowe stado, jeśli jest ich mniej, niż las wykarmi (1 na 150 kafli lasu i łąk, 2–8). Trzyma się 5 kafli od budynków (rosnące miasto je odpędza). Żadnych zapisanych losowań: wybory z haszu czasu i numeru stada.
+- Chata myśliwego (`hunter_lodge`, 2×2, 6 drewna, zasięg 20) i krok „poluj” (`HuntStep`): myśliwy wybiera najbliższe stado (rezerwuje je, żeby nie odeszło), podchodzi na 3 kafle, celuje 2 s, strzela (zdarzenie `hunt_shot`, strzała w widoku), reszta stada ucieka 7 kafli dalej, myśliwy podnosi tuszę (towar „zdobycz”, `game`), w chacie oprawia ją na 2 mięsa i zdejmuje skórę (jak rzeźnik). Sarna i dzik dają tyle samo (prościej, do zmiany przy ocenie). Tryb uproszczony też poluje na stada.
+- Widok `WildLayer`: zwierzęta kręcą się wokół miejsca stada (stoją, skubią trawę albo ryją), idą za stadem, a po strzale biegną; strzała leci łukiem.
+- Grafiki: sarna i dzik ze SpriteKiln (`art/specs/props/{deer,boar}`, 8 kierunków; sarna `idle`, `walk`, `graze`, dzik `idle`, `walk`, `root`; `export_animal.py`), chata myśliwego (`gen_farmsteads.py`: ciemne bale, dach z darni, poroże, skóra na ramie, zdobycz na haku, drwa), ikona zdobyczy (`gen_icons.py`), tusza na plecach (`goods/carried/sack/game.png`), myśliwy rysowany kodem (kaptur, łuk, kołczan, nóż; celowanie jak łucznik).
+- **Zapis v37**: stada w prowincji; starsze gry dostają je w pierwszej sekundzie po wczytaniu.
+- Zrzut: `game_shot.tscn -- --shot=<plik> --map=lakeland --tile=26,56 --zoom=3 --yards=hunter_lodge --fields_seconds=3|22` (kamera na najbliższe stado), stada mapy `src/prototype/e2/herd_probe.gd -- --map=lakeland`.
+
 **DoD:**
 - [ ] Sad daje jabłka, jabłonie rosną razem; jabłka są jedzeniem wszystkich klas (część 1: jedzenie chłopów; mieszczanie i patrycjusze w części 3).
-- [ ] Sarny i dziki żyją na mapie; myśliwy poluje i oprawia zdobycz na mięso i skórę.
+- [x] Sarny i dziki żyją na mapie; myśliwy poluje i oprawia zdobycz na mięso i skórę (część 2).
 - [ ] Dieta 1/2/3 i punkty z progiem działają; dom pokazuje punkty, próg i dodatek do podatku.
 - [ ] Stare zapisy wczytują się po migracji.
 - [ ] Automatyczni gracze, władcy i osady grają według nowych zasad; testy szybkie i długie przechodzą; UI w PL i EN.

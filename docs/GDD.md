@@ -334,6 +334,7 @@ Teren też ma koszt ruchu: las i pole spowalniają, a woda, skały i budynki blo
 | Drwal | 2×2 | drewno (ścina drzewa, wiąże kłody, niesie) |
 | Farma zbożowa | 2×2 + do 16 kafli pola 1×1 stawianych osobno w zasięgu farmy (decyzja 2026-11-05) | zboże |
 | Sad [E2] | 2×2 + do 12 kratek jabłoni w zasięgu 4 kafli, 6 drewna, sadownik | jabłonie rosną razem jak łan (E1), sadownik pieli i zrywa jabłka do kosza (śr. 1,2 kosza z drzewa); jabłka to jedzenie chłopów (obok chleba i ryb), są na targu i w koszarach; jedzenie na start na mapie bez wody |
+| Chata myśliwego [E2] | 2×2, 6 drewna, myśliwy, poluje do 20 kafli od chaty | sarny i dziki żyją stadami (2–5 sztuk) na łąkach przy skraju lasu, wędrują, powoli się rozmnażają, nowe stada wychodzą z lasu, gdy jest ich mniej, niż las wykarmi (1 stado na 150 kafli lasu i łąk, 2–8 na mapę), a od miasta trzymają się z daleka; myśliwy podchodzi na 3 kafle, celuje, strzela z łuku (reszta stada ucieka), niesie tuszę na plecach do chaty, oprawia ją na 2 mięsa i zdejmuje skórę |
 | Młyn | 2×2 | mąka |
 | Piekarnia | 2×2 | chleb |
 | Tartak [M4a] | 2×2 | deski |
