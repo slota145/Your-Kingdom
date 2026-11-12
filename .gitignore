@@ -4,3 +4,4 @@
 
 # gdUnit4 test reports
 /reports/
+__pycache__/

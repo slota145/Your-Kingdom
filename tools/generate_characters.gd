@@ -257,6 +257,10 @@ const ACTIVITIES := {
 
 ## Carry category -> hands (side, front, height) for both hands, the good's anchor and
 ## whether the good hides behind the body when facing the camera (true) or away (false).
+## Townsfolk drawn with SpriteKiln since G3 (tools/spritekiln/gen_civilians.py, ART_SPEC §10.27):
+## this script no longer writes them, so a run cannot bring back the old look.
+const SPRITEKILN := ["porter", "farmer", "builder"]
+
 const CARRY := {
 	"sack": {"hands": [Vector3(3.5, 0.5, 31.0), Vector3(-5.0, 1.0, 17.0)], "anchor": Vector3(4.5, -0.5, 32.0), "behind_camera": false},
 	"basket": {"hands": [Vector3(6.5, 2.5, 17.0), Vector3(-5.0, 0.0, 16.0)], "anchor": Vector3(7.5, 3.0, 15.0), "behind_camera": false},
@@ -283,7 +287,7 @@ func _init() -> void:
 		if arg.begins_with("--only="):
 			only = arg.trim_prefix("--only=")
 	for kind: String in PEOPLE:
-		if not only.is_empty() and kind != only:
+		if (not only.is_empty() and kind != only) or kind in SPRITEKILN:
 			continue
 		_look = PEOPLE[kind]
 		_save(_sheet(4, func(_f: int, t: float) -> Dictionary: return {"breath": sin(t * TAU)}), kind, "idle")
