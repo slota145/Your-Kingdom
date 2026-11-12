@@ -140,7 +140,7 @@ animations:
       lean: 0.18
       hand_L: "[0.16, 0.50, 0.12]"
       hand_R: "[0.16, 0.50, 0.12]"
-      load_at: [0, 0.48, -0.30]
+      load_at: [0, 0.66, -0.26]
   carry_crate:       # a crate in front, in both hands
     frames: 8
     ms: 100

@@ -1635,7 +1635,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 
-> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12, czeka na akceptację.** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
+> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 gotowa, czeka na ocenę („Część 1, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
 
 **Cel:** cała gra w jednym stylu. Mieszkańcy i budynki rysowani dziś kodem (`tools/generate_characters.gd`, `tools/generate_art.gd`) albo z PixelLab dostają modele ze SpriteKiln, tak jak żołnierze, okręty, zagrody, szkoła i koszary. **Zmienia się tylko wygląd:** symulacja, zapis (bez nowej wersji) i zasady gry zostają.
 
@@ -1662,6 +1662,14 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 3. **Warsztaty i surowce:** warsztaty, gospodarstwa, kopalnie i przetwórnie (lista wyżej) oraz drwal, kamieniołom i chata rybaka z PixelLab; z etapami budowy i miejscami pracy (`data/visuals/buildings/*.tres`) poprawionymi pod nowe kształty. Możliwy podział na 2 paczki po ok. 12 budynków.
 4. **Miasto i usługi:** chata poziomu 1 (3 wyglądy, tył, etapy), kamienice patrycjuszy (poziom 3, w stylu kamienic mieszczan, `gen_townhouses.py`, z rusztowaniem przebudowy), studnia, kaplica, kościół, targ, tawerna, ratusz, punkt handlowy, chata budowniczych, skład, obóz pionierów.
 5. **Port i wojsko:** port, nabrzeże rybackie, przystań, słupek, dźwig, magazyny portowe (mały i duży), stocznia i duża stocznia, domy dokerów, płatnerz, łuczarz, zbrojownia, warsztat oblężniczy. Na koniec G3: sprzątanie (usunięcie zamienionych rysunków z generatorów kodu), długie testy, ART_SPEC.
+
+**Część 1, stan (2026-11-12):** gotowa na gałęzi roboczej, czeka na ocenę.
+- Wspólny model mieszkańca (koszula z pasem, nogawice, buty; `idle`, `walk`, 7 chodów z towarem) i generator zawodów z 7 wspólnymi ruchami pracy (młotek, motyka, pielenie, sierp, siew, przykucnięcie, podnoszenie), ART_SPEC §10.27.
+- Tragarz (czerwona chusta), rolnik (słomkowy kapelusz, orka, siew, żniwa, wiązanie, pielenie), budowniczy (fartuch, czapka, młotek) w grze, 8 kierunków bez odbić.
+- Punkt noszenia z modelu: towar na ramieniu, przy biodrze, na plecach i w rękach jak dotąd, za postacią, gdy jest za ciałem. Towary w rękach odbijają się dla kierunków W (poprawka w widoku: wcześniej postać z 8 wierszami pokazywałaby w kierunkach NW, W, SW towar od tyłu).
+- Stary generator postaci nie nadpisuje już tych trzech.
+- Testy: szybki test kompletu animacji (każda postać ma wszystkie ruchy, 8 kierunków, punkt noszenia w każdej klatce) i odbicia towarów. Zrzuty do oceny: `src/prototype/g3/folk_shot.tscn -- --shot=<plik> --id=porter|farmer|builder`.
+- **Do oceny na laptopie:** wygląd przy zoomie 1× i 3×, czy towary dobrze leżą w rękach w ruchu, płynność ruchów pracy, wydajność przy wielu ludziach (klatka 64 jak dotąd, ale 8 wierszy zamiast 5: pamięć postaci ok. 1,6× większa).
 
 **Testy i sprawdzenie (każda część):** szybkie testy; sortowanie nowych budynków z prawdziwym punktem i rozmiarem (`test_sorting.gd`, jak `test_pixellab_building_art_sorts_correctly`); test, że każda postać ma wszystkie animacje, których gra używa (idle, walk, 7 chodów z towarem z mapą punktu noszenia, wszystkie ruchy pracy z jej danych), w tych samych 8 kierunkach i z punktem stopy; zrzuty w chmurze do oceny; wydajność i wygląd „na oko” ocenia właściciel na laptopie.
 
