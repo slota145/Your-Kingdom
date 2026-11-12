@@ -32,11 +32,11 @@ var _idle_since: Dictionary[int, int] = {}
 func _init(simulation: Simulation) -> void:
 	sim = simulation
 	sim.autopilot = true
-	# Until E4 part 5 the automatic player studies nothing: every building, no improvement.
-	sim.research.open = true
 	var level := RulerPlanner.difficulty(sim)
 	state = RulerState.create(ProvinceDef.OWNER_PLAYER, 0, sim.clock.tick)
 	state.treasury = sim.treasury
+	# E4 part 5: it studies the kingdom's research as a ruler does (RulerResearch).
+	state.research = sim.research
 	state.next_expedition = sim.clock.tick + SimClock.seconds_to_ticks(RulerExpansion.EXPEDITION_MINUTES[level] * 60.0)
 	state.next_war = sim.clock.tick + RulerWar.first_ticks(level)
 	if sim.province.landing != null and sim.province.landing.state != Landing.State.DONE:
@@ -53,6 +53,8 @@ func run(seconds: int, on_minute: Callable = Callable()) -> StringName:
 			saving = _barracks_first()
 		if not saving:
 			RulerPlanner.update_owner(sim, state, second)
+		if second % RulerResearch.EVERY == 0:
+			RulerResearch.update_owner(sim, state)
 		RulerExpansion.update_owner(sim, state)
 		RulerWar.update_owner(sim, state, second, 7)
 		_decide()
@@ -81,9 +83,12 @@ func _barracks_first() -> bool:
 		if town == null or RulerPlanner.residents(town) < BARRACKS_PEOPLE:
 			continue
 		var counts := RulerPlanner.counts_of(town)
-		if counts.has(RulerPlanner.LARGE_BARRACKS):
+		if counts.has(RulerPlanner.SMALL_BARRACKS):
 			continue
-		var def := sim.data.get_building(RulerPlanner.LARGE_BARRACKS)
+		# The large barracks once studied (the Invasion starts with them), else the small.
+		var kind := RulerPlanner.LARGE_BARRACKS if town.research.allows_building(sim.data,
+				RulerPlanner.LARGE_BARRACKS) else RulerPlanner.SMALL_BARRACKS
+		var def := sim.data.get_building(kind)
 		if RulerPlanner._affordable(town, state, def):
 			RulerPlanner._open(sim, state, id, town, def)
 		else:

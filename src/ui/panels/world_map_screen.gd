@@ -323,8 +323,8 @@ func _refresh_demand() -> void:
 
 
 ## What the panel tells about AI ruler [param owner] (M8 part 3, owner's survey 2026-11-10):
-## his provinces, people and gold, what he builds, where his settlers go, what he buys, and
-## how far along the plan of growth the selected province is.
+## his provinces, people and gold, what he builds, where his settlers go, what he buys, how
+## far along the plan of growth the selected province is, and his research (E4 part 5).
 func _ruler_lines(owner: StringName, province: ProvinceSim) -> PackedStringArray:
 	var lines := PackedStringArray()
 	var held := Rulers.provinces_of(sim.world, owner)
@@ -345,6 +345,11 @@ func _ruler_lines(owner: StringName, province: ProvinceSim) -> PackedStringArray
 			else tr("ui.ruler.building_none"))
 	var progress := RulerPlanner.plan_progress(province)
 	lines.append(tr("ui.ruler.plan") % [progress.x * 100 / maxi(progress.y, 1)])
+	if ruler != null and ruler.research != null and not ruler.research.open:
+		# E4 part 5: his research, done of all, and what his schools study now.
+		lines.append(tr("ui.ruler.research_done") % [ruler.research.done.size(), sim.data.researches().size()])
+		if ruler.research.current != &"":
+			lines.append(tr("ui.ruler.studying") % tr("research.%s.name" % ruler.research.current))
 	lines.append(tr("ui.ruler.army") % RulerWar.strength(sim, owner))
 	if ruler != null and sim.world.armies.has(ruler.campaign) and ruler.war_target != 0:
 		lines.append(tr("ui.ruler.campaign") % _province_name(ruler.war_target))

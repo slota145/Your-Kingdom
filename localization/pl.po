@@ -4194,6 +4194,12 @@ msgstr "%s zdobywa prowincję %s."
 msgid "ui.note.ruler_defeated"
 msgstr "%s stracił wszystkie prowincje i odpada z gry."
 
+msgid "ui.ruler.research_done"
+msgstr "Zbadane: %d z %d"
+
+msgid "ui.ruler.studying"
+msgstr "Bada: %s"
+
 msgid "ui.ruler.army"
 msgstr "Wojsko: %d żołnierzy"
 

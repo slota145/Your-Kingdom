@@ -24,13 +24,11 @@ func _school(sim: Simulation, at: Vector2i = Vector2i(10, 10)) -> BuildingState:
 	return school
 
 
-func test_locked_buildings_and_the_school_after_the_burghers() -> void:
+func test_locked_buildings_and_the_school_from_the_start() -> void:
 	var sim := _locked()
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"tailor", Vector2i(20, 20))))).is_equal("needs_research")
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"weaver", Vector2i(20, 20))))).is_empty()
-	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"school", Vector2i(26, 26))))).is_equal("needs_burghers")
-	var house := SimFixture.house(sim, Vector2i(2, 2))
-	house.house.level = 2
+	# E4 part 5 (owner's survey 2026-11-12): the school from the start, no burghers needed.
 	assert_str(String(sim.execute(PlaceBuildingCommand.new(&"school", Vector2i(26, 26))))).is_empty()
 	# Research needs a finished school.
 	assert_str(String(sim.execute(StartResearchCommand.new(&"tailoring")))).is_equal("needs_school")
@@ -127,7 +125,8 @@ func test_upgrades_improve_the_work() -> void:
 
 func test_the_rulers_and_the_dev_mode() -> void:
 	var sim := _locked()
-	# Another owner's province builds everything and has no improvement.
+	# A province of no ruler nor player (the raiders' kind) builds everything, no improvement
+	# (the rulers have their own research from E4 part 5, test_e4_world.gd).
 	assert_bool(sim.research_of(9999).open).is_true()
 	assert_int(sim.research_of(9999).porter_load(sim.data)).is_equal(1)
 	sim.execute(SetDevModeCommand.new(true))

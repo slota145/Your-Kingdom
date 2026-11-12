@@ -27,6 +27,10 @@ var campaign: int = 0
 var war_target: int = 0
 ## He lost his last province (the player was told).
 var defeated: bool = false
+## His kingdom's research (E4 part 5, owner's survey 2026-11-11): his schools and university
+## study it as the player's do; at the start of a game he has what his towns already have
+## (ResearchState.of_towns). An older save (before v42) has everything done.
+var research: ResearchState = ResearchState.opened()
 ## "province:building" -> tick before which a building that found no room is not tried
 ## there again. Not saved (after loading it is simply tried once more).
 var no_room: Dictionary[String, int] = {}
@@ -50,7 +54,8 @@ func to_dict() -> Dictionary:
 		builds[str(id)] = next_build[id]
 	return {"owner": String(owner), "treasury": treasury.to_dict(), "next_build": builds,
 			"next_expedition": next_expedition, "next_trade": next_trade, "saving_for": saving_for,
-			"next_war": next_war, "campaign": campaign, "war_target": war_target, "defeated": defeated}
+			"next_war": next_war, "campaign": campaign, "war_target": war_target, "defeated": defeated,
+			"research": research.to_dict()}
 
 
 static func from_dict(d: Dictionary) -> RulerState:
@@ -67,4 +72,5 @@ static func from_dict(d: Dictionary) -> RulerState:
 	r.campaign = int(d.get("campaign", 0))
 	r.war_target = int(d.get("war_target", 0))
 	r.defeated = bool(d.get("defeated", false))
+	r.research = ResearchState.from_dict(d.get("research", {"open": true}))
 	return r

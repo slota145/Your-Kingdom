@@ -3,7 +3,7 @@ extends PanelContainer
 ## The build bar: tabs by kind of building (owner feedback 2026-11-05: finding buildings by
 ## their names alone got tiring), each tab a row of picture buttons; roads and demolition
 ## always on the right. Tooltips name the building, what it does and what it costs. E4 part 2:
-## a building that needs research (or the school before the first burghers) shows a padlock and
+## a building that needs research (or the university before the first patricians) shows a padlock and
 ## why in its tooltip ([method refresh_locks]).
 
 signal tool_selected(tool: Dictionary)

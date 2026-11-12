@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 41
+const CURRENT_VERSION := 42
 ## Hive tiles an old apiary gets on its first second after loading a save before v34.
 const AUTO_HIVES := 4
 ## Horses one pen tile of a stud farm holds (data/buildings/stud_farm.tres, pen_animals).
@@ -139,6 +139,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 41:
 		result = migrate_v40_to_v41(result)
 		version = 41
+	if version < 42:
+		result = migrate_v41_to_v42(result)
+		version = 42
 	return result
 
 
@@ -426,6 +429,25 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
 ## target, the Invasion from the sea with the clock of its waves). A game from before is a
 ## Colonization game: its settings name the scenario and get the default gold target.
+## v42 (E4 part 5): every AI ruler has his kingdom's research ("research" of a ruler's state).
+## A ruler of an older game has all of it done (owner's survey 2026-11-11: old saves get all
+## research), so nothing his towns have or recruit is locked; the raiders' stays open.
+static func migrate_v41_to_v42(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	var all: Array = []
+	for id: String in V39_RESEARCH + V40_RESEARCH:
+		all.append(id)
+	all.append("large_barracks")
+	all.sort()
+	for rd: Variant in world.get("rulers", []):
+		var ruler := rd as Dictionary
+		if ruler == null or ruler.has("research") or String(ruler.get("owner", "")) == "ruler_raiders":
+			continue
+		ruler["research"] = {"open": false, "done": all.duplicate(), "current": "", "progress": 0.0,
+				"queue": []}
+	return state
+
+
 ## v41 (E4 part 4): the small and large barracks; the old 3x3 barracks are no longer built (those
 ## standing work on). A game that had all research (an older one) gets "Large barracks" too; a
 ## game started with research studies it.

@@ -36,7 +36,7 @@ func apply(sim: Simulation) -> void:
 
 
 ## Why the player may not build [param def] in [param province] yet (E4 part 2), or &"": a
-## research it needs, or the house its level asks for (the school after the first burghers).
+## research it needs, or the house its level asks for (the university after the first patricians).
 static func research_error(province: ProvinceSim, def: BuildingDef) -> StringName:
 	if def == null:
 		return &""

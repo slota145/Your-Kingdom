@@ -56,7 +56,8 @@ func test_four_supplied_patrician_houses_on_coast_from_the_ship() -> void:
 
 func _patricians_on(map_id: StringName) -> void:
 	var sim := _new_game(map_id)
-	var bot := SliceBot.new(sim)
+	# E4 part 5: the bot plays with research (a school, bricks, clothes, mead, pigs), as the player.
+	var bot := SliceBot.new(sim, true)
 	var result := {"minute": -1}
 	var trace := PackedStringArray()
 	bot.run(PATRICIAN_LIMIT * 60, func(minute: int) -> void:
