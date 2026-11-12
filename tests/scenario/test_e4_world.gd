@@ -107,14 +107,14 @@ func test_a_ruler_studies_in_order_with_his_reserve_of_gold() -> void:
 	# Without a school there is nothing to study.
 	assert_str(String(RulerResearch.next(sim, ruler))).is_empty()
 	_build(town, &"school")
-	assert_str(String(RulerResearch.next(sim, ruler))).is_equal("tailoring")
-	var cost := sim.data.get_research(&"tailoring").gold_cost
+	assert_str(String(RulerResearch.next(sim, ruler))).is_equal("butchery")
+	var cost := sim.data.get_research(&"butchery").gold_cost
 	ruler.treasury.gold = cost + RulerResearch.RESERVE_GOLD - 1
 	assert_str(String(RulerResearch.update_owner(sim, ruler))).is_empty()
 	ruler.treasury.gold = cost + RulerResearch.RESERVE_GOLD
-	assert_str(String(RulerResearch.update_owner(sim, ruler))).is_equal("tailoring")
+	assert_str(String(RulerResearch.update_owner(sim, ruler))).is_equal("butchery")
 	assert_int(ruler.treasury.gold).is_equal(RulerResearch.RESERVE_GOLD)
-	assert_str(String(ruler.research.current)).is_equal("tailoring")
+	assert_str(String(ruler.research.current)).is_equal("butchery")
 	# The player's research is not touched.
 	assert_str(String(sim.research.current)).is_empty()
 	# A university's research waits for the university; then the soldiers come first (normal).
@@ -287,3 +287,25 @@ func test_the_automatic_player_studies() -> void:
 	var bot := AutoPlayer.new(sim)
 	assert_bool(sim.research.open).is_false()
 	assert_object(bot.state.research).is_same(sim.research)
+
+
+func test_a_ruler_saves_for_his_university_but_not_for_ever() -> void:
+	var sim := _game()
+	var owner: StringName = Rulers.alive(sim.world)[0]
+	var ruler := sim.world.rulers[owner] as RulerState
+	var town := sim.province_state(_capital(sim, owner))
+	_build(town, &"school")
+	for building: BuildingState in town.buildings.all():
+		if building.house != null:
+			building.house.residents = 10
+	assert_bool(RulerResearch.saving_for_university(sim, owner)).is_true()
+	var cost := sim.data.get_research(&"butchery").gold_cost
+	# Gold for the research only: it goes to the university.
+	ruler.treasury.gold = cost + RulerResearch.RESERVE_GOLD
+	assert_str(String(RulerResearch.update_owner(sim, ruler))).is_empty()
+	# Gold for both (the university waits for room): he studies.
+	ruler.treasury.gold = 500 + cost + RulerResearch.RESERVE_GOLD
+	assert_str(String(RulerResearch.update_owner(sim, ruler))).is_equal("butchery")
+	# With his university standing he saves for nothing.
+	_build(town, &"university")
+	assert_bool(RulerResearch.saving_for_university(sim, owner)).is_false()

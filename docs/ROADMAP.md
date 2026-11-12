@@ -1604,8 +1604,8 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Część 5, decyzje z ankiet 2026-11-11 i 2026-11-12 (poprawek z oceny części 3 i 4 brak):**
 - **Uniwersytet władców bez patrycjuszy** (władcy nie mają cegielni, więc nigdy nie mają patrycjuszy): gdy w prowincji stoi szkoła i mieszka ok. 80 ludzi; jeden na królestwo. Na budowach władców cegły zastępuje kamień (Claude, jak duże koszary w części 4; do potwierdzenia przy ocenie).
-- **Kolejność badań według trudności:** najpierw krawiectwo i rzeźnictwo (są w planie budowy), na „łatwym” gospodarka przed wojskiem, na „normalnym” po uniwersytecie duże koszary, płatnerstwo i kusze, na „trudnym” także rycerstwo przed gospodarką. Nadanie, machiny, duża stocznia, ceglarstwo i winiarstwo nie są badane (władcy ich nie używają).
-- **Rezerwa 150 zł:** badanie startuje, gdy po zapłacie zostaje 150 zł. Dodatkowo (Claude, po pomiarze): gdy władca może już postawić uniwersytet, wstrzymuje badania szkoły i zbiera na niego złoto (inaczej nigdy nie uzbierał 500 zł).
+- **Kolejność badań według trudności:** najpierw rzeźnictwo i krawiectwo (są w planie budowy; rzeźnictwo pierwsze, bo inaczej chlewy przychodziły za późno), na „łatwym” gospodarka przed wojskiem, na „normalnym” po uniwersytecie duże koszary, płatnerstwo i kusze, na „trudnym” także rycerstwo przed gospodarką. Nadanie, machiny, duża stocznia, ceglarstwo i winiarstwo nie są badane (władcy ich nie używają).
+- **Rezerwa 150 zł:** badanie startuje, gdy po zapłacie zostaje 150 zł. Dodatkowo (Claude, po pomiarze): gdy władca może już postawić uniwersytet, wstrzymuje badania szkoły i zbiera na niego złoto (inaczej nigdy nie uzbierał 500 zł); gdy złota starcza na oba, bada dalej (uniwersytet czeka wtedy na miejsce, nie na złoto).
 - **Małe koszary, potem duże:** małe w dawnym miejscu planu, po badaniu „Duże koszary” dodatkowo duże.
 - **Scenariusze:** „Najazd z morza” zaczyna się ze zbadanym kamieniarstwem obronnym, dużymi koszarami, płatnerstwem i kuszami; reszta jak zwykła gra.
 - **Automatyczny gracz próby patrycjuszy też bada** (szkoła, ceglarstwo, krawiectwo, pszczelarstwo, rzeźnictwo).

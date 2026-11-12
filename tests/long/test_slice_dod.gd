@@ -69,7 +69,9 @@ func _patricians_on(map_id: StringName) -> void:
 			result["minute"] = minute)
 	print(map_id, ": 4 supplied patrician houses at minute ", result["minute"], "; bot log: ", bot.log)
 	print("\n".join(trace))
-	assert_array(Array(bot.log)).is_empty()
+	# (E4 part 5: the log notes the researches done; nothing else may be in it.)
+	for line: String in bot.log:
+		assert_bool(line.contains(" studied ")).override_failure_message(line).is_true()
 	assert_int(int(result["minute"])).is_between(1, PATRICIAN_LIMIT)
 
 

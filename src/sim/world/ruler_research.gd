@@ -19,15 +19,15 @@ const EVERY := 5
 ## charter, the siege engines, the large shipyard, brickmaking and winemaking are not studied:
 ## the rulers have no use for them.
 const ORDER: Array[Array] = [
-	[&"tailoring", &"butchery", &"beekeeping", &"forestry", &"fishing", &"large_barracks",
+	[&"butchery", &"tailoring", &"beekeeping", &"forestry", &"fishing", &"large_barracks",
 			&"larger_fields", &"carts", &"better_carrying", &"larger_fields_2", &"deep_learning",
 			&"larger_pens", &"larger_pens_2", &"shipbuilding", &"armouring", &"crossbows",
 			&"defensive_masonry"],
-	[&"tailoring", &"butchery", &"large_barracks", &"armouring", &"crossbows", &"beekeeping",
+	[&"butchery", &"tailoring", &"large_barracks", &"armouring", &"crossbows", &"beekeeping",
 			&"shipbuilding", &"forestry", &"fishing", &"carts", &"larger_fields", &"deep_learning",
 			&"better_carrying", &"larger_fields_2", &"larger_pens", &"chivalry", &"larger_pens_2",
 			&"defensive_masonry"],
-	[&"tailoring", &"large_barracks", &"armouring", &"crossbows", &"butchery", &"shipbuilding",
+	[&"butchery", &"tailoring", &"large_barracks", &"armouring", &"crossbows", &"shipbuilding",
 			&"chivalry", &"beekeeping", &"deep_learning", &"forestry", &"fishing", &"carts",
 			&"larger_fields", &"better_carrying", &"larger_fields_2", &"larger_pens",
 			&"larger_pens_2", &"defensive_masonry"],
@@ -59,8 +59,9 @@ static func update_owner(sim: Simulation, ruler: RulerState) -> StringName:
 	var def := sim.data.get_research(id)
 	if ruler.treasury.gold < def.gold_cost + RESERVE_GOLD:
 		return &""
-	if def.institution == ResearchDef.SCHOOL and saving_for_university(sim, ruler.owner):
-		return &""
+	if def.institution == ResearchDef.SCHOOL and saving_for_university(sim, ruler.owner) \
+			and ruler.treasury.gold < _university_gold(sim) + def.gold_cost + RESERVE_GOLD:
+		return &""   # (with gold for both, the university waits for room, not for gold)
 	return id if Researching.begin_for(sim, ruler.owner, research, ruler.treasury, id) else &""
 
 
@@ -98,6 +99,11 @@ static func saving_for_university(sim: Simulation, owner: StringName) -> bool:
 		if town != null and def != null and RulerPlanner._allowed(town, def):
 			return true
 	return false
+
+
+static func _university_gold(sim: Simulation) -> int:
+	var def := sim.data.get_building(RulerPlanner.UNIVERSITY)
+	return def.gold_cost if def != null else 0
 
 
 static func _has_port(sim: Simulation, owner: StringName) -> bool:
