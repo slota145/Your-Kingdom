@@ -1618,7 +1618,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Panel władcy na mapie świata: „Zbadane: X z Y”, „Bada: …” (PL i EN).
 - Automatyczny gracz testów M8 bada jak władca (te same zasady, płaci ze skarbca gracza).
 - **Pomiary** (`src/prototype/e4/world_probe.gd -- [--provinces=22] [--difficulty=2 --rulers=3]`, `patrician_probe.gd -- --map=<mapa> [--open]`), przed → po:
-  - patrycjusze automatycznego gracza (Riverlands/Lakeland/Wybrzeże): 72./70./70. → 71./83./79. minuta;
+  - patrycjusze automatycznego gracza (Riverlands/Lakeland/Wybrzeże): 72./70./70. → 71./83./79. minuta (w długim teście Wybrzeże 88., limit 90; szybkie i długie testy przechodzą);
   - władcy, normalny (22 prowincje): pierwsi żołnierze 22./29. → 22./27., pierwszy atak 31./31. → 31./37., żołnierze w 90. min 44/26 → 28/32;
   - władcy, trudny (3 władców): pierwsi żołnierze 8./23./26. → 11./21./22., pierwszy atak 31./31./35. → 21./27./30.
   - Duże koszary władcy stawiają po uniwersytecie (ok. 50.–60. minuta); do tego czasu walczą łucznikami i włócznikami z małych koszar (10 łóżek), stąd mniej żołnierzy na „normalnym”.
