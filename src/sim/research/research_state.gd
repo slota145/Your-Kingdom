@@ -5,9 +5,10 @@ extends RefCounted
 ## the player's provinces (a research works in the whole kingdom).
 ##
 ## [member open]: every building and ship may be built without research, and only researches
-## in [member done] improve work. The AI rulers, the neutral settlements and the automatic
-## player of the tests play so until E4 part 5, and so do games made without "New game" (tests,
-## tools). The player's new game starts locked; an old save has everything done (migration).
+## in [member done] improve work. Games made without "New game" (tests, tools) and the raiders
+## of the Invasion play so. The player's new game starts locked; an old save has everything
+## done (migration). Each AI ruler has his own (RulerState.research, E4 part 5), a neutral
+## settlement what it has ([method of_towns]).
 
 var open: bool = false
 var done: Dictionary[StringName, bool] = {}
@@ -33,6 +34,34 @@ static func opened() -> ResearchState:
 	var state := ResearchState.new()
 	state.open = true
 	return state
+
+
+## What [param towns] already have, studied (E4 part 5, owner's survey 2026-11-11: the AI
+## rulers' towns and the neutral settlements start with the research of the buildings, ships
+## and soldiers they have), with the researches those need.
+static func of_towns(data: DataRegistry, towns: Array[ProvinceSim]) -> ResearchState:
+	var state := ResearchState.new()
+	state._refresh(data)
+	for town: ProvinceSim in towns:
+		for building: BuildingState in town.buildings.all():
+			state._grant(data, state._unlocks.get(building.def.id, &""))
+			for unit: StringName in building.garrison:
+				state._grant(data, state._unlocks.get(StringName("unit:" + String(unit)), &""))
+		for ship: ShipUnit in town.ships.values():
+			state._grant(data, state._unlocks.get(StringName("ship:" + String(ship.def.id)), &""))
+	state.version += 1
+	return state
+
+
+## Marks [param id] done with every research it needs.
+func _grant(data: DataRegistry, id: StringName) -> void:
+	if id == &"" or done.has(id):
+		return
+	done[id] = true
+	var def := data.get_research(id)
+	if def != null:
+		for need: StringName in def.requires:
+			_grant(data, need)
 
 
 func is_done(id: StringName) -> bool:

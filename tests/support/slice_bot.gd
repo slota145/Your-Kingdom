@@ -12,10 +12,18 @@ const GOLD_RETRY := 30
 ## E2 part 4: the patrician chains (bricks, clothes, mead, the tavern) start this many seconds
 ## earlier than before (minute 35, not 45), except on the Coast.
 const PATRICIANS_EARLIER := 600
+## E4 part 5 (owner's survey 2026-11-11): a bot that studies ([member studies]) plays a game
+## with research locked, as the player's: a school early (it needs no burghers from E4 part 5),
+## then these researches in order (bricks, clothes and mead for the patricians, the pigsty).
+const STUDIES: Array[StringName] = [&"brickmaking", &"tailoring", &"beekeeping", &"butchery"]
+const SCHOOL_AT := 600
 ## Times of the patrician block's actions (seconds) after the shift.
 const PATRICIAN_TIMES: Array[int] = [2100, 2160, 2220, 2280, 2340, 2400, 2460, 2520, 2580, 2640, 2700, 2760, 3000]
 
 var sim: Simulation
+## Plays with research (E4 part 5): builds a school and studies [constant STUDIES]; a building
+## still locked is tried again later.
+var studies: bool = false
 ## Seconds of game time -> actions still to do, in order.
 var _plan: Array[Dictionary] = []
 var log: PackedStringArray = PackedStringArray()
@@ -30,8 +38,12 @@ var _reach: Dictionary[Vector2i, int] = {}
 var _town: Vector2i
 
 
-func _init(simulation: Simulation) -> void:
+func _init(simulation: Simulation, with_research: bool = false) -> void:
 	sim = simulation
+	studies = with_research
+	if studies:
+		sim.research = ResearchState.new()
+		sim.bind_research()
 	var start: Array[Dictionary] = []
 	var town: Vector2i
 	if sim.province.landing != null:
@@ -152,6 +164,12 @@ func _init(simulation: Simulation) -> void:
 		{"at": 1560, "buy_pigs": 3},
 		{"at": 1560, "sell": {&"hides": 0, &"planks": 60, &"stone": 60}},
 	]
+	if studies:
+		# Built first (its site gets the porters and builders) and a second one: the study goes
+		# twice as fast (what a player in a hurry for the patricians does).
+		_plan.append({"at": SCHOOL_AT, "build": &"school", "near": town + Vector2i(-8, 15), "priority": 0})
+		_plan.append({"at": SCHOOL_AT + 30, "build": &"school", "near": town + Vector2i(-12, 15), "priority": 0})
+		_plan.append({"at": SCHOOL_AT, "study": STUDIES.duplicate()})
 	if not start.is_empty():
 		# The Coast keeps the patrician chains at their old time (from minute 45): earlier, the
 		# apiaries, the tavern and the huts took the shore where the harbour bot puts the port.
@@ -220,6 +238,8 @@ func note(e: Dictionary) -> void:
 		produced[e["good"]] = produced.get(e["good"], 0) + int(e["amount"])
 	elif e["type"] == &"goods_sold":
 		sold[e["good"]] = sold.get(e["good"], 0) + int(e["amount"])
+	elif e["type"] == &"research_finished":
+		log.append("min %d studied %s" % [sim.clock.tick / SimClock.seconds_to_ticks(60.0), e["research"]])
 
 
 ## Houses of [param level] or above whose basic needs are all met right now.
@@ -263,6 +283,17 @@ func _do(action: Dictionary) -> void:
 		for good: StringName in keep:
 			sim.execute(SetKeepForBuildingCommand.new(good, int(keep[good])))
 		return
+	if action.has("study"):
+		# Each research in turn: started or queued; tried again without a school or gold.
+		var left: Array = action["study"]
+		while not left.is_empty():
+			var error := sim.execute(StartResearchCommand.new(left[0]))
+			if error != &"" and error != &"research_planned" and error != &"research_done":
+				break
+			left.pop_front()
+		if not left.is_empty():
+			_retry(action)
+		return
 	if action.has("buy_pigs"):
 		var left := int(action["buy_pigs"])
 		while left > 0 and sim.execute(BuyPigCommand.new()) == &"":
@@ -273,11 +304,14 @@ func _do(action: Dictionary) -> void:
 		return
 	var def := sim.data.get_building(action["build"])
 	var spot := find_spot(def, _near_its_work(def, action["near"]))
+	if spot == Agent.NO_TILE and studies:
+		# (E4 part 5: a building that waited for its research may find its spot taken.)
+		spot = find_spot(def, _town)
 	if spot == Agent.NO_TILE:
 		log.append("no spot for %s near %s" % [def.id, action["near"]])
 		return
 	var error := sim.execute(PlaceBuildingCommand.new(def.id, spot))
-	if error == &"not_enough_gold":
+	if error == &"not_enough_gold" or studies and error in [&"needs_research", &"needs_burghers"]:
 		_retry(action)
 		return
 	if error != &"":

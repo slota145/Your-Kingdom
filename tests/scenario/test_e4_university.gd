@@ -69,7 +69,7 @@ func test_units_and_stone_walls_need_research() -> void:
 	sim.research.complete(&"defensive_masonry")
 	var stone: Array[Vector2i] = [Vector2i(30, 34), Vector2i(31, 34)]
 	assert_str(String(sim.execute(BuildWallCommand.new(stone, Walls.STONE)))).is_empty()
-	# The AI rulers' provinces recruit everything.
+	# A province of no ruler nor player recruits everything (E4 part 5: rulers study, test_e4_world).
 	assert_bool(sim.research_of(9999).allows_unit(data, &"knight")).is_true()
 	assert_int(sim.research.cart_extra(data)).is_equal(0)
 	sim.research.complete(&"carts")

@@ -51,9 +51,16 @@ const MIN_SAIL_SECONDS := 60.0
 const START_TROOPS: Dictionary[StringName, int] = {&"spearman": 4, &"archer": 2}
 
 
+## Research the player has at the start (E4 part 5, owner's survey 2026-11-11): the waves bring
+## swordsmen, crossbowmen and a ram within the hour, before a university could stand.
+const START_RESEARCH: Array[StringName] = [&"defensive_masonry", &"large_barracks", &"armouring", &"crossbows"]
+
+
 ## A new Invasion game: the clock of the waves, the raiders' treasury (for the towns they take),
-## and the player's 6 soldiers standing by his landing.
+## the player's 6 soldiers standing by his landing and his military research done.
 static func start(sim: Simulation) -> void:
+	for id: StringName in START_RESEARCH:
+		sim.research.complete(id)
 	var state := InvasionState.new()
 	state.started = sim.clock.tick
 	state.next_wave = sim.clock.tick + SimClock.seconds_to_ticks(FIRST_MINUTES * 60.0)

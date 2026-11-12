@@ -17,5 +17,5 @@ gold_cost = 200
 worker_kinds = Array[StringName]([&"teacher"])
 recipe = ExtResource("2_recipe")
 research_institution = &"school"
-needs_house_level = 2
+needs_house_level = 0
 id = &"school"

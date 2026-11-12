@@ -136,18 +136,19 @@ static func recruit(sim: Simulation, ruler: RulerState, id: int) -> StringName:
 	if have >= wanted(sim, ruler.owner):
 		return &""
 	var mix: Array = MIX[level(sim)]
-	var unit := sim.data.get_unit(mix[have % mix.size()])
+	# The next unit of the mix his research allows (E4 part 5) with a bed for him (E4 part 4:
+	# the small barracks house archers and spearmen only); else the next one after it.
+	var unit: UnitDef = null
+	var barracks: BuildingState = null
+	for k: int in mix.size():
+		var candidate := sim.data.get_unit(mix[(have + k) % mix.size()])
+		if candidate == null or not town.research.allows_unit(sim.data, candidate.id):
+			continue
+		barracks = Barracks.with_bed_for(town, candidate.id)
+		if barracks != null:
+			unit = candidate
+			break
 	if unit == null:
-		return &""
-	# A bed for him (E4 part 4: the small barracks house archers and spearmen only); else any
-	# unit a barracks with a bed takes, in the order of the mix.
-	var barracks := Barracks.with_bed_for(town, unit.id)
-	var k := 1
-	while barracks == null and k < mix.size():
-		unit = sim.data.get_unit(mix[(have + k) % mix.size()])
-		barracks = Barracks.with_bed_for(town, unit.id) if unit != null else null
-		k += 1
-	if barracks == null:
 		return &""
 	var cost := unit.gold_cost * COST_FACTOR
 	if ruler.treasury.gold < cost + RESERVE_GOLD:
@@ -197,8 +198,8 @@ static func _warships(sim: Simulation, ruler: RulerState, town: ProvinceSim) -> 
 	for army: Army in sim.world.armies.values():
 		if army.owner == ruler.owner:
 			have += army.ships
-	if have >= want or cogs == 0:
-		return
+	if have >= want or cogs == 0 or not town.research.allows_ship(sim.data, &"warship"):
+		return   # (E4 part 5: warships after "Shipbuilding")
 	for building: BuildingState in town.buildings.all():
 		if building.def.id == &"shipyard" and building.is_complete() and building.ship_orders.is_empty() \
 				and Ships.build_at(town, building) == null:

@@ -16,16 +16,24 @@ extends RefCounted
 ## entries a province lacks are what it builds next (a few are tried, the first one it can pay
 ## for and find room for goes up). Entries the map cannot take (a port inland) are skipped.
 ## The rulers' barracks (E4 part 4): the large ones, the small ones where those do not fit.
+## E4 part 5 (owner's survey 2026-11-11): the small ones where the barracks always were in the
+## plan, the large ones as well once "Large barracks" is studied (after the university).
 const LARGE_BARRACKS := &"barracks_large"
 const SMALL_BARRACKS := &"barracks_small"
+## E4 part 5: a school (from the start, owner's survey 2026-11-12), the
+## university (one for the whole realm) without patricians, which the rulers never have
+## (owner's survey 2026-11-11): once a school stands in the province and it has this many people.
+const SCHOOL := &"school"
+const UNIVERSITY := &"university"
+const UNIVERSITY_PEOPLE := 80
 const PLAN: Array[Array] = [
 	[&"woodcutter", 2], [&"hut", 3], [&"stockpile", 1], [&"quarry", 1], [&"sawmill", 1],
 	[&"fishing_hut", 1], [&"well", 1], [&"hut", 6], [&"farm", 1], [&"mill", 1], [&"bakery", 1],
 	# E2 part 4: apples and game, the second and third kinds of food (burghers eat 2 kinds,
 	# patricians 3), and food on a map without water.
 	[&"orchard", 1], [&"forester", 1], [&"hunter_lodge", 1], [&"hut", 9], [&"town_hall", 1], [&"woodcutter", 3], [&"chapel", 1],
-	[&"market", 1], [&"well", 2], [&"hut", 12], [&"stockpile", 2], [&"hop_farm", 1],
-	[&"brewery", 1], [&"farm", 2], [&"orchard", 2], [&"hut", 15], [&"barracks_large", 1], [&"trading_post", 1], [&"builders_hut", 1],
+	[&"market", 1], [&"school", 1], [&"well", 2], [&"hut", 12], [&"stockpile", 2], [&"hop_farm", 1],
+	[&"brewery", 1], [&"farm", 2], [&"orchard", 2], [&"hut", 15], [&"barracks_small", 1], [&"university", 1], [&"barracks_large", 1], [&"trading_post", 1], [&"builders_hut", 1],
 	[&"sheep_farm", 1], [&"weaver", 1], [&"tar_kiln", 1], [&"port", 1], [&"shipyard", 1],
 	[&"hut", 18], [&"tailor", 1], [&"fishing_hut", 2], [&"tavern", 1], [&"bakery", 2],
 	[&"mill", 2], [&"farm", 3], [&"hut", 22], [&"church", 1],
@@ -85,6 +93,13 @@ static func ensure_rulers(sim: Simulation) -> void:
 		ruler.next_expedition = sim.clock.tick + SimClock.seconds_to_ticks(
 				RulerExpansion.EXPEDITION_MINUTES[level] * 60.0)
 		ruler.next_war = sim.clock.tick + RulerWar.first_ticks(level)
+		# E4 part 5: he has studied what his towns already have.
+		var towns: Array[ProvinceSim] = []
+		for id: int in Rulers.provinces_of(sim.world, owner):
+			var town := sim.province_state(id)
+			if town != null:
+				towns.append(town)
+		ruler.research = ResearchState.of_towns(sim.data, towns)
 		sim.world.rulers[owner] = ruler
 		if level == GameSettings.HARD:
 			for id: int in Rulers.provinces_of(sim.world, owner):
@@ -145,7 +160,7 @@ static func try_next(sim: Simulation, ruler: RulerState, id: int) -> BuildingSta
 	var saving := ruler.saving_for == id
 	for building_id: StringName in shortages(town, counts, saving):
 		var def := sim.data.get_building(building_id)
-		if def == null or _no_room(ruler, id, building_id, sim.clock.tick):
+		if def == null or _no_room(ruler, id, building_id, sim.clock.tick) or not _allowed(town, def):
 			continue
 		if _affordable(town, ruler, def):
 			var placed := _open(sim, ruler, id, town, def)
@@ -163,6 +178,8 @@ static func try_next(sim: Simulation, ruler: RulerState, id: int) -> BuildingSta
 			continue
 		var def := sim.data.get_building(building_id)
 		if def == null or not _allowed(town, def):
+			continue
+		if building_id == UNIVERSITY and _realm_has(sim, ruler.owner, UNIVERSITY):
 			continue
 		looked += 1
 		if _affordable(town, ruler, def):
@@ -182,6 +199,7 @@ static func try_next(sim: Simulation, ruler: RulerState, id: int) -> BuildingSta
 static func _open(sim: Simulation, ruler: RulerState, id: int, town: ProvinceSim, def: BuildingDef) -> BuildingState:
 	var placed := place(town, def)
 	if placed != null:
+		_no_bricks(town, placed)
 		sim.events.emit(&"ruler_built", {"owner": ruler.owner, "province": id, "def": def.id})
 		return placed
 	ruler.no_room[_room_key(id, def.id)] = sim.clock.tick + SimClock.seconds_to_ticks(NO_ROOM_SECONDS)
@@ -302,15 +320,17 @@ static func plan_progress(town: ProvinceSim) -> Vector2i:
 	return Vector2i(done, PLAN.size())
 
 
-## Buildings of the province by kind, construction sites included. Barracks of any kind (the
-## old 3x3 ones of older towns, the small ones where the large did not fit) count as large
-## barracks too (E4 part 4), so a town has one barracks of the plan.
+## Buildings of the province by kind, construction sites included. Barracks (E4 part 5): the
+## large ones and the old 3x3 ones of older towns count as both small and large barracks (such
+## a town builds no more), the small ones as small only (the large come too once studied).
 static func counts_of(town: ProvinceSim) -> Dictionary[StringName, int]:
 	var counts: Dictionary[StringName, int] = {}
 	for building: BuildingState in town.buildings.all():
 		counts[building.def.id] = counts.get(building.def.id, 0) + 1
-		if building.def.soldier_beds > 0 and building.def.id != LARGE_BARRACKS:
-			counts[LARGE_BARRACKS] = counts.get(LARGE_BARRACKS, 0) + 1
+		if building.def.soldier_beds > 0 and building.def.id != SMALL_BARRACKS:
+			if building.def.id != LARGE_BARRACKS:
+				counts[LARGE_BARRACKS] = counts.get(LARGE_BARRACKS, 0) + 1
+			counts[SMALL_BARRACKS] = counts.get(SMALL_BARRACKS, 0) + 1
 	return counts
 
 
@@ -322,19 +342,66 @@ static func _open_small_barracks(sim: Simulation, ruler: RulerState, id: int, to
 	return _open(sim, ruler, id, town, small)
 
 
+## Whether the province may have [param def]: its rare resource or trait, the owner's research
+## and the houses it asks for (E4 part 5: the university, which
+## asks for patricians, here after [constant UNIVERSITY_PEOPLE] people), the building it needs.
 static func _allowed(town: ProvinceSim, def: BuildingDef) -> bool:
 	if def.needs_rare != &"" and town.rare_resource != def.needs_rare:
 		return false
 	if def.needs_trait != &"" and not town.traits.has(def.needs_trait):
 		return false
+	if def.retired or not town.research.allows_building(town.data, def.id):
+		return false
+	if def.needs_house_level == 2 and not town.has_house_level(2):
+		return false
+	if def.needs_house_level >= 3 and not town.has_house_level(3) and residents(town) < UNIVERSITY_PEOPLE:
+		return false
+	if def.needs_building != &"" and not town.has_finished(def.needs_building):
+		return false
 	return true
+
+
+## Whether a province of [param owner] has a [param building_id] (or its site).
+static func _realm_has(sim: Simulation, owner: StringName, building_id: StringName) -> bool:
+	for id: int in Rulers.provinces_of(sim.world, owner):
+		var town := sim.province_state(id)
+		if town != null and int(counts_of(town).get(building_id, 0)) > 0:
+			return true
+	return false
+
+
+## The goods [param def] costs a ruler: bricks as stone (E4 part 5, as the large barracks in
+## part 4: the rulers have no brickworks).
+static func cost_for_ruler(def: BuildingDef) -> Dictionary[StringName, int]:
+	var cost: Dictionary[StringName, int] = {}
+	for good: StringName in def.build_cost:
+		var as_good: StringName = &"stone" if good == &"bricks" else good
+		cost[as_good] = cost.get(as_good, 0) + int(def.build_cost[good])
+	return cost
+
+
+## The site of [param building] asks for stone instead of bricks ([method cost_for_ruler]).
+static func _no_bricks(town: ProvinceSim, building: BuildingState) -> void:
+	var site := town.sites.get(building.site_id) as ConstructionSite
+	if site == null:
+		return
+	for k: int in site.phase_costs.size():
+		var phase: Dictionary = site.phase_costs[k]
+		if not phase.has(&"bricks"):
+			continue
+		var cost := {}
+		for good: Variant in phase:
+			var as_good: StringName = &"stone" if good == &"bricks" else StringName(good)
+			cost[as_good] = int(cost.get(as_good, 0)) + int(phase[good])
+		site.phase_costs[k] = cost
 
 
 static func _affordable(town: ProvinceSim, ruler: RulerState, def: BuildingDef) -> bool:
 	if not ruler.treasury.can_pay(def.gold_cost):
 		return false
-	for good: StringName in def.build_cost:
-		if town.stored(good) < int(def.build_cost[good]):
+	var cost := cost_for_ruler(def)
+	for good: StringName in cost:
+		if town.stored(good) < int(cost[good]):
 			return false
 	return true
 

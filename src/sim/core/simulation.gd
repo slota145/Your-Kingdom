@@ -42,9 +42,11 @@ var dev_mode: bool = false
 ## may be built, nothing improved) in a game made without "New game" (tests, tools); locked in
 ## a new game from "New game"; all done in an old save.
 var research: ResearchState = ResearchState.opened()
-## What the AI rulers' and the neutral towns' provinces know until E4 part 5: every building,
-## no improvement. Not saved.
+## What the raiders' towns know (the Invasion): every building, no improvement. Not saved.
 var _open_research: ResearchState = ResearchState.opened()
+## Province id -> what a neutral settlement has studied: the research of what stands there
+## (E4 part 5; it builds nothing more). Made when first asked; not saved.
+var _neutral_research: Dictionary[int, ResearchState] = {}
 
 ## Gold the treasury is topped up to in the developer mode.
 const DEV_GOLD := 100000
@@ -207,9 +209,29 @@ func set_dev_mode(on: bool) -> void:
 	events.emit(&"dev_mode_changed", {"on": on})
 
 
-## The research province [param id] builds and works by: the player's, else the open one.
+## The research province [param id] builds and works by: its owner's (the player's, an AI
+## ruler's, E4 part 5), a neutral settlement's own (what stands there), else the open one.
 func research_of(id: int) -> ResearchState:
-	return research if world.owner_of(id) == ProvinceDef.OWNER_PLAYER else _open_research
+	var owner := world.owner_of(id)
+	if owner == ProvinceDef.OWNER_PLAYER:
+		return research
+	if owner == ProvinceDef.OWNER_NEUTRAL:
+		if not _neutral_research.has(id):
+			var state := province_state(id)
+			var towns: Array[ProvinceSim] = []
+			if state != null:
+				towns.append(state)
+			_neutral_research[id] = ResearchState.of_towns(data, towns)
+		return _neutral_research[id]
+	return research_of_owner(owner)
+
+
+## The research of [param owner]: the player's, an AI ruler's, else the open one (the raiders).
+func research_of_owner(owner: StringName) -> ResearchState:
+	if owner == ProvinceDef.OWNER_PLAYER:
+		return research
+	var ruler := world.rulers.get(owner) as RulerState
+	return ruler.research if ruler != null and ruler.research != null else _open_research
 
 
 ## Gives every settled province its owner's research (after loading, a new game).
@@ -318,6 +340,7 @@ func _update_world() -> void:
 		RulerPlanner.ensure_rulers(self)
 		bind_treasuries()
 		RulerPlanner.update(self)
+		RulerResearch.update(self)
 		RulerExpansion.update(self)
 		RulerWar.update(self)
 	Invasion.update(self)
