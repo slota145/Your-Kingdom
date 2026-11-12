@@ -1511,10 +1511,10 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; części 3 i 4 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę („Część 1, stan” … „Część 4, stan”).**
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; części 3 i 4 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; część 5 gotowa 2026-11-12, czeka na ocenę („Część 1, stan” … „Część 5, stan”).**
 
 **Decyzje z ankiet 2026-11-11:**
-- **Szkoła po pierwszym domu mieszczan, uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
+- **Szkoła po pierwszym domu mieszczan** (od części 5: od startu, ankieta 2026-11-12), **uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
 - **Średnio dużo za badaniami** (wbrew rekomendacji „mało”, decyzja właściciela): warsztaty środka gry też są za badaniami. Ryzyko (Claude): władcy, automatyczny gracz i scenariusze muszą badać, inaczej staną w rozwoju; to osobna część planu i pomiary.
 - **Badanie kosztuje złoto i czas.** Złoto płaci się na starcie badania. Nauka idzie tylko wtedy, gdy w szkole (na uniwersytecie) pracuje nauczyciel (uczony).
 - **Badania działają w całym królestwie.** Badanie z jednej prowincji działa we wszystkich prowincjach gracza. Druga szkoła przyspiesza naukę.
@@ -1602,12 +1602,35 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Testy `tests/scenario/test_e4_barracks.gd`; zrzut `game_shot.tscn -- --shot=<plik> --m7=barracks [--drill] --zoom=2`.
 - Do części 5: duże koszary są droższe niż dawne (250 zamiast 60 złota), więc władcy mogą stawiać je później; pomiar tempa w części 5.
 
+**Część 5, decyzje z ankiet 2026-11-11 i 2026-11-12 (poprawek z oceny części 3 i 4 brak):**
+- **Uniwersytet władców bez patrycjuszy** (władcy nie mają cegielni, więc nigdy nie mają patrycjuszy): gdy w prowincji stoi szkoła i mieszka ok. 80 ludzi; jeden na królestwo. Na budowach władców cegły zastępuje kamień (Claude, jak duże koszary w części 4; do potwierdzenia przy ocenie).
+- **Kolejność badań według trudności:** najpierw krawiectwo i rzeźnictwo (są w planie budowy), na „łatwym” gospodarka przed wojskiem, na „normalnym” po uniwersytecie duże koszary, płatnerstwo i kusze, na „trudnym” także rycerstwo przed gospodarką. Nadanie, machiny, duża stocznia, ceglarstwo i winiarstwo nie są badane (władcy ich nie używają).
+- **Rezerwa 150 zł:** badanie startuje, gdy po zapłacie zostaje 150 zł. Dodatkowo (Claude, po pomiarze): gdy władca może już postawić uniwersytet, wstrzymuje badania szkoły i zbiera na niego złoto (inaczej nigdy nie uzbierał 500 zł).
+- **Małe koszary, potem duże:** małe w dawnym miejscu planu, po badaniu „Duże koszary” dodatkowo duże.
+- **Scenariusze:** „Najazd z morza” zaczyna się ze zbadanym kamieniarstwem obronnym, dużymi koszarami, płatnerstwem i kuszami; reszta jak zwykła gra.
+- **Automatyczny gracz próby patrycjuszy też bada** (szkoła, ceglarstwo, krawiectwo, pszczelarstwo, rzeźnictwo).
+- **Szkoła od startu gry (ankieta 2026-11-12, zmiana decyzji z części 2):** pomiar pokazał patrycjuszy w 76./107./82. minucie zamiast 72./70./70.; ze szkołą od startu 71./83./79.
+
+**Część 5, stan (2026-11-12):** gotowa, czeka na ocenę (niescalona).
+- Każdy władca ma własne badania (zapisywane z grą, **v42**: władcy ze starych gier mają wszystko zbadane; test migracji). Na starcie ma zbadane to, co stoi w jego miastach (budynki, okręty, żołnierze w koszarach, z wymaganymi wcześniejszymi badaniami). Jego szkoły i uniwersytet uczą jak u gracza; zdarzenie „władca zbadał” nie pokazuje się graczowi.
+- Plan władcy: szkoła po targu, małe koszary, uniwersytet, duże koszary. Werbuje tylko zbadane jednostki, okręt wojenny po „Budowie okrętów”.
+- Osady neutralne znają to, co w nich stoi; po zmianie właściciela działają badania nowego.
+- Panel władcy na mapie świata: „Zbadane: X z Y”, „Bada: …” (PL i EN).
+- Automatyczny gracz testów M8 bada jak władca (te same zasady, płaci ze skarbca gracza).
+- **Pomiary** (`src/prototype/e4/world_probe.gd -- [--provinces=22] [--difficulty=2 --rulers=3]`, `patrician_probe.gd -- --map=<mapa> [--open]`), przed → po:
+  - patrycjusze automatycznego gracza (Riverlands/Lakeland/Wybrzeże): 72./70./70. → 71./83./79. minuta;
+  - władcy, normalny (22 prowincje): pierwsi żołnierze 22./29. → 22./27., pierwszy atak 31./31. → 31./37., żołnierze w 90. min 44/26 → 28/32;
+  - władcy, trudny (3 władców): pierwsi żołnierze 8./23./26. → 11./21./22., pierwszy atak 31./31./35. → 21./27./30.
+  - Duże koszary władcy stawiają po uniwersytecie (ok. 50.–60. minuta); do tego czasu walczą łucznikami i włócznikami z małych koszar (10 łóżek), stąd mniej żołnierzy na „normalnym”.
+- Uwaga: w kolonizacji z 22 i 16 prowincjami (numer 5) automatyczny gracz testów stoi na 24 mieszkańcach już przed E4 (nie dotyczy długich testów scenariuszy); do sprawdzenia osobno, poza E4.
+- Testy `tests/scenario/test_e4_world.gd`; długie testy patrycjuszy (`test_slice_dod.gd`) grają z badaniami.
+
 **Kryteria ukończenia:**
 - [x] Tryb deweloperski działa z menu nowej gry (część 1).
 - [x] Szkoła bada, badania odblokowują budynki i ulepszenia w całym królestwie; stare zapisy mają wszystko zbadane (test migracji) (część 2).
 - [x] Uniwersytet bada drugą połowę drzewka (część 3).
 - [x] Małe koszary od startu, duże 5×5 za badaniem; stare koszary działają (część 4).
-- [ ] Władcy, osady, automatyczny gracz i scenariusze badają i rozwijają się w podobnym tempie co przed E4 (pomiar); testy szybkie i długie przechodzą; UI w PL i EN (część 5).
+- [x] Władcy, osady, automatyczny gracz i scenariusze badają i rozwijają się w podobnym tempie co przed E4 (pomiar); testy szybkie i długie przechodzą; UI w PL i EN (część 5).
 - [ ] **Twoja ocena gry** po każdej części.
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
