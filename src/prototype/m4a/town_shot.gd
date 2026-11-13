@@ -4,7 +4,7 @@ extends Node
 ## screenshot. For checking the new buildings and panels in the cloud.
 ##
 ## Run: godot --path . res://src/prototype/m4a/town_shot.tscn -- --shot=<png>
-##      [--minutes=N] [--select=<building id>] [--zoom=N] [--layout] [--focus=<block>] [--stocks] [--hide_build] [--moods]
+##      [--minutes=N] [--select=<building id>] [--zoom=N] [--layout] [--focus=<block>] [--stocks] [--hide_build] [--moods] [--limit=<good>:<n>]
 ##
 ## --layout (M4b-1.5) adds a street quarter next to the bot's town: burgher and patrician
 ## houses in a straight row, rows meeting at corners and two rows back to back, each facing
@@ -29,6 +29,9 @@ var _layout: bool = false
 var _focus: String = "all"
 ## --stocks (M4b-2): open the "Kingdom stocks" window.
 var _stocks: bool = false
+## --limit=<good>:<n> (E5, repeatable): the player's limit of a good, set before the bot's
+## town is saved.
+var _limits: Dictionary[StringName, int] = {}
 ## --hide_build (2026-11-07): the build bar hidden, the "Build" button in its place.
 var _hide_build: bool = false
 ## Block name -> grid point the camera looks at (set by _add_quarter).
@@ -84,10 +87,15 @@ func _ready() -> void:
 			_hide_build = true
 		elif arg.begins_with("--focus="):
 			_focus = arg.trim_prefix("--focus=")
+		elif arg.begins_with("--limit="):
+			var parts := arg.trim_prefix("--limit=").split(":")
+			_limits[StringName(parts[0])] = int(parts[1])
 	var sim := Simulation.from_map(Data.registry, Data.registry.get_map(&"riverlands"))
 	SliceBot.new(sim).run(minutes * 60)
 	if _layout:
 		_add_quarter(sim)
+	for good: StringName in _limits:
+		sim.province.goods_limits[good] = _limits[good]
 	SaveService.save_simulation(SAVE_PATH, sim)
 	Game.start_request = {"load": SAVE_PATH}
 	_game = (load(GAME_SCENE) as PackedScene).instantiate() as Node2D

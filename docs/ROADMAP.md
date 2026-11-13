@@ -1693,7 +1693,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E5 — Limit towaru w magazynie
 
-> Pomysł właściciela 2026-11-13 (IDEAS, „Ekonomia (pomysły po UI-2)”). **Ankieta 2026-11-13: krótki osobny kawałek po UI-2, przed częścią 3 G3. Plan z ankiety 2026-11-13 czeka na akceptację.** Część 2 UI-2 dalej czeka na ocenę w grze (właściciel jeszcze nie grał); poprawki z tej oceny mają pierwszeństwo.
+> Pomysł właściciela 2026-11-13 (IDEAS, „Ekonomia (pomysły po UI-2)”). **Ankieta 2026-11-13: krótki osobny kawałek po UI-2, przed częścią 3 G3. Plan zaakceptowany 2026-11-13 („Zaczynaj według planu”); część 1 gotowa, czeka na ocenę („Część 1, stan”).** Część 2 UI-2 dalej czeka na ocenę w grze (właściciel jeszcze nie grał); poprawki z tej oceny mają pierwszeństwo.
 
 **Cel:** gracz panuje nad łańcuchami produkcji. Ustawia, ile najwyżej chce mieć danego towaru (np. 100 desek), a budynki, które go robią, stają po osiągnięciu limitu. Drewno nie idzie wtedy w niepotrzebne deski, a ludzie nie noszą towaru, którego nikt nie chce.
 
@@ -1714,6 +1714,15 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Części (ocena właściciela po całości, jedna część):**
 1. **Limit towaru:** stan w symulacji (limit na towar w prowincji) i komenda do ustawiania, sprawdzenie przed cyklem budynku, powód „limit” u postaci i w panelu, kolumna „Limit” w „Zapasach królestwa”, skrót w panelu budynku, tłumaczenia (pl, en). **Zapis v44** (limity w stanie prowincji, migracja: starsze gry bez limitów, test migracji).
+
+**Część 1, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę. Zapis v44.
+- **Limit w symulacji:** każda prowincja trzyma limity gracza (towar → liczba). Przed nowym cyklem pracownik sprawdza, czy wszystkie wyroby jego przepisu są na limicie; jeśli tak, czeka przy budynku (powód „zapas doszedł do limitu”) i co 3 s sprawdza znowu. Kowal i łuczarz na zmianę pomijają przepis na limicie; ustawiony na jeden przepis stoją, gdy ten jest na limicie. Pola, sady, winnice, zagrody, pasieki i leśnik nigdy nie stają. Prowincje w tle (uproszczony tryb) też pilnują limitu.
+- **Okno „Zapasy królestwa”:** nowa kolumna „Limit” (pole do zaznaczenia i liczba, domyślnie 100 po zaznaczeniu) między bilansem a sprzedażą; zapas na limicie jest czerwony z dymkiem. Zwierzęta bez limitu.
+- **Panel budynku:** pod zapasem na budowy rząd „Limit: Deski” (pole i liczba) dla każdego wyrobu warsztatu lub budynku surowców, a przy postoju czerwony napis „Stoi: zapas „Deski” doszedł do limitu (100).” Dymek pracownika: „czeka: zapas „Deski” doszedł do limitu (100)”.
+- **Pomiar dużego miasta** (`src/prototype/e5/limit_probe.gd -- [--minutes=40] [--limit=<towar>:<n>]`, limity: drewno 60, deski 30, mąka 20, chleb 40, piwo 30): po zjedzeniu starych zapasów każdy towar krąży wokół limitu (drewno 64–74, mąka 15–34, chleb 30–60, piwo 13–56), żaden ani razu nie spadł do zera. **Przekroczenie bywa większe niż jeden cykl** (piwo 56 przy limicie 30), bo kilku piwowarów kończy zaczęte cykle naraz, a towar w rękach liczy się dopiero po odłożeniu.
+- **Testy:** `tests/unit/sim/economy/test_goods_limits.gd` (drwal staje i rusza, tartak liczy stos przy budynku, kowal pomija przepis, pola i zagrody nie stają, tryb w tle, komenda, zapis i migracja v43 → v44), `tests/unit/ui/test_goods_limit_ui.gd` (okno i panel wysyłają limit).
+- **Zrzuty:** okno `town_shot.tscn -- --shot=<plik> --minutes=20 --stocks --limit=planks:5 --limit=wood:200`, panel tartaku `town_shot.tscn -- --shot=<plik> --minutes=20 --select=sawmill --zoom=2 --limit=planks:5`.
+- **Do oceny na laptopie:** czy limit łatwo ustawić (okno i panel), czy napis o postoju jest dość widoczny, czy domyślna liczba 100 po zaznaczeniu pasuje, czy przekroczenie limitu o kilka sztuk przeszkadza.
 
 **Testy i sprawdzenie:** testy symulacji: tartak staje przy limicie desek i rusza po spadku zapasu; drwal staje; pole i zagroda nie stają; kowal przechodzi na drugi przepis; stos przy budynku liczy się do limitu; komenda (zły towar, zła liczba, zwierzęta); migracja v43 → v44. Szybkie i długie testy na koniec. Zrzut okna „Zapasy królestwa” i panelu tartaku z chmury; wygoda ustawiania ocenia właściciel na laptopie.
 
