@@ -1,0 +1,34 @@
+spritekiln: 1
+# G3 part 2b. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `mug`, gen_civilians.py).
+kit: mug
+license: CC0-1.0
+summary: "a wooden tankard with a foaming head"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+  foam: {ramp: bone, bands: [4, 5]}
+
+bones:
+  mug: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  mug:
+    material: wood
+    space: mug
+    priority: 2
+    blend: 0.01
+    prims:
+      - cylinder: {a: [0, -0.06, 0.075], b: [0, 0.09, 0.075], r: 0.062}
+      - torus: {c: [0.0, 0.015, 0.0], R: 0.04, r: 0.012, rot: [0, 0, 1.5708]}
+  foam:
+    material: foam
+    space: mug
+    priority: 2
+    prims:
+      - ellipsoid: {c: [0, 0.095, 0.075], r: [0.062, 0.026, 0.062]}

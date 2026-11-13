@@ -1,0 +1,31 @@
+spritekiln: 1
+# G3 part 2b. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `peel`, gen_civilians.py).
+kit: peel
+license: CC0-1.0
+summary: "a baker's peel: a long wooden pole with a broad flat blade at the far end"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  peel: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  haft:
+    material: wood
+    space: peel
+    priority: 2
+    prims:
+      - cylinder: {a: [0, -0.22, 0], b: [0, 0.78, 0], r: 0.02}
+  blade:
+    material: wood
+    space: peel
+    blend: 0.01
+    prims:
+      - box: {c: [0, 0.9, 0], half: [0.11, 0.12, 0.012]}

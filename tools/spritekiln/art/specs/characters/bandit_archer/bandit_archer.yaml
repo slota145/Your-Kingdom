@@ -1,0 +1,27 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# G3 part 2b: the bandit archer (M7 part 2) shoots like the archer (the same draw) in drab clothes: a dark green
+# hood, a plain leather jerkin instead of the tabard with the red cross, dull hose.
+# Game sheets: export_character.py bandit_archer (attack -> work and work_drill).
+name: bandit_archer
+extends: ../archer/archer.yaml
+
+brief:
+  summary: "Your Kingdom bandit archer: a dark drab-green hood, a plain leather jerkin over a dull gambeson, dark hose, a longbow and a quiver"
+  head: "face open in the hood, its point falling behind the head"
+  must_keep: ["no colours of the kingdom", "longbow taller than the head when drawn", "quiver on the back"]
+  simplify: ["no tabard, no cross"]
+
+ramps:
+  gambeson: ["#0d0c09", "#1f1c16", "#2f2c22", "#3f3b2e", "#4c4839", "#5a5545"]
+  jerkin: ["#110b07", "#291a11", "#3f2c1c", "#543d28", "#664d33", "#775e42"]
+  hose_b: ["#0a0807", "#181311", "#261f1a", "#322a24", "#3d342c", "#483e36"]
+  hood_c: ["#0a0b08", "#171b13", "#23291d", "#2e3628", "#384231", "#434e3c"]
+  hair_b: ["#090504", "#140d09", "#20150f", "#2a1d15", "#33251b", "#3c2e22"]
+
+materials:
+  tabard: {ramp: jerkin, bands: [1, 4]}
+  red: {ramp: jerkin, bands: [1, 4]}
+  trousers: {ramp: hose_b, bands: [1, 4]}
+  hood_cloth: {ramp: hood_c, bands: [1, 5]}
+  hair: {ramp: hair_b}

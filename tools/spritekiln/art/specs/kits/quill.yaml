@@ -1,0 +1,27 @@
+spritekiln: 1
+# G3 part 2b. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `quill`, gen_civilians.py).
+kit: quill
+license: CC0-1.0
+summary: "a goose quill pen"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+  feather: {ramp: bone, bands: [3, 5]}
+
+bones:
+  quill: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  quill:
+    material: feather
+    space: quill
+    priority: 2
+    min_cover: 1
+    prims:
+      - cone: {a: [0, -0.04, 0], b: [0, 0.16, 0], r: [0.008, 0.026]}

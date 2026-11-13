@@ -1,0 +1,32 @@
+spritekiln: 1
+# G3 part 2b. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `rake`, gen_civilians.py).
+kit: rake
+license: CC0-1.0
+summary: "a long wooden rake: a haft with an iron-toothed head at the far end"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  rake: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  haft:
+    material: wood
+    space: rake
+    priority: 2
+    prims:
+      - cylinder: {a: [0, -0.3, 0], b: [0, 0.8, 0], r: 0.02}
+  head:
+    material: steel
+    space: rake
+    priority: 2
+    prims:
+      - box: {c: [0, 0.8, 0.02], half: [0.12, 0.02, 0.025]}
+      - box: {c: [0, 0.8, 0.08], half: [0.11, 0.012, 0.05]}
