@@ -180,7 +180,10 @@ def quoins(parts, P, name, rect, y0, y1, mat="sill_mat", step=0.4):
     while y < y1 - 0.1:
         long_ = k % 2 == 0
         for (x, z) in ((x0, z0), (x0, z1), (x1, z1)):
-            parts.add(name, mat, box([x, y, z], [0.28 if long_ else 0.12, step * 0.42, 0.12 if long_ else 0.28]), "wall")
+            hx, hz = (0.22 if long_ else 0.12), (0.12 if long_ else 0.22)
+            sx = 1 if x == x0 else -1          # into the wall, 0.03 proud of it
+            sz = 1 if z == z0 else -1
+            parts.add(name, mat, box([x + sx * (hx - 0.03), y, z + sz * (hz - 0.03)], [hx, step * 0.42, hz]), "wall")
         k += 1
         y += step
 
@@ -627,4 +630,135 @@ def dormer(parts, P, roof, name, gy, w=0.62, h=0.55, mat="plaster", roof_mat="sh
     g.roof(parts, roof_mat, dark, course=0.13)
     g.bargeboards(parts)
     window_right(parts, P, gy, zf, y0 + h * 0.5, w=w * 0.5, h=h * 0.6, shutters=False)
+    return g
+
+
+def hip_roof(parts, P, name, rect, eave, ridge, mat, dark, over=0.3, course=0.18, spots=None, along="gy"):
+    """A hipped roof over a game rectangle (overhang `over`), the ridge along game y ('gy': model
+    x) or game x ('gx': model z), the hips as steep as the long slopes."""
+    x0, x1, z0, z1 = P.rect(*rect)
+    x0, x1, z0, z1 = x0 - over, x1 + over, z0 - over, z1 + over
+    xc, zc = (x0 + x1) / 2, (z0 + z1) / 2
+    rise = ridge - eave
+    if along == "gy":
+        hw, L = (z1 - z0) / 2, x1 - x0
+        prism = ext([xc, eave, zc], [[-hw, 0], [hw, 0], [0, rise]], L, rot=[0, 1.5708, 0])
+        cuts = [plane([rise, hw, 0], [x1, eave, zc]), plane([-rise, hw, 0], [x0, eave, zc])]
+        cap = box([xc, ridge - 0.02, zc], [max(L / 2 - hw, 0.05), 0.06, 0.09])
+    else:
+        hw, L = (x1 - x0) / 2, z1 - z0
+        prism = ext([xc, eave, zc], [[-hw, 0], [hw, 0], [0, rise]], L)
+        cuts = [plane([0, hw, rise], [xc, eave, z1]), plane([0, hw, -rise], [xc, eave, z0])]
+        cap = box([xc, ridge - 0.02, zc], [0.09, 0.06, max(L / 2 - hw, 0.05)])
+    parts.add(name, mat, prism, "roof")
+    for c in cuts:
+        parts.cut(name, c)
+    parts.paint(name, dark, stripes={"axis": "y", "period": course, "width": 0.055, "offset": eave})
+    if spots:
+        parts.paint(name, spots[0], spots={"scale": spots[1], "density": spots[2], "seed": spots[3]})
+    parts.add(name + "_cap", dark if mat != "thatch" else "thatch_dark", cap, "roof")
+
+
+def cone_roof(parts, P, name, gx, gy, y0, r, h, mat, dark, course=0.16):
+    """A conical roof (a revolved triangle) with its base centre at game (gx, gy), height y0."""
+    x, _, z = P.m(gx, gy)
+    parts.add(name, mat, {"revolve": {"c": r4([x, y0, z]), "profile": {"polygon": [[0, 0], [r4(r), 0], [0, r4(h)]]}}}, "roof")
+    parts.paint(name, dark, stripes={"axis": "y", "period": course, "width": 0.055, "offset": y0})
+
+
+def tree(parts, P, name, gx, gy, h=3.0, crown=0.9, seed=0, mat="leaves"):
+    """A deciduous tree: a tapered trunk with two boughs and a crown of overlapping blobs."""
+    x, _, z = P.m(gx, gy)
+    parts.add(name + "_trunk", "log_bark", cone([x, 0, z], [x, h * 0.62, z], 0.16, 0.08), "prop")
+    parts.add(name + "_trunk", "log_bark", cone([x, h * 0.4, z], [x + 0.35, h * 0.62, z + 0.2], 0.07, 0.04), "prop")
+    parts.add(name + "_trunk", "log_bark", cone([x, h * 0.45, z], [x - 0.3, h * 0.66, z - 0.15], 0.07, 0.04), "prop")
+    blobs = [(0, 0.72, 0, 1.0), (0.42, 0.66, 0.25, 0.7), (-0.4, 0.68, -0.2, 0.72), (0.15, 0.86, -0.3, 0.68),
+             (-0.2, 0.84, 0.35, 0.66), (0.35, 0.6, -0.4, 0.55), (-0.35, 0.58, 0.4, 0.58)]
+    for i, (dx, fy, dz, f) in enumerate(blobs):
+        j = ((seed * 7 + i * 3) % 5 - 2) * 0.04
+        parts.add(name + "_crown", mat, ell([x + dx * crown + j, h * fy, z + dz * crown - j],
+                                             [crown * 0.55 * f, crown * 0.45 * f, crown * 0.55 * f]), "prop", blend=0.06)
+    parts.paint(name + "_crown", "leaves_dark", spots={"scale": 0.12, "density": 0.3, "seed": 5 + seed})
+
+
+def mound(parts, P, name, blobs, mat="stone", dark="stone_dark", layer="wall"):
+    """Rock or earth: blended ellipsoids, blobs = [(gx, gy, y, rx, ry, rz in tiles/units)]."""
+    for gx, gy, y, rx, ry, rz in blobs:
+        x, _, z = P.m(gx, gy)
+        parts.add(name, mat, ell([x, y, z], [rx, ry, rz]), layer, blend=0.12)
+    parts.paint(name, dark, spots={"scale": 0.14, "density": 0.32, "seed": 4})
+
+
+def cart(parts, P, gx, gy, yaw=0.0, name="cart", load=None, tipped=False):
+    """A two-wheeled cart; yaw turns it (0: shafts towards game -y... along model +x)."""
+    x, _, z = P.m(gx, gy)
+    c, s = math.cos(yaw), math.sin(yaw)
+
+    def at(u, v, y):
+        return [x + u * c - v * s, y, z + u * s + v * c]
+    tilt = 0.25 if tipped else 0.0
+    parts.add(name, "board", box(at(0, 0, 0.55), [0.55, 0.05, 0.36], rot=[0, -yaw, tilt]), "prop")
+    for v in (-0.36, 0.36):
+        parts.add(name + "_sides", "board", box(at(0, v, 0.68), [0.55, 0.12, 0.03], rot=[0, -yaw, tilt]), "prop")
+    for u in (-0.55, 0.55):
+        parts.add(name + "_sides", "board", box(at(u, 0, 0.68), [0.03, 0.12, 0.36], rot=[0, -yaw, tilt]), "prop")
+    parts.paint(name + "_sides", "ink", stripes={"axis": "y", "at": [0.68], "width": 0.04})
+    for v in (-0.46, 0.46):
+        w = at(0, v, 0.36)
+        parts.add(name + "_wheels", "post", tor(w, 0.32, 0.045, rot=[1.5708, -yaw, 0]), "prop")
+        parts.add(name + "_hubs", "iron", cyl(at(0, v - 0.05, 0.36), at(0, v + 0.05, 0.36), 0.07), "prop")
+        for k in range(4):
+            a = k * math.pi / 4
+            parts.add(name + "_spokes", "post", cyl(at(math.cos(a) * 0.3, v, 0.36 + math.sin(a) * 0.3),
+                                                    at(-math.cos(a) * 0.3, v, 0.36 - math.sin(a) * 0.3), 0.025), "prop")
+    for v in (-0.2, 0.2):
+        parts.add(name + "_shafts", "post", cyl(at(0.5, v, 0.55), at(1.35, v, 0.15 if not tipped else 0.0), 0.035), "prop",
+                  priority=2)
+    if load:
+        load(parts, at(0, 0, 0.62))
+
+
+def fence(parts, P, pts, name="fence", h=0.5, mat="post", wattle=False):
+    """A rail or wattle fence along game points."""
+    for i, (gx, gy) in enumerate(pts):
+        x, _, z = P.m(gx, gy)
+        parts.add(name + "_posts", mat, cyl([x, 0, z], [x, h + 0.06, z], 0.045), "prop")
+        if i:
+            a = P.m(*pts[i - 1])
+            if wattle:
+                L = math.dist([a[0], a[2]], [x, z])
+                ang = math.atan2(z - a[2], x - a[0])
+                parts.add(name, "wicker", box([(a[0] + x) / 2, h / 2, (a[2] + z) / 2], [L / 2, h / 2, 0.035], rot=[0, -ang, 0]), "prop")
+            else:
+                for y in (h * 0.45, h * 0.9):
+                    parts.add(name, mat, cyl([a[0], y, a[2]], [x, y, z], 0.03), "prop", priority=2)
+    if wattle:
+        parts.paint(name, "log_groove", stripes={"axis": "y", "period": 0.1, "width": 0.055})
+
+
+def wisp(parts, base, h, seed=0, name="smoke"):
+    """A thin curl of grey smoke rising from `base` (model point): small blobs drifting sideways."""
+    n = 5
+    for i in range(n):
+        t = i / (n - 1)
+        r = 0.05 + 0.07 * t
+        dx = -0.25 * t * t + 0.05 * math.sin(seed + i * 1.7)
+        dz = 0.06 * math.cos(seed * 2 + i * 1.3)
+        parts.add(name, "smoke", ell([base[0] + dx, base[1] + h * t, base[2] + dz], [r, r * 1.2, r]), "prop", blend=0.06)
+
+
+def dormer_left(parts, P, roof, name, gx, w=0.62, h=0.55, mat="plaster", roof_mat="shingle", dark="shingle_dark"):
+    """A small gabled dormer on the left slope of a 'gx' roof, at game x = gx, with a window."""
+    xf = roof.xc - roof.hw * 0.55
+    y0 = roof.ridge - roof.slope * (roof.xc - xf) - 0.05
+    gyf, gyb = (P.h - xf) / T, (P.h - roof.xc) / T
+    gx0, gx1 = gx - w / 2 / T, gx + w / 2 / T
+    rect = (gx0, gx1, gyb, gyf)
+    walls(parts, P, name + "_walls", rect, y0 - 0.3, y0 + h, mat)
+    timber_left(parts, P, name + "_frame", rect, y0, y0 + h, 1, braces=False)
+    g = Gable(P, name, rect, "gy", y0 + h, y0 + h + w * 0.55, over=0.1, end_over=0.1, thick=0.1)
+    g.infill(parts, mat)
+    g.roof(parts, roof_mat, dark, course=0.13)
+    g.bargeboards(parts)
+    window_left(parts, P, gx, xf, y0 + h * 0.5, w=w * 0.5, h=h * 0.6, shutters=False)
     return g

@@ -64,6 +64,9 @@ BUILDINGS = {
                                ("construction_2", "construction_2", {"like": "base"})]),
 }
 G1_SET = list(BUILDINGS.keys())
+# G3 part 3: these now come from SpriteKiln (tools/spritekiln/gen_workshops.py). Their raw images
+# still take part in evening out the colours (so the rest keep theirs), but are not written.
+SPRITEKILN = {"woodcutter", "quarry", "fishing_hut"}
 # M7 part 1 (ART_SPEC §10.14): the workshops of metals and weapons, the stud farm, the armoury
 # and the barracks, each with its 2 construction stages edited from the finished building.
 STAGES = [("base", "base", {}),
@@ -97,6 +100,8 @@ def main():
     harmonize(groups, reference=lambda name: name.split("/")[0] in G1_SET)
     for building, (opts, images) in BUILDINGS.items():
         if only and building not in only:
+            continue
+        if building in SPRITEKILN:
             continue
         for name, raw, extra in images:
             args = [sys.executable, FIT, os.path.join(tmp, building, raw + ".png"),
