@@ -1635,7 +1635,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## UI-2 — Poprawki właściciela: budowanie, interfejs i start kolonii
 
-> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo. **Część 1 zaakceptowana („Super!”) i scalona do `main` 2026-11-13 („Część 1, stan”). Część 2 gotowa na gałęzi roboczej 2026-11-13, czeka na ocenę („Część 2, stan”). Część 3 gotowa na tej samej gałęzi 2026-11-13, czeka na ocenę („Część 3, stan”); poprawek z oceny części 2 brak.**
+> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo. **Część 1 zaakceptowana („Super!”) i scalona do `main` 2026-11-13 („Część 1, stan”). Część 2 scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę w grze na laptopie („Część 2, stan”). Część 3 zaakceptowana („Jest super!”) i scalona do `main` 2026-11-13 („Część 3, stan”); poprawek z oceny części 2 brak.**
 
 **Cel:** wygodniejsze budowanie, czytelniejszy interfejs i kolonia, która od pierwszej minuty buduje.
 
@@ -1665,7 +1665,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Zrzuty: menu budowy `game_shot.tscn -- --shot=<plik> --map=coast --tile=73,103 --zoom=1 --port --build_tab=<0..8>`, droga `--plain --tile=48,56 --zoom=2 --road_line=44,52:50,58`, menu pauzy `--plain --tile=48,56 --pause_menu`, przezroczystość `town_shot.tscn -- --shot=<plik> --minutes=10 --select=hut --behind --zoom=2`, mapa świata `world_shot.tscn -- --out=<plik> --seed=5`.
 - **Do oceny na laptopie:** czy droga z dwóch kliknięć jest wygodna (i czy po postawieniu drogi następna ma zaczynać się sama od jej końca), siła i zasięg przezroczystości, czy ikony narzędzi są czytelne, układ menu pauzy, czy napisy nie nachodzą w 1920×1080.
 
-**Część 2, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę. Zapis bez zmian (v42).
+**Część 2, stan (2026-11-13):** scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę w grze. Zapis bez zmian (v42).
 - **Budowy pierwsze:** tragarze biorą najpierw zlecenia dla budów (plac budowy, bruk, statek na pochylni), potem resztę (wóz kupca, statki, przenosiny), a na końcu odnoszenie stosów z warsztatów. Wcześniej brali zlecenia od najstarszego, więc po postawieniu magazynu przez kilka minut przenosili cały ładunek z plaży, a budowy stały.
 - **Budowa bierze z plaży i obozu:** materiały idą na budowę prosto z kupek ładunku startowego (działało już wcześniej, teraz pilnuje tego test).
 - **Budowniczy nosi:** gdy żadna budowa nie ma materiałów, budowniczy sam bierze dowóz na najbliższą (pieszo, bez wózka).
@@ -1676,7 +1676,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Następnie (ankieta 2026-11-13):** część 3 UI-2, potem limit towaru w magazynie (IDEAS, „Ekonomia (pomysły po UI-2)”) jako krótki osobny kawałek przed G3.
 - **Do oceny na laptopie:** start kolonii (czy budowy ruszają od razu), czy tragarzy wystarcza, czy stosy przy budynkach nie rosną za bardzo w dużym mieście.
 
-**Część 3, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę. Zapis v43 (kształt świata).
+**Część 3, stan (2026-11-13):** zaakceptowana („Jest super!”), scalona do `main` 2026-11-13. Zapis v43 (kształt świata).
 - **Osobne okno „Nowa gra”:** przycisk w menu otwiera duże okno (jak wybór startu): po lewej dotychczasowe opcje, po prawej „Podgląd świata”, mała mapa świata z nazwami prowincji. Mapa rysuje się od nowa zaraz po każdej zmianie, która zmienia świat (numer, liczba prowincji, wyspy, scenariusz „Kupieckie wyspy”, wybór „Królestwa”); zmiana władców czy trudności mapy nie zmienia. Losowanie jest to samo co w grze, więc kolejny krok (wybór startu) pokazuje dokładnie ten świat.
 - **„Wylosuj inny”** pod mapą daje nowy numer świata (dawny przycisk „Losuj” przy numerze zniknął). Dla „Królestwa” jest wyszarzony, a mapa pokazuje je takie, jakie jest.
 - Pod mapą krótki podpis: nazwa świata z numerem, liczba prowincji, wysp i prowincji nad morzem (tylko tam można zacząć). Kółko przybliża, przeciąganie przesuwa.
