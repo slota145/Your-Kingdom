@@ -17,6 +17,7 @@ Run (inside tools/spritekiln):
   python3 tools/spritekiln/export_building.py <id> --stages      (from the repository root)
 """
 import copy
+import json
 import math
 import os
 import sys
@@ -61,6 +62,8 @@ RAMPS = {
     "hop_green": ["#0e1a06", "#2a4410", "#467018", "#6a9a28", "#94c048"],
     "hay": ["#1c1406", "#4a3812", "#7a6020", "#a88a34", "#cdb050", "#ecd47a"],
     "grape": ["#12061a", "#341040", "#561c64", "#782c86", "#9a46a4"],
+    "flour": ["#6a6458", "#a8a294", "#d4cfc2", "#ece8de", "#faf8f2"],
+    "sailcloth": ["#4a4234", "#8a7e66", "#bcb092", "#dcd2b6", "#f0e8d2"],
     "tar": ["#030202", "#0e0a08", "#1e1612", "#2e241c"],
 }
 
@@ -140,6 +143,9 @@ def materials():
         "dark_hole": {"ramp": "soot", "bands": [0, 1], "outline": False, "line": False},
         "turf": {"ramp": "grass", "bands": [1, 4]},
         "antler": {"ramp": "antler", "bands": [2, 4]},
+        "flour": {"ramp": "flour", "bands": [2, 4], "outline": False},
+        "flour_sack": {"ramp": "flour", "bands": [1, 4]},
+        "sailcloth": {"ramp": "sailcloth", "bands": [1, 4], "two_sided": True},
         "grape": {"ramp": "grape", "bands": [1, 4]},
         "grape_dark": {"ramp": "grape", "bands": [0, 1], "outline": False},
         "smoke": {"ramp": "smoke", "bands": [1, 3], "outline": False},
@@ -1094,6 +1100,116 @@ def stable():
     return P, p, 304, 2.6
 
 
+# =================================================================================================
+# Mill: a post mill (koźlak). The weatherboarded buck stands on a great post held by a trestle of
+# crosstrees and quarter bars on brick piers; a curved roof, the breast with the windshaft towards
+# the camera's left, steps and the tail pole with a cart wheel down to the work yard; sacks of grain
+# and flour, a spare millstone. The sails are not in the base art: they turn in base_anim
+# (mill_sails(), 8 frames over a quarter turn, BuildingView plays them).
+# =================================================================================================
+MILL_C = (0.52, 0.98)       # game point of the post
+MILL_FLOOR = 1.6
+MILL_HUB = None             # model point of the hub, set by mill()
+
+
+def mill():
+    global MILL_HUB
+    P, p = Plot(2), Parts()
+    K.ground(P, p, seed=28)
+    K.patch(p, "grass_patch", "grass", P, 0.3, 0.3, 0.3, 0.25)
+    K.patch(p, "grass_patch", "grass", P, 1.75, 0.35, 0.25, 0.2)
+    K.patch(p, "flour_dust", "flour", P, 1.4, 1.45, 0.2, 0.15, y=0.013)
+    cx, _, cz = P.m(*MILL_C)
+    p.footprints = [(0.12, 0.92, 0.5, 1.45)]
+    # Trestle: brick piers, crossed crosstrees, quarter bars, the post.
+    for dx, dz in ((0.95, 0), (-0.95, 0), (0, 0.95), (0, -0.95)):
+        p.add("piers", "brick", box([cx + dx, 0.18, cz + dz], [0.17, 0.18, 0.17]), "found")
+    p.paint("piers", "brick_line", stripes={"axis": "y", "period": 0.12, "width": 0.035})
+    p.add("crosstrees", "timber", box([cx, 0.44, cz], [1.05, 0.08, 0.08]), "wall")
+    p.add("crosstrees", "timber", box([cx, 0.44, cz], [0.08, 0.08, 1.05]), "wall")
+    for dx, dz in ((0.85, 0), (-0.85, 0), (0, 0.85), (0, -0.85)):
+        p.add("quarter_bars", "timber", cyl([cx + dx, 0.5, cz + dz], [cx + dx * 0.12, 1.35, cz + dz * 0.12], 0.06), "wall")
+    p.add("post", "log", cyl([cx, 0.4, cz], [cx, MILL_FLOOR + 0.1, cz], 0.16), "wall")
+    # The buck: weatherboards, corner posts, a curved roof running front to back.
+    bx0, bx1 = cx - 0.95, cx + 0.95
+    bz0, bz1 = cz - 0.72, cz + 0.72
+    top = 3.45
+    p.add("buck", "board", box([cx, (MILL_FLOOR + top) / 2, cz], [0.95, (top - MILL_FLOOR) / 2, 0.72]), "wall")
+    p.paint("buck", "ink", stripes={"axis": "y", "period": 0.16, "width": 0.045})
+    p.add("buck_base", "timber", box([cx, MILL_FLOOR + 0.06, cz], [1.0, 0.08, 0.77]), "wall")
+    for (x, z) in ((bx0, bz0), (bx0, bz1), (bx1, bz1)):
+        p.add("buck_posts", "timber", box([x, (MILL_FLOOR + top) / 2, z], [0.06, (top - MILL_FLOOR) / 2, 0.06]), "wall")
+    p.add("buck_posts", "timber", box([bx0, top - 0.05, cz], [0.06, 0.06, 0.74]), "wall")
+    arch = [[-0.86 + 1.72 * i / 10, top + 0.62 * math.sin(math.pi * i / 10)] for i in range(11)]
+    inner = [[q[0], q[1] - 0.12] for q in reversed(arch)]
+    p.add("buck_roof", "shingle", ext([cx, 0, cz], arch + inner, 2.1, rot=[0, 1.5708, 0]), "roof")
+    p.paint("buck_roof", "shingle_dark", stripes={"axis": "x", "period": 0.16, "width": 0.055})
+    p.add("buck_gable", "board", ext([cx, 0, cz], [[-0.72, top], [0.72, top]] +
+                                     [[0.72 - 1.44 * i / 8, top + 0.55 * math.sin(math.pi * (1 - i / 8))] for i in range(1, 8)],
+                                     1.9, rot=[0, 1.5708, 0]), "wall")
+    # The breast: the windshaft's hub out of the front, a little window.
+    MILL_HUB = [bx0 - 0.32, 3.05, cz]
+    p.add("windshaft", "log", cyl([bx0 + 0.3, 3.0, cz], MILL_HUB, 0.12), "wall")
+    p.add("hub", "iron", cyl([MILL_HUB[0] + 0.06, 3.05, cz], [MILL_HUB[0] - 0.06, 3.05, cz], 0.17), "wall")
+    K.window_left(p, P, (cz + P.h) / K.T, bx0, 2.3, w=0.26, h=0.26, shutters=False)
+    # Door, steps and tail pole down to the work yard (right side).
+    xd = cx + 0.35
+    p.add("door", "door_wood", box([xd, MILL_FLOOR + 0.62, bz1 + 0.03], [0.26, 0.5, 0.04]), "wall")
+    p.paint("door", "ink", stripes={"axis": "x", "period": 0.13, "width": 0.04})
+    p.add("door_iron", "iron", box([xd - 0.05, MILL_FLOOR + 0.8, bz1 + 0.08], [0.18, 0.03, 0.02]), "wall")
+    sz0, sz1 = bz1 + 0.05, bz1 + 1.45
+    for sx in (-0.26, 0.26):
+        p.add("steps_side", "timber", cyl([xd + sx, MILL_FLOOR + 0.05, sz0], [xd + sx, 0.0, sz1], 0.05), "wall", priority=2)
+    for i in range(1, 7):
+        t = i / 7
+        p.add("steps", "board", box([xd, MILL_FLOOR * (1 - t), sz0 + (sz1 - sz0) * t], [0.25, 0.025, 0.08]), "wall")
+    p.add("rail", "timber", cyl([xd + 0.28, MILL_FLOOR + 0.75, sz0], [xd + 0.28, 0.7, sz1], 0.03), "wall", priority=2)
+    p.add("tail_pole", "log", cyl([cx + 0.95, MILL_FLOOR + 0.2, cz + 0.2], [cx + 1.25, 0.35, bz1 + 1.6], 0.07), "wall",
+          priority=2)
+    w = [cx + 1.25, 0.35, bz1 + 1.6]
+    p.add("tail_wheel", "post", tor(w, 0.3, 0.045, rot=[0, 0, 1.5708]), "prop")
+    p.add("tail_wheel", "iron", cyl([w[0] - 0.05, w[1], w[2]], [w[0] + 0.05, w[1], w[2]], 0.06), "prop")
+    # Sacks: grain under the trestle, flour on the yard's front edge; a spare millstone.
+    for i, (gx, gy) in enumerate(((0.2, 1.6), (0.35, 1.72), (0.28, 1.55))):
+        K.sack(p, P, gx, gy, s=0.17, y0=0.0 if i < 2 else 0.3)
+    for gx, gy in ((1.7, 1.88), (1.86, 1.75)):
+        K.sack(p, P, gx, gy, s=0.17, mat="flour_sack")
+    x, _, z = P.m(0.15, 0.3)
+    p.add("millstone", "stone", cyl([x, 0.4, z - 0.08], [x, 0.4, z + 0.08], 0.38), "prop")
+    p.add("millstone_eye", "dark_hole", cyl([x, 0.4, z + 0.07], [x, 0.4, z + 0.09], 0.08), "prop")
+    p.paint("millstone", "stone_dark", rings={"axis": "z", "period": 0.12, "width": 0.055})
+    K.tufts(p, P, [(1.95, 0.9), (0.05, 1.97), (1.1, 0.1)])
+    p.spots = {"hopper": (1.35, 1.22)}
+    p.roofs = []
+    return P, p, 288, 2.6
+
+
+def mill_sails(angle):
+    """The four lattice sails turned by `angle` (radians) about the windshaft."""
+    P = mill()[0]      # sets MILL_HUB; only the sails are kept
+    p = Parts()
+    h = MILL_HUB
+    R, r0, wide = 2.15, 0.45, 0.46
+    for k in range(4):
+        a = angle + k * math.pi / 2
+        d = (0.0, math.cos(a), math.sin(a))
+        e = (0.0, -math.sin(a), math.cos(a))
+
+        def at(r, u, dx=0.0):
+            return [h[0] + dx, h[1] + d[1] * r + e[1] * u, h[2] + d[2] * r + e[2] * u]
+        p.add("stocks", "timber", box(at(R / 2, 0, -0.04), [0.05, R / 2, 0.055], rot=[a, 0, 0]), "prop")
+        p.add("sailcloth", "sailcloth", box(at((r0 + R) / 2, wide / 2, 0.02), [0.015, (R - r0) / 2, wide / 2], rot=[a, 0, 0]),
+              "prop")
+        p.add("rails", "timber", box(at((r0 + R) / 2, wide, -0.02), [0.025, (R - r0) / 2, 0.025], rot=[a, 0, 0]), "prop",
+              min_cover=2)
+        for i in range(6):
+            r = r0 + (R - r0) * i / 5
+            p.add("bars", "timber", box(at(r, wide / 2, -0.03), [0.022, 0.022, wide / 2 + 0.02], rot=[a, 0, 0]), "prop",
+                  min_cover=2)
+    p.add("hub_cap", "iron", cyl([h[0] - 0.02, h[1], h[2]], [h[0] - 0.12, h[1], h[2]], 0.15), "prop")
+    return P, p
+
+
 def axe_sign(p, c):
     """Two crossed axes painted on a sign board."""
     x, y, z = c
@@ -1103,6 +1219,10 @@ def axe_sign(p, c):
 
 
 BUILDINGS = {
+    "mill": (mill, "Your Kingdom mill (G3 part 3b), 2x2 tiles: a medieval post mill, a weatherboarded buck with a "
+             "curved shingle roof on a great post, a trestle of crosstrees and quarter bars on brick piers, steps and "
+             "a tail pole with a cart wheel down to the yard, sacks of grain and flour, a spare millstone; the four "
+             "lattice sails turn in a separate animation"),
     "vineyard": (vineyard, "Your Kingdom vineyard (G3 part 3), 3x3 tiles: a vintner's house in an L, a stone ground "
                  "floor and a half-timbered upper floor under red tiles, an arched cellar door and an oriel in the "
                  "wing's gable, a press house with a beam press and casks, a pergola heavy with grapes over a bench"),
@@ -1215,6 +1335,32 @@ def stage(P, parts, which, roofs):
     return out
 
 
+SAIL_FRAMES = 8          # frames over a quarter turn (four sails)
+SAIL_FPS = 4.0           # a quarter turn in 2 s: 7.5 turns a minute, slow
+VISUALS = os.path.join(HERE, "..", "..", "data", "visuals", "buildings")
+
+
+def write_spots(bid, P, parts):
+    """Writes the work spots (game points on the plot) into data/visuals/buildings/<id>.tres as
+    pixel offsets from the entrance tile's centre (BuildingVisualDef.spot_offsets)."""
+    import re
+    path = os.path.join(VISUALS, bid + ".tres")
+    text = open(path).read()
+    ent = ENTRANCES.get(bid, (1, 1))
+    ex, ey = ent[0] + 0.5, ent[1] + 0.5
+    rows = []
+    for name, (gx, gy) in parts.spots.items():
+        dx, dy = gx - ex, gy - ey
+        rows.append('&"%s": Vector2(%d, %d)' % (name, round((dx - dy) * 32), round((dx + dy) * 16)))
+    block = "spot_offsets = Dictionary[StringName, Vector2]({\n" + ",\n".join(rows) + "\n})\n"
+    text = re.sub(r"spot_offsets = Dictionary\[StringName, Vector2\]\(\{.*?\}\)\n", "", text, flags=re.S)
+    text = text.rstrip("\n") + "\n" + block
+    open(path, "w").write(text)
+
+
+ENTRANCES = {"vineyard": (2, 1), "stable": (1, 2)}
+
+
 def write(name, s):
     d = os.path.join(HERE, "art", "specs", "props", name.split("@")[0])
     os.makedirs(d, exist_ok=True)
@@ -1242,6 +1388,20 @@ def main():
             s2["parts"] = dict(st)
             s2["animations"] = s["animations"]
             write(bid, s2)
+        if bid == "mill":
+            for k in range(SAIL_FRAMES):
+                _, sp = mill_sails(k * (math.pi / 2) / SAIL_FRAMES)
+                s3 = head(f"mill_anim_{k}", size, cy, "the mill's sails, frame %d" % k)
+                s3["parts"] = dict(sp)
+                s3["animations"] = s["animations"]
+                write(bid, s3)
+            # Sorted just in front of the plot's front corner: the sails stand before the whole buck
+            # (sorted at the ground under the hub, the buck's strips covered them).
+            anim = {"frames": SAIL_FRAMES, "fps": SAIL_FPS, "sort_tile": [2.02, 2.02]}
+            with open(os.path.join(HERE, "art", "specs", "props", bid, "anim.json"), "w") as fh:
+                json.dump(anim, fh)
+        if getattr(parts, "spots", None):
+            write_spots(bid, P, parts)
         print("written", bid, n, "prims")
 
 

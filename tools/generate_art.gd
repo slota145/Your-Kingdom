@@ -402,7 +402,8 @@ var _yard: Vector2i = Vector2i(-1, -1)
 ## (tools/spritekiln/gen_workshops.py); this script no longer draws them, so nothing old comes back.
 ## Their drawings stay in BUILDINGS until the G3 clean-up.
 const SPRITEKILN_BUILDINGS: Array[String] = ["woodcutter", "forester", "quarry", "fishing_hut",
-		"mine", "clay_pit", "farm", "hop_farm", "vineyard", "stable", "charcoal_burner", "tar_kiln"]
+		"mine", "clay_pit", "farm", "hop_farm", "vineyard", "stable", "charcoal_burner", "tar_kiln",
+		"mill"]
 
 
 func _init() -> void:

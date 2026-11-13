@@ -34,3 +34,29 @@ func test_neighbours_in_a_row_get_different_gables() -> void:
 	for i: int in 3:
 		names[visual.row_variant_name("level_2_middle", Vector2i(10, 10 + 2 * i))] = true
 	assert_int(names.size()).is_greater(1)
+
+
+## G3 part 3b: the mill's sails turn (base_anim over the base art, frames played in _process).
+func test_mill_sails_turn() -> void:
+	var view: BuildingView = auto_free(BuildingView.new())
+	view.setup("buildings/mill/base", Vector2i(10, 10))
+	var anim := view.get_children().filter(func(c: Node) -> bool: return c is Sprite2D and (c as Sprite2D).hframes > 1)
+	assert_int(anim.size()).is_equal(1)
+	var sails: Sprite2D = anim[0]
+	assert_int(sails.hframes).is_greater(1)
+	assert_int(sails.texture.get_width() / sails.hframes).is_equal(ArtPaths.texture("buildings/mill/base.png").get_width())
+	var first := sails.frame
+	view._process(0.3)
+	assert_int(sails.frame).is_not_equal(first)
+	# Lowered (see-through mode): the sails hide; mirrored art has them too.
+	view.set_lowered(true)
+	assert_bool(sails.visible).is_false()
+	var mirrored: BuildingView = auto_free(BuildingView.new())
+	mirrored.setup("buildings/mill/base", Vector2i(10, 10), true)
+	assert_int(mirrored.get_children().filter(func(c: Node) -> bool: return c is Sprite2D and (c as Sprite2D).hframes > 1).size()).is_equal(1)
+
+
+func test_buildings_without_a_moving_part_do_not_process() -> void:
+	var view: BuildingView = auto_free(BuildingView.new())
+	view.setup("buildings/bakery/base", Vector2i(10, 10))
+	assert_bool(view.is_processing()).is_false()

@@ -16,6 +16,11 @@ var _strips: Array[Sprite2D] = []
 var _full_regions: Array[Rect2] = []
 var _lowered: bool = false
 var _texture: Texture2D
+## Moving part drawn over the building (the mill's sails, G3 part 3b): "<art>_anim.png" with
+## its frames side by side and "<art>_anim.json" {frames, fps, sort_tile}; null = none.
+var _anim: Sprite2D
+var _anim_fps: float = 0.0
+var _anim_time: float = 0.0
 
 ## Texture -> its image, for clicks on the drawn pixels (loaded on the first click).
 static var _images: Dictionary[Texture2D, Image] = {}
@@ -25,6 +30,7 @@ static var _mirrored: Dictionary[String, Texture2D] = {}
 
 func _init() -> void:
 	y_sort_enabled = true
+	set_process(false)
 
 
 ## [param art]: art path without extension, e.g. "buildings/mill/base" (.png + .json).
@@ -56,6 +62,45 @@ func setup(art: String, tile: Vector2i, mirrored: bool = false) -> void:
 		add_child(sprite)
 		_strips.append(sprite)
 		_full_regions.append(sprite.region_rect)
+	_setup_anim(art, mirrored)
+
+
+## The moving part, if the art has one: a strip of frames the size of the art, with the same
+## pivot, sorted at the ground point under it ("sort_tile", in tiles of the footprint as drawn).
+func _setup_anim(art: String, mirrored: bool) -> void:
+	var meta_path := ArtPaths.resolve(art + "_anim.json")
+	if not FileAccess.file_exists(meta_path):
+		return
+	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(meta_path))
+	var tex := ArtPaths.texture(art + "_anim.png")
+	if tex == null:
+		return
+	if mirrored:
+		# The strip flipped whole mirrors every frame and reverses their order: the sails then
+		# turn the same way round as in the art, which reads just as well.
+		tex = mirror_texture(art + "_anim", tex)
+	var frames := int(meta.get("frames", 1))
+	var at: Array = meta.get("sort_tile", [0.0, 0.0])
+	var sort_tile := Vector2(float(at[0]), float(at[1]))
+	if mirrored:
+		sort_tile = Vector2(sort_tile.y, sort_tile.x)
+	_anim = Sprite2D.new()
+	_anim.texture = tex
+	_anim.centered = false
+	_anim.hframes = frames
+	# Front vertex of the footprint = this node's origin; the sort point is a ground point of it.
+	_anim.position = IsoMath.grid_to_screen(sort_tile) - IsoMath.grid_to_screen(Vector2(footprint))
+	_anim.offset = -Vector2(_pivot) - _anim.position
+	add_child(_anim)
+	_anim_fps = float(meta.get("fps", 4.0))
+	# Mills side by side should not turn in step.
+	_anim_time = float(absi(origin_tile.x * 31 + origin_tile.y * 17) % 97) / 10.0
+	set_process(frames > 1)
+
+
+func _process(delta: float) -> void:
+	_anim_time += delta
+	_anim.frame = int(_anim_time * _anim_fps) % _anim.hframes
 
 
 ## The mirror image of [param tex] (cached per art path).
@@ -104,6 +149,8 @@ func set_lowered(lowered: bool) -> void:
 	if lowered == _lowered:
 		return
 	_lowered = lowered
+	if _anim != null:
+		_anim.visible = not lowered
 	for i: int in _strips.size():
 		var full := _full_regions[i]
 		var s := _strips[i]

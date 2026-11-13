@@ -32,7 +32,8 @@ func test_pixellab_building_art_sorts_correctly() -> void:
 ## G3 part 3: workshops and raw-material buildings from SpriteKiln (tools/spritekiln/gen_workshops.py),
 ## base art and both construction stages, as drawn and mirrored.
 const SPRITEKILN_WORKSHOPS: Array[String] = ["woodcutter", "forester", "quarry", "fishing_hut",
-		"mine", "clay_pit", "farm", "hop_farm", "vineyard", "stable", "charcoal_burner", "tar_kiln"]
+		"mine", "clay_pit", "farm", "hop_farm", "vineyard", "stable", "charcoal_burner", "tar_kiln",
+		"mill"]
 
 
 func test_spritekiln_workshop_art_sorts_correctly() -> void:
