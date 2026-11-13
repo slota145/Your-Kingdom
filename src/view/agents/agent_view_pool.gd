@@ -4,6 +4,8 @@ extends Node2D
 ## outside have no node. Child of the y-sorted world. The animation follows only the
 ## agent's activity, facing and carried good.
 
+## Half the width of a person's sprite that counts when sorting him over his workplace.
+const WORK_SPRITE_HALF_W := 14.0
 const VIEW_MARGIN := 96.0
 ## Used when a profession has no art of its own yet.
 const FALLBACK_CHARACTER := &"peasant"
@@ -91,6 +93,15 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 				elif lift > 0.0:
 					lift += 1.0
 					screen.y += 1.0
+		if spot != Vector2.ZERO and not open and agent.combat == null:
+			# At a work spot inside the footprint (the work yard by the door, G3 part 3): sorted just
+			# after the building's own strips there, drawn where he stands, so the building's art
+			# does not cover him (strips sort at the front edge of the footprint).
+			var key := _work_yard_sort_key(agent, screen + spot)
+			var y := screen.y + jitter.y + spot.y
+			if key > y:
+				lift += key - y
+				screen.y += key - y
 		sprite.position = screen + jitter + spot
 		sprite.set_lift(lift)
 		if agent.combat != null:
@@ -214,6 +225,27 @@ func _out_of_sight(agent: Agent) -> bool:
 		return false
 	var visual := _visual_of(workplace.def.id)
 	return visual != null and visual.hidden_spots.has(step.spot)
+
+
+## Screen y just after the strips of the agent's workplace that his sprite overlaps (strips
+## sort on the footprint's front edge, BuildingSlicer); -INF when he has none.
+func _work_yard_sort_key(agent: Agent, at: Vector2) -> float:
+	var workplace := province.buildings.get_building(agent.workplace_id)
+	if workplace == null:
+		return -INF
+	var fp := workplace.def.footprint
+	if workplace.orientation % 2 == 1:
+		fp = Vector2i(fp.y, fp.x)
+	var front := IsoMath.grid_to_screen(Vector2(workplace.origin + fp))
+	var left := -BuildingSlicer.STRIP_WIDTH * fp.x
+	var count := fp.x + fp.y
+	var key := -INF
+	var rel := at.x - front.x
+	for edge: float in [rel - WORK_SPRITE_HALF_W, rel + WORK_SPRITE_HALF_W]:
+		var i := clampi(floori((edge - left) / BuildingSlicer.STRIP_WIDTH), 0, count - 1)
+		var center := left + (i + 0.5) * BuildingSlicer.STRIP_WIDTH
+		key = maxf(key, front.y + BuildingSlicer.front_edge_y(center) + 1.0)
+	return key
 
 
 ## Pixel offset of the named work spot (oven, table...) while the agent works there.

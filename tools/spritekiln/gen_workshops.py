@@ -64,6 +64,18 @@ RAMPS = {
     "grape": ["#12061a", "#341040", "#561c64", "#782c86", "#9a46a4"],
     "flour": ["#6a6458", "#a8a294", "#d4cfc2", "#ece8de", "#faf8f2"],
     "sailcloth": ["#4a4234", "#8a7e66", "#bcb092", "#dcd2b6", "#f0e8d2"],
+    "bread": ["#2a1404", "#6a3a10", "#a0621e", "#c88a38", "#e4b462"],
+    "dough": ["#6a5c48", "#a8987c", "#d4c4a4", "#ece0c4"],
+    "copper": ["#2a0e06", "#6a2a10", "#a4481e", "#d06a32", "#ec9a5a"],
+    "beer": ["#1a0c02", "#4a2a08", "#7a4a12"],
+    "pewter": ["#2a2c2e", "#5e6266", "#9298a0", "#c6ccd2"],
+    "brass": ["#2a1c04", "#6a4a10", "#a8801e", "#d8b040"],
+    "leather": ["#1a0c06", "#3e2412", "#64401e", "#8a5e30"],
+    "cobble": ["#1e1c1a", "#3e3a36", "#5a5650", "#76716a", "#928c84"],
+    "cloth_red": ["#2a0606", "#6a1412", "#a42620", "#cc4434"],
+    "cloth_blue": ["#060c22", "#142456", "#24408a", "#4062b4"],
+    "cloth_green": ["#061a0c", "#14421e", "#246a30", "#3e9048"],
+    "meat": ["#2a0606", "#6a1614", "#a42e26", "#cc5a48", "#e88a78"],
     "tar": ["#030202", "#0e0a08", "#1e1612", "#2e241c"],
 }
 
@@ -143,6 +155,27 @@ def materials():
         "dark_hole": {"ramp": "soot", "bands": [0, 1], "outline": False, "line": False},
         "turf": {"ramp": "grass", "bands": [1, 4]},
         "antler": {"ramp": "antler", "bands": [2, 4]},
+        "bread": {"ramp": "bread", "bands": [1, 4]},
+        "dough": {"ramp": "dough", "bands": [1, 3]},
+        "copper": {"ramp": "copper", "bands": [1, 4], "finish": "metal"},
+        "beer": {"ramp": "beer", "bands": [0, 2], "finish": "glossy", "outline": False},
+        "pewter": {"ramp": "pewter", "bands": [1, 3], "finish": "metal"},
+        "brass": {"ramp": "brass", "bands": [1, 3], "finish": "metal"},
+        "leather": {"ramp": "leather", "bands": [1, 3]},
+        "cobble_ground": {"ramp": "cobble", "bands": [2, 4], "outline": False},
+        "cloth_red": {"ramp": "cloth_red", "bands": [1, 3]},
+        "cloth_blue": {"ramp": "cloth_blue", "bands": [1, 3]},
+        "cloth_green": {"ramp": "cloth_green", "bands": [1, 3]},
+        "meat": {"ramp": "meat", "bands": [1, 4]},
+        "honey": {"ramp": "straw", "bands": [3, 5], "finish": "glossy"},
+        "bone": {"ramp": "bone", "bands": [2, 4]},
+        "plank": {"ramp": "wood", "bands": [2, 5]},
+        "plank_alt": {"ramp": "wood", "bands": [3, 5]},
+        "clay_light": {"ramp": "clay", "bands": [2, 4]},
+        "brick_alt": {"ramp": "brick", "bands": [2, 4]},
+        "wool": {"ramp": "flour", "bands": [1, 4]},
+        "hide": {"ramp": "leather", "bands": [1, 3]},
+        "meat_dark": {"ramp": "meat", "bands": [0, 1], "outline": False},
         "flour": {"ramp": "flour", "bands": [2, 4], "outline": False},
         "flour_sack": {"ramp": "flour", "bands": [1, 4]},
         "sailcloth": {"ramp": "sailcloth", "bands": [1, 4], "two_sided": True},
@@ -1210,6 +1243,676 @@ def mill_sails(angle):
     return P, p
 
 
+# --- emblems for the sign boards (a few pixels each) -----------------------------------------------
+def emblem_pretzel(p, c):
+    x, y, z = c
+    p.add("sign_emblem", "bread", tor([x, y, z + 0.01], 0.09, 0.03, rot=[1.5708, 0, 0]), "wall", priority=3)
+    p.add("sign_emblem", "bread", tor([x - 0.05, y - 0.03, z + 0.01], 0.05, 0.025, rot=[1.5708, 0, 0]), "wall", priority=3)
+    p.add("sign_emblem", "bread", tor([x + 0.05, y - 0.03, z + 0.01], 0.05, 0.025, rot=[1.5708, 0, 0]), "wall", priority=3)
+
+
+def emblem_tankard(p, c):
+    x, y, z = c
+    p.add("sign_emblem", "pewter", box([x, y, z + 0.01], [0.07, 0.1, 0.012]), "wall", priority=3)
+    p.add("sign_emblem", "pewter", tor([x + 0.09, y, z + 0.01], 0.05, 0.018, rot=[1.5708, 0, 0]), "wall", priority=3)
+    p.add("sign_emblem", "flour", box([x, y + 0.11, z + 0.012], [0.08, 0.03, 0.012]), "wall", priority=3)
+
+
+def emblem_jug(p, c):
+    x, y, z = c
+    p.add("sign_emblem", "honey", ell([x, y - 0.02, z + 0.01], [0.08, 0.09, 0.012]), "wall", priority=3)
+    p.add("sign_emblem", "honey", box([x, y + 0.08, z + 0.01], [0.035, 0.04, 0.012]), "wall", priority=3)
+
+
+def emblem_grapes(p, c):
+    grape_sign(p, c)
+
+
+def emblem_saw(p, c):
+    x, y, z = c
+    p.add("sign_emblem", "steel", box([x, y, z + 0.01], [0.15, 0.05, 0.012]), "wall", priority=3)
+    p.add("sign_emblem", "haft", box([x - 0.17, y, z + 0.01], [0.03, 0.07, 0.012]), "wall", priority=3)
+
+
+def emblem_horseshoe(p, c):
+    x, y, z = c
+    p.add("sign_emblem", "iron", tor([x, y, z + 0.01], 0.08, 0.025, rot=[1.5708, 0, 0]), "wall", priority=3)
+    p.add("sign_emblem", "sign_board", box([x, y - 0.08, z + 0.015], [0.06, 0.04, 0.012]), "wall", priority=3)
+
+
+def emblem_shears(p, c):
+    x, y, z = c
+    for s in (-1, 1):
+        p.add("sign_emblem", "steel", box([x, y, z + 0.01], [0.02, 0.13, 0.012], rot=[0, 0, s * 0.4]), "wall", priority=3)
+        p.add("sign_emblem", "steel", tor([x + s * 0.06, y - 0.13, z + 0.01], 0.035, 0.015, rot=[1.5708, 0, 0]), "wall", priority=3)
+
+
+def emblem_shuttle(p, c):
+    x, y, z = c
+    p.add("sign_emblem", "cloth_blue", box([x, y, z + 0.01], [0.13, 0.08, 0.012]), "wall", priority=3)
+    p.add("sign_emblem", "cloth_red", box([x, y, z + 0.015], [0.13, 0.025, 0.012]), "wall", priority=3)
+
+
+def emblem_ox(p, c):
+    x, y, z = c
+    p.add("sign_emblem", "bone", box([x, y - 0.02, z + 0.01], [0.07, 0.08, 0.012]), "wall", priority=3)
+    for s in (-1, 1):
+        p.add("sign_emblem", "bone", box([x + s * 0.1, y + 0.08, z + 0.01], [0.05, 0.02, 0.012], rot=[0, 0, s * 0.5]), "wall",
+              priority=3)
+
+
+# =================================================================================================
+# Bakery: a half-timbered town house with a jettied upper floor under red tiles, a dormer, a brick
+# chimney; a great clay bread oven built out into the work yard with its own little roof and
+# chimney; a kneading table with dough and loaves, a peel, a bread rack, firewood, a pretzel sign.
+# =================================================================================================
+def bakery():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, mat="cobble_ground", dark="earth_dark", seed=30)
+    house = (0.1, 0.95, 0.12, 1.25)
+    g, eave, top = K.house(p, P, "house", house, ground="plaster_ochre", ground_h=1.45, upper="plaster", upper_h=0.85,
+                           axis="gy", rise=1.35, frame_ground=True, posts=(2, 4))
+    K.dormer(p, P, g, "dormer", 0.6, roof_mat="tile", dark="tile_dark")
+    K.chimney(p, P, "chimney", 0.3, 0.45, 2.5, 4.0, w=0.18)
+    x0, x1, z0, z1 = P.rect(*house)
+    K.door_right(p, P, "door", 0.95, z1, 0.2, w=0.5, h=0.95, arch=True)
+    K.window_right(p, P, 0.35, z1, 0.95, w=0.3, h=0.36, open_=False)
+    K.window_right(p, P, 0.4, P.rect(*top)[3], 1.85, w=0.3, h=0.34, box_=True)
+    K.window_right(p, P, 1.0, P.rect(*top)[3], 1.85, w=0.3, h=0.34)
+    K.window_left(p, P, 0.53, P.rect(*top)[0], 1.85, w=0.3, h=0.34)
+    K.sign_right(p, P, 1.2, z1, 1.4, emblem_pretzel)
+    # The oven: a clay dome on a stone base in front of the house, a little tiled roof over it.
+    og = (0.55, 1.62)
+    ox, _, oz = P.m(*og)
+    p.add("oven_base", "fieldstone", box([ox, 0.25, oz], [0.62, 0.25, 0.62]), "wall")
+    p.paint("oven_base", "stone_dark", spots={"scale": 0.07, "density": 0.38, "seed": 5})
+    p.footprints.append((0.2, 0.9, 1.3, 1.95))
+    K.dome(p, P, "oven", og[0], og[1], 0.55, 0.68, "clay", y0=0.5)
+    p.paint("oven", "clay_dark", spots={"scale": 0.06, "density": 0.25, "seed": 2})
+    p.add("oven_mouth", "dark_hole", box([ox, 0.68, oz + 0.5], [0.16, 0.13, 0.06]), "wall")
+    p.add("oven_glow", "flame", box([ox, 0.62, oz + 0.53], [0.1, 0.06, 0.03]), "wall")
+    p.add("oven_arch", "brick", box([ox, 0.86, oz + 0.53], [0.22, 0.05, 0.05]), "wall")
+    p.add("oven_flue", "brick", box([ox - 0.2, 1.35, oz - 0.15], [0.1, 0.25, 0.1]), "roof")
+    K.lean_to(p, P, "oven_roof", (0.18, 0.92, 1.3, 1.95), "-gy", 1.55, 1.9, "tile", "tile_dark", over=0.08)
+    # Kneading table on the yard's right edge, loaves on a rack, a peel, firewood under the oven roof.
+    tx, _, tz = P.m(1.6, 1.9)
+    p.add("table", "board", box([tx, 0.5, tz], [0.18, 0.04, 0.42]), "prop")
+    for dz in (-0.36, 0.36):
+        p.add("table_legs", "post", box([tx, 0.24, tz + dz], [0.14, 0.24, 0.04]), "prop")
+    p.add("dough", "dough", ell([tx, 0.58, tz + 0.1], [0.1, 0.06, 0.15]), "prop")
+    for dz in (-0.25, -0.1):
+        p.add("loaves", "bread", ell([tx + 0.02, 0.58, tz + dz], [0.1, 0.05, 0.07]), "prop")
+    p.add("flour_bin", "flour_sack", ell([tx - 0.3, 0.16, tz - 0.25], [0.14, 0.16, 0.16]), "prop")
+    a, b = P.m(1.05, 1.95, 0.0), P.m(1.08, 1.9, 1.3)
+    p.add("peel", "haft", cyl(a, b, 0.022), "prop", priority=2, min_cover=2)
+    p.add("peel_blade", "board", box([b[0], 1.3, b[2]], [0.1, 0.12, 0.015]), "prop", priority=2)
+    K.woodpile(p, P, "oven_wood", 0.2, 0.9, 1.92, 2, r=0.08, along="gx", mat="split")
+    p.spots = {"oven": (1.35, 1.6), "table": (1.62, 1.68)}
+    K.tufts(p, P, [(1.95, 0.95), (1.1, 0.06)])
+    return P, p, 240, 2.1
+
+
+# =================================================================================================
+# Brewery: a stone brewhouse with a louvred smoke lantern on the ridge and a tall chimney, malt
+# floor window and hoist; in the yard a copper kettle on a brick hearth with fire, the mash tun with
+# a paddle, casks and sacks of malt; an ale stake (a bush on a pole) over the door.
+# =================================================================================================
+def brewery():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, seed=32)
+    house = (0.1, 0.96, 0.1, 1.5)
+    g, eave, top = K.house(p, P, "house", house, ground="fieldstone", ground_h=2.0, axis="gx", rise=1.55,
+                           roof_mat="tile", roof_dark="tile_dark", with_quoins=True)
+    x0, x1, z0, z1 = P.rect(*house)
+    # Louvred lantern on the ridge.
+    lx = P.m(0, 0.75)[0]
+    p.add("lantern_walls", "board", box([lx, eave + 1.55, g.zc], [0.22, 0.2, 0.22]), "roof")
+    p.paint("lantern_walls", "ink", stripes={"axis": "y", "period": 0.08, "width": 0.055})
+    K.cone_roof(p, P, "lantern_roof", (g.zc + P.h) / K.T, 0.75, eave + 1.72, 0.36, 0.42, "tile", "tile_dark", course=0.1)
+    K.chimney(p, P, "chimney", 0.5, 0.25, 2.8, 4.35, w=0.2)
+    K.door_right(p, P, "door", 1.15, z1, 0.2, w=0.56, h=1.1, arch=True, frame="sill_mat")
+    K.window_right(p, P, 0.45, z1, 1.1, w=0.3, h=0.42)
+    K.window_left(p, P, 0.5, x0, 1.2, w=0.3, h=0.42, open_=False)
+    xd = P.m(0, 0.7)[0]
+    p.add("malt_door", "door_wood", box([xd, 2.45, z1 + 0.25], [0.22, 0.28, 0.04]), "wall")
+    # Ale stake: a pole out over the door with a bush hung on it.
+    pz = z1 + 0.05
+    p.add("ale_stake", "post", cyl([P.m(0, 1.35)[0], 2.0, pz], [P.m(0, 1.35)[0], 2.0, pz + 0.75], 0.035), "wall")
+    p.add("ale_bush", "leaves", ell([P.m(0, 1.35)[0], 1.82, pz + 0.72], [0.14, 0.17, 0.14]), "wall")
+    # Yard: brick hearth with a copper kettle and fire, the mash tun and paddle, casks, malt sacks.
+    hx, _, hz = P.m(1.22, 1.22)
+    p.add("hearth", "brick", box([hx, 0.3, hz], [0.32, 0.3, 0.32]), "prop")
+    p.paint("hearth", "brick_line", stripes={"axis": "y", "period": 0.12, "width": 0.035})
+    p.add("hearth_fire", "flame", box([hx - 0.1, 0.18, hz + 0.33], [0.15, 0.1, 0.02]), "prop")
+    p.add("hearth_mouth", "dark_hole", box([hx - 0.1, 0.2, hz + 0.32], [0.19, 0.14, 0.015]), "prop")
+    p.add("kettle", "copper", {"revolve": {"c": K.r4([hx, 0.6, hz]), "profile": {"polygon": [
+        [0, 0], [0.22, 0], [0.33, 0.06], [0.36, 0.22], [0.33, 0.38], [0.3, 0.42], [0, 0.42]]}}}, "prop")
+    p.add("kettle_brew", "beer", cyl([hx, 0.98, hz], [hx, 1.01, hz], 0.28), "prop")
+    K.wisp(p, [hx, 1.05, hz], 0.6, 2)
+    K.tub(p, P, "mash_tun", 1.72, 1.72, 0.32, 0.55, fill="beer")
+    a = P.m(1.72, 1.72, 0.55)
+    p.add("paddle", "haft", cyl([a[0] - 0.1, 0.5, a[2] + 0.05], [a[0] + 0.15, 1.2, a[2] - 0.1], 0.025), "prop", priority=2)
+    for i, gy in enumerate((1.3, 1.52)):
+        K.barrel(p, P, 1.88, gy, r=0.17, h=0.42, name="casks")
+    K.barrel(p, P, 1.88, 1.41, r=0.16, h=0.38, name="casks_top", lying=True, along="z")
+    p["casks_top"]["prims"][0]["ellipsoid"]["c"][1] = 0.58
+    K.sack(p, P, 1.12, 1.9, s=0.16)
+    K.sack(p, P, 1.3, 1.94, s=0.15)
+    p.spots = {"kettle": (1.48, 1.32), "vat": (1.48, 1.72)}
+    K.tufts(p, P, [(1.95, 0.6), (1.1, 0.05), (0.05, 1.97)])
+    return P, p, 256, 2.2
+
+
+# =================================================================================================
+# Meadery: a low wattle-and-daub house under a heavy thatch with a hipped end, an open shelter with
+# a shelf of skeps; in the yard a honey vat with a ladle, a trestle of casks, crocks of honey and a
+# jug sign.
+# =================================================================================================
+def meadery():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, seed=34)
+    K.patch(p, "grass_patch", "grass", P, 0.4, 1.9, 0.35, 0.08)
+    house = (0.1, 0.95, 0.12, 1.3)
+    p.footprints.append(house)
+    K.plinth(p, P, "plinth", house, h=0.18, mat="fieldstone")
+    K.walls(p, P, "walls", house, 0.18, 1.4, "plaster_ochre")
+    K.timber_left(p, P, "frame_l", house, 0.18, 1.4, 2)
+    K.timber_right(p, P, "frame_r", house, 0.18, 1.4, 4)
+    K.hip_roof(p, P, "roof", house, 1.38, 2.95, "thatch", "thatch_dark", over=0.34, course=0.15, spots=("moss", 0.1, 0.16, 3))
+    K.chimney(p, P, "chimney", 0.5, 0.4, 2.0, 3.25, w=0.15, mat="fieldstone", cap="fieldstone")
+    x0, x1, z0, z1 = P.rect(*house)
+    K.door_right(p, P, "door", 1.0, z1, 0.18, w=0.48, h=0.9, arch=False)
+    K.window_right(p, P, 0.42, z1, 0.85, w=0.28, h=0.3, box_=True)
+    K.window_left(p, P, 0.53, x0, 0.85, w=0.28, h=0.3)
+    K.sign_right(p, P, 1.22, z1, 1.25, emblem_jug)
+    # Skep shelter in front of the house.
+    sh = (0.15, 0.92, 1.38, 1.95)
+    K.lean_to(p, P, "shelter_roof", sh, "-gy", 1.05, 1.35, "thatch", "thatch_dark", over=0.08)
+    sx0, sx1, sz0, sz1 = P.rect(*sh)
+    p.add("shelf", "board", box([(sx0 + sx1) / 2, 0.42, (sz0 + sz1) / 2], [0.2, 0.04, (sz1 - sz0) / 2 - 0.05]), "prop")
+    for i in range(3):
+        z = sz0 + 0.3 + i * (sz1 - sz0 - 0.6) / 2
+        p.add("skeps", "hay", ell([(sx0 + sx1) / 2, 0.66, z], [0.2, 0.25, 0.2]), "prop")
+        p.add("skep_doors", "dark_hole", box([(sx0 + sx1) / 2 - 0.2, 0.5, z], [0.02, 0.03, 0.05]), "prop")
+    p.cut("skeps", plane([0, -1, 0], [0, 0.46, 0]))
+    p.paint("skeps", "thatch_dark", rings={"axis": "y", "period": 0.1, "width": 0.055})
+    # Yard: honey vat with a ladle, casks on a trestle, crocks.
+    K.tub(p, P, "honey_vat", 1.2, 1.72, 0.3, 0.5, fill="honey")
+    a = P.m(1.2, 1.72, 0.5)
+    p.add("ladle", "haft", cyl([a[0], 0.45, a[2]], [a[0] + 0.2, 0.95, a[2] + 0.1], 0.022), "prop", priority=2)
+    tx, _, tz = P.m(1.85, 1.35)
+    p.add("cask_trestle", "post", box([tx, 0.15, tz], [0.18, 0.15, 0.45]), "prop")
+    for dz in (-0.22, 0.22):
+        p.add("mead_casks", "barrel", ell([tx, 0.45, tz + dz], [0.3, 0.17, 0.17]), "prop")
+        p.add("mead_cask_ends", "barrel_lid", cyl([tx - 0.28, 0.45, tz + dz], [tx - 0.3, 0.45, tz + dz], 0.13), "prop")
+        p.add("mead_taps", "brass", box([tx - 0.32, 0.4, tz + dz], [0.03, 0.02, 0.02]), "prop")
+    p.paint("mead_casks", "iron", stripes={"axis": "x", "at": [tx - 0.16, tx + 0.16], "width": 0.045})
+    for i, (gx, gy) in enumerate(((1.15, 1.32), (1.27, 1.25), (1.32, 1.4))):
+        x, _, z = P.m(gx, gy)
+        p.add("crocks", "clay", ell([x, 0.13, z], [0.1, 0.13, 0.1]), "prop")
+        p.add("crock_lids", "honey", cyl([x, 0.24, z], [x, 0.27, z], 0.06), "prop")
+    p.spots = {"vat": (1.45, 1.75), "cask": (1.62, 1.32)}
+    K.tufts(p, P, [(1.95, 0.6), (1.1, 0.05)])
+    return P, p, 224, 1.9
+
+
+# =================================================================================================
+# Wine press: a stone press house with a red-tiled roof, the gable to the yard, an arched cellar
+# door; in the yard a screw press on a wooden tub with a tray of crushed grapes, casks on chocks,
+# baskets of grapes, a sign with a bunch of grapes.
+# =================================================================================================
+def wine_press():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, seed=36)
+    K.patch(p, "must_stain", "grape_dark", P, 1.35, 1.6, 0.18, 0.12, y=0.013)
+    house = (0.1, 0.96, 0.12, 1.35)
+    g, eave, top = K.house(p, P, "house", house, ground="fieldstone", ground_h=1.5, upper="plaster", upper_h=0.8,
+                           axis="gx", rise=1.25, with_quoins=True, posts=(3, 2))
+    x0, x1, z0, z1 = P.rect(*house)
+    K.door_right(p, P, "door", 0.7, z1, 0.2, w=0.6, h=0.95, arch=True, frame="sill_mat")
+    K.window_right(p, P, 0.72, P.rect(*top)[3], 1.95, w=0.3, h=0.32)
+    K.window_left(p, P, 0.5, P.rect(*top)[0], 1.95, w=0.3, h=0.32, open_=False)
+    K.window_left(p, P, 0.5, x0, 0.9, w=0.24, h=0.26, shutters=False)
+    K.sign_right(p, P, 1.22, z1, 1.3, emblem_grapes)
+    K.chimney(p, P, "chimney", 0.25, 0.3, 2.4, 3.8, w=0.17)
+    # A vine climbing the house's left face on a trellis.
+    for i in range(4):
+        q = P.m(0.15 + i * 0.22, 1.37)
+        p.add("vine", "leaves", ell([q[0] - 0.06, 0.9 + 0.25 * (i % 2), q[2]], [0.08, 0.32, 0.18]), "prop")
+    p.add("vine_bunches", "grape", ell(P.m(0.4, 1.38, 0.7), [0.05, 0.1, 0.06]), "prop")
+    p.add("vine_bunches", "grape", ell(P.m(0.75, 1.38, 0.75), [0.05, 0.1, 0.06]), "prop")
+    # The screw press: a tub, two posts, a beam, the screw and its bar.
+    cx, _, cz = P.m(1.3, 1.65)
+    p.add("press_tub", "barrel", cyl([cx, 0, cz], [cx, 0.4, cz], 0.34), "prop")
+    p.paint("press_tub", "iron", stripes={"axis": "y", "at": [0.08, 0.32], "width": 0.045})
+    p.add("press_must", "grape", cyl([cx, 0.38, cz], [cx, 0.42, cz], 0.3), "prop")
+    for dx in (-0.42, 0.42):
+        p.add("press_posts", "timber", box([cx + dx, 0.65, cz], [0.06, 0.65, 0.06]), "prop")
+    p.add("press_beam", "timber", box([cx, 1.25, cz], [0.5, 0.07, 0.07]), "prop")
+    p.add("press_screw", "post", cyl([cx, 0.45, cz], [cx, 1.38, cz], 0.05), "prop")
+    p.paint("press_screw", "ink", stripes={"axis": "y", "period": 0.08, "width": 0.055})
+    p.add("press_block", "board", box([cx, 0.5, cz], [0.26, 0.06, 0.26]), "prop")
+    p.add("press_bar", "haft", cyl([cx - 0.35, 0.95, cz], [cx + 0.35, 0.95, cz], 0.025), "prop", priority=2)
+    # Casks on chocks along the yard's right edge, baskets of grapes.
+    for i, gy in enumerate((1.25, 1.55)):
+        x, _, z = P.m(1.85, gy)
+        p.add("casks", "barrel", ell([x, 0.27, z], [0.3, 0.22, 0.22]), "prop")
+        p.add("cask_ends", "barrel_lid", cyl([x - 0.28, 0.27, z], [x - 0.3, 0.27, z], 0.18), "prop")
+        p.add("chocks", "post", box([x, 0.04, z], [0.25, 0.04, 0.2]), "prop")
+    p.paint("casks", "iron", stripes={"axis": "x", "period": 0.18, "width": 0.045})
+    for gx, gy in ((1.62, 1.92), (1.85, 1.85)):
+        x, _, z = P.m(gx, gy)
+        p.add("baskets", "wicker", cone([x, 0, z], [x, 0.28, z], 0.15, 0.19), "prop")
+        p.add("basket_grapes", "grape", ell([x, 0.3, z], [0.17, 0.08, 0.17]), "prop")
+    p.paint("baskets", "log_groove", stripes={"axis": "y", "period": 0.08, "width": 0.055})
+    p.spots = {"press": (1.42, 1.38), "cask": (1.62, 1.4)}
+    K.tufts(p, P, [(1.95, 0.6), (1.05, 0.05)])
+    return P, p, 240, 2.0
+
+
+# =================================================================================================
+# Sawmill: a plank saw-house with a long shingle roof and a loft hatch, an open drying shed with
+# stacked planks on sticks in front; in the work yard a log on high trestles with a two-man frame
+# saw in it, sawdust, a log pile at the back edge, a saw sign.
+# =================================================================================================
+def sawmill():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, seed=38)
+    for gx, gy in ((1.35, 1.75), (1.6, 1.5)):
+        K.patch(p, "sawdust", "chips", P, gx, gy, 0.15, 0.1)
+    house = (0.1, 0.95, 0.12, 1.15)
+    g, eave, top = K.house(p, P, "house", house, ground="board", ground_h=1.8, axis="gy", rise=1.3,
+                           roof_mat="shingle", roof_dark="shingle_dark", plinth_mat="fieldstone", roof_spots=("moss", 0.09, 0.12, 5))
+    x0, x1, z0, z1 = P.rect(*house)
+    for (x, z) in ((x0, z0), (x0, z1), (x1, z1)):
+        p.add("corner_posts", "timber", box([x, 1.0, z], [0.07, 0.8, 0.07]), "wall")
+    p.add("loft_hatch", "door_wood", box([x0 - 0.04, 2.25, (z0 + z1) / 2], [0.04, 0.24, 0.2]), "wall")
+    K.door_right(p, P, "door", 0.85, z1, 0.2, w=0.7, h=1.2, arch=False)
+    K.window_right(p, P, 0.35, z1, 1.1, w=0.3, h=0.3)
+    K.sign_right(p, P, 1.12, z1, 1.6, emblem_saw)
+    # Drying shed: posts and a shingle roof over planks stacked with sticks between.
+    shed = (0.12, 0.92, 1.2, 1.95)
+    K.lean_to(p, P, "shed_roof", shed, "-gy", 1.25, 1.75, "shingle", "shingle_dark", over=0.08)
+    sx0, sx1, sz0, sz1 = P.rect(*shed)
+    for k in range(5):
+        y = 0.1 + k * 0.12
+        p.add("planks_%s" % ("a" if k % 2 else "b"), "plank" if k % 2 else "plank_alt",
+              box([(sx0 + sx1) / 2 + 0.05, y, (sz0 + sz1) / 2], [(sx1 - sx0) / 2 - 0.15, 0.045, (sz1 - sz0) / 2 - 0.15]), "prop")
+        for dz in (-0.5, 0.0, 0.5):
+            p.add("sticks", "post", box([(sx0 + sx1) / 2 + 0.05, y + 0.06, (sz0 + sz1) / 2 + dz], [(sx1 - sx0) / 2 - 0.12, 0.015, 0.03]),
+                  "prop")
+    # Saw trestles with a log and a frame saw in the work yard.
+    a, b = P.m(1.15, 1.72), P.m(1.88, 1.72)
+    for q in (P.m(1.25, 1.72), P.m(1.78, 1.72)):
+        for s in (-1, 1):
+            p.add("trestles", "post", box([q[0], 0.4, q[2]], [0.035, 0.45, 0.035], rot=[s * 0.35, 0, 0]), "prop")
+        p.add("trestles", "post", box([q[0], 0.82, q[2]], [0.06, 0.04, 0.2]), "prop")
+    K.log(p, P, (1.08, 1.72), (1.95, 1.72), 0.17, "saw_log", y=1.0)
+    m = P.m(1.5, 1.72)
+    p.add("frame_saw", "post", box([m[0], 1.0, m[2]], [0.02, 0.55, 0.3]), "prop", priority=2)
+    p.cut("frame_saw", box([m[0], 1.0, m[2]], [0.05, 0.5, 0.25]))
+    p.add("saw_blade", "steel", box([m[0], 1.0, m[2]], [0.01, 0.55, 0.02]), "prop", priority=2, min_cover=2)
+    # A log pile on the stack tile's back edge (low) and a cant hook.
+    for k, (gx, r) in enumerate(((1.2, 0.14), (1.5, 0.14), (1.35, 0.13))):
+        y = r if k < 2 else 0.38
+        K.log(p, P, (gx, 0.08), (gx, 0.5), r, "log_pile", y=y)
+    K.tufts(p, P, [(1.95, 0.75), (0.05, 1.97)])
+    p.spots = {"bench": (1.38, 1.52)}
+    return P, p, 224, 1.9
+
+
+# =================================================================================================
+# Blacksmith: a fieldstone smithy with a great chimney and a hooded open forge facing the yard
+# (glowing coals, leather bellows), a red-tiled roof; an anvil on its stump, a quenching trough, a
+# rack of tongs and hammers, horseshoes on the wall, a horseshoe sign.
+# =================================================================================================
+def blacksmith():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, seed=40)
+    K.patch(p, "soot_ground", "charcoal", P, 1.3, 1.35, 0.22, 0.15, y=0.013)
+    house = (0.1, 0.92, 0.12, 1.45)
+    g, eave, top = K.house(p, P, "house", house, ground="fieldstone", ground_h=1.75, axis="gy", rise=1.3,
+                           roof_mat="tile", roof_dark="tile_dark", with_quoins=True)
+    x0, x1, z0, z1 = P.rect(*house)
+    # Forge: a stone hearth built out from the right face, its hood up into a great chimney.
+    fz = z1
+    fx = P.m(0, 1.12)[0]
+    p.add("forge", "fieldstone", box([fx, 0.38, fz + 0.3], [0.38, 0.38, 0.3]), "wall")
+    p.paint("forge", "stone_dark", spots={"scale": 0.06, "density": 0.4, "seed": 8})
+    p.add("coals", "charcoal", box([fx, 0.78, fz + 0.32], [0.3, 0.03, 0.22]), "wall")
+    p.add("coals_glow", "flame", ell([fx, 0.8, fz + 0.38], [0.16, 0.05, 0.1]), "wall")
+    p.add("hood", "fieldstone", ext([fx, 0, fz + 0.32], [[-0.42, 1.35], [0.42, 1.35], [0.2, 1.85], [-0.2, 1.85]], 0.62,
+                                    rot=[0, 1.5708, 0]), "wall")
+    p.add("hood", "fieldstone", ext([fx, 0, fz + 0.32], [[-0.4, 1.35], [0.4, 1.35], [0.18, 1.85], [-0.18, 1.85]], 0.8), "wall")
+    for dx in (-0.36, 0.36):
+        p.add("hood_posts", "timber", box([fx + dx, 1.08, fz + 0.55], [0.05, 0.3, 0.05]), "wall")
+    K.chimney(p, P, "chimney", 0.82, 1.12, 1.85, 3.9, w=0.24, mat="fieldstone", cap="stone")
+    p["chimney"]["paint"] = [{"material": "stone_dark", "spots": {"scale": 0.07, "density": 0.38, "seed": 9}}]
+    bx = fx + 0.55
+    p.add("bellows", "leather", ext([bx, 0.75, fz + 0.3], [[-0.3, -0.12], [0.25, -0.03], [0.25, 0.03], [-0.3, 0.12]], 0.35,
+                                    rot=[0, 1.5708, 0]), "wall")
+    p.add("bellows_arm", "post", cyl([bx + 0.3, 1.2, fz + 0.3], [bx - 0.2, 0.95, fz + 0.3], 0.03), "wall")
+    K.door_right(p, P, "door", 0.45, z1, 0.2, w=0.5, h=1.0, arch=True, frame="sill_mat")
+    K.window_left(p, P, 0.5, x0, 1.05, w=0.3, h=0.32, open_=False)
+    for i, y in enumerate((1.25, 1.4)):
+        q = P.m(0, 0.82 + 0.1 * i)
+        p.add("shoes_on_wall", "iron", tor([q[0], y, z1 + 0.04], 0.07, 0.02, rot=[1.5708, 0, 0]), "wall", priority=2)
+    K.sign_right(p, P, 0.2, z1, 1.55, emblem_horseshoe)
+    # Anvil on its stump, the quenching trough, a tool rack.
+    ax, _, az = P.m(1.55, 1.55)
+    p.add("anvil_stump", "log_bark", cyl([ax, 0, az], [ax, 0.36, az], 0.2), "prop")
+    p.add("anvil", "iron", box([ax, 0.45, az], [0.09, 0.09, 0.2]), "prop")
+    p.add("anvil", "iron", box([ax, 0.55, az], [0.12, 0.04, 0.24]), "prop")
+    p.add("anvil", "iron", cone([ax, 0.55, az + 0.24], [ax, 0.55, az + 0.42], 0.05, 0.01), "prop")
+    p.add("hot_iron", "flame", box([ax, 0.6, az - 0.05], [0.02, 0.015, 0.12]), "prop")
+    tx, _, tz = P.m(1.85, 1.85)
+    p.add("trough", "board", box([tx, 0.2, tz], [0.4, 0.2, 0.17]), "prop")
+    p.cut("trough", box([tx, 0.32, tz], [0.34, 0.12, 0.11]))
+    p.add("trough_water", "water", box([tx, 0.3, tz], [0.34, 0.01, 0.11]), "prop")
+    rx, _, rz = P.m(1.9, 1.15)
+    p.add("tool_rack", "post", box([rx, 0.55, rz], [0.04, 0.55, 0.3]), "prop")
+    p.add("tool_rack", "post", box([rx, 0.9, rz], [0.05, 0.03, 0.34]), "prop")
+    for i in range(4):
+        p.add("tongs", "iron", box([rx - 0.05, 0.62, rz - 0.22 + i * 0.15], [0.015, 0.28, 0.02]), "prop", priority=2)
+    p.spots = {"forge": (1.38, 1.15), "anvil": (1.42, 1.72)}
+    K.tufts(p, P, [(1.95, 0.6), (1.05, 0.05), (0.05, 1.97)])
+    return P, p, 240, 2.05
+
+
+# =================================================================================================
+# Smelter: a squat bloomery tower of stone and clay, wider at the foot, iron bands, a glowing
+# tapping arch and a flame at the throat, a great double bellows worked from a shed; heaps of ore
+# and charcoal, iron blooms on a stone, slag; a brick-and-timber hut for the smelters.
+# =================================================================================================
+def smelter():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, seed=42)
+    K.patch(p, "slag_ground", "charcoal", P, 1.3, 1.5, 0.3, 0.2, y=0.013)
+    hut = (0.1, 0.92, 0.12, 0.95)
+    g, eave, top = K.house(p, P, "hut", hut, ground="brick", ground_h=1.35, upper="plaster", upper_h=0.7, axis="gx",
+                           rise=1.1, roof_mat="slate", roof_dark="slate_dark", posts=(2, 2))
+    x0, x1, z0, z1 = P.rect(*hut)
+    K.door_right(p, P, "door", 0.5, z1, 0.2, w=0.46, h=0.9, arch=True, frame="brick")
+    K.window_left(p, P, 0.5, x0, 0.85, w=0.26, h=0.28, open_=False)
+    # The furnace tower in front of the hut.
+    fg = (0.55, 1.45)
+    fx, _, fz = P.m(*fg)
+    p.add("furnace", "fieldstone", {"revolve": {"c": K.r4([fx, 0, fz]), "profile": {"polygon": [
+        [0, 0], [0.72, 0], [0.7, 0.4], [0.55, 1.6], [0.42, 2.25], [0.3, 2.3], [0, 2.3]]}}}, "wall")
+    p.paint("furnace", "stone_dark", spots={"scale": 0.07, "density": 0.4, "seed": 6})
+    p.paint("furnace", "iron", stripes={"axis": "y", "at": [0.7, 1.35, 1.95], "width": 0.06})
+    p.footprints.append((0.2, 0.9, 1.1, 1.8))
+    p.add("throat_glow", "flame", cyl([fx, 2.28, fz], [fx, 2.32, fz], 0.22), "wall")
+    K.wisp(p, [fx, 2.35, fz], 0.8, 5)
+    p.add("tap_arch", "brick", box([fx, 0.38, fz + 0.66], [0.26, 0.38, 0.08]), "wall")
+    p.add("tap_hole", "dark_hole", box([fx, 0.28, fz + 0.72], [0.15, 0.22, 0.03]), "wall")
+    p.add("tap_glow", "flame", box([fx, 0.18, fz + 0.74], [0.1, 0.1, 0.02]), "wall")
+    p.add("tap_slag", "charcoal", ell([fx, 0.03, fz + 0.95], [0.25, 0.04, 0.2]), "prop")
+    # Bellows shed against the furnace's left side: two great bellows under a lean-to.
+    for i, dz in enumerate((-0.25, 0.22)):
+        p.add("bellows", "leather", ext([fx - 0.95, 0.45 + 0.08 * i, fz + dz],
+                                        [[-0.4, -0.13], [0.3, -0.03], [0.3, 0.03], [-0.4, 0.13]], 0.32, rot=[0, 1.5708, 0]), "prop")
+        p.add("bellows_board", "board", box([fx - 1.05, 0.6 + 0.08 * i, fz + dz], [0.38, 0.03, 0.18], rot=[0, 0, 0.15]), "prop")
+    p.add("bellows_beam", "post", box([fx - 1.1, 1.15, fz], [0.05, 0.05, 0.5]), "prop")
+    for dz in (-0.45, 0.45):
+        p.add("bellows_posts", "post", cyl([fx - 1.1, 0, fz + dz], [fx - 1.1, 1.15, fz + dz], 0.05), "prop")
+    # Heaps of ore and charcoal on the yard's right edge, blooms on a stone, a long rake.
+    for (gx, gy, mat) in ((1.85, 1.3, "ore"), (1.82, 1.75, "charcoal")):
+        x, _, z = P.m(gx, gy)
+        p.add("heap_" + mat, mat, ell([x, 0.05, z], [0.3, 0.32, 0.3]), "prop", blend=0.05)
+        p.paint("heap_" + mat, "stone_dark", spots={"scale": 0.05, "density": 0.3, "seed": 3})
+    x, _, z = P.m(1.25, 1.9)
+    p.add("bloom_stone", "stone", box([x, 0.15, z], [0.22, 0.15, 0.22], round_=0.03), "prop")
+    for dz in (-0.08, 0.1):
+        p.add("blooms", "iron", ell([x, 0.36, z + dz], [0.1, 0.07, 0.09]), "prop")
+    a, b = P.m(1.05, 1.15, 0.0), P.m(1.05, 1.0, 1.5)
+    p.add("rake", "haft", cyl(a, b, 0.025), "prop", priority=2, min_cover=2)
+    p.spots = {"furnace": (1.38, 1.55)}
+    K.tufts(p, P, [(1.95, 0.6), (1.05, 0.05)])
+    return P, p, 240, 2.05
+
+
+# =================================================================================================
+# Brickworks: a moulders' shed of planks with a long low roof over racks of green bricks drying, a
+# vaulted brick kiln with two arched fire-holes towards the yard and a short stack; a moulding
+# table with a mould and a lump of clay, a stack of fired bricks, a water tub, a clay heap.
+# =================================================================================================
+def brickworks():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, seed=44)
+    K.patch(p, "clay_ground", "clay_dark", P, 1.5, 1.4, 0.3, 0.2, y=0.013)
+    shed = (0.1, 0.95, 0.1, 0.95)
+    p.footprints.append(shed)
+    K.plinth(p, P, "shed_plinth", shed, h=0.15, mat="brick")
+    sx0, sx1, sz0, sz1 = P.rect(*shed)
+    p.add("shed_back", "board", box([sx1 - 0.05, 0.75, (sz0 + sz1) / 2], [0.05, 0.75, (sz1 - sz0) / 2]), "wall")
+    p.add("shed_back", "board", box([(sx0 + sx1) / 2, 0.75, sz0 + 0.05], [(sx1 - sx0) / 2, 0.75, 0.05]), "wall")
+    p.paint("shed_back", "ink", stripes={"axis": "x", "period": 0.18, "width": 0.045})
+    p.paint("shed_back", "ink", stripes={"axis": "z", "period": 0.18, "width": 0.045})
+    K.hip_roof(p, P, "shed_roof", shed, 1.45, 2.45, "tile", "tile_dark", over=0.22, course=0.13)
+    for (x, z) in ((sx0 + 0.08, sz0 + 0.08), (sx0 + 0.08, sz1 - 0.08), (sx1 - 0.08, sz1 - 0.08)):
+        p.add("shed_posts", "timber", box([x, 0.75, z], [0.06, 0.75, 0.06]), "wall")
+    for k in range(3):
+        y = 0.25 + k * 0.38
+        p.add("racks", "board", box([(sx0 + sx1) / 2, y, (sz0 + sz1) / 2], [(sx1 - sx0) / 2 - 0.25, 0.025, (sz1 - sz0) / 2 - 0.25]), "prop")
+        for i in range(6):
+            for j in range(2):
+                p.add("green_bricks_%d" % ((i + j) % 2), "clay" if (i + j) % 2 else "clay_light",
+                      box([sx0 + 0.45 + j * 0.45, y + 0.08, sz0 + 0.35 + i * 0.27], [0.18, 0.055, 0.09]), "prop")
+    # The kiln in front: a brick vault, arched fire-holes on the yard side, a stack.
+    kiln = (0.12, 0.95, 1.1, 1.92)
+    kx0, kx1, kz0, kz1 = P.rect(*kiln)
+    kc = [(kx0 + kx1) / 2, 0, (kz0 + kz1) / 2]
+    p.footprints.append(kiln)
+    p.add("kiln", "brick", box([kc[0], 0.55, kc[2]], [(kx1 - kx0) / 2, 0.55, (kz1 - kz0) / 2]), "wall")
+    p.add("kiln", "brick", cyl([kx0, 1.1, kc[2]], [kx1, 1.1, kc[2]], (kz1 - kz0) / 2 - 0.02), "wall")
+    p.cut("kiln", plane([0, -1, 0], [0, 0.02, 0]))
+    p.paint("kiln", "brick_line", stripes={"axis": "y", "period": 0.12, "width": 0.035})
+    p.add("kiln_ends", "brick", ext([kx0 - 0.02, 0, kc[2]], [[-(kz1 - kz0) / 2 - 0.05, 0], [(kz1 - kz0) / 2 + 0.05, 0],
+                                                            [(kz1 - kz0) / 2 + 0.05, 1.1], [0, 1.95], [-(kz1 - kz0) / 2 - 0.05, 1.1]],
+                                    0.08, rot=[0, 1.5708, 0]), "wall")
+    for dx in (-0.4, 0.4):
+        p.add("fire_holes", "dark_hole", box([kc[0] + dx, 0.3, kz1 + 0.01], [0.16, 0.2, 0.03]), "wall")
+        p.add("fire_holes", "dark_hole", cyl([kc[0] + dx, 0.5, kz1 - 0.02], [kc[0] + dx, 0.5, kz1 + 0.04], 0.16), "wall")
+        p.add("fire_glow", "flame", box([kc[0] + dx, 0.2, kz1 + 0.04], [0.1, 0.1, 0.01]), "wall")
+    K.chimney(p, P, "kiln_stack", 0.55, 1.5, 1.7, 2.8, w=0.18)
+    K.wisp(p, [P.m(0.55, 1.5)[0], 2.95, P.m(0.55, 1.5)[2]], 0.7, 4)
+    # Moulding table, fired bricks, water tub, clay heap.
+    tx, _, tz = P.m(1.82, 1.38)
+    p.add("mould_table", "board", box([tx, 0.5, tz], [0.38, 0.04, 0.2]), "prop")
+    for dx in (-0.32, 0.32):
+        p.add("mould_table_legs", "post", box([tx + dx, 0.24, tz], [0.04, 0.24, 0.16]), "prop")
+    p.add("mould", "board", box([tx + 0.1, 0.58, tz], [0.14, 0.04, 0.08]), "prop")
+    p.add("clay_lump", "clay", ell([tx - 0.15, 0.6, tz], [0.12, 0.08, 0.1]), "prop")
+    x, _, z = P.m(1.25, 1.92)
+    for k in range(4):
+        p.add("fired_bricks_%d" % (k % 2), "brick" if k % 2 else "brick_alt",
+              box([x, 0.07 + k * 0.13, z], [0.2, 0.06, 0.3]), "prop")
+    K.tub(p, P, "water_tub", 1.78, 1.85, 0.2, 0.36, fill="water")
+    x, _, z = P.m(1.2, 1.12)
+    p.add("clay_heap", "clay", ell([x, 0.05, z], [0.28, 0.28, 0.28]), "prop", blend=0.05)
+    p.spots = {"table": (1.62, 1.38), "kiln": (1.35, 1.72)}
+    K.tufts(p, P, [(1.95, 0.6), (1.05, 0.05)])
+    return P, p, 224, 1.8
+
+
+# =================================================================================================
+# Weaver: a tall narrow town house, a jettied half-timbered upper floor with big windows for light,
+# a steep slate roof with a hoist gable; an open pentice in front sheltering a great floor loom
+# with cloth on the beam; a spinning wheel and baskets of wool in the yard, dyed cloth drying on a
+# pole, a sign with a striped bolt.
+# =================================================================================================
+def weaver():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, mat="cobble_ground", seed=46)
+    house = (0.1, 0.95, 0.12, 1.15)
+    g, eave, top = K.house(p, P, "house", house, ground="plaster", ground_h=1.5, upper="plaster", upper_h=1.0, axis="gx",
+                           rise=1.45, roof_mat="slate", roof_dark="slate_dark", frame_ground=True, posts=(3, 3))
+    x0, x1, z0, z1 = P.rect(*house)
+    tz1 = P.rect(*top)[3]
+    K.door_right(p, P, "door", 0.65, z1, 0.2, w=0.46, h=0.95, arch=False)
+    for gy in (0.3, 0.75):
+        K.window_right(p, P, gy, tz1, 2.05, w=0.36, h=0.45, shutters=False)
+    K.window_left(p, P, 0.53, P.rect(*top)[0], 2.05, w=0.42, h=0.45, shutters=False)
+    K.window_left(p, P, 0.53, x0, 0.95, w=0.36, h=0.36)
+    K.sign_right(p, P, 1.05, z1, 1.35, emblem_shuttle)
+    K.chimney(p, P, "chimney", 0.2, 0.3, 2.8, 4.1, w=0.16)
+    # Pentice with the loom.
+    pen = (0.12, 0.95, 1.18, 1.92)
+    K.lean_to(p, P, "pentice", pen, "-gy", 1.4, 1.75, "slate", "slate_dark", over=0.06)
+    px0, px1, pz0, pz1 = P.rect(*pen)
+    lx, lz = (px0 + px1) / 2, (pz0 + pz1) / 2
+    for dz in (-0.45, 0.45):
+        for dx in (-0.3, 0.3):
+            p.add("loom_frame", "post", box([lx + dx, 0.6, lz + dz], [0.04, 0.6, 0.04]), "prop")
+        p.add("loom_frame", "post", box([lx, 1.18, lz + dz], [0.34, 0.04, 0.04]), "prop")
+    for dx in (-0.3, 0.3):
+        p.add("loom_beams", "post", cyl([lx + dx, 0.75, lz - 0.48], [lx + dx, 0.75, lz + 0.48], 0.05), "prop")
+    p.add("warp", "cloth_red", box([lx, 0.76, lz], [0.3, 0.012, 0.42]), "prop")
+    p.paint("warp", "cloth_blue", stripes={"axis": "z", "period": 0.12, "width": 0.055})
+    p.add("cloth_roll", "cloth_red", cyl([lx - 0.3, 0.7, lz - 0.4], [lx - 0.3, 0.7, lz + 0.4], 0.09), "prop")
+    p.add("heddles", "post", box([lx, 1.0, lz], [0.03, 0.15, 0.44]), "prop")
+    # Spinning wheel, wool baskets, cloth drying on a pole.
+    wx, _, wz = P.m(1.75, 1.35)
+    p.add("wheel_bench", "board", box([wx, 0.35, wz], [0.32, 0.04, 0.1], rot=[0, 0.3, 0]), "prop")
+    for dx in (-0.25, 0.25):
+        p.add("wheel_legs", "post", box([wx + dx, 0.17, wz], [0.03, 0.17, 0.03]), "prop")
+    p.add("spin_wheel", "post", tor([wx + 0.15, 0.68, wz - 0.05], 0.26, 0.03, rot=[0, 0, 1.5708]), "prop")
+    p.add("spin_wheel", "post", cyl([wx + 0.15, 0.4, wz - 0.05], [wx + 0.15, 0.68, wz - 0.05], 0.025), "prop")
+    p.add("distaff", "wool", ell([wx - 0.2, 0.62, wz], [0.06, 0.1, 0.06]), "prop")
+    for gx, gy in ((1.18, 1.9), (1.4, 1.95)):
+        x, _, z = P.m(gx, gy)
+        p.add("wool_baskets", "wicker", cone([x, 0, z], [x, 0.28, z], 0.15, 0.18), "prop")
+        p.add("wool_in", "wool", ell([x, 0.3, z], [0.17, 0.09, 0.17]), "prop")
+    a, b = P.m(1.92, 1.6), P.m(1.92, 1.95)
+    for q in (a, b):
+        p.add("dry_poles", "post", cyl([q[0], 0, q[2]], [q[0], 1.2, q[2]], 0.035), "prop")
+    p.add("dry_poles", "post", cyl([a[0], 1.18, a[2]], [b[0], 1.18, b[2]], 0.03), "prop")
+    p.add("dyed_cloth", "cloth_blue", box([(a[0] + b[0]) / 2, 0.85, a[2]], [abs(b[0] - a[0]) / 2 - 0.05, 0.32, 0.015]), "prop")
+    p.add("dyed_cloth2", "cloth_green", box([(a[0] + b[0]) / 2 + 0.02, 0.95, a[2] - 0.05], [abs(b[0] - a[0]) / 2 - 0.12, 0.22, 0.015]),
+          "prop")
+    p.spots = {"loom": (1.1, 1.62), "wheel": (1.55, 1.38)}
+    K.tufts(p, P, [(1.95, 0.6), (1.05, 0.05)])
+    return P, p, 256, 2.25
+
+
+# =================================================================================================
+# Tailor: a narrow town house with two jettied upper floors under red tiles, a shop front whose
+# lower shutter folds down into a counter with folded cloth; a cutting table in the yard with a bolt,
+# shears and a chalk line, a dressmaker's dummy, garments on a line, a sign with shears.
+# =================================================================================================
+def tailor():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, mat="cobble_ground", seed=48)
+    house = (0.12, 0.95, 0.14, 1.2)
+    g, eave, top = K.house(p, P, "house", house, ground="plaster_ochre", ground_h=1.45, upper="plaster", upper_h=0.85,
+                           axis="gy", rise=1.5, frame_ground=True, posts=(2, 4))
+    # A second jettied floor.
+    j = 0.1 / K.T
+    top2 = (top[0] - j, top[1] + j, top[2] - j, top[3] + j)
+    x0, x1, z0, z1 = P.rect(*house)
+    t0, t1, tz0, tz1 = P.rect(*top2)
+    p.add("jetty2", "timber", box([(t0 + t1) / 2, eave + 0.02, (tz0 + tz1) / 2], [(t1 - t0) / 2 + 0.03, 0.06, (tz1 - tz0) / 2 + 0.03]), "wall")
+    K.walls(p, P, "upper2", top2, eave + 0.06, eave + 0.8, "plaster")
+    K.timber_left(p, P, "upper2_frame", top2, eave + 0.06, eave + 0.8, 2)
+    K.timber_right(p, P, "upper2_frame", top2, eave + 0.06, eave + 0.8, 4)
+    # Raise the roof onto the second floor.
+    for nm in ("house_roof", "house_cap", "house_barge", "house_gable", "house_gframe"):
+        del p[nm]
+    p.roofs.pop()
+    g2 = Gable(P, "house2", top2, "gy", eave + 0.8, eave + 2.25, over=0.3, end_over=0.24)
+    g2.infill(p, "plaster")
+    g2.gable_frame(p)
+    g2.roof(p, "tile", "tile_dark", course=0.13)
+    g2.bargeboards(p)
+    p.roofs.append(g2)
+    K.chimney(p, P, "chimney", 0.3, 0.45, 3.4, 4.75, w=0.17)
+    for gy in (0.4, 0.95):
+        K.window_right(p, P, gy, P.rect(*top)[3], 1.85, w=0.3, h=0.34, box_=gy == 0.4)
+        K.window_right(p, P, gy, tz1, 2.7, w=0.28, h=0.3)
+    K.window_left(p, P, 0.53, t0, 2.7, w=0.28, h=0.3)
+    K.window_left(p, P, 0.53, P.rect(*top)[0], 1.85, w=0.3, h=0.34)
+    # Shop front: an opening with the upper shutter propped up and the lower one as a counter.
+    sx = P.m(0, 0.45)[0]
+    p.add("shop_opening", "dark_hole", box([sx, 0.95, z1 + 0.01], [0.32, 0.28, 0.03]), "wall")
+    p.add("shop_counter", "board", box([sx, 0.66, z1 + 0.2], [0.34, 0.035, 0.2]), "wall")
+    p.add("shop_shutter", "shutter", box([sx, 1.32, z1 + 0.17], [0.34, 0.035, 0.18], rot=[-0.6, 0, 0]), "wall")
+    for dx, mat in ((-0.18, "cloth_red"), (0.0, "cloth_blue"), (0.18, "cloth_green")):
+        p.add("counter_cloth_" + mat, mat, box([sx + dx, 0.73, z1 + 0.22], [0.08, 0.035, 0.13]), "wall")
+    K.door_right(p, P, "door", 1.0, z1, 0.2, w=0.44, h=0.92, arch=False)
+    K.sign_right(p, P, 1.18, z1, 1.6, emblem_shears)
+    # Cutting table, dummy, garments on a line.
+    tx, _, tz = P.m(1.55, 1.75)
+    p.add("cut_table", "board", box([tx, 0.5, tz], [0.22, 0.04, 0.42]), "prop")
+    for dz in (-0.36, 0.36):
+        p.add("cut_table_legs", "post", box([tx, 0.24, tz + dz], [0.18, 0.24, 0.04]), "prop")
+    p.add("cut_cloth", "cloth_red", box([tx, 0.56, tz + 0.1], [0.18, 0.015, 0.26]), "prop")
+    p.add("cut_bolt", "cloth_blue", cyl([tx - 0.12, 0.6, tz - 0.4], [tx + 0.12, 0.6, tz - 0.4], 0.07), "prop")
+    p.add("shears", "steel", box([tx, 0.58, tz + 0.05], [0.02, 0.01, 0.1]), "prop", priority=2)
+    x, _, z = P.m(1.9, 1.35)
+    p.add("dummy", "post", cyl([x, 0, z], [x, 0.85, z], 0.03), "prop")
+    p.add("dummy", "post", cone([x - 0.08, 0, z], [x, 0.1, z], 0.15, 0.02), "prop")
+    p.add("dummy_body", "cloth_green", ell([x, 1.05, z], [0.15, 0.24, 0.12]), "prop")
+    a, b = P.m(1.15, 1.97), P.m(1.95, 1.97)
+    for q in (a, b):
+        p.add("line_posts", "post", cyl([q[0], 0, q[2]], [q[0], 1.15, q[2]], 0.035), "prop")
+    p.add("line", "rope", cyl([a[0], 1.1, a[2]], [b[0], 1.1, b[2]], 0.015), "prop", min_cover=1)
+    for i, mat in enumerate(("cloth_red", "bone", "cloth_blue")):
+        z = a[2] + 0.35 + i * 0.55
+        p.add("garments_" + mat, mat, ext([a[0], 0, z], [[-0.18, 1.08], [0.18, 1.08], [0.15, 0.65], [-0.15, 0.65]], 0.03,
+                                          rot=[0, 1.5708, 0]), "prop")
+    p.spots = {"table": (1.35, 1.72)}
+    K.tufts(p, P, [(1.95, 0.6), (1.05, 0.05)])
+    return P, p, 288, 2.55
+
+
+# =================================================================================================
+# Slaughterhouse: a long fieldstone building with a half-timbered gable under red tiles, a wide door
+# and a drain gutter running out to a stone basin; a gallows rack with carcasses and a hide stretched
+# on a frame; a chopping block with a cleaver, a tub of salt, barrels, an ox-head sign.
+# =================================================================================================
+def slaughterhouse():
+    P, p = Plot(2), Parts()
+    K.ground(P, p, seed=50)
+    K.patch(p, "stain", "meat_dark", P, 1.35, 1.75, 0.14, 0.1, y=0.013)
+    house = (0.1, 0.92, 0.1, 1.45)
+    g, eave, top = K.house(p, P, "house", house, ground="fieldstone", ground_h=1.6, axis="gy", rise=1.3, with_quoins=True)
+    x0, x1, z0, z1 = P.rect(*house)
+    K.door_right(p, P, "door", 0.95, z1, 0.2, w=0.6, h=1.0, arch=True, frame="sill_mat")
+    K.window_right(p, P, 0.35, z1, 1.05, w=0.28, h=0.3, open_=False)
+    K.window_left(p, P, 0.5, x0, 2.15, w=0.26, h=0.3, shutters=False)
+    K.sign_right(p, P, 1.32, z1, 1.45, emblem_ox)
+    K.dormer(p, P, g, "dormer", 0.45, roof_mat="tile", dark="tile_dark")
+    # Drain gutter from the door to a stone basin.
+    a = P.m(1.0, 0.95)
+    p.add("gutter", "stone", box([a[0], 0.03, a[2] + 0.4], [0.09, 0.03, 0.42]), "prop")
+    p.add("gutter_blood", "meat_dark", box([a[0], 0.065, a[2] + 0.4], [0.04, 0.01, 0.38]), "prop")
+    # Gallows rack with carcasses at the yard's right edge.
+    r0, r1 = P.m(1.9, 1.05), P.m(1.9, 1.6)
+    for q in (r0, r1):
+        p.add("rack", "timber", box([q[0], 0.85, q[2]], [0.05, 0.85, 0.05]), "prop")
+    p.add("rack", "timber", box([(r0[0] + r1[0]) / 2, 1.68, r0[2]], [abs(r1[0] - r0[0]) / 2 + 0.06, 0.05, 0.05]), "prop")
+    for i in range(2):
+        x = r0[0] + (r1[0] - r0[0]) * (0.3 + 0.4 * i)
+        p.add("hooks", "iron", cyl([x, 1.63, r0[2]], [x, 1.45, r0[2]], 0.015), "prop", min_cover=1)
+        p.add("carcasses", "meat", ell([x, 1.05, r0[2]], [0.13, 0.38, 0.11]), "prop")
+        p.add("carcass_fat", "bone", ell([x, 1.3, r0[2] + 0.03], [0.1, 0.12, 0.09]), "prop")
+    # Hide on a frame by the front edge, chopping block with a cleaver, salt tub, barrels.
+    a, b = P.m(1.3, 1.97), P.m(1.85, 1.97)
+    for q in (a, b):
+        p.add("hide_frame", "post", cyl([q[0], 0, q[2]], [q[0], 1.0, q[2]], 0.035), "prop")
+    p.add("hide_frame", "post", cyl([a[0], 0.95, a[2]], [b[0], 0.95, b[2]], 0.03), "prop")
+    p.add("hide", "hide", box([(a[0] + b[0]) / 2, 0.58, a[2]], [abs(b[0] - a[0]) / 2 - 0.1, 0.3, 0.015]), "prop")
+    K.stump(p, P, 1.38, 1.62, r=0.24, h=0.42, name="block")
+    x, _, z = P.m(1.38, 1.62)
+    p.add("cleaver", "steel", box([x - 0.05, 0.5, z + 0.05], [0.1, 0.07, 0.015], rot=[0, 0.5, 0.2]), "prop", priority=2)
+    K.tub(p, P, "salt_tub", 1.12, 1.88, 0.18, 0.32, fill="flour")
+    K.barrel(p, P, 1.12, 1.3, r=0.17, h=0.42)
+    p.spots = {"block": (1.55, 1.72), "rack": (1.7, 1.32)}
+    K.tufts(p, P, [(1.95, 0.6), (1.05, 0.05)])
+    return P, p, 240, 2.0
+
+
 def axe_sign(p, c):
     """Two crossed axes painted on a sign board."""
     x, y, z = c
@@ -1219,6 +1922,37 @@ def axe_sign(p, c):
 
 
 BUILDINGS = {
+    "smelter": (smelter, "Your Kingdom smelter (G3 part 3b), 2x2 tiles: a bloomery tower of fieldstone with iron "
+                "bands, a glowing tapping arch and throat, great double bellows, heaps of ore and charcoal, iron "
+                "blooms on a stone, a brick hut with a half-timbered gable under slate"),
+    "brickworks": (brickworks, "Your Kingdom brickworks (G3 part 3b), 2x2 tiles: an open moulders' shed under a hipped "
+                   "tile roof with racks of green bricks, a vaulted brick kiln with glowing fire-holes and a stack, a "
+                   "moulding table, fired bricks, a water tub, a clay heap"),
+    "weaver": (weaver, "Your Kingdom weaver (G3 part 3b), 2x2 tiles: a tall half-timbered town house with big windows "
+               "under slate, a pentice over a great floor loom, a spinning wheel, baskets of wool, dyed cloth drying"),
+    "tailor": (tailor, "Your Kingdom tailor (G3 part 3b), 2x2 tiles: a narrow town house with two jettied floors under "
+               "red tiles, a shop front with a counter of folded cloth, a cutting table, a dummy, garments on a line, a "
+               "shears sign"),
+    "slaughterhouse": (slaughterhouse, "Your Kingdom slaughterhouse (G3 part 3b), 2x2 tiles: a long fieldstone building "
+                       "under red tiles with a dormer, a drain gutter, a gallows rack with carcasses, a hide on a frame, "
+                       "a chopping block with a cleaver, a salt tub, an ox-head sign"),
+    "bakery": (bakery, "Your Kingdom bakery (G3 part 3b), 2x2 tiles: a half-timbered town house with a jettied upper "
+               "floor under red tiles, a dormer, a great clay bread oven with a glowing mouth under its own roof, a "
+               "kneading table with dough and loaves, a peel, a pretzel sign"),
+    "brewery": (brewery, "Your Kingdom brewery (G3 part 3b), 2x2 tiles: a fieldstone brewhouse with quoins, a louvred "
+                "lantern on the ridge, a tall chimney, an ale stake with a bush, a copper kettle on a brick hearth with "
+                "fire, a mash tun with a paddle, casks and malt sacks"),
+    "meadery": (meadery, "Your Kingdom meadery (G3 part 3b), 2x2 tiles: a wattle-and-daub house under a hipped thatch, "
+                "a shelter with straw skeps, a honey vat with a ladle, casks on a trestle, honey crocks, a jug sign"),
+    "wine_press": (wine_press, "Your Kingdom wine press (G3 part 3b), 2x2 tiles: a fieldstone press house with a half-"
+                   "timbered gable to the yard, an arched door, a vine on a trellis, a screw press on a tub of must, "
+                   "casks on chocks, baskets of grapes"),
+    "sawmill": (sawmill, "Your Kingdom sawmill (G3 part 3b), 2x2 tiles: a plank saw-house under shingles with a loft "
+                "hatch, a drying shed with planks stacked on sticks, a log on high trestles with a frame saw, sawdust, "
+                "a log pile, a saw sign"),
+    "blacksmith": (blacksmith, "Your Kingdom blacksmith (G3 part 3b), 2x2 tiles: a fieldstone smithy under red tiles, "
+                   "an open hooded forge with glowing coals and leather bellows, a great chimney, an anvil on a stump, "
+                   "a quenching trough, a rack of tongs, horseshoes on the wall"),
     "mill": (mill, "Your Kingdom mill (G3 part 3b), 2x2 tiles: a medieval post mill, a weatherboarded buck with a "
              "curved shingle roof on a great post, a trestle of crosstrees and quarter bars on brick piers, steps and "
              "a tail pole with a cart wheel down to the yard, sacks of grain and flour, a spare millstone; the four "

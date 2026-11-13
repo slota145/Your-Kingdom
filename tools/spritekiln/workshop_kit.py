@@ -762,3 +762,66 @@ def dormer_left(parts, P, roof, name, gx, w=0.62, h=0.55, mat="plaster", roof_ma
     g.bargeboards(parts)
     window_left(parts, P, gx, xf, y0 + h * 0.5, w=w * 0.5, h=h * 0.6, shutters=False)
     return g
+
+
+def house(parts, P, name, rect, ground="plaster", ground_h=1.7, upper=None, upper_h=0.9, jetty=0.12, axis="gy",
+          roof_mat="tile", roof_dark="tile_dark", rise=1.4, posts=(3, 4), plinth_mat="stone", with_quoins=False,
+          frame_ground=False, course=0.13, roof_spots=None, over=0.3, end_over=0.24, flare=True):
+    """A medieval house on a game rectangle: a plinth, a ground floor of `ground` (plaster, fieldstone,
+    ashlar, brick, log, board), optionally a jettied half-timbered upper floor of `upper` plaster, a
+    gabled roof along `axis` with timbering in the gable and crossed bargeboards. Returns the Gable,
+    the eave height and the rectangle of the top floor."""
+    plinth(parts, P, name + "_plinth", rect, h=0.2, mat=plinth_mat)
+    if ground == "log":
+        log_walls(parts, P, name + "_ground", rect, 0.2, ground_h, course=0.19)
+    elif ground == "board":
+        board_walls(parts, P, name + "_ground", rect, 0.2, ground_h)
+    else:
+        walls(parts, P, name + "_ground", rect, 0.2, ground_h, ground)
+        if ground in ("fieldstone", "stone"):
+            parts.paint(name + "_ground", "stone_dark", spots={"scale": 0.07, "density": 0.38, "seed": 3})
+        elif ground == "brick":
+            parts.paint(name + "_ground", "brick_line", stripes={"axis": "y", "period": 0.12, "width": 0.035})
+        elif ground == "ashlar":
+            parts.paint(name + "_ground", "ashlar_line", stripes={"axis": "y", "period": 0.25, "width": 0.05, "offset": 0.2})
+    if with_quoins:
+        quoins(parts, P, name + "_quoins", rect, 0.2, ground_h)
+    if frame_ground:
+        timber_left(parts, P, name + "_gframe_l", rect, 0.2, ground_h, posts[0])
+        timber_right(parts, P, name + "_gframe_r", rect, 0.2, ground_h, posts[1])
+    top_rect, eave = rect, ground_h
+    if upper:
+        j = jetty / T
+        top_rect = (rect[0] - j, rect[1] + j, rect[2] - j, rect[3] + j)
+        x0, x1, z0, z1 = P.rect(*top_rect)
+        parts.add(name + "_jetty", "timber", box([(x0 + x1) / 2, ground_h + 0.04, (z0 + z1) / 2],
+                                                 [(x1 - x0) / 2 + 0.03, 0.06, (z1 - z0) / 2 + 0.03]), "wall")
+        eave = ground_h + upper_h
+        walls(parts, P, name + "_upper", top_rect, ground_h + 0.08, eave, upper)
+        timber_left(parts, P, name + "_uframe", top_rect, ground_h + 0.08, eave, posts[0])
+        timber_right(parts, P, name + "_uframe", top_rect, ground_h + 0.08, eave, posts[1])
+    g = Gable(P, name, top_rect, axis, eave, eave + rise, over=over, end_over=end_over, flare=flare)
+    g.infill(parts, upper or ("plaster" if ground in ("log", "board", "brick") else ground))
+    g.gable_frame(parts)
+    g.roof(parts, roof_mat, roof_dark, course=course, spots=roof_spots)
+    g.bargeboards(parts)
+    parts.footprints.append(rect)
+    parts.roofs.append(g)
+    return g, eave, top_rect
+
+
+def dome(parts, P, name, gx, gy, r, h, mat, layer="wall", y0=0.0):
+    """A beehive dome (ovens, kilns) on game point (gx, gy), its foot at height y0."""
+    x, _, z = P.m(gx, gy)
+    prof = [[0, 0]] + [[r * math.cos(a), h * math.sin(a)] for a in [i * math.pi / 2 / 8 for i in range(8)]] + [[0, h]]
+    parts.add(name, mat, {"revolve": {"c": r4([x, y0, z]), "profile": {"polygon": [r4(q) for q in prof]}}}, layer)
+
+
+def tub(parts, P, name, gx, gy, r, h, fill=None, mat="barrel"):
+    x, _, z = P.m(gx, gy)
+    parts.add(name, mat, cyl([x, 0, z], [x, h, z], r), "prop")
+    parts.paint(name, "iron", stripes={"axis": "y", "at": [0.08, h - 0.08], "width": 0.045})
+    parts.paint(name, "barrel_dark", stripes={"axis": "x", "period": 0.1, "width": 0.055})
+    if fill:
+        parts.add(name + "_fill", fill, cyl([x, h - 0.06, z], [x, h - 0.03, z], r * 0.9), "prop")
+

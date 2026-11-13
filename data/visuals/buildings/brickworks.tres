@@ -6,6 +6,6 @@
 script = ExtResource("1_vis")
 art_id = "brickworks"
 spot_offsets = Dictionary[StringName, Vector2]({
-&"table": Vector2(-6, -2),
-&"kiln": Vector2(10, -8)
+&"table": Vector2(8, 0),
+&"kiln": Vector2(-12, 1)
 })

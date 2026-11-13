@@ -1730,7 +1730,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 
-> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 1, stan”). Część 2a scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 2a, stan”). Część 2b scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 2b, stan”). Część 3: plan zaakceptowany 2026-11-13; paczka 3a gotowa, czeka na ocenę („Część 3a, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
+> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 1, stan”). Część 2a scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 2a, stan”). Część 2b scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 2b, stan”). Część 3: plan zaakceptowany 2026-11-13; paczki 3a i 3b gotowe na gałęzi, 3b czeka na ocenę („Część 3a, stan”, „Część 3b, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
 
 **Cel:** cała gra w jednym stylu. Mieszkańcy i budynki rysowani dziś kodem (`tools/generate_characters.gd`, `tools/generate_art.gd`) albo z PixelLab dostają modele ze SpriteKiln, tak jak żołnierze, okręty, zagrody, szkoła i koszary. **Zmienia się tylko wygląd:** symulacja, zapis (bez nowej wersji) i zasady gry zostają.
 
@@ -1799,6 +1799,13 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Stary rysunek kodem i z PixelLab nie nadpisuje już tych budynków. Test sortowania obejmuje każdy z nich (podstawa i 2 etapy, zwykły i odbity).
 - **Zrzuty do oceny:** `tools/spritekiln/previews/g3_part3a_1.png` i `g3_part3a_2.png` (stary po lewej od żółtej kreski, nowy i etapy budowy po prawej); w grze `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=44,56 --zoom=2 --yards=woodcutter,forester,quarry,fishing_hut` (i inne listy budynków).
 - **Do oceny:** czy budynki są dość szczegółowe i średniowieczne, czy da się je rozpoznać z daleka (zoom 1×), czy nic nie zasłania stosu towarów i ludzi przy drzwiach, nieruchomy dym na mielerzu i piecu smolarza, etapy budowy.
+
+**Część 3b, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę. Właściciel po 3a: „Kurde wspaniale to wygląda!… Zacznij od razu następny etap”, z prośbą o powoli obracający się wiatrak (ocena 3a: bez poprawek).
+- 12 warsztatów ze SpriteKiln, każdy od nowa (opis każdego w ART_SPEC §10.28): młyn jako koźlak, piekarnia, browar, miodosytnia, tłocznia, tartak, kuźnia, huta, cegielnia, tkacz, krawiec, rzeźnia; etapy budowy z modelu.
+- **Śmigła młyna obracają się powoli** (8 klatek na ćwierć obrotu, 4 klatki na sekundę; każdy młyn w innej fazie). Nowa możliwość widoku: ruchoma część budynku (ARCHITECTURE §6.2 p. 6), test `test_mill_sails_turn`.
+- **Stanowiska pracy na podwórku przy wejściu** (miejsca pracy z przepisów przeniesione pod nowe kształty) i **poprawka widoku:** pracownik przy stanowisku nie znika już pod sztuką własnego budynku (ARCHITECTURE §6.2 p. 3); dotyczy wszystkich budynków z miejscami pracy.
+- **Zrzuty:** `tools/spritekiln/previews/g3_part3b_{1,2}.png`, `g3_mill_sails.gif`; w grze `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=46,54 --zoom=2 --yards=mill,mill` i `town_shot.tscn -- --shot=<plik> --minutes=20 --select=bakery --zoom=3` (piekarz przy stole).
+- **Do oceny:** szybkość obrotu śmigieł, wygląd budynków przy zoomie 1×, czy pracownicy przy stanowiskach dobrze wyglądają (stoją przed budynkiem, ale nie przed sąsiednimi budynkami), czy stos towaru i stanowiska się nie zasłaniają.
 
 **Testy i sprawdzenie (każda część):** szybkie testy; sortowanie nowych budynków z prawdziwym punktem i rozmiarem (`test_sorting.gd`, jak `test_pixellab_building_art_sorts_correctly`); test, że każda postać ma wszystkie animacje, których gra używa (idle, walk, 7 chodów z towarem z mapą punktu noszenia, wszystkie ruchy pracy z jej danych), w tych samych 8 kierunkach i z punktem stopy; zrzuty w chmurze do oceny; wydajność i wygląd „na oko” ocenia właściciel na laptopie.
 

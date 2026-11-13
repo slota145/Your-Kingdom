@@ -403,7 +403,8 @@ var _yard: Vector2i = Vector2i(-1, -1)
 ## Their drawings stay in BUILDINGS until the G3 clean-up.
 const SPRITEKILN_BUILDINGS: Array[String] = ["woodcutter", "forester", "quarry", "fishing_hut",
 		"mine", "clay_pit", "farm", "hop_farm", "vineyard", "stable", "charcoal_burner", "tar_kiln",
-		"mill"]
+		"mill", "bakery", "brewery", "meadery", "wine_press", "sawmill", "blacksmith", "smelter", "brickworks",
+		"weaver", "tailor", "slaughterhouse"]
 
 
 func _init() -> void:

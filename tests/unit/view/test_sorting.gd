@@ -33,7 +33,8 @@ func test_pixellab_building_art_sorts_correctly() -> void:
 ## base art and both construction stages, as drawn and mirrored.
 const SPRITEKILN_WORKSHOPS: Array[String] = ["woodcutter", "forester", "quarry", "fishing_hut",
 		"mine", "clay_pit", "farm", "hop_farm", "vineyard", "stable", "charcoal_burner", "tar_kiln",
-		"mill"]
+		"mill", "bakery", "brewery", "meadery", "wine_press", "sawmill", "blacksmith", "smelter", "brickworks",
+		"weaver", "tailor", "slaughterhouse"]
 
 
 func test_spritekiln_workshop_art_sorts_correctly() -> void:

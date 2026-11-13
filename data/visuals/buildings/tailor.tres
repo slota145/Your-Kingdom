@@ -6,5 +6,5 @@
 script = ExtResource("1_vis")
 art_id = "tailor"
 spot_offsets = Dictionary[StringName, Vector2]({
-&"table": Vector2(-6, -6)
+&"table": Vector2(-12, 1)
 })
