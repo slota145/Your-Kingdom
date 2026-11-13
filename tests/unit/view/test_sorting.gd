@@ -20,12 +20,25 @@ func test_building_strips_sort_correctly() -> void:
 ## must still sort right with people walking around.
 func test_pixellab_building_art_sorts_correctly() -> void:
 	var arts: Array[String] = []
-	for building: String in ["pioneer_camp", "hut", "woodcutter", "quarry", "fishing_hut"]:
+	for building: String in ["pioneer_camp"]:
 		for name: String in ["base", "construction_1", "construction_2"]:
 			arts.append("res://assets/buildings/%s/%s.json" % [building, name])
-	for name: String in ["base_2", "base_3", "base_back", "base_2_back", "base_3_back",
-			"construction_1_back", "construction_2_back"]:
+	_check_arts(arts)
+
+
+## G3 part 4a: every house image from SpriteKiln (tools/spritekiln/gen_homes.py, gen_townhouses.py):
+## the hut's three looks with their backs, its construction stages and the upgrade scaffold, and
+## every piece of the burgher (level 2) and patrician (level 3) rows, as drawn and mirrored.
+func test_spritekiln_house_art_sorts_correctly() -> void:
+	var arts: Array[String] = []
+	for name: String in ["base", "base_2", "base_3", "construction_1", "construction_2", "upgrade_scaffold"]:
 		arts.append("res://assets/buildings/hut/%s.json" % name)
+		arts.append("res://assets/buildings/hut/%s_back.json" % name)
+	for level: int in [2, 3]:
+		for piece: String in ["single", "end_a", "middle", "end_b", "corner_a", "corner_b"]:
+			for look: String in ["", "_2", "_3"]:
+				for back: String in ["", "_back"]:
+					arts.append("res://assets/buildings/hut/level_%d_%s%s%s.json" % [level, piece, look, back])
 	_check_arts(arts)
 
 

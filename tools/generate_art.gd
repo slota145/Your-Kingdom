@@ -404,7 +404,9 @@ var _yard: Vector2i = Vector2i(-1, -1)
 const SPRITEKILN_BUILDINGS: Array[String] = ["woodcutter", "forester", "quarry", "fishing_hut",
 		"mine", "clay_pit", "farm", "hop_farm", "vineyard", "stable", "charcoal_burner", "tar_kiln",
 		"mill", "bakery", "brewery", "meadery", "wine_press", "sawmill", "blacksmith", "smelter", "brickworks",
-		"weaver", "tailor", "slaughterhouse"]
+		"weaver", "tailor", "slaughterhouse",
+		# G3 part 4a: every hut image (levels 1-3, backs, stages, scaffold) from SpriteKiln.
+		"hut"]
 
 
 func _init() -> void:

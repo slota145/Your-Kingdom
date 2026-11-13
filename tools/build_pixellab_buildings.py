@@ -66,7 +66,7 @@ BUILDINGS = {
 G1_SET = list(BUILDINGS.keys())
 # G3 part 3: these now come from SpriteKiln (tools/spritekiln/gen_workshops.py). Their raw images
 # still take part in evening out the colours (so the rest keep theirs), but are not written.
-SPRITEKILN = {"woodcutter", "quarry", "fishing_hut"}
+SPRITEKILN = {"woodcutter", "quarry", "fishing_hut", "hut"}   # hut: G3 part 4a (gen_homes.py)
 # M7 part 1 (ART_SPEC §10.14): the workshops of metals and weapons, the stud farm, the armoury
 # and the barracks, each with its 2 construction stages edited from the finished building.
 STAGES = [("base", "base", {}),
