@@ -406,7 +406,10 @@ const SPRITEKILN_BUILDINGS: Array[String] = ["woodcutter", "forester", "quarry",
 		"mill", "bakery", "brewery", "meadery", "wine_press", "sawmill", "blacksmith", "smelter", "brickworks",
 		"weaver", "tailor", "slaughterhouse",
 		# G3 part 4a: every hut image (levels 1-3, backs, stages, scaffold) from SpriteKiln.
-		"hut"]
+		"hut",
+		# G3 part 4b: the town's buildings (gen_town.py), the warehouse's stages and shed.
+		"well", "chapel", "church", "market", "tavern", "town_hall", "trading_post", "builders_hut", "pioneer_camp",
+		"stockpile"]
 
 
 func _init() -> void:

@@ -60,3 +60,35 @@ func test_buildings_without_a_moving_part_do_not_process() -> void:
 	var view: BuildingView = auto_free(BuildingView.new())
 	view.setup("buildings/bakery/base", Vector2i(10, 10))
 	assert_bool(view.is_processing()).is_false()
+
+
+## G3 part 4b: a building view without a moving part stops processing on its first frame (it
+## used to look up the missing frame strip every frame once in the tree).
+func test_view_without_a_moving_part_processes_safely() -> void:
+	var view: BuildingView = auto_free(BuildingView.new())
+	view.setup("buildings/bakery/base", Vector2i(10, 10))
+	view._process(0.1)
+	assert_bool(view.is_processing()).is_false()
+
+
+## G3 part 4b: the warehouse yard (deck and goods stacks) has a roofed shed over its back edges,
+## drawn as four pieces sorted on their own footprints: the back walls just outside the yard, the
+## posts and roofs over the back row and the back column (mirrored: offsets swapped).
+func test_warehouse_yard_has_its_shed_in_pieces() -> void:
+	var sim := SimFixture.make_sim()
+	var store := SimFixture.place(sim, &"stockpile", Vector2i(10, 10))
+	var layer: BuildingLayer = auto_free(BuildingLayer.new())
+	layer.province = sim.province
+	assert_str(layer._art_key(store, {})).is_equal("yard")
+	layer._build(store, "yard")
+	var holder: Node2D = layer._views[store.id]
+	assert_int(holder.get_children().filter(func(c: Node) -> bool: return c is StockpileView).size()).is_equal(1)
+	var origins: Array = holder.get_children().filter(func(c: Node) -> bool: return c is BuildingView) \
+			.map(func(v: BuildingView) -> Vector2i: return v.origin_tile)
+	assert_array(origins).contains_exactly_in_any_order([Vector2i(10, 9), Vector2i(9, 10), Vector2i(10, 10), Vector2i(10, 11)])
+	store.orientation = 1
+	layer._drop(store.id)
+	layer._build(store, "yard")
+	origins = layer._views[store.id].get_children().filter(func(c: Node) -> bool: return c is BuildingView) \
+			.map(func(v: BuildingView) -> Vector2i: return v.origin_tile)
+	assert_array(origins).contains_exactly_in_any_order([Vector2i(9, 10), Vector2i(10, 9), Vector2i(10, 10), Vector2i(11, 10)])

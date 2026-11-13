@@ -15,17 +15,6 @@ func test_building_strips_sort_correctly() -> void:
 				"footprint %s:\n%s" % [footprint, "\n".join(failures.slice(0, 10))]).is_empty()
 
 
-## G1: the pioneer set drawn by PixelLab is wider than the code-drawn art (eaves, props) and
-## its pivot need not sit in the middle; the strips of every such image (and its mirror)
-## must still sort right with people walking around.
-func test_pixellab_building_art_sorts_correctly() -> void:
-	var arts: Array[String] = []
-	for building: String in ["pioneer_camp"]:
-		for name: String in ["base", "construction_1", "construction_2"]:
-			arts.append("res://assets/buildings/%s/%s.json" % [building, name])
-	_check_arts(arts)
-
-
 ## G3 part 4a: every house image from SpriteKiln (tools/spritekiln/gen_homes.py, gen_townhouses.py):
 ## the hut's three looks with their backs, its construction stages and the upgrade scaffold, and
 ## every piece of the burgher (level 2) and patrician (level 3) rows, as drawn and mirrored.
@@ -43,11 +32,14 @@ func test_spritekiln_house_art_sorts_correctly() -> void:
 
 
 ## G3 part 3: workshops and raw-material buildings from SpriteKiln (tools/spritekiln/gen_workshops.py),
-## base art and both construction stages, as drawn and mirrored.
+## and G3 part 4b: the town's buildings (gen_town.py; the warehouse's base is its shed), base art and
+## both construction stages, as drawn and mirrored.
 const SPRITEKILN_WORKSHOPS: Array[String] = ["woodcutter", "forester", "quarry", "fishing_hut",
 		"mine", "clay_pit", "farm", "hop_farm", "vineyard", "stable", "charcoal_burner", "tar_kiln",
 		"mill", "bakery", "brewery", "meadery", "wine_press", "sawmill", "blacksmith", "smelter", "brickworks",
-		"weaver", "tailor", "slaughterhouse"]
+		"weaver", "tailor", "slaughterhouse",
+		# G3 part 4b: the town's buildings (gen_town.py); the pioneer camp was the last from PixelLab.
+		"well", "chapel", "church", "market", "tavern", "town_hall", "trading_post", "builders_hut", "pioneer_camp"]
 
 
 func test_spritekiln_workshop_art_sorts_correctly() -> void:
@@ -55,6 +47,9 @@ func test_spritekiln_workshop_art_sorts_correctly() -> void:
 	for building: String in SPRITEKILN_WORKSHOPS:
 		for name: String in ["base", "construction_1", "construction_2"]:
 			arts.append("res://assets/buildings/%s/%s.json" % [building, name])
+	# The warehouse: its construction stages and the four pieces of its shed (each its own footprint).
+	for name: String in ["construction_1", "construction_2", "shed_a_back", "shed_b_back", "shed_a_front", "shed_b_front"]:
+		arts.append("res://assets/buildings/stockpile/%s.json" % name)
 	_check_arts(arts)
 
 

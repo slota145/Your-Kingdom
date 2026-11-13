@@ -99,6 +99,9 @@ func _setup_anim(art: String, mirrored: bool) -> void:
 
 
 func _process(delta: float) -> void:
+	if _anim == null:     # no moving part (processing is on by default until setup turns it off)
+		set_process(false)
+		return
 	_anim_time += delta
 	_anim.frame = int(_anim_time * _anim_fps) % _anim.hframes
 
