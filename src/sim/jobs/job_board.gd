@@ -144,7 +144,7 @@ func update(province: ProvinceSim) -> void:
 			dockers[agent.workplace_id].append(agent)
 			docker_count += 1
 	var assigned := 0
-	for request: TransportRequest in all():
+	for request: TransportRequest in _in_serving_order(province):
 		var crews: Variant = Harbour.request_crews(province, request) if docker_count > 0 \
 				or (not province.ships.is_empty() and _touches_ship(province, request)) else null
 		if crews != null:
@@ -186,6 +186,50 @@ func update(province: ProvinceSim) -> void:
 			return
 
 
+## The requests in the order porters take them: materials for building first (construction
+## sites, cobbles, ships on the slipway), then the rest, each group oldest first (UI-2 part 2,
+## owner 2026-11-13: at the start the porters moved the whole kit into the new storage while the
+## builder waited for wood).
+func _in_serving_order(province: ProvinceSim) -> Array[TransportRequest]:
+	var builds: Array[TransportRequest] = []
+	var rest: Array[TransportRequest] = []
+	for request: TransportRequest in _requests.values():
+		if is_for_building(province, request.dest_id):
+			builds.append(request)
+		else:
+			rest.append(request)
+	return builds + rest
+
+
+## Whether [param dest_id] is something being built (a construction site, cobbles, a ship).
+static func is_for_building(province: ProvinceSim, dest_id: int) -> bool:
+	return dest_id != 0 and (province.sites.has(dest_id) or province.paving.has(dest_id)
+			or province.ship_builds.has(dest_id))
+
+
+## Gives [param builder] (idle, no site he could work on) one trip of materials to the nearest
+## construction site still waiting for them (UI-2 part 2, owner 2026-11-13: a builder with
+## nothing to build carries the materials himself). False when there is nothing he can take.
+func give_builder_a_load(province: ProvinceSim, builder: Agent) -> bool:
+	var candidates: Array[TransportRequest] = []
+	for request: TransportRequest in _requests.values():
+		if province.sites.has(request.dest_id) and request.unassigned() > 0 \
+				and request.retry_at <= province.tick:
+			candidates.append(request)
+	if candidates.is_empty():
+		return false
+	var at := builder.tile()
+	candidates.sort_custom(func(a: TransportRequest, b: TransportRequest) -> bool:
+		var da := (province.access_tile(a.dest_id) - at).length_squared()
+		var db := (province.access_tile(b.dest_id) - at).length_squared()
+		return da < db or (da == db and a.id < b.id))
+	for request: TransportRequest in candidates:
+		var one: Array[Agent] = [builder]
+		if _assign_one(province, request, one):
+			return true
+	return false
+
+
 static func _touches_ship(province: ProvinceSim, request: TransportRequest) -> bool:
 	return province.ships.has(request.source_id) or province.ships.has(request.dest_id)
 
@@ -218,8 +262,7 @@ func _assign_one(province: ProvinceSim, request: TransportRequest, idle: Array[A
 		_requests.erase(request.id)
 		return false
 	# Construction leaves each storage's reserve alone (firewood for houses, ROADMAP M4).
-	var keep_reserve := province.sites.has(request.dest_id) or province.paving.has(request.dest_id) \
-			or province.ship_builds.has(request.dest_id)
+	var keep_reserve := is_for_building(province, request.dest_id)
 	var src := request.source_id
 	if src == 0:
 		src = province.nearest_source(request.good, load, province.access_tile(request.dest_id),
@@ -240,7 +283,8 @@ func _assign_one(province: ProvinceSim, request: TransportRequest, idle: Array[A
 	var porter := idle[best]
 	idle.remove_at(best)
 	var vehicle := &""
-	if request.unassigned() >= Carriers.HANDCART_MIN and Carriers.has_free_handcart(province, porter):
+	if porter.kind == PORTER_KIND and request.unassigned() >= Carriers.HANDCART_MIN \
+			and Carriers.has_free_handcart(province, porter):
 		# E4 part 3: "Carts" research loads a handcart with one more.
 		var cart := Carriers.HANDCART_LOAD + province.research.cart_extra(province.data)
 		var big := _largest_load(province, request, src, mini(cart,
@@ -266,8 +310,7 @@ func _assign_wagon(province: ProvinceSim, request: TransportRequest, carters: Ar
 	if (request.source_id != 0 and province.storage(request.source_id) == null) \
 			or (request.dest_id != 0 and not province.accepts_deliveries(request.dest_id)):
 		return false
-	var keep_reserve := province.sites.has(request.dest_id) or province.paving.has(request.dest_id) \
-			or province.ship_builds.has(request.dest_id)
+	var keep_reserve := is_for_building(province, request.dest_id)
 	var src := request.source_id
 	if src == 0:
 		src = province.nearest_source(request.good, Carriers.WAGON_MIN,
