@@ -5,10 +5,13 @@ extends TaskStep
 ## With drop_on_fail it never fails: the goods go on the ground instead.
 ##
 ## Production yard (M4b-2, UI-2 part 2): a worker puts what he made on the yard of his workplace
-## (porters take it to a storage); when the yard is full he carries it to the nearest storage
-## himself, and when no storage has room either, he waits at his workplace with the goods in hand
+## (porters take it to a storage); when YARD_WAITING units already wait there (the porters cannot
+## keep up) or the yard is full, he carries it to the nearest storage himself, and when no storage has room either, he waits at his workplace with the goods in hand
 ## (blackboard "_yard_full") and looks for room again every WAIT_CHECK_TICKS.
 
+## Units of his good waiting on his yard from which a worker no longer adds to it but carries
+## to a storage himself (UI-2 part 2: the porters cannot keep up).
+const YARD_WAITING := 3
 ## How often a waiting worker looks for room again (1 s).
 const WAIT_CHECK_TICKS := 10
 
@@ -97,6 +100,11 @@ static func _yard_first(province: ProvinceSim, agent: Agent) -> int:
 		return 0
 	var good_def := province.data.get_good(agent.carry_good)
 	if good_def != null and good_def.is_live():
+		return 0
+	# Porters behind (a big town's yards fill faster than they are emptied): he takes it to a
+	# storage himself, as before, instead of piling up more for the porters.
+	var yard := _own_yard(province, agent)
+	if yard != null and yard.total(agent.carry_good) >= YARD_WAITING:
 		return 0
 	return _yard_with_room(province, agent)
 

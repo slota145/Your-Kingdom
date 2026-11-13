@@ -121,12 +121,13 @@ func test_the_worker_leaves_his_output_on_the_yard_even_with_room_in_a_storage()
 	assert_int(stock.stock.total(&"wood")).is_equal(0)
 
 
-## UI-2 part 2: when the yard is full, the worker walks to a storage with room himself.
-func test_a_full_yard_sends_the_worker_to_a_storage_himself() -> void:
+## UI-2 part 2: when the porters cannot keep up (a few logs already wait on the yard), the
+## worker walks to a storage with room himself.
+func test_a_yard_waiting_for_porters_sends_the_worker_to_a_storage_himself() -> void:
 	var sim := SimFixture.make_sim()
 	var scene := SimFixture.woodcutter_scene(sim)
 	var hut: BuildingState = scene["hut"]
 	var stock: BuildingState = scene["stock"]
-	hut.yard.add(&"wood", 10)
+	hut.yard.add(&"wood", DeliverStep.YARD_WAITING)
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return stock.stock.total(&"wood") >= 1, 300)).is_true()
-	assert_int(hut.yard.total(&"wood")).is_equal(10)
+	assert_int(hut.yard.total(&"wood")).is_equal(DeliverStep.YARD_WAITING)
