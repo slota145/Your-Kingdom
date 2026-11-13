@@ -4,8 +4,7 @@ extends PanelContainer
 ## with pause and the three speeds as icon buttons (owner's request 2026-11-07); on the right
 ## the buttons (world map, stocks, routes, save/load, language, menu).
 
-signal save_requested
-signal load_requested
+## The pause menu (UI-2 part 1).
 signal menu_requested
 signal stocks_requested
 signal world_requested
@@ -63,10 +62,11 @@ func _init() -> void:
 	moods.tooltip_text = "ui.hud.moods_tip"
 	moods.toggled.connect(func(on: bool) -> void: moods_toggled.emit(on))
 	row.add_child(moods)
-	row.add_child(UiKit.button("ui.hud.save", func() -> void: save_requested.emit()))
-	row.add_child(UiKit.button("ui.hud.load", func() -> void: load_requested.emit()))
-	row.add_child(UiKit.button("ui.hud.language", Loc.cycle_locale))
-	row.add_child(UiKit.button("ui.hud.menu", func() -> void: menu_requested.emit()))
+	# UI-2 part 1 (owner 2026-11-13): saving, loading, the language and the main menu live in the
+	# pause menu (Esc); this button opens it.
+	var menu := UiKit.button("ui.hud.menu", func() -> void: menu_requested.emit())
+	menu.tooltip_text = "ui.hud.menu_tip"
+	row.add_child(menu)
 
 
 static func _spacer() -> Control:

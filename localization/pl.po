@@ -301,6 +301,33 @@ msgstr "English"
 msgid "ui.hud.menu"
 msgstr "Menu"
 
+msgid "ui.hud.menu_tip"
+msgstr "Menu gry: zapis, wczytanie, język, menu główne (Esc)"
+
+msgid "ui.pause.title"
+msgstr "Gra wstrzymana"
+
+msgid "ui.pause.resume"
+msgstr "Wróć do gry"
+
+msgid "ui.pause.save"
+msgstr "Zapisz grę"
+
+msgid "ui.pause.load"
+msgstr "Wczytaj zapis"
+
+msgid "ui.pause.language_tip"
+msgstr "Zmień język gry"
+
+msgid "ui.pause.main_menu"
+msgstr "Menu główne"
+
+msgid "ui.pause.quit"
+msgstr "Wyjdź z gry"
+
+msgid "ui.pause.hint"
+msgstr "Esc: wróć do gry · F5 zapis · F9 wczytanie"
+
 msgid "ui.build.cost"
 msgstr "Koszt: %s"
 
@@ -308,13 +335,13 @@ msgid "ui.build.road"
 msgstr "Droga"
 
 msgid "ui.build.road_tip"
-msgstr "Ubita droga. Przeciągnij myszą. Ludzie chodzą po niej o połowę szybciej. Przeciągnięta przez rzekę sama zamawia drewniany most."
+msgstr "Ubita droga. Kliknij początek, potem koniec: droga biegnie w kształcie litery L (R zmienia stronę skrętu, prawy przycisk albo Esc anuluje). Ludzie chodzą po niej o połowę szybciej. Poprowadzona przez rzekę sama zamawia drewniany most."
 
 msgid "ui.build.paving"
 msgstr "Bruk"
 
 msgid "ui.build.paving_tip"
-msgstr "Bruk z kamienia: 1 kamień na kafel. Przeciągnij myszą po drodze albo po wolnym terenie. Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej. Przeciągnięty przez rzekę sam zamawia kamienny most. Zaplanowane kafle mają przerywaną ramkę; prawy przycisk (przeciągnij) albo rozbiórka anuluje plan."
+msgstr "Bruk z kamienia: 1 kamień na kafel. Kliknij początek, potem koniec, po drodze albo po wolnym terenie: bruk biegnie w kształcie litery L (R zmienia stronę skrętu, prawy przycisk albo Esc anuluje). Tragarze przynoszą kamień, budowniczy układa kafel po kaflu. Ludzie chodzą po bruku o 80% szybciej. Poprowadzony przez rzekę sam zamawia kamienny most. Zaplanowane kafle mają przerywaną ramkę; prawy przycisk (przeciągnij) albo rozbiórka anuluje plan."
 
 msgid "ui.build.demolish"
 msgstr "Rozbiórka"
@@ -648,6 +675,9 @@ msgstr "Nie ma takiego wyglądu."
 
 msgid "ui.build.rotate_hint"
 msgstr "R: obróć wejście · T: zmień wygląd"
+
+msgid "ui.build.line_hint"
+msgstr "Klik: początek, klik: koniec · R: skręt · prawy przycisk/Esc: anuluj"
 
 msgid "ui.command_error.not_a_farm"
 msgstr "To nie jest farma."

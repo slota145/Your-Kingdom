@@ -17,6 +17,8 @@ const SETTLE_FRAMES := 10
 const SHOT_FRAMES := 40
 
 var _game: Node2D
+## UI-2: a road tool in hand behind the first house of [member _select] (see-through buildings).
+var _behind: bool = false
 var _frames: int = 0
 var _shot_path: String = ""
 var _select: StringName = &""
@@ -76,6 +78,8 @@ func _ready() -> void:
 			_stocks = true
 		elif arg == "--moods":
 			_moods = true
+		elif arg == "--behind":
+			_behind = true
 		elif arg == "--hide_build":
 			_hide_build = true
 		elif arg.begins_with("--focus="):
@@ -113,11 +117,25 @@ func _arrange() -> void:
 	if _layout and _blocks.has(_focus):
 		camera.position = IsoMath.grid_to_screen(_blocks[_focus])
 	for b: BuildingState in sim.province.buildings.all():
+		if b.def.id == _select and _behind:
+			# The cursor on the tile just behind the house, a road tool in hand.
+			var tile := b.origin - Vector2i(1, 0)
+			camera.position = IsoMath.tile_center_screen(tile)
+			_game.call("_set_tool", {"kind": &"road"})
+			_warp_later(IsoMath.tile_center_screen(tile))
+			return
 		if b.def.id == _select:
 			camera.position = IsoMath.tile_center_screen(b.entrance_tile())
 			var panel: BuildingPanel = _game.get("_building_panel")
 			panel.show_building(sim.province, b.id)
 			return
+
+
+## Puts the cursor on [param world_pos] once the camera has moved there.
+func _warp_later(world_pos: Vector2) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	get_viewport().warp_mouse(get_viewport().get_canvas_transform() * world_pos)
 
 
 ## Finds free ground for the quarter and builds it: finished houses at their level with

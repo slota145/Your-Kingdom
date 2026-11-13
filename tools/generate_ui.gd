@@ -40,6 +40,15 @@ func _init() -> void:
 	_save(_lock(), "icon_lock.png")
 	for speed: int in [1, 2, 3]:
 		_save(_play_icon(speed), "icon_speed_%d.png" % speed)
+	# UI-2 part 1 (owner 2026-11-13): the build bar's tools as pictures instead of words.
+	_save(_tool_road(false), "tool_road.png")
+	_save(_tool_road(true), "tool_paving.png")
+	_save(_tool_pier(false), "tool_pier.png")
+	_save(_tool_pier(true), "tool_quay.png")
+	_save(_tool_bridge(false), "tool_bridge.png")
+	_save(_tool_bridge(true), "tool_stone_bridge.png")
+	_save(_tool_demolish(), "tool_demolish.png")
+	_save(_tool_hide(), "tool_hide.png")
 	print("UI art written to ", OUT)
 	quit()
 
@@ -302,3 +311,132 @@ func _play_icon(count: int) -> Image:
 				var edge := x == half or x == 0 or y == 0 or y == 8
 				img.set_pixel(left + x, y, OUTLINE if edge else PARCHMENT_LIGHT)
 	return img
+
+
+# --- Build tools (UI-2 part 1): 16x16 pictures, light on the wooden buttons ------------------
+
+const DIRT := Color(0.66, 0.5, 0.32)
+const DIRT_DARK := Color(0.48, 0.35, 0.21)
+const GRASS := Color(0.45, 0.6, 0.28)
+const GRASS_DARK := Color(0.33, 0.46, 0.2)
+const STONE := Color(0.7, 0.69, 0.65)
+const STONE_DARK := Color(0.48, 0.47, 0.44)
+const WATER := Color(0.28, 0.5, 0.7)
+const WATER_LIGHT := Color(0.5, 0.7, 0.86)
+
+
+## A flat diamond with its centre at (cx, cy), half width hw and half height hh.
+func _diamond(img: Image, cx: float, cy: float, hw: float, hh: float, colour: Color) -> void:
+	for y: int in img.get_height():
+		for x: int in img.get_width():
+			if absf(x + 0.5 - cx) / hw + absf(y + 0.5 - cy) / hh <= 1.0:
+				img.set_pixel(x, y, colour)
+
+
+## A dark outline round everything drawn (like the other icons).
+func _outlined(img: Image) -> Image:
+	var out := img.duplicate() as Image
+	for y: int in img.get_height():
+		for x: int in img.get_width():
+			if img.get_pixel(x, y).a > 0.0:
+				continue
+			for d: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				var n := Vector2i(x, y) + d
+				if n.x >= 0 and n.y >= 0 and n.x < img.get_width() and n.y < img.get_height() \
+						and img.get_pixelv(n).a > 0.0:
+					out.set_pixel(x, y, OUTLINE)
+					break
+	return out
+
+
+## A road (dirt, or cobbles when [param paved]) running across a patch of grass.
+func _tool_road(paved: bool) -> Image:
+	var img := _blank(18, 12)
+	_diamond(img, 9, 6, 9, 5.5, GRASS)
+	for y: int in 12:
+		for x: int in 18:
+			if img.get_pixel(x, y).a == 0.0:
+				continue
+			# A band running from the upper left to the lower right edge of the diamond.
+			var across := (x - 9) * 0.5 - (y - 6) * 1.0
+			if absf(across) <= 1.9:
+				var c := DIRT
+				if paved:
+					c = STONE if (x + y * 3) % 4 != 0 else STONE_DARK
+				elif (x * 7 + y * 3) % 5 == 0:
+					c = DIRT_DARK
+				img.set_pixel(x, y, c)
+			elif (x * 5 + y * 11) % 7 == 0:
+				img.set_pixel(x, y, GRASS_DARK)
+	return _outlined(img)
+
+
+## A wooden pier on posts, or a stone quay wall, over water.
+func _tool_pier(stone: bool) -> Image:
+	var img := _blank(18, 14)
+	_diamond(img, 9, 9, 9, 5, WATER)
+	for x: int in range(2, 16, 4):
+		img.set_pixel(x, 11, WATER_LIGHT)
+	for y: int in range(3, 9):
+		for x: int in range(2, 16):
+			var top := y < 6
+			var c: Color
+			if stone:
+				c = STONE if top else (STONE_DARK if (x + (y % 2) * 2) % 4 != 0 else OUTLINE)
+			else:
+				c = WOOD_LIGHT if top and x % 3 != 0 else WOOD
+				if not top:
+					c = WATER if x % 4 != 1 else WOOD_DARK
+			img.set_pixel(x, y, c)
+	return _outlined(img)
+
+
+## A bridge (timber, or stone when [param stone]) arching over water.
+func _tool_bridge(stone: bool) -> Image:
+	var img := _blank(18, 13)
+	for y: int in range(9, 13):
+		for x: int in 18:
+			img.set_pixel(x, y, WATER if (x + y) % 6 != 0 else WATER_LIGHT)
+	var deck := STONE if stone else WOOD_LIGHT
+	var body := STONE_DARK if stone else WOOD
+	for x: int in 18:
+		var rise := int(round(2.5 * sin(PI * x / 17.0)))
+		var top := 6 - rise
+		img.set_pixel(x, top, deck)
+		img.set_pixel(x, top + 1, body)
+		if stone:
+			# The arch's spandrel down to the water, the opening in the middle.
+			for y: int in range(top + 2, 12):
+				var opening := absf(x - 8.5) < 4.0 and y > 12 - 4.0 * cos((x - 8.5) / 4.0 * PI / 2.0)
+				if not opening:
+					img.set_pixel(x, y, body if (x + y) % 3 != 0 else STONE)
+		elif x % 4 == 1:
+			for y: int in range(top + 2, 12):
+				img.set_pixel(x, y, WOOD_DARK)
+		if x % 3 == 0:
+			img.set_pixel(x, top - 1, body)   # the railing's posts
+	return _outlined(img)
+
+
+## A pickaxe: demolish.
+func _tool_demolish() -> Image:
+	var img := _blank(16, 16)
+	for i: int in range(3, 15):
+		img.set_pixel(i, i, WOOD_LIGHT)
+		img.set_pixel(i - 1, i, WOOD)
+	for t: int in range(-5, 6):
+		var x := 6 + t
+		var y := 6 - t - (1 if absi(t) < 3 else 0) + (absi(t) * absi(t)) / 8
+		img.set_pixel(clampi(x, 0, 15), clampi(y, 0, 15), IRON_LIGHT)
+		img.set_pixel(clampi(x, 0, 15), clampi(y + 1, 0, 15), IRON)
+	return _outlined(img)
+
+
+## A chevron pointing down: put the build bar away.
+func _tool_hide() -> Image:
+	var img := _blank(12, 9)
+	for x: int in range(1, 11):
+		var y := 6 - absi(x * 2 - 11) / 2
+		for k: int in 2:
+			img.set_pixel(x, clampi(y - k, 0, 8), PARCHMENT_LIGHT)
+	return _outlined(img)

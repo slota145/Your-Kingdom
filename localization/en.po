@@ -296,6 +296,33 @@ msgstr "Polski"
 msgid "ui.hud.menu"
 msgstr "Menu"
 
+msgid "ui.hud.menu_tip"
+msgstr "Game menu: save, load, language, main menu (Esc)"
+
+msgid "ui.pause.title"
+msgstr "Game paused"
+
+msgid "ui.pause.resume"
+msgstr "Back to the game"
+
+msgid "ui.pause.save"
+msgstr "Save the game"
+
+msgid "ui.pause.load"
+msgstr "Load the save"
+
+msgid "ui.pause.language_tip"
+msgstr "Change the game's language"
+
+msgid "ui.pause.main_menu"
+msgstr "Main menu"
+
+msgid "ui.pause.quit"
+msgstr "Quit the game"
+
+msgid "ui.pause.hint"
+msgstr "Esc: back to the game · F5 save · F9 load"
+
 msgid "ui.build.cost"
 msgstr "Cost: %s"
 
@@ -303,13 +330,13 @@ msgid "ui.build.road"
 msgstr "Road"
 
 msgid "ui.build.road_tip"
-msgstr "Dirt road. Drag with the mouse. People walk half again as fast on it. Dragged over a river, it orders a timber bridge."
+msgstr "Dirt road. Click its start, then its end: the road runs in an L (R switches the turn, right click or Esc cancels). People walk half again as fast on it. Led over a river, it orders a timber bridge."
 
 msgid "ui.build.paving"
 msgstr "Paving"
 
 msgid "ui.build.paving_tip"
-msgstr "Cobbled road: 1 stone per tile. Drag with the mouse over a road or free ground. Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles. Dragged over a river, they order a stone bridge. Ordered tiles have a dashed frame; drag with the right button, or demolish, to cancel the order."
+msgstr "Cobbled road: 1 stone per tile. Click its start, then its end, over a road or free ground: the cobbles run in an L (R switches the turn, right click or Esc cancels). Porters bring the stone, the builder lays it tile by tile. People walk 80% faster on cobbles. Led over a river, they order a stone bridge. Ordered tiles have a dashed frame; drag with the right button, or demolish, to cancel the order."
 
 msgid "ui.build.demolish"
 msgstr "Demolish"
@@ -643,6 +670,9 @@ msgstr "There is no such look."
 
 msgid "ui.build.rotate_hint"
 msgstr "R: turn the entrance · T: change the look"
+
+msgid "ui.build.line_hint"
+msgstr "Click: start, click: end · R: turn · right click/Esc: cancel"
 
 msgid "ui.command_error.not_a_farm"
 msgstr "This is not a farm."

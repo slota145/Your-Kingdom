@@ -62,12 +62,22 @@ var _research: ResearchWindow
 var _locks_time: float = 0.0
 var _world_map: WorldMapScreen
 var _notes: Notifications
+var _pause_menu: PauseMenu
+## Whether the game was paused before the pause menu opened (it stays so when the menu closes).
+var _paused_before_menu: bool = false
 ## "Developer mode" in the corner while it is on (E4 part 1; F12 switches it).
 var _dev_label: Label
 var _tool: Dictionary = {}
 var _hover: Vector2i = Vector2i(-999, -999)
 var _drag_tiles: Array[Vector2i] = []
 var _dragging: bool = false
+## UI-2 part 1 (owner 2026-11-13): roads and cobbles from two clicks. The first click starts the
+## line here, it runs to the cursor in an L (along one grid axis, then the other), the second
+## click lays it. NONE while no line is started.
+var _line_from: Vector2i = NONE_TILE
+## Whether the L turns first along grid y (R flips it).
+var _line_y_first: bool = false
+const NONE_TILE := Vector2i(-1, -1)
 var _follow_id: int = 0
 var _time: float = 0.0
 var _preview_dirty: bool = false
@@ -227,9 +237,7 @@ func _build_ui() -> void:
 	_ui.add_child(root)
 	_top = TopBar.new()
 	_top.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	_top.save_requested.connect(_quick_save)
-	_top.load_requested.connect(_quick_load)
-	_top.menu_requested.connect(_back_to_menu)
+	_top.menu_requested.connect(_open_pause_menu)
 	_top.stocks_requested.connect(_toggle_stocks)
 	_top.world_requested.connect(_toggle_world_map)
 	_top.routes_requested.connect(_toggle_routes)
@@ -419,9 +427,38 @@ func _build_ui() -> void:
 			_notes.push(tr("ui.command_error.%s" % error)))
 	root.add_child(_research)
 	_notes = Notifications.new()
-	_notes.position = Vector2(12, 64)
 	_notes.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_notes)
+	_place_notes()
+	_pause_menu = PauseMenu.new()
+	_pause_menu.visible = false
+	_pause_menu.resumed.connect(_close_pause_menu)
+	_pause_menu.save_requested.connect(func() -> void:
+		_close_pause_menu()
+		_quick_save())
+	_pause_menu.load_requested.connect(func() -> void:
+		_close_pause_menu()
+		_quick_load())
+	_pause_menu.main_menu_requested.connect(_back_to_menu)
+	_pause_menu.quit_requested.connect(func() -> void:
+		_quick_save()
+		get_tree().quit())
+	root.add_child(_pause_menu)
+	# UI-2 part 1: on the world map the messages go to the bottom-left corner, off the map's
+	# own names (top-left in the province, under the top bar).
+	_world_map.visibility_changed.connect(_place_notes)
+
+
+func _place_notes() -> void:
+	if _world_map.visible:
+		_notes.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, 12)
+		_notes.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		_notes.alignment = BoxContainer.ALIGNMENT_END
+	else:
+		_notes.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		_notes.grow_vertical = Control.GROW_DIRECTION_END
+		_notes.alignment = BoxContainer.ALIGNMENT_BEGIN
+		_notes.position = Vector2(12, 64)
 
 
 ## Battles of the player's armies and fleets on the world map (M8 part 2): the choice how to
@@ -597,6 +634,26 @@ func _toggle_stocks() -> void:
 		_stocks.open(sim.province)
 
 
+## Whether Esc has something to close before the pause menu: a panel, a window, selected soldiers.
+func _anything_open() -> bool:
+	return _building_panel.visible or _agent_panel.visible or _ship_panel.visible or _army_panel.visible \
+			or not _selected.is_empty() or _follow_id != 0
+
+
+func _open_pause_menu() -> void:
+	if _pause_menu.visible:
+		return
+	_paused_before_menu = Game.paused
+	Game.paused = true
+	_pause_menu.visible = true
+	_pause_menu.move_to_front()
+
+
+func _close_pause_menu() -> void:
+	_pause_menu.visible = false
+	Game.paused = _paused_before_menu
+
+
 func _close_panels() -> void:
 	_building_panel.visible = false
 	_agent_panel.visible = false
@@ -632,6 +689,9 @@ func _process(delta: float) -> void:
 	if tile != _hover or _preview_dirty \
 			or (_preview_stale and _time - _preview_time >= PREVIEW_REFRESH):
 		_hover = tile
+		if _line_from != NONE_TILE:
+			# The started road follows the cursor also when the camera moves under it.
+			_drag_tiles = LineTool.l_path(_line_from, _hover, _line_y_first)
 		_preview_dirty = false
 		_preview_stale = false
 		_preview_time = _time
@@ -672,9 +732,12 @@ func _set_tool(tool: Dictionary) -> void:
 	_tool = tool
 	_drag_tiles.clear()
 	_dragging = false
+	_line_from = NONE_TILE
 	_cancelling = false
 	_turn.begin()
-	_build.show_rotate_hint(tool.get("kind", &"") == &"building")
+	var tool_kind: StringName = tool.get("kind", &"")
+	_build.show_hint("ui.build.rotate_hint" if tool_kind == &"building"
+			else "ui.build.line_hint" if tool_kind == &"road" or tool_kind == &"paving" else "")
 	if not tool.is_empty():
 		_close_panels()
 	_update_preview()
@@ -683,6 +746,9 @@ func _set_tool(tool: Dictionary) -> void:
 func _update_preview() -> void:
 	if view == null:
 		return
+	# UI-2 part 1: buildings in front of the cursor fade while any build tool is in hand.
+	var building_tool: bool = not _tool.is_empty() and _tool.get("kind", &"") != &"demolish"
+	view.buildings.fade_in_front_of(_hover if building_tool else BuildingLayer.NONE_TILE)
 	var tiles: Dictionary[Vector2i, String] = {}
 	var kind: StringName = _tool.get("kind", &"")
 	var ghost := ""
@@ -859,6 +925,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if mb.pressed and _tool.is_empty() and not _selected.is_empty():
 			_order_at(get_global_mouse_position())
 			return
+		if mb.pressed and _line_from != NONE_TILE:
+			_cancel_line()
+			return
 		if mb.pressed:
 			if _tool.get("kind", &"") == &"paving" and not _dragging 					and sim.province.cancel_paving_error(_hover) == &"":
 				_start_cancelling()
@@ -891,6 +960,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			if line != _drag_tiles:
 				_drag_tiles = line
 				_update_preview()
+		elif _line_from != NONE_TILE:
+			var l_line := LineTool.l_path(_line_from, _hover, _line_y_first)
+			if l_line != _drag_tiles:
+				_drag_tiles = l_line
+				_update_preview()
 		elif kind == &"pier" or kind == &"quay":
 			# Quays are drawn like walls: a straight line in 8 directions from the first tile (N1).
 			var line := BuildQuayCommand.line(_drag_tiles[0], _hover)
@@ -901,6 +975,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_extend_drag(_hover)
 			_update_preview()
 		return
+	if _pause_menu.visible:
+		if event.is_action_pressed(&"ui_cancel"):
+			_close_pause_menu()
+		return
 	if _world_map.visible:
 		if event.is_action_pressed(&"ui_cancel") or event.is_action_pressed(&"world_map"):
 			_toggle_world_map()
@@ -909,11 +987,21 @@ func _unhandled_input(event: InputEvent) -> void:
 		_toggle_world_map()
 	elif event.is_action_pressed(&"toggle_build_menu"):
 		_show_build_menu(not _build.visible)
+	elif event.is_action_pressed(&"ui_cancel") and _line_from != NONE_TILE:
+		_cancel_line()
+	elif event.is_action_pressed(&"rotate_building") and _line_from != NONE_TILE:
+		_line_y_first = not _line_y_first
+		_drag_tiles = LineTool.l_path(_line_from, _hover, _line_y_first)
+		_update_preview()
 	elif event.is_action_pressed(&"ui_cancel"):
+		# UI-2 part 1: Esc first puts the tool away, then closes what is open, and only then
+		# opens the pause menu.
 		if not _tool.is_empty():
 			_set_tool({})
-		else:
+		elif _anything_open():
 			_close_panels()
+		else:
+			_open_pause_menu()
 	elif event.is_action_pressed(&"toggle_pause"):
 		Game.toggle_pause()
 	elif event.is_action_pressed(&"game_speed_up"):
@@ -962,7 +1050,15 @@ func _on_left_press() -> void:
 			var command := _demolish_target(_hover)
 			if command != null:
 				_execute(command)
-		&"road", &"paving", &"pier", &"quay", &"bridge", &"stone_bridge", &"field", &"plant", &"palisade", &"stone_wall", &"stairs":
+		&"road", &"paving":
+			if _line_from == NONE_TILE:
+				_line_from = _hover
+				_dragging = true
+				_drag_tiles = [_hover]
+				_update_preview()
+			else:
+				_lay_line()
+		&"pier", &"quay", &"bridge", &"stone_bridge", &"field", &"plant", &"palisade", &"stone_wall", &"stairs":
 			_dragging = true
 			_drag_tiles = [_hover]
 			_update_preview()
@@ -985,6 +1081,32 @@ func _on_left_release() -> void:
 		return
 	if not _dragging:
 		return
+	if _line_from != NONE_TILE:
+		# A road or cobbles wait for the second click, unless the mouse was dragged away with the
+		# button held: then the line is laid at once (the old way still works).
+		if _hover != _line_from:
+			_lay_line()
+		return
+	_lay_dragged()
+
+
+## Lays the started road or cobbles along the L to the cursor.
+func _lay_line() -> void:
+	_drag_tiles = LineTool.l_path(_line_from, _hover, _line_y_first)
+	_line_from = NONE_TILE
+	_lay_dragged()
+
+
+## Forgets a started road or cobbles (right click or Esc); the tool stays.
+func _cancel_line() -> void:
+	_line_from = NONE_TILE
+	_dragging = false
+	_drag_tiles.clear()
+	_update_preview()
+
+
+## Builds what the dragged or clicked tiles of the tool describe.
+func _lay_dragged() -> void:
 	_dragging = false
 	var kind: StringName = _tool.get("kind", &"")
 	if kind == &"road" or kind == &"paving":
