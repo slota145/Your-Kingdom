@@ -48,7 +48,8 @@ def export(pid):
     out_dir = os.path.join(ROOT, "assets", "characters", pid)
     os.makedirs(out_dir, exist_ok=True)
     # Old sheets of clips the new model no longer has (the code-drawn generic ones) must not linger.
-    first = gen_civilians.PROFESSIONS[pid]["activities"][0]
+    acts = gen_civilians.PROFESSIONS[pid]["activities"]
+    first = acts[0] if acts else ""
     written = set()
     for clip, info in sk["animations"].items():
         n = len(info["directions"]["s"]["frames"])

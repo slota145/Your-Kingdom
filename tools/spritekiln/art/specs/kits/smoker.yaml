@@ -1,0 +1,33 @@
+spritekiln: 1
+# G3 part 2a. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `smoker`, gen_civilians.py).
+kit: smoker
+license: CC0-1.0
+summary: "a bee smoker: a small tin can on a handle with a spout"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  smoker: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  handle:
+    material: wood
+    space: smoker
+    priority: 2
+    prims:
+      - cylinder: {a: [0, -0.04, 0], b: [0, 0.08, 0], r: 0.02}
+  can:
+    material: steel
+    space: smoker
+    priority: 2
+    blend: 0.01
+    prims:
+      - cylinder: {a: [0, 0.08, 0], b: [0, 0.2, 0], r: 0.05}
+      - cone: {a: [0, 0.2, 0], b: [0, 0.27, 0.03], r: [0.04, 0.015]}

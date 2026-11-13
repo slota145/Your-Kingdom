@@ -259,7 +259,9 @@ const ACTIVITIES := {
 ## whether the good hides behind the body when facing the camera (true) or away (false).
 ## Townsfolk drawn with SpriteKiln since G3 (tools/spritekiln/gen_civilians.py, ART_SPEC §10.27):
 ## this script no longer writes them, so a run cannot bring back the old look.
-const SPRITEKILN := ["porter", "farmer", "builder"]
+const SPRITEKILN := ["porter", "farmer", "builder",
+		"woodcutter", "forester", "stonecutter", "miner", "clay_digger", "fisher", "angler", "hunter", "shepherd",
+		"swineherd", "groom", "beekeeper", "orchardist", "hop_grower", "winegrower", "carter", "docker"]
 
 const CARRY := {
 	"sack": {"hands": [Vector3(3.5, 0.5, 31.0), Vector3(-5.0, 1.0, 17.0)], "anchor": Vector3(4.5, -0.5, 32.0), "behind_camera": false},

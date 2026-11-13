@@ -9,6 +9,7 @@ Run: python3 tools/spritekiln/gen_civilians.py [<id> ...]
 Then render each: cd tools/spritekiln/art/specs/characters/<id> && spritekiln render <id>.yaml
 and copy into the game: python3 tools/spritekiln/export_civilian.py <id> ...
 """
+import colorsys
 import os
 import sys
 
@@ -27,6 +28,20 @@ RAMPS = {
     "hose_dark": ["#120e0b", "#2a221c", "#40362c", "#584a3c", "#706050", "#8a7864"],
     "hose": ["#120e0b", "#2e2620", "#4a4035", "#665a4b", "#837563", "#a3937c"],
 }
+
+
+
+def ramp_from(rgb):
+    """Six tones (index 0 = outline) around an old code-drawn colour (generate_characters.gd PEOPLE),
+    the colour itself near tone 4; darker tones a little more saturated and shifted warm."""
+    h, sat, v = colorsys.rgb_to_hsv(*rgb)
+    tones = []
+    for k, (vm, sm, dh) in enumerate([(0.17, 1.15, -0.02), (0.40, 1.10, -0.014), (0.62, 1.05, -0.007),
+                                      (0.82, 1.0, 0.0), (1.0, 0.95, 0.004), (1.17, 0.85, 0.008)]):
+        r, g, b = colorsys.hsv_to_rgb((h + dh) % 1.0, min(1.0, sat * sm), min(1.0, v * vm))
+        tones.append("#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255)))
+    return tones
+
 
 # Shared work moves. Tools turn in the torso's frame at the fist (tool_pitch tips the haft forward from
 # upright: 1.57 level ahead, more points it down to the ground; tool_yaw turns it about the body's axis).
@@ -98,21 +113,140 @@ MOVES = {
     ],
 }
 
-# Activity (the game's work_<activity>) -> move.
+MOVES.update({
+    # a two-handed overhead swing (an axe at a trunk, a pick at the rock face)
+    "chop": [
+        f"hand_R: [0.10, 0.30, 0.36], hand_L: [0.04, 0.24, 0.34], tool_pitch: 1.6, lean: 0.24, bob: -0.03, {STANCE}",
+        f"hand_R: [0.10, 0.62, 0.14], hand_L: [0.04, 0.56, 0.12], tool_pitch: 0.4, lean: 0.04, {STANCE}",
+        f"hand_R: [0.09, 0.86, -0.08], hand_L: [0.04, 0.80, -0.08], tool_pitch: -0.7, lean: -0.08, head_pitch: -0.08, squash: 0.98, {STANCE}",
+        f"hand_R: [0.09, 0.88, -0.10], hand_L: [0.04, 0.82, -0.10], tool_pitch: -0.9, lean: -0.10, head_pitch: -0.08, squash: 0.97, {STANCE}",
+        f"hand_R: [0.08, 0.50, 0.30], hand_L: [0.04, 0.44, 0.28], tool_pitch: 0.9, lean: 0.16, squash: 1.02, {STANCE}",
+        f"hand_R: [0.08, 0.26, 0.40], hand_L: [0.03, 0.20, 0.38], tool_pitch: 1.75, lean: 0.30, bob: -0.04, {STANCE}",
+    ],
+    # bent over a block at knee height: short hammer taps on a chisel held in the left hand (dressing stone, ore)
+    "knock": [
+        f"hand_R: [0.16, 0.02, 0.38], hand_L: [0.06, -0.04, 0.40], tool_pitch: 2.1, lean: 0.48, bob: -0.12, head_pitch: 0.15, {STANCE}",
+        f"hand_R: [0.18, 0.16, 0.32], hand_L: [0.06, -0.04, 0.40], tool_pitch: 1.4, lean: 0.46, bob: -0.12, head_pitch: 0.15, {STANCE}",
+        f"hand_R: [0.18, 0.26, 0.26], hand_L: [0.06, -0.04, 0.40], tool_pitch: 0.8, lean: 0.44, bob: -0.12, head_pitch: 0.15, {STANCE}",
+        f"hand_R: [0.16, 0.04, 0.38], hand_L: [0.06, -0.04, 0.40], tool_pitch: 2.1, lean: 0.48, bob: -0.13, head_pitch: 0.15, {STANCE}",
+    ],
+    # both hands turn a winch handle round in front at waist height (hoist, wind)
+    "crank": [
+        f"hand_R: [0.12, 0.38, 0.34], hand_L: [0.04, 0.38, 0.34], lean: 0.12, {STANCE}",
+        f"hand_R: [0.12, 0.30, 0.44], hand_L: [0.04, 0.30, 0.44], lean: 0.18, {STANCE}",
+        f"hand_R: [0.12, 0.18, 0.44], hand_L: [0.04, 0.18, 0.44], lean: 0.22, bob: -0.02, {STANCE}",
+        f"hand_R: [0.12, 0.10, 0.34], hand_L: [0.04, 0.10, 0.34], lean: 0.20, bob: -0.03, {STANCE}",
+        f"hand_R: [0.12, 0.18, 0.24], hand_L: [0.04, 0.18, 0.24], lean: 0.14, bob: -0.02, {STANCE}",
+        f"hand_R: [0.12, 0.30, 0.24], hand_L: [0.04, 0.30, 0.24], lean: 0.10, {STANCE}",
+    ],
+    # a spade: drive it in, lever the soil up and throw it aside (dig, muck out)
+    "dig": [
+        f"hand_R: [0.12, 0.20, 0.26], hand_L: [0.08, 0.00, 0.28], tool_pitch: 2.95, lean: 0.22, {STANCE}",
+        f"hand_R: [0.12, 0.12, 0.27], hand_L: [0.08, -0.08, 0.29], tool_pitch: 3.0, lean: 0.26, bob: -0.05, {STANCE}",
+        f"hand_R: [0.12, 0.18, 0.16], hand_L: [0.08, 0.02, 0.26], tool_pitch: 2.55, lean: 0.30, bob: -0.04, {STANCE}",
+        f"hand_R: [0.14, 0.34, 0.18], hand_L: [0.08, 0.20, 0.28], tool_pitch: 2.1, lean: 0.20, {STANCE}",
+        f"hand_R: [0.20, 0.40, 0.14], hand_L: [0.14, 0.26, 0.26], tool_pitch: 1.9, tool_yaw: 0.8, twist: 0.3, lean: 0.14, {STANCE}",
+        f"hand_R: [0.12, 0.30, 0.20], hand_L: [0.08, 0.10, 0.26], tool_pitch: 2.7, twist: 0.1, lean: 0.18, {STANCE}",
+    ],
+    # standing at ease, both hands on top of a tool planted in the ground in front (a rest, the shepherd's watch)
+    "lean": [
+        f"hand_R: [0.10, 0.22, 0.30], hand_L: [0.06, 0.24, 0.30], tool_pitch: 3.05, lean: 0.06, head_yaw: 0.2, {STANCE}",
+        f"hand_R: [0.10, 0.22, 0.30], hand_L: [0.06, 0.24, 0.30], tool_pitch: 3.05, lean: 0.06, head_yaw: 0.1, bob: -0.01, {STANCE}",
+        f"hand_R: [0.10, 0.22, 0.30], hand_L: [0.06, 0.24, 0.30], tool_pitch: 3.05, lean: 0.06, head_yaw: -0.15, {STANCE}",
+        f"hand_R: [0.10, 0.22, 0.30], hand_L: [0.06, 0.24, 0.30], tool_pitch: 3.05, lean: 0.06, head_yaw: -0.25, bob: -0.01, {STANCE}",
+    ],
+    # a staff upright at the side, the hand high on it, looking round over the flock
+    "watch": [
+        f"hand_R: [0.30, 0.30, 0.16], hand_L: [0.30, 0.04, 0.02], tool_pitch: 0.1, head_yaw: 0.3, {STANCE}",
+        f"hand_R: [0.30, 0.30, 0.16], hand_L: [0.30, 0.04, 0.02], tool_pitch: 0.1, head_yaw: 0.1, bob: -0.01, {STANCE}",
+        f"hand_R: [0.30, 0.30, 0.16], hand_L: [0.30, 0.04, 0.02], tool_pitch: 0.1, head_yaw: -0.15, {STANCE}",
+        f"hand_R: [0.30, 0.30, 0.16], hand_L: [0.30, 0.04, 0.02], tool_pitch: 0.1, head_yaw: -0.3, bob: -0.01, {STANCE}",
+    ],
+    # a fishing rod swung back over the shoulder and whipped out over the water
+    "cast": [
+        f"hand_R: [0.18, 0.36, 0.30], hand_L: [0.10, 0.24, 0.26], tool_yaw: 0.4, tool_pitch: 1.1, lean: 0.08, {STANCE}",
+        f"hand_R: [0.18, 0.62, 0.12], hand_L: [0.10, 0.30, 0.22], tool_pitch: 0.0, lean: -0.02, {STANCE}",
+        f"hand_R: [0.18, 0.74, -0.02], hand_L: [0.10, 0.30, 0.22], tool_pitch: -0.7, lean: -0.08, head_pitch: -0.06, {STANCE}",
+        f"hand_R: [0.18, 0.58, 0.24], hand_L: [0.10, 0.30, 0.24], tool_pitch: 0.6, lean: 0.10, {STANCE}",
+        f"hand_R: [0.18, 0.40, 0.38], hand_L: [0.10, 0.28, 0.28], tool_yaw: 0.4, tool_pitch: 1.3, lean: 0.16, {STANCE}",
+        f"hand_R: [0.18, 0.36, 0.34], hand_L: [0.10, 0.24, 0.28], tool_yaw: 0.4, tool_pitch: 1.2, lean: 0.10, {STANCE}",
+    ],
+    # holding the rod out still, waiting for a bite
+    "hold": [
+        f"hand_R: [0.18, 0.34, 0.32], hand_L: [0.10, 0.22, 0.28], tool_yaw: 0.4, tool_pitch: 1.15, lean: 0.06, {STANCE}",
+        f"hand_R: [0.18, 0.34, 0.32], hand_L: [0.10, 0.22, 0.28], tool_yaw: 0.4, tool_pitch: 1.12, lean: 0.06, bob: -0.01, {STANCE}",
+        f"hand_R: [0.18, 0.34, 0.32], hand_L: [0.10, 0.22, 0.28], tool_yaw: 0.4, tool_pitch: 1.15, lean: 0.06, head_yaw: 0.1, {STANCE}",
+        f"hand_R: [0.18, 0.34, 0.32], hand_L: [0.10, 0.22, 0.28], tool_yaw: 0.4, tool_pitch: 1.18, lean: 0.06, bob: -0.01, {STANCE}",
+    ],
+    # the rod raised, the left hand winding the line in
+    "reel": [
+        f"hand_R: [0.18, 0.40, 0.30], hand_L: [0.08, 0.30, 0.30], tool_yaw: 0.4, tool_pitch: 0.8, lean: 0.0, {STANCE}",
+        f"hand_R: [0.18, 0.40, 0.30], hand_L: [0.08, 0.24, 0.36], tool_yaw: 0.4, tool_pitch: 0.78, lean: 0.0, {STANCE}",
+        f"hand_R: [0.18, 0.40, 0.30], hand_L: [0.08, 0.18, 0.30], tool_yaw: 0.4, tool_pitch: 0.76, lean: 0.02, {STANCE}",
+        f"hand_R: [0.18, 0.40, 0.30], hand_L: [0.08, 0.24, 0.24], tool_yaw: 0.4, tool_pitch: 0.78, lean: 0.0, {STANCE}",
+    ],
+    # a knife at chest height, short strokes away from the body along a piece held in the left hand
+    "whittle": [
+        f"hand_R: [0.06, 0.34, 0.30], hand_L: [0.10, 0.34, 0.32], tool_pitch: 1.4, lean: 0.14, head_pitch: 0.15, {STANCE}",
+        f"hand_R: [0.14, 0.34, 0.36], hand_L: [0.10, 0.34, 0.32], tool_pitch: 1.5, lean: 0.14, head_pitch: 0.15, {STANCE}",
+        f"hand_R: [0.24, 0.32, 0.40], hand_L: [0.10, 0.34, 0.32], tool_pitch: 1.6, lean: 0.14, head_pitch: 0.15, {STANCE}",
+        f"hand_R: [0.10, 0.34, 0.32], hand_L: [0.10, 0.34, 0.32], tool_pitch: 1.4, lean: 0.14, head_pitch: 0.15, {STANCE}",
+    ],
+    # long brush strokes along something at chest height in front (a horse's flank)
+    "brush": [
+        f"hand_R: [0.06, 0.42, 0.42], hand_L: [0.24, 0.46, 0.44], tool_pitch: 1.6, tool_yaw: -0.4, lean: 0.12, {STANCE}",
+        f"hand_R: [0.16, 0.38, 0.44], hand_L: [0.24, 0.46, 0.44], tool_pitch: 1.6, tool_yaw: 0.0, lean: 0.12, {STANCE}",
+        f"hand_R: [0.28, 0.32, 0.42], hand_L: [0.24, 0.46, 0.44], tool_pitch: 1.6, tool_yaw: 0.4, lean: 0.14, {STANCE}",
+        f"hand_R: [0.18, 0.40, 0.40], hand_L: [0.24, 0.46, 0.44], tool_pitch: 1.6, tool_yaw: 0.1, lean: 0.12, {STANCE}",
+    ],
+    # a smoker held out over a hive, gently swung, the left hand lifting the lid
+    "tend": [
+        f"hand_R: [0.20, 0.18, 0.36], hand_L: [0.10, 0.10, 0.40], tool_pitch: 0.4, lean: 0.20, head_pitch: 0.1, {STANCE}",
+        f"hand_R: [0.24, 0.24, 0.38], hand_L: [0.10, 0.12, 0.40], tool_pitch: 0.6, lean: 0.20, head_pitch: 0.1, {STANCE}",
+        f"hand_R: [0.26, 0.28, 0.36], hand_L: [0.10, 0.14, 0.40], tool_pitch: 0.7, lean: 0.20, head_pitch: 0.1, {STANCE}",
+        f"hand_R: [0.22, 0.22, 0.36], hand_L: [0.10, 0.12, 0.40], tool_pitch: 0.5, lean: 0.20, head_pitch: 0.1, {STANCE}",
+    ],
+    # the archer's draw (archer.yaml attack): nock, raise, draw to the cheek, hold, loose, lower
+    "aim": [
+        "arrow: 1, bow_x: -0.25, bow_z: 0.75, hand_L: [0.2, 0.18, 0.18], hand_R: [0.12, 0.2, 0.12]",
+        "arrow: 1, bow_x: 0.25, bow_z: 2.75, bow_roll: -1.57, hand_L: [0.1, 0.42, 0.38], hand_R: [0.04, 0.4, 0.18], twist: -0.2",
+        "arrow: 1, bow_x: 0, bow_z: 1.25, bow_roll: -1.57, hand_L: [0.05, 0.47, 0.5], hand_R: [-0.02, 0.5, -0.02], twist: -0.45, lean: -0.05, foot_L: [0.16, 0, 0.14], foot_R: [0.14, 0, -0.12]",
+        "arrow: 1, bow_x: 0, bow_z: 1.25, bow_roll: -1.57, hand_L: [0.05, 0.47, 0.52], hand_R: [-0.03, 0.5, -0.06], twist: -0.5, lean: -0.05, foot_L: [0.16, 0, 0.14], foot_R: [0.14, 0, -0.12]",
+        "arrow: 0, bow_x: 0, bow_z: 1.25, bow_roll: -1.57, hand_L: [0.05, 0.47, 0.54], hand_R: [-0.12, 0.52, -0.14], twist: -0.5, foot_L: [0.16, 0, 0.14], foot_R: [0.14, 0, -0.12]",
+        "arrow: 0, bow_x: -0.25, bow_z: 1.25, bow_roll: 0, hand_L: [0.18, 0.22, 0.2], hand_R: [0.14, 0.16, 0.1]",
+    ],
+})
+
+# Activity (the game's work_<activity>) -> (move, tool): tool None = the profession's own, "" = empty hands.
 ACTIVITIES = {
-    "build": "hammer", "plow": "till", "weed": "scrape", "harvest": "reap", "sow": "sow", "bind": "stoop",
-    "load": "lift",
+    "build": ("hammer", None), "plow": ("till", "hoe"), "weed": ("scrape", "hoe"), "harvest": ("reap", "sickle"),
+    "sow": ("sow", ""), "bind": ("stoop", ""), "load": ("lift", ""), "hand_over": ("lift", ""),
+    "chop": ("chop", "axe"), "hew": ("chop", "pick"), "pick": ("chop", "pick"), "shape": ("knock", "hammer"),
+    "hoist": ("crank", ""), "wind": ("crank", ""), "descend": ("stoop", ""),
+    "dig": ("dig", "spade"), "muck": ("dig", "spade"), "plant": ("stoop", ""), "rest": ("lean", None),
+    "cast": ("cast", "rod"), "wait_bite": ("hold", "rod"), "reel": ("reel", "rod"),
+    "carve": ("whittle", "knife"), "skin": ("stoop", "knife"), "bend": ("stoop", ""), "aim": ("aim", "bow"),
+    "herd": ("watch", "crook"), "shear": ("stoop", "shears"), "feed": ("sow", ""),
+    "groom": ("brush", "brush"), "tend_hives": ("tend", "smoker"), "collect_honey": ("stoop", ""),
 }
+FARM = ["plow", "sow", "harvest", "bind", "weed"]
 
 # Tools: a kit from art/specs/kits or a built-in one, with its params; the moves drive `pitch` through tool_pitch.
 TOOLS = {
     "hammer": "{kit: hammer, as: tool, at: wrist_R, with: {length: 0.30, head: 0.06, width: 0.065, tilt: 0.3, pitch: tool_pitch, cheat: tool_cheat}}",
     "hoe": "{kit: hoe, as: tool, at: wrist_R, with: {pitch: tool_pitch}}",
     "sickle": "{kit: sickle, as: tool, at: wrist_R, with: {pitch: tool_pitch}}",
+    "axe": "{kit: axe, as: tool, at: wrist_R, with: {length: 0.62, cheat: 0}}",
+    "pick": "{kit: pick, as: tool, at: wrist_R}",
+    "spade": "{kit: spade, as: tool, at: wrist_R}",
+    "rod": "{kit: rod, as: tool, at: wrist_R}",
+    "knife": "{kit: knife, as: tool, at: wrist_R}",
+    "shears": "{kit: shears, as: tool, at: wrist_R}",
+    "crook": "{kit: crook, as: tool, at: wrist_R}",
+    "brush": "{kit: brush, as: tool, at: wrist_R}",
+    "smoker": "{kit: smoker, as: tool, at: wrist_R}",
+    "bow": "{kit: bow, as: tool, at: wrist_L, with: {length: 1.3, depth: 0.17, thick: 0.06, cheat: 0}}",
 }
-
-# Moves that need a different tool than the profession's own (a farmer ploughs with a hoe, reaps with a sickle).
-MOVE_TOOL = {"till": "hoe", "scrape": "hoe", "reap": "sickle", "sow": "", "stoop": "", "lift": ""}
 
 # Headwear parts (head space; the head kit's crown is near y 0.33 head units).
 HEADWEAR = {
@@ -153,12 +287,84 @@ HEADWEAR = {
 """,
 }
 
+HEADWEAR.update({
+    "wide": """  hat_brim:           # a wide felt hat with a low round crown
+    material: hat_m
+    space: head
+    prims:
+      - cylinder: {a: [0, 0.25, -0.02], b: [0, 0.272, -0.02], r: 0.25}
+  hat_crown:
+    material: hat_m
+    space: head
+    blend: 0.02
+    prims:
+      - ellipsoid: {c: [0, 0.27, -0.025], r: [0.155, 0.1, 0.16]}
+    cut:
+      - plane: {n: [0, -1, 0], c: [0, 0.26, 0]}
+""",
+    "veil": """  hat_brim:           # a beekeeper's straw hat with a pale veil hanging round the head
+    material: hat_m
+    space: head
+    prims:
+      - cylinder: {a: [0, 0.26, -0.02], b: [0, 0.282, -0.02], r: 0.23}
+  hat_crown:
+    material: hat_m
+    space: head
+    prims:
+      - cone: {a: [0, 0.27, -0.02], b: [0, 0.36, -0.03], r: [0.15, 0.12]}
+  veil:
+    material: veil_m
+    space: head
+    prims:
+      - cone: {a: [0, 0.26, -0.02], b: [0, -0.04, -0.01], r: [0.215, 0.17], shell: 0.045}
+""",
+    "hood": "",   # the hood kit (HOOD_USE)
+    "none": "",
+})
+
 # The hair kit under each headwear (replaces the base's `hair` use).
 HAIR = {
     "kerchief": None,
+    "wide": "{kit: hair, at: head, with: {fringe: 0.4, part: 0.2, locks: 0.5, length: 0.2, volume: 0.8}}",
+    "veil": "{kit: hair, at: head, with: {fringe: 0.3, part: 0.1, locks: 0.3, length: 0.1, volume: 0.7}}",
+    "hood": "{kit: hair, at: head, with: {fringe: 0.4, part: 0.2, locks: 0.3, length: 0.1, volume: 0.7}}",
+    "none": "{kit: hair, at: head, with: {fringe: 0.4, part: 0.2, locks: 0.5, length: 0.2, volume: 0.9}}",
     "cap": "{kit: hair, at: head, with: {fringe: 0.3, part: 0.1, locks: 0.4, length: 0.15, volume: 0.7}}",
     "straw": "{kit: hair, at: head, with: {fringe: 0.4, part: 0.2, locks: 0.5, length: 0.2, volume: 0.8}}",
 }
+
+HOOD_USE = "{kit: hood, as: hood, at: head, with: {size: 0.9, depth: 0.2, tip: 0.1, tilt: -0.25, mantle: false}, materials: {hood: hat_m}}"
+
+BEARD = """  beard:              # a full short beard on the jaw and chin
+    material: hair
+    space: head
+    blend: 0.02
+    prims:
+      - ellipsoid: {c: [0, 0.01, 0.075], r: [0.095, 0.065, 0.06]}
+      - ellipsoid: {c: [0, -0.035, 0.085], r: [0.06, 0.05, 0.045]}
+"""
+
+CLOAK_USE = "{kit: cape, as: cloak, at: pelvis, with: {length: 0.62, width: 0.44, flare: 0.16, drape: 0.08, dip: 0.15}, materials: {cape: cloak_m}}"
+
+QUIVER = """  quiver:             # on the back, arrows sticking up over the right shoulder (as the archer's)
+    material: leather
+    space: torso_rot
+    prims:
+      - cylinder: {a: [-0.08, 0.05, -0.2], b: [-0.17, 0.52, -0.23], r: 0.055}
+  quiver_arrows:
+    material: feather
+    space: torso_rot
+    min_cover: 2
+    prims:
+      - cone: {a: [-0.17, 0.5, -0.23], b: [-0.21, 0.66, -0.25], r: [0.045, 0.03]}
+  nocked:             # the arrow while drawing: from the string hand past the bow
+    material: wood
+    when: "arrow > 0.5"
+    priority: 3
+    min_cover: 2
+    prims:
+      - cylinder: {a: "@wrist_R", b: {between: ["@wrist_R", "@wrist_L"], t: 1.25}, r: 0.018}
+"""
 
 APRON = """  apron:              # a leather or linen apron from the belt to the knees
     material: apron_m
@@ -177,32 +383,100 @@ SEEDBAG = """  seedbag:            # the seed bag on the left hip while sowing
       - cylinder: {a: [0.22, 0.10, 0.06], b: [-0.12, 0.52, 0.0], r: 0.018}
 """
 
+# Looks: a ramp name from RAMPS or an old code-drawn RGB colour (generate_characters.gd PEOPLE) for
+# shirt, hose, hat, apron, hair and cloak; headwear from HEADWEAR; activities as the game names them.
 PROFESSIONS = {
     "porter": {"summary": "porter: a brown wool jerkin, grey hose, a red kerchief over the hair",
                "shirt": "brown", "hose": "hose", "hat": "kerchief", "hat_ramp": "red",
                "activities": ["load"]},
     "farmer": {"summary": "farmer: an undyed linen smock, brown hose, a wide straw hat",
                "shirt": "flax", "hose": "hose_dark", "hat": "straw", "hat_ramp": "straw", "apron_ramp": "brown",
-               "activities": ["plow", "sow", "harvest", "bind", "weed"]},
+               "activities": FARM},
     "builder": {"summary": "builder: a grey shirt, a leather apron, a green felt cap, a carpenter's hammer",
                 "shirt": "grey", "hose": "hose", "hat": "cap", "hat_ramp": "green", "apron": True,
                 "apron_ramp": "leather", "tool": "hammer", "activities": ["build"]},
+    # G3 part 2a: raw materials and farming
+    "woodcutter": {"summary": "woodcutter: a red wool shirt, a full beard, an axe",
+                   "shirt": (0.72, 0.2, 0.16), "hose": (0.32, 0.28, 0.22), "hair": (0.35, 0.22, 0.12),
+                   "hat": "none", "beard": True, "activities": ["chop", "bind"]},
+    "forester": {"summary": "forester: a green shirt and cap, a spade for planting saplings",
+                 "shirt": (0.3, 0.5, 0.28), "hose": (0.36, 0.3, 0.22), "hair": (0.4, 0.26, 0.14),
+                 "hat": "cap", "hat_ramp": (0.22, 0.38, 0.2), "tool": "spade", "activities": ["dig", "plant", "rest"]},
+    "stonecutter": {"summary": "stonecutter: a grey shirt, a leather apron, a grey beard, a pick and a mallet",
+                    "shirt": (0.58, 0.6, 0.62), "hose": (0.32, 0.3, 0.28), "hair": (0.3, 0.3, 0.3),
+                    "hat": "none", "beard": True, "apron": True, "apron_ramp": (0.5, 0.36, 0.22),
+                    "activities": ["hew", "shape", "hoist"]},
+    "miner": {"summary": "miner: a brown shirt, a leather cap and apron, a beard, a pick",
+              "shirt": (0.55, 0.42, 0.3), "hose": (0.3, 0.27, 0.24), "hair": (0.28, 0.2, 0.14),
+              "hat": "cap", "hat_ramp": (0.38, 0.27, 0.17), "beard": True, "apron": True,
+              "apron_ramp": (0.42, 0.3, 0.2), "activities": ["pick", "shape", "descend", "wind"]},
+    "clay_digger": {"summary": "clay digger: a clay-coloured shirt and kerchief, a spade",
+                    "shirt": (0.66, 0.5, 0.4), "hose": (0.45, 0.35, 0.28), "hair": (0.25, 0.18, 0.12),
+                    "hat": "kerchief", "hat_ramp": (0.55, 0.4, 0.3), "activities": ["dig"]},
+    "fisher": {"summary": "fisher: a blue shirt, a wide yellow hat, a beard; hauls in the catch",
+               "shirt": (0.3, 0.42, 0.55), "hose": (0.36, 0.33, 0.3), "hair": (0.55, 0.42, 0.25),
+               "hat": "wide", "hat_ramp": (0.75, 0.62, 0.3), "beard": True, "activities": [], "work": "lift"},
+    "angler": {"summary": "angler: a light blue shirt, a wide hat, a fishing rod",
+               "shirt": (0.36, 0.5, 0.7), "hose": (0.4, 0.36, 0.3), "hair": (0.5, 0.36, 0.2),
+               "hat": "wide", "hat_ramp": (0.55, 0.45, 0.3), "activities": ["cast", "wait_bite", "reel"]},
+    "hunter": {"summary": "hunter: a drab tunic, a green hood, a quiver on the back, a bow and a knife",
+               "shirt": (0.4, 0.36, 0.24), "hose": (0.3, 0.26, 0.2), "hair": (0.3, 0.2, 0.12),
+               "hat": "hood", "hat_ramp": (0.26, 0.34, 0.2), "quiver": True, "tool": "knife",
+               "activities": ["carve", "skin", "bend", "aim"]},
+    "shepherd": {"summary": "shepherd: an undyed wool shirt and cloak, a wide hat, a grey beard, a crook",
+                 "shirt": (0.72, 0.66, 0.54), "hose": (0.42, 0.36, 0.28), "hair": (0.5, 0.45, 0.4),
+                 "hat": "wide", "hat_ramp": (0.45, 0.35, 0.24), "beard": True, "cloak": (0.55, 0.5, 0.42),
+                 "tool": "crook", "activities": ["herd", "shear"]},
+    "swineherd": {"summary": "swineherd: a tan shirt, a straw hat, a spade for mucking out",
+                  "shirt": (0.6, 0.52, 0.36), "hose": (0.38, 0.3, 0.22), "hair": (0.55, 0.38, 0.2),
+                  "hat": "straw", "hat_ramp": "straw", "apron_ramp": "brown", "activities": ["feed", "muck"]},
+    "groom": {"summary": "groom: a tan shirt, blue hose, a wide hat, a curry brush",
+              "shirt": (0.6, 0.48, 0.32), "hose": (0.3, 0.3, 0.36), "hair": (0.45, 0.3, 0.16),
+              "hat": "wide", "hat_ramp": (0.42, 0.3, 0.18), "apron_ramp": "brown", "activities": ["feed", "groom"]},
+    "beekeeper": {"summary": "beekeeper: a pale smock, a straw hat with a veil, a smoker",
+                  "shirt": (0.9, 0.86, 0.72), "hose": (0.6, 0.55, 0.45), "hair": (0.45, 0.3, 0.15),
+                  "hat": "veil", "hat_ramp": (0.88, 0.78, 0.48), "activities": ["tend_hives", "collect_honey"]},
+    "orchardist": {"summary": "orchardist: a green smock, a straw hat",
+                   "shirt": (0.42, 0.56, 0.3), "hose": (0.4, 0.33, 0.24), "hair": (0.45, 0.3, 0.16),
+                   "hat": "straw", "hat_ramp": "straw", "apron_ramp": "brown", "activities": FARM},
+    "hop_grower": {"summary": "hop grower: a leaf-green smock, a straw hat",
+                   "shirt": (0.42, 0.58, 0.32), "hose": (0.38, 0.32, 0.24), "hair": (0.3, 0.2, 0.12),
+                   "hat": "straw", "hat_ramp": "straw", "apron_ramp": "brown", "activities": FARM},
+    "winegrower": {"summary": "winegrower: a violet smock, a straw hat",
+                   "shirt": (0.55, 0.42, 0.62), "hose": (0.38, 0.32, 0.24), "hair": (0.3, 0.2, 0.12),
+                   "hat": "straw", "hat_ramp": "straw", "apron_ramp": "brown", "activities": FARM},
+    "carter": {"summary": "carter: a green shirt, a wide hat, a beard",
+               "shirt": (0.42, 0.5, 0.36), "hose": (0.34, 0.28, 0.22), "hair": (0.35, 0.24, 0.14),
+               "hat": "wide", "hat_ramp": (0.4, 0.3, 0.2), "beard": True, "activities": ["load"]},
+    "docker": {"summary": "docker: a pale shirt, blue hose, a red kerchief, a leather apron",
+               "shirt": (0.62, 0.58, 0.5), "hose": (0.25, 0.28, 0.38), "hair": (0.25, 0.17, 0.1),
+               "hat": "kerchief", "hat_ramp": (0.6, 0.2, 0.18), "apron": True, "apron_ramp": (0.42, 0.32, 0.22),
+               "activities": ["hand_over"]},
 }
 
+# The bow's own turns replace the kit's (as the archer's: the arm stretched out cannot raise it otherwise).
+BOW_BONES = """  bow: {rot: "[bow_x, 0, bow_z]", scale: "max(show_bow, 0.001)"}
+  bow_stave: {rot: "[0, bow_roll, 0]"}"""
 
-def ramp(name):
-    return "[" + ", ".join(f'"{c}"' for c in RAMPS[name]) + "]"
+
+def ramp(value):
+    tones = RAMPS[value] if isinstance(value, str) else ramp_from(value)
+    return "[" + ", ".join(f'"{c}"' for c in tones) + "]"
 
 
-def move_keys(move):
-    return "\n".join(f"      - {{ms: 125, set: {{{k}}}}}" for k in MOVES[move])
+def move_keys(move, extra=""):
+    return "\n".join(f"      - {{ms: 125, set: {{{extra}{k}}}}}" for k in MOVES[move])
+
+
+def tool_of(p, activity):
+    move, tool = ACTIVITIES[activity]
+    return move, (p.get("tool", "") if tool is None else tool)
 
 
 def spec_text(pid, p):
     acts = p["activities"]
-    tools = {p.get("tool", "")} | {MOVE_TOOL[ACTIVITIES[a]] for a in acts if ACTIVITIES[a] in MOVE_TOOL}
+    tools = {tool_of(p, a)[1] for a in acts}
     tools.discard("")
-    # One tool per spec part set: several tools are separate uses shown only in their clips.
     lines = [
         "spritekiln: 1",
         "# Generated by tools/spritekiln/gen_civilians.py (G3): edit the generator, not this file.",
@@ -215,45 +489,60 @@ def spec_text(pid, p):
         "ramps:",
         f"  shirt: {ramp(p['shirt'])}",
         f"  hose: {ramp(p['hose'])}",
-        f"  hat: {ramp(p['hat_ramp'])}",
+        f"  hat: {ramp(p.get('hat_ramp', 'flax'))}",
         f"  apron: {ramp(p.get('apron_ramp', 'flax'))}",
-        "",
-        "channels:",
-        "  seedbag: 0",
     ]
+    if "hair" in p:
+        lines.append(f"  hair: {ramp(p['hair'])}")
+    if "cloak" in p:
+        lines.append(f"  cloak: {ramp(p['cloak'])}")
+    if p["hat"] == "veil":
+        lines.append(f"  veil: {ramp((0.62, 0.62, 0.55))}")
+    lines += ["", "materials:", "  hair: {ramp: hair}"]
+    if "cloak" in p:
+        lines.append("  cloak_m: {ramp: cloak, bands: [1, 5]}")
+    if p["hat"] == "veil":
+        lines.append("  veil_m: {ramp: veil, bands: [2, 5]}")
+    if p.get("quiver"):
+        lines += ["  feather: {ramp: apron, bands: [3, 5], outline: false}", "  wood: {ramp: wood}"]
+    lines += ["", "channels:", "  seedbag: 0"]
     for t in sorted(tools):
         lines.append(f"  show_{t}: 0")
+    if "bow" in tools:
+        lines += ["  bow_x: -0.75", "  bow_z: 0", "  bow_roll: 0", "  arrow: 0"]
     if HAIR[p["hat"]]:
         lines += ["", "use:", f"  - {HAIR[p['hat']]}"]
     else:
         lines[lines.index("extends: ../civilian/civilian.yaml") + 1:1] = ["remove: [use.hair]"]
         lines += ["", "use:"]
-    if tools:
-        for t in sorted(tools):
-            lines.append(f"  - {TOOLS[t]}".replace("as: tool", f"as: {t}"))
+    if p["hat"] == "hood":
+        lines.append(f"  - {HOOD_USE}")
+    if "cloak" in p:
+        lines.append(f"  - {CLOAK_USE}")
+    for t in sorted(tools):
+        lines.append(f"  - {TOOLS[t]}".replace("as: tool", f"as: {t}"))
     lines += ["", "parts:"]
-    lines.append(HEADWEAR[p["hat"]].rstrip("\n"))
-    if p.get("apron"):
-        lines.append(APRON.rstrip("\n"))
-    if any(ACTIVITIES[a] == "sow" for a in acts):
-        lines.append(SEEDBAG.rstrip("\n"))
-    # Hide every tool outside its clips: scale its bone to nothing.
+    for piece, on in ((HEADWEAR[p["hat"]], True), (BEARD, p.get("beard")), (APRON, p.get("apron")),
+                      (QUIVER, p.get("quiver")),
+                      (SEEDBAG, any(ACTIVITIES[a][0] == "sow" for a in acts))):
+        if on and piece:
+            lines.append(piece.rstrip("\n"))
+    # Tools turn in the torso's frame at the fist and hide outside their clips (bone scaled to nothing).
     if tools:
         lines += ["", "bones:"]
         for t in sorted(tools):
+            if t == "bow":
+                lines.append(BOW_BONES)
+                continue
             lines.append(f'  {t}: {{parent: torso_rot, at: wrist_R, pos: [0, 0, 0], rot: "[tool_pitch, tool_yaw, 0]", '
                          f'scale: "max(show_{t}, 0.001)"}}')
     lines += ["", "animations:"]
-    for a in acts:
-        move = ACTIVITIES[a]
-        tool = MOVE_TOOL.get(move, p.get("tool", "")) if move in MOVE_TOOL else p.get("tool", "")
-        lines.append(f"  work_{a}:")
-        lines.append("    loop: true")
-        lines.append("    keys:")
-        body = move_keys(move)
-        if tool:
-            body = body.replace("set: {", f"set: {{show_{tool}: 1, ")
-        lines.append(body)
+    clips = [(f"work_{a}",) + tool_of(p, a) for a in acts]
+    if "work" in p:
+        clips.append(("work", p["work"], ""))
+    for clip, move, tool in clips:
+        lines += [f"  {clip}:", "    loop: true", "    keys:"]
+        lines.append(move_keys(move, f"show_{tool}: 1, " if tool else ""))
     return "\n".join(lines) + "\n"
 
 
