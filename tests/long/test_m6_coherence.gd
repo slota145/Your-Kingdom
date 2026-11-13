@@ -1,10 +1,12 @@
 extends GdUnitTestSuite
 ## M6 part 1, risk R8 (ARCHITECTURE §7.2): the same province over 30 minutes of game time in
 ## the detailed and in the simplified mode makes about as much bread (and planks and beer):
-## within ±15%. The big city is viewed for 10 minutes first, so the simplified mode has its
-## calibration (ProductionLog).
+## within ±15%. The big city is viewed first, so the simplified mode has its calibration
+## (ProductionLog). UI-2 part 2: 30 minutes instead of 20, since with porters serving building
+## sites first the fixture's open sites finish early and leave the sawmills a short burst of
+## wood; measured at 20 minutes that burst made the simplified mode's planks 35% too many.
 
-const CALIBRATE_MINUTES := 20
+const CALIBRATE_MINUTES := 30
 const MINUTES := 30
 const TOLERANCE := 0.15
 const GOODS: Array[StringName] = [&"bread", &"planks", &"beer"]
