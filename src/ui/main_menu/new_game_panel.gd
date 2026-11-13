@@ -5,10 +5,13 @@ extends VBoxContainer
 ## their difficulty, the victory condition (with its target). "Start" sends GameSettings to the
 ## game scene. M8 part 5: four scenarios with a line about each; the Merchant islands take a
 ## gold target instead of a victory condition, the Invasion from the sea has neither (nor rulers).
-## E4 part 1: a tick box for the developer mode.
+## E4 part 1: a tick box for the developer mode. UI-2 part 3: it sits in NewGameWindow beside
+## the live world preview; every change of an option emits [signal options_changed], and the
+## "Roll another" button under the preview calls [method reroll].
 
 signal start_requested(settings: GameSettings)
 signal back_requested
+signal options_changed
 
 const HANDMADE := &"kingdom"
 ## Numbers of first plundering waves offered (then "all").
@@ -59,8 +62,8 @@ func _init() -> void:
 	_seed.min_value = 1
 	_seed.max_value = 99999
 	_seed.value = randi_range(1, 99999)
+	_seed.value_changed.connect(func(_v: float) -> void: _refresh())
 	seed_row.add_child(_seed)
-	seed_row.add_child(UiKit.button("ui.new_game.random", func() -> void: _seed.value = randi_range(1, 99999)))
 	add_child(seed_row)
 	_generated_rows.append(seed_row)
 	_provinces = _slider("ui.new_game.provinces", GameSettings.MIN_PROVINCES, GameSettings.MAX_PROVINCES, 22)
@@ -113,6 +116,17 @@ func _init() -> void:
 	buttons.add_child(UiKit.button("ui.new_game.back", func() -> void: back_requested.emit()))
 	add_child(buttons)
 	_refresh()
+
+
+## A new world number (the "Roll another" button under the preview).
+func reroll() -> void:
+	var old := int(_seed.value)
+	while int(_seed.value) == old:
+		_seed.value = randi_range(1, 99999)
+
+
+func is_generated() -> bool:
+	return _world.selected == 0
 
 
 func _choice(label_key: String, items: Array) -> OptionButton:
@@ -210,3 +224,4 @@ func _refresh() -> void:
 		var probe := GameSettings.new()
 		probe.province_count = int(_provinces.value)
 		_target.value = probe.default_target(kind)
+	options_changed.emit()

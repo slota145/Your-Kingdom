@@ -3931,7 +3931,7 @@ msgid "ui.new_game.seed"
 msgstr "Numer świata"
 
 msgid "ui.new_game.random"
-msgstr "Losuj"
+msgstr "Wylosuj inny"
 
 msgid "ui.new_game.size"
 msgstr "Wielkość"
@@ -4049,6 +4049,33 @@ msgstr "Nie wybrano jeszcze prowincji."
 
 msgid "ui.new_game.start_at"
 msgstr "Start: %s (%s)"
+
+msgid "ui.new_game.preview"
+msgstr "Podgląd świata"
+
+msgid "ui.new_game.preview_hint"
+msgstr "Mapa zmienia się od razu przy każdej zmianie opcji. Kółkiem przybliżasz, przeciągnięciem przesuwasz."
+
+msgid "ui.new_game.preview_caption"
+msgstr "%s: %s, %s, %s"
+
+msgid "ui.new_game.preview_provinces"
+msgid_plural "ui.new_game.preview_provinces_plural"
+msgstr[0] "%d prowincja"
+msgstr[1] "%d prowincje"
+msgstr[2] "%d prowincji"
+
+msgid "ui.new_game.preview_islands"
+msgid_plural "ui.new_game.preview_islands_plural"
+msgstr[0] "%d wyspa"
+msgstr[1] "%d wyspy"
+msgstr[2] "%d wysp"
+
+msgid "ui.new_game.preview_coast"
+msgid_plural "ui.new_game.preview_coast_plural"
+msgstr[0] "%d nad morzem"
+msgstr[1] "%d nad morzem"
+msgstr[2] "%d nad morzem"
 
 msgid "ui.new_game.island"
 msgstr "wyspa"

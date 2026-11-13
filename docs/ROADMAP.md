@@ -1635,7 +1635,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## UI-2 — Poprawki właściciela: budowanie, interfejs i start kolonii
 
-> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo. **Część 1 zaakceptowana („Super!”) i scalona do `main` 2026-11-13 („Część 1, stan”). Część 2 gotowa na gałęzi roboczej 2026-11-13, czeka na ocenę („Część 2, stan”).**
+> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo. **Część 1 zaakceptowana („Super!”) i scalona do `main` 2026-11-13 („Część 1, stan”). Część 2 gotowa na gałęzi roboczej 2026-11-13, czeka na ocenę („Część 2, stan”). Część 3 gotowa na tej samej gałęzi 2026-11-13, czeka na ocenę („Część 3, stan”); poprawek z oceny części 2 brak.**
 
 **Cel:** wygodniejsze budowanie, czytelniejszy interfejs i kolonia, która od pierwszej minuty buduje.
 
@@ -1675,6 +1675,16 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Do decyzji przy ocenie:** wędkarz zyskał najwięcej (nie chodzi do magazynu): w 10 minut przystań rybacka 36 → 56 ryb, wędkarz 16 → 48; czy go spowolnić, żeby przystań znów łowiła wyraźnie więcej? (ankieta 2026-11-13: właściciel zdecyduje po ocenie w grze, na razie bez zmian) Gra jest teraz szybsza (patrycjusze 8–25 minut wcześniej): czy to dobre tempo?
 - **Następnie (ankieta 2026-11-13):** część 3 UI-2, potem limit towaru w magazynie (IDEAS, „Ekonomia (pomysły po UI-2)”) jako krótki osobny kawałek przed G3.
 - **Do oceny na laptopie:** start kolonii (czy budowy ruszają od razu), czy tragarzy wystarcza, czy stosy przy budynkach nie rosną za bardzo w dużym mieście.
+
+**Część 3, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę. Bez zmian w symulacji i zapisie (v42).
+- **Osobne okno „Nowa gra”:** przycisk w menu otwiera duże okno (jak wybór startu): po lewej dotychczasowe opcje, po prawej „Podgląd świata”, mała mapa świata z nazwami prowincji. Mapa rysuje się od nowa zaraz po każdej zmianie, która zmienia świat (numer, liczba prowincji, wyspy, scenariusz „Kupieckie wyspy”, wybór „Królestwa”); zmiana władców czy trudności mapy nie zmienia. Losowanie jest to samo co w grze, więc kolejny krok (wybór startu) pokazuje dokładnie ten świat.
+- **„Wylosuj inny”** pod mapą daje nowy numer świata (dawny przycisk „Losuj” przy numerze zniknął). Dla „Królestwa” jest wyszarzony, a mapa pokazuje je takie, jakie jest.
+- Pod mapą krótki podpis: nazwa świata z numerem, liczba prowincji, wysp i prowincji nad morzem (tylko tam można zacząć). Kółko przybliża, przeciąganie przesuwa.
+- **Nazwy prowincji nie nachodzą na siebie** (podgląd i wybór startu): nazwa bez miejsca próbuje linijkę niżej albo wyżej, a gdy dalej brak miejsca, pokazuje się po przybliżeniu; nie wychodzi za krawędź.
+- „Wróć” z wyboru startu wraca do okna „Nowa gra” (z tymi samymi opcjami), nie do menu.
+- Test `tests/unit/ui/test_new_game_window.gd` (podgląd to ten sam świat, który zrobi gra; zmiana opcji go przerysowuje; „Wylosuj inny” zmienia numer; „Królestwo” bez losowania).
+- Zrzuty: `menu_shot.tscn -- --out=<plik> --open=new_game_panel [--seed=<n>] [--provinces=9..60] [--islands=<n>] [--scenario=0..3] [--kingdom] [--reroll]`, wybór startu `--open=start_picker`.
+- **Do oceny na laptopie:** czy mapa jest dość duża w 1920×1080, czy przerysowanie przy przeciąganiu suwaka jest płynne (świat 60 prowincji robi się ok. 50 ms), czy nazwy są czytelne. **Do decyzji:** czy wybór startu ma się dziać od razu na tej mapie (kliknięcie prowincji), bez drugiego kroku.
 
 **Testy i sprawdzenie:** szybkie testy; testy symulacji dla części 2 (pierwszeństwo budów, budowa z obozu, budowniczy noszący, stos zawsze, brak zakleszczeń przy pełnym stosie), długie testy na koniec części; zrzuty z chmury (menu budowy, mapa świata, droga w trakcie stawiania, przezroczystość, menu pauzy, okno nowej gry); wygląd w 1920×1080 i odczucia z gry ocenia właściciel na laptopie.
 

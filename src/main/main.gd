@@ -21,9 +21,11 @@ var _language: Button
 var _tools_button: Button
 var _tools: VBoxContainer
 var _plural_list: Label
-## The menu's buttons, and the "New game" settings shown instead of them (M8 part 1).
+## The menu's buttons; "New game" opens its own window with the live world preview (UI-2
+## part 3), then the start picker for a generated world (M8 part 1).
 var _menu_box: VBoxContainer
-var _new_game_panel: NewGamePanel
+var _menu_panel: PanelContainer
+var _new_game_window: NewGameWindow
 var _start_picker: StartPicker
 
 
@@ -51,33 +53,29 @@ func _ready() -> void:
 	box.add_theme_constant_override(&"separation", 10)
 	holder.add_child(box)
 	_menu_box = box
-	_new_game_panel = NewGamePanel.new()
-	_new_game_panel.visible = false
-	_new_game_panel.start_requested.connect(func(settings: GameSettings) -> void:
+	_menu_panel = panel
+	_new_game_window = NewGameWindow.new()
+	_full_window(_new_game_window)
+	_new_game_window.start_requested.connect(func(settings: GameSettings) -> void:
 		if settings.is_generated():
 			# A generated world: choose where to start first (M8 part 1).
-			panel.visible = false
+			_new_game_window.visible = false
 			_start_picker.open(settings)
 		else:
 			Game.start_request = {"settings": settings.to_dict()}
 			_open(GAME_SCENE))
-	_new_game_panel.back_requested.connect(func() -> void:
-		_new_game_panel.visible = false
-		_menu_box.visible = true)
-	holder.add_child(_new_game_panel)
+	_new_game_window.back_requested.connect(func() -> void:
+		_new_game_window.visible = false
+		panel.visible = true)
+	add_child(_new_game_window)
 	_start_picker = StartPicker.new()
-	_start_picker.visible = false
-	_start_picker.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_start_picker.offset_left = 40
-	_start_picker.offset_top = 40
-	_start_picker.offset_right = -40
-	_start_picker.offset_bottom = -40
+	_full_window(_start_picker)
 	_start_picker.start_requested.connect(func(settings: GameSettings) -> void:
 		Game.start_request = {"settings": settings.to_dict()}
 		_open(GAME_SCENE))
 	_start_picker.back_requested.connect(func() -> void:
 		_start_picker.visible = false
-		panel.visible = true)
+		_new_game_window.open())
 	add_child(_start_picker)
 	_title = UiKit.title("ui.main.title")
 	_title.add_theme_font_size_override(&"font_size", 56)
@@ -91,9 +89,7 @@ func _ready() -> void:
 	box.add_child(_subtitle)
 	box.add_child(HSeparator.new())
 	var worlds := Data.registry.all_of(&"world")
-	_new_game = _menu_button(box, "ui.main.new_game", func() -> void:
-		_menu_box.visible = false
-		_new_game_panel.visible = true)
+	_new_game = _menu_button(box, "ui.main.new_game", open_new_game)
 	_new_game.disabled = worlds.is_empty()
 	var quick := SaveService.slot_path("quick")
 	_load_game = _menu_button(box, "ui.main.load_game", _start_game.bind(quick))
@@ -140,6 +136,22 @@ func _ready() -> void:
 	_menu_button(box, "ui.main.quit", func() -> void: get_tree().quit())
 	EventBus.language_changed.connect(_on_language_changed)
 	_refresh()
+
+
+## Opens the "New game" window in place of the menu (UI-2 part 3).
+func open_new_game() -> void:
+	_menu_panel.visible = false
+	_new_game_window.open()
+
+
+## A window over the menu picture, 40 px from its edges (the "New game" and the start picker).
+func _full_window(window: Control) -> void:
+	window.visible = false
+	window.set_anchors_preset(Control.PRESET_FULL_RECT)
+	window.offset_left = 40
+	window.offset_top = 40
+	window.offset_right = -40
+	window.offset_bottom = -40
 
 
 func _menu_button(parent: Control, key: String, on_pressed: Callable) -> Button:
