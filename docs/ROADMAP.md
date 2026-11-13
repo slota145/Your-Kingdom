@@ -1831,6 +1831,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Część 4b, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę. Poprawek z oceny 4a już brak („Brak poprawek :D jest super!”).
 - **10 budynków miasta ze SpriteKiln**, każdy od nowa (opis w ART_SPEC §10.30): studnia, kaplica, kościół (wieża z zegarem i iglicą, cmentarz), targowisko (trzy kramy pod pasiastymi daszkami, krzyż targowy), tawerna (lada z beczkami, stół z ławami, wiecha), ratusz (podcienia, wieża zegarowa nad bramą z herbem, zielona miedź, schodkowy szczyt), skład kupiecki (waga belkowa, kryty wóz, bela na wyciągu), chata budowniczych, obóz pionierów (namioty, ognisko z kociołkiem, wóz osadników, chorągiew) i **magazyn z dużą wiatą** wzdłuż tylnych krawędzi placu; stosy towarów leżą jak dotąd i dalej je widać.
+- **Testy:** szybkie i długie (koniec części 4, 15 zestawów) przechodzą.
 - Etapy budowy każdego z tego samego modelu. Karczmarz i straganiarz stoją przy ladzie (miejsca pracy bez zmian).
 - **Poprawka widoku:** budynek bez ruchomej części zgłaszał w każdej klatce błąd (od części 3b, widać to było tylko w dzienniku); teraz wyłącza przetwarzanie w pierwszej klatce (test).
 - Stary rysunek kodem i z PixelLab nie nadpisuje tych budynków; obóz pionierów był ostatnim budynkiem z PixelLab. Test sortowania obejmuje każdy z nich, test klucza grafiki magazynu z wiatą.
