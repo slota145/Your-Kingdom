@@ -13,3 +13,8 @@ ramps:
   cobble:        ["#16140f", "#3a362e", "#5c574b", "#7e7868", "#9e9886", "#bcb6a2"]
   stone:         ["#121110", "#2f2c28", "#4e4a43", "#6f6a60", "#938d80", "#b8b2a3"]
   wood:          ["#160d07", "#3a2414", "#5e3c20", "#80562e", "#a3743f", "#c49a5e"]
+  # G3 part 4a review (owner 2026-11-13): burghers' roofs without blue, patricians' without red.
+  tile_brown:    ["#160c06", "#3a2214", "#5c3a22", "#7c5232", "#9a6c44", "#b6885a"]
+  shingle_roof:  ["#0e0a07", "#251a12", "#3c2c1e", "#54402c", "#6c563c", "#86704e"]
+  copper:        ["#0a1612", "#1a3a30", "#2c5a4a", "#3f7a64", "#5c9a80", "#86bca2"]
+  graphite:      ["#0a0a0c", "#1c1c20", "#2e2e34", "#43434a", "#5a5a62", "#76767e"]

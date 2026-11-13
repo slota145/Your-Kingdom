@@ -23,6 +23,7 @@ GAP = 0.09           # narrow gap between burgher plots
 T = 0.045            # half thickness of a timber beam (0.09 = about 1.7 px)
 PL = 0.20            # stone plinth height
 JETTY = 0.10         # each upper floor sticks out this much at the front
+SJ = 0.09            # and this much at each side (burgher row houses, owner's review of 4a)
 
 
 def r4(v):
@@ -54,6 +55,9 @@ class House:
         self.door_u = door_u
         self.chimney = chimney
         self.jetty = JETTY
+        self.sj = 0.0                   # side jetty per floor and side (row houses: SJ)
+        self.dormer = False
+        self.kick = True                # the eaves kicked up a little
         self.gable = gable              # plain (timbered), stepped or curved (a masonry show gable)
         self.parts = {}
 
@@ -129,34 +133,68 @@ class House:
 
     # -- the house -----------------------------------------------------------------------
     def build(self):
+        """A burgher house (owner's review of 4a, 2026-11-13): a fieldstone ground floor with timber
+        posts and knee braces, half-timbered upper floors each jettied a little further out at the
+        front and at the sides (`sj` per floor and side: the top floor has the full width, so the
+        houses of a row touch up there and narrow lanes stay between them below), dormers, a kicked
+        eave."""
         uc, w, vb, vf = self.uc, self.w, self.vb, self.vf
-        u0, u1 = uc - w / 2, uc + w / 2
         nup = len(self.floors) - 1
         vtop = vf + nup * self.jetty
         G = self.floors[0]
-        # plinth and ground floor
-        self.add("plinth", self.box((uc, PL / 2, (vb + vf) / 2 + 0.02), (w / 2, PL / 2, (vf - vb) / 2 + 0.02)),
+        sj = self.sj
+
+        def span(k):        # u range of floor k (0 = the ground floor)
+            h = w / 2 - (nup - k) * sj
+            return uc - h, uc + h
+        g0, g1 = span(0)
+        # plinth and the stone ground floor
+        self.add("plinth", self.box((uc, PL / 2, (vb + vf) / 2 + 0.02), ((g1 - g0) / 2, PL / 2, (vf - vb) / 2 + 0.02)),
                  "stone")
         y = PL
-        self.add("walls", self.box((uc, y + G / 2, (vb + vf) / 2), (w / 2 - 0.02, G / 2, (vf - vb) / 2)),
-                 self.plaster, priority=1)
-        levels = [(y, y + G, vf)]
+        self.add("ground_walls", self.box((uc, y + G / 2, (vb + vf) / 2), ((g1 - g0) / 2 - 0.02, G / 2, (vf - vb) / 2)),
+                 "groundstone", priority=1)
+        self.parts[f"{self.n}_ground_walls"]["paint"] = [
+            {"material": "groundstone_dark", "spots": {"scale": 0.1, "density": 0.34, "seed": sum(map(ord, self.n)) % 23}}]
+        levels = [(y, y + G, vf, g0, g1)]
         y += G
         for k, fh in enumerate(self.floors[1:], start=1):
             vfk = vf + k * self.jetty
-            self.add("walls", self.box((uc, y + fh / 2, (vb + vfk) / 2), (w / 2, fh / 2, (vfk - vb) / 2)),
+            a, b = span(k)
+            self.add("walls", self.box((uc, y + fh / 2, (vb + vfk) / 2), ((b - a) / 2, fh / 2, (vfk - vb) / 2)),
                      self.plaster)
-            # the jetty: a dark beam end line under the overhang
-            self.add("timber", self.box((uc, y + 0.04, vfk - 0.02), (w / 2 + 0.02, 0.05, 0.05)), "timber")
-            levels.append((y, y + fh, vfk))
+            # the jetty: a sill beam round the overhang and the joist ends under it
+            self.add("timber", self.box((uc, y + 0.04, vfk - 0.02), ((b - a) / 2 + 0.02, 0.05, 0.05)), "timber")
+            pa, pb = span(k - 1)
+            for side, u in (("-u", a), ("+u", b)):
+                if side not in self.side_frame and side not in self.side_windows:
+                    continue
+                s = -1 if side == "-u" else 1
+                self.add("timber", self.box((u + s * 0.01, y + 0.04, (vb + vfk) / 2), (0.05, 0.05, (vfk - vb) / 2)), "timber")
+                if sj > 0:
+                    n = max(3, round((vfk - vb) / 0.32))
+                    for i in range(n):
+                        jv = vb + 0.12 + (vfk - vb - 0.24) * i / (n - 1)
+                        self.add("joists", self.box(((u + (pa if s < 0 else pb)) / 2, y - 0.04, jv),
+                                                    (abs(u - (pa if s < 0 else pb)) / 2 + 0.02, 0.035, 0.035)), "timber")
+            n = max(2, round((b - a) / 0.32))
+            for i in range(n):
+                ju = a + 0.1 + (b - a - 0.2) * i / (n - 1)
+                self.add("joists", self.box((ju, y - 0.04, vfk - self.jetty / 2 - 0.02), (0.035, 0.035, self.jetty / 2 + 0.02)),
+                         "timber")
+            levels.append((y, y + fh, vfk, a, b))
             y += fh
         E = y
-        # front: ground floor (corner posts, door, a window)
-        y0, y1, v = levels[0]
+        # front: the ground floor (corner posts with knee braces, the door, a window)
+        y0, y1, v, u0, u1 = levels[0]
         self.beam_front(v, (u0, y1 - T), (u1, y1 - T))
-        du = self.door_u if self.door_u is not None else (u0 + 0.5 if w > 1.3 else uc)
+        a1, b1 = (levels[1][3], levels[1][4]) if len(levels) > 1 else (u0, u1)
+        for pu, out in ((u0 + T, a1), (u1 - T, b1)):
+            self.beam_front(v, (pu, y0), (pu, y1))
+            self.beam_front(v, (pu, y1 - 0.55), (out + (0.06 if out < uc else -0.06), y1 - 0.02))
+        du = self.door_u if self.door_u is not None else (u0 + 0.45 if (u1 - u0) > 1.2 else uc)
         if self.gate:      # a round-arched gateway with a stone frame (the passage under a corner house)
-            gw, gh = min(0.5, w / 2 - 0.12), 1.75
+            gw, gh = min(0.5, (u1 - u0) / 2 - 0.12), 1.75
             arch = [[gw * math.cos(math.radians(a_)), gh - gw + gw * math.sin(math.radians(a_))] for a_ in range(0, 181, 30)]
             frame = [[x * (gw + 0.12) / gw, (y_ - (gh - gw)) * (gw + 0.12) / gw + gh - gw] for x, y_ in arch]
             for poly, mat, dz in ((frame + [[-gw - 0.12, 0], [gw + 0.12, 0]], "sill_mat", 0.02),
@@ -173,18 +211,19 @@ class House:
                 self.beam_front(v, (du + s * (dw + T), y0), (du + s * (dw + T), y0 + dh + T))
             self.beam_front(v, (du - dw - 2 * T, y0 + dh + T), (du + dw + 2 * T, y0 + dh + T))
             self.add("step", self.box((du, 0.06, v + 0.22), (dw + 0.08, 0.06, 0.16)), "stone")
-            if w > 1.25:
-                ux = u1 - 0.42 if du < uc else u0 + 0.42
-                self.window_front(v, ux, y0 + 0.75, shutters=True)
+            if (u1 - u0) > 1.15:
+                ux = u1 - 0.4 if du < uc else u0 + 0.4
+                self.window_front(v, ux, y0 + 0.75, ww=0.38, shutters=True)
         # front: upper floors (posts, rails, windows, braces)
-        for (ya, yb, v) in levels[1:]:
-            nwin = 3 if w > 2.15 else (2 if w > 1.42 else 1)
+        for (ya, yb, v, u0, u1) in levels[1:]:
+            wk = u1 - u0
+            nwin = 3 if wk > 2.15 else (2 if wk > 1.42 else 1)
             ww, wh = 0.42, 0.68
             ys = ya + 0.55
-            cs = [u0 + w * (i + 0.5) / nwin for i in range(nwin)]
+            cs = [u0 + wk * (i + 0.5) / nwin for i in range(nwin)]
             if not self.front_frame:     # a plastered front: windows with shutters only
                 for c in cs:
-                    self.window_front(v, c, ys, ww, wh, shutters=w > 1.1)
+                    self.window_front(v, c, ys, ww, wh, shutters=wk > 1.1)
                 continue
             self.beam_front(v, (u0, ya + T), (u1, ya + T))
             self.beam_front(v, (u0, yb - T), (u1, yb - T))
@@ -209,33 +248,68 @@ class House:
         if self.gable == "tower":       # an oriel turret on the corner: no gable or roof of its own
             return self.oriel(uc, vf, E)
         R = self.gables(E, vtop)
-        # side walls: timber where the wall may show, windows where it faces a street
+        # side walls: stone below (with a post and a knee brace at the front corner), timber above
+        # where the wall may show, windows where it faces a street
         for side in ("-u", "+u"):
             if side not in self.side_frame and side not in self.side_windows:
                 continue
             s = -1 if side == "-u" else 1
-            u = (u0 if s < 0 else u1) + s * 0.012
-            for (ya, yb, vfk) in levels:
-                span = vfk - vb
-                nb = max(2, round(span / 0.85))
+            for li, (ya, yb, vfk, a, b) in enumerate(levels):
+                u = (a if s < 0 else b) + s * 0.012
+                sp = vfk - vb
+                nb = max(2, round(sp / 0.85))
+                if li == 0:
+                    self.beam_side(u, (vfk - T, ya), (vfk - T, yb))
+                    if len(levels) > 1:
+                        uo = (levels[1][3] if s < 0 else levels[1][4]) + s * 0.012
+                        self.add("timber", self.box(((u + uo) / 2, yb - 0.3, vfk - 0.1), (abs(uo - u) / 2 + 0.03, 0.035, 0.035),
+                                                    rot=self.rot_v(-s * 0.9)), "timber")
+                    if side in self.side_windows:
+                        for i in range(nb):
+                            if i % 2 == 0:
+                                a_ = vb + sp * (i + 0.5) / nb
+                                self.window_side(u, s, a_, ya + 0.75, 0.38)
+                    continue
                 self.beam_side(u, (vb, ya + T), (vfk, ya + T))
                 self.beam_side(u, (vb, yb - T), (vfk, yb - T))
                 for i in range(nb + 1):
-                    pv = vb + T + (span - 2 * T) * i / nb
+                    pv = vb + T + (sp - 2 * T) * i / nb
                     self.beam_side(u, (pv, ya), (pv, yb))
                 for i in range(nb):
-                    a = vb + T + (span - 2 * T) * i / nb
-                    b = vb + T + (span - 2 * T) * (i + 1) / nb
-                    if side in self.side_windows and i % 2 == (1 if ya > PL else 0):
-                        self.window_side(u, s, (a + b) / 2, ya + (0.55 if ya > PL else 0.75), min(0.42, b - a - 0.2))
+                    a_ = vb + T + (sp - 2 * T) * i / nb
+                    b_ = vb + T + (sp - 2 * T) * (i + 1) / nb
+                    if side in self.side_windows and i % 2 == 1:
+                        self.window_side(u, s, (a_ + b_) / 2, ya + 0.55, min(0.42, b_ - a_ - 0.2))
                     elif i % 2 == 0:
-                        self.beam_side(u, (a, ya + T), (b, yb - T))
+                        self.beam_side(u, (a_, ya + T), (b_, yb - T))
                     else:
-                        self.beam_side(u, (b, ya + T), (a, yb - T))
+                        self.beam_side(u, (b_, ya + T), (a_, yb - T))
         if self.back_detail:
-            self.back_face(levels, E, w / 2 * math.tan(self.pitch))
+            self.back_face([lv[:3] for lv in levels], E, w / 2 * math.tan(self.pitch), spans=[lv[3:] for lv in levels])
+        if self.dormer and R > 1.2 and w > 1.35:
+            self.dormer_left(E, R, vtop)
         self.roof_and_chimney(E, R, vtop)
         return self.finish()
+
+    def dormer_left(self, E, R, vtop):
+        """A small gabled dormer with a window on the roof slope that faces -u (the camera's side)."""
+        uc, w, vb = self.uc, self.w, self.vb
+        vm = vb + (vtop - vb) * 0.45
+        uf = uc - w * 0.33                       # its window wall
+        ys = E + R * (1 - (uc - uf) / (w / 2))   # where that wall meets the slope
+        hw, h = 0.33, 0.72
+        ub = uc - w * 0.04
+        self.add("dormer", self.box(((uf + ub) / 2, ys + h / 2 - 0.15, vm), ((ub - uf) / 2, h / 2 + 0.15, hw)), self.plaster,
+                 priority=2)
+        self.beam_side(uf - 0.012, (vm - hw, ys + h - T), (vm + hw, ys + h - T), part="dormer_timber")
+        self.beam_side(uf - 0.012, (vm - hw + T, ys - 0.05), (vm - hw + T, ys + h), part="dormer_timber")
+        self.beam_side(uf - 0.012, (vm + hw - T, ys - 0.05), (vm + hw - T, ys + h), part="dormer_timber")
+        self.window_side(uf, -1, vm, ys + 0.12, 0.32, 0.38)
+        self.add("dormer_shutter", self.box((uf - 0.04, ys + 0.26, vm + hw + 0.06), (0.02, 0.16, 0.09)), "shutter")
+        top = ys + h
+        for s in (-1, 1):       # its roof: two slabs falling to +-v, the ridge along u
+            self.add("dormer_roof", self.box(((uf + ub) / 2 - 0.04, top + 0.12, vm + s * 0.17), ((ub - uf) / 2 + 0.1, 0.035, 0.22),
+                                             rot=self.rot_u(-s * 0.62)), self.roof)
 
     def roof_and_chimney(self, E, R, vtop):
         """The roof: two tiled slabs, a lath under every course, the ridge and a chimney."""
@@ -253,6 +327,11 @@ class House:
             self.add(f"roof_{'l' if s < 0 else 'r'}",
                      self.box((cu, cy + lift, (v0 + v1) / 2), (Lr / 2, 0.05, (v1 - v0) / 2), rot=self.rot_v(ang),
                               rnd=0.01), self.roof)
+            if self.kick:       # the eave kicked up: a short, flatter slab beyond the lower edge
+                a2 = th * 0.42
+                ku, ky = eu + s * 0.13 * math.cos(a2), ey + lift - 0.13 * math.sin(a2) + 0.02
+                self.add(f"roof_{'l' if s < 0 else 'r'}", self.box((ku, ky, (v0 + v1) / 2), (0.16, 0.05, (v1 - v0) / 2),
+                                                                     rot=self.rot_v(a2 if s < 0 else -a2)), self.roof)
             p = self.parts[f"{self.n}_roof_{'l' if s < 0 else 'r'}"]
             p["paint"] = [{"material": self.roof + "_light", "spots": {"scale": 0.18, "density": 0.2,
                                                                          "seed": sum(map(ord, self.n)) % 97 + (s > 0)}}]
@@ -360,15 +439,17 @@ class House:
                 win(v + 0.04, uc, E + 0.98, 0.24, 0.32)
         return R
 
-    def back_face(self, levels, E, R):
-        """The back wall: a plain back door, windows, timbering on every floor and on the back gable."""
+    def back_face(self, levels, E, R, spans=None):
+        """The back wall: a plain back door, windows, timbering on every upper floor (the ground
+        floor is stone) and on the back gable. spans: the u range of each floor."""
         uc, w, v = self.uc, self.w, self.vb
-        u0, u1 = uc - w / 2, uc + w / 2
-        for (ya, yb, _) in levels:
+        for li, (ya, yb, _) in enumerate(levels):
+            u0, u1 = spans[li] if spans else (uc - w / 2, uc + w / 2)
             ground = ya <= PL + 1e-6
             nwin = 1 if ground or w < 1.42 else 2
-            cs = [u0 + w * (i + 0.5) / nwin for i in range(nwin)] if not ground else [u1 - 0.45]
-            self.beam_front(v, (u0, ya + T), (u1, ya + T), sgn=-1)
+            cs = [u0 + (u1 - u0) * (i + 0.5) / nwin for i in range(nwin)] if not ground else [u1 - 0.45]
+            if not ground:
+                self.beam_front(v, (u0, ya + T), (u1, ya + T), sgn=-1)
             self.beam_front(v, (u0, yb - T), (u1, yb - T), sgn=-1)
             posts = [u0 + T, u1 - T]
             ys = ya + (0.75 if ground else 0.55)
@@ -382,12 +463,13 @@ class House:
                 du = u0 + 0.42
                 self.add("door", self.box((du, ya + dh / 2, v - 0.01), (dw, dh / 2, 0.03)), "door_wood")
                 posts += [du - dw - T, du + dw + T]
-            for p_ in posts:
+            for p_ in (posts if not ground else posts[:2]):
                 self.beam_front(v, (p_, ya), (p_, yb), sgn=-1)
             if not ground:
                 left, right = u0 + 2 * T, cs[0] - 0.19 - 2 * T
                 if right - left > 0.12:
                     self.beam_front(v, (left, ya + T), (right, yb - T), sgn=-1)
+        u0, u1 = uc - w / 2, uc + w / 2
         if self.gable != "tower":
             uc_ = uc
             self.beam_front(v, (u0 + 0.05, E + 0.03), (uc_, E + R - 0.02), sgn=-1)
@@ -444,6 +526,7 @@ class RichHouse(House):
         k.setdefault("front_frame", False)
         super().__init__(*a, **k)
         self.jetty = 0.0
+        self.kick = False
         self.arcade, self.bay, self.arms = arcade, bay, arms
 
     # -- details --------------------------------------------------------------------------
@@ -714,7 +797,9 @@ def materials():
     }
     for p in PLASTERS:
         m[p] = {"ramp": p}
-    for r in ("tile", "slate"):
+    m["groundstone"] = {"ramp": "stone", "bands": [2, 4]}
+    m["groundstone_dark"] = {"ramp": "stone", "bands": [1, 2], "outline": False}
+    for r in ("tile", "slate", "tile_brown", "shingle_roof", "copper", "graphite"):
         m[r] = {"ramp": r, "bands": [2, 4]}
         m[r + "_light"] = {"ramp": r, "bands": [3, 5]}
         m[r + "_dark"] = {"ramp": r, "bands": [0, 1], "outline": False}
@@ -738,9 +823,12 @@ def row(widths, vfs, floors, plasters, roofs, end=None, extra=None, cls=None):
     for i, w in enumerate(widths):
         sw = ("-u",) if (end in ("b", "both") and i == 0) else ()
         sf = ("-u", "+u") if (end in ("a", "both") and i == len(widths) - 1) else ("-u",)
-        houses.append((cls or House)(f"h{i}", "z", u + w / 2, w, -H + 0.16, vfs[i], floors[i], plasters[i], roofs[i],
-                            side_windows=sw, side_frame=sf, chimney=0.3 + 0.15 * (i % 2),
-                            **((extra or [{}] * len(widths))[i])))
+        h = (cls or House)(f"h{i}", "z", u + w / 2, w, -H + 0.16, vfs[i], floors[i], plasters[i], roofs[i],
+                           side_windows=sw, side_frame=sf, chimney=0.3 + 0.15 * (i % 2),
+                           **((extra or [{}] * len(widths))[i]))
+        if cls is not RichHouse:      # burghers: jettied at the sides too, every other one with a dormer
+            h.sj, h.dormer = SJ, i % 2 == 0
+        houses.append(h)
         u += w
     return houses
 
@@ -748,24 +836,24 @@ def row(widths, vfs, floors, plasters, roofs, end=None, extra=None, cls=None):
 FRAGMENTS = {
     # heights differ in one plot: 2 or 3 storeys, different floor heights and roof pitches, show gables
     "middle": lambda: row([1.55, 1.5, 1.45], [1.98, 1.84, 2.03], [[2.0, 1.75], [2.0, 1.75, 1.6], [1.9, 1.85]],
-                          ["plaster_cream", "plaster_ochre", "plaster_pink"], ["tile", "slate", "tile"],
+                          ["plaster_cream", "plaster_ochre", "plaster_pink"], ["tile", "tile_brown", "tile"],
                           extra=[{"pitch": 57}, {"gable": "curved", "pitch": 60}, {"gable": "stepped", "pitch": 63}]),
     "end_a": lambda: row([2.0, 2.3], [1.94, 2.02], [[2.0, 1.8, 1.6], [2.0, 1.7]],
                          ["plaster_cream", "plaster_pink"], ["tile", "tile"], end="a",
                          extra=[{"gable": "stepped", "pitch": 58}, {"pitch": 52}]),
     "end_b": lambda: row([2.15, 2.15], [1.9, 2.02], [[2.0, 1.8], [2.0, 1.85, 1.6]],
-                         ["plaster_cream", "plaster_blue"], ["slate", "tile"], end="b",
+                         ["plaster_cream", "plaster_blue"], ["shingle_roof", "tile"], end="b",
                          extra=[{"pitch": 55}, {"gable": "curved", "pitch": 58}]),
     # more row variants (owner 2026-11-09): plastered fronts, more storeys, other gables
     "middle_2": lambda: row([2.4, 1.9], [1.95, 2.03], [[2.0, 1.8, 1.65], [2.0, 1.8]],
-                            ["plaster_ochre", "plaster_cream"], ["tile", "slate"],
+                            ["plaster_ochre", "plaster_cream"], ["tile", "tile_brown"],
                             extra=[{"gable": "curved", "pitch": 56, "front_frame": False}, {"pitch": 54}]),
     "middle_3": lambda: row([1.4, 1.65, 1.45], [2.0, 1.86, 1.96], [[2.0, 1.75, 1.6], [1.9, 1.8], [2.0, 1.95]],
-                            ["plaster_pink", "plaster_cream", "plaster_blue"], ["tile", "tile", "slate"],
+                            ["plaster_pink", "plaster_cream", "plaster_blue"], ["tile", "tile", "shingle_roof"],
                             extra=[{"gable": "stepped", "pitch": 62}, {"pitch": 52}, {"gable": "curved", "pitch": 60,
                                                                                      "front_frame": False}]),
     "end_b_2": lambda: row([2.0, 2.3], [2.02, 1.9], [[2.0, 1.8, 1.6], [2.0, 1.75]],
-                           ["plaster_cream", "plaster_ochre"], ["tile", "slate"], end="b",
+                           ["plaster_cream", "plaster_ochre"], ["tile", "tile_brown"], end="b",
                            extra=[{"pitch": 57}, {"gable": "stepped", "pitch": 60, "front_frame": False}]),
     # chamfered corners: the corner house's corner cut at 45 degrees, a narrow bay facing the camera on the cut
     "corner_a": lambda: corner("gate"),
@@ -774,11 +862,11 @@ FRAGMENTS = {
 }
 
 CORNER_LOOKS = {
-    "gate": dict(h0=("plaster_cream", "tile", "stepped"), h1=("plaster_ochre", "tile"), h2=("plaster_cream", "slate"),
+    "gate": dict(h0=("plaster_cream", "tile", "stepped"), h1=("plaster_ochre", "tile"), h2=("plaster_cream", "shingle_roof"),
                  bay=dict(gable="curved", gate=True, front_frame=False)),
-    "tower": dict(h0=("plaster_cream", "slate", "plain"), h1=("plaster_pink", "tile"), h2=("plaster_blue", "tile"),
+    "tower": dict(h0=("plaster_cream", "tile_brown", "plain"), h1=("plaster_pink", "tile"), h2=("plaster_blue", "tile"),
                   bay=dict(gable="tower", front_frame=False)),
-    "shop": dict(h0=("plaster_pink", "tile", "curved"), h1=("plaster_cream", "slate"), h2=("plaster_ochre", "tile"),
+    "shop": dict(h0=("plaster_pink", "tile", "curved"), h1=("plaster_cream", "shingle_roof"), h2=("plaster_ochre", "tile"),
                  bay=dict(gable="stepped", front_frame=True)),
 }
 
@@ -799,7 +887,7 @@ def corner(look, rich=False):
     mid = (cx + leg / 2, cz - leg / 2)
     chamfer = [{"plane": {"n": n, "at": round(at, 4)}}]
     plaster0, roof0, gable0 = lk["h0"]
-    bay_roof = lk["h1"][1] if look != "tower" else "slate"
+    bay_roof = lk["h1"][1] if look != "tower" else ("slate" if rich else "shingle_roof")
     plain = "masonry" if rich else "plain"
     return [
         Hs("h0", "z", (0.02 + H - GAP) / 2, (H - GAP) - 0.02, -H + 0.16, 1.98, [2.4, 1.95] if rich else [2.0, 1.8],
@@ -816,18 +904,18 @@ def corner(look, rich=False):
 C, O, P_, B = "plaster_cream", "plaster_ochre", "plaster_pink", "plaster_blue"
 # The game's set (owner 2026-11-09: the burgher houses go into the game): level 2 pieces x 3 looks.
 GAME = {
-    ("single", 1): lambda: row([2.2, 2.1], [1.96, 2.02], [[2.0, 1.8, 1.6], [2.0, 1.75]], [P_, C], ["tile", "slate"],
+    ("single", 1): lambda: row([2.2, 2.1], [1.96, 2.02], [[2.0, 1.8, 1.6], [2.0, 1.75]], [P_, C], ["tile", "tile_brown"],
                                end="both", extra=[{"gable": "stepped", "pitch": 58}, {"pitch": 54}]),
     ("single", 2): lambda: row([1.5, 1.45, 1.5], [2.0, 1.88, 1.98], [[2.0, 1.8], [2.0, 1.75, 1.6], [1.9, 1.85]],
-                               [C, B, O], ["tile", "tile", "slate"], end="both",
+                               [C, B, O], ["tile", "tile", "shingle_roof"], end="both",
                                extra=[{"pitch": 58}, {"gable": "curved", "pitch": 60}, {"pitch": 61}]),
-    ("single", 3): lambda: row([2.3, 2.0], [1.92, 2.03], [[2.0, 1.85], [2.0, 1.8, 1.6]], [O, C], ["slate", "tile"],
+    ("single", 3): lambda: row([2.3, 2.0], [1.92, 2.03], [[2.0, 1.85], [2.0, 1.8, 1.6]], [O, C], ["tile_brown", "tile"],
                                end="both", extra=[{"gable": "curved", "pitch": 57, "front_frame": False}, {"pitch": 56}]),
     ("end_a", 1): FRAGMENTS["end_a"],
     ("end_a", 2): lambda: row([1.5, 1.5, 1.4], [1.9, 2.02, 1.95], [[2.0, 1.85], [2.0, 1.75, 1.6], [2.0, 1.8]],
-                              [B, C, P_], ["slate", "tile", "tile"], end="a",
+                              [B, C, P_], ["shingle_roof", "tile", "tile"], end="a",
                               extra=[{"pitch": 60}, {"gable": "stepped", "pitch": 62}, {"pitch": 55}]),
-    ("end_a", 3): lambda: row([2.1, 2.2], [2.02, 1.92], [[2.0, 1.8], [2.0, 1.8, 1.6]], [C, O], ["tile", "slate"],
+    ("end_a", 3): lambda: row([2.1, 2.2], [2.02, 1.92], [[2.0, 1.8], [2.0, 1.8, 1.6]], [C, O], ["tile", "tile_brown"],
                               end="a", extra=[{"pitch": 55}, {"gable": "curved", "pitch": 58, "front_frame": False}]),
     ("middle", 1): FRAGMENTS["middle"],
     ("middle", 2): FRAGMENTS["middle_2"],
@@ -835,7 +923,7 @@ GAME = {
     ("end_b", 1): FRAGMENTS["end_b"],
     ("end_b", 2): FRAGMENTS["end_b_2"],
     ("end_b", 3): lambda: row([1.45, 1.5, 1.5], [1.95, 2.02, 1.88], [[2.0, 1.75], [2.0, 1.85, 1.6], [2.0, 1.8]],
-                              [O, C, P_], ["tile", "slate", "tile"], end="b",
+                              [O, C, P_], ["tile", "shingle_roof", "tile"], end="b",
                               extra=[{"pitch": 59}, {"gable": "stepped", "pitch": 61}, {"pitch": 54}]),
     ("corner_a", 1): lambda: corner("gate"),
     ("corner_a", 2): lambda: corner("tower"),
@@ -853,38 +941,38 @@ F3, F3b, F4 = [2.4, 1.95, 1.8], [2.4, 1.9], [2.4, 1.9, 1.75]
 # The patricians' set (hut level 3, G3 part 4a, owner's survey 2026-11-13: rich, of stone): ashlar and
 # brick, arcades, portals with coats of arms, oriels, stepped and curved gables; 6 pieces x 3 looks.
 GAME3 = {
-    ("single", 1): lambda: row([2.2, 2.1], [2.0, 1.96], [F3, F3b], [AS, BR], ["slate", "tile"], end="both", cls=R3,
+    ("single", 1): lambda: row([2.2, 2.1], [2.0, 1.96], [F3, F3b], [AS, BR], ["slate", "copper"], end="both", cls=R3,
                                extra=[{"gable": "stepped", "pitch": 58, "arcade": True},
                                       {"pitch": 55, "bay": True, "arms": "blue"}]),
-    ("single", 2): lambda: row([2.1, 2.2], [2.0, 1.94], [F3b, F3], [AG, AS], ["tile", "slate"],
+    ("single", 2): lambda: row([2.1, 2.2], [2.0, 1.94], [F3b, F3], [AG, AS], ["graphite", "slate"],
                                end="both", cls=R3, extra=[{"gable": "curved", "pitch": 60, "arcade": True},
                                                           {"gable": "stepped", "pitch": 58, "arcade": True,
                                                            "arms": "green"}]),
-    ("single", 3): lambda: row([2.3, 2.0], [1.96, 2.02], [F3b, F3], [BR, AG], ["tile", "slate"], end="both", cls=R3,
+    ("single", 3): lambda: row([2.3, 2.0], [1.96, 2.02], [F3b, F3], [BR, AG], ["copper", "slate"], end="both", cls=R3,
                                extra=[{"gable": "stepped", "pitch": 57, "bay": True}, {"gable": "curved", "pitch": 58,
                                                                                       "arms": "blue"}]),
-    ("end_a", 1): lambda: row([2.0, 2.3], [1.96, 2.02], [F3, F3b], [AS, BR], ["slate", "tile"], end="a", cls=R3,
+    ("end_a", 1): lambda: row([2.0, 2.3], [1.96, 2.02], [F3, F3b], [AS, BR], ["slate", "graphite"], end="a", cls=R3,
                               extra=[{"gable": "stepped", "pitch": 58, "arcade": True}, {"pitch": 54, "bay": True}]),
-    ("end_a", 2): lambda: row([2.2, 2.1], [1.96, 2.02], [F3, F3b], [BR, AS], ["tile", "slate"],
+    ("end_a", 2): lambda: row([2.2, 2.1], [1.96, 2.02], [F3, F3b], [BR, AS], ["copper", "slate"],
                               end="a", cls=R3, extra=[{"pitch": 57, "arcade": True},
                                                       {"gable": "curved", "pitch": 59, "arcade": True, "arms": "blue"}]),
-    ("end_a", 3): lambda: row([2.1, 2.2], [2.02, 1.96], [F3b, F3], [AG, BR], ["slate", "tile"], end="a", cls=R3,
+    ("end_a", 3): lambda: row([2.1, 2.2], [2.02, 1.96], [F3b, F3], [AG, BR], ["slate", "graphite"], end="a", cls=R3,
                               extra=[{"pitch": 55, "arms": "green"}, {"gable": "stepped", "pitch": 58, "bay": True}]),
-    ("middle", 1): lambda: row([2.2, 2.1], [1.98, 2.02], [F3, F3b], [BR, AS], ["tile", "slate"], cls=R3,
+    ("middle", 1): lambda: row([2.2, 2.1], [1.98, 2.02], [F3, F3b], [BR, AS], ["copper", "slate"], cls=R3,
                                extra=[{"gable": "stepped", "pitch": 59, "arcade": True},
                                       {"gable": "curved", "pitch": 57, "arcade": True, "arms": "blue"}]),
-    ("middle", 2): lambda: row([2.15, 2.15], [2.0, 1.94], [F3, F3b], [AG, BR], ["slate", "tile"],
+    ("middle", 2): lambda: row([2.15, 2.15], [2.0, 1.94], [F3, F3b], [AG, BR], ["slate", "graphite"],
                                cls=R3, extra=[{"pitch": 58, "arcade": True, "arms": "green"},
                                               {"gable": "stepped", "pitch": 60, "arcade": True}]),
-    ("middle", 3): lambda: row([2.3, 2.0], [1.96, 2.02], [F3b, F3], [AS, BR], ["tile", "slate"], cls=R3,
+    ("middle", 3): lambda: row([2.3, 2.0], [1.96, 2.02], [F3b, F3], [AS, BR], ["copper", "slate"], cls=R3,
                                extra=[{"gable": "curved", "pitch": 56, "bay": True}, {"pitch": 58, "arms": "blue"}]),
-    ("end_b", 1): lambda: row([2.15, 2.15], [1.98, 2.02], [F3b, F3], [BR, AG], ["slate", "tile"], end="b", cls=R3,
+    ("end_b", 1): lambda: row([2.15, 2.15], [1.98, 2.02], [F3b, F3], [BR, AG], ["slate", "graphite"], end="b", cls=R3,
                               extra=[{"pitch": 55, "bay": True, "arms": "green"}, {"gable": "curved", "pitch": 58,
                                                                                    "arcade": True}]),
-    ("end_b", 2): lambda: row([2.0, 2.3], [2.02, 1.96], [F3, F3b], [AS, BR], ["tile", "slate"], end="b", cls=R3,
+    ("end_b", 2): lambda: row([2.0, 2.3], [2.02, 1.96], [F3, F3b], [AS, BR], ["copper", "slate"], end="b", cls=R3,
                               extra=[{"gable": "stepped", "pitch": 58, "arcade": True}, {"pitch": 55, "arcade": True,
                                                                                          "arms": "blue"}]),
-    ("end_b", 3): lambda: row([2.1, 2.2], [1.98, 2.02], [F3, F3b], [AG, BR], ["tile", "slate"],
+    ("end_b", 3): lambda: row([2.1, 2.2], [1.98, 2.02], [F3, F3b], [AG, BR], ["graphite", "slate"],
                               end="b", cls=R3, extra=[{"pitch": 57, "bay": True}, {"gable": "curved", "pitch": 58,
                                                                                     "arms": "blue"}]),
     ("corner_a", 1): lambda: corner("gate", rich=True),
@@ -896,11 +984,11 @@ GAME3 = {
 }
 
 CORNER_LOOKS3 = {
-    "gate": dict(h0=(AS, "slate", "stepped"), h1=(BR, "tile"), h2=(AG, "slate"),
+    "gate": dict(h0=(AS, "slate", "stepped"), h1=(BR, "copper"), h2=(AG, "slate"),
                  bay=dict(gable="curved", gate=True), extra={"h0": {"arcade": True}, "h2": {"arms": "blue"}}),
-    "tower": dict(h0=(BR, "tile", "curved"), h1=(AS, "slate"), h2=(BR, "tile"),
+    "tower": dict(h0=(BR, "graphite", "curved"), h1=(AS, "slate"), h2=(BR, "copper"),
                   bay=dict(gable="tower"), extra={"h0": {"arcade": True, "arms": "green"}}),
-    "shop": dict(h0=(AG, "tile", "stepped"), h1=(AS, "tile"), h2=(AG, "slate"),
+    "shop": dict(h0=(AG, "graphite", "stepped"), h1=(AS, "copper"), h2=(AG, "slate"),
                  bay=dict(gable="stepped"), extra={"h0": {"bay": True}, "h2": {"arcade": True}}),
 }
 

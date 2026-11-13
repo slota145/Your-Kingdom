@@ -4,7 +4,8 @@ and a street of rows built as the game places them. 2x scale.
 
 Run: python3 tools/spritekiln/compose_homes.py <out dir> [--rev=<git rev>]
 Writes g3_part4a_1.png (huts, backs, stages, scaffold), g3_part4a_2.png (patricians: each piece
-old | new look 1, 2, 3 and the back of look 1) and g3_part4a_street.png.
+old | new look 1, 2, 3 and the back of look 1), g3_part4a_4.png and _5.png (burghers after the owner's
+review: stone ground floor, side jetties, dormers, new roof colours) and g3_part4a_street.png.
 """
 import io
 import json
@@ -99,6 +100,12 @@ def main():
         rows.append([old(rev, n), new(n), new(n + "_2"), new(n + "_3"), new(n + "_back")])
     sheet(rows[:3], os.path.join(out, "g3_part4a_2.png"))
     sheet(rows[3:], os.path.join(out, "g3_part4a_3.png"))
+    rows = []
+    for piece in ("single", "middle", "end_b", "corner_a"):
+        n = "level_2_" + piece
+        rows.append([old(rev, n), new(n), new(n + "_2"), new(n + "_3"), new(n + "_back")])
+    sheet(rows[:2], os.path.join(out, "g3_part4a_4.png"))
+    sheet(rows[2:], os.path.join(out, "g3_part4a_5.png"))
     street(os.path.join(out, "g3_part4a_street.png"))
 
 

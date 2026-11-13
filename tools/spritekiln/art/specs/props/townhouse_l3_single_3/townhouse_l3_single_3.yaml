@@ -66,6 +66,13 @@ materials:
   plaster_ochre: {ramp: plaster_ochre}
   plaster_pink: {ramp: plaster_pink}
   plaster_blue: {ramp: plaster_blue}
+  groundstone:
+    ramp: stone
+    bands: [2, 4]
+  groundstone_dark:
+    ramp: stone
+    bands: [1, 2]
+    outline: false
   tile:
     ramp: tile
     bands: [2, 4]
@@ -84,6 +91,46 @@ materials:
     bands: [3, 5]
   slate_dark:
     ramp: slate
+    bands: [0, 1]
+    outline: false
+  tile_brown:
+    ramp: tile_brown
+    bands: [2, 4]
+  tile_brown_light:
+    ramp: tile_brown
+    bands: [3, 5]
+  tile_brown_dark:
+    ramp: tile_brown
+    bands: [0, 1]
+    outline: false
+  shingle_roof:
+    ramp: shingle_roof
+    bands: [2, 4]
+  shingle_roof_light:
+    ramp: shingle_roof
+    bands: [3, 5]
+  shingle_roof_dark:
+    ramp: shingle_roof
+    bands: [0, 1]
+    outline: false
+  copper:
+    ramp: copper
+    bands: [2, 4]
+  copper_light:
+    ramp: copper
+    bands: [3, 5]
+  copper_dark:
+    ramp: copper
+    bands: [0, 1]
+    outline: false
+  graphite:
+    ramp: graphite
+    bands: [2, 4]
+  graphite_light:
+    ramp: graphite
+    bands: [3, 5]
+  graphite_dark:
+    ramp: graphite
     bands: [0, 1]
     outline: false
   brick_wall:
@@ -187,7 +234,7 @@ parts:
     - material: brick_line
       stripes: {axis: y, period: 0.13, width: 0.055}
   h0_courses:
-    material: tile_dark
+    material: copper_dark
     prims:
     - box:
         c: [-1.0828, 2.62, 1.99]
@@ -866,7 +913,7 @@ parts:
         c: [-1.0828, 6.7975, 1.92]
         r: 0.08
   h0_roof_l:
-    material: tile
+    material: copper
     prims:
     - box:
         c: [-1.7904, 5.4196, -0.1715]
@@ -874,10 +921,10 @@ parts:
         rot: [0.0, 0.0, 0.9948]
         round: 0.01
     paint:
-    - material: tile_light
+    - material: copper_light
       spots: {scale: 0.18, density: 0.2, seed: 55}
   h0_roof_r:
-    material: tile
+    material: copper
     prims:
     - box:
         c: [-0.3752, 5.4196, -0.1715]
@@ -885,10 +932,10 @@ parts:
         rot: [0.0, 0.0, -0.9948]
         round: 0.01
     paint:
-    - material: tile_light
+    - material: copper_light
       spots: {scale: 0.18, density: 0.2, seed: 56}
   h0_ridge:
-    material: tile_dark
+    material: copper_dark
     prims:
     - cylinder:
         a: [-1.0828, 6.5175, -2.243]
