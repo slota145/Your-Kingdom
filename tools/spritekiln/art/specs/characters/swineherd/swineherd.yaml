@@ -60,9 +60,9 @@ animations:
   work_muck:
     loop: true
     keys:
-      - {ms: 125, set: {show_spade: 1, hand_R: [0.12, 0.20, 0.26], hand_L: [0.08, 0.00, 0.28], tool_pitch: 2.95, lean: 0.22, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
-      - {ms: 125, set: {show_spade: 1, hand_R: [0.12, 0.12, 0.27], hand_L: [0.08, -0.08, 0.29], tool_pitch: 3.0, lean: 0.26, bob: -0.05, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
-      - {ms: 125, set: {show_spade: 1, hand_R: [0.12, 0.18, 0.16], hand_L: [0.08, 0.02, 0.26], tool_pitch: 2.55, lean: 0.30, bob: -0.04, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
+      - {ms: 125, set: {show_spade: 1, hand_R: [0.12, 0.26, 0.26], hand_L: [0.08, 0.06, 0.28], tool_pitch: 2.95, lean: 0.22, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
+      - {ms: 125, set: {show_spade: 1, hand_R: [0.12, 0.24, 0.27], hand_L: [0.08, 0.04, 0.29], tool_pitch: 3.0, lean: 0.26, bob: -0.05, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
+      - {ms: 125, set: {show_spade: 1, hand_R: [0.12, 0.28, 0.16], hand_L: [0.08, 0.12, 0.26], tool_pitch: 2.55, lean: 0.30, bob: -0.04, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
       - {ms: 125, set: {show_spade: 1, hand_R: [0.14, 0.34, 0.18], hand_L: [0.08, 0.20, 0.28], tool_pitch: 2.1, lean: 0.20, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
       - {ms: 125, set: {show_spade: 1, hand_R: [0.20, 0.40, 0.14], hand_L: [0.14, 0.26, 0.26], tool_pitch: 1.9, tool_yaw: 0.8, twist: 0.3, lean: 0.14, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
       - {ms: 125, set: {show_spade: 1, hand_R: [0.12, 0.30, 0.20], hand_L: [0.08, 0.10, 0.26], tool_pitch: 2.7, twist: 0.1, lean: 0.18, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
