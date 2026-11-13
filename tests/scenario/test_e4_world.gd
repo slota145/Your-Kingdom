@@ -279,7 +279,7 @@ func test_ruler_research_is_saved_and_old_saves_get_everything() -> void:
 	for def: ResearchDef in sim.data.researches():
 		assert_bool((after.world.rulers[owner] as RulerState).research.is_done(def.id)) \
 				.override_failure_message("missing %s" % def.id).is_true()
-	assert_int(SaveMigrations.CURRENT_VERSION).is_equal(42)
+	assert_int(SaveMigrations.CURRENT_VERSION).is_greater_equal(42)
 
 
 func test_the_automatic_player_studies() -> void:

@@ -4,6 +4,7 @@ extends SceneTree
 ## universities, and the researches done; the minute of the first attack of each ruler and of
 ## the player's first patrician house and first soldier.
 ## "$GODOT" --headless --path . -s res://src/prototype/e4/world_probe.gd -- [--seed=5] [--minutes=90] [--rulers=2] [--provinces=22] [--scenario=colonization] [--difficulty=1]
+## [--archipelago] (UI-2 part 3): islands only with the rules of the scenario.
 
 
 func _init() -> void:
@@ -16,6 +17,7 @@ func _init() -> void:
 	s.world_seed = int(args.get("seed", "5"))
 	s.rulers = int(args.get("rulers", "2"))
 	s.province_count = int(args.get("provinces", "22"))
+	s.archipelago = args.has("archipelago")
 	if args.has("difficulty"):
 		s.difficulty = int(args["difficulty"])
 	s.fit_scenario()
@@ -71,7 +73,7 @@ func _init() -> void:
 				var list: Array = (research as ResearchState).done.keys()
 				list.sort()
 				done = " research %s now %s" % [list, (research as ResearchState).current]
-			print("    %s houses %s %s units %s%s" % [owner, levels, have, units, done]))
+			print("    %s provinces %d houses %s %s units %s%s" % [owner, Rulers.provinces_of(sim.world, owner).size(), levels, have, units, done]))
 	print("FIRSTS %s" % firsts)
 	print("END %s" % bot.summary())
 	quit()

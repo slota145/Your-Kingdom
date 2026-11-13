@@ -83,7 +83,7 @@ func redraw() -> void:
 	var settings := panel.settings()
 	var data: DataRegistry = Data.registry
 	var key: Array = [settings.world_def, settings.world_seed, settings.province_count, settings.islands,
-			settings.scenario == GameSettings.ISLANDS]
+			settings.is_archipelago()]
 	if key == _shown_key:
 		return
 	_shown_key = key

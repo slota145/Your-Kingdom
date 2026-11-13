@@ -53,3 +53,21 @@ func test_the_kingdom_is_shown_as_it_is_and_cannot_be_rolled() -> void:
 	window.redraw()
 	assert_str(String(window.preview.world.id)).is_equal("kingdom")
 	assert_bool(window._reroll.disabled).is_true()
+
+
+func test_islands_only_in_colonization_draws_islands_and_hides_the_slider() -> void:
+	var window := _window()
+	window.panel._seed.value = 77
+	window.panel._shape.selected = 1
+	window.panel._refresh()
+	window.redraw()
+	assert_bool(window.panel._islands.get_parent().visible).is_false()
+	var settings := window.panel.settings()
+	assert_bool(settings.archipelago).is_true()
+	for id: StringName in window.preview.world.provinces:
+		assert_bool(Data.registry.get_province(id).island).is_true()
+	# The Invasion has no such choice.
+	window.panel._scenario.selected = GameSettings.SCENARIOS.find(GameSettings.INVASION)
+	window.panel._refresh()
+	assert_bool(window.panel._shape.get_parent().visible).is_false()
+	assert_bool(window.panel.settings().archipelago).is_false()

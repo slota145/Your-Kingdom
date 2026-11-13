@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 42
+const CURRENT_VERSION := 43
 ## Hive tiles an old apiary gets on its first second after loading a save before v34.
 const AUTO_HIVES := 4
 ## Horses one pen tile of a stud farm holds (data/buildings/stud_farm.tres, pen_animals).
@@ -142,6 +142,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 42:
 		result = migrate_v41_to_v42(result)
 		version = 42
+	if version < 43:
+		result = migrate_v42_to_v43(result)
+		version = 43
 	return result
 
 
@@ -429,6 +432,16 @@ static func migrate_v24_to_v25(state: Dictionary) -> Dictionary:
 ## v31 (M8 part 5): scenarios (the Divided continent, the Merchant islands with their gold
 ## target, the Invasion from the sea with the clock of its waves). A game from before is a
 ## Colonization game: its settings name the scenario and get the default gold target.
+## v43 (UI-2 part 3): a generated world may be islands only in any scenario ("archipelago" of
+## the world's settings); an older game had islands only in the Merchant islands, which still
+## make them by their scenario.
+static func migrate_v42_to_v43(state: Dictionary) -> Dictionary:
+	var world: Variant = state.get("world")
+	if world is Dictionary and (world as Dictionary).get("settings") is Dictionary:
+		((world as Dictionary)["settings"] as Dictionary)["archipelago"] = false
+	return state
+
+
 ## v42 (E4 part 5): every AI ruler has his kingdom's research ("research" of a ruler's state).
 ## A ruler of an older game has all of it done (owner's survey 2026-11-11: old saves get all
 ## research), so nothing his towns have or recruit is locked; the raiders' stays open.

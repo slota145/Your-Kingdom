@@ -4050,6 +4050,15 @@ msgstr "Nie wybrano jeszcze prowincji."
 msgid "ui.new_game.start_at"
 msgstr "Start: %s (%s)"
 
+msgid "ui.new_game.shape"
+msgstr "Kształt świata"
+
+msgid "ui.new_game.shape_continent"
+msgstr "Kontynent"
+
+msgid "ui.new_game.shape_islands"
+msgstr "Same wyspy"
+
 msgid "ui.new_game.preview"
 msgstr "Podgląd świata"
 

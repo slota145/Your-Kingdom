@@ -4012,6 +4012,15 @@ msgstr "No province chosen yet."
 msgid "ui.new_game.start_at"
 msgstr "Start: %s (%s)"
 
+msgid "ui.new_game.shape"
+msgstr "World shape"
+
+msgid "ui.new_game.shape_continent"
+msgstr "Continent"
+
+msgid "ui.new_game.shape_islands"
+msgstr "Islands only"
+
 msgid "ui.new_game.preview"
 msgstr "World preview"
 
