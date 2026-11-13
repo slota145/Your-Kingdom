@@ -52,6 +52,12 @@ var _dev: bool = false
 ## --research (E4 part 2): a locked research with some done, one under way and a queue, and the
 ## research window open.
 var _research: bool = false
+## UI-2: the build menu's tab to show (-1: the first).
+var _build_tab: int = -1
+## UI-2: a road being laid from two clicks, "x,y:x,y" (from the first click to the cursor).
+var _road_line: String = ""
+## UI-2: the pause menu open.
+var _pause_menu: bool = false
 var _frames: int = 0
 var _shot_path: String = ""
 var _tile: Vector2i = Vector2i(-1, -1)
@@ -211,6 +217,12 @@ func _ready() -> void:
 			_dev = true
 		elif arg == "--research":
 			_research = true
+		elif arg == "--pause_menu":
+			_pause_menu = true
+		elif arg.begins_with("--road_line="):
+			_road_line = arg.trim_prefix("--road_line=")
+		elif arg.begins_with("--build_tab="):
+			_build_tab = int(arg.trim_prefix("--build_tab="))
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--map="):
 			Game.start_request = {"map": arg.trim_prefix("--map=")}
@@ -239,6 +251,19 @@ func _arrange() -> void:
 	view.terrain.organic = not _plain
 	if _dev:
 		_game.call("_execute", SetDevModeCommand.new(true))
+	if not _road_line.is_empty():
+		var ends := _road_line.split(":")
+		var a := ends[0].split(",")
+		var b := ends[1].split(",")
+		_game.call("_set_tool", {"kind": &"road"})
+		_game.set("_line_from", Vector2i(int(a[0]), int(a[1])))
+		_game.set("_dragging", true)
+		var to := IsoMath.tile_center_screen(Vector2i(int(b[0]), int(b[1])))
+		get_viewport().warp_mouse(get_viewport().get_canvas_transform() * to)
+	if _pause_menu:
+		_game.call("_open_pause_menu")
+	if _build_tab >= 0:
+		(_game.get("_build") as BuildMenu).call("_show_tab", _build_tab)
 	if _research:
 		sim.research = ResearchState.new()
 		for id: StringName in [&"butchery", &"forestry", &"tailoring"]:

@@ -30,6 +30,9 @@ const TABS: Array[Dictionary] = [
 ## Wall tools (M7 part 2): tool kind -> its cost, shown in the tooltip.
 const WALL_COSTS: Dictionary[StringName, String] = {&"palisade": "wood", &"stone_wall": "stone", &"stairs": "stone"}
 const ICON_SIZE := Vector2(72, 56)
+## A building button: the picture and up to two lines of its name (UI-2 part 1: a long name
+## such as "Chata budowniczych" ran over the next button).
+const BUTTON_SIZE := Vector2(100, 56 + 40)
 
 var _tab_buttons: Array[Button] = []
 var _rows: Array[Control] = []
@@ -153,7 +156,15 @@ func refresh_locks(province: ProvinceSim) -> void:
 
 ## Shows the hint about turning buildings with R while one is being placed (M4b-1.5).
 func show_rotate_hint(on: bool) -> void:
-	_rotate_hint.visible = on
+	show_hint("ui.build.rotate_hint" if on else "")
+
+
+## Shows a hint about the tool in hand by its localization key (UI-2 part 1: how to lay a road
+## from two clicks); empty hides it.
+func show_hint(key: String) -> void:
+	_rotate_hint.visible = key != ""
+	if key != "":
+		_rotate_hint.text = key
 
 
 func _show_tab(index: int) -> void:
@@ -165,7 +176,7 @@ func _show_tab(index: int) -> void:
 ## A picture of the building with its name under it.
 func _building_button(def: BuildingDef) -> Button:
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(96, 0)
+	b.custom_minimum_size = BUTTON_SIZE
 	b.pressed.connect(func() -> void: tool_selected.emit({"kind": &"building", "def": def.id}))
 	var content := VBoxContainer.new()
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -181,11 +192,9 @@ func _building_button(def: BuildingDef) -> Button:
 	content.add_child(icon)
 	var name := Label.new()
 	name.text = def.name_key()
-	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
-	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fit_name(name)
 	content.add_child(name)
-	b.custom_minimum_size.y = ICON_SIZE.y + 30
+	b.custom_minimum_size.y = BUTTON_SIZE.y
 	var lock := UiKit.icon("lock")
 	lock.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE, 4)
 	lock.scale = Vector2(2, 2)
@@ -208,7 +217,7 @@ func _building_button(def: BuildingDef) -> Button:
 ## A wall tool (M7 part 2): drag a line of palisade, stone wall or stairs.
 func _wall_button(tool: StringName) -> Button:
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(96, ICON_SIZE.y + 30)
+	b.custom_minimum_size = BUTTON_SIZE
 	b.pressed.connect(func() -> void: tool_selected.emit({"kind": tool}))
 	var content := VBoxContainer.new()
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -225,9 +234,7 @@ func _wall_button(tool: StringName) -> Button:
 	var name := Label.new()
 	var key := "ui.build." + String(tool)
 	name.text = key
-	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
-	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fit_name(name)
 	content.add_child(name)
 	b.tooltip_text = key + "_tip"
 	if tool == BuildWallCommand.STONE_TOOL:
@@ -244,7 +251,18 @@ func _wall_button(tool: StringName) -> Button:
 	return b
 
 
-## The finished building's art (a storage yard has none: its second construction phase).
+## A building's name under its picture: centred, wrapped to the button's width (two lines at most).
+func _fit_name(name: Label) -> void:
+	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name.custom_minimum_size.x = BUTTON_SIZE.x - 8.0
+	name.max_lines_visible = 2
+	name.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
+	name.add_theme_constant_override(&"line_spacing", -2)
+	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+## The finished building's art (a storage yard has none: its menu picture, else its second construction phase).
 ## The building's picture in the menu (also a house need's icon, P2 part 3).
 static func icon_for(def: BuildingDef) -> Texture2D:
 	return _icon(def)
@@ -253,5 +271,9 @@ static func icon_for(def: BuildingDef) -> Texture2D:
 static func _icon(def: BuildingDef) -> Texture2D:
 	var visual := BuildingVisualDef.for_building(def.id)
 	var art_id := visual.art_id if visual != null else String(def.id)
+	# UI-2 part 1: a menu picture of its own where the building's art is no finished building
+	# (storage yards, port pieces: tools/render_menu_icons.gd).
+	if ResourceLoader.exists(ArtPaths.resolve("buildings/%s/icon.png" % art_id)):
+		return ArtPaths.texture("buildings/%s/icon.png" % art_id)
 	var name := "construction_2" if visual != null and visual.yard else "base"
 	return ArtPaths.texture("buildings/%s/%s.png" % [art_id, name])

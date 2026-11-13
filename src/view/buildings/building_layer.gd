@@ -22,6 +22,11 @@ var province: ProvinceSim
 
 ## Building id -> its current visual node.
 var _views: Dictionary[int, Node2D] = {}
+## Whether some buildings are see-through now ([method fade_in_front_of]).
+var _fading: bool = false
+## How far round the cursor's tile (screen px, each way) a building in front fades.
+const FADE_REACH := Vector2(112, 72)
+const NONE_TILE := Vector2i(-1, -1)
 ## Building id -> art key the view was built for (rebuild only when it changes).
 var _keys: Dictionary[int, String] = {}
 var _site_piles: Dictionary[int, StackSprite] = {}
@@ -211,6 +216,22 @@ func _house_rows() -> Dictionary[int, String]:
 					"footprint": building.def.footprint, "level": building.house.level})
 	return HouseRowResolver.resolve(houses, func(t: Vector2i) -> bool:
 		return province.grid.is_inside(t) and province.grid.has_road(t))
+
+
+## UI-2 part 1 (owner 2026-11-13): while the player builds, buildings that stand in front of
+## the tile under the cursor and cover the ground round it turn see-through, so the player sees
+## where the road or the building goes. [param tile] NONE_TILE: everything solid again.
+func fade_in_front_of(tile: Vector2i) -> void:
+	if tile == NONE_TILE and not _fading:
+		return
+	_fading = tile != NONE_TILE
+	var centre := IsoMath.tile_center_screen(tile)
+	var focus := Rect2(centre - FADE_REACH, FADE_REACH * 2.0)
+	for id: int in _views:
+		for child: Node in _views[id].get_children():
+			var view := child as BuildingView
+			if view != null:
+				view.set_faded(_fading and view.position.y > centre.y and view.get_screen_rect().intersects(focus))
 
 
 ## The building whose drawn art is under [param world_pos], the front one when several

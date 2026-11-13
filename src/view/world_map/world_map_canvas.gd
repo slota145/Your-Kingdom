@@ -51,6 +51,8 @@ const OWNER_ARMS: Dictionary[StringName, Color] = {
 	&"ruler_raiders": Color(0.12, 0.11, 0.10),
 }
 const MARGIN := 24.0
+## Size of the provinces' names (px).
+const LABEL_FONT := 18
 ## How near (parchment pixels) a click has to be to an expedition's mark.
 const MARK_RADIUS := 22.0
 const ROUTE_OK := Color(0.20, 0.45, 0.18)
@@ -265,8 +267,9 @@ func _draw() -> void:
 	_draw_army_route()
 	_draw_sea_fights()
 	draw_set_transform_matrix(Transform2D.IDENTITY)
-	for id: int in sim.world.ids():
-		_draw_label(id, fit)
+	var spots := label_spots(fit)
+	for id: int in spots:
+		_draw_label(id, spots[id])
 	_draw_compass(frame)
 	draw_rect(frame.grow(-6.0), BORDER, false, 3.0)
 	draw_rect(frame.grow(-12.0), Color(BORDER, 0.5), false, 1.0)
@@ -386,15 +389,80 @@ func _draw_town(id: int) -> void:
 		draw_arc(at + Vector2(0, -6), 26.0, 0.0, TAU, 32, SELECTED, 2.0)
 
 
-func _draw_label(id: int, fit: Transform2D) -> void:
+## Where each province's name goes on screen (UI-2 part 1: names ran into each other on a
+## crowded map). A name tries under its town first, then above it, then to either side, then
+## further down, and takes the first place that overlaps no name placed before it nor another
+## town; when none is free it stays under its town. Keys: province ids, values: the centre of
+## the name's baseline row (as _draw_label takes it).
+func label_spots(fit: Transform2D) -> Dictionary[int, Vector2]:
+	var font := get_theme_default_font()
+	var placed: Array[Rect2] = []
+	var towns: Dictionary[int, Rect2] = {}
+	for id: int in sim.world.ids():
+		var def := sim.world.def_of(id, sim.data)
+		if def != null:
+			towns[id] = Rect2(fit * def.world_pos - Vector2(18, 30), Vector2(36, 36))
+	var spots: Dictionary[int, Vector2] = {}
+	for id: int in sim.world.ids():
+		var def := sim.world.def_of(id, sim.data)
+		if def == null:
+			continue
+		var town := fit * def.world_pos
+		var size := _label_box(id, font)
+		var below := town + Vector2(0, 22)
+		var candidates: Array[Vector2] = [below, town + Vector2(0, -48),
+				town + Vector2(size.x / 2.0 + 24.0, -12), town + Vector2(-size.x / 2.0 - 24.0, -12),
+				below + Vector2(0, 22), town + Vector2(0, -70)]
+		var chosen := below
+		for at: Vector2 in candidates:
+			var box := _label_rect(at, size)
+			var free := true
+			for other: Rect2 in placed:
+				if other.intersects(box):
+					free = false
+					break
+			if free:
+				for other_id: int in towns:
+					if other_id != id and towns[other_id].intersects(box):
+						free = false
+						break
+			if free:
+				chosen = at
+				break
+		placed.append(_label_rect(chosen, size))
+		spots[id] = chosen
+	return spots
+
+
+## The width (name, arms and marks) and height of a province's label.
+func _label_box(id: int, font: Font) -> Vector2:
+	var def := sim.world.def_of(id, sim.data)
+	var width := font.get_string_size(tr(def.name_key()), HORIZONTAL_ALIGNMENT_CENTER, -1, LABEL_FONT).x
+	var marks := 1 if def.rare_resource != &"" else 0
+	for t: StringName in def.all_traits():
+		if not (t == ProvinceDef.RICH_IRON and def.rare_resource == &"iron_ore"):
+			marks += 1
+	# Arms on the left (16 px) and the rare resource and trait marks on the right (20 px each).
+	return Vector2(width + 16.0 + 20.0 * marks, 20.0)
+
+
+## A label's rectangle when drawn at [param at] (see [method label_spots]): the name is centred,
+## arms on its left, marks on its right.
+func _label_rect(at: Vector2, size: Vector2) -> Rect2:
+	return Rect2(at + Vector2(-size.x / 2.0, 0.0), Vector2(size.x, size.y)).grow(2.0)
+
+
+func _draw_label(id: int, at: Vector2) -> void:
 	var def := sim.world.def_of(id, sim.data)
 	if def == null:
 		return
 	var font := get_theme_default_font()
-	var at := fit * (def.world_pos + Vector2(0, 22))
 	var text := tr(def.name_key())
-	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, 18).x
-	draw_string(font, at - Vector2(width / 2.0, -12.0), text, HORIZONTAL_ALIGNMENT_CENTER, -1, 18, INK)
+	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, LABEL_FONT).x
+	# A parchment rim round the letters keeps the name readable over borders and roads.
+	var pos := at - Vector2(width / 2.0, -12.0)
+	draw_string_outline(font, pos, text, HORIZONTAL_ALIGNMENT_CENTER, -1, LABEL_FONT, 4, PARCHMENT)
+	draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_CENTER, -1, LABEL_FONT, INK)
 	var owner := sim.world.owner_of(id)
 	if OWNER_ARMS.has(owner):
 		_draw_arms(at + Vector2(-width / 2.0 - 16.0, 4.0), OWNER_ARMS[owner])

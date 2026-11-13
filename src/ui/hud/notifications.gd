@@ -85,6 +85,17 @@ func push(text: String) -> void:
 	l.add_theme_color_override(&"font_color", UiKit.LIGHT)
 	l.add_theme_color_override(&"font_outline_color", Color(0.14, 0.08, 0.05))
 	l.add_theme_constant_override(&"outline_size", 6)
+	# UI-2 part 1: a dark see-through strip behind each message, so it never runs into the
+	# town's or the world map's own labels underneath.
+	var strip := StyleBoxFlat.new()
+	strip.bg_color = Color(0.14, 0.08, 0.05, 0.62)
+	strip.set_corner_radius_all(4)
+	strip.content_margin_left = 8.0
+	strip.content_margin_right = 8.0
+	strip.content_margin_top = 2.0
+	strip.content_margin_bottom = 2.0
+	l.add_theme_stylebox_override(&"normal", strip)
+	l.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	add_child(l)
 	var tween := l.create_tween()
 	tween.tween_interval(LIFETIME)
