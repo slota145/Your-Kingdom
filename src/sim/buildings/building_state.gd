@@ -292,11 +292,19 @@ static func yard_goods(building_def: BuildingDef, data: DataRegistry) -> Array[S
 	var goods: Array[StringName] = []
 	if building_def.recipe == null or building_def.storage_slots > 0 or building_def.is_house():
 		return goods
-	var delivers := false
-	var steps: Array[StepDef] = []
 	for recipe: RecipeDef in building_def.all_recipes():
-		steps.append_array(recipe.steps)
-	for step: StepDef in steps:
+		for good: StringName in recipe_goods(recipe, data):
+			if not goods.has(good):
+				goods.append(good)
+	return goods
+
+
+## What a worker of [param recipe] brings to storages (E5: the goods its limits look at);
+## empty when its cycle delivers nothing.
+static func recipe_goods(recipe: RecipeDef, data: DataRegistry) -> Array[StringName]:
+	var goods: Array[StringName] = []
+	var delivers := false
+	for step: StepDef in recipe.steps:
 		var good: StringName = &""
 		if step is DeliverStepDef:
 			delivers = true

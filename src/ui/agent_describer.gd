@@ -23,6 +23,9 @@ static func doing(province: ProvinceSim, agent: Agent) -> String:
 	if task == null:
 		if agent.cooldown > 0 and agent.last_fail == &"no_source" and agent.last_fail_good != &"":
 			return _f("ui.doing.waiting_for", [_good(agent.last_fail_good)])
+		if agent.cooldown > 0 and agent.last_fail == &"goods_limit" and agent.last_fail_good != &"":
+			return _f("ui.doing.goods_limit", [_good(agent.last_fail_good),
+					int(province.goods_limits.get(agent.last_fail_good, 0))])
 		if agent.cooldown > 0 and agent.last_fail == &"kept_for_building" and agent.last_fail_good != &"":
 			return _f("ui.doing.kept_for_building", [_good(agent.last_fail_good)])
 		if agent.cooldown > 0 and agent.last_fail != &"":

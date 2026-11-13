@@ -3,7 +3,8 @@ extends PanelContainer
 ## The selected building: what it is, what its people are doing right now ("Baker: bakes
 ## bread (60%)", "Waits for flour"), construction progress, household needs, stored goods.
 ## Settings: work priority (workplaces), the wood reserve (storages), taxes (town hall), and
-## for workshops how much of each input the province keeps for building (one value per good).
+## for workshops how much of each input the province keeps for building (one value per good)
+## and the player's limit of each good it makes (E5).
 
 signal demolish_requested(building_id: int)
 signal add_fields_requested(farm_id: int)
@@ -63,6 +64,11 @@ var _herd_label: Label
 var _herd_slider: HSlider
 ## Input goods the keep sliders are built for, and a slider per good.
 var _keep_goods: Array[StringName] = []
+## The limits of the goods a workshop or gatherer makes (E5): a tick and a number per good.
+var _limit_box: VBoxContainer
+var _limit_status: Label
+var _limit_goods: Array[StringName] = []
+var _limit_rows: Dictionary[StringName, Dictionary] = {}
 var _keep_sliders: Dictionary[StringName, HSlider] = {}
 var _tax_box: Container
 var _tax_label: Label
@@ -200,6 +206,8 @@ func _build_settings(box: VBoxContainer) -> void:
 	_cart_row.add_child(_cart_button)
 	_keep_box = VBoxContainer.new()
 	box.add_child(_keep_box)
+	_limit_box = VBoxContainer.new()
+	box.add_child(_limit_box)
 	_herd_box = VBoxContainer.new()
 	box.add_child(_herd_box)
 	_herd_label = UiKit.label()
@@ -488,6 +496,7 @@ func _refresh_settings(b: BuildingState) -> void:
 		_cart_button.disabled = b.carts >= b.def.max_carts \
 				or province.stored(&"planks") < int(Carriers.HANDCART_COST[&"planks"])
 	_refresh_keep(b)
+	_refresh_limits(b)
 	_refresh_ships(b)
 	_military.refresh(province, b)
 	_expedition.visible = b.def.id == TOWN_HALL and b.is_complete() and sim != null
@@ -552,6 +561,70 @@ func _build_keep_rows(goods: Array[StringName]) -> void:
 		_keep_sliders[good] = slider
 	if not goods.is_empty():
 		_keep_box.add_child(UiKit.label("ui.keep.hint"))
+
+
+## Goods whose limit the panel offers (E5): what a finished workshop or gatherer brings to the
+## storages; none for fields, pens, hives and foresters.
+func _limited_goods(b: BuildingState) -> Array[StringName]:
+	var goods: Array[StringName] = []
+	if b.is_complete() and ProvinceSim.limits_apply(b.def):
+		for good: StringName in BuildingState.yard_goods(b.def, province.data):
+			var def := province.data.get_good(good)
+			if def != null and not def.is_live():
+				goods.append(good)
+	return goods
+
+
+func _refresh_limits(b: BuildingState) -> void:
+	var goods := _limited_goods(b)
+	if goods != _limit_goods:
+		_build_limit_rows(goods)
+	_limit_box.visible = not goods.is_empty()
+	for good: StringName in goods:
+		var row := _limit_rows[good]
+		var limited := province.goods_limits.has(good)
+		(row["tick"] as CheckBox).set_pressed_no_signal(limited)
+		var spin := row["amount"] as SpinBox
+		if limited and not spin.get_line_edit().has_focus():
+			spin.set_value_no_signal(int(province.goods_limits[good]))
+	var stopped := province.limit_stopping(b) if not goods.is_empty() else &""
+	_limit_status.visible = stopped != &""
+	if stopped != &"":
+		_limit_status.text = tr("ui.limit.stopped") % [tr("good.%s.name" % stopped),
+				int(province.goods_limits.get(stopped, 0))]
+
+
+func _build_limit_rows(goods: Array[StringName]) -> void:
+	for child: Node in _limit_box.get_children():
+		_limit_box.remove_child(child)
+		child.queue_free()
+	_limit_goods = goods
+	_limit_rows.clear()
+	if goods.is_empty():
+		return
+	_limit_status = UiKit.label()
+	_limit_status.add_theme_color_override(&"font_color", UiKit.HEADING)
+	_limit_box.add_child(_limit_status)
+	for good: StringName in goods:
+		var row := HBoxContainer.new()
+		var tick := CheckBox.new()
+		tick.text = tr("ui.limit.of") % tr("good.%s.name" % good)
+		tick.tooltip_text = "ui.limit.hint"
+		var amount := SpinBox.new()
+		amount.min_value = 0
+		amount.max_value = SetGoodsLimitCommand.MAX_LIMIT
+		amount.step = 1
+		amount.value = 100
+		amount.tooltip_text = "ui.limit.hint"
+		tick.toggled.connect(func(on: bool) -> void:
+			command_requested.emit(SetGoodsLimitCommand.new(good, int(amount.value) if on else -1)))
+		amount.value_changed.connect(func(value: float) -> void:
+			if tick.button_pressed:
+				command_requested.emit(SetGoodsLimitCommand.new(good, int(value))))
+		row.add_child(tick)
+		row.add_child(amount)
+		_limit_box.add_child(row)
+		_limit_rows[good] = {"tick": tick, "amount": amount}
 
 
 func _keep_label(good: StringName) -> Label:

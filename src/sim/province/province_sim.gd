@@ -110,6 +110,10 @@ var entry_tile: Vector2i = Vector2i.ZERO
 ## Units of a good workshops leave in the province for construction and households
 ## (GDD §4.1: the sawmill must not eat all the wood). Set by the player, 0 = none.
 var keep_for_building: Dictionary[StringName, int] = {}
+## Most units of a good the player wants in the province (E5): once the kingdom holds this
+## many (kingdom_stock), workshops and gatherers that make it stop until the stock drops below.
+## Fields, orchards, pens and hives go on. Set by the player only; no entry = no limit.
+var goods_limits: Dictionary[StringName, int] = {}
 ## Terrain definitions by TileGrid index.
 var terrains: Array[TerrainDef] = []
 
@@ -3049,6 +3053,69 @@ func workshop_may_take(good: StringName, amount: int) -> bool:
 	return total - amount >= keep
 
 
+## Whether the kingdom holds at least the player's limit of [param good] (E5).
+func limit_reached(good: StringName) -> bool:
+	if not goods_limits.has(good):
+		return false
+	return kingdom_stock(good) >= goods_limits[good]
+
+
+## Whether limits may stop buildings of [param def] (E5): not fields, orchards, pens, hives or
+## a forester (crops and herds go on growing).
+static func limits_apply(def: BuildingDef) -> bool:
+	return def.field_limit() <= 0 and def.herd_good == &"" and not def.plants_trees()
+
+
+## The first good of [param recipe] at its limit when every good the recipe brings to the
+## storages is at its limit (E5), else &"" (it may run).
+func limited_good(recipe: RecipeDef) -> StringName:
+	if goods_limits.is_empty() or recipe == null:
+		return &""
+	var goods := BuildingState.recipe_goods(recipe, data)
+	if goods.is_empty():
+		return &""
+	for good: StringName in goods:
+		if not limit_reached(good):
+			return &""
+	return goods[0]
+
+
+## The recipe a worker of [param building] works next (E5): the building's own choice, or
+## with recipes taking turns the next one whose goods are not all at their limit; null when
+## the limits stop the building.
+func next_recipe(building: BuildingState) -> RecipeDef:
+	if goods_limits.is_empty() or not limits_apply(building.def):
+		return building.take_recipe()
+	var choices := building.def.recipe_choices
+	if choices.is_empty() or (building.recipe_mode >= 0 and building.recipe_mode < choices.size()):
+		var own := building.take_recipe()
+		return own if limited_good(own) == &"" else null
+	for i: int in choices.size():
+		var recipe := building.take_recipe()
+		if limited_good(recipe) == &"":
+			return recipe
+	return null
+
+
+## The good whose limit stops [param building] now (E5), &"" when it may work.
+func limit_stopping(building: BuildingState) -> StringName:
+	if goods_limits.is_empty() or not limits_apply(building.def) or building.def.recipe == null:
+		return &""
+	var choices := building.def.recipe_choices
+	if choices.is_empty():
+		return limited_good(building.def.recipe)
+	if building.recipe_mode >= 0 and building.recipe_mode < choices.size():
+		return limited_good(choices[building.recipe_mode])
+	var first: StringName = &""
+	for recipe: RecipeDef in choices:
+		var good := limited_good(recipe)
+		if good == &"":
+			return &""
+		if first == &"":
+			first = good
+	return first
+
+
 ## Units of [param good] storage [param id] keeps back from construction (0 for piles).
 func reserve_of(id: int, good: StringName) -> int:
 	var building := buildings.get_building(id)
@@ -3264,6 +3331,11 @@ func to_dict() -> Dictionary:
 		d["arrows"] = Troops.arrows_to_list(self)
 	if raids.next_tick >= 0 or raids.count > 0:
 		d["raids"] = raids.to_dict()
+	if not goods_limits.is_empty():
+		var limits := {}
+		for good: StringName in goods_limits:
+			limits[String(good)] = goods_limits[good]
+		d["goods_limits"] = limits
 	return d
 
 
@@ -3328,6 +3400,9 @@ static func from_dict(d: Dictionary, registry: DataRegistry, event_queue: SimEve
 	var keep: Dictionary = d.get("keep_for_building", {})
 	for good: Variant in keep:
 		province.keep_for_building[StringName(String(good))] = int(keep[good])
+	var limits: Dictionary = d.get("goods_limits", {})
+	for good: Variant in limits:
+		province.goods_limits[StringName(String(good))] = int(limits[good])
 	province.merchant = Merchant.from_dict(d.get("merchant", {}), registry)
 	province.sea_merchant = SeaMerchant.from_dict(d.get("sea_merchant", {}))
 	if d.has("landing"):

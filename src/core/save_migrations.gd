@@ -3,7 +3,7 @@ extends RefCounted
 ## Upgrades saved simulation states to the current format (ARCHITECTURE §8). Each step
 ## migrate_vN_to_vN+1 changes only what that version changed; tests keep one fixture per version.
 
-const CURRENT_VERSION := 43
+const CURRENT_VERSION := 44
 ## Hive tiles an old apiary gets on its first second after loading a save before v34.
 const AUTO_HIVES := 4
 ## Horses one pen tile of a stud farm holds (data/buildings/stud_farm.tres, pen_animals).
@@ -145,6 +145,9 @@ static func migrate(state: Dictionary, from_version: int) -> Dictionary:
 	if version < 43:
 		result = migrate_v42_to_v43(result)
 		version = 43
+	if version < 44:
+		result = migrate_v43_to_v44(result)
+		version = 44
 	return result
 
 
@@ -439,6 +442,13 @@ static func migrate_v42_to_v43(state: Dictionary) -> Dictionary:
 	var world: Variant = state.get("world")
 	if world is Dictionary and (world as Dictionary).get("settings") is Dictionary:
 		((world as Dictionary)["settings"] as Dictionary)["archipelago"] = false
+	return state
+
+
+## v44 (E5): a province keeps the player's limits of goods ("goods_limits": good -> units).
+## Optional: an older game has none. The version guards a game with limits from a build that
+## would ignore them.
+static func migrate_v43_to_v44(state: Dictionary) -> Dictionary:
 	return state
 
 

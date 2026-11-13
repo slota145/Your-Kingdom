@@ -1481,7 +1481,7 @@ msgid "ui.stocks.title"
 msgstr "Zapasy królestwa"
 
 msgid "ui.stocks.hint"
-msgstr "Zapasy to suma z magazynów, stosów przy budynkach, chlewów, kramów i ziemi. Produkcja i zużycie na minutę to średnia z ostatnich 5 minut. Zaznacz towar, a kupiec wędrowny i kupiec morski kupią wszystko, co jest ponad wpisaną liczbę. W ostatniej kolumnie ustawiasz, ile desek, smoły i sukna kupić od kupca morskiego."
+msgstr "Zapasy to suma z magazynów, stosów przy budynkach, chlewów, kramów i ziemi. Produkcja i zużycie na minutę to średnia z ostatnich 5 minut. Zaznacz towar, a kupiec wędrowny i kupiec morski kupią wszystko, co jest ponad wpisaną liczbę. W kolumnie „Limit” ustawiasz, ile najwyżej chcesz mieć towaru: przy tej liczbie warsztaty, które go robią, stoją. W ostatniej kolumnie ustawiasz, ile desek, smoły i sukna kupić od kupca morskiego."
 
 msgid "ui.stocks.good"
 msgstr "Towar"
@@ -4847,3 +4847,32 @@ msgstr "Te koszary szkolą tylko łuczników i włóczników."
 
 msgid "ui.command_error.retired"
 msgstr "Tych koszar już się nie stawia."
+
+# --- E5: goods limits ---
+
+msgid "ui.stocks.limit"
+msgstr "Limit"
+
+msgid "ui.stocks.limit_hint"
+msgstr "Gdy zapas dojdzie do tej liczby, warsztaty i budynki, które robią ten towar (np. tartak, drwal), staną i ruszą same, gdy zapas spadnie. Pola, sady i zagrody pracują dalej. Odznacz, żeby zdjąć limit."
+
+msgid "ui.stocks.limit_reached"
+msgstr "Limit osiągnięty: budynki, które robią ten towar, czekają."
+
+msgid "ui.limit.of"
+msgstr "Limit: %s"
+
+msgid "ui.limit.hint"
+msgstr "Gdy zapas w prowincji (magazyny, stosy, kramy i ziemia) dojdzie do tej liczby, budynki, które robią ten towar, staną i ruszą same, gdy zapas spadnie. Odznacz, żeby zdjąć limit. To samo ustawisz w oknie „Zapasy królestwa”."
+
+msgid "ui.limit.stopped"
+msgstr "Stoi: zapas „%s” doszedł do limitu (%d)."
+
+msgid "ui.doing.goods_limit"
+msgstr "czeka: zapas „%s” doszedł do limitu (%d)"
+
+msgid "ui.reason.goods_limit"
+msgstr "zapas doszedł do limitu"
+
+msgid "ui.command_error.not_limited"
+msgstr "Zwierząt nie ogranicza się limitem."
