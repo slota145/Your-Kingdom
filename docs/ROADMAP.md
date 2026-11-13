@@ -1661,7 +1661,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 
-> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 1, stan”). Część 2a scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 2a, stan”). Część 2b gotowa 2026-11-13, czeka na ocenę („Część 2b, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
+> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 1, stan”). Część 2a scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 2a, stan”). Część 2b scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 2b, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
 
 **Cel:** cała gra w jednym stylu. Mieszkańcy i budynki rysowani dziś kodem (`tools/generate_characters.gd`, `tools/generate_art.gd`) albo z PixelLab dostają modele ze SpriteKiln, tak jak żołnierze, okręty, zagrody, szkoła i koszary. **Zmienia się tylko wygląd:** symulacja, zapis (bez nowej wersji) i zasady gry zostają.
 
@@ -1704,7 +1704,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Zrzuty: `src/prototype/g3/folk_shot.tscn -- --shot=<plik> --id=<zawód>`.
 - **Do oceny:** czy zawody dalej się rozpoznaje, siatka pszczelarza (zasłania twarz w całości: przy 34 px prawdziwej siatki nie widać), czytelność wędki i łuku.
 
-**Część 2b, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę (poprawek z oceny części 1 i 2a brak).
+**Część 2b, stan (2026-11-13):** gotowa, scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę (poprawek z oceny części 1 i 2a brak).
 - 25 zawodów rzemiosła i miasta ze SpriteKiln (lista w części 2), kolory z dawnego wyglądu; suknie (domownik, tkaczka, straganiarka) i długie szaty (nauczyciel, uczony, kupiec), czapka młynarza i wysoka czapka piekarza (ART_SPEC §10.27).
 - 17 nowych wspólnych ruchów pracy (ugniatanie, łopata do pieca, mieszanie w kadzi, piła, przędzenie, krosno, szycie, krojenie, podanie, miech, prasa, drąg w ognisku, wskaźnik, dzwonek, czytanie, pisanie, ręce za plecami) i 10 nowych narzędzi (łopata piekarska, mieszadło, piła, kufel, kleszcze, grabie, kij, dzwonek, księga, pióro).
 - Bandyci walczą jak dotąd (bandyta jak pikinier, bandyta-łucznik jak łucznik), w burych kapturach, bez barw królestwa: odmiany żołnierzy ze SpriteKiln.
