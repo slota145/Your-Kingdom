@@ -1635,7 +1635,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## UI-2 — Poprawki właściciela: budowanie, interfejs i start kolonii
 
-> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo. **Część 1 zaakceptowana („Super!”) i scalona do `main` 2026-11-13 („Część 1, stan”).**
+> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo. **Część 1 zaakceptowana („Super!”) i scalona do `main` 2026-11-13 („Część 1, stan”). Część 2 gotowa na gałęzi roboczej 2026-11-13, czeka na ocenę („Część 2, stan”).**
 
 **Cel:** wygodniejsze budowanie, czytelniejszy interfejs i kolonia, która od pierwszej minuty buduje.
 
@@ -1664,6 +1664,16 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Ikony narzędzi** (droga, bruk, pomost, nabrzeże, most, most kamienny, rozbiórka, schowaj) zamiast napisów, z dymkiem: nazwa i opis (`tools/generate_ui.gd`, `assets/ui/tool_*.png`).
 - Zrzuty: menu budowy `game_shot.tscn -- --shot=<plik> --map=coast --tile=73,103 --zoom=1 --port --build_tab=<0..8>`, droga `--plain --tile=48,56 --zoom=2 --road_line=44,52:50,58`, menu pauzy `--plain --tile=48,56 --pause_menu`, przezroczystość `town_shot.tscn -- --shot=<plik> --minutes=10 --select=hut --behind --zoom=2`, mapa świata `world_shot.tscn -- --out=<plik> --seed=5`.
 - **Do oceny na laptopie:** czy droga z dwóch kliknięć jest wygodna (i czy po postawieniu drogi następna ma zaczynać się sama od jej końca), siła i zasięg przezroczystości, czy ikony narzędzi są czytelne, układ menu pauzy, czy napisy nie nachodzą w 1920×1080.
+
+**Część 2, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę. Zapis bez zmian (v42).
+- **Budowy pierwsze:** tragarze biorą najpierw zlecenia dla budów (plac budowy, bruk, statek na pochylni), potem resztę (wóz kupca, statki, przenosiny), a na końcu odnoszenie stosów z warsztatów. Wcześniej brali zlecenia od najstarszego, więc po postawieniu magazynu przez kilka minut przenosili cały ładunek z plaży, a budowy stały.
+- **Budowa bierze z plaży i obozu:** materiały idą na budowę prosto z kupek ładunku startowego (działało już wcześniej, teraz pilnuje tego test).
+- **Budowniczy nosi:** gdy żadna budowa nie ma materiałów, budowniczy sam bierze dowóz na najbliższą (pieszo, bez wózka).
+- **Stos przy budynku:** pracownik produkcji odkłada wyrób na stos przy swoim budynku i wraca do pracy, a do magazynu niesie go tragarz. **Zmiana po pomiarach dużego miasta:** gdy na stosie czekają już 3 sztuki (tragarze nie nadążają) albo stos jest pełny, pracownik niesie wyrób do magazynu sam, jak dawniej; bez miejsca w magazynach czeka. W mieście na 730 mieszkańców i 48 tragarzy zasada „zawsze na stos” zawalała tragarzy (ponad 1000 sztuk na stosach, kupiec nic nie dostawał), a z progiem tragarze pracują bez przerwy, ale nic nie stoi.
+- **Pomiary** (przed → po): start jak gracz na Wybrzeżu (`src/prototype/ui2/start_probe.gd -- --player`): druga chata w 453. → 167. sekundzie, obóz 60. → 52.; 4 domy patrycjuszy automatycznego gracza (`patrician_probe.gd`): Riverlands 71. → 58. minuta, Pojezierze 83. → 58., Wybrzeże 79. → 71.; świat z władcami (`world_probe.gd`, 90 minut): gracz 24 → 50 budynków i 24 → 90 mieszkańców, władcy podobnie jak przed; duże miasto (`src/prototype/ui2/city_probe.gd`): chleb, deski i piwo bez spadków.
+- **Testy:** `tests/unit/sim/jobs/test_colony_start.gd` (budowy pierwsze, budowa z ziemi, budowniczy nosi i buduje), `test_yard.gd` (stos mimo miejsca w magazynie, pracownik niesie sam przy czekającym stosie); sceny testów produkcji dostały tragarza. Test zgodności trybów (`test_m6_coherence.gd`) kalibruje 30 minut zamiast 20 (otwarte budowy w zapisanym mieście kończą się teraz szybciej i dają tartakom chwilowy zryw drewna). Automatyczny gracz portu rezerwuje brzeg pod port (miasto rosło szybciej i go zabudowywało).
+- **Do decyzji przy ocenie:** wędkarz zyskał najwięcej (nie chodzi do magazynu): w 10 minut przystań rybacka 36 → 56 ryb, wędkarz 16 → 48; czy go spowolnić, żeby przystań znów łowiła wyraźnie więcej? Gra jest teraz szybsza (patrycjusze 8–25 minut wcześniej): czy to dobre tempo?
+- **Do oceny na laptopie:** start kolonii (czy budowy ruszają od razu), czy tragarzy wystarcza, czy stosy przy budynkach nie rosną za bardzo w dużym mieście.
 
 **Testy i sprawdzenie:** szybkie testy; testy symulacji dla części 2 (pierwszeństwo budów, budowa z obozu, budowniczy noszący, stos zawsze, brak zakleszczeń przy pełnym stosie), długie testy na koniec części; zrzuty z chmury (menu budowy, mapa świata, droga w trakcie stawiania, przezroczystość, menu pauzy, okno nowej gry); wygląd w 1920×1080 i odczucia z gry ocenia właściciel na laptopie.
 
