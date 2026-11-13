@@ -305,10 +305,10 @@ MOVES.update({
     ],
     # a long pole thrust down into a fire or a kiln in front and drawn back (tend a fire)
     "poke": [
-        f"hand_R: [0.14, 0.34, 0.14], hand_L: [0.06, 0.18, 0.36], tool_pitch: -0.9, lean: 0.14, {STANCE}",
-        f"hand_R: [0.14, 0.30, 0.24], hand_L: [0.06, 0.13, 0.46], tool_pitch: -0.95, lean: 0.22, bob: -0.02, {STANCE}",
-        f"hand_R: [0.14, 0.28, 0.30], hand_L: [0.06, 0.10, 0.52], tool_pitch: -1.0, lean: 0.28, bob: -0.03, {STANCE}",
-        f"hand_R: [0.14, 0.32, 0.20], hand_L: [0.06, 0.15, 0.42], tool_pitch: -0.95, lean: 0.18, {STANCE}",
+        f"hand_R: [0.14, 0.42, 0.12], hand_L: [0.06, 0.28, 0.30], tool_yaw: -0.5, tool_pitch: -0.55, lean: 0.10, {STANCE}",
+        f"hand_R: [0.14, 0.40, 0.19], hand_L: [0.06, 0.25, 0.38], tool_yaw: -0.5, tool_pitch: -0.58, lean: 0.15, bob: -0.02, {STANCE}",
+        f"hand_R: [0.14, 0.38, 0.24], hand_L: [0.06, 0.22, 0.43], tool_yaw: -0.5, tool_pitch: -0.62, lean: 0.19, bob: -0.03, {STANCE}",
+        f"hand_R: [0.14, 0.40, 0.17], hand_L: [0.06, 0.26, 0.35], tool_yaw: -0.5, tool_pitch: -0.58, lean: 0.14, {STANCE}",
     ],
     # a staff raised forward to point at a board, tapping it (the teacher)
     "point": [
