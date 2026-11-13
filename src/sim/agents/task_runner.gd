@@ -316,6 +316,8 @@ static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 			build.bb = {"site": site}
 			build.steps = build_steps()
 			agent.task = build
+		elif province.jobs.give_builder_a_load(province, agent):
+			pass   # UI-2 part 2: no site to work on yet, so he fetches materials for one
 		return
 	if workplace != null and workplace.paused:
 		return

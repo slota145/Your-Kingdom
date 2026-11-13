@@ -29,6 +29,11 @@ Lista z rozmowy po G3 część 2b. **Ankieta 2026-11-13: wszystkie punkty weszł
 9. [właściciel] **Ikony zamiast napisów** dla narzędzi: droga, bruk, burzenie itp. (napisy zajmują dużo miejsca).
    - Ocena (Claude): koszt mały; ikony z podpowiedzią po najechaniu myszą (nazwa i skrót klawisza), żeby nie zgadywać. Ikony narysować w stylu reszty interfejsu.
 
+## Ekonomia (pomysły po UI-2)
+
+- [właściciel, 2026-11-13] **Limit towaru w magazynie:** dla każdego towaru gracz ustawia limit (np. 100 desek); po jego osiągnięciu warsztaty, które go robią, przestają pracować, dopóki zapas nie spadnie poniżej limitu.
+  - Ocena (Claude): dobry pomysł, znany z Anno i Settlersów: drewno nie idzie w niepotrzebne deski, a gracz panuje nad łańcuchami. Koszt średni: limit w zapisie (nowa wersja z migracją), sprawdzenie przed cyklem warsztatu (jak dziś „stos pełny”), powód w panelu („czeka: limit desek”), suwaki w oknie „Zapasy królestwa” (obok progu sprzedaży kupcowi i rezerwy na budowy). Uwaga: stojący warsztat to bezczynni pracownicy, więc domyślnie bez limitu. Automatyczni gracze i władcy mogą zostać bez niego. **Ankieta 2026-11-13: po części 3 UI-2, jako krótki osobny kawałek przed G3.**
+
 ## Zamek i wojsko
 
 - [gracz] **Hurdycje na murach:** drewniane galerie na koronie muru kamiennego, następny stopień po blankach (pomysł z „Grubych murów jak w Twierdzy”, których reszta weszła w M7).

@@ -77,8 +77,8 @@ static func geography(data: DataRegistry, settings: GameSettings) -> WorldDef:
 	noise.fractal_octaves = 4
 	var count := clampi(settings.province_count, GameSettings.MIN_PROVINCES, GameSettings.MAX_PROVINCES)
 	var islands := clampi(settings.islands, 0, mini(GameSettings.MAX_ISLANDS, count / 3))
-	var archipelago := settings.scenario == GameSettings.ISLANDS
-	# (The Merchant islands: a bigger sheet, so the islands have sea round them.)
+	var archipelago := settings.is_archipelago()
+	# (Islands only, the Merchant islands or by choice: a bigger sheet, so the islands have sea round them.)
 	var size := size_for(roundi(count * ISLAND_SHEET)) if archipelago else size_for(count)
 	noise.frequency = 0.0028 * SIZE.x / size.x
 	# Scattered points on a jittered grid over the parchment; more sea for more islands.
@@ -263,7 +263,7 @@ static func assign(data: DataRegistry, world: WorldDef, settings: GameSettings) 
 	player.owner = ProvinceDef.OWNER_PLAYER
 	player.template = &"islands" if player.island and player.template != &"coast" else &"coast"
 	var divided := settings.scenario == GameSettings.DIVIDED
-	var anywhere := divided or settings.scenario == GameSettings.ISLANDS
+	var anywhere := divided or settings.is_archipelago()
 	taken.append(player)
 	world.start_province = start
 	# Far from the player first, then from each other (a ruler is never put between them).

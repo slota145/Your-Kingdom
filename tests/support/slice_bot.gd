@@ -27,6 +27,9 @@ var studies: bool = false
 ## Seconds of game time -> actions still to do, in order.
 var _plan: Array[Dictionary] = []
 var log: PackedStringArray = PackedStringArray()
+## Ground the town leaves free for another bot (UI-2 part 2: the HarbourBot's port on the Coast
+## shore, which a faster growing town built over); empty = none.
+var keep_clear: Rect2i = Rect2i()
 ## Units produced and sold to the merchant so far, by good (from the events).
 var produced: Dictionary[StringName, int] = {}
 var sold: Dictionary[StringName, int] = {}
@@ -383,6 +386,8 @@ func find_spot(def: BuildingDef, near: Vector2i) -> Vector2i:
 
 func _fits_with_margin(def: BuildingDef, origin: Vector2i) -> bool:
 	if sim.province.placement_error(def, origin) != &"":
+		return false
+	if keep_clear.intersects(Rect2i(origin, def.footprint)):
 		return false
 	if not _reach.is_empty():
 		var steps := int(_reach.get(origin, 1 << 20))

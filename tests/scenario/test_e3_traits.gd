@@ -410,6 +410,8 @@ func _farm(fertile: bool) -> Dictionary:
 			Vector2i(14, 14), Vector2i(15, 14), Vector2i(16, 12), Vector2i(16, 13)]:
 		assert_str(String(sim.execute(PlaceFieldCommand.new(farm.id, tile)))).is_empty()
 	var farmer := SimFixture.spawn(sim, &"farmer", farm.entrance_tile())
+	# UI-2 part 2: the worker leaves what he made on his yard, a porter takes it to the storage.
+	SimFixture.spawn(sim, &"porter", Vector2i(6, 8))
 	sim.execute(AssignWorkerCommand.new(farmer.id, farm.id))
 	return {"sim": sim, "stock": stock, "farm": farm}
 

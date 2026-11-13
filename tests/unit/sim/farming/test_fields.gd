@@ -8,6 +8,8 @@ func _farm_scene() -> Dictionary:
 	var stock := SimFixture.place(sim, &"stockpile", Vector2i(2, 2))
 	var farm := SimFixture.place(sim, &"farm", Vector2i(12, 12))
 	var farmer := SimFixture.spawn(sim, &"farmer", farm.entrance_tile())
+	# UI-2 part 2: the worker leaves what he made on his yard, a porter takes it to the storage.
+	SimFixture.spawn(sim, &"porter", Vector2i(6, 8))
 	sim.execute(AssignWorkerCommand.new(farmer.id, farm.id))
 	return {"sim": sim, "stock": stock, "farm": farm, "farmer": farmer}
 
@@ -52,14 +54,16 @@ func test_field_cycle_ends_with_a_sheaf_in_the_storage() -> void:
 		var g := sim.province.fields.growth_stage(tile, sim.clock.tick)
 		if g > 0 and not stages.has(g):
 			stages.append(g)
-		if stock.stock.total(&"grain") > 0:
+		# UI-2 part 2: the farmer leaves the sheaf on the farm's yard (a porter takes it on).
+		if farm.yard.total(&"grain") + stock.stock.total(&"grain") > 0:
 			break
 	for activity: StringName in [&"plow", &"sow", &"harvest", &"bind"]:
 		assert_bool(activities.has(activity)).override_failure_message("never " + activity).is_true()
 	assert_array(stages).is_equal([1, 2, 3])
 	assert_int(harvested).is_equal(1)
-	assert_int(stock.stock.total(&"grain")).is_equal(1)
+	assert_int(farm.yard.total(&"grain") + stock.stock.total(&"grain")).is_equal(1)
 	assert_int(sim.province.fields.stage(tile, sim.clock.tick)).is_equal(FieldStore.Stage.FALLOW)
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return stock.stock.total(&"grain") >= 1, 60.0)).is_true()
 
 
 func test_removing_a_field_under_the_farmer_releases_it() -> void:

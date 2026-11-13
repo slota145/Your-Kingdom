@@ -4,10 +4,14 @@ extends TaskStep
 ## carried goods down. Blackboard "to" fixes the destination (transport tasks).
 ## With drop_on_fail it never fails: the goods go on the ground instead.
 ##
-## Production yard (M4b-2): when no storage has room, a worker puts the goods on the yard of
-## his workplace; when that is full too, he waits at his workplace with the goods in hand
+## Production yard (M4b-2, UI-2 part 2): a worker puts what he made on the yard of his workplace
+## (porters take it to a storage); when YARD_WAITING units already wait there (the porters cannot
+## keep up) or the yard is full, he carries it to the nearest storage himself, and when no storage has room either, he waits at his workplace with the goods in hand
 ## (blackboard "_yard_full") and looks for room again every WAIT_CHECK_TICKS.
 
+## Units of his good waiting on his yard from which a worker no longer adds to it but carries
+## to a storage himself (UI-2 part 2: the porters cannot keep up).
+const YARD_WAITING := 3
 ## How often a waiting worker looks for room again (1 s).
 const WAIT_CHECK_TICKS := 10
 
@@ -30,8 +34,13 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 				dst = Carriers.road_sink(province, agent.carry_good, agent.carry_amount, agent.tile(),
 						int(bb.get("from", 0)))
 			else:
-				dst = province.nearest_sink(agent.carry_good, agent.carry_amount, agent.tile(),
-						int(bb.get("from", 0)))
+				# UI-2 part 2 (owner 2026-11-13): a worker puts what he made on the yard of his
+				# workplace and goes back to work; porters take it on. Only when the yard is full
+				# does he carry it to a storage himself.
+				dst = _yard_first(province, agent)
+				if dst == 0:
+					dst = province.nearest_sink(agent.carry_good, agent.carry_amount, agent.tile(),
+							int(bb.get("from", 0)))
 			if dst == 0:
 				dst = _yard_with_room(province, agent)
 		var stock := province.storage(dst) if province.accepts_deliveries(dst) else null
@@ -82,6 +91,22 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 ## The yard of the agent's workplace, or null.
 static func _own_yard(province: ProvinceSim, agent: Agent) -> Stockpile:
 	return province.storage(ProvinceSim.yard_id(agent.workplace_id)) if agent.workplace_id != 0 else null
+
+
+## The yard of the agent's workplace for what he made there (a recipe's or a stash's output, no
+## live animal: those go to their herd) when it has room, else 0.
+static func _yard_first(province: ProvinceSim, agent: Agent) -> int:
+	if agent.task.kind != Task.KIND_RECIPE and agent.task.kind != Task.KIND_STASH:
+		return 0
+	var good_def := province.data.get_good(agent.carry_good)
+	if good_def != null and good_def.is_live():
+		return 0
+	# Porters behind (a big town's yards fill faster than they are emptied): he takes it to a
+	# storage himself, as before, instead of piling up more for the porters.
+	var yard := _own_yard(province, agent)
+	if yard != null and yard.total(agent.carry_good) >= YARD_WAITING:
+		return 0
+	return _yard_with_room(province, agent)
 
 
 ## Storage id of the agent's workplace yard when it has room for what he carries, else 0.

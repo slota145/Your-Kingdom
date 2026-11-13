@@ -27,6 +27,12 @@ var crane_lifts: int = 0
 var warehouse_stored: int = 0
 var voyages: int = 0
 var merchant_at_mooring: int = 0
+## The bay shore where the port and its pier go (Coast): the town bot leaves it free.
+func port_ground() -> Rect2i:
+	var b := sim.province.landing.beach if sim.province.landing != null else Vector2i(70, 74)
+	return Rect2i(b + Vector2i(-7, 6), Vector2i(10, 12))
+
+
 ## First tile of the pier (its corner at the shore), once laid out.
 var _pier: Vector2i = Agent.NO_TILE
 

@@ -1,7 +1,8 @@
 extends GdUnitTestSuite
-## Production yard (ROADMAP M4b-2): with every storage full a worker puts his output on the
-## stack by his building and waits when that is full; anybody may take from it and porters
-## bring it to a storage once there is room. Nothing of production lies on the ground.
+## Production yard (ROADMAP M4b-2, UI-2 part 2): a worker always puts his output on the stack by
+## his building, porters bring it to a storage; when the stack is full he carries it to a storage
+## himself, and with every storage full too he waits. Anybody may take from it. Nothing of
+## production lies on the ground.
 
 
 ## Fills every slot of [param stock] with stone, so nothing else fits.
@@ -107,3 +108,26 @@ func test_yard_survives_save_and_load() -> void:
 	var again: BuildingState = loaded.province.buildings.get_building(hut.id)
 	assert_int(again.yard.total(&"wood")).is_equal(6)
 	assert_int(again.yard.stack_size(&"wood")).is_equal(10)
+
+
+## UI-2 part 2 (owner 2026-11-13): with room in the storage the woodcutter still leaves his logs
+## on the yard and goes back to the trees; without a porter they stay there.
+func test_the_worker_leaves_his_output_on_the_yard_even_with_room_in_a_storage() -> void:
+	var sim := SimFixture.make_sim()
+	var scene := SimFixture.woodcutter_scene(sim)
+	var hut: BuildingState = scene["hut"]
+	var stock: BuildingState = scene["stock"]
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return hut.yard.total(&"wood") >= 2, 300)).is_true()
+	assert_int(stock.stock.total(&"wood")).is_equal(0)
+
+
+## UI-2 part 2: when the porters cannot keep up (a few logs already wait on the yard), the
+## worker walks to a storage with room himself.
+func test_a_yard_waiting_for_porters_sends_the_worker_to_a_storage_himself() -> void:
+	var sim := SimFixture.make_sim()
+	var scene := SimFixture.woodcutter_scene(sim)
+	var hut: BuildingState = scene["hut"]
+	var stock: BuildingState = scene["stock"]
+	hut.yard.add(&"wood", DeliverStep.YARD_WAITING)
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return stock.stock.total(&"wood") >= 1, 300)).is_true()
+	assert_int(hut.yard.total(&"wood")).is_equal(DeliverStep.YARD_WAITING)

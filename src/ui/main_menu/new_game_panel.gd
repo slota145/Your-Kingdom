@@ -5,10 +5,13 @@ extends VBoxContainer
 ## their difficulty, the victory condition (with its target). "Start" sends GameSettings to the
 ## game scene. M8 part 5: four scenarios with a line about each; the Merchant islands take a
 ## gold target instead of a victory condition, the Invasion from the sea has neither (nor rulers).
-## E4 part 1: a tick box for the developer mode.
+## E4 part 1: a tick box for the developer mode. UI-2 part 3: it sits in NewGameWindow beside
+## the live world preview; every change of an option emits [signal options_changed], and the
+## "Roll another" button under the preview calls [method reroll].
 
 signal start_requested(settings: GameSettings)
 signal back_requested
+signal options_changed
 
 const HANDMADE := &"kingdom"
 ## Numbers of first plundering waves offered (then "all").
@@ -27,6 +30,9 @@ var _world: OptionButton
 var _seed: SpinBox
 var _provinces: HSlider
 var _islands: HSlider
+## The shape of a generated world (UI-2 part 3): a continent, or islands only (the Merchant
+## islands' sea with the rules of Colonization or the Divided continent).
+var _shape: OptionButton
 var _rulers: OptionButton
 var _difficulty: OptionButton
 var _victory: OptionButton
@@ -59,11 +65,13 @@ func _init() -> void:
 	_seed.min_value = 1
 	_seed.max_value = 99999
 	_seed.value = randi_range(1, 99999)
+	_seed.value_changed.connect(func(_v: float) -> void: _refresh())
 	seed_row.add_child(_seed)
-	seed_row.add_child(UiKit.button("ui.new_game.random", func() -> void: _seed.value = randi_range(1, 99999)))
 	add_child(seed_row)
 	_generated_rows.append(seed_row)
 	_provinces = _slider("ui.new_game.provinces", GameSettings.MIN_PROVINCES, GameSettings.MAX_PROVINCES, 22)
+	_shape = _choice("ui.new_game.shape", ["ui.new_game.shape_continent", "ui.new_game.shape_islands"])
+	_shape.item_selected.connect(func(_i: int) -> void: _refresh())
 	_islands = _slider("ui.new_game.islands", 0, GameSettings.MAX_ISLANDS, 3)
 	_rulers = _choice("ui.new_game.rulers", ["1", "2", "3"])
 	_rulers.selected = 1
@@ -113,6 +121,17 @@ func _init() -> void:
 	buttons.add_child(UiKit.button("ui.new_game.back", func() -> void: back_requested.emit()))
 	add_child(buttons)
 	_refresh()
+
+
+## A new world number (the "Roll another" button under the preview).
+func reroll() -> void:
+	var old := int(_seed.value)
+	while int(_seed.value) == old:
+		_seed.value = randi_range(1, 99999)
+
+
+func is_generated() -> bool:
+	return _world.selected == 0
 
 
 func _choice(label_key: String, items: Array) -> OptionButton:
@@ -175,6 +194,7 @@ func settings() -> GameSettings:
 		s.scenario = GameSettings.SCENARIOS[_scenario.selected]
 		s.gold_target = int(_gold.value)
 		s.endless = _invasion_goal.selected == 1
+		s.archipelago = _shape.selected == 1 and _shape.get_parent().visible
 		s.plunder_waves = GameSettings.PLUNDER_ALL if _plunder.selected > PLUNDER_CHOICES else _plunder.selected
 		s.fit_scenario()
 	return s
@@ -197,7 +217,11 @@ func _refresh() -> void:
 	_gold_row.visible = scenario == GameSettings.ISLANDS
 	_invasion_goal.get_parent().visible = scenario == GameSettings.INVASION
 	_plunder.get_parent().visible = scenario == GameSettings.INVASION
-	_islands.get_parent().visible = generated and scenario != GameSettings.ISLANDS   # (all islands there)
+	# Islands only by choice in Colonization and the Divided continent (always in the Merchant
+	# islands, never in the Invasion); no islands slider then.
+	_shape.get_parent().visible = generated and (scenario == GameSettings.COLONIZATION or scenario == GameSettings.DIVIDED)
+	var all_islands: bool = scenario == GameSettings.ISLANDS or (_shape.get_parent().visible and _shape.selected == 1)
+	_islands.get_parent().visible = generated and not all_islands
 	_victory_row.visible = scenario != GameSettings.ISLANDS and scenario != GameSettings.INVASION
 	# The hand-made world has no rulers: no conquest there.
 	_victory.set_item_disabled(0, not generated)
@@ -210,3 +234,4 @@ func _refresh() -> void:
 		var probe := GameSettings.new()
 		probe.province_count = int(_provinces.value)
 		_target.value = probe.default_target(kind)
+	options_changed.emit()

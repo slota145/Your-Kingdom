@@ -34,6 +34,8 @@ func _mill_scene() -> Dictionary:
 	var stock := SimFixture.place(sim, &"stockpile", Vector2i(2, 2))
 	var mill := SimFixture.place(sim, &"test_mill", Vector2i(14, 3))
 	var miller := SimFixture.spawn(sim, &"miller", mill.entrance_tile())
+	# UI-2 part 2: the worker leaves what he made on his yard, a porter takes it to the storage.
+	SimFixture.spawn(sim, &"porter", Vector2i(8, 8))
 	sim.execute(AssignWorkerCommand.new(miller.id, mill.id))
 	return {"sim": sim, "stock": stock, "mill": mill, "miller": miller}
 

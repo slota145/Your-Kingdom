@@ -17,6 +17,7 @@ func test_coast_bot_uses_the_quays_and_both_berths() -> void:
 	assert_array(Array(problems)).is_empty()
 	var town := SliceBot.new(sim)
 	var harbour := HarbourBot.new(sim)
+	town.keep_clear = harbour.port_ground()
 	var trace := PackedStringArray()
 	var watch := DeadlockWatch.new()
 	for second: int in MINUTES * 60:

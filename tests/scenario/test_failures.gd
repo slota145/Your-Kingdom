@@ -57,7 +57,6 @@ func test_stockpile_demolished_during_delivery() -> void:
 	var sim := SimFixture.make_sim()
 	var scene := SimFixture.woodcutter_scene(sim)
 	var stock: BuildingState = scene["stock"]
-	var worker: Agent = scene["worker"]
 	var other := SimFixture.place(sim, &"stockpile", Vector2i(4, 20))
 	stock.stock.add(&"wood", 30)
 	for i: int in 6:
@@ -66,17 +65,27 @@ func test_stockpile_demolished_during_delivery() -> void:
 	var start := 30 + int(Construction.refund(stock.def).get(&"wood", 0))
 	var counter := _wood_cut(sim)
 	var expected := func() -> int: return start + int(counter.call())
-	# Wait until the woodcutter walks to the stockpile with a log and has reserved space there.
-	for i: int in 2000:
+	# Wait until someone walks to the stockpile with a log and has reserved space there (UI-2
+	# part 2: a porter taking it from the woodcutter's yard).
+	var carrier: Agent = null
+	for i: int in 3000:
 		sim.step()
-		if worker.task != null and int(worker.task.bb.get("_dst", 0)) == stock.id:
+		for agent: Agent in sim.province.agents.all():
+			if agent.is_carrying() and agent.task != null and int(agent.task.bb.get("_dst", 0)) == stock.id:
+				carrier = agent
+		if carrier != null:
 			break
-	assert_int(int(worker.task.bb.get("_dst", 0))).is_equal(stock.id)
+	assert_object(carrier).is_not_null()
 	sim.execute(DemolishCommand.new(stock.id))
 	_run_checked(sim, SimFixture.ticks(300), &"wood", expected)
 	assert_int(sim.province.piles.size()).is_equal(0)
-	assert_int(other.stock.total(&"wood")).is_equal(sim.province.goods_total(&"wood")
-			- (worker.carry_amount if worker.carry_good == &"wood" else 0))
+	var in_hands := 0
+	for agent: Agent in sim.province.agents.all():
+		if agent.carry_good == &"wood":
+			in_hands += agent.carry_amount
+	var hut: BuildingState = scene["hut"]
+	assert_int(other.stock.total(&"wood")).is_equal(sim.province.goods_total(&"wood") - in_hands
+			- hut.yard.total(&"wood"))
 
 
 func test_transport_source_demolished_while_porter_walks() -> void:
@@ -127,10 +136,14 @@ func test_no_path_to_stockpile() -> void:
 			if x == 3 or y == 3 or x == 8 or y == 8:
 				sim.province.grid.set_blocked(Vector2i(x, y), true)
 				sim.province.refresh_tile(Vector2i(x, y))
+	# UI-2 part 2: the woodcutter leaves the wood on his yard; a porter who cannot reach the
+	# walled-in stockpile gives up without holding space there, and the wood stays put.
+	SimFixture.spawn(sim, &"porter", Vector2i(14, 12))
+	var hut: BuildingState = scene["hut"]
 	_run_checked(sim, SimFixture.ticks(120), &"wood", _wood_cut(sim))
 	assert_int(stock.stock.total(&"wood")).is_equal(0)
 	assert_int(stock.stock.reservation_count()).is_equal(0)
-	assert_int(sim.province.piles.size()).is_greater(0)
+	assert_int(hut.yard.total(&"wood") + sim.province.piles.size()).is_greater(0)
 
 
 func test_porter_request_with_unreachable_source_waits_without_holding() -> void:

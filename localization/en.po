@@ -3893,7 +3893,7 @@ msgid "ui.new_game.seed"
 msgstr "World number"
 
 msgid "ui.new_game.random"
-msgstr "Random"
+msgstr "Roll another"
 
 msgid "ui.new_game.size"
 msgstr "Size"
@@ -4011,6 +4011,39 @@ msgstr "No province chosen yet."
 
 msgid "ui.new_game.start_at"
 msgstr "Start: %s (%s)"
+
+msgid "ui.new_game.shape"
+msgstr "World shape"
+
+msgid "ui.new_game.shape_continent"
+msgstr "Continent"
+
+msgid "ui.new_game.shape_islands"
+msgstr "Islands only"
+
+msgid "ui.new_game.preview"
+msgstr "World preview"
+
+msgid "ui.new_game.preview_hint"
+msgstr "The map changes at once with every option. Wheel to zoom, drag to move."
+
+msgid "ui.new_game.preview_caption"
+msgstr "%s: %s, %s, %s"
+
+msgid "ui.new_game.preview_provinces"
+msgid_plural "ui.new_game.preview_provinces_plural"
+msgstr[0] "%d province"
+msgstr[1] "%d provinces"
+
+msgid "ui.new_game.preview_islands"
+msgid_plural "ui.new_game.preview_islands_plural"
+msgstr[0] "%d island"
+msgstr[1] "%d islands"
+
+msgid "ui.new_game.preview_coast"
+msgid_plural "ui.new_game.preview_coast_plural"
+msgstr[0] "%d on the coast"
+msgstr[1] "%d on the coast"
 
 msgid "ui.new_game.island"
 msgstr "island"
