@@ -1635,7 +1635,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 
-> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 1, stan”). Część 2a gotowa, czeka na ocenę („Część 2a, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
+> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 1, stan”). Część 2a scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 2a, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
 
 **Cel:** cała gra w jednym stylu. Mieszkańcy i budynki rysowani dziś kodem (`tools/generate_characters.gd`, `tools/generate_art.gd`) albo z PixelLab dostają modele ze SpriteKiln, tak jak żołnierze, okręty, zagrody, szkoła i koszary. **Zmienia się tylko wygląd:** symulacja, zapis (bez nowej wersji) i zasady gry zostają.
 
@@ -1671,7 +1671,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Testy: szybki test kompletu animacji (każda postać ma wszystkie ruchy, 8 kierunków, punkt noszenia w każdej klatce) i odbicia towarów. Zrzuty do oceny: `src/prototype/g3/folk_shot.tscn -- --shot=<plik> --id=porter|farmer|builder`.
 - **Do oceny na laptopie:** wygląd przy zoomie 1× i 3×, czy towary dobrze leżą w rękach w ruchu, płynność ruchów pracy, wydajność przy wielu ludziach (klatka 64 jak dotąd, ale 8 wierszy zamiast 5: pamięć postaci ok. 1,6× większa).
 
-**Część 2a, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę (poprawek z oceny części 1 brak).
+**Część 2a, stan (2026-11-13):** gotowa, scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę (poprawek z oceny części 1 brak).
 - 17 zawodów surowców i rolnictwa ze SpriteKiln (lista w części 2), kolory z dawnego wyglądu, nowe nakrycia głowy (szeroki kapelusz, kapelusz z siatką pszczelarza, kaptur), broda, płaszcz pasterza, kołczan myśliwego (ART_SPEC §10.27).
 - 13 nowych wspólnych ruchów pracy (zamach oburącz, ociosywanie, korba, kopanie, odpoczynek, laska, wędka: zarzut, czekanie i zwijanie, strugowanie nożem, zgrzebło, podkurzacz, naciąg łuku) i 8 nowych narzędzi (kilof, łopata, wędka, nóż, nożyce, laska pasterska, zgrzebło, podkurzacz).
 - Komplet animacji taki jak dotąd (test), stary generator pomija te zawody.
