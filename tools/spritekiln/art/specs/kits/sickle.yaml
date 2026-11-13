@@ -1,0 +1,39 @@
+spritekiln: 1
+# G3 part 1: a reaping sickle in the right fist: a short handle along the hand's y and a crescent blade
+# curving forward (z) and back over the top.
+kit: sickle
+license: CC0-1.0
+summary: a short wooden handle with a thin crescent iron blade
+host: humanoid
+at: wrist_R
+params:
+  size: 1            # scale of the whole sickle
+  tilt: 0.5          # the handle leans forward from the fist (radians about the hand's x)
+  pitch: 0           # extra lean at the wrist (a channel such as tool_pitch)
+  cheat: 0           # per-direction turn of the blade's flat to the camera (0: off)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  sickle: {parent: at, pos: [0, 0, 0.035], rot: "[tilt + pitch, -cheat*pulse(yaw*sx, 0, 60), 0]", scale: size}
+
+parts:
+  handle:
+    material: wood
+    space: sickle
+    priority: 2
+    prims:
+      - cylinder: {a: [0, -0.07, 0], b: [0, 0.09, 0], r: 0.025}
+  blade:             # the crescent lies in the handle's y-z plane
+    material: steel
+    space: sickle
+    priority: 2
+    prims:
+      - extrude: {c: [0, 0, 0], rot: [0, -1.5708, 0], depth: 0.05,
+                  profile: {bezier: [[0, 0.08], [0.02, 0.24], [0.17, 0.30], [0.30, 0.30], [0.36, 0.17],
+                                     [0.30, 0.25], [0.18, 0.25], [0.06, 0.20], [0.04, 0.09], [0.02, 0.085]]}}
+
+sockets:
+  tip: {bone: sickle, offset: [0, 0.17, 0.36]}

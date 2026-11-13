@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/prototype/g3/folk_shot.gd" id="1"]
+
+[node name="FolkShot" type="Node2D"]
+script = ExtResource("1")

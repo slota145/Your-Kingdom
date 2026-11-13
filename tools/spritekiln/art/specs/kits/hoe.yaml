@@ -1,0 +1,40 @@
+spritekiln: 1
+# G3 part 1: a farmer's hoe held in the right fist; the long haft runs along the hand frame's y,
+# the iron blade at its top end bends forward along z (down into the soil when the haft is swung forward).
+kit: hoe
+license: CC0-1.0
+summary: a long wooden hoe with a flat iron blade at a right angle at the top
+host: humanoid
+at: wrist_R
+params:
+  length: 0.78       # from the fist to the blade end of the haft (world units)
+  butt: 0.32         # haft below the fist (world units)
+  blade: 0.16        # how far the blade reaches out along z (world units)
+  tilt: 0.4          # the haft leans forward from the fist (radians about the hand's x)
+  pitch: 0           # extra lean at the wrist (a channel such as tool_pitch)
+  cheat: 0           # per-direction turn of the blade to the camera (0: off)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  hoe: {parent: at, pos: [0, 0, 0.035], rot: "[tilt + pitch, 0, 0]"}
+  hoe_haft: {parent: hoe, rot: "[0, -cheat*pulse(yaw*sx, 0, 60), 0]"}
+
+parts:
+  haft:
+    material: wood
+    space: hoe_haft
+    priority: 2
+    prims:
+      - cylinder: {a: "[0, -butt, 0]", b: "[0, length, 0]", r: 0.021}
+  blade:
+    material: steel
+    space: hoe_haft
+    blend: 0.01
+    prims:
+      - box: {c: "[0, length - 0.02, blade*0.5]", half: "[0.075, 0.035, blade*0.5]", rot: [0.35, 0, 0]}
+
+sockets:
+  tip: {bone: hoe_haft, offset: "[0, length - 0.04, blade]"}

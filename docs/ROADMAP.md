@@ -1511,7 +1511,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## E4 — Szkoła, uniwersytet, badania oraz małe i duże koszary
 
-> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; części 3 i 4 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; część 5 gotowa 2026-11-12, czeka na ocenę („Część 1, stan” … „Część 5, stan”).**
+> IDEAS, „Pakiet zmian w ekonomii i rozwoju”, punkty 7–8, i pomysł właściciela z 2026-11-11: najpierw szkoła z częścią badań, dopiero później uniwersytet. **Decyzje z ankiet 2026-11-11 niżej. Start 2026-11-11 (poprawek z ocen E3 brak); części 1 i 2 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; części 3 i 4 scalone do `main` 2026-11-11 na prośbę właściciela, czekają na ocenę; część 5 scalona do `main` 2026-11-12 na prośbę właściciela (poprawek z oceny E4 brak), czeka na ocenę („Część 1, stan” … „Część 5, stan”).**
 
 **Decyzje z ankiet 2026-11-11:**
 - **Szkoła po pierwszym domu mieszczan** (od części 5: od startu, ankieta 2026-11-12), **uniwersytet po pierwszej kamienicy patrycjuszy i szkole.** Start gry bez zmian.
@@ -1611,7 +1611,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Automatyczny gracz próby patrycjuszy też bada** (szkoła, ceglarstwo, krawiectwo, pszczelarstwo, rzeźnictwo).
 - **Szkoła od startu gry (ankieta 2026-11-12, zmiana decyzji z części 2):** pomiar pokazał patrycjuszy w 76./107./82. minucie zamiast 72./70./70.; ze szkołą od startu 71./83./79.
 
-**Część 5, stan (2026-11-12):** gotowa, czeka na ocenę (niescalona).
+**Część 5, stan (2026-11-12):** gotowa, scalona do `main` 2026-11-12 na prośbę właściciela (poprawek z oceny E4 brak), czeka na ocenę.
 - Każdy władca ma własne badania (zapisywane z grą, **v42**: władcy ze starych gier mają wszystko zbadane; test migracji). Na starcie ma zbadane to, co stoi w jego miastach (budynki, okręty, żołnierze w koszarach, z wymaganymi wcześniejszymi badaniami). Jego szkoły i uniwersytet uczą jak u gracza; zdarzenie „władca zbadał” nie pokazuje się graczowi.
 - Plan władcy: szkoła po targu, małe koszary, uniwersytet, duże koszary. Werbuje tylko zbadane jednostki, okręt wojenny po „Budowie okrętów”.
 - Osady neutralne znają to, co w nich stoi; po zmianie właściciela działają badania nowego.
@@ -1635,21 +1635,45 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 
-> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Do zaplanowania: szczegółowy plan i ankieta przed startem.** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.21).
+> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 1, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
 
-**Cel:** cała gra w jednym stylu. Budynki i mieszkańcy rysowani dziś kodem (`tools/generate_art.gd`, `tools/generate_characters.gd`) albo z PixelLab dostają modele ze SpriteKiln, tak jak żołnierze, okręty i zagrody.
+**Cel:** cała gra w jednym stylu. Mieszkańcy i budynki rysowani dziś kodem (`tools/generate_characters.gd`, `tools/generate_art.gd`) albo z PixelLab dostają modele ze SpriteKiln, tak jak żołnierze, okręty, zagrody, szkoła i koszary. **Zmienia się tylko wygląd:** symulacja, zapis (bez nowej wersji) i zasady gry zostają.
 
-**Co zostało do zamiany (stan 2026-11-11):**
-- **Mieszkańcy:** ok. 35 zawodów (drwal, rolnik, młynarz, piekarz, tragarz, budowniczy, rybak, pszczelarz, kowal…), każdy z chodzeniem, noszeniem 7 rodzajów towarów (worek, kłoda, skrzynia, beczka, kamień, kosz, snop) i własnymi ruchami pracy; do tego domownik, osadnik, kupiec, straganiarz i bandyci. Drwal ze SpriteKiln jest już gotowy jako próba.
-- **Budynki:** ok. 45 rysowanych kodem albo z PixelLab: warsztaty (młyn, piekarnia, browar, tartak, kuźnia…), usługi (studnia, kaplica, kościół, targowisko, tawerna, ratusz), port i nabrzeża, wojsko i mury, chaty mieszkańców (poziom 1) i kamienice patrycjuszy (poziom 3). Etapy budowy (rusztowania) też.
+**Co zostało do zamiany (spis 2026-11-12):**
+- **Mieszkańcy (kodem):** 47 postaci: 41 zawodów, domownik, osadnik, kupiec, straganiarz, rekrut, bandyta i bandyta-łucznik. Każda ma `idle`, `walk`, 7 chodów z towarem (beczka, kosz, snop, skrzynia, kłoda, worek, kamień, z mapami punktu noszenia `*.anchors.png`) i 1–5 ruchów pracy (razem ok. 85 ruchów). Drwal ze SpriteKiln z próby (§10.20) nie jest w grze.
+- **Budynki (kodem, ok. 45):** warsztaty i surowce (młyn, piekarnia, browar, tartak, kuźnia, huta, kopalnia, glinianka, cegielnia, smolarnia, węglarz, tkacz, krawiec, rzeźnia, miodosytnia, tłocznia, farma, chmielnik, winnica, leśniczy, stajnia…), miasto i usługi (studnia, kaplica, kościół, targ, tawerna, ratusz, punkt handlowy, chata budowniczych, skład), port (port, nabrzeże rybackie, przystań, słupek, dźwig, magazyny portowe, stocznie, domy dokerów), wojsko (płatnerz, łuczarz, zbrojownia, warsztat oblężniczy) i kamienice patrycjuszy (poziom 3, `hut/level_3_*`). Każdy z 2 etapami budowy.
+- **Budynki z PixelLab (5):** chata poziomu 1 (3 wyglądy z tyłami i etapami), drwal, kamieniołom, chata rybaka, obóz pionierów.
 
-**Propozycja podziału (do potwierdzenia w ankiecie, ocena po każdej paczce):**
-1. **Mieszkańcy:** wspólny model człowieka (jak żołnierze), ubrania i narzędzia według zawodu, chodzenie, noszenie towarów (punkty zaczepienia z SpriteKiln zamiast dzisiejszych map), ruchy pracy. Najpierw pilot 3 zawodów (np. tragarz, rolnik, budowniczy) do oceny.
-2. **Warsztaty i surowce:** drwal, kamieniołom, tartak, młyn, piekarnia, browar, rybak, glinianka, cegielnia, tkacz, krawiec, rzeźnia i podobne.
-3. **Miasto i usługi:** chaty (poziom 1) i kamienice patrycjuszy (poziom 3), studnia, kaplica, kościół, targowisko, tawerna, ratusz, magazyny.
-4. **Port, wojsko i mury:** port, dźwig, stocznie, kuźnia, płatnerz, koszary, zbrojownia, wieże i bramy (mury rysowane kodem zostają albo dostają nową skórę).
+**Decyzje z ankiety 2026-11-12:**
+- **Najpierw mieszkańcy** (pilot 3 zawodów, potem reszta), dopiero potem budynki. Najtrudniejsza rzecz (noszenie towarów) wychodzi od razu.
+- **Wspólne ruchy pracy, własne narzędzie:** ok. 25 wzorów ruchu (kucie, kopanie, mieszanie, piłowanie, schylanie, podawanie, rąbanie, siew, żęcie, pisanie…) na jednym modelu człowieka, a każdy zawód ma swój strój, nakrycie głowy i narzędzie. Gra dalej zna dzisiejsze nazwy ruchów (`work_forge`, `work_knead`…): każda nazwa wskazuje na jeden wzór z narzędziem zawodu.
+- **Budynki z PixelLab też zamieniamy** (w paczkach warsztatów i miasta).
+- **Mury, bramy i wieże zostają jak są** (bramy mają grafiki z PixelLab na modelu z kodu, „wygląda dobrze”). Do G3 nie wchodzą: mury, palisada, brama w palisadzie, brama, wieża, dawne koszary (poza menu).
 
-**Ryzyka:** dużo pracy (dziesiątki modeli i setki animacji), czas renderowania w chmurze (bez karty graficznej), punkty noszenia towarów muszą pasować do dzisiejszych stosów i wózków, wydajność przy 400+ postaciach do sprawdzenia na laptopie. Przy każdej paczce zostaje możliwość powrotu do starej grafiki.
+**Założenia (domyślne, do zmiany w ocenie):**
+- **Punkt noszenia z modelu:** w modelu jest „gniazdo” (punkt w dłoniach albo na plecach), a eksport zamienia je na dzisiejsze mapy `*.anchors.png`. Towary w rękach, stosy i wózki zostają, więc kod gry się nie zmienia.
+- **Etapy budowy z tego samego modelu** (fundament i palik ze sznurkiem, potem ściany z rusztowaniem i krokwie bez pokrycia), robione przez generator, nie ręcznie.
+- **Powrót do starej grafiki przez historię gita** (stare pliki zostają w repozytorium do końca G3, generatory z kodu też), bez przełącznika w opcjach.
+- Generatory w `tools/spritekiln/gen_*.py`, eksport `export_*.py` (jak dotąd). `tools/generate_characters.gd` i `generate_art.gd` przestają nadpisywać zamienione postacie i budynki (lista wyjątków), żeby nic nie wróciło przypadkiem.
+
+**Części (ocena właściciela po każdej):**
+1. **Pilot mieszkańców:** wspólny model człowieka cywila (prostszy niż żołnierz: koszula, kubrak albo fartuch, nogawice, czapka, kaptur albo słomkowy kapelusz, bez zbroi), gniazdo noszenia i eksport map punktu noszenia, generator zawodów. Trzy zawody: **tragarz** (7 chodów z towarem, ładowanie), **rolnik** (orka, siew, pielenie, żniwa, wiązanie snopów) i **budowniczy** (budowa). Zrzuty: tragarze z każdym towarem w 8 kierunkach, pole w pracy, plac budowy. Próba wydajności 400 postaci na laptopie.
+2. **Reszta mieszkańców:** pozostałe 44 postacie, w dwóch paczkach do oceny: (a) surowce i rolnictwo (drwal, leśniczy, kamieniarz, górnik, glinianka, rybak, wędkarz, myśliwy, pasterz, świniarz, stajenny, pszczelarz, sadownik, chmielarz, winogrodnik, woźnica, doker), (b) rzemiosło i miasto (młynarz, piekarz, piwowar, miodosytnik, winiarz, tartacznik, kowal, hutnik, płatnerz, łuczarz, cieśla okrętowy, węglarz, smolarz, ceglarz, tkacz, krawiec, rzeźnik, karczmarz, straganiarz, kupiec, nauczyciel, uczony, domownik, osadnik, rekrut, bandyci). Po tej części cała ludność jest ze SpriteKiln, a `generate_characters.gd` rysuje już tylko placeholdery.
+3. **Warsztaty i surowce:** warsztaty, gospodarstwa, kopalnie i przetwórnie (lista wyżej) oraz drwal, kamieniołom i chata rybaka z PixelLab; z etapami budowy i miejscami pracy (`data/visuals/buildings/*.tres`) poprawionymi pod nowe kształty. Możliwy podział na 2 paczki po ok. 12 budynków.
+4. **Miasto i usługi:** chata poziomu 1 (3 wyglądy, tył, etapy), kamienice patrycjuszy (poziom 3, w stylu kamienic mieszczan, `gen_townhouses.py`, z rusztowaniem przebudowy), studnia, kaplica, kościół, targ, tawerna, ratusz, punkt handlowy, chata budowniczych, skład, obóz pionierów.
+5. **Port i wojsko:** port, nabrzeże rybackie, przystań, słupek, dźwig, magazyny portowe (mały i duży), stocznia i duża stocznia, domy dokerów, płatnerz, łuczarz, zbrojownia, warsztat oblężniczy. Na koniec G3: sprzątanie (usunięcie zamienionych rysunków z generatorów kodu), długie testy, ART_SPEC.
+
+**Część 1, stan (2026-11-12):** gotowa, scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę.
+- Wspólny model mieszkańca (koszula z pasem, nogawice, buty; `idle`, `walk`, 7 chodów z towarem) i generator zawodów z 7 wspólnymi ruchami pracy (młotek, motyka, pielenie, sierp, siew, przykucnięcie, podnoszenie), ART_SPEC §10.27.
+- Tragarz (czerwona chusta), rolnik (słomkowy kapelusz, orka, siew, żniwa, wiązanie, pielenie), budowniczy (fartuch, czapka, młotek) w grze, 8 kierunków bez odbić.
+- Punkt noszenia z modelu: towar na ramieniu, przy biodrze, na plecach i w rękach jak dotąd, za postacią, gdy jest za ciałem. Towary w rękach odbijają się dla kierunków W (poprawka w widoku: wcześniej postać z 8 wierszami pokazywałaby w kierunkach NW, W, SW towar od tyłu).
+- Stary generator postaci nie nadpisuje już tych trzech.
+- Testy: szybki test kompletu animacji (każda postać ma wszystkie ruchy, 8 kierunków, punkt noszenia w każdej klatce) i odbicia towarów. Zrzuty do oceny: `src/prototype/g3/folk_shot.tscn -- --shot=<plik> --id=porter|farmer|builder`.
+- **Do oceny na laptopie:** wygląd przy zoomie 1× i 3×, czy towary dobrze leżą w rękach w ruchu, płynność ruchów pracy, wydajność przy wielu ludziach (klatka 64 jak dotąd, ale 8 wierszy zamiast 5: pamięć postaci ok. 1,6× większa).
+
+**Testy i sprawdzenie (każda część):** szybkie testy; sortowanie nowych budynków z prawdziwym punktem i rozmiarem (`test_sorting.gd`, jak `test_pixellab_building_art_sorts_correctly`); test, że każda postać ma wszystkie animacje, których gra używa (idle, walk, 7 chodów z towarem z mapą punktu noszenia, wszystkie ruchy pracy z jej danych), w tych samych 8 kierunkach i z punktem stopy; zrzuty w chmurze do oceny; wydajność i wygląd „na oko” ocenia właściciel na laptopie.
+
+**Ryzyka:** dużo pracy (ok. 47 postaci i 55 budynków), więc części mogą się dzielić na mniejsze paczki; czas renderu w chmurze (postać z 12 animacjami w 8 kierunkach to kilka minut z numba, budynek 20–100 s); punkt noszenia musi pasować do dzisiejszych towarów (sprawdza pilot); 400+ postaci (klatka 64 jak dziś, więc pamięć bez zmian; sprawdzi właściciel); nowe budynki mogą mieć inny obrys niż stare, więc miejsca pracy i drzwi trzeba przesunąć.
 
 ## M9 — Produkcja grafik (równolegle, od M4)
 

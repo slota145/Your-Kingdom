@@ -67,8 +67,18 @@ func show_state(visual: CharacterVisual, anim: StringName, dir: int, time: float
 	frame = row_flip.x * sheet.frames + column
 	flip_h = row_flip.y == 1
 	var wheel := int(time * WHEEL_FPS) % WHEEL_FRAMES if String(anim).begins_with("walk") else 0
-	_update_vehicle(row_flip, vehicle, loaded, wheel)
+	_update_vehicle(overlay_row_flip(row_flip), vehicle, loaded, wheel)
 	_update_good(sheet, row_flip, column, carry_category, &"" if vehicle != &"" else good)
+
+
+## Row of a 5-row overlay sheet (carried goods, led animals, vehicles: S, SE, E, NE, N) and
+## whether to flip it, for a person's sheet row and flip. A mirrored person's sheet already
+## gives a row from 0 to 4; an 8-row sheet (SpriteKiln townsfolk, G3) faces NW, W and SW in
+## rows 5-7, whose overlays are the flipped NE, E and SE.
+static func overlay_row_flip(row_flip: Vector2i) -> Vector2i:
+	if row_flip.x >= 5:
+		return Vector2i(IsoMath.DIR_COUNT - row_flip.x, 1)
+	return row_flip
 
 
 ## A handcart in front of the person (M4b-3), pushed by the handles; goods ride on it.
@@ -112,13 +122,13 @@ func _update_good(sheet: CharacterSheet, row_flip: Vector2i, column: int,
 		return
 	_good_overlay.visible = true
 	_good_overlay.texture = _carried_texture(carry_category, good)
-	var good_row := mini(row_flip.x, 4)
-	_good_overlay.region_rect = Rect2(0, good_row * CARRIED_FRAME.y, CARRIED_FRAME.x, CARRIED_FRAME.y)
+	var overlay := overlay_row_flip(row_flip)
+	_good_overlay.region_rect = Rect2(0, mini(overlay.x, 4) * CARRIED_FRAME.y, CARRIED_FRAME.x, CARRIED_FRAME.y)
 	var anchor := sheet.anchors[index]
 	if row_flip.y == 1:
 		anchor.x = -anchor.x - 1.0   # mirrored inside the 64 px frame around the feet (x = 32)
 	_good_overlay.position = anchor
-	_good_overlay.flip_h = row_flip.y == 1
+	_good_overlay.flip_h = overlay.y == 1
 	_good_overlay.show_behind_parent = sheet.anchor_behind[index] == 1
 
 
@@ -127,13 +137,14 @@ func _update_good(sheet: CharacterSheet, row_flip: Vector2i, column: int,
 func _show_led(row_flip: Vector2i, carry_category: String, good: StringName) -> void:
 	_good_overlay.visible = true
 	_good_overlay.texture = _carried_texture(carry_category, good)
-	var good_row := mini(row_flip.x, 4)
+	var overlay := overlay_row_flip(row_flip)
+	var good_row := mini(overlay.x, 4)
 	_good_overlay.region_rect = Rect2(0, good_row * CARRIED_FRAME.y, CARRIED_FRAME.x, CARRIED_FRAME.y)
 	var at := LED_OFFSET
-	if row_flip.y == 1:
+	if overlay.y == 1:
 		at.x = -at.x
 	_good_overlay.position = at
-	_good_overlay.flip_h = row_flip.y == 1
+	_good_overlay.flip_h = overlay.y == 1
 	# Walking away from the camera the person hides the animal on his far side.
 	_good_overlay.show_behind_parent = good_row >= 3
 
