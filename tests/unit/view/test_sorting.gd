@@ -26,6 +26,23 @@ func test_pixellab_building_art_sorts_correctly() -> void:
 	for name: String in ["base_2", "base_3", "base_back", "base_2_back", "base_3_back",
 			"construction_1_back", "construction_2_back"]:
 		arts.append("res://assets/buildings/hut/%s.json" % name)
+	_check_arts(arts)
+
+
+## G3 part 3: workshops and raw-material buildings from SpriteKiln (tools/spritekiln/gen_workshops.py),
+## base art and both construction stages, as drawn and mirrored.
+const SPRITEKILN_WORKSHOPS: Array[String] = ["woodcutter"]
+
+
+func test_spritekiln_workshop_art_sorts_correctly() -> void:
+	var arts: Array[String] = []
+	for building: String in SPRITEKILN_WORKSHOPS:
+		for name: String in ["base", "construction_1", "construction_2"]:
+			arts.append("res://assets/buildings/%s/%s.json" % [building, name])
+	_check_arts(arts)
+
+
+func _check_arts(arts: Array[String]) -> void:
 	for path: String in arts:
 		var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
 		var fp := Vector2i(int(meta["footprint"][0]), int(meta["footprint"][1]))

@@ -398,6 +398,12 @@ var _footprint: Vector2i
 var _yard: Vector2i = Vector2i(-1, -1)
 
 
+## G3 part 3: buildings whose base art and both construction stages come from SpriteKiln
+## (tools/spritekiln/gen_workshops.py); this script no longer draws them, so nothing old comes back.
+## Their drawings stay in BUILDINGS until the G3 clean-up.
+const SPRITEKILN_BUILDINGS: Array[String] = ["woodcutter"]
+
+
 func _init() -> void:
 	var registry := DataRegistry.new()
 	registry.load_from("res://data")
@@ -407,6 +413,8 @@ func _init() -> void:
 			only = arg.trim_prefix("--only=")
 	for id: String in BUILDINGS:
 		if not only.is_empty() and id != only:
+			continue
+		if SPRITEKILN_BUILDINGS.has(id):
 			continue
 		var def := registry.get_building(StringName(id))
 		if def == null:
