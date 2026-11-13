@@ -1635,7 +1635,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 
-> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 gotowa, czeka na ocenę („Część 1, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
+> Prośba właściciela 2026-11-11 (po E1: „Super to wygląda”). **Plan z ankiety 2026-11-12 zaakceptowany 2026-11-12. Część 1 scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę („Część 1, stan”).** Wzór: budynki 2×2 z E1 (`gen_farmsteads.py`), kamienice mieszczan, żołnierze i okręty, które już są ze SpriteKiln (ART_SPEC §10.20–10.26).
 
 **Cel:** cała gra w jednym stylu. Mieszkańcy i budynki rysowani dziś kodem (`tools/generate_characters.gd`, `tools/generate_art.gd`) albo z PixelLab dostają modele ze SpriteKiln, tak jak żołnierze, okręty, zagrody, szkoła i koszary. **Zmienia się tylko wygląd:** symulacja, zapis (bez nowej wersji) i zasady gry zostają.
 
@@ -1663,7 +1663,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 4. **Miasto i usługi:** chata poziomu 1 (3 wyglądy, tył, etapy), kamienice patrycjuszy (poziom 3, w stylu kamienic mieszczan, `gen_townhouses.py`, z rusztowaniem przebudowy), studnia, kaplica, kościół, targ, tawerna, ratusz, punkt handlowy, chata budowniczych, skład, obóz pionierów.
 5. **Port i wojsko:** port, nabrzeże rybackie, przystań, słupek, dźwig, magazyny portowe (mały i duży), stocznia i duża stocznia, domy dokerów, płatnerz, łuczarz, zbrojownia, warsztat oblężniczy. Na koniec G3: sprzątanie (usunięcie zamienionych rysunków z generatorów kodu), długie testy, ART_SPEC.
 
-**Część 1, stan (2026-11-12):** gotowa na gałęzi roboczej, czeka na ocenę.
+**Część 1, stan (2026-11-12):** gotowa, scalona do `main` 2026-11-13 na prośbę właściciela, czeka na ocenę.
 - Wspólny model mieszkańca (koszula z pasem, nogawice, buty; `idle`, `walk`, 7 chodów z towarem) i generator zawodów z 7 wspólnymi ruchami pracy (młotek, motyka, pielenie, sierp, siew, przykucnięcie, podnoszenie), ART_SPEC §10.27.
 - Tragarz (czerwona chusta), rolnik (słomkowy kapelusz, orka, siew, żniwa, wiązanie, pielenie), budowniczy (fartuch, czapka, młotek) w grze, 8 kierunków bez odbić.
 - Punkt noszenia z modelu: towar na ramieniu, przy biodrze, na plecach i w rękach jak dotąd, za postacią, gdy jest za ciałem. Towary w rękach odbijają się dla kierunków W (poprawka w widoku: wcześniej postać z 8 wierszami pokazywałaby w kierunkach NW, W, SW towar od tyłu).
