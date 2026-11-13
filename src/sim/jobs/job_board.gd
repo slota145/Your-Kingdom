@@ -186,19 +186,25 @@ func update(province: ProvinceSim) -> void:
 			return
 
 
-## The requests in the order porters take them: materials for building first (construction
-## sites, cobbles, ships on the slipway), then the rest, each group oldest first (UI-2 part 2,
-## owner 2026-11-13: at the start the porters moved the whole kit into the new storage while the
-## builder waited for wood).
+## The requests in the order porters take them, each group oldest first (UI-2 part 2):
+## materials for building (construction sites, cobbles, ships on the slipway; owner 2026-11-13:
+## at the start the porters moved the whole kit into the new storage while the builder waited
+## for wood), then the rest (the merchant's wagon, ships, moves the player asked for), and last
+## the stacks from the workshops' yards to a storage: a big town's workers fill their yards
+## faster than its porters empty them, and a full yard only sends its worker to a storage
+## himself, so nothing else may wait behind them.
 func _in_serving_order(province: ProvinceSim) -> Array[TransportRequest]:
 	var builds: Array[TransportRequest] = []
 	var rest: Array[TransportRequest] = []
+	var yards: Array[TransportRequest] = []
 	for request: TransportRequest in _requests.values():
 		if is_for_building(province, request.dest_id):
 			builds.append(request)
+		elif request.source_id < 0 and request.dest_id == 0:
+			yards.append(request)
 		else:
 			rest.append(request)
-	return builds + rest
+	return builds + rest + yards
 
 
 ## Whether [param dest_id] is something being built (a construction site, cobbles, a ship).
