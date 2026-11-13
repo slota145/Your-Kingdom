@@ -398,6 +398,20 @@ var _footprint: Vector2i
 var _yard: Vector2i = Vector2i(-1, -1)
 
 
+## G3 part 3: buildings whose base art and both construction stages come from SpriteKiln
+## (tools/spritekiln/gen_workshops.py); this script no longer draws them, so nothing old comes back.
+## Their drawings stay in BUILDINGS until the G3 clean-up.
+const SPRITEKILN_BUILDINGS: Array[String] = ["woodcutter", "forester", "quarry", "fishing_hut",
+		"mine", "clay_pit", "farm", "hop_farm", "vineyard", "stable", "charcoal_burner", "tar_kiln",
+		"mill", "bakery", "brewery", "meadery", "wine_press", "sawmill", "blacksmith", "smelter", "brickworks",
+		"weaver", "tailor", "slaughterhouse",
+		# G3 part 4a: every hut image (levels 1-3, backs, stages, scaffold) from SpriteKiln.
+		"hut",
+		# G3 part 4b: the town's buildings (gen_town.py), the warehouse's stages and shed.
+		"well", "chapel", "church", "market", "tavern", "town_hall", "trading_post", "builders_hut", "pioneer_camp",
+		"stockpile"]
+
+
 func _init() -> void:
 	var registry := DataRegistry.new()
 	registry.load_from("res://data")
@@ -407,6 +421,8 @@ func _init() -> void:
 			only = arg.trim_prefix("--only=")
 	for id: String in BUILDINGS:
 		if not only.is_empty() and id != only:
+			continue
+		if SPRITEKILN_BUILDINGS.has(id):
 			continue
 		var def := registry.get_building(StringName(id))
 		if def == null:

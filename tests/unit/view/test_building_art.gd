@@ -34,3 +34,61 @@ func test_neighbours_in_a_row_get_different_gables() -> void:
 	for i: int in 3:
 		names[visual.row_variant_name("level_2_middle", Vector2i(10, 10 + 2 * i))] = true
 	assert_int(names.size()).is_greater(1)
+
+
+## G3 part 3b: the mill's sails turn (base_anim over the base art, frames played in _process).
+func test_mill_sails_turn() -> void:
+	var view: BuildingView = auto_free(BuildingView.new())
+	view.setup("buildings/mill/base", Vector2i(10, 10))
+	var anim := view.get_children().filter(func(c: Node) -> bool: return c is Sprite2D and (c as Sprite2D).hframes > 1)
+	assert_int(anim.size()).is_equal(1)
+	var sails: Sprite2D = anim[0]
+	assert_int(sails.hframes).is_greater(1)
+	assert_int(sails.texture.get_width() / sails.hframes).is_equal(ArtPaths.texture("buildings/mill/base.png").get_width())
+	var first := sails.frame
+	view._process(0.3)
+	assert_int(sails.frame).is_not_equal(first)
+	# Lowered (see-through mode): the sails hide; mirrored art has them too.
+	view.set_lowered(true)
+	assert_bool(sails.visible).is_false()
+	var mirrored: BuildingView = auto_free(BuildingView.new())
+	mirrored.setup("buildings/mill/base", Vector2i(10, 10), true)
+	assert_int(mirrored.get_children().filter(func(c: Node) -> bool: return c is Sprite2D and (c as Sprite2D).hframes > 1).size()).is_equal(1)
+
+
+func test_buildings_without_a_moving_part_do_not_process() -> void:
+	var view: BuildingView = auto_free(BuildingView.new())
+	view.setup("buildings/bakery/base", Vector2i(10, 10))
+	assert_bool(view.is_processing()).is_false()
+
+
+## G3 part 4b: a building view without a moving part stops processing on its first frame (it
+## used to look up the missing frame strip every frame once in the tree).
+func test_view_without_a_moving_part_processes_safely() -> void:
+	var view: BuildingView = auto_free(BuildingView.new())
+	view.setup("buildings/bakery/base", Vector2i(10, 10))
+	view._process(0.1)
+	assert_bool(view.is_processing()).is_false()
+
+
+## G3 part 4b: the warehouse yard (deck and goods stacks) has a roofed shed over its back edges,
+## drawn as four pieces sorted on their own footprints: the back walls just outside the yard, the
+## posts and roofs over the back row and the back column (mirrored: offsets swapped).
+func test_warehouse_yard_has_its_shed_in_pieces() -> void:
+	var sim := SimFixture.make_sim()
+	var store := SimFixture.place(sim, &"stockpile", Vector2i(10, 10))
+	var layer: BuildingLayer = auto_free(BuildingLayer.new())
+	layer.province = sim.province
+	assert_str(layer._art_key(store, {})).is_equal("yard")
+	layer._build(store, "yard")
+	var holder: Node2D = layer._views[store.id]
+	assert_int(holder.get_children().filter(func(c: Node) -> bool: return c is StockpileView).size()).is_equal(1)
+	var origins: Array = holder.get_children().filter(func(c: Node) -> bool: return c is BuildingView) \
+			.map(func(v: BuildingView) -> Vector2i: return v.origin_tile)
+	assert_array(origins).contains_exactly_in_any_order([Vector2i(10, 9), Vector2i(9, 10), Vector2i(10, 10), Vector2i(10, 11)])
+	store.orientation = 1
+	layer._drop(store.id)
+	layer._build(store, "yard")
+	origins = layer._views[store.id].get_children().filter(func(c: Node) -> bool: return c is BuildingView) \
+			.map(func(v: BuildingView) -> Vector2i: return v.origin_tile)
+	assert_array(origins).contains_exactly_in_any_order([Vector2i(9, 10), Vector2i(10, 9), Vector2i(10, 10), Vector2i(11, 10)])

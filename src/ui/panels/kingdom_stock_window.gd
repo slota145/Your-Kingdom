@@ -5,13 +5,14 @@ extends PanelContainer
 ## uses per minute (average of the last 5 minutes) and the balance, green or red. The last
 ## column says what the travelling merchant may buy: everything above the number, when ticked.
 ## The column after it (M5 part 2) is for the goods the sea merchant sells: he unloads them
-## while the kingdom holds less than the number, when ticked.
+## while the kingdom holds less than the number, when ticked. The column before the merchant's
+## (E5) is the player's limit: at that stock workshops and gatherers making the good stop.
 
 signal command_requested(command: Command)
 signal closed
 
 const REFRESH := 0.5
-const COLUMNS := 8
+const COLUMNS := 9
 
 var province: ProvinceSim
 
@@ -33,11 +34,11 @@ func _init() -> void:
 	head.add_child(title)
 	head.add_child(UiKit.button("ui.close", func() -> void: closed.emit()))
 	_hint = UiKit.label("ui.stocks.hint")
-	_hint.custom_minimum_size.x = 820.0
+	_hint.custom_minimum_size.x = 960.0
 	_hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
 	box.add_child(_hint)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(900, 520)
+	scroll.custom_minimum_size = Vector2(1040, 520)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	box.add_child(scroll)
 	_grid = GridContainer.new()
@@ -74,7 +75,7 @@ func _build_rows() -> void:
 		child.queue_free()
 	_rows.clear()
 	for key: String in ["", "ui.stocks.good", "ui.stocks.stock", "ui.stocks.made", "ui.stocks.used",
-			"ui.stocks.balance", "ui.stocks.sell", "ui.stocks.buy"]:
+			"ui.stocks.balance", "ui.stocks.limit", "ui.stocks.sell", "ui.stocks.buy"]:
 		var header := _small(key)
 		header.add_theme_color_override(&"font_color", UiKit.HEADING)
 		_grid.add_child(header)
@@ -95,6 +96,8 @@ func _build_rows() -> void:
 			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			l.custom_minimum_size.x = 64.0
 			_grid.add_child(l)
+		var limit := _limit_cell(def)
+		_grid.add_child(limit["cell"])
 		var sell := HBoxContainer.new()
 		var tick := CheckBox.new()
 		tick.tooltip_text = "ui.stocks.sell_hint"
@@ -119,8 +122,36 @@ func _build_rows() -> void:
 		sell.add_child(price)
 		_grid.add_child(sell)
 		_rows[good] = {"stock": stock, "made": made, "used": used, "balance": balance,
-				"tick": tick, "amount": amount}
+				"tick": tick, "amount": amount, "limit_tick": limit["tick"],
+				"limit_amount": limit["amount"]}
 		_grid.add_child(_buy_cell(good))
+
+
+## The player's limit of a good (E5): ticked, workshops stop once the kingdom holds the number.
+## Live goods (animals) have none.
+func _limit_cell(def: GoodDef) -> Dictionary:
+	var good := def.id
+	var cell := HBoxContainer.new()
+	var tick := CheckBox.new()
+	tick.tooltip_text = "ui.stocks.limit_hint"
+	var amount := SpinBox.new()
+	amount.min_value = 0
+	amount.max_value = SetGoodsLimitCommand.MAX_LIMIT
+	amount.step = 1
+	amount.value = 100
+	amount.tooltip_text = "ui.stocks.limit_hint"
+	amount.get_line_edit().add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
+	if def.is_live():
+		tick.disabled = true
+		amount.editable = false
+	tick.toggled.connect(func(on: bool) -> void:
+		command_requested.emit(SetGoodsLimitCommand.new(good, int(amount.value) if on else -1)))
+	amount.value_changed.connect(func(value: float) -> void:
+		if tick.button_pressed:
+			command_requested.emit(SetGoodsLimitCommand.new(good, int(value))))
+	cell.add_child(tick)
+	cell.add_child(amount)
+	return {"cell": cell, "tick": tick, "amount": amount}
 
 
 ## "Buy up to N" from the sea merchant, for the goods he sells (an empty cell otherwise).
@@ -157,7 +188,20 @@ func _refresh() -> void:
 		var row: Dictionary = _rows[good]
 		var made := province.ledger.made_per_minute(good, tick)
 		var used := province.ledger.used_per_minute(good, tick)
-		(row["stock"] as Label).text = str(province.kingdom_stock(good))
+		var stock_label := row["stock"] as Label
+		stock_label.text = str(province.kingdom_stock(good))
+		# At the limit (E5) the stock reads in the warning colour: its makers stand idle.
+		var limited := province.goods_limits.has(good)
+		if limited and province.limit_reached(good):
+			stock_label.add_theme_color_override(&"font_color", UiKit.HEADING)
+			stock_label.tooltip_text = "ui.stocks.limit_reached"
+		else:
+			stock_label.remove_theme_color_override(&"font_color")
+			stock_label.tooltip_text = ""
+		(row["limit_tick"] as CheckBox).set_pressed_no_signal(limited)
+		var limit_spin := row["limit_amount"] as SpinBox
+		if limited and not limit_spin.get_line_edit().has_focus():
+			limit_spin.set_value_no_signal(int(province.goods_limits[good]))
 		(row["made"] as Label).text = tr("ui.stocks.rate") % made
 		(row["used"] as Label).text = tr("ui.stocks.rate") % used
 		var balance := row["balance"] as Label

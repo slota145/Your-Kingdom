@@ -327,8 +327,14 @@ static func _start_next(province: ProvinceSim, agent: Agent) -> void:
 		agent.cooldown = RETRY_TICKS
 		return
 	if workplace != null and workplace.def.recipe != null and not workplace.def.recipe.steps.is_empty():
-		# A blacksmith makes spears or swords, as the player set it or taking turns (M7).
-		var recipe := workplace.take_recipe()
+		# A blacksmith makes spears or swords, as the player set it or taking turns (M7); the
+		# player's limits skip a recipe whose goods the kingdom has enough of (E5).
+		var recipe := province.next_recipe(workplace)
+		if recipe == null:
+			agent.last_fail = &"goods_limit"
+			agent.last_fail_good = province.limit_stopping(workplace)
+			agent.cooldown = RETRY_TICKS
+			return
 		var task := Task.new()
 		task.kind = Task.KIND_RECIPE
 		task.recipe_id = recipe.id

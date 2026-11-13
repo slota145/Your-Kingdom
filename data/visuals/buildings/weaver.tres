@@ -6,6 +6,6 @@
 script = ExtResource("1_vis")
 art_id = "weaver"
 spot_offsets = Dictionary[StringName, Vector2]({
-&"wheel": Vector2(8, -8),
-&"loom": Vector2(-8, -2)
+&"loom": Vector2(-17, -4),
+&"wheel": Vector2(5, -1)
 })

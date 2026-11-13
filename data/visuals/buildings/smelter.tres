@@ -5,3 +5,6 @@
 [resource]
 script = ExtResource("1_vis")
 art_id = "smelter"
+spot_offsets = Dictionary[StringName, Vector2]({
+&"furnace": Vector2(-5, -1)
+})

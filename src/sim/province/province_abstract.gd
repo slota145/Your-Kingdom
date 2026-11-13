@@ -398,6 +398,9 @@ func _walk_to_storage(building: BuildingState) -> float:
 func _cycle(building: BuildingState, cycle: WorkCycle) -> bool:
 	var p := detail
 	var near := building.entrance_tile()
+	# The player's limits stop it as in the detailed mode (E5).
+	if p.limit_stopping(building) != &"":
+		return false
 	for good: StringName in cycle.inputs:
 		var have := building.supply.total(good) if building.supply != null and building.house == null else 0
 		if have < cycle.inputs[good] and _source(good) == null:

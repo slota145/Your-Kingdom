@@ -23,6 +23,7 @@ GAP = 0.09           # narrow gap between burgher plots
 T = 0.045            # half thickness of a timber beam (0.09 = about 1.7 px)
 PL = 0.20            # stone plinth height
 JETTY = 0.10         # each upper floor sticks out this much at the front
+SJ = 0.09            # and this much at each side (burgher row houses, owner's review of 4a)
 
 
 def r4(v):
@@ -53,6 +54,10 @@ class House:
         self.side_frame = side_frame
         self.door_u = door_u
         self.chimney = chimney
+        self.jetty = JETTY
+        self.sj = 0.0                   # side jetty per floor and side (row houses: SJ)
+        self.dormer = False
+        self.kick = True                # the eaves kicked up a little
         self.gable = gable              # plain (timbered), stepped or curved (a masonry show gable)
         self.parts = {}
 
@@ -128,34 +133,68 @@ class House:
 
     # -- the house -----------------------------------------------------------------------
     def build(self):
+        """A burgher house (owner's review of 4a, 2026-11-13): a fieldstone ground floor with timber
+        posts and knee braces, half-timbered upper floors each jettied a little further out at the
+        front and at the sides (`sj` per floor and side: the top floor has the full width, so the
+        houses of a row touch up there and narrow lanes stay between them below), dormers, a kicked
+        eave."""
         uc, w, vb, vf = self.uc, self.w, self.vb, self.vf
-        u0, u1 = uc - w / 2, uc + w / 2
         nup = len(self.floors) - 1
-        vtop = vf + nup * JETTY
+        vtop = vf + nup * self.jetty
         G = self.floors[0]
-        # plinth and ground floor
-        self.add("plinth", self.box((uc, PL / 2, (vb + vf) / 2 + 0.02), (w / 2, PL / 2, (vf - vb) / 2 + 0.02)),
+        sj = self.sj
+
+        def span(k):        # u range of floor k (0 = the ground floor)
+            h = w / 2 - (nup - k) * sj
+            return uc - h, uc + h
+        g0, g1 = span(0)
+        # plinth and the stone ground floor
+        self.add("plinth", self.box((uc, PL / 2, (vb + vf) / 2 + 0.02), ((g1 - g0) / 2, PL / 2, (vf - vb) / 2 + 0.02)),
                  "stone")
         y = PL
-        self.add("walls", self.box((uc, y + G / 2, (vb + vf) / 2), (w / 2 - 0.02, G / 2, (vf - vb) / 2)),
-                 self.plaster, priority=1)
-        levels = [(y, y + G, vf)]
+        self.add("ground_walls", self.box((uc, y + G / 2, (vb + vf) / 2), ((g1 - g0) / 2 - 0.02, G / 2, (vf - vb) / 2)),
+                 "groundstone", priority=1)
+        self.parts[f"{self.n}_ground_walls"]["paint"] = [
+            {"material": "groundstone_dark", "spots": {"scale": 0.1, "density": 0.34, "seed": sum(map(ord, self.n)) % 23}}]
+        levels = [(y, y + G, vf, g0, g1)]
         y += G
         for k, fh in enumerate(self.floors[1:], start=1):
-            vfk = vf + k * JETTY
-            self.add("walls", self.box((uc, y + fh / 2, (vb + vfk) / 2), (w / 2, fh / 2, (vfk - vb) / 2)),
+            vfk = vf + k * self.jetty
+            a, b = span(k)
+            self.add("walls", self.box((uc, y + fh / 2, (vb + vfk) / 2), ((b - a) / 2, fh / 2, (vfk - vb) / 2)),
                      self.plaster)
-            # the jetty: a dark beam end line under the overhang
-            self.add("timber", self.box((uc, y + 0.04, vfk - 0.02), (w / 2 + 0.02, 0.05, 0.05)), "timber")
-            levels.append((y, y + fh, vfk))
+            # the jetty: a sill beam round the overhang and the joist ends under it
+            self.add("timber", self.box((uc, y + 0.04, vfk - 0.02), ((b - a) / 2 + 0.02, 0.05, 0.05)), "timber")
+            pa, pb = span(k - 1)
+            for side, u in (("-u", a), ("+u", b)):
+                if side not in self.side_frame and side not in self.side_windows:
+                    continue
+                s = -1 if side == "-u" else 1
+                self.add("timber", self.box((u + s * 0.01, y + 0.04, (vb + vfk) / 2), (0.05, 0.05, (vfk - vb) / 2)), "timber")
+                if sj > 0:
+                    n = max(3, round((vfk - vb) / 0.32))
+                    for i in range(n):
+                        jv = vb + 0.12 + (vfk - vb - 0.24) * i / (n - 1)
+                        self.add("joists", self.box(((u + (pa if s < 0 else pb)) / 2, y - 0.04, jv),
+                                                    (abs(u - (pa if s < 0 else pb)) / 2 + 0.02, 0.035, 0.035)), "timber")
+            n = max(2, round((b - a) / 0.32))
+            for i in range(n):
+                ju = a + 0.1 + (b - a - 0.2) * i / (n - 1)
+                self.add("joists", self.box((ju, y - 0.04, vfk - self.jetty / 2 - 0.02), (0.035, 0.035, self.jetty / 2 + 0.02)),
+                         "timber")
+            levels.append((y, y + fh, vfk, a, b))
             y += fh
         E = y
-        # front: ground floor (corner posts, door, a window)
-        y0, y1, v = levels[0]
+        # front: the ground floor (corner posts with knee braces, the door, a window)
+        y0, y1, v, u0, u1 = levels[0]
         self.beam_front(v, (u0, y1 - T), (u1, y1 - T))
-        du = self.door_u if self.door_u is not None else (u0 + 0.5 if w > 1.3 else uc)
+        a1, b1 = (levels[1][3], levels[1][4]) if len(levels) > 1 else (u0, u1)
+        for pu, out in ((u0 + T, a1), (u1 - T, b1)):
+            self.beam_front(v, (pu, y0), (pu, y1))
+            self.beam_front(v, (pu, y1 - 0.55), (out + (0.06 if out < uc else -0.06), y1 - 0.02))
+        du = self.door_u if self.door_u is not None else (u0 + 0.45 if (u1 - u0) > 1.2 else uc)
         if self.gate:      # a round-arched gateway with a stone frame (the passage under a corner house)
-            gw, gh = min(0.5, w / 2 - 0.12), 1.75
+            gw, gh = min(0.5, (u1 - u0) / 2 - 0.12), 1.75
             arch = [[gw * math.cos(math.radians(a_)), gh - gw + gw * math.sin(math.radians(a_))] for a_ in range(0, 181, 30)]
             frame = [[x * (gw + 0.12) / gw, (y_ - (gh - gw)) * (gw + 0.12) / gw + gh - gw] for x, y_ in arch]
             for poly, mat, dz in ((frame + [[-gw - 0.12, 0], [gw + 0.12, 0]], "sill_mat", 0.02),
@@ -172,18 +211,19 @@ class House:
                 self.beam_front(v, (du + s * (dw + T), y0), (du + s * (dw + T), y0 + dh + T))
             self.beam_front(v, (du - dw - 2 * T, y0 + dh + T), (du + dw + 2 * T, y0 + dh + T))
             self.add("step", self.box((du, 0.06, v + 0.22), (dw + 0.08, 0.06, 0.16)), "stone")
-            if w > 1.25:
-                ux = u1 - 0.42 if du < uc else u0 + 0.42
-                self.window_front(v, ux, y0 + 0.75, shutters=True)
+            if (u1 - u0) > 1.15:
+                ux = u1 - 0.4 if du < uc else u0 + 0.4
+                self.window_front(v, ux, y0 + 0.75, ww=0.38, shutters=True)
         # front: upper floors (posts, rails, windows, braces)
-        for (ya, yb, v) in levels[1:]:
-            nwin = 3 if w > 2.15 else (2 if w > 1.42 else 1)
+        for (ya, yb, v, u0, u1) in levels[1:]:
+            wk = u1 - u0
+            nwin = 3 if wk > 2.15 else (2 if wk > 1.42 else 1)
             ww, wh = 0.42, 0.68
             ys = ya + 0.55
-            cs = [u0 + w * (i + 0.5) / nwin for i in range(nwin)]
+            cs = [u0 + wk * (i + 0.5) / nwin for i in range(nwin)]
             if not self.front_frame:     # a plastered front: windows with shutters only
                 for c in cs:
-                    self.window_front(v, c, ys, ww, wh, shutters=w > 1.1)
+                    self.window_front(v, c, ys, ww, wh, shutters=wk > 1.1)
                 continue
             self.beam_front(v, (u0, ya + T), (u1, ya + T))
             self.beam_front(v, (u0, yb - T), (u1, yb - T))
@@ -207,7 +247,120 @@ class House:
                 self.beam_front(v, (right, ya + T), (left, yb - T))
         if self.gable == "tower":       # an oriel turret on the corner: no gable or roof of its own
             return self.oriel(uc, vf, E)
-        # gables: the back one plain; the front one timbered, or a masonry show gable above the roof
+        R = self.gables(E, vtop)
+        # side walls: stone below (with a post and a knee brace at the front corner), timber above
+        # where the wall may show, windows where it faces a street
+        for side in ("-u", "+u"):
+            if side not in self.side_frame and side not in self.side_windows:
+                continue
+            s = -1 if side == "-u" else 1
+            for li, (ya, yb, vfk, a, b) in enumerate(levels):
+                u = (a if s < 0 else b) + s * 0.012
+                sp = vfk - vb
+                nb = max(2, round(sp / 0.85))
+                if li == 0:
+                    self.beam_side(u, (vfk - T, ya), (vfk - T, yb))
+                    if len(levels) > 1:
+                        uo = (levels[1][3] if s < 0 else levels[1][4]) + s * 0.012
+                        self.add("timber", self.box(((u + uo) / 2, yb - 0.3, vfk - 0.1), (abs(uo - u) / 2 + 0.03, 0.035, 0.035),
+                                                    rot=self.rot_v(-s * 0.9)), "timber")
+                    if side in self.side_windows:
+                        for i in range(nb):
+                            if i % 2 == 0:
+                                a_ = vb + sp * (i + 0.5) / nb
+                                self.window_side(u, s, a_, ya + 0.75, 0.38)
+                    continue
+                self.beam_side(u, (vb, ya + T), (vfk, ya + T))
+                self.beam_side(u, (vb, yb - T), (vfk, yb - T))
+                for i in range(nb + 1):
+                    pv = vb + T + (sp - 2 * T) * i / nb
+                    self.beam_side(u, (pv, ya), (pv, yb))
+                for i in range(nb):
+                    a_ = vb + T + (sp - 2 * T) * i / nb
+                    b_ = vb + T + (sp - 2 * T) * (i + 1) / nb
+                    if side in self.side_windows and i % 2 == 1:
+                        self.window_side(u, s, (a_ + b_) / 2, ya + 0.55, min(0.42, b_ - a_ - 0.2))
+                    elif i % 2 == 0:
+                        self.beam_side(u, (a_, ya + T), (b_, yb - T))
+                    else:
+                        self.beam_side(u, (b_, ya + T), (a_, yb - T))
+        if self.back_detail:
+            self.back_face([lv[:3] for lv in levels], E, w / 2 * math.tan(self.pitch), spans=[lv[3:] for lv in levels])
+        if self.dormer and R > 1.2 and w > 1.35:
+            self.dormer_left(E, R, vtop)
+        self.roof_and_chimney(E, R, vtop)
+        return self.finish()
+
+    def dormer_left(self, E, R, vtop):
+        """A small gabled dormer with a window on the roof slope that faces -u (the camera's side)."""
+        uc, w, vb = self.uc, self.w, self.vb
+        vm = vb + (vtop - vb) * 0.45
+        uf = uc - w * 0.33                       # its window wall
+        ys = E + R * (1 - (uc - uf) / (w / 2))   # where that wall meets the slope
+        hw, h = 0.33, 0.72
+        ub = uc - w * 0.04
+        self.add("dormer", self.box(((uf + ub) / 2, ys + h / 2 - 0.15, vm), ((ub - uf) / 2, h / 2 + 0.15, hw)), self.plaster,
+                 priority=2)
+        self.beam_side(uf - 0.012, (vm - hw, ys + h - T), (vm + hw, ys + h - T), part="dormer_timber")
+        self.beam_side(uf - 0.012, (vm - hw + T, ys - 0.05), (vm - hw + T, ys + h), part="dormer_timber")
+        self.beam_side(uf - 0.012, (vm + hw - T, ys - 0.05), (vm + hw - T, ys + h), part="dormer_timber")
+        self.window_side(uf, -1, vm, ys + 0.12, 0.32, 0.38)
+        self.add("dormer_shutter", self.box((uf - 0.04, ys + 0.26, vm + hw + 0.06), (0.02, 0.16, 0.09)), "shutter")
+        top = ys + h
+        for s in (-1, 1):       # its roof: two slabs falling to +-v, the ridge along u
+            self.add("dormer_roof", self.box(((uf + ub) / 2 - 0.04, top + 0.12, vm + s * 0.17), ((ub - uf) / 2 + 0.1, 0.035, 0.22),
+                                             rot=self.rot_u(-s * 0.62)), self.roof)
+
+    def roof_and_chimney(self, E, R, vtop):
+        """The roof: two tiled slabs, a lath under every course, the ridge and a chimney."""
+        uc, w, vb = self.uc, self.w, self.vb
+        ov = 0.17
+        th = self.pitch
+        Lr = math.hypot(w / 2 + ov, (w / 2 + ov) * math.tan(th))
+        v0, v1 = vb - 0.06, (vtop + 0.09 if self.gable == "plain" else vtop - 0.06)
+        roof_dark = self.roof + "_dark"
+        for s in (-1, 1):
+            eu, ey = uc + s * (w / 2 + ov), E - ov * math.tan(th)
+            cu, cy = (eu + uc) / 2, (ey + E + R) / 2
+            lift = 0.05 / math.cos(th)
+            ang = th if s < 0 else -th
+            self.add(f"roof_{'l' if s < 0 else 'r'}",
+                     self.box((cu, cy + lift, (v0 + v1) / 2), (Lr / 2, 0.05, (v1 - v0) / 2), rot=self.rot_v(ang),
+                              rnd=0.01), self.roof)
+            if self.kick:       # the eave kicked up: a short, flatter slab beyond the lower edge
+                a2 = th * 0.42
+                ku, ky = eu + s * 0.13 * math.cos(a2), ey + lift - 0.13 * math.sin(a2) + 0.02
+                self.add(f"roof_{'l' if s < 0 else 'r'}", self.box((ku, ky, (v0 + v1) / 2), (0.16, 0.05, (v1 - v0) / 2),
+                                                                     rot=self.rot_v(a2 if s < 0 else -a2)), self.roof)
+            p = self.parts[f"{self.n}_roof_{'l' if s < 0 else 'r'}"]
+            p["paint"] = [{"material": self.roof + "_light", "spots": {"scale": 0.18, "density": 0.2,
+                                                                         "seed": sum(map(ord, self.n)) % 97 + (s > 0)}}]
+            # courses: thin dark laths along v, one every 0.21 up the slope
+            k = 1
+            while True:
+                t = k * 0.21
+                if t > Lr - 0.12:
+                    break
+                fu = eu - s * t * math.cos(th)
+                fy = ey + t * math.sin(th) + 0.11 / math.cos(th)
+                self.add("courses", {"cylinder": {"a": self.pt(fu, fy, v0), "b": self.pt(fu, fy, v1), "r": 0.026}},
+                         roof_dark)
+                k += 1
+        self.add("ridge", {"cylinder": {"a": self.pt(uc, E + R + 0.1, v0), "b": self.pt(uc, E + R + 0.1, v1),
+                                         "r": 0.07}}, roof_dark)
+        if self.chimney is not None:
+            cv = vb + (vtop - vb) * self.chimney
+            cu = uc + w * 0.18
+            ytop = E + R + 0.45
+            yb_ = E + R * 0.4
+            self.add("chimney", self.box((cu, (ytop + yb_) / 2, cv), (0.13, (ytop - yb_) / 2, 0.13)), "brick")
+            self.add("chimney", self.box((cu, ytop, cv), (0.16, 0.04, 0.16)), "brick")
+
+    def gables(self, E, vtop):
+        """The gables: the back one plain; the front one timbered, plain masonry (`masonry`, with a
+        stone coping and windows) or a masonry show gable above the roof. Returns the roof's rise."""
+        uc, w, vb = self.uc, self.w, self.vb
+        u0, u1 = uc - w / 2, uc + w / 2
         R = (w / 2) * math.tan(self.pitch)
         rotg = r4(self.mrot([0, self.yaw, 0])) if abs(self.yaw) > 1e-6 else None
 
@@ -234,6 +387,19 @@ class House:
                 self.window_front(v, uc, E + 0.18, gw, min(0.5, yc - E - 0.3))
                 for s in (-1, 1):
                     self.beam_front(v, (uc + s * (gw / 2 + T), E), (uc + s * (gw / 2 + T), yc))
+        elif self.gable == "masonry":
+            self.add("gable", gable_prim(vtop - 0.05, tri, 0.1), self.plaster)
+            L = math.hypot(w / 2 + 0.06, R) / 2
+            ang = math.atan2(R, w / 2)
+            for s in (-1, 1):     # a stone coping along both edges, a finial at the top
+                self.add("trim", self.box((uc + s * (w / 4), E + R / 2 + 0.06, vtop - 0.02), (L, 0.06, 0.1),
+                                          rot=self.rot_v(-s * ang)), "sill_mat")
+            self.add("trim", {"sphere": {"c": self.pt(uc, E + R + 0.12, vtop - 0.02), "r": 0.09}}, "sill_mat")
+            nw = 2 if w > 1.4 else 1
+            for i in range(nw):
+                self.window_rich(v, uc + (i - (nw - 1) / 2) * w * 0.32, E + 0.2, 0.32, 0.55)
+            if R > 1.5:
+                self.window_rich(v, uc, E + 1.0, 0.22, 0.34)
         else:
             hw = w / 2 + 0.04
             if self.gable == "stepped":
@@ -266,83 +432,24 @@ class House:
             self.add("trim", self.box((uc, E + 0.03, vtop + 0.06), (hw + 0.04, 0.04, 0.06)), "sill_mat")
             self.add("trim", {"sphere": {"c": self.pt(uc, E + Rg + 0.06, vtop - 0.04), "r": 0.08}}, "sill_mat")
             nw = 2 if w > 1.4 else 1
+            win = self.window_rich if getattr(self, "rich", False) else self.window_front
             for i in range(nw):
-                self.window_front(v + 0.04, uc + (i - (nw - 1) / 2) * w * 0.36, E + 0.22, 0.34, 0.5)
+                win(v + 0.04, uc + (i - (nw - 1) / 2) * w * 0.36, E + 0.22, 0.34, 0.5)
             if Rg > 1.6:
-                self.window_front(v + 0.04, uc, E + 0.98, 0.24, 0.32)
-        # side walls: timber where the wall may show, windows where it faces a street
-        for side in ("-u", "+u"):
-            if side not in self.side_frame and side not in self.side_windows:
-                continue
-            s = -1 if side == "-u" else 1
-            u = (u0 if s < 0 else u1) + s * 0.012
-            for (ya, yb, vfk) in levels:
-                span = vfk - vb
-                nb = max(2, round(span / 0.85))
-                self.beam_side(u, (vb, ya + T), (vfk, ya + T))
-                self.beam_side(u, (vb, yb - T), (vfk, yb - T))
-                for i in range(nb + 1):
-                    pv = vb + T + (span - 2 * T) * i / nb
-                    self.beam_side(u, (pv, ya), (pv, yb))
-                for i in range(nb):
-                    a = vb + T + (span - 2 * T) * i / nb
-                    b = vb + T + (span - 2 * T) * (i + 1) / nb
-                    if side in self.side_windows and i % 2 == (1 if ya > PL else 0):
-                        self.window_side(u, s, (a + b) / 2, ya + (0.55 if ya > PL else 0.75), min(0.42, b - a - 0.2))
-                    elif i % 2 == 0:
-                        self.beam_side(u, (a, ya + T), (b, yb - T))
-                    else:
-                        self.beam_side(u, (b, ya + T), (a, yb - T))
-        if self.back_detail:
-            self.back_face(levels, E, w / 2 * math.tan(self.pitch))
-        # roof: two tiled slabs, a lath under every course, the ridge and a chimney
-        ov = 0.17
-        th = self.pitch
-        Lr = math.hypot(w / 2 + ov, (w / 2 + ov) * math.tan(th))
-        v0, v1 = vb - 0.06, (vtop + 0.09 if self.gable == "plain" else vtop - 0.06)
-        roof_dark = self.roof + "_dark"
-        for s in (-1, 1):
-            eu, ey = uc + s * (w / 2 + ov), E - ov * math.tan(th)
-            cu, cy = (eu + uc) / 2, (ey + E + R) / 2
-            lift = 0.05 / math.cos(th)
-            ang = th if s < 0 else -th
-            self.add(f"roof_{'l' if s < 0 else 'r'}",
-                     self.box((cu, cy + lift, (v0 + v1) / 2), (Lr / 2, 0.05, (v1 - v0) / 2), rot=self.rot_v(ang),
-                              rnd=0.01), self.roof)
-            p = self.parts[f"{self.n}_roof_{'l' if s < 0 else 'r'}"]
-            p["paint"] = [{"material": self.roof + "_light", "spots": {"scale": 0.18, "density": 0.2,
-                                                                         "seed": sum(map(ord, self.n)) % 97 + (s > 0)}}]
-            # courses: thin dark laths along v, one every 0.21 up the slope
-            k = 1
-            while True:
-                t = k * 0.21
-                if t > Lr - 0.12:
-                    break
-                fu = eu - s * t * math.cos(th)
-                fy = ey + t * math.sin(th) + 0.11 / math.cos(th)
-                self.add("courses", {"cylinder": {"a": self.pt(fu, fy, v0), "b": self.pt(fu, fy, v1), "r": 0.026}},
-                         roof_dark)
-                k += 1
-        self.add("ridge", {"cylinder": {"a": self.pt(uc, E + R + 0.1, v0), "b": self.pt(uc, E + R + 0.1, v1),
-                                         "r": 0.07}}, roof_dark)
-        if self.chimney is not None:
-            cv = vb + (vtop - vb) * self.chimney
-            cu = uc + w * 0.18
-            ytop = E + R + 0.45
-            yb_ = E + R * 0.4
-            self.add("chimney", self.box((cu, (ytop + yb_) / 2, cv), (0.13, (ytop - yb_) / 2, 0.13)), "brick")
-            self.add("chimney", self.box((cu, ytop, cv), (0.16, 0.04, 0.16)), "brick")
-        return self.finish()
+                win(v + 0.04, uc, E + 0.98, 0.24, 0.32)
+        return R
 
-    def back_face(self, levels, E, R):
-        """The back wall: a plain back door, windows, timbering on every floor and on the back gable."""
+    def back_face(self, levels, E, R, spans=None):
+        """The back wall: a plain back door, windows, timbering on every upper floor (the ground
+        floor is stone) and on the back gable. spans: the u range of each floor."""
         uc, w, v = self.uc, self.w, self.vb
-        u0, u1 = uc - w / 2, uc + w / 2
-        for (ya, yb, _) in levels:
+        for li, (ya, yb, _) in enumerate(levels):
+            u0, u1 = spans[li] if spans else (uc - w / 2, uc + w / 2)
             ground = ya <= PL + 1e-6
             nwin = 1 if ground or w < 1.42 else 2
-            cs = [u0 + w * (i + 0.5) / nwin for i in range(nwin)] if not ground else [u1 - 0.45]
-            self.beam_front(v, (u0, ya + T), (u1, ya + T), sgn=-1)
+            cs = [u0 + (u1 - u0) * (i + 0.5) / nwin for i in range(nwin)] if not ground else [u1 - 0.45]
+            if not ground:
+                self.beam_front(v, (u0, ya + T), (u1, ya + T), sgn=-1)
             self.beam_front(v, (u0, yb - T), (u1, yb - T), sgn=-1)
             posts = [u0 + T, u1 - T]
             ys = ya + (0.75 if ground else 0.55)
@@ -356,12 +463,13 @@ class House:
                 du = u0 + 0.42
                 self.add("door", self.box((du, ya + dh / 2, v - 0.01), (dw, dh / 2, 0.03)), "door_wood")
                 posts += [du - dw - T, du + dw + T]
-            for p_ in posts:
+            for p_ in (posts if not ground else posts[:2]):
                 self.beam_front(v, (p_, ya), (p_, yb), sgn=-1)
             if not ground:
                 left, right = u0 + 2 * T, cs[0] - 0.19 - 2 * T
                 if right - left > 0.12:
                     self.beam_front(v, (left, ya + T), (right, yb - T), sgn=-1)
+        u0, u1 = uc - w / 2, uc + w / 2
         if self.gable != "tower":
             uc_ = uc
             self.beam_front(v, (u0 + 0.05, E + 0.03), (uc_, E + R - 0.02), sgn=-1)
@@ -403,6 +511,269 @@ class House:
         return self.finish()
 
 
+class RichHouse(House):
+    """A patrician house (hut level 3, G3 part 4a): masonry (ashlar or brick) on a tall stone plinth,
+    no jetties, a stone string course at every floor and a cornice, framed cross windows with hood
+    moulds, quoins, and either an arcade of round arches (`arcade`) or a stone portal with a coat of
+    arms over it; optionally an oriel bay on the upper floors (`bay`). Gables: masonry, stepped or
+    curved, or the corner turret ("tower")."""
+
+    rich = True
+    AD = 0.62       # depth of the arcade
+
+    def __init__(self, *a, arcade=False, bay=False, arms="red", **k):
+        k.setdefault("gable", "masonry")
+        k.setdefault("front_frame", False)
+        super().__init__(*a, **k)
+        self.jetty = 0.0
+        self.kick = False
+        self.arcade, self.bay, self.arms = arcade, bay, arms
+
+    # -- details --------------------------------------------------------------------------
+    def rotg(self):
+        return r4(self.mrot([0, self.yaw, 0])) if abs(self.yaw) > 1e-6 else None
+
+    def ext_front(self, part, mat, u, y, v, poly, depth, **extra):
+        g = {"c": self.pt(u, y, v), "depth": depth, "profile": {"polygon": r4p(poly)}}
+        if self.rotg():
+            g["rot"] = self.rotg()
+        self.add(part, {"extrude": g}, mat, **extra)
+
+    def window_rich(self, v, uw, ys, ww=0.42, wh=0.9, sgn=1, frame="sill_mat"):
+        """A stone-framed cross window (a mullion and a transom) with a sill and a hood mould."""
+        self.add("wframe" + ("_shade" if frame != "sill_mat" else ""),
+                 self.box((uw, ys + wh / 2, v + sgn * 0.02), (ww / 2 + 0.07, wh / 2 + 0.07, 0.03)), frame)
+        self.add("glass", self.box((uw, ys + wh / 2, v + sgn * 0.04), (ww / 2, wh / 2, 0.02)), "glass")
+        if ww > 0.3:
+            self.add("mullion", self.box((uw, ys + wh / 2, v + sgn * 0.06), (0.025, wh / 2, 0.02)), "sill_mat")
+        if wh > 0.5:
+            self.add("mullion", self.box((uw, ys + wh * 0.62, v + sgn * 0.06), (ww / 2, 0.025, 0.02)), "sill_mat")
+        self.add("sill", self.box((uw, ys - 0.08, v + sgn * 0.07), (ww / 2 + 0.1, 0.035, 0.07)), "sill_mat")
+        self.add("hood", self.box((uw, ys + wh + 0.11, v + sgn * 0.06), (ww / 2 + 0.12, 0.035, 0.06)), "sill_mat")
+
+    def window_side_rich(self, u, s, vw, ys, ww=0.4, wh=0.85):
+        self.add("wframe", self.box((u + s * 0.02, ys + wh / 2, vw), (0.03, wh / 2 + 0.07, ww / 2 + 0.07)), "sill_mat")
+        self.add("glass", self.box((u + s * 0.04, ys + wh / 2, vw), (0.02, wh / 2, ww / 2)), "glass")
+        self.add("mullion", self.box((u + s * 0.06, ys + wh / 2, vw), (0.02, wh / 2, 0.025)), "sill_mat")
+        self.add("mullion", self.box((u + s * 0.06, ys + wh * 0.62, vw), (0.02, 0.025, ww / 2)), "sill_mat")
+        self.add("sill", self.box((u + s * 0.07, ys - 0.08, vw), (0.07, 0.035, ww / 2 + 0.1)), "sill_mat")
+        self.add("hood", self.box((u + s * 0.06, ys + wh + 0.11, vw), (0.06, 0.035, ww / 2 + 0.12)), "sill_mat")
+
+    def course(self, y, v, sgn=1, big=False):
+        """A stone string course (or the cornice, `big`) across the front (or back) face."""
+        hh, d = (0.07, 0.1) if big else (0.04, 0.06)
+        self.add("courses", self.box((self.uc, y, v + sgn * d / 2), (self.w / 2 + (0.03 if big else 0.0), hh, d)), "sill_mat")
+
+    def course_side(self, u, s, y, v0, v1, big=False):
+        hh, d = (0.07, 0.1) if big else (0.04, 0.06)
+        self.add("courses", self.box((u + s * d / 2, y, (v0 + v1) / 2), (d, hh, (v1 - v0) / 2)), "sill_mat")
+
+    def arms_at(self, u, y, v):
+        """A painted coat of arms in a stone frame: a shield with a gold chevron."""
+        sh = [[-0.2, 0.22], [0.2, 0.22], [0.2, -0.02], [0.0, -0.26], [-0.2, -0.02]]
+        fr = [[x * 1.35, y_ * 1.3 + 0.02] for x, y_ in sh]
+        self.ext_front("arms_frame", "sill_mat", u, y, v + 0.03, fr, 0.06)
+        self.ext_front("arms_" + self.arms, "herald_" + self.arms, u, y, v + 0.08, sh, 0.06, priority=2)
+        self.add("arms_chevron", self.box((u - 0.09, y - 0.02, v + 0.12), (0.12, 0.035, 0.02), rot=self.rot_v(0.7)),
+                 "gold_trim", priority=3)
+        self.add("arms_chevron", self.box((u + 0.09, y - 0.02, v + 0.12), (0.12, 0.035, 0.02), rot=self.rot_v(-0.7)),
+                 "gold_trim", priority=3)
+
+    def arch_poly(self, hw, spring, top=None):
+        """An arched opening (half width hw, springing at `spring`), closed at the bottom (y 0)."""
+        pts = [[hw * math.cos(math.radians(a)), spring + hw * math.sin(math.radians(a))] for a in range(0, 181, 15)]
+        return pts + [[-hw, 0], [hw, 0]]
+
+    def portal(self, u, v, y0, gate=False, frame="sill_mat"):
+        """A round-arched stone portal with voussoirs and a plank door (or a dark gateway)."""
+        gw = 0.5 if gate else 0.36
+        spring = 1.3 if gate else 1.12
+        inner = self.arch_poly(gw, spring)
+        outer = [[x * (gw + 0.14) / gw, (y_ - spring) * (gw + 0.14) / gw + spring if y_ > spring else y_] for x, y_ in inner]
+        outer = [[x, y_] for x, y_ in outer[:-2]] + [[-(gw + 0.14), 0], [gw + 0.14, 0]]
+        self.ext_front("portal" + ("_shade" if frame != "sill_mat" else ""), frame, u, y0, v + 0.04, outer, 0.1, priority=2)
+        self.ext_front("gate" if gate else "door", "gate_dark" if gate else "door_wood", u, y0, v + 0.07, inner, 0.1,
+                       priority=2)
+        if not gate:
+            self.add("door_line", self.box((u, y0 + spring / 2 + 0.1, v + 0.13), (0.018, spring / 2 + 0.05, 0.02)), "ink")
+            for yy in (y0 + 0.35, y0 + 0.95):
+                self.add("door_iron", self.box((u, yy, v + 0.13), (gw - 0.06, 0.03, 0.02)), "iron_band", priority=3)
+        for k in range(5):      # voussoirs: darker joints on the arch ring
+            a = math.radians(30 + k * 30)
+            self.add("voussoir", self.box((u + (gw + 0.07) * math.cos(a), y0 + spring + (gw + 0.07) * math.sin(a), v + 0.1),
+                                          (0.012, 0.075, 0.02), rot=self.rot_v(a - math.pi / 2)), "stone_joint")
+        self.add("step", self.box((u, 0.06, v + 0.25), (gw + 0.2, 0.06, 0.18)), "stone")
+        self.add("step", self.box((u, 0.17, v + 0.12), (gw + 0.12, 0.05, 0.1)), "stone")
+        return spring + gw + 0.14
+
+    # -- the house ------------------------------------------------------------------------
+    def build(self):
+        uc, w, vb, vf = self.uc, self.w, self.vb, self.vf
+        u0, u1 = uc - w / 2, uc + w / 2
+        G = self.floors[0]
+        PLH = PL + 0.15                     # a taller plinth of dressed stone
+        self.add("plinth", self.box((uc, PLH / 2, (vb + vf) / 2 + 0.03), (w / 2 + 0.01, PLH / 2, (vf - vb) / 2 + 0.03)),
+                 "plinth_stone")
+        vg = vf - self.AD if self.arcade else vf
+        self.add("walls_ground", self.box((uc, PLH + (G - PLH + PL) / 2, (vb + vg) / 2), (w / 2 - 0.02, (G - PLH + PL) / 2,
+                                                                                     (vg - vb) / 2)),
+                 self.plaster, priority=1)
+        if self.arcade:     # the back wall of the arcade lies in deep shade
+            self.add("arcade_back", self.box((uc, PL + G / 2, vg + 0.01), (w / 2 - 0.03, G / 2, 0.015)),
+                     self.plaster + "_shade", priority=2)
+        y = PL + G
+        levels = [(PL, y, vf)]
+        for fh in self.floors[1:]:
+            self.add("walls", self.box((uc, y + fh / 2, (vb + vf) / 2), (w / 2, fh / 2, (vf - vb) / 2)), self.plaster)
+            levels.append((y, y + fh, vf))
+            y += fh
+        E = y
+        # string courses and the cornice
+        for (ya, _, _) in levels[1:]:
+            self.course(ya + 0.02, vf)
+        self.course(E - 0.04, vf, big=True)
+        # quoins on the two front corners
+        k, yq = 0, PLH + 0.1
+        while yq < E - 0.25:
+            for su in (-1, 1):
+                long_ = (k % 2 == 0)
+                hu = 0.2 if long_ else 0.12
+                self.add("quoins", self.box((uc + su * (w / 2 - hu + 0.02), yq + 0.15, vf + 0.015), (hu, 0.15, 0.03)),
+                         "sill_mat")
+            k += 1
+            yq += 0.34
+        # ground floor: an arcade of round arches, or a portal
+        if self.arcade:
+            nb = max(1, round(w / 0.85))
+            bw = w / nb
+            spring = min(1.55, PL + G - bw / 2 - 0.35) - PL
+            for i in range(nb + 1):
+                pu = u0 + i * bw
+                pu = min(max(pu, u0 + 0.12), u1 - 0.12)
+                self.add("pillars", self.box((pu, PL + (spring + 0.05) / 2, vf - 0.12), (0.12, (spring + 0.05) / 2, 0.12)),
+                         "sill_mat")
+                self.add("pillars", self.box((pu, PL + spring + 0.06, vf - 0.12), (0.16, 0.05, 0.15)), "sill_mat")
+            for i in range(nb):
+                cu = u0 + (i + 0.5) * bw
+                hb = bw / 2 - 0.12
+                poly = [[-hb - 0.12, G], [hb + 0.12, G], [hb + 0.12, spring]]
+                poly += [[hb * math.cos(math.radians(a)), spring + hb * math.sin(math.radians(a))] for a in range(0, 181, 15)]
+                poly += [[-hb - 0.12, spring]]
+                self.ext_front("spandrels", self.plaster, cu, PL, vf - 0.12, poly, 0.24)
+                self.add("keystones", self.box((cu, PL + spring + hb + 0.05, vf + 0.01), (0.07, 0.1, 0.03)), "sill_mat")
+            # flagstones under the arcade, the door and a shop window in the shade at the back
+            self.add("arcade_floor", self.box((uc, PL - 0.02, vf - self.AD / 2), (w / 2 - 0.03, 0.025, self.AD / 2)),
+                     "flags")
+            du = self.door_u if self.door_u is not None else (u0 + 0.5 if w > 1.4 else uc)
+            if self.gate:
+                self.portal(du, vg, PL, gate=True, frame="stone_shade")
+            else:      # a plank door in the shade, a lantern on a bracket
+                self.add("door", self.box((du, PL + 0.62, vg + 0.03), (0.28, 0.62, 0.03)), "door_wood")
+                self.add("door_line", self.box((du, PL + 0.62, vg + 0.07), (0.018, 0.57, 0.02)), "ink")
+            self.arms_at(uc, PL + G + 0.62 if not self.bay else PL + G - 0.28, vf)
+        else:
+            du = self.door_u if self.door_u is not None else (u0 + 0.5 if w > 1.4 else uc)
+            top = self.portal(du, vf, PL, gate=self.gate)
+            self.arms_at(du, PL + top + 0.32, vf)
+            if w > 1.4:
+                ux = u1 - 0.5 if du < uc else u0 + 0.5
+                self.window_rich(vf, ux, PL + 0.75, 0.46, 0.85)
+                # a shop counter under the window: a shutter let down on chains
+                self.add("counter", self.box((ux, PL + 0.62, vf + 0.16), (0.3, 0.03, 0.16)), "door_wood")
+        # upper floors: cross windows (the bay takes the middle of the first two floors)
+        for li, (ya, yb, v) in enumerate(levels[1:], start=1):
+            nwin = 3 if w > 2.15 else (2 if w > 1.42 else 1)
+            cs = [u0 + w * (i + 0.5) / nwin for i in range(nwin)]
+            for c in cs:
+                if self.bay and li <= 2 and abs(c - uc) < w / (2 * nwin) + 1e-6 and nwin != 2:
+                    continue
+                if self.bay and nwin == 2 and li <= 2:
+                    c = u0 + 0.3 if c < uc else u1 - 0.3
+                self.window_rich(v, c, ya + 0.42, 0.4 if nwin > 1 else 0.5, min(0.95, (yb - ya) - 0.75))
+        if self.bay:
+            self.oriel_bay(levels)
+        if self.gable == "tower":
+            self.paint_walls()
+            return self.oriel(uc, vf, E)
+        R = self.gables(E, vf)
+        self.paint_walls()
+        # side walls: courses where they may show, framed windows where a street passes
+        for side in ("-u", "+u"):
+            if side not in self.side_frame and side not in self.side_windows:
+                continue
+            s = -1 if side == "-u" else 1
+            u = (u0 if s < 0 else u1)
+            for (ya, yb, _) in levels[1:]:
+                self.course_side(u, s, ya + 0.02, vb, vf)
+            self.course_side(u, s, E - 0.04, vb, vf, big=True)
+            if side in self.side_windows:
+                span = vf - vb
+                nb = max(2, round(span / 1.1))
+                for (ya, yb, _) in levels:
+                    for i in range(nb):
+                        vw = vb + span * (i + 0.5) / nb
+                        if ya <= PL + 1e-6 and i == nb - 1 and self.arcade:
+                            continue
+                        self.window_side_rich(u, s, vw, ya + (0.55 if ya > PL else 0.7), 0.38, min(0.85, yb - ya - 0.75))
+        if self.back_detail:
+            self.back_rich(levels, E, R)
+        self.roof_and_chimney(E, R, vf)
+        return self.finish()
+
+    def oriel_bay(self, levels):
+        """A stone oriel on a corbel over the first two upper floors, cross windows, a lead roof."""
+        uc, vf = self.uc, self.vf
+        bw, D = min(0.86, self.w * 0.42), 0.34
+        y0 = levels[1][0] + 0.12
+        y1 = levels[min(2, len(levels) - 1)][1] - 0.15
+        self.add("bay", self.box((uc, (y0 + y1) / 2, vf + D / 2), (bw / 2, (y1 - y0) / 2, D / 2)), self.plaster, priority=2)
+        self.add("bay_courses", self.box((uc, y0 + 0.03, vf + D / 2 + 0.02), (bw / 2 + 0.04, 0.05, D / 2 + 0.04)), "sill_mat")
+        self.add("bay_courses", self.box((uc, y1 - 0.03, vf + D / 2 + 0.02), (bw / 2 + 0.04, 0.05, D / 2 + 0.04)), "sill_mat")
+        self.add("bay_corbel", {"cone": {"a": self.pt(uc, y0 - 0.7, vf + 0.04), "b": self.pt(uc, y0, vf + D / 2),
+                                         "r": [0.06, bw / 2]}}, "sill_mat")
+        for (ya, yb, _) in levels[1:3]:
+            self.window_rich(vf + D, uc, max(ya, y0) + 0.35, bw - 0.3, min(0.85, yb - max(ya, y0) - 0.65))
+        self.add("bay_roof", self.box((uc, y1 + 0.18, vf + D / 2 - 0.02), (bw / 2 + 0.05, 0.035, D / 2 + 0.14),
+                                      rot=self.rot_u(-0.55)), "lead")
+
+    def paint_walls(self):
+        for nm in ("walls", "walls_ground", "gable", "show_gable", "spandrels", "bay"):
+            p = self.parts.get(f"{self.n}_{nm}")
+            if p is None:
+                continue
+            mat = p["material"].replace("_shade", "")
+            if mat.startswith("brick"):
+                p.setdefault("paint", []).append({"material": "brick_line", "stripes": {"axis": "y", "period": 0.13,
+                                                                                        "width": 0.055}})
+            elif mat.startswith("ashlar"):
+                p.setdefault("paint", []).append({"material": mat + "_line", "stripes": {"axis": "y", "period": 0.3,
+                                                                                         "width": 0.055, "offset": 0.05}})
+                p["paint"].append({"material": mat + "_line", "spots": {"scale": 0.22, "density": 0.12,
+                                                                         "seed": sum(map(ord, self.n)) % 31}})
+
+    def back_rich(self, levels, E, R):
+        """The back wall: framed windows, a plain back door, string courses, a gable window."""
+        uc, w, v = self.uc, self.w, self.vb
+        u0, u1 = uc - w / 2, uc + w / 2
+        for (ya, yb, _) in levels:
+            ground = ya <= PL + 1e-6
+            nwin = 1 if (ground or w < 1.42) else 2
+            cs = [u1 - 0.5] if ground else [u0 + w * (i + 0.5) / nwin for i in range(nwin)]
+            for c in cs:
+                if ground and w < 1.2:
+                    break
+                self.window_rich(v, c, ya + (0.7 if ground else 0.42), 0.38, min(0.8, yb - ya - 0.75), sgn=-1)
+            if ground:
+                du = u0 + 0.45
+                self.add("door", self.box((du, ya + 0.7, v - 0.01), (0.26, 0.6, 0.03)), "door_wood")
+                self.add("wframe", self.box((du, ya + 0.72, v + 0.005), (0.33, 0.66, 0.02)), "sill_mat")
+            else:
+                self.course(ya + 0.02, v, sgn=-1)
+        self.course(E - 0.04, v, sgn=-1, big=True)
+        if self.gable != "tower" and R > 0.9:
+            self.window_rich(v, uc, E + 0.25, 0.28, 0.45, sgn=-1)
+
+
 def r4p(pts):
     return [r4(p) for p in pts]
 
@@ -426,7 +797,9 @@ def materials():
     }
     for p in PLASTERS:
         m[p] = {"ramp": p}
-    for r in ("tile", "slate"):
+    m["groundstone"] = {"ramp": "stone", "bands": [2, 4]}
+    m["groundstone_dark"] = {"ramp": "stone", "bands": [1, 2], "outline": False}
+    for r in ("tile", "slate", "tile_brown", "shingle_roof", "copper", "graphite"):
         m[r] = {"ramp": r, "bands": [2, 4]}
         m[r + "_light"] = {"ramp": r, "bands": [3, 5]}
         m[r + "_dark"] = {"ramp": r, "bands": [0, 1], "outline": False}
@@ -438,9 +811,11 @@ def plot_parts():
                      "paint": [{"material": "cobble_dark", "spots": {"scale": 0.09, "density": 0.35, "seed": 3}}]}}
 
 
-def row(widths, vfs, floors, plasters, roofs, end=None, extra=None):
-    """Houses side by side across the plot (orient z), from -x (side b) to +x (side a)."""
-    lo, hi = -H + GAP, H - GAP
+def row(widths, vfs, floors, plasters, roofs, end=None, extra=None, cls=None):
+    """Houses side by side across the plot (orient z), from -x (side b) to +x (side a). The
+    patricians' plots (cls RichHouse) touch their neighbours (ART_SPEC 7), the burghers' keep a gap."""
+    gap = 0.015 if cls is RichHouse else GAP
+    lo, hi = -H + gap, H - gap
     scale = (hi - lo) / sum(widths)
     widths = [w * scale for w in widths]
     houses = []
@@ -448,9 +823,12 @@ def row(widths, vfs, floors, plasters, roofs, end=None, extra=None):
     for i, w in enumerate(widths):
         sw = ("-u",) if (end in ("b", "both") and i == 0) else ()
         sf = ("-u", "+u") if (end in ("a", "both") and i == len(widths) - 1) else ("-u",)
-        houses.append(House(f"h{i}", "z", u + w / 2, w, -H + 0.16, vfs[i], floors[i], plasters[i], roofs[i],
-                            side_windows=sw, side_frame=sf, chimney=0.3 + 0.15 * (i % 2),
-                            **((extra or [{}] * len(widths))[i])))
+        h = (cls or House)(f"h{i}", "z", u + w / 2, w, -H + 0.16, vfs[i], floors[i], plasters[i], roofs[i],
+                           side_windows=sw, side_frame=sf, chimney=0.3 + 0.15 * (i % 2),
+                           **((extra or [{}] * len(widths))[i]))
+        if cls is not RichHouse:      # burghers: jettied at the sides too, every other one with a dormer
+            h.sj, h.dormer = SJ, i % 2 == 0
+        houses.append(h)
         u += w
     return houses
 
@@ -458,24 +836,24 @@ def row(widths, vfs, floors, plasters, roofs, end=None, extra=None):
 FRAGMENTS = {
     # heights differ in one plot: 2 or 3 storeys, different floor heights and roof pitches, show gables
     "middle": lambda: row([1.55, 1.5, 1.45], [1.98, 1.84, 2.03], [[2.0, 1.75], [2.0, 1.75, 1.6], [1.9, 1.85]],
-                          ["plaster_cream", "plaster_ochre", "plaster_pink"], ["tile", "slate", "tile"],
+                          ["plaster_cream", "plaster_ochre", "plaster_pink"], ["tile", "tile_brown", "tile"],
                           extra=[{"pitch": 57}, {"gable": "curved", "pitch": 60}, {"gable": "stepped", "pitch": 63}]),
     "end_a": lambda: row([2.0, 2.3], [1.94, 2.02], [[2.0, 1.8, 1.6], [2.0, 1.7]],
                          ["plaster_cream", "plaster_pink"], ["tile", "tile"], end="a",
                          extra=[{"gable": "stepped", "pitch": 58}, {"pitch": 52}]),
     "end_b": lambda: row([2.15, 2.15], [1.9, 2.02], [[2.0, 1.8], [2.0, 1.85, 1.6]],
-                         ["plaster_cream", "plaster_blue"], ["slate", "tile"], end="b",
+                         ["plaster_cream", "plaster_blue"], ["shingle_roof", "tile"], end="b",
                          extra=[{"pitch": 55}, {"gable": "curved", "pitch": 58}]),
     # more row variants (owner 2026-11-09): plastered fronts, more storeys, other gables
     "middle_2": lambda: row([2.4, 1.9], [1.95, 2.03], [[2.0, 1.8, 1.65], [2.0, 1.8]],
-                            ["plaster_ochre", "plaster_cream"], ["tile", "slate"],
+                            ["plaster_ochre", "plaster_cream"], ["tile", "tile_brown"],
                             extra=[{"gable": "curved", "pitch": 56, "front_frame": False}, {"pitch": 54}]),
     "middle_3": lambda: row([1.4, 1.65, 1.45], [2.0, 1.86, 1.96], [[2.0, 1.75, 1.6], [1.9, 1.8], [2.0, 1.95]],
-                            ["plaster_pink", "plaster_cream", "plaster_blue"], ["tile", "tile", "slate"],
+                            ["plaster_pink", "plaster_cream", "plaster_blue"], ["tile", "tile", "shingle_roof"],
                             extra=[{"gable": "stepped", "pitch": 62}, {"pitch": 52}, {"gable": "curved", "pitch": 60,
                                                                                      "front_frame": False}]),
     "end_b_2": lambda: row([2.0, 2.3], [2.02, 1.9], [[2.0, 1.8, 1.6], [2.0, 1.75]],
-                           ["plaster_cream", "plaster_ochre"], ["tile", "slate"], end="b",
+                           ["plaster_cream", "plaster_ochre"], ["tile", "tile_brown"], end="b",
                            extra=[{"pitch": 57}, {"gable": "stepped", "pitch": 60, "front_frame": False}]),
     # chamfered corners: the corner house's corner cut at 45 degrees, a narrow bay facing the camera on the cut
     "corner_a": lambda: corner("gate"),
@@ -484,19 +862,22 @@ FRAGMENTS = {
 }
 
 CORNER_LOOKS = {
-    "gate": dict(h0=("plaster_cream", "tile", "stepped"), h1=("plaster_ochre", "tile"), h2=("plaster_cream", "slate"),
+    "gate": dict(h0=("plaster_cream", "tile", "stepped"), h1=("plaster_ochre", "tile"), h2=("plaster_cream", "shingle_roof"),
                  bay=dict(gable="curved", gate=True, front_frame=False)),
-    "tower": dict(h0=("plaster_cream", "slate", "plain"), h1=("plaster_pink", "tile"), h2=("plaster_blue", "tile"),
+    "tower": dict(h0=("plaster_cream", "tile_brown", "plain"), h1=("plaster_pink", "tile"), h2=("plaster_blue", "tile"),
                   bay=dict(gable="tower", front_frame=False)),
-    "shop": dict(h0=("plaster_pink", "tile", "curved"), h1=("plaster_cream", "slate"), h2=("plaster_ochre", "tile"),
+    "shop": dict(h0=("plaster_pink", "tile", "curved"), h1=("plaster_cream", "shingle_roof"), h2=("plaster_ochre", "tile"),
                  bay=dict(gable="stepped", front_frame=True)),
 }
 
 
-def corner(look):
-    """Corner fragment (corner_a: joined at side a (+x) and at the back (-z)) with a chamfered corner."""
-    lk = CORNER_LOOKS[look]
-    h1_floors = [2.0, 1.75, 1.6]
+def corner(look, rich=False):
+    """Corner fragment (corner_a: joined at side a (+x) and at the back (-z)) with a chamfered corner.
+    rich: the patricians' corner (hut level 3: RichHouse, CORNER_LOOKS3, taller floors)."""
+    lk = (CORNER_LOOKS3 if rich else CORNER_LOOKS)[look]
+    Hs = RichHouse if rich else House
+    h1_floors = [2.4, 1.95, 1.8] if rich else [2.0, 1.75, 1.6]
+    xk = lk.get("extra", {}) if rich else {}
     h1_vf = H - GAP - 0.2
     h1_uc, h1_w = (-0.05 + H - 0.04) / 2 - 0.05, (H - 0.04) + 0.05 - 0.1
     cx, cz = -(h1_vf + 2 * JETTY), h1_uc + h1_w / 2         # the corner's outer point (x, z)
@@ -506,34 +887,35 @@ def corner(look):
     mid = (cx + leg / 2, cz - leg / 2)
     chamfer = [{"plane": {"n": n, "at": round(at, 4)}}]
     plaster0, roof0, gable0 = lk["h0"]
-    bay_roof = lk["h1"][1] if look != "tower" else "slate"
+    bay_roof = lk["h1"][1] if look != "tower" else ("slate" if rich else "shingle_roof")
+    plain = "masonry" if rich else "plain"
     return [
-        House("h0", "z", (0.02 + H - GAP) / 2, (H - GAP) - 0.02, -H + 0.16, 1.98, [2.0, 1.8], plaster0, roof0,
-              side_frame=("-u",), gable=gable0, pitch=56),
-        House("h1", "mx", h1_uc, h1_w, -0.02, h1_vf, h1_floors, lk["h1"][0], lk["h1"][1], side_windows=("+u",),
-              side_frame=(), chimney=0.2, gable="plain", pitch=58, cuts=chamfer),
-        House("hc", -45.0, 0.0, leg * 1.4142, -1.0, 0.0, h1_floors, lk["h1"][0], bay_roof, side_frame=(),
-              chimney=None, pitch=60, origin=mid, **lk["bay"]),
-        House("h2", "mx", (-H + 0.16 - 0.05) / 2, (H - 0.16) - 0.05, -0.02, H - GAP - 0.14, [2.0, 1.7],
-              lk["h2"][0], lk["h2"][1], side_frame=(), chimney=0.35, pitch=62),
+        Hs("h0", "z", (0.02 + H - GAP) / 2, (H - GAP) - 0.02, -H + 0.16, 1.98, [2.4, 1.95] if rich else [2.0, 1.8],
+           plaster0, roof0, side_frame=("-u",), gable=gable0, pitch=56, **xk.get("h0", {})),
+        Hs("h1", "mx", h1_uc, h1_w, -0.02, h1_vf, h1_floors, lk["h1"][0], lk["h1"][1], side_windows=("+u",),
+           side_frame=(), chimney=0.2, gable=plain, pitch=58, cuts=chamfer, **xk.get("h1", {})),
+        Hs("hc", -45.0, 0.0, leg * 1.4142, -1.0, 0.0, h1_floors, lk["h1"][0], bay_roof, side_frame=(),
+           chimney=None, pitch=60, origin=mid, **lk["bay"]),
+        Hs("h2", "mx", (-H + 0.16 - 0.05) / 2, (H - 0.16) - 0.05, -0.02, H - GAP - 0.14, [2.4, 1.9] if rich else [2.0, 1.7],
+           lk["h2"][0], lk["h2"][1], side_frame=(), chimney=0.35, pitch=62, gable=plain, **xk.get("h2", {})),
     ]
 
 
 C, O, P_, B = "plaster_cream", "plaster_ochre", "plaster_pink", "plaster_blue"
 # The game's set (owner 2026-11-09: the burgher houses go into the game): level 2 pieces x 3 looks.
 GAME = {
-    ("single", 1): lambda: row([2.2, 2.1], [1.96, 2.02], [[2.0, 1.8, 1.6], [2.0, 1.75]], [P_, C], ["tile", "slate"],
+    ("single", 1): lambda: row([2.2, 2.1], [1.96, 2.02], [[2.0, 1.8, 1.6], [2.0, 1.75]], [P_, C], ["tile", "tile_brown"],
                                end="both", extra=[{"gable": "stepped", "pitch": 58}, {"pitch": 54}]),
     ("single", 2): lambda: row([1.5, 1.45, 1.5], [2.0, 1.88, 1.98], [[2.0, 1.8], [2.0, 1.75, 1.6], [1.9, 1.85]],
-                               [C, B, O], ["tile", "tile", "slate"], end="both",
+                               [C, B, O], ["tile", "tile", "shingle_roof"], end="both",
                                extra=[{"pitch": 58}, {"gable": "curved", "pitch": 60}, {"pitch": 61}]),
-    ("single", 3): lambda: row([2.3, 2.0], [1.92, 2.03], [[2.0, 1.85], [2.0, 1.8, 1.6]], [O, C], ["slate", "tile"],
+    ("single", 3): lambda: row([2.3, 2.0], [1.92, 2.03], [[2.0, 1.85], [2.0, 1.8, 1.6]], [O, C], ["tile_brown", "tile"],
                                end="both", extra=[{"gable": "curved", "pitch": 57, "front_frame": False}, {"pitch": 56}]),
     ("end_a", 1): FRAGMENTS["end_a"],
     ("end_a", 2): lambda: row([1.5, 1.5, 1.4], [1.9, 2.02, 1.95], [[2.0, 1.85], [2.0, 1.75, 1.6], [2.0, 1.8]],
-                              [B, C, P_], ["slate", "tile", "tile"], end="a",
+                              [B, C, P_], ["shingle_roof", "tile", "tile"], end="a",
                               extra=[{"pitch": 60}, {"gable": "stepped", "pitch": 62}, {"pitch": 55}]),
-    ("end_a", 3): lambda: row([2.1, 2.2], [2.02, 1.92], [[2.0, 1.8], [2.0, 1.8, 1.6]], [C, O], ["tile", "slate"],
+    ("end_a", 3): lambda: row([2.1, 2.2], [2.02, 1.92], [[2.0, 1.8], [2.0, 1.8, 1.6]], [C, O], ["tile", "tile_brown"],
                               end="a", extra=[{"pitch": 55}, {"gable": "curved", "pitch": 58, "front_frame": False}]),
     ("middle", 1): FRAGMENTS["middle"],
     ("middle", 2): FRAGMENTS["middle_2"],
@@ -541,7 +923,7 @@ GAME = {
     ("end_b", 1): FRAGMENTS["end_b"],
     ("end_b", 2): FRAGMENTS["end_b_2"],
     ("end_b", 3): lambda: row([1.45, 1.5, 1.5], [1.95, 2.02, 1.88], [[2.0, 1.75], [2.0, 1.85, 1.6], [2.0, 1.8]],
-                              [O, C, P_], ["tile", "slate", "tile"], end="b",
+                              [O, C, P_], ["tile", "shingle_roof", "tile"], end="b",
                               extra=[{"pitch": 59}, {"gable": "stepped", "pitch": 61}, {"pitch": 54}]),
     ("corner_a", 1): lambda: corner("gate"),
     ("corner_a", 2): lambda: corner("tower"),
@@ -553,16 +935,75 @@ GAME = {
 }
 
 
-def game_names():
+AS, AG, BR = "ashlar_sand", "ashlar_grey", "brick_wall"
+R3 = RichHouse
+F3, F3b, F4 = [2.4, 1.95, 1.8], [2.4, 1.9], [2.4, 1.9, 1.75]
+# The patricians' set (hut level 3, G3 part 4a, owner's survey 2026-11-13: rich, of stone): ashlar and
+# brick, arcades, portals with coats of arms, oriels, stepped and curved gables; 6 pieces x 3 looks.
+GAME3 = {
+    ("single", 1): lambda: row([2.2, 2.1], [2.0, 1.96], [F3, F3b], [AS, BR], ["slate", "copper"], end="both", cls=R3,
+                               extra=[{"gable": "stepped", "pitch": 58, "arcade": True},
+                                      {"pitch": 55, "bay": True, "arms": "blue"}]),
+    ("single", 2): lambda: row([2.1, 2.2], [2.0, 1.94], [F3b, F3], [AG, AS], ["graphite", "slate"],
+                               end="both", cls=R3, extra=[{"gable": "curved", "pitch": 60, "arcade": True},
+                                                          {"gable": "stepped", "pitch": 58, "arcade": True,
+                                                           "arms": "green"}]),
+    ("single", 3): lambda: row([2.3, 2.0], [1.96, 2.02], [F3b, F3], [BR, AG], ["copper", "slate"], end="both", cls=R3,
+                               extra=[{"gable": "stepped", "pitch": 57, "bay": True}, {"gable": "curved", "pitch": 58,
+                                                                                      "arms": "blue"}]),
+    ("end_a", 1): lambda: row([2.0, 2.3], [1.96, 2.02], [F3, F3b], [AS, BR], ["slate", "graphite"], end="a", cls=R3,
+                              extra=[{"gable": "stepped", "pitch": 58, "arcade": True}, {"pitch": 54, "bay": True}]),
+    ("end_a", 2): lambda: row([2.2, 2.1], [1.96, 2.02], [F3, F3b], [BR, AS], ["copper", "slate"],
+                              end="a", cls=R3, extra=[{"pitch": 57, "arcade": True},
+                                                      {"gable": "curved", "pitch": 59, "arcade": True, "arms": "blue"}]),
+    ("end_a", 3): lambda: row([2.1, 2.2], [2.02, 1.96], [F3b, F3], [AG, BR], ["slate", "graphite"], end="a", cls=R3,
+                              extra=[{"pitch": 55, "arms": "green"}, {"gable": "stepped", "pitch": 58, "bay": True}]),
+    ("middle", 1): lambda: row([2.2, 2.1], [1.98, 2.02], [F3, F3b], [BR, AS], ["copper", "slate"], cls=R3,
+                               extra=[{"gable": "stepped", "pitch": 59, "arcade": True},
+                                      {"gable": "curved", "pitch": 57, "arcade": True, "arms": "blue"}]),
+    ("middle", 2): lambda: row([2.15, 2.15], [2.0, 1.94], [F3, F3b], [AG, BR], ["slate", "graphite"],
+                               cls=R3, extra=[{"pitch": 58, "arcade": True, "arms": "green"},
+                                              {"gable": "stepped", "pitch": 60, "arcade": True}]),
+    ("middle", 3): lambda: row([2.3, 2.0], [1.96, 2.02], [F3b, F3], [AS, BR], ["copper", "slate"], cls=R3,
+                               extra=[{"gable": "curved", "pitch": 56, "bay": True}, {"pitch": 58, "arms": "blue"}]),
+    ("end_b", 1): lambda: row([2.15, 2.15], [1.98, 2.02], [F3b, F3], [BR, AG], ["slate", "graphite"], end="b", cls=R3,
+                              extra=[{"pitch": 55, "bay": True, "arms": "green"}, {"gable": "curved", "pitch": 58,
+                                                                                   "arcade": True}]),
+    ("end_b", 2): lambda: row([2.0, 2.3], [2.02, 1.96], [F3, F3b], [AS, BR], ["copper", "slate"], end="b", cls=R3,
+                              extra=[{"gable": "stepped", "pitch": 58, "arcade": True}, {"pitch": 55, "arcade": True,
+                                                                                         "arms": "blue"}]),
+    ("end_b", 3): lambda: row([2.1, 2.2], [1.98, 2.02], [F3, F3b], [AG, BR], ["graphite", "slate"],
+                              end="b", cls=R3, extra=[{"pitch": 57, "bay": True}, {"gable": "curved", "pitch": 58,
+                                                                                    "arms": "blue"}]),
+    ("corner_a", 1): lambda: corner("gate", rich=True),
+    ("corner_a", 2): lambda: corner("tower", rich=True),
+    ("corner_a", 3): lambda: corner("shop", rich=True),
+    ("corner_b", 1): lambda: corner("shop", rich=True),
+    ("corner_b", 2): lambda: corner("gate", rich=True),
+    ("corner_b", 3): lambda: corner("tower", rich=True),
+}
+
+CORNER_LOOKS3 = {
+    "gate": dict(h0=(AS, "slate", "stepped"), h1=(BR, "copper"), h2=(AG, "slate"),
+                 bay=dict(gable="curved", gate=True), extra={"h0": {"arcade": True}, "h2": {"arms": "blue"}}),
+    "tower": dict(h0=(BR, "graphite", "curved"), h1=(AS, "slate"), h2=(BR, "copper"),
+                  bay=dict(gable="tower"), extra={"h0": {"arcade": True, "arms": "green"}}),
+    "shop": dict(h0=(AG, "graphite", "stepped"), h1=(AS, "copper"), h2=(AG, "slate"),
+                 bay=dict(gable="stepped"), extra={"h0": {"bay": True}, "h2": {"arcade": True}}),
+}
+
+
+def game_names(level=2):
     out = []
-    for (frag, n) in GAME:
+    for (frag, n) in (GAME if level == 2 else GAME3):
         for back in (False, True):
-            out.append(f"l2_{frag}" + (f"_{n}" if n > 1 else "") + ("_back" if back else ""))
+            out.append(f"l{level}_{frag}" + (f"_{n}" if n > 1 else "") + ("_back" if back else ""))
     return out
 
 
 def game_houses(name):
-    """l2_<piece>[_<look>][_back] -> houses: corner_b mirrored in x, the back views mirrored in z with back walls."""
+    """l2_<piece>[_<look>][_back] (or l3_: the patricians) -> houses: corner_b mirrored in x, the back views
+    mirrored in z with back walls."""
     rest = name[3:]
     back = rest.endswith("_back")
     if back:
@@ -570,7 +1011,7 @@ def game_houses(name):
     n = 1
     if rest[-2:] in ("_2", "_3"):
         n, rest = int(rest[-1]), rest[:-2]
-    houses = GAME[(rest, n)]()
+    houses = (GAME3 if name.startswith("l3_") else GAME)[(rest, n)]()
     for h in houses:
         h.mx = -1 if rest == "corner_b" else 1
         h.mz = -1 if back else 1
@@ -582,10 +1023,52 @@ def game_houses(name):
     return houses
 
 
+RAMPS3 = {
+    "ashlar_sand": ["#1c160e", "#4a3c28", "#7a6648", "#a89070", "#cab490", "#e4d4b0"],
+    "ashlar_grey": ["#141414", "#383836", "#5c5a56", "#82807a", "#a6a49c", "#c8c6bc"],
+    "herald_red": ["#2a0606", "#6a1412", "#a42620", "#cc4434"],
+    "herald_blue": ["#060c22", "#142456", "#24408a", "#4062b4"],
+    "herald_green": ["#061a0c", "#14421e", "#246a30", "#3e9048"],
+}
+
+
+def materials3():
+    """The patricians' extra materials (hut level 3)."""
+    m = {"brick_wall": {"ramp": "brick", "bands": [2, 4]}, "brick_wall_shade": {"ramp": "brick", "bands": [0, 1]},
+         "brick_line": {"ramp": "brick", "bands": [0, 1], "outline": False},
+         "plinth_stone": {"ramp": "stone", "bands": [2, 4]}, "flags": {"ramp": "cobble", "bands": [2, 4], "outline": False},
+         "gold_trim": {"ramp": "gold", "bands": [3, 5], "finish": "metal"}, "iron_band": {"ramp": "steel", "bands": [1, 2]},
+         "stone_joint": {"ramp": "stone", "bands": [0, 1], "outline": False}, "lead": {"ramp": "slate", "bands": [2, 4]},
+         "stone_shade": {"ramp": "stone", "bands": [0, 2]}}
+    for r in ("ashlar_sand", "ashlar_grey"):
+        m[r] = {"ramp": r, "bands": [2, 5]}
+        m[r + "_shade"] = {"ramp": r, "bands": [0, 1]}
+        m[r + "_line"] = {"ramp": r, "bands": [1, 2], "outline": False}
+    for c in ("red", "blue", "green"):
+        m["herald_" + c] = {"ramp": "herald_" + c, "bands": [1, 3]}
+    return m
+
+
 def spec(frag):
     parts = plot_parts()
-    for h in (game_houses(frag) if frag.startswith("l2_") else FRAGMENTS[frag]()):
+    for h in (game_houses(frag) if frag.startswith(("l2_", "l3_")) else FRAGMENTS[frag]()):
         parts.update(h.build())
+    if frag.startswith("l3_"):
+        s = spec_base(frag, parts)
+        s["brief"]["summary"] = (f"Your Kingdom patrician townhouses (hut level 3, G3 part 4a), fragment {frag} of a row on "
+                                 "a 2x2 plot: tall houses of ashlar and brick, arcades, stone portals with coats of arms, "
+                                 "oriels, stepped and curved gables, tiled or slate roofs")
+        s["materials"].update(materials3())
+        rest = {k: v for k, v in s.items() if k not in ("palette", "camera")}
+        out = {k: s[k] for k in ("spritekiln", "name", "render", "kind", "size", "directions", "palette", "camera",
+                                 "shadow")}
+        out["ramps"] = RAMPS3
+        out.update({k: v for k, v in rest.items() if k not in out})
+        return out
+    return spec_base(frag, parts)
+
+
+def spec_base(frag, parts):
     return {
         "spritekiln": 1,
         "name": f"townhouse_{frag}",
@@ -612,6 +1095,8 @@ def main():
     frags = sys.argv[1:] or list(FRAGMENTS)
     if frags == ["game"]:
         frags = game_names()
+    elif frags == ["game3"]:
+        frags = game_names(3)
     for f in frags:
         d = os.path.join(OUT, f"townhouse_{f}")
         os.makedirs(d, exist_ok=True)

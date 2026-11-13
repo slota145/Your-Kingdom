@@ -1461,7 +1461,7 @@ msgid "ui.stocks.title"
 msgstr "Kingdom stocks"
 
 msgid "ui.stocks.hint"
-msgstr "Stocks add up storages, stacks by buildings, pigsties, stalls and the ground. Made and used per minute are averages of the last 5 minutes. Tick a good and the travelling merchant and the sea merchant buy everything above the number. In the last column you set how many planks, how much tar and cloth to buy from the sea merchant."
+msgstr "Stocks add up storages, stacks by buildings, pigsties, stalls and the ground. Made and used per minute are averages of the last 5 minutes. Tick a good and the travelling merchant and the sea merchant buy everything above the number. In the \"Limit\" column you set the most of a good you want: at that number the workshops making it stop. In the last column you set how many planks, how much tar and cloth to buy from the sea merchant."
 
 msgid "ui.stocks.good"
 msgstr "Good"
@@ -4804,3 +4804,32 @@ msgstr "These barracks train only archers and spearmen."
 
 msgid "ui.command_error.retired"
 msgstr "These barracks are no longer built."
+
+# --- E5: goods limits ---
+
+msgid "ui.stocks.limit"
+msgstr "Limit"
+
+msgid "ui.stocks.limit_hint"
+msgstr "Once the stock reaches this number, workshops and buildings making the good (e.g. the sawmill, the woodcutter) stop, and start again by themselves when the stock drops. Fields, orchards and pens go on. Untick to remove the limit."
+
+msgid "ui.stocks.limit_reached"
+msgstr "Limit reached: the buildings making this good are waiting."
+
+msgid "ui.limit.of"
+msgstr "Limit: %s"
+
+msgid "ui.limit.hint"
+msgstr "Once the province's stock (storages, stacks, stalls and the ground) reaches this number, the buildings making this good stop, and start again by themselves when it drops. Untick to remove the limit. The same is set in the \"Kingdom stocks\" window."
+
+msgid "ui.limit.stopped"
+msgstr "Stopped: the stock of \"%s\" reached its limit (%d)."
+
+msgid "ui.doing.goods_limit"
+msgstr "waiting: the stock of \"%s\" reached its limit (%d)"
+
+msgid "ui.reason.goods_limit"
+msgstr "the stock reached its limit"
+
+msgid "ui.command_error.not_limited"
+msgstr "Animals have no limit."

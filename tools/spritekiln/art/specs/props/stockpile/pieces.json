@@ -1,0 +1,1 @@
+{"shed_a_back": {"offset": [0, -1], "footprint": [4, 1]}, "shed_b_back": {"offset": [-1, 0], "footprint": [1, 4]}, "shed_a_front": {"offset": [0, 0], "footprint": [4, 1]}, "shed_b_front": {"offset": [0, 1], "footprint": [1, 3]}}

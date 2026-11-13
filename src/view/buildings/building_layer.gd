@@ -15,6 +15,8 @@ const MIRROR_SUFFIX := "@m"
 ## Opacity of the placement preview building.
 const GHOST_ALPHA := 0.6
 
+## Pieces of a yard's shed, back ones first (_add_yard_pieces).
+const YARD_PIECES: Array[String] = ["shed_a_back", "shed_b_back", "shed_a_front", "shed_b_front"]
 ## Art path -> whether the file exists.
 static var _exists: Dictionary[String, bool] = {}
 
@@ -170,13 +172,14 @@ func _build(building: BuildingState, key: String) -> void:
 	holder.y_sort_enabled = true
 	add_child(holder)
 	_views[building.id] = holder
-	if key == "yard":
-		var yard := StockpileView.new()
-		holder.add_child(yard)
-		yard.setup(building)
-		_stockpiles.append(yard)
-	else:
-		for art: String in key.split("|"):
+	for art: String in key.split("|"):
+		if art == "yard":
+			var yard := StockpileView.new()
+			holder.add_child(yard)
+			yard.setup(building)
+			_stockpiles.append(yard)
+			_add_yard_pieces(holder, building)
+		else:
 			add_art(holder, art, building.origin)
 	if building.def.is_port() and building.def.quay_slots > 0 and building.is_complete():
 		var quay := QuayYard.new()
@@ -189,6 +192,26 @@ func _build(building: BuildingState, key: String) -> void:
 		pile.position = IsoMath.tile_center_screen(building.door_front_tile())
 		holder.add_child(pile)
 		_site_piles[building.id] = pile
+
+
+## G3 part 4b: a yard's roofed shed (the warehouse), drawn as pieces each sorted on its own
+## footprint (`offset` in tiles from the yard's origin, in its .json), so the goods stacks sort
+## between them: the back walls behind every stack, the posts and the roof in front of the back
+## row only. Mirrored yards (orientation 1) swap the offsets like the art.
+func _add_yard_pieces(holder: Node2D, building: BuildingState) -> void:
+	var visual := BuildingVisualDef.for_building(building.def.id)
+	var art_id := visual.art_id if visual != null else String(building.def.id)
+	var mirrored := building.orientation % 2 == 1
+	for piece: String in YARD_PIECES:
+		var art := "buildings/%s/%s" % [art_id, piece]
+		if not _art_exists(art):
+			continue
+		var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(ArtPaths.resolve(art + ".json")))
+		var off: Array = meta.get("offset", [0, 0])
+		var offset := Vector2i(int(off[0]), int(off[1]))
+		if mirrored:
+			offset = Vector2i(offset.y, offset.x)
+		add_art(holder, art + (MIRROR_SUFFIX if mirrored else ""), building.origin + offset)
 
 
 func _drop(id: int) -> void:
