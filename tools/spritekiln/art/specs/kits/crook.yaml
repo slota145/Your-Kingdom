@@ -1,0 +1,26 @@
+spritekiln: 1
+# G3 part 2a. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `crook`, gen_civilians.py).
+kit: crook
+license: CC0-1.0
+summary: "a tall shepherd's crook: a staff from the ground to above the head, hooked at the top"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  crook: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  staff:
+    material: wood
+    space: crook
+    priority: 2
+    prims:
+      - cylinder: {a: [0, -1.05, 0], b: [0, 0.42, 0], r: 0.024}
+      - tube: {pts: [[0, 0.42, 0], [0, 0.56, 0.02], [0, 0.56, 0.14], [0, 0.46, 0.15]], r: [0.024, 0.02]}

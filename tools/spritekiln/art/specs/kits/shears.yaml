@@ -1,0 +1,32 @@
+spritekiln: 1
+# G3 part 2a. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `shears`, gen_civilians.py).
+kit: shears
+license: CC0-1.0
+summary: "a pair of sheep shears, two blades on a sprung bow"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  shears: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  bow:
+    material: steel
+    space: shears
+    priority: 2
+    prims:
+      - cylinder: {a: [0, -0.06, 0], b: [0, 0.06, 0], r: 0.026}
+  blades:
+    material: steel
+    space: shears
+    priority: 2
+    prims:
+      - cone: {a: [0.02, 0.06, 0], b: [0.01, 0.24, 0], r: [0.024, 0.006]}
+      - cone: {a: [-0.02, 0.06, 0], b: [-0.01, 0.24, 0], r: [0.024, 0.006]}

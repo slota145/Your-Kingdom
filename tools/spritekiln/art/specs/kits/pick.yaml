@@ -1,0 +1,33 @@
+spritekiln: 1
+# G3 part 2a. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `pick`, gen_civilians.py).
+kit: pick
+license: CC0-1.0
+summary: "a long-hafted pick with a slightly curved double-pointed iron head"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  pick: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  haft:
+    material: wood
+    space: pick
+    priority: 2
+    prims:
+      - cylinder: {a: [0, -0.12, 0], b: [0, 0.62, 0], r: 0.022}
+  head:
+    material: steel
+    space: pick
+    blend: 0.015
+    prims:
+      - cylinder: {a: [0, 0.58, 0], b: [0, 0.66, 0], r: 0.035}
+      - cone: {a: [0, 0.62, 0], b: [0, 0.56, 0.24], r: [0.03, 0.008]}
+      - cone: {a: [0, 0.62, 0], b: [0, 0.57, -0.2], r: [0.028, 0.01]}

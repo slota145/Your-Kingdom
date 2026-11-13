@@ -13,6 +13,9 @@ ramps:
   hat: ["#1c0908", "#4a1512", "#7c221b", "#a63026", "#c64a34", "#dc7350"]
   apron: ["#1a1610", "#463e30", "#73685a", "#9f927e", "#c4b8a0", "#e2d8c2"]
 
+materials:
+  hair: {ramp: hair}
+
 channels:
   seedbag: 0
 

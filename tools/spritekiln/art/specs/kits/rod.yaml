@@ -1,0 +1,26 @@
+spritekiln: 1
+# G3 part 2a. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `rod`, gen_civilians.py).
+kit: rod
+license: CC0-1.0
+summary: "a long thin fishing rod with a line hanging from the tip"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  rod: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  rod:
+    material: wood
+    space: rod
+    priority: 3
+    min_cover: 1
+    prims:
+      - cone: {a: [0, -0.18, 0], b: [0, 1.1, 0], r: [0.024, 0.01]}

@@ -1,0 +1,31 @@
+spritekiln: 1
+# G3 part 2a. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `knife`, gen_civilians.py).
+kit: knife
+license: CC0-1.0
+summary: "a short knife"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+
+bones:
+  knife: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  grip:
+    material: wood
+    space: knife
+    priority: 2
+    prims:
+      - cylinder: {a: [0, -0.05, 0], b: [0, 0.05, 0], r: 0.022}
+  blade:
+    material: steel
+    space: knife
+    priority: 2
+    prims:
+      - cone: {a: [0, 0.05, 0], b: [0, 0.2, 0.0], r: [0.03, 0.006]}
