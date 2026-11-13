@@ -6,6 +6,29 @@ Format: `- [źródło: gracz/Claude] krótki opis — (opcjonalnie) ocena: koszt
 
 Porządki 2026-11-11: zrealizowane pomysły przeniesione na koniec pliku, w poczekalni zostały tylko otwarte.
 
+## Poprawki właściciela (2026-11-13, do zaplanowania)
+
+Lista z rozmowy po G3 część 2b. **Ankieta 2026-11-13: wszystkie punkty weszły do etapu UI-2 (ROADMAP), decyzje tam.** Oceny zostają tu dla historii.
+
+1. [właściciel] **Budowa drogi z dwóch kliknięć:** pierwsze kliknięcie zaczyna drogę, potem podgląd ciągnie się do kursora, a drugie kliknięcie ją stawia (zamiast „rysowania” po mapie). To samo dla bruku, a może i murów.
+   - Ocena (Claude): koszt mały, tylko narzędzie budowy (widok i interfejs), bez zmian w symulacji. Pytanie do ustalenia: trasa w kształcie „L” (najpierw w jedną stronę, potem w drugą) czy najkrótsza droga omijająca przeszkody. Polecam „L”, bo jest przewidywalne i takie jest w Anno i Twierdzy; prawy przycisk albo Esc anuluje.
+2. [właściciel] **Przezroczyste budynki przy budowaniu:** gdy stawiamy drogę albo budynek za budynkami, te z przodu robią się półprzezroczyste.
+   - Ocena (Claude): koszt mały. Wariant „przezroczystość” był już w planie widoczności za budynkami (ROADMAP M1, wariant a). Przezroczyste tylko budynki zasłaniające kursor (w promieniu kilku kafli), nie wszystkie.
+3. [właściciel] **Zapis, wczytanie, język i powrót do menu w menu pauzy pod Esc** zamiast przycisków na górze ekranu.
+   - Ocena (Claude): koszt mały, czysty interfejs; pasek u góry się odchudza. Esc dziś zdejmuje narzędzie budowy: najpierw zdejmuje narzędzie, a dopiero drugie Esc otwiera menu pauzy (gra stoi, gdy menu jest otwarte).
+4. [właściciel] **Lepszy start kolonizacji:** dziś na początku nie da się nic postawić, bo tragarze najpierw noszą towary ze startu do magazynu, a budowniczy czeka.
+   - Ocena (Claude): prawdopodobna przyczyna: tragarze biorą zlecenia po kolei od najstarszego, więc przenosiny ładunku startowego idą przed budową. Naprawa: zlecenia dla budów mają pierwszeństwo, a budowa może brać prosto z obozu pionierów (nie musi czekać, aż towar trafi do magazynu). Koszt mały do średniego, zmiana w symulacji z testami; trzeba sprawdzić automatycznego gracza i władców (ich czasy budowy się skrócą).
+5. [właściciel] **Pracownik zawsze odkłada wyrób na stos przy swoim budynku**, a do magazynu niosą go tragarze (dziś sadownik i inni noszą sami do magazynu, co obniża wydajność).
+   - Ocena (Claude): stos przy budynku już jest (M4b-2), ale używany tylko przy pełnych magazynach, więc to głównie zmiana reguły. Pasuje do Anno i Twierdzy, a pracownik dłużej pracuje. Ryzyka: więcej pracy dla tragarzy (może ich zabraknąć na starcie), zmiana balansu całej ekonomii (automatyczny gracz, władcy, testy czasów), stos musi pomieścić co najmniej jedną partię. Koszt średni. Warto razem z punktem 4.
+6. [właściciel] **Okno nowej gry z podglądem świata na żywo:** wybór „Nowa gra” otwiera osobne okno, w którym zmiana opcji (wielkość, liczba władców, cechy…) od razu zmienia podgląd tworzonego świata.
+   - Ocena (Claude): koszt średni. Świat losuje się szybko, a mapa świata już jest rysowana, więc podgląd to głównie mały widok mapy w oknie i ponowne losowanie przy każdej zmianie (z tym samym ziarnem, żeby świat nie skakał przy każdym kliknięciu).
+7. [właściciel] **Napisy nachodzą na siebie** w menu budowy i przy otwarciu mapy świata.
+   - Ocena (Claude): to błąd, nie pomysł; do poprawienia od razu (zrzuty z chmury pokażą, gdzie się nakładają, ocena na laptopie w 1920×1080).
+8. [właściciel] **Niektóre budynki w menu budowy mają ikonę z etapu budowy** zamiast gotowego budynku.
+   - Ocena (Claude): błąd, mały koszt; prawdopodobnie ikona czyta zły plik dla budynków ze SpriteKiln. Do poprawienia od razu.
+9. [właściciel] **Ikony zamiast napisów** dla narzędzi: droga, bruk, burzenie itp. (napisy zajmują dużo miejsca).
+   - Ocena (Claude): koszt mały; ikony z podpowiedzią po najechaniu myszą (nazwa i skrót klawisza), żeby nie zgadywać. Ikony narysować w stylu reszty interfejsu.
+
 ## Zamek i wojsko
 
 - [gracz] **Hurdycje na murach:** drewniane galerie na koronie muru kamiennego, następny stopień po blankach (pomysł z „Grubych murów jak w Twierdzy”, których reszta weszła w M7).

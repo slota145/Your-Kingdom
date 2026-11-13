@@ -1,0 +1,33 @@
+spritekiln: 1
+# G3 part 2b. Held in the right fist; the tool runs along the hand frame's +y (the townsfolk
+# turn it in the torso's frame through the bone `book`, gen_civilians.py).
+kit: book
+license: CC0-1.0
+summary: "an open book in red leather, held flat in both hands (the right fist holds its edge)"
+host: humanoid
+at: wrist_R
+params:
+  tilt: 0.4          # lean from the fist when no host turns it (radians about the hand's x)
+
+materials:
+  steel: {ramp: steel, finish: metal}
+  wood: {ramp: wood, finish: matte, bands: [2, 5]}
+  cover: {ramp: wood, bands: [1, 3]}
+  paper: {ramp: bone, bands: [3, 5]}
+
+bones:
+  book: {parent: at, pos: [0, 0, 0.035], rot: "[tilt, 0, 0]"}
+
+parts:
+  cover:
+    material: cover
+    space: book
+    priority: 2
+    prims:
+      - box: {c: [0.12, 0, 0], half: [0.14, 0.014, 0.1]}
+  pages:
+    material: paper
+    space: book
+    priority: 2
+    prims:
+      - box: {c: [0.12, 0.02, 0], half: [0.13, 0.01, 0.09]}

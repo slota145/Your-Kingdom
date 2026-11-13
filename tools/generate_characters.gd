@@ -261,7 +261,14 @@ const ACTIVITIES := {
 ## this script no longer writes them, so a run cannot bring back the old look.
 const SPRITEKILN := ["porter", "farmer", "builder",
 		"woodcutter", "forester", "stonecutter", "miner", "clay_digger", "fisher", "angler", "hunter", "shepherd",
-		"swineherd", "groom", "beekeeper", "orchardist", "hop_grower", "winegrower", "carter", "docker"]
+		"swineherd", "groom", "beekeeper", "orchardist", "hop_grower", "winegrower", "carter", "docker",
+		# G3 part 2b: crafts and the town, and the bandits (since then every person; the soldiers and the
+		# ladderman were already SpriteKiln's, ART_SPEC §10.20)
+		"miller", "baker", "brewer", "mead_maker", "vintner", "sawyer", "blacksmith", "smelter", "armourer",
+		"bowyer", "shipwright", "charcoal_burner", "tar_burner", "brickmaker", "weaver", "tailor", "butcher",
+		"innkeeper", "stallholder", "merchant", "teacher", "scholar", "householder", "settler", "recruit",
+		"bandit", "bandit_archer", "spearman", "archer", "swordsman", "knight", "halberdier", "crossbowman",
+		"man_at_arms", "light_cavalry", "ladderman"]
 
 const CARRY := {
 	"sack": {"hands": [Vector3(3.5, 0.5, 31.0), Vector3(-5.0, 1.0, 17.0)], "anchor": Vector3(4.5, -0.5, 32.0), "behind_camera": false},
@@ -315,7 +322,7 @@ func _init() -> void:
 	var fighters := SOLDIERS.duplicate()
 	fighters.merge(BANDITS)
 	for kind: String in fighters:
-		if not only.is_empty() and kind != only:
+		if (not only.is_empty() and kind != only) or kind in SPRITEKILN:
 			continue
 		_look = fighters[kind]
 		_royal = _look.get("royal", ROYAL)

@@ -54,7 +54,36 @@ const SPRITEKILN_TOWNSFOLK: Dictionary[String, Array] = {
 	"winegrower": ["plow", "sow", "harvest", "bind", "weed"],
 	"carter": ["load"],
 	"docker": ["hand_over"],
+	# G3 part 2b
+	"miller": ["grind"],
+	"baker": ["knead", "bake"],
+	"brewer": ["mash", "brew"],
+	"mead_maker": ["mix", "ferment"],
+	"vintner": ["press", "ferment"],
+	"sawyer": ["saw"],
+	"blacksmith": ["heat", "forge", "quench"],
+	"smelter": ["stack", "bellows", "tap"],
+	"armourer": ["heat", "rivet", "polish"],
+	"bowyer": ["carve", "bend", "string"],
+	"shipwright": ["hammer"],
+	"charcoal_burner": ["stack", "tend_fire", "rake"],
+	"tar_burner": ["stack", "tend_fire", "tap"],
+	"brickmaker": ["mould", "fire"],
+	"weaver": ["spin", "weave"],
+	"tailor": ["cut", "sew"],
+	"butcher": ["slaughter", "skin"],
+	"innkeeper": ["serve"],
+	"stallholder": ["sell"],
+	"merchant": [],
+	"teacher": ["teach", "ring", "rest"],
+	"scholar": ["read", "write", "rest"],
+	"householder": [],
+	"settler": [],
+	"recruit": [],
 }
+## Fighters from SpriteKiln (G3 part 2b: the bandits, after the spearman and the archer): idle, walk and
+## the blow they fight and drill with (work, work_drill), 8 unmirrored rows.
+const SPRITEKILN_FIGHTERS: Array[String] = ["bandit", "bandit_archer"]
 const CARRY_CATEGORIES: Array[String] = ["sack", "barrel", "log", "basket", "bundle", "crate", "stone"]
 
 
@@ -71,6 +100,16 @@ func test_spritekiln_townsfolk_have_every_clip() -> void:
 			var sheet := CharacterSheet.from_files(path, "", 8.0)
 			assert_int(sheet.rows).override_failure_message("%s %s" % [id, anim]).is_equal(8)
 			assert_int(sheet.frame_size.x).is_equal(64)
+
+
+func test_spritekiln_bandits_have_every_clip() -> void:
+	for id: String in SPRITEKILN_FIGHTERS:
+		for anim: String in ["idle", "walk", "work", "work_drill"]:
+			var path := ArtPaths.resolve("characters/%s/%s.png" % [id, anim])
+			assert_bool(ResourceLoader.exists(path)).override_failure_message("%s %s" % [id, anim]).is_true()
+			var sheet := CharacterSheet.from_files(path, "", 8.0)
+			assert_int(sheet.rows).override_failure_message("%s %s" % [id, anim]).is_equal(8)
+			assert_int(sheet.foot.y).is_equal(sheet.frame_size.y - CharacterSheet.FOOT_MARGIN)
 
 
 func test_spritekiln_townsfolk_carry_anchors_in_every_frame() -> void:

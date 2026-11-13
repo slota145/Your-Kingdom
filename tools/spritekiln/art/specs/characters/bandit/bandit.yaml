@@ -1,0 +1,41 @@
+spritekiln: 1
+# yaml-language-server: $schema=https://raw.githubusercontent.com/LucasJRamos/spritekiln/main/spritekiln/data/spec.schema.json
+# G3 part 2b: the bandit (M7 part 2) fights like the spearman (a spear thrust behind a round shield) in drab,
+# unmarked clothes: a hood instead of the kettle hat, a beard, a plain wooden shield, no pennant, no cross.
+# Game sheets: export_character.py bandit (attack -> work and work_drill).
+name: bandit
+extends: ../spearman/spearman.yaml
+remove: [use.kettle, parts.kettle_brim, parts.pennant, parts.shield_cross]
+
+brief:
+  summary: "Your Kingdom bandit: a drab brown hood, a dirty quilted gambeson, dark hose, a beard, a spear and a plain round wooden shield"
+  head: "face open in the hood, a short dark beard"
+  must_keep: ["no colours of the kingdom", "hood reads at 1x", "spear readable in every direction"]
+  simplify: ["no pennant, no shield emblem"]
+
+use:
+  - {kit: head, at: head, with: {width: 1.0, jaw: 0.5, chin: 0.5, nose: 0, ears: 0}}
+  - {kit: hair, at: head, with: {fringe: 0.4, part: 0.2, locks: 0.3, length: 0.1, volume: 0.7}}
+  - {kit: hood, as: hood, at: head, with: {size: 0.9, depth: 0.2, tip: 0.1, tilt: -0.25, mantle: true}, materials: {hood: hood_cloth}}
+
+ramps:
+  gambeson: ["#100c0a", "#251d17", "#392e25", "#4b3f32", "#5c4e3f", "#6b5e4d"]
+  hose_b: ["#0a0808", "#161412", "#231f1c", "#2e2a26", "#38332e", "#423d37"]
+  hood_c: ["#0a0908", "#181513", "#26211e", "#322c28", "#3d3631", "#48413b"]
+  hair_b: ["#070503", "#100b08", "#19120e", "#211913", "#292018", "#30261e"]
+  shield_b: ["#140c08", "#2e1e13", "#47321f", "#5e452c", "#735739", "#866b49"]
+
+materials:
+  trousers: {ramp: hose_b, bands: [1, 4]}
+  hood_cloth: {ramp: hood_c, bands: [1, 5]}
+  hair: {ramp: hair_b}
+  shield_face_m: {ramp: shield_b, bands: [1, 4], finish: matte}
+
+parts:
+  beard:              # a full short beard on the jaw and chin
+    material: hair
+    space: head
+    blend: 0.02
+    prims:
+      - ellipsoid: {c: [0, 0.01, 0.075], r: [0.095, 0.065, 0.06]}
+      - ellipsoid: {c: [0, -0.035, 0.085], r: [0.06, 0.05, 0.045]}
