@@ -8,7 +8,7 @@ Porządki 2026-11-11: zrealizowane pomysły przeniesione na koniec pliku, w pocz
 
 ## Poprawki właściciela (2026-11-13, do zaplanowania)
 
-Lista z rozmowy po G3 część 2b. Kolejność i etap ustali właściciel (ankieta).
+Lista z rozmowy po G3 część 2b. **Ankieta 2026-11-13: wszystkie punkty weszły do etapu UI-2 (ROADMAP), decyzje tam.** Oceny zostają tu dla historii.
 
 1. [właściciel] **Budowa drogi z dwóch kliknięć:** pierwsze kliknięcie zaczyna drogę, potem podgląd ciągnie się do kursora, a drugie kliknięcie ją stawia (zamiast „rysowania” po mapie). To samo dla bruku, a może i murów.
    - Ocena (Claude): koszt mały, tylko narzędzie budowy (widok i interfejs), bez zmian w symulacji. Pytanie do ustalenia: trasa w kształcie „L” (najpierw w jedną stronę, potem w drugą) czy najkrótsza droga omijająca przeszkody. Polecam „L”, bo jest przewidywalne i takie jest w Anno i Twierdzy; prawy przycisk albo Esc anuluje.
