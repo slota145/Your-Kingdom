@@ -8,6 +8,8 @@ func test_orchard_apples_reach_the_storage() -> void:
 	var stock := SimFixture.place(sim, &"stockpile", Vector2i(4, 18))
 	var orchard := SimFixture.place(sim, &"orchard", Vector2i(18, 18))
 	var worker := SimFixture.spawn(sim, &"orchardist", orchard.entrance_tile())
+	# UI-2 part 2: the worker leaves what he made on his yard, a porter takes it to the storage.
+	SimFixture.spawn(sim, &"porter", Vector2i(10, 22))
 	assert_str(String(sim.execute(AssignWorkerCommand.new(worker.id, orchard.id)))).is_empty()
 	for tile: Vector2i in [Vector2i(16, 18), Vector2i(16, 19), Vector2i(17, 21), Vector2i(18, 21)]:
 		assert_str(String(sim.execute(PlaceFieldCommand.new(orchard.id, tile)))).is_empty()
