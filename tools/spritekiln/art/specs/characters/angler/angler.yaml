@@ -46,12 +46,12 @@ animations:
   work_cast:
     loop: true
     keys:
-      - {ms: 125, set: {show_rod: 1, hand_R: [0.18, 0.36, 0.30], hand_L: [0.10, 0.24, 0.26], tool_yaw: 0.4, tool_pitch: 1.1, lean: 0.08, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
+      - {ms: 125, set: {show_rod: 1, hand_R: [0.18, 0.36, 0.30], hand_L: [0.10, 0.24, 0.26], tool_yaw: 0.4, tool_pitch: 1.0, lean: 0.08, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
       - {ms: 125, set: {show_rod: 1, hand_R: [0.18, 0.62, 0.12], hand_L: [0.10, 0.30, 0.22], tool_pitch: 0.0, lean: -0.02, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
       - {ms: 125, set: {show_rod: 1, hand_R: [0.18, 0.74, -0.02], hand_L: [0.10, 0.30, 0.22], tool_pitch: -0.7, lean: -0.08, head_pitch: -0.06, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
       - {ms: 125, set: {show_rod: 1, hand_R: [0.18, 0.58, 0.24], hand_L: [0.10, 0.30, 0.24], tool_pitch: 0.6, lean: 0.10, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
-      - {ms: 125, set: {show_rod: 1, hand_R: [0.18, 0.40, 0.38], hand_L: [0.10, 0.28, 0.28], tool_yaw: 0.4, tool_pitch: 1.3, lean: 0.16, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
-      - {ms: 125, set: {show_rod: 1, hand_R: [0.18, 0.36, 0.34], hand_L: [0.10, 0.24, 0.28], tool_yaw: 0.4, tool_pitch: 1.2, lean: 0.10, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
+      - {ms: 125, set: {show_rod: 1, hand_R: [0.18, 0.40, 0.38], hand_L: [0.10, 0.28, 0.28], tool_yaw: 0.4, tool_pitch: 0.95, lean: 0.16, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
+      - {ms: 125, set: {show_rod: 1, hand_R: [0.18, 0.36, 0.34], hand_L: [0.10, 0.24, 0.28], tool_yaw: 0.4, tool_pitch: 1.0, lean: 0.10, foot_L: [0.15, 0, 0.10], foot_R: [0.15, 0, -0.08]}}
   work_wait_bite:
     loop: true
     keys:

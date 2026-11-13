@@ -143,7 +143,7 @@ MOVES.update({
     "dig": [
         f"hand_R: [0.12, 0.26, 0.26], hand_L: [0.08, 0.06, 0.28], tool_pitch: 2.95, lean: 0.22, {STANCE}",
         f"hand_R: [0.12, 0.24, 0.27], hand_L: [0.08, 0.04, 0.29], tool_pitch: 3.0, lean: 0.26, bob: -0.05, {STANCE}",
-        f"hand_R: [0.12, 0.28, 0.16], hand_L: [0.08, 0.12, 0.26], tool_pitch: 2.55, lean: 0.30, bob: -0.04, {STANCE}",
+        f"hand_R: [0.12, 0.36, 0.16], hand_L: [0.08, 0.20, 0.26], tool_pitch: 2.4, lean: 0.30, bob: -0.04, {STANCE}",
         f"hand_R: [0.14, 0.34, 0.18], hand_L: [0.08, 0.20, 0.28], tool_pitch: 2.1, lean: 0.20, {STANCE}",
         f"hand_R: [0.20, 0.40, 0.14], hand_L: [0.14, 0.26, 0.26], tool_pitch: 1.9, tool_yaw: 0.8, twist: 0.3, lean: 0.14, {STANCE}",
         f"hand_R: [0.12, 0.30, 0.20], hand_L: [0.08, 0.10, 0.26], tool_pitch: 2.7, twist: 0.1, lean: 0.18, {STANCE}",
@@ -164,12 +164,12 @@ MOVES.update({
     ],
     # a fishing rod swung back over the shoulder and whipped out over the water
     "cast": [
-        f"hand_R: [0.18, 0.36, 0.30], hand_L: [0.10, 0.24, 0.26], tool_yaw: 0.4, tool_pitch: 1.1, lean: 0.08, {STANCE}",
+        f"hand_R: [0.18, 0.36, 0.30], hand_L: [0.10, 0.24, 0.26], tool_yaw: 0.4, tool_pitch: 1.0, lean: 0.08, {STANCE}",
         f"hand_R: [0.18, 0.62, 0.12], hand_L: [0.10, 0.30, 0.22], tool_pitch: 0.0, lean: -0.02, {STANCE}",
         f"hand_R: [0.18, 0.74, -0.02], hand_L: [0.10, 0.30, 0.22], tool_pitch: -0.7, lean: -0.08, head_pitch: -0.06, {STANCE}",
         f"hand_R: [0.18, 0.58, 0.24], hand_L: [0.10, 0.30, 0.24], tool_pitch: 0.6, lean: 0.10, {STANCE}",
-        f"hand_R: [0.18, 0.40, 0.38], hand_L: [0.10, 0.28, 0.28], tool_yaw: 0.4, tool_pitch: 1.3, lean: 0.16, {STANCE}",
-        f"hand_R: [0.18, 0.36, 0.34], hand_L: [0.10, 0.24, 0.28], tool_yaw: 0.4, tool_pitch: 1.2, lean: 0.10, {STANCE}",
+        f"hand_R: [0.18, 0.40, 0.38], hand_L: [0.10, 0.28, 0.28], tool_yaw: 0.4, tool_pitch: 0.95, lean: 0.16, {STANCE}",
+        f"hand_R: [0.18, 0.36, 0.34], hand_L: [0.10, 0.24, 0.28], tool_yaw: 0.4, tool_pitch: 1.0, lean: 0.10, {STANCE}",
     ],
     # holding the rod out still, waiting for a bite
     "hold": [
