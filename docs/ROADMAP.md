@@ -1635,7 +1635,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## UI-2 — Poprawki właściciela: budowanie, interfejs i start kolonii
 
-> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo. **Część 1 gotowa na gałęzi roboczej 2026-11-13, czeka na ocenę („Część 1, stan”).**
+> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo. **Część 1 zaakceptowana („Super!”) i scalona do `main` 2026-11-13 („Część 1, stan”).**
 
 **Cel:** wygodniejsze budowanie, czytelniejszy interfejs i kolonia, która od pierwszej minuty buduje.
 
@@ -1655,7 +1655,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 2. **Start kolonii i stosy:** pierwszeństwo budów u tragarzy, budowa bierze z obozu pionierów, budowniczy nosi sam, stos przy budynku zawsze. Zmiana w symulacji z testami; sprawdzenie automatycznego gracza, władców i osad (czasy z prób E2 i E4), ewentualnie zapis (nowa wersja z migracją, jeśli zmieni się stan).
 3. **Nowa gra z podglądem świata:** osobne okno z opcjami i mapą świata na żywo.
 
-**Część 1, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę. Bez zmian w symulacji i zapisie (v42).
+**Część 1, stan (2026-11-13):** zaakceptowana („Super!”), scalona do `main` 2026-11-13. Bez zmian w symulacji i zapisie (v42).
 - **Nachodzące napisy:** nazwy w menu budowy zawijają się do 2 linijek w przycisku (np. „Chata budowniczych”); nazwy prowincji na mapie świata szukają wolnego miejsca (pod miastem, nad nim, z boku, niżej) i mają jasną obwódkę; powiadomienia leżą na ciemnym, półprzezroczystym pasku, a przy otwartej mapie świata w lewym dolnym rogu.
 - **Ikony w menu budowy:** skład i magazyny portowe mają ikonę gotowego placu z towarami, port, miejsce cumowania, słupek i dźwig stoją na kawałku kamiennego nabrzeża nad wodą (`assets/buildings/<id>/icon.png`, rysuje je `tools/render_menu_icons.gd` kodem gry; menu bierze `icon.png` przed grafiką budynku).
 - **Droga i bruk z dwóch kliknięć** w kształcie L (R zmienia stronę skrętu, prawy przycisk albo Esc anuluje zaczętą drogę, narzędzie zostaje w ręku); przeciągnięcie z wciśniętym przyciskiem dalej stawia drogę od razu. Podpowiedź pod paskiem. Test `tests/unit/ui/test_line_tool.gd`.
