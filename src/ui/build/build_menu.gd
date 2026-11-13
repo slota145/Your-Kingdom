@@ -30,6 +30,10 @@ const TABS: Array[Dictionary] = [
 ## Wall tools (M7 part 2): tool kind -> its cost, shown in the tooltip.
 const WALL_COSTS: Dictionary[StringName, String] = {&"palisade": "wood", &"stone_wall": "stone", &"stairs": "stone"}
 const ICON_SIZE := Vector2(72, 56)
+## The tools on the right of the tabs, in order (UI-2 part 1: pictures, assets/ui/tool_<id>.png).
+const TOOLS: Array[StringName] = [&"road", &"paving", &"pier", &"quay", &"bridge", &"stone_bridge", &"demolish"]
+## A tool's localization key where it is not the tool's own id.
+const TOOL_KEYS: Dictionary[StringName, String] = {&"quay": "stone_quay"}
 ## A building button: the picture and up to two lines of its name (UI-2 part 1: a long name
 ## such as "Chata budowniczych" ran over the next button).
 const BUTTON_SIZE := Vector2(100, 56 + 40)
@@ -69,37 +73,17 @@ func setup(registry: DataRegistry) -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tabs.add_child(spacer)
+	# UI-2 part 1 (owner 2026-11-13): the tools are pictures, their name and use in the tooltip.
+	for tool: StringName in TOOLS:
+		var key := "ui.build.%s" % TOOL_KEYS.get(tool, tool)
+		tabs.add_child(_tool_button(tool, key, func() -> void: tool_selected.emit({"kind": tool})))
+	tabs.add_child(_tool_button(&"hide", "ui.build.hide", func() -> void: hide_requested.emit()))
+	# The hint about the tool in hand goes last: when long, it takes a line of its own.
 	_rotate_hint = Label.new()
 	_rotate_hint.text = "ui.build.rotate_hint"
 	_rotate_hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE + 2)
 	_rotate_hint.visible = false
 	tabs.add_child(_rotate_hint)
-	var road := UiKit.button("ui.build.road", func() -> void: tool_selected.emit({"kind": &"road"}))
-	road.tooltip_text = "ui.build.road_tip"
-	tabs.add_child(road)
-	var paving := UiKit.button("ui.build.paving", func() -> void: tool_selected.emit({"kind": &"paving"}))
-	paving.tooltip_text = "ui.build.paving_tip"
-	tabs.add_child(paving)
-	# N1: quays on the sea, laid by dragging like roads.
-	var pier := UiKit.button("ui.build.pier", func() -> void: tool_selected.emit({"kind": &"pier"}))
-	pier.tooltip_text = "ui.build.pier_tip"
-	tabs.add_child(pier)
-	var quay := UiKit.button("ui.build.stone_quay", func() -> void: tool_selected.emit({"kind": &"quay"}))
-	quay.tooltip_text = "ui.build.stone_quay_tip"
-	tabs.add_child(quay)
-	# B1: bridges over rivers, fords and lakes, dragged from bank to bank.
-	var bridge := UiKit.button("ui.build.bridge", func() -> void: tool_selected.emit({"kind": &"bridge"}))
-	bridge.tooltip_text = "ui.build.bridge_tip"
-	tabs.add_child(bridge)
-	var stone_bridge := UiKit.button("ui.build.stone_bridge", func() -> void: tool_selected.emit({"kind": &"stone_bridge"}))
-	stone_bridge.tooltip_text = "ui.build.stone_bridge_tip"
-	tabs.add_child(stone_bridge)
-	var demolish := UiKit.button("ui.build.demolish", func() -> void: tool_selected.emit({"kind": &"demolish"}))
-	demolish.tooltip_text = "ui.build.demolish_tip"
-	tabs.add_child(demolish)
-	var hide := UiKit.button("ui.build.hide", func() -> void: hide_requested.emit())
-	hide.tooltip_text = "ui.build.hide_tip"
-	tabs.add_child(hide)
 	for tab: Dictionary in TABS:
 		var row := HFlowContainer.new()
 		box.add_child(row)
@@ -248,6 +232,19 @@ func _wall_button(tool: StringName) -> Button:
 		b.add_child(lock)
 		_wall_lock = lock
 		_wall_lock_button = b
+	return b
+
+
+## A tool as a picture button; the tooltip gives its name over its use ([param key] and key_tip).
+func _tool_button(tool: StringName, key: String, on_pressed: Callable) -> Button:
+	var b := Button.new()
+	b.icon = load("res://assets/ui/tool_%s.png" % tool) as Texture2D
+	b.custom_minimum_size = Vector2(44, 36)
+	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	b.tooltip_text = key
+	# Built when shown, so it follows a change of language.
+	b.mouse_entered.connect(func() -> void: b.tooltip_text = "\n".join([tr(key), tr(key + "_tip")]))
+	b.pressed.connect(on_pressed)
 	return b
 
 

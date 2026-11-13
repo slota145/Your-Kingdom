@@ -262,6 +262,7 @@ Pliki leżą w folderze budynku domu (`buildings/hut/`), a ich nazwy wskazuje `d
 | 3 (patrycjusze) | jak poziom 2 (`level_3_…`) |
 | Ulepszanie | `upgrade_scaffold.png` (rusztowanie nakładane na dom), `upgrade_scaffold_back.png` |
 | Budowa | `construction_1.png` (fundament i rusztowanie), `construction_2.png` (ściany na rusztowaniu) — każdy budynek ma własne, w tym samym kadrze co `base`; domy także `construction_1_back.png`, `construction_2_back.png` |
+| Ikona w menu budowy | `icon.png` (opcjonalnie, UI-2): tylko gdy `base` nie pokazuje gotowego budynku (składy i magazyny portowe: plac z towarami; port, miejsce cumowania, słupek, dźwig: na kawałku nabrzeża nad wodą), rysuje ją `tools/render_menu_icons.gd` (`xvfb-run`); menu bierze ją przed `base` |
 
 - **Orientacje (M4b-1.5):** grafikę rysujemy dla orientacji 0 (drzwi na ścianie +x, prawej dolnej). Orientacja 1 to ta sama grafika w lustrze (odbija ją gra). Domy w orientacjach 2 i 3 używają grafiki `_back` (drzwi po stronie niewidocznej, od kamery tył: tylne drzwi, mniej ozdób), 3 w lustrze. Pozostałe budynki nie mają grafik `_back`.
 - Pierzeja na grafice biegnie wzdłuż osi y (front domu na ścianie +x); pierzeje wzdłuż x to lustro. `a` to koniec o mniejszej współrzędnej: `end_a` łączy się z sąsiadem tylko po stronie `b`, `end_b` tylko po stronie `a`, `corner_a` po stronie `a` i z tyłu (tam stoi dom drugiego rzędu), `corner_b` po stronie `b` i z tyłu.

@@ -672,7 +672,7 @@ msgid "ui.build.rotate_hint"
 msgstr "R: turn the entrance · T: change the look"
 
 msgid "ui.build.line_hint"
-msgstr "Click the start and the end · R: switch the turn · right click or Esc: cancel"
+msgstr "Click: start, click: end · R: turn · right click/Esc: cancel"
 
 msgid "ui.command_error.not_a_farm"
 msgstr "This is not a farm."

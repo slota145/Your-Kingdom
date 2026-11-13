@@ -677,7 +677,7 @@ msgid "ui.build.rotate_hint"
 msgstr "R: obróć wejście · T: zmień wygląd"
 
 msgid "ui.build.line_hint"
-msgstr "Kliknij początek i koniec · R: zmień skręt · prawy przycisk albo Esc: anuluj"
+msgstr "Klik: początek, klik: koniec · R: skręt · prawy przycisk/Esc: anuluj"
 
 msgid "ui.command_error.not_a_farm"
 msgstr "To nie jest farma."

@@ -1635,7 +1635,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 ## UI-2 — Poprawki właściciela: budowanie, interfejs i start kolonii
 
-> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo.
+> Lista właściciela z 2026-11-13 (po G3 część 2b, IDEAS „Poprawki właściciela”). **Ankieta 2026-11-13: osobny etap teraz, przed częścią 3 G3, w 3 paczkach.** Części 1–2b G3 dalej czekają na ocenę; poprawki z tych ocen mają pierwszeństwo. **Część 1 gotowa na gałęzi roboczej 2026-11-13, czeka na ocenę („Część 1, stan”).**
 
 **Cel:** wygodniejsze budowanie, czytelniejszy interfejs i kolonia, która od pierwszej minuty buduje.
 
@@ -1654,6 +1654,16 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 1. **Błędy i wygoda budowania:** nachodzące napisy w menu budowy i przy otwarciu mapy świata, ikony budynków z etapu budowy zamiast gotowych, droga i bruk z dwóch kliknięć, przezroczyste budynki przy budowaniu, menu pauzy pod Esc, ikony narzędzi. Bez zmian w symulacji i zapisie.
 2. **Start kolonii i stosy:** pierwszeństwo budów u tragarzy, budowa bierze z obozu pionierów, budowniczy nosi sam, stos przy budynku zawsze. Zmiana w symulacji z testami; sprawdzenie automatycznego gracza, władców i osad (czasy z prób E2 i E4), ewentualnie zapis (nowa wersja z migracją, jeśli zmieni się stan).
 3. **Nowa gra z podglądem świata:** osobne okno z opcjami i mapą świata na żywo.
+
+**Część 1, stan (2026-11-13):** gotowa na gałęzi roboczej, czeka na ocenę. Bez zmian w symulacji i zapisie (v42).
+- **Nachodzące napisy:** nazwy w menu budowy zawijają się do 2 linijek w przycisku (np. „Chata budowniczych”); nazwy prowincji na mapie świata szukają wolnego miejsca (pod miastem, nad nim, z boku, niżej) i mają jasną obwódkę; powiadomienia leżą na ciemnym, półprzezroczystym pasku, a przy otwartej mapie świata w lewym dolnym rogu.
+- **Ikony w menu budowy:** skład i magazyny portowe mają ikonę gotowego placu z towarami, port, miejsce cumowania, słupek i dźwig stoją na kawałku kamiennego nabrzeża nad wodą (`assets/buildings/<id>/icon.png`, rysuje je `tools/render_menu_icons.gd` kodem gry; menu bierze `icon.png` przed grafiką budynku).
+- **Droga i bruk z dwóch kliknięć** w kształcie L (R zmienia stronę skrętu, prawy przycisk albo Esc anuluje zaczętą drogę, narzędzie zostaje w ręku); przeciągnięcie z wciśniętym przyciskiem dalej stawia drogę od razu. Podpowiedź pod paskiem. Test `tests/unit/ui/test_line_tool.gd`.
+- **Przezroczyste budynki:** przy każdym narzędziu budowy (poza rozbiórką) budynki stojące przed kafelkiem pod kursorem i zasłaniające okolicę (ok. 3 kafle) robią się półprzezroczyste.
+- **Menu pauzy pod Esc:** Esc odkłada narzędzie, potem zamyka panele, a dopiero potem otwiera menu (wróć do gry, zapisz, wczytaj, język, menu główne, wyjdź); gra stoi, gdy menu jest otwarte. Przycisk „Menu” na górnym pasku też je otwiera; zapis, wczytanie i język zniknęły z paska.
+- **Ikony narzędzi** (droga, bruk, pomost, nabrzeże, most, most kamienny, rozbiórka, schowaj) zamiast napisów, z dymkiem: nazwa i opis (`tools/generate_ui.gd`, `assets/ui/tool_*.png`).
+- Zrzuty: menu budowy `game_shot.tscn -- --shot=<plik> --map=coast --tile=73,103 --zoom=1 --port --build_tab=<0..8>`, droga `--plain --tile=48,56 --zoom=2 --road_line=44,52:50,58`, menu pauzy `--plain --tile=48,56 --pause_menu`, przezroczystość `town_shot.tscn -- --shot=<plik> --minutes=10 --select=hut --behind --zoom=2`, mapa świata `world_shot.tscn -- --out=<plik> --seed=5`.
+- **Do oceny na laptopie:** czy droga z dwóch kliknięć jest wygodna (i czy po postawieniu drogi następna ma zaczynać się sama od jej końca), siła i zasięg przezroczystości, czy ikony narzędzi są czytelne, układ menu pauzy, czy napisy nie nachodzą w 1920×1080.
 
 **Testy i sprawdzenie:** szybkie testy; testy symulacji dla części 2 (pierwszeństwo budów, budowa z obozu, budowniczy noszący, stos zawsze, brak zakleszczeń przy pełnym stosie), długie testy na koniec części; zrzuty z chmury (menu budowy, mapa świata, droga w trakcie stawiania, przezroczystość, menu pauzy, okno nowej gry); wygląd w 1920×1080 i odczucia z gry ocenia właściciel na laptopie.
 
