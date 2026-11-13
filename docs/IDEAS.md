@@ -32,7 +32,7 @@ Lista z rozmowy po G3 część 2b. **Ankieta 2026-11-13: wszystkie punkty weszł
 ## Ekonomia (pomysły po UI-2)
 
 - [właściciel, 2026-11-13] **Limit towaru w magazynie:** dla każdego towaru gracz ustawia limit (np. 100 desek); po jego osiągnięciu warsztaty, które go robią, przestają pracować, dopóki zapas nie spadnie poniżej limitu.
-  - Ocena (Claude): dobry pomysł, znany z Anno i Settlersów: drewno nie idzie w niepotrzebne deski, a gracz panuje nad łańcuchami. Koszt średni: limit w zapisie (nowa wersja z migracją), sprawdzenie przed cyklem warsztatu (jak dziś „stos pełny”), powód w panelu („czeka: limit desek”), suwaki w oknie „Zapasy królestwa” (obok progu sprzedaży kupcowi i rezerwy na budowy). Uwaga: stojący warsztat to bezczynni pracownicy, więc domyślnie bez limitu. Automatyczni gracze i władcy mogą zostać bez niego. **Ankieta 2026-11-13: po części 3 UI-2, jako krótki osobny kawałek przed G3.**
+  - Ocena (Claude): dobry pomysł, znany z Anno i Settlersów: drewno nie idzie w niepotrzebne deski, a gracz panuje nad łańcuchami. Koszt średni: limit w zapisie (nowa wersja z migracją), sprawdzenie przed cyklem warsztatu (jak dziś „stos pełny”), powód w panelu („czeka: limit desek”), suwaki w oknie „Zapasy królestwa” (obok progu sprzedaży kupcowi i rezerwy na budowy). Uwaga: stojący warsztat to bezczynni pracownicy, więc domyślnie bez limitu. Automatyczni gracze i władcy mogą zostać bez niego. **Ankieta 2026-11-13: po części 3 UI-2, jako krótki osobny kawałek przed G3. Plan: ROADMAP, E5.**
 
 ## Zamek i wojsko
 

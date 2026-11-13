@@ -26,7 +26,7 @@ M0 Fundament
                 │                        └─► M7 Wojsko, mury i oblężenia
                 │                             └─► B1 Most przez rzekę i łagodniejszy brzeg
                 │                                  └─► W1 Nowe wybrzeże ──► J1 Nowe jednostki i okręty
-                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► E1 Magazyny, farmy i awans ──► E2 Jedzenie i potrzeby ──► E3 Cechy prowincji ──► E4 Badania i koszary ──► G3 Stare grafiki ze SpriteKiln (części 1–2) ──► UI-2 Poprawki właściciela ──► G3 (części 3–5) ──► M10 Wersja 1.0
+                │                                       └─► M8 Przeciwnicy i sandbox ──► Z1 Zagrody ze zwierzętami ──► E1 Magazyny, farmy i awans ──► E2 Jedzenie i potrzeby ──► E3 Cechy prowincji ──► E4 Badania i koszary ──► G3 Stare grafiki ze SpriteKiln (części 1–2) ──► UI-2 Poprawki właściciela ──► E5 Limit towaru ──► G3 (części 3–5) ──► M10 Wersja 1.0
                 └─► M9 Produkcja grafik (równolegle od M4, partiami)
 Po 1.0: P1 interaktywne bitwy morskie, P2 kampania, P3 pory roku, ...
 ```
@@ -1673,7 +1673,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Pomiary** (przed → po): start jak gracz na Wybrzeżu (`src/prototype/ui2/start_probe.gd -- --player`): druga chata w 453. → 167. sekundzie, obóz 60. → 52.; 4 domy patrycjuszy automatycznego gracza (`patrician_probe.gd`): Riverlands 71. → 58. minuta, Pojezierze 83. → 58., Wybrzeże 79. → 71.; świat z władcami (`world_probe.gd`, 90 minut): gracz 24 → 50 budynków i 24 → 90 mieszkańców, władcy podobnie jak przed; duże miasto (`src/prototype/ui2/city_probe.gd`): chleb, deski i piwo bez spadków.
 - **Testy:** `tests/unit/sim/jobs/test_colony_start.gd` (budowy pierwsze, budowa z ziemi, budowniczy nosi i buduje), `test_yard.gd` (stos mimo miejsca w magazynie, pracownik niesie sam przy czekającym stosie); sceny testów produkcji dostały tragarza. Test zgodności trybów (`test_m6_coherence.gd`) kalibruje 30 minut zamiast 20 (otwarte budowy w zapisanym mieście kończą się teraz szybciej i dają tartakom chwilowy zryw drewna). Automatyczny gracz portu rezerwuje brzeg pod port (miasto rosło szybciej i go zabudowywało).
 - **Do decyzji przy ocenie:** wędkarz zyskał najwięcej (nie chodzi do magazynu): w 10 minut przystań rybacka 36 → 56 ryb, wędkarz 16 → 48; czy go spowolnić, żeby przystań znów łowiła wyraźnie więcej? (ankieta 2026-11-13: właściciel zdecyduje po ocenie w grze, na razie bez zmian) Gra jest teraz szybsza (patrycjusze 8–25 minut wcześniej): czy to dobre tempo?
-- **Następnie (ankieta 2026-11-13):** część 3 UI-2, potem limit towaru w magazynie (IDEAS, „Ekonomia (pomysły po UI-2)”) jako krótki osobny kawałek przed G3.
+- **Następnie (ankieta 2026-11-13):** część 3 UI-2, potem limit towaru w magazynie jako krótki osobny kawałek przed G3 (etap E5).
 - **Do oceny na laptopie:** start kolonii (czy budowy ruszają od razu), czy tragarzy wystarcza, czy stosy przy budynkach nie rosną za bardzo w dużym mieście.
 
 **Część 3, stan (2026-11-13):** zaakceptowana („Jest super!”), scalona do `main` 2026-11-13. Zapis v43 (kształt świata).
@@ -1690,6 +1690,34 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Testy i sprawdzenie:** szybkie testy; testy symulacji dla części 2 (pierwszeństwo budów, budowa z obozu, budowniczy noszący, stos zawsze, brak zakleszczeń przy pełnym stosie), długie testy na koniec części; zrzuty z chmury (menu budowy, mapa świata, droga w trakcie stawiania, przezroczystość, menu pauzy, okno nowej gry); wygląd w 1920×1080 i odczucia z gry ocenia właściciel na laptopie.
 
 **Ryzyka:** stos zawsze daje dużo więcej pracy tragarzom (na starcie może ich zabraknąć, a ekonomia zwolni albo przyspieszy: trzeba porównać próby przed i po); budowniczy noszący może zostawiać budowy bez rąk do pracy; przezroczystość musi działać z cięciem budynków na paski (sortowanie głębi).
+
+## E5 — Limit towaru w magazynie
+
+> Pomysł właściciela 2026-11-13 (IDEAS, „Ekonomia (pomysły po UI-2)”). **Ankieta 2026-11-13: krótki osobny kawałek po UI-2, przed częścią 3 G3. Plan z ankiety 2026-11-13 czeka na akceptację.** Część 2 UI-2 dalej czeka na ocenę w grze (właściciel jeszcze nie grał); poprawki z tej oceny mają pierwszeństwo.
+
+**Cel:** gracz panuje nad łańcuchami produkcji. Ustawia, ile najwyżej chce mieć danego towaru (np. 100 desek), a budynki, które go robią, stają po osiągnięciu limitu. Drewno nie idzie wtedy w niepotrzebne deski, a ludzie nie noszą towaru, którego nikt nie chce.
+
+**Decyzje z ankiety 2026-11-13:**
+- **Kogo stopuje limit:** warsztaty (tartak, młyn, piekarnia, kowal itd.) i budynki surowców (drwal, kamieniarz, kopalnie, odkrywka, wędkarz, przystań rybacka, myśliwy, glinianka itd.). **Nie stopuje** pól, sadów, chmielu, winnic ani zagród: rosną i hodują dalej (zatrzymanie w połowie wzrostu psułoby plony).
+- **Co liczy się do limitu:** ta sama liczba co w oknie „Zapasy królestwa”: magazyny, stosy przy budynkach, kramy i kupki na ziemi (bez spiżarni domów, budów i towaru w rękach).
+- **Pracownicy przy limicie czekają przy budynku;** panel budynku i dymek postaci mówią „Czeka: limit desek (100)”. Ruszają sami.
+- **Wznowienie:** gdy zapas spadnie poniżej limitu (limit 100: przy 99 deskach tartak robi kolejną). Bez dodatkowego zapasu.
+- **Gdzie się ustawia:** nowa kolumna „Limit” w oknie „Zapasy królestwa” (pole do zaznaczenia i liczba, jak próg sprzedaży kupcowi) oraz skrót w panelu budynku: limit jego wyrobu (zaznacz i liczba).
+- **Tylko gracz:** władcy, osady i automatyczny gracz grają jak dziś, bez limitów.
+
+**Założenia (domyślne, do zmiany w ocenie):**
+- Domyślnie żaden towar nie ma limitu (stojący warsztat to bezczynni pracownicy).
+- Limit jest osobny w każdej prowincji (każda ma swoje magazyny, GDD §4.2), tak jak próg sprzedaży kupcowi; zakres 0–999.
+- Budynek z kilkoma wyrobami: kowal z kilkoma przepisami pomija przepis, którego wyrób jest na limicie, i staje dopiero, gdy wszystkie jego wyroby są na limicie; budynek, który z jednego cyklu robi kilka towarów naraz, staje, gdy wszystkie są na limicie.
+- Sprawdzenie przed rozpoczęciem cyklu (jak dziś „stos pełny”): cykl już zaczęty kończy się normalnie, więc zapas może przekroczyć limit o jeden cykl.
+- Limit nie dotyczy towaru z handlu, wypraw i zwrotów z rozbiórki (tylko produkcji).
+
+**Części (ocena właściciela po całości, jedna część):**
+1. **Limit towaru:** stan w symulacji (limit na towar w prowincji) i komenda do ustawiania, sprawdzenie przed cyklem budynku, powód „limit” u postaci i w panelu, kolumna „Limit” w „Zapasach królestwa”, skrót w panelu budynku, tłumaczenia (pl, en). **Zapis v44** (limity w stanie prowincji, migracja: starsze gry bez limitów, test migracji).
+
+**Testy i sprawdzenie:** testy symulacji: tartak staje przy limicie desek i rusza po spadku zapasu; drwal staje; pole i zagroda nie stają; kowal przechodzi na drugi przepis; stos przy budynku liczy się do limitu; komenda (zły towar, zła liczba, zwierzęta); migracja v43 → v44. Szybkie i długie testy na koniec. Zrzut okna „Zapasy królestwa” i panelu tartaku z chmury; wygoda ustawiania ocenia właściciel na laptopie.
+
+**Ryzyka:** limit niższy niż potrzeby budów może zatrzymać rozwój („czemu nikt nie robi desek?”), więc powód w panelu musi być wyraźny; łańcuchy stają kaskadą (pełne deski → tartak stoi → drewno rośnie do swojego limitu → drwal stoi), co jest zamierzone, ale trzeba to sprawdzić w próbie dużego miasta.
 
 ## G3 — Stare grafiki budynków i mieszkańców ze SpriteKiln
 
