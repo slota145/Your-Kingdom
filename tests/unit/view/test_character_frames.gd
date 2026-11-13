@@ -36,6 +36,24 @@ const SPRITEKILN_TOWNSFOLK: Dictionary[String, Array] = {
 	"porter": ["load"],
 	"farmer": ["plow", "sow", "harvest", "bind", "weed"],
 	"builder": ["build"],
+	# G3 part 2a
+	"woodcutter": ["chop", "bind"],
+	"forester": ["dig", "plant", "rest"],
+	"stonecutter": ["hew", "shape", "hoist"],
+	"miner": ["pick", "shape", "descend", "wind"],
+	"clay_digger": ["dig"],
+	"fisher": [],
+	"angler": ["cast", "wait_bite", "reel"],
+	"hunter": ["carve", "skin", "bend", "aim"],
+	"shepherd": ["herd", "shear"],
+	"swineherd": ["feed", "muck"],
+	"groom": ["feed", "groom"],
+	"beekeeper": ["tend_hives", "collect_honey"],
+	"orchardist": ["plow", "sow", "harvest", "bind", "weed"],
+	"hop_grower": ["plow", "sow", "harvest", "bind", "weed"],
+	"winegrower": ["plow", "sow", "harvest", "bind", "weed"],
+	"carter": ["load"],
+	"docker": ["hand_over"],
 }
 const CARRY_CATEGORIES: Array[String] = ["sack", "barrel", "log", "basket", "bundle", "crate", "stone"]
 
