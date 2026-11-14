@@ -186,6 +186,9 @@ func _build(building: BuildingState, key: String) -> void:
 		holder.add_child(quay)
 		quay.setup(building)
 		_quays.append(quay)
+		# G3 part 5a: the port's weigh-house shed over the back row of its quay yard, in pieces
+		# like the warehouse's shed so the stacks sort between them.
+		_add_yard_pieces(holder, building)
 	if building.under_construction or building.site_id != 0:
 		var pile := StackSprite.new()
 		# Materials lie on the tile in front of the door.
@@ -194,7 +197,8 @@ func _build(building: BuildingState, key: String) -> void:
 		_site_piles[building.id] = pile
 
 
-## G3 part 4b: a yard's roofed shed (the warehouse), drawn as pieces each sorted on its own
+## G3 part 4b: a yard's roofed shed (the warehouse; part 5a: the port warehouses and the port's
+## quay yard), drawn as pieces each sorted on its own
 ## footprint (`offset` in tiles from the yard's origin, in its .json), so the goods stacks sort
 ## between them: the back walls behind every stack, the posts and the roof in front of the back
 ## row only. Mirrored yards (orientation 1) swap the offsets like the art.

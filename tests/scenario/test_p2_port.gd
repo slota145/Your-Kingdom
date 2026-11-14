@@ -191,3 +191,17 @@ func test_dockers_house_strip_is_stone_quay() -> void:
 		assert_int(tiles.get(Vector2i(x, 31), 0)).is_equal(TileGrid.STONE_QUAY)
 	# The hut keeps its timber deck on piles.
 	assert_int(tiles.get(hut.origin + Vector2i(0, 1), 0)).is_equal(TileGrid.PIER)
+
+
+## G3 part 5a (owner's request 2026-11-14): a shipyard stands on a stone quay under its whole
+## footprint, land part too, with its slipway cut into it as open water.
+func test_shipyard_stands_on_stone_quay_round_its_slipway() -> void:
+	var sim := SimFixture.make_sim(Vector2i(48, 48), 1)
+	SimFixture.coast(sim, 30, 33)
+	var province := sim.province
+	var yard := SimFixture.place(sim, &"shipyard", Vector2i(20, 28))
+	var tiles := QuayLayer.quay_tiles(province)
+	for tile: Vector2i in yard.tiles():
+		var rel := tile - yard.origin
+		var slip := rel.y >= 2 and (rel.x == 1 or rel.x == 2)
+		assert_int(tiles.get(tile, 0)).override_failure_message("%s" % rel).is_equal(0 if slip else TileGrid.STONE_QUAY)
