@@ -409,7 +409,10 @@ const SPRITEKILN_BUILDINGS: Array[String] = ["woodcutter", "forester", "quarry",
 		"hut",
 		# G3 part 4b: the town's buildings (gen_town.py), the warehouse's stages and shed.
 		"well", "chapel", "church", "market", "tavern", "town_hall", "trading_post", "builders_hut", "pioneer_camp",
-		"stockpile"]
+		"stockpile",
+		# G3 part 5a: the harbour (gen_port.py), the port warehouses' stages and sheds.
+		"bollard", "mooring", "crane", "port", "fishing_wharf", "shipyard", "large_shipyard", "docker_hut", "docker_house",
+		"port_warehouse", "port_warehouse_small", "port_store"]
 
 
 func _init() -> void:

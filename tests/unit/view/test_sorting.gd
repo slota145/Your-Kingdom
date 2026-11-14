@@ -53,6 +53,32 @@ func test_spritekiln_workshop_art_sorts_correctly() -> void:
 	_check_arts(arts)
 
 
+## G3 part 5a: the harbour's buildings from SpriteKiln (tools/spritekiln/gen_port.py): base art and
+## both construction stages; the port's shed and the port warehouses' sheds as pieces (each on its
+## own footprint), the yards (port warehouses, port store) only with their stages.
+const SPRITEKILN_HARBOUR: Array[String] = ["bollard", "mooring", "crane", "port", "fishing_wharf", "shipyard",
+		"large_shipyard", "docker_hut", "docker_house"]
+const SPRITEKILN_HARBOUR_YARDS: Array[String] = ["port_warehouse", "port_warehouse_small", "port_store"]
+
+
+func test_spritekiln_harbour_art_sorts_correctly() -> void:
+	var arts: Array[String] = []
+	for building: String in SPRITEKILN_HARBOUR + SPRITEKILN_HARBOUR_YARDS:
+		for name: String in ["base", "construction_1", "construction_2", "shed_a_back", "shed_b_back", "shed_a_front",
+				"shed_b_front"]:
+			var path := "res://assets/buildings/%s/%s.json" % [building, name]
+			if name == "base" and SPRITEKILN_HARBOUR_YARDS.has(building):
+				assert_bool(FileAccess.file_exists(path)).override_failure_message("%s: a yard has no base art" % path).is_false()
+				continue
+			if name.begins_with("shed_") and not FileAccess.file_exists(path):
+				continue
+			arts.append(path)
+	for building: String in ["port", "port_warehouse", "port_warehouse_small"]:
+		assert_bool(FileAccess.file_exists("res://assets/buildings/%s/shed_a_front.json" % building)).override_failure_message(
+				"%s has no shed" % building).is_true()
+	_check_arts(arts)
+
+
 func _check_arts(arts: Array[String]) -> void:
 	for path: String in arts:
 		var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
