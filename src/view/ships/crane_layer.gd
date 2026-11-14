@@ -6,7 +6,7 @@ extends Node2D
 ## over the world (the jib is high above everything). Reads the operator's lift progress
 ## (Cranes.lift_progress) every frame; never changes the simulation.
 
-## Mast foot and treadwheel axle in the art (generate_art.gd, "crane"), as drawn (orientation 0).
+## Mast foot and treadwheel axle in the art (tools/spritekiln/gen_port.py, "crane"), as drawn (orientation 0).
 const MAST_FOOT := Vector2(1.15, 0.85)
 const WHEEL_FOOT := Vector2(0.5, 1.5)
 ## Heights (screen px) of the jib's heel on the mast, of the mast cap, and of the jib head.

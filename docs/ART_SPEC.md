@@ -383,6 +383,8 @@ Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
 
 ### 10.3 Budynki rysowane kodem (2026-11-05)
 
+> **Historia:** od sprzątania G3 (2026-11-14, §10.33) żaden budynek nie jest już rysowany kodem, a `tools/generate_art.gd` i `tools/town_house_art.gd` zostały usunięte (są w historii gita). Opisy niżej i w kolejnych punktach, które je wymieniają, dotyczą dawnego wyglądu.
+
 **Decyzja właściciela projektu:** zanim powstaną grafiki z PixelLab albo ręczne, budynki rysuje kod, starannie, jako grafiki docelowe w `assets/buildings/` (placeholdery zostają bez zmian). Narzędzie: `tools/generate_art.gd`.
 
 - **Bryły zamiast klocków:** budynek składa się z kilku brył: dom z dachem dwuspadowym lub czterospadowym, przybudówka, otwarta wiata (widać pracę w środku: piec, kozioł z kłodą, kocioł, bloki kamienia), okrągła wieża ze stożkowym dachem (wiatrak, suszarnia chmielu), wieża z iglicą (kościół, kaplica, ratusz z zegarem). Bryły rysujemy od tyłu do przodu.
@@ -396,6 +398,8 @@ Wyniki są w piaskownicy murów (`src/prototype/walls/`, obiekty w `pixellab/`).
 - **Jeszcze niezrobione:** plac magazynu (rysuje go widok jako brązowy romb).
 
 ### 10.4 Postacie rysowane kodem (2026-11-05)
+
+> **Historia:** od G3 części 2b cała ludność jest ze SpriteKiln (§10.27); w sprzątaniu G3 (2026-11-14, §10.33) z `tools/generate_characters.gd` usunięto rysunki ludzi, zostało tylko stado koni i prowadzony koń (towar).
 
 Narzędzie: `tools/generate_characters.gd`, wynik w `assets/characters/<zawód>/`. Każdy zawód ma własną postać (`data/visuals/agents/<zawód>.tres` wskazuje ją bez zabarwienia).
 
@@ -707,4 +711,10 @@ Powód: kredyty PixelLab skończyły się po ok. 2 tygodniach. Szukamy darmowych
 - **Generator `tools/spritekiln/gen_military.py`** na klockach i zapisie z `gen_port.py` (`GP.run`); render i eksport `tools/spritekiln/build_military.sh <id>…` (to `build_port.sh` z innym generatorem), arkusz `compose_workshops.py` → `previews/g3_part5b_1.png`, z gry `g3_part5b_game.png` (`game_shot.tscn -- --plain --tile=48,56 --focus=46,56 --zoom=2 --yards=armourer,bowyer,armoury,siege_workshop --fields_seconds=12`).
 - **Płatnerz** (2×2): wąski dom, kamienny parter i ochrowy szachulec pod dachówką z kominem, ceglane palenisko z żarem pod własnym daszkiem przy prawej ścianie, miech, stół z hełmem, kolczugą i młotkiem, stojak z kolczugą, czerwonym wamsem ze złotym krzyżem i hełmem, kamień szlifierski na korbę, kadź do hartowania, tarcze na ścianie, szyld z hełmem; miejsca pracy `forge` i `bench` przy palenisku i stole. **Łuczarz** (2×2): chata z bali pod stromym gontem z głębokim okapem, pod którym schną cisowe łęczyska, pęki łęczysk, stojak z naciągniętymi łukami na prawej ścianie, ława z łukiem przy drzwiach (`bench`), słomiana tarcza w kręgi ze strzałami na sztaludze, beczka strzał z lotkami, szyld z łukiem. **Zbrojownia** (3×3): przysadzisty dwupiętrowy arsenał z kamienia polnego z narożnikami i gzymsem z ciosów, przypory, okna z kratami, czterospadowy łupek z wieżyczką z żaluzjami i iglicą, portal z herbem i dwiema chorągwiami, daszek nad stojakiem włóczni, tarcze, wóz z pękiem włóczni. **Warsztat oblężniczy** (3×3): wielka otwarta szopa na słupach z mieczami i wieszarami w szczycie, ściana z desek z narzędziami z tyłu, w środku taran w budowie na kozłach (belka z żelazną głowicą, krokwie daszku, dwie skóry), obok koła z szprychami, ramiona balisty na kozle, kołowrót, belki.
 - **Stare generatory ich nie nadpisują:** `tools/generate_art.gd` pomija te 4 budynki, `tools/build_pixellab_buildings.py` zapisuje już tylko dawne koszary (poza menu).
+
+### 10.33 Sprzątanie G3 (część 5b, 2026-11-14)
+
+- **Etapy budowy z modeli** (ankieta 2026-11-14: „pełne, z etapami”) dla 14 budynków ze SpriteKiln sprzed G3 części 3, których etapy rysował jeszcze kod: chlew, owczarnia, stadnina, pasieka, sad, myśliwy, chata i dom tragarzy, odkrywka, głęboka kopalnia, szkoła, uniwersytet, małe i duże koszary. `tools/spritekiln/gen_stages.py` czyta gotowy spec budynku i pisze obok `<id>_c1.yaml` (model ucięty tuż nad ziemią: podwórko, podmurówki, fundamenty; paliki w narożnikach bryły i sznurek, sterta belek i kamieni) i `<id>_c2.yaml` (model ucięty na 0,85: ściany do połowy, rusztowanie z pomostami na dwóch widocznych ścianach) z tą samą kamerą, więc leżą dokładnie na budynku. Bryłę znajduje sam (wysokie skrzynie stojące na ziemi; inaczej działka bez brzegu). `tools/spritekiln/build_stages.sh [<id>…]` renderuje i eksportuje same etapy (podstawa bez zmian).
+- **Usunięte:** `tools/generate_art.gd` (po G3 nie rysował już żadnej grafiki, której gra używa) i `tools/town_house_art.gd`; z `tools/generate_characters.gd` rysunki ludzi, żołnierzy i bandytów oraz pisanie `data/visuals/agents/*.tres` (pliki zostają w repozytorium); zostało stado koni i prowadzony koń (ikona konia jest ze SpriteKiln). Stare grafiki są w historii gita.
+- **Kod gry nie zmienia się;** mury, palisada, bramy i wieża jak dotąd (placeholdery i PixelLab), dawne koszary poza menu z PixelLab (`tools/build_pixellab_buildings.py`).
 

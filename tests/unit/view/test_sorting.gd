@@ -63,6 +63,17 @@ const SPRITEKILN_HARBOUR: Array[String] = ["bollard", "mooring", "crane", "port"
 const SPRITEKILN_HARBOUR_YARDS: Array[String] = ["port_warehouse", "port_warehouse_small", "port_store"]
 
 
+## G3 clean-up: the construction stages of the SpriteKiln buildings made before G3 part 3, now from
+## their models (tools/spritekiln/gen_stages.py), as drawn and mirrored.
+func test_spritekiln_model_stages_sort_correctly() -> void:
+	var arts: Array[String] = []
+	for building: String in ["pigsty", "sheep_farm", "stud_farm", "apiary", "orchard", "hunter_lodge", "porters_hut",
+			"porters_house", "stone_pit", "deep_mine", "school", "university", "barracks_small", "barracks_large"]:
+		for name: String in ["construction_1", "construction_2"]:
+			arts.append("res://assets/buildings/%s/%s.json" % [building, name])
+	_check_arts(arts)
+
+
 func test_spritekiln_harbour_art_sorts_correctly() -> void:
 	var arts: Array[String] = []
 	for building: String in SPRITEKILN_HARBOUR + SPRITEKILN_HARBOUR_YARDS:
