@@ -32,7 +32,8 @@ extends Resource
 @export var quay_tiles: Array[Vector2i] = []
 ## When it stands over the water, it stands on a stone quay under its whole footprint (land
 ## part too), not on a timber deck, so it joins a stone quay beside it (the dockers' house,
-## owner's request 2026-11-09).
+## owner's request 2026-11-09). Water tiles left out of quay_tiles stay open water (a shipyard's
+## slipway cut into its stone quay, G3 part 5a).
 @export var stone_strip: bool = false
 ## Work spot name -> pixel offset from the entrance tile centre where the worker is drawn.
 ## "<spot>_<n>" is the spot of the building's n-th worker (from 1), used before "<spot>".

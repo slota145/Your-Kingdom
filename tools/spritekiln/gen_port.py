@@ -722,7 +722,7 @@ def shipyard():
     K.log(p, P, (2.05, 0.85), (3.05, 0.85), 0.12, name="spare_mast", y=0.62, mat="raw_timber")
     planks_stack(p, P, 2.5, 0.45, along="gx", layers=4, length=0.8)
     # the slipway
-    slipway(p, P, 0.85, 2.95, 1.45, 3.98, y0=0.42, y1=-0.32)
+    slipway(p, P, 1.06, 2.94, 1.45, 3.98, y0=0.42, y1=-0.32)
     # tar kettle, log pile, anchor, a bollard on the pier strip
     tar_kettle(p, P, 0.45, 1.55)
     for k in range(3):
@@ -778,7 +778,7 @@ def large_shipyard():
             p.add("trestles", "post", cyl([a[0] + s * 0.18, 0, a[2]], [a[0], 0.55, a[2]], 0.04), "prop")
     K.log(p, P, (3.35, 1.75), (4.9, 1.75), 0.14, name="spare_mast", y=0.64, mat="raw_timber")
     # the slipway between the two pier strips
-    slipway(p, P, 1.1, 4.9, 2.45, 5.98, y0=0.5, y1=-0.35, water_from=3.0)
+    slipway(p, P, 1.06, 4.94, 2.45, 5.98, y0=0.5, y1=-0.35, water_from=3.0)
     shear_legs(p, P, (0.75, 2.3), (0.75, 3.3), 4.6, name="shears_a")
     shear_legs(p, P, (5.25, 2.3), (5.25, 3.3), 4.6, name="shears_b")
     tar_kettle(p, P, 0.45, 2.75)

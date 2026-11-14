@@ -82,8 +82,15 @@ static func quay_tiles(source: ProvinceSim) -> Dictionary[Vector2i, int]:
 		var kind := TileGrid.STONE_QUAY if stone else TileGrid.PIER
 		if stone:
 			# The whole building stands on the stone quay, its land part too (owner's request
-			# 2026-11-09).
-			strip = building.tiles()
+			# 2026-11-09), except the water it leaves open: a shipyard's slipway is cut into the
+			# quay (G3 part 5a, owner's request 2026-11-14).
+			var open_water := building.def.water_tiles_at(building.origin, building.orientation)
+			for tile: Vector2i in strip:
+				open_water.erase(tile)
+			strip = []
+			for tile: Vector2i in building.tiles():
+				if not open_water.has(tile):
+					strip.append(tile)
 		for tile: Vector2i in strip:
 			if not tiles.has(tile):
 				tiles[tile] = kind
