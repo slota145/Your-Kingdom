@@ -169,6 +169,26 @@ func update_view(delta: float) -> void:
 		_update_herd(building, delta)
 
 
+## The herds on screen, for their calls (M10 part 1): one entry per pen building with
+## animals in [param rect] (world pixels) and one per hive, as {"key", "kind", "at"}: the
+## herd good (&"pig", &"sheep", &"horse") or &"bees", and a point among them.
+func voices(rect: Rect2) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for id: int in _herds:
+		var building := province.buildings.get_building(id) if province != null else null
+		if building == null:
+			continue
+		for animal: _Animal in _herds[id]:
+			if animal.sprite.visible and rect.has_point(animal.sprite.position):
+				result.append({"key": "pen_%d" % id, "kind": building.def.herd_good, "at": animal.sprite.position})
+				break
+	for tile: Vector2i in _skeps:
+		var at := _skeps[tile].position
+		if rect.has_point(at):
+			result.append({"key": "hive_%d_%d" % [tile.x, tile.y], "kind": &"bees", "at": at})
+	return result
+
+
 # --- Fences and gates ------------------------------------------------------------------------
 
 func _rebuild_pens() -> void:

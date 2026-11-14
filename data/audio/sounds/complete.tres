@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/audio/sound_def.gd" id="1_snd"]
+
+[resource]
+script = ExtResource("1_snd")
+id = &"complete"
+files = PackedStringArray("sfx/ui/complete_1.ogg")
+events = Array[StringName]([&"building_completed"])
+volume_db = -8.0
+pitch_jitter = 0.03
+hit = 0.5
+every = 1
+chance = 1.0
+max_voices = 1

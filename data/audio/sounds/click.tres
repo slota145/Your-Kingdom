@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/audio/sound_def.gd" id="1_snd"]
+
+[resource]
+script = ExtResource("1_snd")
+id = &"click"
+files = PackedStringArray("sfx/ui/click_1.ogg", "sfx/ui/click_2.ogg")
+events = Array[StringName]([&"ui_click"])
+volume_db = -10.0
+pitch_jitter = 0.05
+hit = 0.5
+every = 1
+chance = 1.0
+max_voices = 1

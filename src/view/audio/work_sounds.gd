@@ -1,14 +1,18 @@
 class_name WorkSounds
 extends Node2D
-## The blows of people at work on screen (ROADMAP M10 part 1): an axe in a trunk, a hammer
-## on the anvil, a pick on stone. Each worker the AgentViewPool drew this frame is heard
-## once per loop of his work animation, from where he stands, quieter far from the middle
-## of the screen and when the camera is zoomed out. Only [constant MAX_VOICES] blows play at
-## once and at most [member SoundDef.max_voices] of one sound: the nearest win.
+## The sound effects of a province on screen (ROADMAP M10 part 1): the blows of people at
+## work (an axe in a trunk, a hammer on the anvil), and the sounds queued by the view for
+## simulation events and animals (a sword blow, a building placed, a pig in its pen). Each
+## worker the AgentViewPool drew this frame is heard once per loop of his work animation,
+## from where he stands, quieter far from the middle of the screen and when the camera is
+## zoomed out. Only [constant MAX_VOICES] sounds play at once and at most
+## [member SoundDef.max_voices] of one sound: the nearest win.
 
 const MAX_VOICES := 12
 ## World pixels from the middle of the screen at which a blow fades to nothing.
 const HEAR_DISTANCE := 1800.0
+## Queued sounds further off the screen than this (world pixels) are not heard.
+const OFF_SCREEN := 160.0
 const BUS := &"Effects"
 
 var _players: Array[AudioStreamPlayer2D] = []
@@ -22,6 +26,9 @@ var _rng := RandomNumberGenerator.new()
 ## shows the rhythm there.
 var played: Dictionary[StringName, int] = {}
 var struck: Dictionary[StringName, int] = {}
+## Sounds queued since the last update: {"sound", "at"} (world pixels; null = the middle of
+## the screen, for sounds of the player's own doing such as a building placed).
+var _queued: Array[Dictionary] = []
 
 
 func _init() -> void:
@@ -35,9 +42,29 @@ func _init() -> void:
 		_playing.append(&"")
 
 
-## Called every frame after the AgentViewPool has drawn its people.
-func update_sounds(pool: AgentViewPool, listener: Vector2, zoom: float, paused: bool) -> void:
+## Plays [param sound] at the next update, at [param at] (world pixels; null = the middle
+## of the screen). With [param by_chance], [member SoundDef.chance] decides whether it is
+## heard at all (animal calls have their own interval instead).
+func queue(sound: SoundDef, at: Variant = null, by_chance: bool = true) -> void:
+	if by_chance and sound.chance < 1.0 and _rng.randf() >= sound.chance:
+		return
+	_queued.append({"sound": sound, "at": at})
+
+
+## Called every frame after the AgentViewPool has drawn its people. [param view]: the
+## screen in world pixels.
+func update_sounds(pool: AgentViewPool, view: Rect2, zoom: float, paused: bool) -> void:
+	var listener := view.get_center()
 	var due: Array[Dictionary] = []
+	var near := view.grow(OFF_SCREEN)
+	for item: Dictionary in _queued:
+		var sound := item["sound"] as SoundDef
+		var at: Vector2 = listener if item["at"] == null else item["at"]
+		if paused or not near.has_point(at):
+			continue
+		struck[sound.id] = struck.get(sound.id, 0) + 1
+		due.append({"sound": sound, "at": at, "distance": at.distance_to(listener)})
+	_queued.clear()
 	var seen: Dictionary[int, int] = {}
 	for i: int in pool.work_ids.size():
 		var sound := SoundBank.for_activity(pool.work_activities[i])

@@ -11,6 +11,7 @@ assets/audio, then rewrites assets/audio/CREDITS.md from the same table.
 Processing kinds:
     hit    one short sound (a blow): mono, leading silence cut, peak at -1 dBFS, at most 1.2 s
     shot   a longer one-shot (a wave, a bleat): mono or stereo as given, peak at -1 dBFS
+    clip   like shot but nothing cut from the start (quiet textures such as a fire, tiny clicks)
     loop   a background bed: stereo, the end crossfaded into the start so it loops without a seam
     loop60 the same from the opening minute of a long recording
     music  a piece of music: stereo, loudness levelled to -16 LUFS
@@ -80,6 +81,34 @@ PACKS: dict[str, tuple[str, str, str, str]] = {
               BSB + "UPLOAD/bwf-en/0821.wav"),
     "barrow": (BSB + "squeaky-wheelbarrow-1-s2516.html", "Joseph Sardin (BigSoundBank)", "CC0",
                BSB + "UPLOAD/flac/2516.flac"),
+    # Batch 2 (2026-11-14): crafts, animals, battle, interface, harbour.
+    "saw": (BSB + "saw-wood-s0559.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0559.wav"),
+    "fireplace": (BSB + "fireplace-1-s0030.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0030.wav"),
+    "rope_creak": (BSB + "rope-1-s3420.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/3420.wav"),
+    "sheep_a": (BSB + "sheep-1-s2343.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/2343.wav"),
+    "sheep_b": (BSB + "sheep-2-s2344.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/2344.wav"),
+    "sheep_c": (BSB + "sheep-3-s2345.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/2345.wav"),
+    "sheep_d": (BSB + "sheep-5-s2347.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/2347.wav"),
+    "neigh_a": (BSB + "neighing-of-a-horse-1-s0284.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0284.wav"),
+    "neigh_b": (BSB + "horse-neighing-4-s1541.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/1541.wav"),
+    "horse_breath": (BSB + "breath-of-a-horse-1-s0285.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0285.wav"),
+    "pig_a": (BSB + "grumpy-pig-1-s1658.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/1658.wav"),
+    "pig_b": (BSB + "grumpy-pig-2-s1659.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/1659.wav"),
+    "bees": (BSB + "solitary-bees-or-flies-s0101.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0101.wav"),
+    "bow": (BSB + "archery-s0549.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0549.wav"),
+    "coins": (BSB + "coins-1-s0193.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0193.wav"),
+    "gavel": (BSB + "gavel-2-blows-s1589.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/1589.wav"),
+    "masts": (BSB + "masts-whistling-1-s2443.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/2443.wav"),
+    "weapons": ("https://opengameart.org/content/medieval-sound-effects-weapon-impacts", "StillNorthMedia", "CC0",
+                "medieval_sfx_weapon_on_weapon_1_of_2.7z"),
+    "grunts": ("https://opengameart.org/content/grunts-male-death-and-pain", "TheBardOfBlasphemy", "CC0",
+               "death%20pain%20grunts.wav"),
+    "wood_crack": ("https://opengameart.org/content/35-wooden-crackshitsdestructions", "Independent.nu", "CC0",
+                   "independent_nu_ljudbank-wood_crack_hit_destruction.7z"),
+    "breaking": ("https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx", "rubberduck", "CC0",
+                 "sfx_breaking_and_falling.zip"),
+    "kenney_ui": ("https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks", "Kenney", "CC0",
+                  "UI_SFX_Set.zip"),
 }
 
 # Target (under assets/audio) -> (pack, file inside the pack or "" for the download itself, kind, gain dB)
@@ -135,6 +164,60 @@ SOURCES: dict[str, tuple] = {
     "ambience/bird_4.ogg": ("birds", "Forest Birds/Forest Birds 9.wav", "shot", 0.0),
     "ambience/gull_1.ogg": ("gull1", "", "shot", 0.0),
     "ambience/gull_2.ogg": ("gull3", "", "shot", 0.0),
+    # Batch 2 (2026-11-14). Crafts: a hand saw, a fire (oven, forge, kiln), a creaking winch.
+    "sfx/work/saw_1.ogg": ("saw", "", "hit", 0.0, {"segment": 4, "len": 0.5}),
+    "sfx/work/saw_2.ogg": ("saw", "", "hit", 0.0, {"segment": 6, "len": 0.5}),
+    "sfx/work/saw_3.ogg": ("saw", "", "hit", 0.0, {"segment": 8, "len": 0.5}),
+    "sfx/work/saw_4.ogg": ("saw", "", "hit", 0.0, {"segment": 10, "len": 0.5}),
+    "sfx/work/fire_1.ogg": ("fireplace", "", "clip", 0.0, {"start": 5, "len": 3}),
+    "sfx/work/fire_2.ogg": ("fireplace", "", "clip", 0.0, {"start": 20, "len": 3}),
+    "sfx/work/fire_3.ogg": ("fireplace", "", "clip", 0.0, {"start": 35, "len": 3}),
+    "sfx/work/creak_1.ogg": ("rope_creak", "", "shot", 0.0),
+    # Animals in pens and wild herds.
+    "sfx/animals/sheep_2.ogg": ("sheep_a", "", "shot", 0.0),
+    "sfx/animals/sheep_3.ogg": ("sheep_b", "", "shot", 0.0),
+    "sfx/animals/sheep_4.ogg": ("sheep_c", "", "shot", 0.0),
+    "sfx/animals/sheep_5.ogg": ("sheep_d", "", "shot", 0.0),
+    "sfx/animals/horse_1.ogg": ("neigh_a", "", "shot", 0.0),
+    "sfx/animals/horse_2.ogg": ("neigh_b", "", "shot", 0.0),
+    "sfx/animals/horse_3.ogg": ("horse_breath", "", "shot", 0.0),
+    "sfx/animals/pig_1.ogg": ("pig_a", "", "shot", 0.0),
+    "sfx/animals/pig_2.ogg": ("pig_b", "", "shot", 0.0, {"start": 0, "len": 2.6}),
+    "sfx/animals/pig_3.ogg": ("pig_b", "", "shot", 0.0, {"start": 2.7, "len": 3.4}),
+    "sfx/animals/bees_1.ogg": ("bees", "", "shot", 0.0),
+    # Battle: blades meeting, a bow, a man falling, a ram on a wall.
+    "sfx/battle/clash_1.ogg": ("weapons", "Sabre Norse Sword Blade on Blade.wav", "hit", 0.0, {"segment": 0, "len": 0.7, "threshold": -30}),
+    "sfx/battle/clash_2.ogg": ("weapons", "Sabre Norse Sword Blade on Blade.wav", "hit", 0.0, {"segment": 3, "len": 0.7, "threshold": -30}),
+    "sfx/battle/clash_3.ogg": ("weapons", "Sabre Norse Sword Blade on Blade.wav", "hit", 0.0, {"segment": 6, "len": 0.7, "threshold": -30}),
+    "sfx/battle/clash_4.ogg": ("weapons", "Mace Norse Sword Blade.wav", "hit", 0.0, {"segment": 0, "len": 0.5, "threshold": -30}),
+    "sfx/battle/clash_5.ogg": ("weapons", "Mace Norse Sword Blade.wav", "hit", 0.0, {"segment": 4, "len": 0.5, "threshold": -30}),
+    "sfx/battle/clash_6.ogg": ("weapons", "Axe Norse Sword Blade on Blade.wav", "hit", 0.0, {"segment": 2, "len": 0.6, "threshold": -30}),
+    "sfx/battle/bow_1.ogg": ("bow", "", "hit", 0.0, {"segment": 0, "len": 0.5}),
+    "sfx/battle/bow_2.ogg": ("bow", "", "hit", 0.0, {"segment": 1, "len": 0.5}),
+    "sfx/battle/death_1.ogg": ("grunts", "", "shot", 0.0, {"segment": 2, "len": 0.8}),
+    "sfx/battle/death_2.ogg": ("grunts", "", "shot", 0.0, {"segment": 3, "len": 1.0}),
+    "sfx/battle/death_3.ogg": ("grunts", "", "shot", 0.0, {"segment": 6, "len": 1.4}),
+    "sfx/battle/death_4.ogg": ("grunts", "", "shot", 0.0, {"segment": 9, "len": 1.1}),
+    "sfx/battle/death_5.ogg": ("grunts", "", "shot", 0.0, {"segment": 10, "len": 0.8}),
+    "sfx/battle/death_6.ogg": ("grunts", "", "shot", 0.0, {"segment": 11, "len": 1.2}),
+    "sfx/battle/ram_1.ogg": ("wood_crack", "impactwood01.mp3.flac", "shot", 0.0),
+    "sfx/battle/ram_2.ogg": ("wood_crack", "impactwood05.mp3.flac", "shot", 0.0),
+    "sfx/battle/ram_3.ogg": ("wood_crack", "impactwood10.mp3.flac", "shot", 0.0),
+    "sfx/battle/ram_4.ogg": ("wood_crack", "crack03.mp3.flac", "shot", 0.0),
+    # Interface: a click, a building placed, pulled down, finished; coins at a sale.
+    "sfx/ui/click_1.ogg": ("kenney_ui", "click1.wav", "clip", 0.0),
+    "sfx/ui/click_2.ogg": ("kenney_ui", "click3.wav", "clip", 0.0),
+    "sfx/ui/place_1.ogg": ("wood_metal", "wood_close_01.ogg", "hit", 0.0),
+    "sfx/ui/place_2.ogg": ("wood_metal", "wood_close_02.ogg", "hit", 0.0),
+    "sfx/ui/demolish_1.ogg": ("breaking", "bfh1_breaking_01.ogg", "shot", 0.0),
+    "sfx/ui/demolish_2.ogg": ("breaking", "bfh1_breaking_02.ogg", "shot", 0.0),
+    "sfx/ui/complete_1.ogg": ("gavel", "", "shot", 0.0),
+    "sfx/ui/coins_1.ogg": ("coins", "", "shot", 0.0, {"segment": 0, "len": 0.8}),
+    "sfx/ui/coins_2.ogg": ("coins", "", "shot", 0.0, {"segment": 2, "len": 0.6}),
+    "sfx/ui/coins_3.ogg": ("coins", "", "shot", 0.0, {"segment": 3, "len": 0.6}),
+    # Harbour: wind in the rigging, a creaking rope.
+    "ambience/harbour_bed.ogg": ("masts", "", "loop", 0.0, {"start": 10, "len": 60}),
+    "ambience/rope_1.ogg": ("rope_creak", "", "shot", -4.0),
     # Music.
     "music/market_day.ogg": ("market_day", "", "music", 0.0),
     "music/harvest_season.ogg": ("harvest_season", "", "music", 0.0),
@@ -170,12 +253,33 @@ def fetch(cache: Path, pack: str) -> Path:
     return path
 
 
+def onsets(src: Path, threshold: float) -> list[float]:
+    """Starts of the sounds in [src]: where each stretch of silence (below [threshold] dB) ends."""
+    out = run(["ffmpeg", "-nostats", "-i", str(src), "-af", "silencedetect=noise=%sdB:d=0.12" % threshold, "-f", "null", "-"])
+    starts, ends = [], []
+    for line in out.splitlines():
+        if "silence_start:" in line:
+            starts.append(float(line.split("silence_start:")[1].split()[0]))
+        if "silence_end:" in line:
+            ends.append(float(line.split("silence_end:")[1].split()[0]))
+    # A sound at the very start has no silence before it.
+    return ([0.0] if not starts or starts[0] > 0.05 else []) + ends
+
+
 def cut(cache: Path, src: Path, target: str, opts: dict) -> Path:
-    """The part of [src] given by [opts] (start, len, lowpass), faded in and out, as a WAV in the cache."""
+    """The part of [src] given by [opts], faded in and out, as a WAV in the cache: from "start"
+    (seconds) or from the start of sound number "segment" (counted from 0, split at silences
+    below "threshold" dB, default -35), "len" seconds long, optionally through a "lowpass" filter."""
     out = cache / "cuts" / (target.replace("/", "_") + ".wav")
     out.parent.mkdir(parents=True, exist_ok=True)
     length = float(opts["len"])
-    filters = ["afade=t=in:d=0.05", "afade=t=out:st=%.3f:d=0.4" % max(length - 0.4, 0.05)]
+    if "segment" in opts:
+        found = onsets(src, float(opts.get("threshold", -35)))
+        if int(opts["segment"]) >= len(found):
+            sys.exit("%s: only %d sounds in %s" % (target, len(found), src.name))
+        opts = dict(opts, start=max(found[int(opts["segment"])] - 0.01, 0.0))
+    fade = min(0.4, length * 0.4)
+    filters = ["afade=t=in:d=0.01", "afade=t=out:st=%.3f:d=%.3f" % (length - fade, fade)]
     if "lowpass" in opts:
         filters.insert(0, "lowpass=f=%d" % opts["lowpass"])
     run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(opts.get("start", 0)), "-t", str(length), "-i", str(src),
@@ -225,8 +329,8 @@ def encode(src: Path, dst: Path, kind: str, gain: float) -> None:
         g = peak_gain(src, trim) + gain
         run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src), "-af", "%s,volume=%.2fdB" % (trim, g),
              "-ac", "1", *ogg, str(dst)])
-    elif kind == "shot":
-        trim = "silenceremove=start_periods=1:start_threshold=-50dB"
+    elif kind in ("shot", "clip"):
+        trim = "silenceremove=start_periods=1:start_threshold=-50dB" if kind == "shot" else "anull"
         g = peak_gain(src, trim) + gain
         run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src), "-af", "%s,volume=%.2fdB" % (trim, g),
              *ogg, str(dst)])

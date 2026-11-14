@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/audio/sound_def.gd" id="1_snd"]
+
+[resource]
+script = ExtResource("1_snd")
+id = &"coins"
+files = PackedStringArray("sfx/ui/coins_1.ogg", "sfx/ui/coins_2.ogg", "sfx/ui/coins_3.ogg")
+events = Array[StringName]([&"goods_sold"])
+volume_db = -12.0
+pitch_jitter = 0.05
+hit = 0.5
+every = 1
+chance = 1.0
+max_voices = 1

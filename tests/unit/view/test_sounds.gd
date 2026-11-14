@@ -5,6 +5,8 @@ extends GdUnitTestSuite
 
 ## Activities set in code rather than in recipe data.
 const CODE_ACTIVITIES: Array[StringName] = [&"build"]
+## A screen round the world origin (world pixels).
+const SCREEN := Rect2(-640, -360, 1280, 720)
 
 
 func test_every_sound_file_is_there() -> void:
@@ -50,6 +52,74 @@ func test_sounds_belong_to_real_activities() -> void:
 	assert_int(heard).is_greater(8)
 
 
+func test_event_sounds_belong_to_real_events() -> void:
+	var emitted := _emitted_events()
+	assert_bool(emitted.has(&"unit_struck")).is_true()
+	var heard := 0
+	for sound: SoundDef in SoundBank.sounds():
+		for event: StringName in sound.events:
+			assert_bool(event == &"ui_click" or emitted.has(event)).override_failure_message(String(event)).is_true()
+			heard += 1
+	for event: StringName in [&"unit_struck", &"arrow_shot", &"unit_died", &"wall_damaged", &"building_placed",
+			&"building_removed", &"building_completed", &"ui_click"]:
+		assert_object(SoundBank.for_event(event)).override_failure_message(String(event)).is_not_null()
+	assert_int(heard).is_greater_equal(8)
+
+
+func test_animal_sounds_belong_to_real_animals() -> void:
+	var known: Dictionary[StringName, bool] = {&"bees": true}
+	for kind: StringName in WildHerds.KINDS:
+		known[kind] = true
+	for def: GameDef in SimFixture.registry().all_of(&"building"):
+		var building := def as BuildingDef
+		if building.herd_good != &"":
+			known[building.herd_good] = true
+			assert_object(SoundBank.for_animal(building.herd_good)).override_failure_message(String(building.herd_good)).is_not_null()
+	for sound: SoundDef in SoundBank.sounds():
+		for animal: StringName in sound.animals:
+			assert_bool(known.has(animal)).override_failure_message(String(animal)).is_true()
+
+
+func test_herds_call_now_and_then_not_all_at_once() -> void:
+	var voices := AnimalVoices.new(7)
+	var herds: Array[Dictionary] = []
+	for i: int in 6:
+		herds.append({"key": "pen_%d" % i, "kind": &"sheep", "at": Vector2(i * 50, 0)})
+	var sheep := SoundBank.for_animal(&"sheep")
+	var calls := 0
+	var first_second := 0
+	for frame: int in 600:   # 60 s in tenths
+		var due := voices.update(herds, 0.1)
+		calls += due.size()
+		if frame < 10:
+			first_second += due.size()
+	assert_int(first_second).is_less_equal(2)
+	# Each pen about every (8 + 20) / 2 s: some 10 to 30 calls from 6 pens in a minute.
+	assert_int(calls).is_between(6, int(6 * 60 / sheep.interval.x) + 6)
+	# A herd off the screen is forgotten; an animal without a sound stays silent.
+	var quiet: Array[Dictionary] = [{"key": "wild_1", "kind": &"unicorn", "at": Vector2.ZERO}]
+	assert_int(voices.update(quiet, 100.0).size()).is_equal(0)
+
+
+func test_event_sounds_are_heard_where_they_happen() -> void:
+	var sim := SimFixture.make_sim()
+	var hut := SimFixture.place(sim, &"hut", Vector2i(10, 10))
+	var at: Variant = ProvinceView.event_point(sim.province, {"type": &"building_completed", "building": hut.id})
+	assert_vector(at as Vector2).is_equal(IsoMath.grid_to_screen(Vector2(10, 10) + Vector2(hut.def.footprint) * 0.5))
+	assert_vector(ProvinceView.event_point(sim.province, {"type": &"unit_died", "pos": Vector2(3, 4)}) as Vector2) \
+			.is_equal(IsoMath.grid_to_screen(Vector2(3, 4)))
+	# Gone already (a building pulled down): the middle of the screen.
+	assert_object(ProvinceView.event_point(sim.province, {"type": &"building_removed", "building": 999})).is_null()
+	var sounds := auto_free(WorkSounds.new()) as WorkSounds
+	add_child(sounds)
+	var pool := auto_free(AgentViewPool.new()) as AgentViewPool
+	var clash := SoundBank.for_event(&"unit_struck")
+	sounds.queue(clash, Vector2(100, 0))
+	sounds.queue(clash, Vector2(90000, 0))   # far off the screen: not heard
+	sounds.update_sounds(pool, SCREEN, 1.0, false)
+	assert_int(sounds.struck.get(clash.id, 0)).is_equal(1)
+
+
 func test_a_blow_is_heard_once_per_loop_of_the_animation() -> void:
 	var sounds := auto_free(WorkSounds.new()) as WorkSounds
 	add_child(sounds)
@@ -57,20 +127,20 @@ func test_a_blow_is_heard_once_per_loop_of_the_animation() -> void:
 	var axe := SoundBank.for_activity(&"chop")
 	# Just before the blow: nothing (and the first sight of a worker never plays).
 	_work(pool, 7, &"chop", 3.0 + axe.hit - 0.05)
-	sounds.update_sounds(pool, Vector2.ZERO, 1.0, false)
+	sounds.update_sounds(pool, SCREEN, 1.0, false)
 	assert_int(_playing(sounds)).is_equal(0)
 	_work(pool, 7, &"chop", 3.0 + axe.hit - 0.01)
-	sounds.update_sounds(pool, Vector2.ZERO, 1.0, false)
+	sounds.update_sounds(pool, SCREEN, 1.0, false)
 	assert_int(_playing(sounds)).is_equal(0)
 	# The axe bites: one blow.
 	_work(pool, 7, &"chop", 3.0 + axe.hit + 0.02)
-	sounds.update_sounds(pool, Vector2.ZERO, 1.0, false)
+	sounds.update_sounds(pool, SCREEN, 1.0, false)
 	assert_int(_playing(sounds)).is_equal(1)
 	# Paused: the swing goes on in the picture, the blow is not heard.
 	for player: Node in sounds.get_children():
 		(player as AudioStreamPlayer2D).stop()
 	_work(pool, 7, &"chop", 4.0 + axe.hit + 0.02)
-	sounds.update_sounds(pool, Vector2.ZERO, 1.0, true)
+	sounds.update_sounds(pool, SCREEN, 1.0, true)
 	assert_int(_playing(sounds)).is_equal(0)
 
 
@@ -169,6 +239,27 @@ func test_audio_buses_exist() -> void:
 func _pick(tracks: Array[MusicTrackDef], mood: StringName, played: Array[MusicTrackDef],
 		rng: RandomNumberGenerator) -> MusicTrackDef:
 	return Music.pick(tracks, mood, played, rng)
+
+
+## Event types the simulation emits (province.events.emit(&"...")).
+func _emitted_events() -> Dictionary[StringName, bool]:
+	var found: Dictionary[StringName, bool] = {}
+	var regex := RegEx.create_from_string("emit\\(&\"([a-z_]+)\"")
+	for path: String in _gd_files("res://src/sim"):
+		for m: RegExMatch in regex.search_all(FileAccess.get_file_as_string(path)):
+			found[StringName(m.get_string(1))] = true
+	return found
+
+
+func _gd_files(dir_path: String) -> Array[String]:
+	var result: Array[String] = []
+	var dir := DirAccess.open(dir_path)
+	for file: String in dir.get_files():
+		if file.ends_with(".gd"):
+			result.append(dir_path.path_join(file))
+	for sub: String in dir.get_directories():
+		result.append_array(_gd_files(dir_path.path_join(sub)))
+	return result
 
 
 func _work(pool: AgentViewPool, id: int, activity: StringName, cycle: float) -> void:

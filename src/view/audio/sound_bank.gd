@@ -12,6 +12,8 @@ const AUDIO_ROOT := "res://assets/audio/"
 static var _loaded: bool = false
 static var _sounds: Array[SoundDef] = []
 static var _by_activity: Dictionary[StringName, SoundDef] = {}
+static var _by_event: Dictionary[StringName, SoundDef] = {}
+static var _by_animal: Dictionary[StringName, SoundDef] = {}
 static var _ambiences: Array[AmbienceDef] = []
 static var _music: Array[MusicTrackDef] = []
 static var _streams: Dictionary[String, AudioStream] = {}
@@ -36,6 +38,18 @@ static func music() -> Array[MusicTrackDef]:
 static func for_activity(activity: StringName) -> SoundDef:
 	_load()
 	return _by_activity.get(activity)
+
+
+## The sound of the simulation event [param type] (or &"ui_click"), or null.
+static func for_event(type: StringName) -> SoundDef:
+	_load()
+	return _by_event.get(type)
+
+
+## The call of the animal [param kind] (a herd good, a wild herd's kind), or null.
+static func for_animal(kind: StringName) -> SoundDef:
+	_load()
+	return _by_animal.get(kind)
 
 
 ## The stream of a file under assets/audio, loaded once; null when it is missing.
@@ -66,16 +80,22 @@ static func _load() -> void:
 		if sound == null:
 			continue
 		_sounds.append(sound)
-		for activity: StringName in sound.activities:
-			if _by_activity.has(activity):
-				push_error("SoundBank: '%s' already makes the sound '%s'" % [activity, _by_activity[activity].id])
-			_by_activity[activity] = sound
+		_index(_by_activity, sound.activities, sound)
+		_index(_by_event, sound.events, sound)
+		_index(_by_animal, sound.animals, sound)
 	for res: Resource in _resources(AMBIENCE_DIR):
 		if res is AmbienceDef:
 			_ambiences.append(res as AmbienceDef)
 	for res: Resource in _resources(MUSIC_DIR):
 		if res is MusicTrackDef:
 			_music.append(res as MusicTrackDef)
+
+
+static func _index(index: Dictionary[StringName, SoundDef], keys: Array[StringName], sound: SoundDef) -> void:
+	for key: StringName in keys:
+		if index.has(key):
+			push_error("SoundBank: '%s' already makes the sound '%s'" % [key, index[key].id])
+		index[key] = sound
 
 
 static func _resources(dir_path: String) -> Array[Resource]:

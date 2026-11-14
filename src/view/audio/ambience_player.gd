@@ -83,10 +83,11 @@ func update_sounds(province: ProvinceSim, visible_rect: Rect2, people: int, delt
 		shot.play()
 
 
-## Share of the tiles in [param rect] (world pixels) with trees and with water, as
-## {Source.FOREST: share, Source.WATER: share}. Tiles off the map are not counted.
+## Share of the tiles in [param rect] (world pixels) with trees, with water and with piers
+## or quays, as {Source.FOREST: share, Source.WATER: share, Source.HARBOUR: share}. Tiles
+## off the map are not counted.
 static func survey(province: ProvinceSim, rect: Rect2) -> Dictionary:
-	var shares := {AmbienceDef.Source.FOREST: 0.0, AmbienceDef.Source.WATER: 0.0}
+	var shares := {AmbienceDef.Source.FOREST: 0.0, AmbienceDef.Source.WATER: 0.0, AmbienceDef.Source.HARBOUR: 0.0}
 	var corners: Array[Vector2i] = [
 		IsoMath.tile_at_screen(rect.position), IsoMath.tile_at_screen(rect.end),
 		IsoMath.tile_at_screen(Vector2(rect.end.x, rect.position.y)),
@@ -109,6 +110,7 @@ static func survey(province: ProvinceSim, rect: Rect2) -> Dictionary:
 	var total := 0
 	var trees := 0
 	var water := 0
+	var quays := 0
 	for y: int in range(low.y, high.y + 1, step):
 		for x: int in range(low.x, high.x + 1, step):
 			var tile := Vector2i(x, y)
@@ -122,9 +124,12 @@ static func survey(province: ProvinceSim, rect: Rect2) -> Dictionary:
 			var index := province.grid.terrain(tile)
 			if index < terrains.size() and terrains[index] != null and terrains[index].is_kind(&"water"):
 				water += 1
+			if province.grid.has_quay(tile):
+				quays += 1
 	if total > 0:
 		shares[AmbienceDef.Source.FOREST] = float(trees) / total
 		shares[AmbienceDef.Source.WATER] = float(water) / total
+		shares[AmbienceDef.Source.HARBOUR] = float(quays) / total
 	return shares
 
 

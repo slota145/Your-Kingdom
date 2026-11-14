@@ -49,6 +49,55 @@ zgody i podpisu. Autorów i tak wymieniamy z wdzięczności.
 | `ambience/bird_4.ogg` | https://opengameart.org/content/forest-bird-sounds | pauliuw | CC0 | `Forest Birds/Forest Birds 9.wav` |
 | `ambience/gull_1.ogg` | https://opengameart.org/content/solo-seagull-sound-effects | rango-mango | CC0 | `Seagull%20Ambient%201.wav` |
 | `ambience/gull_2.ogg` | https://opengameart.org/content/solo-seagull-sound-effects | rango-mango | CC0 | `Seagull%20Ambient%203.wav` |
+| `sfx/work/saw_1.ogg` | https://bigsoundbank.com/saw-wood-s0559.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0559.wav` |
+| `sfx/work/saw_2.ogg` | https://bigsoundbank.com/saw-wood-s0559.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0559.wav` |
+| `sfx/work/saw_3.ogg` | https://bigsoundbank.com/saw-wood-s0559.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0559.wav` |
+| `sfx/work/saw_4.ogg` | https://bigsoundbank.com/saw-wood-s0559.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0559.wav` |
+| `sfx/work/fire_1.ogg` | https://bigsoundbank.com/fireplace-1-s0030.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0030.wav` |
+| `sfx/work/fire_2.ogg` | https://bigsoundbank.com/fireplace-1-s0030.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0030.wav` |
+| `sfx/work/fire_3.ogg` | https://bigsoundbank.com/fireplace-1-s0030.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0030.wav` |
+| `sfx/work/creak_1.ogg` | https://bigsoundbank.com/rope-1-s3420.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/3420.wav` |
+| `sfx/animals/sheep_2.ogg` | https://bigsoundbank.com/sheep-1-s2343.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/2343.wav` |
+| `sfx/animals/sheep_3.ogg` | https://bigsoundbank.com/sheep-2-s2344.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/2344.wav` |
+| `sfx/animals/sheep_4.ogg` | https://bigsoundbank.com/sheep-3-s2345.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/2345.wav` |
+| `sfx/animals/sheep_5.ogg` | https://bigsoundbank.com/sheep-5-s2347.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/2347.wav` |
+| `sfx/animals/horse_1.ogg` | https://bigsoundbank.com/neighing-of-a-horse-1-s0284.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0284.wav` |
+| `sfx/animals/horse_2.ogg` | https://bigsoundbank.com/horse-neighing-4-s1541.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/1541.wav` |
+| `sfx/animals/horse_3.ogg` | https://bigsoundbank.com/breath-of-a-horse-1-s0285.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0285.wav` |
+| `sfx/animals/pig_1.ogg` | https://bigsoundbank.com/grumpy-pig-1-s1658.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/1658.wav` |
+| `sfx/animals/pig_2.ogg` | https://bigsoundbank.com/grumpy-pig-2-s1659.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/1659.wav` |
+| `sfx/animals/pig_3.ogg` | https://bigsoundbank.com/grumpy-pig-2-s1659.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/1659.wav` |
+| `sfx/animals/bees_1.ogg` | https://bigsoundbank.com/solitary-bees-or-flies-s0101.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0101.wav` |
+| `sfx/battle/clash_1.ogg` | https://opengameart.org/content/medieval-sound-effects-weapon-impacts | StillNorthMedia | CC0 | `Sabre Norse Sword Blade on Blade.wav` |
+| `sfx/battle/clash_2.ogg` | https://opengameart.org/content/medieval-sound-effects-weapon-impacts | StillNorthMedia | CC0 | `Sabre Norse Sword Blade on Blade.wav` |
+| `sfx/battle/clash_3.ogg` | https://opengameart.org/content/medieval-sound-effects-weapon-impacts | StillNorthMedia | CC0 | `Sabre Norse Sword Blade on Blade.wav` |
+| `sfx/battle/clash_4.ogg` | https://opengameart.org/content/medieval-sound-effects-weapon-impacts | StillNorthMedia | CC0 | `Mace Norse Sword Blade.wav` |
+| `sfx/battle/clash_5.ogg` | https://opengameart.org/content/medieval-sound-effects-weapon-impacts | StillNorthMedia | CC0 | `Mace Norse Sword Blade.wav` |
+| `sfx/battle/clash_6.ogg` | https://opengameart.org/content/medieval-sound-effects-weapon-impacts | StillNorthMedia | CC0 | `Axe Norse Sword Blade on Blade.wav` |
+| `sfx/battle/bow_1.ogg` | https://bigsoundbank.com/archery-s0549.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0549.wav` |
+| `sfx/battle/bow_2.ogg` | https://bigsoundbank.com/archery-s0549.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0549.wav` |
+| `sfx/battle/death_1.ogg` | https://opengameart.org/content/grunts-male-death-and-pain | TheBardOfBlasphemy | CC0 | `death%20pain%20grunts.wav` |
+| `sfx/battle/death_2.ogg` | https://opengameart.org/content/grunts-male-death-and-pain | TheBardOfBlasphemy | CC0 | `death%20pain%20grunts.wav` |
+| `sfx/battle/death_3.ogg` | https://opengameart.org/content/grunts-male-death-and-pain | TheBardOfBlasphemy | CC0 | `death%20pain%20grunts.wav` |
+| `sfx/battle/death_4.ogg` | https://opengameart.org/content/grunts-male-death-and-pain | TheBardOfBlasphemy | CC0 | `death%20pain%20grunts.wav` |
+| `sfx/battle/death_5.ogg` | https://opengameart.org/content/grunts-male-death-and-pain | TheBardOfBlasphemy | CC0 | `death%20pain%20grunts.wav` |
+| `sfx/battle/death_6.ogg` | https://opengameart.org/content/grunts-male-death-and-pain | TheBardOfBlasphemy | CC0 | `death%20pain%20grunts.wav` |
+| `sfx/battle/ram_1.ogg` | https://opengameart.org/content/35-wooden-crackshitsdestructions | Independent.nu | CC0 | `impactwood01.mp3.flac` |
+| `sfx/battle/ram_2.ogg` | https://opengameart.org/content/35-wooden-crackshitsdestructions | Independent.nu | CC0 | `impactwood05.mp3.flac` |
+| `sfx/battle/ram_3.ogg` | https://opengameart.org/content/35-wooden-crackshitsdestructions | Independent.nu | CC0 | `impactwood10.mp3.flac` |
+| `sfx/battle/ram_4.ogg` | https://opengameart.org/content/35-wooden-crackshitsdestructions | Independent.nu | CC0 | `crack03.mp3.flac` |
+| `sfx/ui/click_1.ogg` | https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks | Kenney | CC0 | `click1.wav` |
+| `sfx/ui/click_2.ogg` | https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks | Kenney | CC0 | `click3.wav` |
+| `sfx/ui/place_1.ogg` | https://opengameart.org/content/100-cc0-metal-and-wood-sfx | rubberduck | CC0 | `wood_close_01.ogg` |
+| `sfx/ui/place_2.ogg` | https://opengameart.org/content/100-cc0-metal-and-wood-sfx | rubberduck | CC0 | `wood_close_02.ogg` |
+| `sfx/ui/demolish_1.ogg` | https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx | rubberduck | CC0 | `bfh1_breaking_01.ogg` |
+| `sfx/ui/demolish_2.ogg` | https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx | rubberduck | CC0 | `bfh1_breaking_02.ogg` |
+| `sfx/ui/complete_1.ogg` | https://bigsoundbank.com/gavel-2-blows-s1589.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/1589.wav` |
+| `sfx/ui/coins_1.ogg` | https://bigsoundbank.com/coins-1-s0193.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0193.wav` |
+| `sfx/ui/coins_2.ogg` | https://bigsoundbank.com/coins-1-s0193.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0193.wav` |
+| `sfx/ui/coins_3.ogg` | https://bigsoundbank.com/coins-1-s0193.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/0193.wav` |
+| `ambience/harbour_bed.ogg` | https://bigsoundbank.com/masts-whistling-1-s2443.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/2443.wav` |
+| `ambience/rope_1.ogg` | https://bigsoundbank.com/rope-1-s3420.html | Joseph Sardin (BigSoundBank) | CC0 | `https://bigsoundbank.com/UPLOAD/bwf-en/3420.wav` |
 | `music/market_day.ogg` | https://opengameart.org/content/medieval-market-day | RandomMind | CC0 | `Market_Day.wav` |
 | `music/harvest_season.ogg` | https://opengameart.org/content/medieval-harvest-season | RandomMind | CC0 | `harvestseason.wav` |
 | `music/exploration.ogg` | https://opengameart.org/content/medieval-exploration | RandomMind | CC0 | `Exploration.wav` |
