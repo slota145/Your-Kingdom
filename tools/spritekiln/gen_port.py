@@ -944,10 +944,12 @@ ENTRANCES = {"bollard": (0, 0), "mooring": (0, 0), "crane": (0, 1), "port": (3, 
 YARDS = {"port_warehouse", "port_warehouse_small", "port_store"}
 
 
-def main():
-    only = [a for a in sys.argv[1:] if not a.startswith("-")]
-    W.ENTRANCES.update(ENTRANCES)
-    for bid, (fn, summary) in BUILDINGS.items():
+def run(buildings, entrances, args):
+    """Writes the specs (base, pieces, construction stages, work spots) of `buildings`
+    {id: (fn, summary)}; `args` = ids to write (all when empty)."""
+    only = [a for a in args if not a.startswith("-")]
+    W.ENTRANCES.update(entrances)
+    for bid, (fn, summary) in buildings.items():
         if only and bid not in only:
             continue
         P, parts, size, cy = fn()
@@ -975,6 +977,10 @@ def main():
         if getattr(parts, "spots", None):
             W.write_spots(bid, P, parts)
         print("written", bid, n, "prims")
+
+
+def main():
+    run(BUILDINGS, ENTRANCES, sys.argv[1:])
 
 
 if __name__ == "__main__":

@@ -39,7 +39,9 @@ const SPRITEKILN_WORKSHOPS: Array[String] = ["woodcutter", "forester", "quarry",
 		"mill", "bakery", "brewery", "meadery", "wine_press", "sawmill", "blacksmith", "smelter", "brickworks",
 		"weaver", "tailor", "slaughterhouse",
 		# G3 part 4b: the town's buildings (gen_town.py); the pioneer camp was the last from PixelLab.
-		"well", "chapel", "church", "market", "tavern", "town_hall", "trading_post", "builders_hut", "pioneer_camp"]
+		"well", "chapel", "church", "market", "tavern", "town_hall", "trading_post", "builders_hut", "pioneer_camp",
+		# G3 part 5b: the military workshops (gen_military.py).
+		"armourer", "bowyer", "armoury", "siege_workshop"]
 
 
 func test_spritekiln_workshop_art_sorts_correctly() -> void:

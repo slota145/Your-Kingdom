@@ -6,7 +6,7 @@
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"
 YARDS=" port_warehouse port_warehouse_small port_store "
-cd "$HERE" && python3 gen_port.py "$@"
+cd "$HERE" && python3 "${GEN:-gen_port.py}" "$@"
 for id in "$@"; do
 	cd "$HERE/art/specs/props/$id"
 	specs="${id}_c1 ${id}_c2 $(ls ${id}_shed_*.yaml 2>/dev/null | sed "s/.yaml//")"
