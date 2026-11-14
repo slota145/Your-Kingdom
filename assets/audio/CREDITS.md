@@ -109,3 +109,17 @@ zgody i podpisu. Autorów i tak wymieniamy z wdzięczności.
 | `music/flute_strings.ogg` | https://opengameart.org/content/minimalistic-flute-strings-tune | Spring Spring | CC0 | `ff_2.ogg` |
 | `music/at_home.ogg` | https://opengameart.org/content/at-home-orchestral | Wolfgang | CC0 | `cinematic-calm.wav` |
 | `music/beautiful_forest.ogg` | https://opengameart.org/content/beautiful-forest-orchestra | nene | CC0 | `beautiful_forest_16bit_44.1khz_1.ogg` |
+| `music/war_medieval_battle.ogg` | https://opengameart.org/content/medieval-battle | RandomMind | CC0 | `battle_1.wav` |
+| `music/war_knights_challenge.ogg` | https://opengameart.org/content/a-knights-challenge | umplix | CC0 | `a_knights_challenge.wav` |
+| `music/war_call_to_battle.ogg` | https://opengameart.org/content/call-to-battle | Eldritch Grim | CC0 | `trampent.wav` |
+| `music/war_call_to_war.ogg` | https://opengameart.org/content/call-to-war | umplix | CC0 | `call_to_war.wav` |
+| `music/war_laments_of_war.ogg` | https://opengameart.org/content/laments-of-the-war | Cethiel | CC0 | `Lament%20of%20the%20War%20-%20Lossless%20FLAC.flac` |
+| `music/war_qazijamjam.ogg` | https://opengameart.org/content/qazijamjam-orchestral-battle-theme | emmama | CC0 | `QaziJamJam.wav` |
+| `music/war_the_battlefield.ogg` | https://opengameart.org/content/the-battlefield | umplix | CC0 | `the_battlefield.wav` |
+| `music/war_to_battle.ogg` | https://opengameart.org/content/to-battle | umplix | CC0 | `to_battle.wav` |
+| `music/war_militaristic.ogg` | https://opengameart.org/content/some-militaristic-tune | Spring Spring | CC0 | `march2_0.ogg` |
+| `music/war_legend_will_rise.ogg` | https://opengameart.org/content/a-legend-will-rise-orchestral | codeManu | CC0 | `A%20Legend%20Will%20Rise.mp3` |
+| `music/war_prepare_swords.ogg` | https://opengameart.org/content/prepare-your-swords | Bojidar Marinov | CC0 | `prepare_your_swords_0.ogg` |
+| `music/war_swordfight.ogg` | https://opengameart.org/content/swordfight | Kistol | CC0 | `Swordfight_0.ogg` |
+| `music/war_final_stand.ogg` | https://opengameart.org/content/final-stand | iamoneabe | CC0 | `final_stand.wav` |
+| `music/war_battle_theme_a.ogg` | https://opengameart.org/content/battle-theme-a | cynicmusic | CC0 | `battleThemeA.mp3` |

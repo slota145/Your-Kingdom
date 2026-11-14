@@ -222,13 +222,21 @@ func test_music_does_not_repeat_a_piece_too_soon() -> void:
 	var all := SoundBank.music()
 	assert_int(all.size()).is_greater_equal(11)
 	var played: Array[MusicTrackDef] = []
+	var peaceful: Array[MusicTrackDef] = []
+	for track: MusicTrackDef in all:
+		if track.moods.has(&"peace"):
+			peaceful.append(track)
 	for i: int in 60:
-		var next := _pick(all, &"peace", played, rng)
-		var since := played.size() - 1 - played.rfind(next) if played.has(next) else all.size()
-		assert_int(since).is_greater_equal(all.size() / 2)
+		var next := _pick(peaceful, &"peace", played, rng)
+		var since := played.size() - 1 - played.rfind(next) if played.has(next) else peaceful.size()
+		assert_int(since).is_greater_equal(peaceful.size() / 2)
 		played.append(next)
-	# The game has music for the menu and for a province at peace.
+	# The game has music for the menu, for a province at peace and for a battle; battle
+	# pieces never play in peace.
 	assert_object(_pick(all, &"menu", [] as Array[MusicTrackDef], rng)).is_not_null()
+	var war := _pick(all, &"war", [] as Array[MusicTrackDef], rng)
+	assert_object(war).is_not_null()
+	assert_bool(war.moods.has(&"peace")).is_false()
 
 
 func test_audio_buses_exist() -> void:

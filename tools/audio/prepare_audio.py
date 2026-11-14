@@ -69,6 +69,21 @@ PACKS: dict[str, tuple[str, str, str, str]] = {
     "at_home": ("https://opengameart.org/content/at-home-orchestral", "Wolfgang", "CC0", "cinematic-calm.wav"),
     "beautiful_forest": ("https://opengameart.org/content/beautiful-forest-orchestra", "nene", "CC0",
                          "beautiful_forest_16bit_44.1khz_1.ogg"),
+    # Battle music (owner's choice 2026-11-14, listening round 3).
+    "war_medieval_battle": ("https://opengameart.org/content/medieval-battle", "RandomMind", "CC0", "battle_1.wav"),
+    "war_knights_challenge": ("https://opengameart.org/content/a-knights-challenge", "umplix", "CC0", "a_knights_challenge.wav"),
+    "war_call_to_battle": ("https://opengameart.org/content/call-to-battle", "Eldritch Grim", "CC0", "trampent.wav"),
+    "war_call_to_war": ("https://opengameart.org/content/call-to-war", "umplix", "CC0", "call_to_war.wav"),
+    "war_laments_of_war": ("https://opengameart.org/content/laments-of-the-war", "Cethiel", "CC0", "Lament%20of%20the%20War%20-%20Lossless%20FLAC.flac"),
+    "war_qazijamjam": ("https://opengameart.org/content/qazijamjam-orchestral-battle-theme", "emmama", "CC0", "QaziJamJam.wav"),
+    "war_the_battlefield": ("https://opengameart.org/content/the-battlefield", "umplix", "CC0", "the_battlefield.wav"),
+    "war_to_battle": ("https://opengameart.org/content/to-battle", "umplix", "CC0", "to_battle.wav"),
+    "war_militaristic": ("https://opengameart.org/content/some-militaristic-tune", "Spring Spring", "CC0", "march2_0.ogg"),
+    "war_legend_will_rise": ("https://opengameart.org/content/a-legend-will-rise-orchestral", "codeManu", "CC0", "A%20Legend%20Will%20Rise.mp3"),
+    "war_prepare_swords": ("https://opengameart.org/content/prepare-your-swords", "Bojidar Marinov", "CC0", "prepare_your_swords_0.ogg"),
+    "war_swordfight": ("https://opengameart.org/content/swordfight", "Kistol", "CC0", "Swordfight_0.ogg"),
+    "war_final_stand": ("https://opengameart.org/content/final-stand", "iamoneabe", "CC0", "final_stand.wav"),
+    "war_battle_theme_a": ("https://opengameart.org/content/battle-theme-a", "cynicmusic", "CC0", "battleThemeA.mp3"),
     # Town hubbub and village sounds from BigSoundBank (Joseph Sardin, CC0; owner's choice 2026-11-14).
     "walla": (BSB + "walla-group-averages-discussions-s0684.html", "Joseph Sardin (BigSoundBank)", "CC0",
               BSB + "UPLOAD/bwf-en/0684.wav"),
@@ -230,6 +245,21 @@ SOURCES: dict[str, tuple] = {
     "music/flute_strings.ogg": ("flute_strings", "", "music", 0.0),
     "music/at_home.ogg": ("at_home", "", "music", 0.0),
     "music/beautiful_forest.ogg": ("beautiful_forest", "", "music", 0.0),
+    # Battle music (mood "war").
+    "music/war_medieval_battle.ogg": ("war_medieval_battle", "", "music", 0.0),
+    "music/war_knights_challenge.ogg": ("war_knights_challenge", "", "music", 0.0),
+    "music/war_call_to_battle.ogg": ("war_call_to_battle", "", "music", 0.0),
+    "music/war_call_to_war.ogg": ("war_call_to_war", "", "music", 0.0),
+    "music/war_laments_of_war.ogg": ("war_laments_of_war", "", "music", 0.0),
+    "music/war_qazijamjam.ogg": ("war_qazijamjam", "", "music", 0.0),
+    "music/war_the_battlefield.ogg": ("war_the_battlefield", "", "music", 0.0),
+    "music/war_to_battle.ogg": ("war_to_battle", "", "music", 0.0),
+    "music/war_militaristic.ogg": ("war_militaristic", "", "music", 0.0),
+    "music/war_legend_will_rise.ogg": ("war_legend_will_rise", "", "music", 0.0),
+    "music/war_prepare_swords.ogg": ("war_prepare_swords", "", "music", 0.0),
+    "music/war_swordfight.ogg": ("war_swordfight", "", "music", 0.0),
+    "music/war_final_stand.ogg": ("war_final_stand", "", "music", 0.0),
+    "music/war_battle_theme_a.ogg": ("war_battle_theme_a", "", "music", 0.0),
 }
 
 LOOP_FADE = 3.0
