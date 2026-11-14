@@ -5059,3 +5059,6 @@ msgstr "Szybki zapis"
 
 msgid "ui.action.quick_load"
 msgstr "Wczytaj zapis"
+
+msgid "ui.options.percent"
+msgstr "%d%%"

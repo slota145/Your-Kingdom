@@ -112,7 +112,7 @@ func _screen_tab() -> VBoxContainer:
 	_check(list, "ui.options.vsync", "display/vsync")
 	var scales: Array[String] = []
 	for f: float in Options.UI_SCALES:
-		scales.append("%d%%" % roundi(f * 100.0))
+		scales.append(tr("ui.options.percent") % roundi(f * 100.0))
 	_choice(list, "ui.options.ui_scale", scales, _index_of(Options.UI_SCALES, float(Options.get_value("display/ui_scale"))),
 			func(i: int) -> void: Options.set_value("display/ui_scale", Options.UI_SCALES[i]))
 	var limits: Array[String] = []
@@ -256,11 +256,11 @@ func _volume(list: VBoxContainer, label_key: String, key: String) -> HSlider:
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(slider)
-	var shown := UiKit.label("%d%%" % int(slider.value), false)
+	var shown := UiKit.label(tr("ui.options.percent") % int(slider.value), false)
 	shown.custom_minimum_size.x = 52
 	row.add_child(shown)
 	slider.value_changed.connect(func(v: float) -> void:
-		shown.text = "%d%%" % int(v)
+		shown.text = tr("ui.options.percent") % int(v)
 		Options.set_value(key, v / 100.0))
 	return slider
 

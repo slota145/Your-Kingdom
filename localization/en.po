@@ -5016,3 +5016,6 @@ msgstr "Quick save"
 
 msgid "ui.action.quick_load"
 msgstr "Load the save"
+
+msgid "ui.options.percent"
+msgstr "%d%%"
