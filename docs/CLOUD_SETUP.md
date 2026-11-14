@@ -48,3 +48,14 @@ Setup script jest opcjonalny. Bez niego hook i tak pobierze Godota (78 MB) na po
 | eksport gry i próba wyeksportowanej wersji (M10 część 2): `python3 tools/get_export_templates.py` (raz, pobiera z 1,3 GB tylko szablony Linux i Windows), potem `tools/export_game.sh [linux\|windows]` | uruchomienie `.exe` (plik ma ok. 190 MB, za duży do repozytorium; na laptopie buduje go `eksportuj.ps1`) |
 
 Sesja w chmurze pracuje na **osobnej gałęzi** i może otworzyć pull request. Żeby zobaczyć jej pracę na laptopie, scal PR na GitHubie albo przenieś sesję poleceniem `claude --teleport` (wymaga czystego stanu gita lokalnie).
+
+## Wydania dla graczy (M10, decyzja właściciela 2026-11-14)
+
+Gra dla kolegów to `.exe` z publicznego repozytorium **`slota145/YourKingdom-Releases`** (kod, grafiki i historia zostają prywatne). Gra w `.exe` przy starcie pyta to repozytorium o najnowsze wydanie i sama się aktualizuje (autoload `Updates`, ARCHITECTURE §14).
+
+**Jednorazowo (właściciel):** publiczne repozytorium `YourKingdom-Releases` z README; token *fine-grained* tylko do niego z uprawnieniem *Contents: Read and write*; w `Your-Kingdom` sekret Actions `RELEASES_TOKEN` z tym tokenem.
+
+**Nowa wersja (może ją zrobić sesja Claude):**
+1. Podbij `config/version` w `project.godot` (np. `0.9.0` → `0.9.1`) w zmianie, która trafia do `main` (wersja jest numerem wydania, `v0.9.1`; to samo wydanie drugi raz się nie utworzy).
+2. Uruchom workflow **Release** na `main` (GitHub: Actions → Release → Run workflow, z polem „Co nowego”; z sesji: narzędzie GitHuba do uruchamiania workflowów). Buduje on grę na Linuksie GitHuba, robi próbę `--smoke`, buduje `.exe`, liczy SHA-256 i publikuje wydanie z plikami `YourKingdom.exe` i `YourKingdom.exe.sha256`.
+3. Gry kolegów przy następnym starcie pokażą „Nowa wersja 0.9.1: pobierz i uruchom”.

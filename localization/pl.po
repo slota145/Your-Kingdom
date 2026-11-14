@@ -5071,3 +5071,12 @@ msgid_plural "ui.main.update_ready_plural"
 msgstr[0] "Nowa wersja gry (%d zmiana): zaktualizuj"
 msgstr[1] "Nowa wersja gry (%d zmiany): zaktualizuj"
 msgstr[2] "Nowa wersja gry (%d zmian): zaktualizuj"
+
+msgid "ui.main.release_ready"
+msgstr "Nowa wersja %s: pobierz i uruchom"
+
+msgid "ui.main.update_downloading"
+msgstr "Pobieranie nowej wersji… %d%%"
+
+msgid "ui.main.update_failed"
+msgstr "Nie udało się pobrać: otwórz stronę z grą"

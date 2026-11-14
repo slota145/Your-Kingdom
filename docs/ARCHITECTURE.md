@@ -780,6 +780,6 @@ Zasady:
 | `Diagnostics` | nagłówek dziennika błędów na starcie (wersja, system, wczytane dane), M10 część 2, §8 |
 | `Music` | muzyka według nastroju (menu, gra, bitwa) i kliknięcia przycisków, M10 część 1, §6.9 |
 | `Options` | ustawienia gracza w `user://settings.cfg` (ekran, dźwięk, gra, klawisze), M10 część 3, §6.10 |
-| `Updates` | tylko gra z folderu repozytorium na Windows: w tle sprawdza nowe commity na `main` i uruchamia `aktualizuj.ps1 -Restart` (przycisk w menu głównym) |
+| `Updates` | aktualizacje (przycisk w menu głównym): gra z folderu repozytorium na Windows sprawdza nowe commity na `main` i uruchamia `aktualizuj.ps1 -Restart`; `.exe` graczy pyta publiczne repozytorium `YourKingdom-Releases` o najnowsze wydanie (API GitHuba bez logowania), pobiera nowy `.exe` z paskiem postępu, sprawdza SHA-256 z pliku `.sha256`, zamienia się z działającym (ten dostaje nazwę `.old.exe`, usuwaną przy następnym starcie), uruchamia nowy i kończy; przy błędzie przycisk otwiera stronę wydania. Wydania buduje `.github/workflows/release.yml` (CLOUD_SETUP, „Wydania”) |
 
 Symulacja **nie** korzysta z autoloadów (poza `Data`, przekazywanym jawnie przez konstruktor, co ułatwia testy).

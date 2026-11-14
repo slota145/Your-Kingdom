@@ -29,6 +29,8 @@ var _new_game_window: NewGameWindow
 var _options: OptionsWindow
 ## "A new version of the game is out" (Updates autoload, the owner's folder only).
 var _update_button: Button
+## The download of a new version for players failed: the button opens the release page.
+var _update_failed: bool = false
 var _start_picker: StartPicker
 
 
@@ -103,10 +105,13 @@ func _ready() -> void:
 	box.add_child(_subtitle)
 	box.add_child(HSeparator.new())
 	# Shown when GitHub has something new (the owner's game folder on Windows).
-	_update_button = _menu_button(box, "", Updates.update_now)
+	_update_button = _menu_button(box, "", _on_update_pressed)
 	_update_button.add_theme_color_override(&"font_color", UiKit.GOLD)
 	_update_button.visible = false
 	Updates.checked.connect(_on_updates_checked)
+	Updates.release_found.connect(_on_release_found)
+	Updates.download_progressed.connect(_on_download_progressed)
+	Updates.download_failed.connect(_on_download_failed)
 	var worlds := Data.registry.all_of(&"world")
 	_new_game = _menu_button(box, "ui.main.new_game", open_new_game)
 	_new_game.disabled = worlds.is_empty()
@@ -212,7 +217,41 @@ func _on_updates_checked(_behind: int) -> void:
 	_refresh_update_button()
 
 
+func _on_release_found(_version: String) -> void:
+	_refresh_update_button()
+
+
+func _on_download_progressed(fraction: float) -> void:
+	_update_button.text = tr("ui.main.update_downloading") % roundi(fraction * 100.0)
+
+
+func _on_download_failed(_reason: String) -> void:
+	_update_failed = true
+	_update_button.disabled = false
+	_refresh_update_button()
+
+
+## The players' .exe downloads the new version (or, after a failed download, opens the
+## release page); the owner's game folder runs aktualizuj.ps1.
+func _on_update_pressed() -> void:
+	if Updates.release_version == "":
+		Updates.update_now()
+	elif _update_failed:
+		OS.shell_open(Updates.release_page)
+	else:
+		_update_button.disabled = true
+		_update_button.text = tr("ui.main.update_downloading") % 0
+		Updates.download_release()
+
+
 func _refresh_update_button() -> void:
+	if Updates.downloading:
+		return
+	if Updates.release_version != "":
+		_update_button.visible = true
+		_update_button.text = tr("ui.main.update_failed") if _update_failed \
+				else tr("ui.main.release_ready") % Updates.release_version
+		return
 	_update_button.visible = Updates.behind > 0
 	if Updates.behind > 0:
 		_update_button.text = tr_n("ui.main.update_ready", "ui.main.update_ready_plural", Updates.behind) % Updates.behind
