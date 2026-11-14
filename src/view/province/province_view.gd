@@ -49,6 +49,9 @@ var wild: WildLayer
 var moods: MoodLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
+## The blows of the people at work and the background of forest, water and town (M10 part 1).
+var work_sounds: WorkSounds
+var ambience: AmbiencePlayer
 
 var _field_timer: float = 0.0
 var _buildings_dirty: bool = false
@@ -138,6 +141,10 @@ func setup(source: ProvinceSim) -> void:
 	cranes.z_index = 1
 	add_child(cranes)
 	cranes.setup(province)
+	work_sounds = WorkSounds.new()
+	add_child(work_sounds)
+	ambience = AmbiencePlayer.new()
+	add_child(ambience)
 
 
 func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -> void:
@@ -167,6 +174,13 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 		_field_timer = 0.0
 		terrain.refresh_fields()
 		vines.refresh()
+
+
+## The work sounds and the background, after [method update_view] has drawn the people.
+## [param listener]: the middle of the screen in world pixels.
+func update_sounds(visible_rect: Rect2, zoom: float, paused: bool, delta: float) -> void:
+	work_sounds.update_sounds(agents, visible_rect.get_center(), zoom, paused)
+	ambience.update_sounds(province, visible_rect, agents.visible_count, delta)
 
 
 func on_sim_event(event: Dictionary) -> void:

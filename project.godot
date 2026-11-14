@@ -23,6 +23,7 @@ EventBus="*res://src/core/event_bus.gd"
 Loc="*res://src/core/loc.gd"
 Game="*res://src/core/game.gd"
 SaveService="*res://src/core/save_service.gd"
+Music="*res://src/view/audio/music_player.gd"
 
 [debug]
 

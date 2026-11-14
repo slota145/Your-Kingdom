@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/audio/sound_def.gd" id="1_snd"]
+
+[resource]
+script = ExtResource("1_snd")
+id = &"pick"
+files = PackedStringArray("sfx/work/stone_1.ogg", "sfx/work/stone_2.ogg", "sfx/work/stone_3.ogg", "sfx/work/stone_4.ogg")
+activities = Array[StringName]([&"hew", &"pick", &"dig_ore"])
+volume_db = -3.0
+hit = 0.83
+chance = 1.0
+max_voices = 3

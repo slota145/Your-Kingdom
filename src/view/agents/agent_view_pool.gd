@@ -30,6 +30,13 @@ var forts: FortLayer
 ## Screen positions of the fighters' heads drawn last update (agent id -> point), for the
 ## life bars over them (TroopsLayer).
 var heads: Dictionary[int, Vector2] = {}
+## The people at work drawn last update, for their work sounds (M10 part 1): agent id,
+## activity, screen point and how many loops of the work animation he has done (the
+## fraction is how far into the current one).
+var work_ids: PackedInt32Array = PackedInt32Array()
+var work_activities: Array[StringName] = []
+var work_positions: PackedVector2Array = PackedVector2Array()
+var work_cycles: PackedFloat64Array = PackedFloat64Array()
 
 
 func _init() -> void:
@@ -55,6 +62,10 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 	var rect := world_rect.grow(VIEW_MARGIN)
 	var used := 0
 	heads.clear()
+	work_ids.clear()
+	work_activities.clear()
+	work_positions.clear()
+	work_cycles.clear()
 	for agent: Agent in agents.all():
 		if agent.vehicle == Ships.ABOARD:
 			continue   # drawn in his boat by the ShipLayer (M5)
@@ -122,8 +133,17 @@ func update_view(agents: AgentStore, alpha: float, world_rect: Rect2, time: floa
 					and agent.vehicle == &"" else &"walk"
 		elif agent.activity == &"idle":
 			anim = &"idle"
-		sprite.show_state(CharacterVisual.get_visual(_character(agent.kind)), anim, agent.facing,
-				time + agent.id * 0.137, category, good if agent.activity == &"walk" else &"",
+		var visual := CharacterVisual.get_visual(_character(agent.kind))
+		var anim_time := time + agent.id * 0.137
+		if agent.combat == null and agent.activity != &"walk" and agent.activity != &"idle":
+			var sheet := visual.get_sheet(anim)
+			if sheet != null:
+				work_ids.append(agent.id)
+				work_activities.append(agent.activity)
+				work_positions.append(sprite.position)
+				work_cycles.append(anim_time * sheet.fps / maxi(sheet.frames, 1))
+		sprite.show_state(visual, anim, agent.facing,
+				anim_time, category, good if agent.activity == &"walk" else &"",
 				Carriers.WAGON if agent.vehicle == Carriers.SETTLER_WAGON else agent.vehicle,
 				good != &"" or agent.vehicle == Carriers.SETTLER_WAGON \
 						or agent.vehicle == Carriers.TRADE_WAGON)

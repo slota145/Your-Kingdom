@@ -32,6 +32,7 @@ var _start_picker: StartPicker
 func _ready() -> void:
 	theme = UiKit.theme()
 	add_child(MenuBackdrop.new())
+	Music.play_mood(&"menu")
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE

@@ -177,6 +177,7 @@ func _show_province() -> void:
 	move_child(view, 0)
 	view.setup(sim.province)
 	view.moods.show_all = _moods_all
+	Music.play_mood(&"peace")
 	camera = GameCamera.new()
 	add_child(camera)
 	var size := sim.province.grid.size
@@ -679,6 +680,7 @@ func _process(delta: float) -> void:
 		_locks_time = 0.0
 		_build.refresh_locks(sim.province)
 	view.update_view(Game.alpha(), camera.visible_world_rect(), _time, delta)
+	view.update_sounds(camera.visible_world_rect(), camera.zoom_factor(), Game.paused, delta)
 	if _follow_id != 0:
 		var agent := sim.province.agents.get_agent(_follow_id)
 		if agent == null:

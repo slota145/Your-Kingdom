@@ -442,6 +442,15 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Dziewięć pól powtarzanych, nie rozciąganych** (`AXIS_STRETCH_MODE_TILE_FIT`), żeby włókna pergaminu i słoje drewna zostały piksel w piksel.
 - **Menu główne** (`src/main/main.gd`) buduje się w kodzie: `MenuBackdrop` (warstwy obrazu, chmury, dym, mewy, shader wody) i pergaminowy panel z przyciskami. Obraz pokrywa okno skalą całkowitą, jeśli tylko się da (1280×720: ×2, 1920×1080: ×3).
 
+### 6.9 Dźwięk i muzyka (M10 część 1)
+
+- **Dane zamiast kodu:** `data/audio/sounds/<id>.tres` (`SoundDef`: kilka nagrań tego samego uderzenia, czynności, które je wydają, głośność, rozrzut wysokości, moment uderzenia w pętli animacji, co ile pętli, szansa, limit naraz), `data/audio/ambience/<id>.tres` (`AmbienceDef`: pętla tła i rozsiane pojedyncze dźwięki, źródło: las, woda albo miasto), `data/audio/music/<id>.tres` (`MusicTrackDef`: plik i nastroje `menu`, `peace`). Wczytuje je `SoundBank` (widok, statycznie, jak `BuildingVisualDef`). Pliki w `assets/audio` (ART_SPEC §11).
+- **Symulacja nie wie o dźwięku.** Dźwięk pracy wynika z tego, co widok i tak rysuje: `AgentViewPool` zapisuje pracujących na ekranie (id, czynność, punkt, liczba pętli animacji pracy), a `WorkSounds` gra uderzenie, gdy pętla mija moment `hit` (np. 5. z 6 klatek zamachu siekierą). Rytm jest więc zgrany z ruchem i nie zależy od liczby klatek na sekundę. Kto jest w budynku albo poza ekranem, nie jest słyszany.
+- **Głosy:** 12 odtwarzaczy 2D na całą prowincję (`AudioStreamPlayer2D`, cichną z odległością od środka ekranu, panorama lewo-prawo), najbliższe uderzenia wygrywają, a jeden dźwięk ma własny limit (`max_voices`), więc 30 drwali to kilka siekier, nie hałas. Oddalenie kamery do 0,5× ścisza uderzenia o 6 dB. Pauza wycisza uderzenia.
+- **Tło (`AmbiencePlayer`):** co 0,5 s próbka do 600 kafli na ekranie: udział drzew i wody; miasto według liczby ludzi na ekranie. Głośność płynnie idzie za ekranem, pętla zaczyna od losowego miejsca, pojedyncze dźwięki (fale, mewy, ptaki) padają rzadziej, gdy źródła jest mało.
+- **Muzyka:** autoload `Music` gra utwory pasujące do nastroju po kolei z ciszą 20–50 s między nimi; zmiana nastroju (menu → gra) nie przerywa utworu, który pasuje do obu.
+- **Szyny dźwięku** (`default_bus_layout.tres`): `Music`, `Effects`, `Ambience` pod `Master`; głośności na razie stałe w pliku, suwaki w części 3 M10 (opcje).
+
 ## 7. Prowincje nieoglądane: symulacja dwutrybowa
 
 **Decyzja:**
@@ -755,5 +764,6 @@ Zasady:
 | `EventBus` | rozsyłanie `SimEvent` do widoku i UI |
 | `Loc` | pomocnicy lokalizacji i formatowania |
 | `SaveService` | zapis, odczyt i migracje |
+| `Music` | muzyka według nastroju (menu, gra), M10 część 1, §6.9 |
 
 Symulacja **nie** korzysta z autoloadów (poza `Data`, przekazywanym jawnie przez konstruktor, co ułatwia testy).

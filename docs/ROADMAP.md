@@ -1890,13 +1890,22 @@ Partiami, w kolejności etapów: najpierw grafiki slice’a, potem M4, M5 itd. K
 - stabilność,
 - eksport na Windows.
 
-**Plan (2026-11-14, ankieta właściciela, do akceptacji):** poprawek z oceny G3 5b brak. Stan wyjściowy: w grze nie ma żadnego dźwięku, okna opcji (okno zawsze 1600×900), autozapisu ani ustawień eksportu. Części po kolei, ocena po każdej:
+**Plan (2026-11-14, ankieta właściciela, zaakceptowany):** poprawek z oceny G3 5b brak. Stan wyjściowy: w grze nie ma żadnego dźwięku, okna opcji (okno zawsze 1600×900), autozapisu ani ustawień eksportu. Części po kolei, ocena po każdej:
 1. **Dźwięk i muzyka** (pierwsze, decyzja z ankiety): dźwięki pracy przypięte do czynności postaci (siekiera, młot, piła, kilof, zwierzęta) słychać tylko z miejsca pracy na ekranie, ciszej przy oddaleniu kamery; tło (las, morze, gwar miasta zależny od liczby mieszkańców), dźwięki interfejsu, bitwy, 4–6 utworów muzyki. **Źródło: darmowe paczki CC0** (ankieta); lista plików z autorem i licencją w `assets/audio/CREDITS.md`. Głośność na razie stała w kodzie (suwaki w części 3). Partiami jak grafiki w G3, ocena odsłuchu na laptopie.
 2. **Wersja na Windows i stabilność:** ustawienia eksportu i plik .exe, autozapis co kilka minut (bez zmiany formatu zapisu), zapis błędów do pliku w `user://`.
 3. **Opcje:** ekran (okno lub pełny ekran, rozdzielczość, synchronizacja pionowa), głośność (ogólna, muzyka, efekty), zmiana klawiszy; z menu głównego i menu pauzy; ustawienia w `user://settings.cfg`, osobno od zapisu gry.
 4. **Samouczek: podpowiedzi w grze** (ankieta): krótkie okienka przy pierwszym razie (pierwszy dom, brak drewna, pierwszy kupiec…), każdą można wyłączyć, wszystkie wyłącza opcja.
 5. **Dopracowanie UI i balans:** poprawki z zaległych ocen (M8, Z1, M7, B1, W1, J1) i z grania; balans z pomiarów automatycznego gracza i władców, ostatnie słowo ma granie właściciela.
+- **Plan zaakceptowany 2026-11-14** („Zacznij według planu”).
 - **Ryzyka:** w chmurze `opengameart.org` jest osiągalne, a `kenney.nl`, `freesound.org` i `sonniss.com` są zablokowane (2026-11-14); jeśli zabraknie dźwięków, poprosić o dodanie hosta albo właściciel pobiera paczkę na laptopie. Mieszanie stylów z różnych paczek: wybierać mało autorów. Wiele dźwięków naraz przy 400+ postaciach: limit jednoczesnych głosów i grupowanie tych samych dźwięków.
+
+**Część 1, stan (2026-11-14):** partia 1 dźwięków gotowa na gałęzi roboczej, czeka na odsłuch na laptopie.
+- **Dźwięki pracy** (opis: ARCHITECTURE §6.9, pliki: ART_SPEC §11): siekiera drwala, kilof kamieniarza i górnika, dłuto przy obróbce kamienia, młotek budowniczego i cieśli okrętowego, kowadło kowala, nitowanie płatnerza, łopata kopacza gliny i przy sadzeniu, beczenie owcy przy strzyży (co piąte cięcie). Uderzenie pada w tej klatce, w której narzędzie trafia, raz na pętlę animacji; słychać tylko tych, których widać, z ich miejsca (lewo-prawo), ciszej z dala od środka ekranu i przy oddaleniu kamery; najwyżej 12 naraz, najbliższe wygrywają. Pauza wycisza uderzenia.
+- **Tło:** las (ptaki), woda (fale i mewy), miasto (gwar) robią się głośniejsze, gdy na ekranie jest więcej lasu, wody albo ludzi.
+- **Muzyka:** „Medieval: Market Day” (RandomMind) w menu i w grze, potem 20–50 s ciszy i znowu.
+- **Bez zmian w symulacji i zapisie.** Wszystko jest z CC0, lista autorów w `assets/audio/CREDITS.md`; pliki robi `tools/audio/prepare_audio.py`.
+- **Testy:** `tests/unit/view/test_sounds.gd` (pliki są i mają autorów, czynności istnieją, uderzenie raz na pętlę, limit głosów, szansa niezależna od klatek, tło z udziału lasu i wody, muzyka bez powtórki, szyny). Próba: `src/prototype/m10/sound_probe.gd -- [--seconds=60] [--zoom=1]` (ile uderzeń daje duże miasto).
+- **Do oceny na ucho:** głośność całości (muzyka, efekty, tło), czy uderzenia trafiają w ruch narzędzia, czy gwar miasta (nagranie tłumu) pasuje do średniowiecza, czy muzyka nie męczy. Następne partie: piła, młyn, piekarnia, zwierzęta w zagrodach, statki i port, dźwięki interfejsu, bitwa, kolejne utwory.
 
 ---
 
