@@ -17,8 +17,11 @@ var _playing: Array[StringName] = []
 ## Agent id -> the last blow counted (loops of his work animation).
 var _last_blow: Dictionary[int, int] = {}
 var _rng := RandomNumberGenerator.new()
-## Blows played so far by sound id (probes and tests).
+## Blows played so far by sound id, and blows due (before the voice limits), for probes
+## and tests. Without a sound card (headless) players never finish, so only [member struck]
+## shows the rhythm there.
 var played: Dictionary[StringName, int] = {}
+var struck: Dictionary[StringName, int] = {}
 
 
 func _init() -> void:
@@ -47,6 +50,7 @@ func update_sounds(pool: AgentViewPool, listener: Vector2, zoom: float, paused: 
 			continue
 		if not heard(sound, id, blow):
 			continue
+		struck[sound.id] = struck.get(sound.id, 0) + 1
 		var at := pool.work_positions[i]
 		due.append({"sound": sound, "at": at, "distance": at.distance_to(listener)})
 	_last_blow = seen

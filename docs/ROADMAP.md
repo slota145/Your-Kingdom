@@ -1904,7 +1904,7 @@ Partiami, w kolejności etapów: najpierw grafiki slice’a, potem M4, M5 itd. K
 - **Tło:** las (ptaki), woda (fale i mewy), miasto (gwar) robią się głośniejsze, gdy na ekranie jest więcej lasu, wody albo ludzi.
 - **Muzyka:** „Medieval: Market Day” (RandomMind) w menu i w grze, potem 20–50 s ciszy i znowu.
 - **Bez zmian w symulacji i zapisie.** Wszystko jest z CC0, lista autorów w `assets/audio/CREDITS.md`; pliki robi `tools/audio/prepare_audio.py`.
-- **Testy:** `tests/unit/view/test_sounds.gd` (pliki są i mają autorów, czynności istnieją, uderzenie raz na pętlę, limit głosów, szansa niezależna od klatek, tło z udziału lasu i wody, muzyka bez powtórki, szyny). Próba: `src/prototype/m10/sound_probe.gd -- [--seconds=60] [--zoom=1]` (ile uderzeń daje duże miasto).
+- **Testy:** `tests/unit/view/test_sounds.gd` (pliki są i mają autorów, czynności istnieją, uderzenie raz na pętlę, limit głosów, szansa niezależna od klatek, tło z udziału lasu i wody, muzyka bez powtórki, szyny). Próba: `src/prototype/m10/sound_probe.tscn -- [--seconds=60] [--zoom=1]` (ile uderzeń daje duże miasto).
 - **Do oceny na ucho:** głośność całości (muzyka, efekty, tło), czy uderzenia trafiają w ruch narzędzia, czy gwar miasta (nagranie tłumu) pasuje do średniowiecza, czy muzyka nie męczy. Następne partie: piła, młyn, piekarnia, zwierzęta w zagrodach, statki i port, dźwięki interfejsu, bitwa, kolejne utwory.
 
 ---
