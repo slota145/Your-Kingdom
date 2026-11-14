@@ -1902,10 +1902,11 @@ Partiami, w kolejności etapów: najpierw grafiki slice’a, potem M4, M5 itd. K
 **Część 1, stan (2026-11-14):** partia 1 dźwięków gotowa na gałęzi roboczej, czeka na odsłuch na laptopie.
 - **Dźwięki pracy** (opis: ARCHITECTURE §6.9, pliki: ART_SPEC §11): siekiera drwala, kilof kamieniarza i górnika, dłuto przy obróbce kamienia, młotek budowniczego i cieśli okrętowego, kowadło kowala, nitowanie płatnerza, łopata kopacza gliny i przy sadzeniu, beczenie owcy przy strzyży (co piąte cięcie). Uderzenie pada w tej klatce, w której narzędzie trafia, raz na pętlę animacji; słychać tylko tych, których widać, z ich miejsca (lewo-prawo), ciszej z dala od środka ekranu i przy oddaleniu kamery; najwyżej 12 naraz, najbliższe wygrywają. Pauza wycisza uderzenia.
 - **Tło:** las (ptaki), woda (fale i mewy), miasto (gwar) robią się głośniejsze, gdy na ekranie jest więcej lasu, wody albo ludzi.
-- **Muzyka:** „Medieval: Market Day” (RandomMind) w menu i w grze, potem 20–50 s ciszy i znowu.
+- **Muzyka:** 11 utworów w menu i w grze, między nimi 20–50 s ciszy; utwór wraca dopiero po ok. połowie pozostałych.
+- **Odsłuch, runda 2 (2026-11-14, strona z odtwarzaczami):** gwar z nagrania tłumu „za współczesny”, więc właściciel wybrał samą rozmowę ok. 25 osób (BigSoundBank, CC0) z kogutem, kurami, psami, dzwonem, kozami i taczkami co kilka sekund; z 21 utworów CC0 wybrał 11 (ART_SPEC §11).
 - **Bez zmian w symulacji i zapisie.** Wszystko jest z CC0, lista autorów w `assets/audio/CREDITS.md`; pliki robi `tools/audio/prepare_audio.py`.
 - **Testy:** `tests/unit/view/test_sounds.gd` (pliki są i mają autorów, czynności istnieją, uderzenie raz na pętlę, limit głosów, szansa niezależna od klatek, tło z udziału lasu i wody, muzyka bez powtórki, szyny). Próba: `src/prototype/m10/sound_probe.tscn -- [--seconds=60] [--zoom=1]` (ile uderzeń daje duże miasto).
-- **Do oceny na ucho:** głośność całości (muzyka, efekty, tło), czy uderzenia trafiają w ruch narzędzia, czy gwar miasta (nagranie tłumu) pasuje do średniowiecza, czy muzyka nie męczy. Następne partie: piła, młyn, piekarnia, zwierzęta w zagrodach, statki i port, dźwięki interfejsu, bitwa, kolejne utwory.
+- **Do oceny na ucho:** głośność całości (muzyka, efekty, tło), czy uderzenia trafiają w ruch narzędzia, czy nowy gwar z odgłosami wsi brzmi dobrze w grze, czy muzyka nie męczy. Następne partie: piła, młyn, piekarnia, zwierzęta w zagrodach, statki i port, dźwięki interfejsu, bitwa, kolejne utwory.
 
 ---
 

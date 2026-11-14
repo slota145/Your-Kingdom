@@ -13,6 +13,9 @@ const SILENT_DB := -60.0
 var mood: StringName = &""
 var current: MusicTrackDef
 
+## Pieces played lately, newest last: they wait until about half of the others have played.
+var recent: Array[MusicTrackDef] = []
+
 var _player: AudioStreamPlayer
 var _fade: Tween
 var _pause_left: float = -1.0
@@ -34,7 +37,7 @@ func play_mood(new_mood: StringName) -> void:
 	mood = new_mood
 	if current != null and current.moods.has(mood) and _player.playing:
 		return
-	_start(pick(SoundBank.music(), mood, current, _rng))
+	_start(pick(SoundBank.music(), mood, recent, _rng))
 
 
 func stop() -> void:
@@ -49,26 +52,36 @@ func _process(delta: float) -> void:
 		return
 	_pause_left -= delta
 	if _pause_left < 0.0:
-		_start(pick(SoundBank.music(), mood, current, _rng))
+		_start(pick(SoundBank.music(), mood, recent, _rng))
 
 
-## A piece for [param for_mood], another than [param last] when there is one.
-static func pick(tracks: Array[MusicTrackDef], for_mood: StringName, last: MusicTrackDef,
+## A piece for [param for_mood] that is not among the last half of [param played] (newest
+## last), so with 11 pieces each comes back only after about five others.
+static func pick(tracks: Array[MusicTrackDef], for_mood: StringName, played: Array[MusicTrackDef],
 		rng: RandomNumberGenerator) -> MusicTrackDef:
 	var fitting: Array[MusicTrackDef] = []
 	for track: MusicTrackDef in tracks:
 		if track.moods.has(for_mood):
 			fitting.append(track)
-	if fitting.size() > 1 and last != null:
-		fitting.erase(last)
 	if fitting.is_empty():
 		return null
-	return fitting[rng.randi() % fitting.size()]
+	var fresh := fitting.duplicate()
+	var keep_out := fitting.size() / 2
+	for i: int in range(played.size() - 1, -1, -1):
+		if keep_out <= 0 or fresh.size() <= 1:
+			break
+		if fresh.has(played[i]):
+			fresh.erase(played[i])
+			keep_out -= 1
+	return fresh[rng.randi() % fresh.size()]
 
 
 func _start(track: MusicTrackDef) -> void:
 	_pause_left = -1.0
 	current = track
+	if track != null:
+		recent.erase(track)
+		recent.append(track)
 	if track == null:
 		_fade_to(SILENT_DB, FADE_OUT, true)
 		return

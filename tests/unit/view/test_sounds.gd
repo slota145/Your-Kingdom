@@ -135,20 +135,30 @@ func test_background_follows_forest_and_water_on_screen() -> void:
 	assert_float(AmbiencePlayer.level_db(-6.0, 1.0)).is_equal_approx(-6.0, 0.001)
 
 
-func test_music_does_not_repeat_a_piece_when_there_is_another() -> void:
+func test_music_does_not_repeat_a_piece_too_soon() -> void:
 	var rng := RandomNumberGenerator.new()
 	var a := MusicTrackDef.new()
 	a.moods = [&"peace"]
 	var b := MusicTrackDef.new()
 	b.moods = [&"peace", &"menu"]
-	var tracks: Array[MusicTrackDef] = [a, b]
+	var two: Array[MusicTrackDef] = [a, b]
+	var after_a: Array[MusicTrackDef] = [a]
 	for i: int in 10:
-		assert_object(_pick(tracks, &"peace", a, rng)).is_same(b)
-	assert_object(_pick(tracks, &"menu", b, rng)).is_same(b)
-	assert_object(_pick(tracks, &"war", null, rng)).is_null()
+		assert_object(_pick(two, &"peace", after_a, rng)).is_same(b)
+	var after_b: Array[MusicTrackDef] = [b]
+	assert_object(_pick(two, &"menu", after_b, rng)).is_same(b)
+	assert_object(_pick(two, &"war", [] as Array[MusicTrackDef], rng)).is_null()
+	# The game's pieces: none comes back before about half of the others have played.
+	var all := SoundBank.music()
+	assert_int(all.size()).is_greater_equal(11)
+	var played: Array[MusicTrackDef] = []
+	for i: int in 60:
+		var next := _pick(all, &"peace", played, rng)
+		var since := played.size() - 1 - played.rfind(next) if played.has(next) else all.size()
+		assert_int(since).is_greater_equal(all.size() / 2)
+		played.append(next)
 	# The game has music for the menu and for a province at peace.
-	assert_object(_pick(SoundBank.music(), &"menu", null, rng)).is_not_null()
-	assert_object(_pick(SoundBank.music(), &"peace", null, rng)).is_not_null()
+	assert_object(_pick(all, &"menu", [] as Array[MusicTrackDef], rng)).is_not_null()
 
 
 func test_audio_buses_exist() -> void:
@@ -156,9 +166,9 @@ func test_audio_buses_exist() -> void:
 		assert_int(AudioServer.get_bus_index(bus)).override_failure_message(String(bus)).is_not_equal(-1)
 
 
-func _pick(tracks: Array[MusicTrackDef], mood: StringName, last: MusicTrackDef,
+func _pick(tracks: Array[MusicTrackDef], mood: StringName, played: Array[MusicTrackDef],
 		rng: RandomNumberGenerator) -> MusicTrackDef:
-	return Music.pick(tracks, mood, last, rng)
+	return Music.pick(tracks, mood, played, rng)
 
 
 func _work(pool: AgentViewPool, id: int, activity: StringName, cycle: float) -> void:

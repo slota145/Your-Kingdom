@@ -27,8 +27,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "assets" / "audio"
 OGA = "https://opengameart.org/sites/default/files/"
+BSB = "https://bigsoundbank.com/"
 
-# Source packs: key -> (page, author, licence, download file name on OpenGameArt).
+# Source packs: key -> (page, author, licence, download: a file name on OpenGameArt or a full URL).
 PACKS: dict[str, tuple[str, str, str, str]] = {
     "wood_metal": ("https://opengameart.org/content/100-cc0-metal-and-wood-sfx", "rubberduck", "CC0",
                    "100-CC0-wood-metal-SFX.zip"),
@@ -43,8 +44,6 @@ PACKS: dict[str, tuple[str, str, str, str]] = {
               "Seagull%20Ambient%201.wav"),
     "gull3": ("https://opengameart.org/content/solo-seagull-sound-effects", "rango-mango", "CC0",
               "Seagull%20Ambient%203.wav"),
-    "crowd": ("https://opengameart.org/content/crowd-shoutingspeaking-ambience", "starninjas", "CC0",
-              "crowd_shouting_0.ogg"),
     "wave1": ("https://opengameart.org/content/beach-ocean-waves", "jasinski (shared by qubodup)", "CC0",
               "wave_01_cc0-18363__jasinski__alkaibeach.flac"),
     "wave2": ("https://opengameart.org/content/beach-ocean-waves", "jasinski (shared by qubodup)", "CC0",
@@ -54,10 +53,38 @@ PACKS: dict[str, tuple[str, str, str, str]] = {
     "wave4": ("https://opengameart.org/content/beach-ocean-waves", "jasinski (shared by qubodup)", "CC0",
               "wave_04_cc0-18363__jasinski__alkaibeach.flac"),
     "market_day": ("https://opengameart.org/content/medieval-market-day", "RandomMind", "CC0", "Market_Day.wav"),
+    # Music, round 2 (owner's choice 2026-11-14).
+    "harvest_season": ("https://opengameart.org/content/medieval-harvest-season", "RandomMind", "CC0", "harvestseason.wav"),
+    "exploration": ("https://opengameart.org/content/medieval-exploration", "RandomMind", "CC0", "Exploration.wav"),
+    "kings_feast": ("https://opengameart.org/content/medieval-kings-feast", "RandomMind", "CC0", "Kings_Feast_0.mp3"),
+    "minstrel_dance": ("https://opengameart.org/content/medieval-minstrel-dance", "RandomMind", "CC0",
+                       "Minstrel_Dance_0.mp3"),
+    "bards_tale": ("https://opengameart.org/content/medieval-the-bards-tale", "RandomMind", "CC0", "The_Bards_Tale.mp3"),
+    "old_tower_inn": ("https://opengameart.org/content/medieval-the-old-tower-inn", "RandomMind", "CC0",
+                      "The_Old_Tower_Inn.mp3"),
+    "rejoicing": ("https://opengameart.org/content/medieval-rejoicing", "RandomMind", "CC0", "Rejoicing_0.mp3"),
+    "flute_strings": ("https://opengameart.org/content/minimalistic-flute-strings-tune", "Spring Spring", "CC0",
+                      "ff_2.ogg"),
+    "at_home": ("https://opengameart.org/content/at-home-orchestral", "Wolfgang", "CC0", "cinematic-calm.wav"),
+    "beautiful_forest": ("https://opengameart.org/content/beautiful-forest-orchestra", "nene", "CC0",
+                         "beautiful_forest_16bit_44.1khz_1.ogg"),
+    # Town hubbub and village sounds from BigSoundBank (Joseph Sardin, CC0; owner's choice 2026-11-14).
+    "walla": (BSB + "walla-group-averages-discussions-s0684.html", "Joseph Sardin (BigSoundBank)", "CC0",
+              BSB + "UPLOAD/bwf-en/0684.wav"),
+    "rooster": (BSB + "rooster-s0104.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0104.wav"),
+    "cock": (BSB + "cock-song-1-s0440.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0440.wav"),
+    "henhouse": (BSB + "henhouse-s0282.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0282.wav"),
+    "dogs": (BSB + "2-dogs-barking-s0868.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0868.wav"),
+    "bell": (BSB + "1-church-bell-s0830.html", "Joseph Sardin (BigSoundBank)", "CC0", BSB + "UPLOAD/bwf-en/0830.wav"),
+    "goats": (BSB + "small-herd-of-goats-s0821.html", "Joseph Sardin (BigSoundBank)", "CC0",
+              BSB + "UPLOAD/bwf-en/0821.wav"),
+    "barrow": (BSB + "squeaky-wheelbarrow-1-s2516.html", "Joseph Sardin (BigSoundBank)", "CC0",
+               BSB + "UPLOAD/flac/2516.flac"),
 }
 
-# Target (under assets/audio) -> (pack, file inside the pack or "" for the download itself, kind, gain dB).
-SOURCES: dict[str, tuple[str, str, str, float]] = {
+# Target (under assets/audio) -> (pack, file inside the pack or "" for the download itself, kind, gain dB)
+# and optionally a cut of the source made first: {"start": s, "len": s, "lowpass": Hz}.
+SOURCES: dict[str, tuple] = {
     # An axe biting into a trunk (woodcutter).
     "sfx/work/axe_1.ogg": ("wood_metal", "wood_hit_03.ogg", "hit", 0.0),
     "sfx/work/axe_2.ogg": ("wood_metal", "wood_hit_04.ogg", "hit", 0.0),
@@ -87,7 +114,17 @@ SOURCES: dict[str, tuple[str, str, str, float]] = {
     # Background beds and scattered sounds.
     "ambience/forest_bed.ogg": ("birds_bed", "", "loop", 0.0),
     "ambience/water_bed.ogg": ("river", "", "loop60", 0.0),
-    "ambience/town_bed.ogg": ("crowd", "", "loop", 0.0),
+    # Town: people talking (a walla group, softened as from a distance) and village sounds over it.
+    "ambience/town_bed.ogg": ("walla", "", "loop", 0.0, {"start": 10, "len": 60, "lowpass": 6000}),
+    "ambience/rooster_1.ogg": ("rooster", "", "shot", 0.0, {"start": 1.5, "len": 2.5}),
+    "ambience/rooster_2.ogg": ("cock", "", "shot", 0.0, {"start": 0, "len": 2.2}),
+    "ambience/hens_1.ogg": ("henhouse", "", "shot", 0.0, {"start": 0, "len": 8.6}),
+    "ambience/hens_2.ogg": ("henhouse", "", "shot", 0.0, {"start": 9.2, "len": 6.5}),
+    "ambience/dogs_1.ogg": ("dogs", "", "shot", 0.0, {"start": 2.05, "len": 3.5}),
+    "ambience/dogs_2.ogg": ("dogs", "", "shot", 0.0, {"start": 9.6, "len": 2.2}),
+    "ambience/bell_1.ogg": ("bell", "", "shot", -3.0, {"start": 0, "len": 9}),
+    "ambience/goats_1.ogg": ("goats", "", "shot", 0.0, {"start": 10, "len": 8}),
+    "ambience/barrow_1.ogg": ("barrow", "", "shot", 0.0, {"start": 2, "len": 4}),
     "ambience/wave_1.ogg": ("wave1", "", "shot", 0.0),
     "ambience/wave_2.ogg": ("wave2", "", "shot", 0.0),
     "ambience/wave_3.ogg": ("wave3", "", "shot", 0.0),
@@ -100,6 +137,16 @@ SOURCES: dict[str, tuple[str, str, str, float]] = {
     "ambience/gull_2.ogg": ("gull3", "", "shot", 0.0),
     # Music.
     "music/market_day.ogg": ("market_day", "", "music", 0.0),
+    "music/harvest_season.ogg": ("harvest_season", "", "music", 0.0),
+    "music/exploration.ogg": ("exploration", "", "music", 0.0),
+    "music/kings_feast.ogg": ("kings_feast", "", "music", 0.0),
+    "music/minstrel_dance.ogg": ("minstrel_dance", "", "music", 0.0),
+    "music/bards_tale.ogg": ("bards_tale", "", "music", 0.0),
+    "music/old_tower_inn.ogg": ("old_tower_inn", "", "music", 0.0),
+    "music/rejoicing.ogg": ("rejoicing", "", "music", 0.0),
+    "music/flute_strings.ogg": ("flute_strings", "", "music", 0.0),
+    "music/at_home.ogg": ("at_home", "", "music", 0.0),
+    "music/beautiful_forest.ogg": ("beautiful_forest", "", "music", 0.0),
 }
 
 LOOP_FADE = 3.0
@@ -114,11 +161,26 @@ def run(cmd: list[str]) -> str:
 
 def fetch(cache: Path, pack: str) -> Path:
     name = PACKS[pack][3]
-    path = cache / "downloads" / name.replace("%20", "_")
+    url = name if name.startswith("http") else OGA + name
+    local = (pack + "_" + name.rsplit("/", 1)[1]) if name.startswith("http") else name
+    path = cache / "downloads" / local.replace("%20", "_")
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
-        run(["curl", "-sSfL", "--max-time", "300", "-o", str(path), OGA + name])
+        run(["curl", "-sSfL", "--max-time", "300", "-o", str(path), url])
     return path
+
+
+def cut(cache: Path, src: Path, target: str, opts: dict) -> Path:
+    """The part of [src] given by [opts] (start, len, lowpass), faded in and out, as a WAV in the cache."""
+    out = cache / "cuts" / (target.replace("/", "_") + ".wav")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    length = float(opts["len"])
+    filters = ["afade=t=in:d=0.05", "afade=t=out:st=%.3f:d=0.4" % max(length - 0.4, 0.05)]
+    if "lowpass" in opts:
+        filters.insert(0, "lowpass=f=%d" % opts["lowpass"])
+    run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(opts.get("start", 0)), "-t", str(length), "-i", str(src),
+         "-af", ",".join(filters), "-c:a", "pcm_s24le", str(out)])
+    return out
 
 
 def unpack(cache: Path, pack: str, inner: str) -> Path:
@@ -210,13 +272,14 @@ def write_credits() -> None:
         "# Dźwięki i muzyka: autorzy i licencje",
         "",
         "Plik tworzy `tools/audio/prepare_audio.py` z tej samej tabeli, z której robi pliki. Nie edytuj ręcznie.",
+        "Źródła: OpenGameArt (opengameart.org) i BigSoundBank (Joseph Sardin, bigsoundbank.com).",
         "Wszystkie nagrania są na licencji CC0 (domena publiczna): wolno ich używać, zmieniać i sprzedawać bez",
         "zgody i podpisu. Autorów i tak wymieniamy z wdzięczności.",
         "",
         "| Plik | Źródło | Autor | Licencja | Oryginał |",
         "|---|---|---|---|---|",
     ]
-    for target, (pack, inner, _kind, _gain) in SOURCES.items():
+    for target, (pack, inner, *_rest) in SOURCES.items():
         page, author, licence, name = PACKS[pack]
         original = inner if inner != "" else name
         lines.append("| `%s` | %s | %s | %s | `%s` |" % (target, page, author, licence, original))
@@ -229,10 +292,12 @@ def main() -> None:
     parser.add_argument("--only", nargs="*", default=[], help="targets to rebuild (default: all)")
     args = parser.parse_args()
     cache = Path(args.cache).resolve()
-    for target, (pack, inner, kind, gain) in SOURCES.items():
+    for target, (pack, inner, kind, gain, *rest) in SOURCES.items():
         if args.only and target not in args.only:
             continue
         src = unpack(cache, pack, inner)
+        if rest:
+            src = cut(cache, src, target, rest[0])
         encode(src, OUT / target, kind, gain)
         print("%-34s %5.2f s" % (target, duration(OUT / target)))
     write_credits()
