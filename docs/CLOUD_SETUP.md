@@ -45,5 +45,6 @@ Setup script jest opcjonalny. Bez niego hook i tak pobierze Godota (78 MB) na po
 | import i walidacja projektu | edytor Godota |
 | zrzuty ekranu z `--write-movie` (*do sprawdzenia: wymaga renderowania bez ekranu*) | |
 | commity i wysyłanie gałęzi na GitHuba | |
+| eksport gry i próba wyeksportowanej wersji (M10 część 2): `python3 tools/get_export_templates.py` (raz, pobiera z 1,3 GB tylko szablony Linux i Windows), potem `tools/export_game.sh [linux\|windows]` | uruchomienie `.exe` (plik ma ok. 190 MB, za duży do repozytorium; na laptopie buduje go `eksportuj.ps1`) |
 
 Sesja w chmurze pracuje na **osobnej gałęzi** i może otworzyć pull request. Żeby zobaczyć jej pracę na laptopie, scal PR na GitHubie albo przenieś sesję poleceniem `claude --teleport` (wymaga czystego stanu gita lokalnie).

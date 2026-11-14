@@ -517,6 +517,9 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Zawartość:** id encji (licznik `next_id`), wszystkie rezerwacje, zadania postaci (rodzaj, indeks kroku, tablica `bb` z celami po id), **pozostałe punkty ścieżek i kolejka zapytań o ścieżki**, roszczenia do drzew, zlecenia transportowe, stan RNG i zegar.
 - **Ścieżki zapisujemy (decyzja z M2).** Liczenie ich od nowa w połowie drogi może przy remisach kosztów dać inną trasę. Wtedy wczytana gra rozjechałaby się z grą bez zapisu, a DoD wymaga identycznego przebiegu. Koszt: kilkadziesiąt liczb na idącą postać.
 - **Nie zapisujemy:** węzłów widoku, cache’y, kolejki zdarzeń (widok opróżnia ją co klatkę) ani komend czekających na następny tick. `prev_pos` po wczytaniu równa się `pos`.
+- **Autozapis i bezpieczny zapis (M10 część 2):** co 5 minut gry (bez pauzy) i przy zamknięciu okna gra zapisuje się do slotu `auto`, osobno od szybkiego zapisu `quick` (F5, menu pauzy). „Wczytaj grę” w menu i F9 biorą nowszy z nich (`SaveService.latest_slot_path`). Każdy zapis idzie najpierw do pliku `.tmp`, a stary plik jest zastępowany dopiero, gdy nowy jest kompletny, więc awaria w trakcie zapisu nie niszczy poprzedniego. Format bez zmian.
+- **Dziennik błędów (M10 część 2):** Godot zapisuje dziennik do `user://logs` (do 10 plików, `debug/file_logging`), z każdym błędem i ostrzeżeniem, a przy wysypaniu z miejscem awarii. Autoload `Diagnostics` dopisuje na starcie nagłówek (wersja gry z `application/config/version`, Godot, system, język, ile danych wczytano i z iloma problemami, gdzie są zapisy), a `Music` liczbę dźwięków i utworów. Przycisk „Folder dziennika błędów” w menu pauzy i w narzędziach menu głównego otwiera ten folder.
+- **Eksport (M10 część 2):** `export_presets.cfg` ma presety „Windows Desktop” (`build/windows/YourKingdom.exe`) i „Linux”; całość w jednym pliku (`embed_pck`), poza grą zostają `tests/`, `tools/`, `docs/` i gdUnit4, a pliki `*.json` (opisy grafik czytane przez `FileAccess`) i `assets/audio/CREDITS.md` są dołączone jawnie. Próba wyeksportowanej gry: argument `-- --smoke[=<sekundy>]` (`Game.smoke_seconds`) sam zaczyna nową grę, gra na najwyższej prędkości, robi autozapis, wczytuje go i kończy; `tools/export_game.sh linux` sprawdza dziennik.
 - **Liczby:** JSON zapisujemy z pełną precyzją (`full_precision`), żeby pozycje float wracały bit w bit. Wartości 64-bitowe (stan RNG) zapisujemy jako tekst. Siatki kafli zapisujemy jako base64.
 - **Wersja 2 (M3):** teren i drogi w siatce, place budowy, pola, wejście na mapę, dom postaci, stan domów. Migracja v1 → v2 w `SaveMigrations` (mapa v1 to sama trawa, wszystkie budynki gotowe). Fixtury: `tests/fixtures/saves/v1_woodcutter.json` i `v2_village.json`.
 - **Wersja 3 (M4a):** skarbiec (`treasury`), rezerwy magazynów, priorytety pracy, schowki warsztatów. Migracja v2 → v3 daje miastu z M3 100 złota, magazynom rezerwę 5 drewna, a spiżarniom chat sloty na nowe towary. `BuildingState.from_dict` dodatkowo poszerza spiżarnię, gdy dane dodadzą nowe towary. Fixtura: `tests/fixtures/saves/v3_town.json`.
@@ -765,6 +768,7 @@ Zasady:
 | `EventBus` | rozsyłanie `SimEvent` do widoku i UI |
 | `Loc` | pomocnicy lokalizacji i formatowania |
 | `SaveService` | zapis, odczyt i migracje |
-| `Music` | muzyka według nastroju (menu, gra), M10 część 1, §6.9 |
+| `Diagnostics` | nagłówek dziennika błędów na starcie (wersja, system, wczytane dane), M10 część 2, §8 |
+| `Music` | muzyka według nastroju (menu, gra, bitwa) i kliknięcia przycisków, M10 część 1, §6.9 |
 
 Symulacja **nie** korzysta z autoloadów (poza `Data`, przekazywanym jawnie przez konstruktor, co ułatwia testy).

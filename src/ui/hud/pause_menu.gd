@@ -2,13 +2,14 @@ class_name PauseMenu
 extends Control
 ## The pause menu (UI-2 part 1, owner 2026-11-13): Esc, or the "Menu" button of the top bar,
 ## opens it over the dimmed game, which stands still while it is open. Back to the game, quick
-## save and load, the language, the main menu, quitting.
+## save and load, the language, the main menu, quitting, the folder of the error log.
 
 signal resumed
 signal save_requested
 signal load_requested
 signal main_menu_requested
 signal quit_requested
+signal logs_requested
 
 const DIM := Color(0.05, 0.03, 0.02, 0.55)
 
@@ -44,6 +45,10 @@ func _init() -> void:
 	box.add_child(_language)
 	box.add_child(UiKit.button("ui.pause.main_menu", func() -> void: main_menu_requested.emit()))
 	box.add_child(UiKit.button("ui.pause.quit", func() -> void: quit_requested.emit()))
+	var logs := UiKit.button("ui.pause.logs", func() -> void: logs_requested.emit())
+	logs.tooltip_text = "ui.pause.logs_tip"
+	logs.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
+	box.add_child(logs)
 	var hint := UiKit.label("ui.pause.hint", false)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)

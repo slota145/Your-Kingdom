@@ -3,6 +3,7 @@ extends GdUnitTestSuite
 
 const SaveServiceScript := preload("res://src/core/save_service.gd")
 const TEST_PATH := "user://test_saves/roundtrip.sav"
+const OTHER_PATH := "user://test_saves/other.sav"
 
 var _service: Node
 
@@ -12,7 +13,28 @@ func before_test() -> void:
 
 
 func after_test() -> void:
-	DirAccess.remove_absolute(TEST_PATH)
+	for path: String in [TEST_PATH, OTHER_PATH, TEST_PATH + ".tmp"]:
+		DirAccess.remove_absolute(path)
+
+
+## M10 part 2: a save goes through a temporary file and replaces the old one only when
+## complete; nothing is left over.
+func test_saving_again_replaces_the_save_and_leaves_no_temporary_file() -> void:
+	assert_int(_service.save_state(TEST_PATH, {"tick": 1})).is_equal(OK)
+	assert_int(_service.save_state(TEST_PATH, {"tick": 2})).is_equal(OK)
+	assert_bool(FileAccess.file_exists(TEST_PATH + ".tmp")).is_false()
+	assert_int(int(_service.load_state(TEST_PATH)["tick"])).is_equal(2)
+
+
+## M10 part 2: "Load game" continues from the newer of the quick save and the autosave.
+func test_newest_save_is_found() -> void:
+	assert_str(_service.newest([TEST_PATH, OTHER_PATH] as Array[String])).is_equal("")
+	_service.save_state(OTHER_PATH, {"tick": 1})
+	assert_str(_service.newest([TEST_PATH, OTHER_PATH] as Array[String])).is_equal(OTHER_PATH)
+	# File times have a resolution of one second.
+	await get_tree().create_timer(1.1).timeout
+	_service.save_state(TEST_PATH, {"tick": 2})
+	assert_str(_service.newest([TEST_PATH, OTHER_PATH] as Array[String])).is_equal(TEST_PATH)
 
 
 func test_round_trip_keeps_state() -> void:

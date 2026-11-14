@@ -325,6 +325,12 @@ msgstr "Menu główne"
 msgid "ui.pause.quit"
 msgstr "Wyjdź z gry"
 
+msgid "ui.pause.logs"
+msgstr "Folder dziennika błędów"
+
+msgid "ui.pause.logs_tip"
+msgstr "Otwiera folder z dziennikiem gry. Po błędzie wyślij najnowszy plik."
+
 msgid "ui.pause.hint"
 msgstr "Esc: wróć do gry · F5 zapis · F9 wczytanie"
 
@@ -597,6 +603,9 @@ msgstr "Mieszkaniec odszedł z domu: %s"
 
 msgid "ui.note.saved"
 msgstr "Gra zapisana."
+
+msgid "ui.note.autosaved"
+msgstr "Zapisano automatycznie"
 
 msgid "ui.note.save_failed"
 msgstr "Nie udało się zapisać gry."

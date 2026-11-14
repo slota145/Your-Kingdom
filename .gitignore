@@ -5,3 +5,6 @@
 # gdUnit4 test reports
 /reports/
 __pycache__/
+
+# Exported games (tools/export_game.sh, eksportuj.ps1)
+/build/

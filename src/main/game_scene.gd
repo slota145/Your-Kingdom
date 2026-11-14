@@ -20,7 +20,9 @@ var _settings: GameSettings = null
 var _map_id: StringName = START_MAP
 ## World of a new game (main menu, M6); empty = a single-province game on [member _map_id].
 var _world_id: StringName = &""
-const QUICK_SLOT := "quick"
+const QUICK_SLOT := SaveService.QUICK_SLOT
+## Seconds of play (not paused) between two autosaves (M10 part 2).
+const AUTOSAVE_SECONDS := 300.0
 ## Screen pixels around a person's feet that count as clicking them.
 ## A person is picked only when clicked close to the body, so clicks near people still
 ## reach the building behind them (owner feedback 2026-11-05).
@@ -100,8 +102,14 @@ var _box_from: Vector2 = Vector2.INF
 const BOX_MIN := 6.0
 
 
+## Seconds of play left until the next autosave.
+var _autosave_left: float = AUTOSAVE_SECONDS
+
+
 func _ready() -> void:
 	InputSetup.ensure_defaults()
+	# Closing the window autosaves first (M10 part 2); the game quits itself after that.
+	get_tree().auto_accept_quit = false
 	var load_path := String(Game.start_request.get("load", ""))
 	_map_id = StringName(String(Game.start_request.get("map", START_MAP)))
 	_world_id = StringName(String(Game.start_request.get("world", "")))
@@ -116,10 +124,14 @@ func _ready() -> void:
 	if early_raid:
 		_execute(StartRaidCommand.new(120.0))
 	EventBus.sim_event_emitted.connect(_on_sim_event)
+	if Game.smoke_seconds > 0.0:
+		_smoke_run.call_deferred()
 
 
 func _exit_tree() -> void:
 	Game.stop()
+	# Back to the menu: closing the window there needs no save.
+	get_tree().auto_accept_quit = true
 
 
 func _new_game() -> Simulation:
@@ -444,6 +456,7 @@ func _build_ui() -> void:
 	_pause_menu.quit_requested.connect(func() -> void:
 		_quick_save()
 		get_tree().quit())
+	_pause_menu.logs_requested.connect(SaveService.open_logs)
 	root.add_child(_pause_menu)
 	# UI-2 part 1: on the world map the messages go to the bottom-left corner, off the map's
 	# own names (top-left in the province, under the top bar).
@@ -674,6 +687,10 @@ func _process(delta: float) -> void:
 	if sim == null:
 		return
 	_time += delta
+	if not Game.paused:
+		_autosave_left -= delta
+		if _autosave_left <= 0.0:
+			_autosave()
 	_build.lock_to(sim.province.first_building)
 	_locks_time += delta
 	if _locks_time >= 0.5:
@@ -1388,8 +1405,37 @@ func _back_to_menu() -> void:
 	get_tree().change_scene_to_file("res://src/main/main.tscn")
 
 
+## A smoke run (Game.smoke_seconds, M10 part 2): plays at the highest speed, autosaves,
+## loads the autosave back, plays on a moment and quits; the log says how it went.
+func _smoke_run() -> void:
+	Game.set_speed_index(Game.SPEEDS.size() - 1)
+	await get_tree().create_timer(Game.smoke_seconds * 0.5).timeout
+	_autosave()
+	_quick_load()
+	await get_tree().create_timer(Game.smoke_seconds * 0.5).timeout
+	print("smoke: tick %d, %d people, %d buildings" % [sim.clock.tick, sim.province.agents.count(),
+			sim.province.buildings.count()])
+	get_tree().quit()
+
+
+## Every [constant AUTOSAVE_SECONDS] of play into its own slot, so F5 saves are not
+## overwritten; "Load game" takes whichever is newer.
+func _autosave() -> void:
+	_autosave_left = AUTOSAVE_SECONDS
+	var error := SaveService.save_simulation(SaveService.slot_path(SaveService.AUTO_SLOT), sim)
+	_notes.push(tr("ui.note.autosaved") if error == OK else tr("ui.note.save_failed"))
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		if sim != null:
+			SaveService.save_simulation(SaveService.slot_path(SaveService.AUTO_SLOT), sim)
+		get_tree().quit()
+
+
+## Loads the newest save: the quick save or the autosave.
 func _quick_load() -> void:
-	var path := SaveService.slot_path(QUICK_SLOT)
+	var path := SaveService.latest_slot_path()
 	var loaded: Simulation = SaveService.load_simulation(path, Data.registry) \
 			if FileAccess.file_exists(path) else null
 	if loaded == null:

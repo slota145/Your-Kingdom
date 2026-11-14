@@ -1909,6 +1909,16 @@ Partiami, w kolejności etapów: najpierw grafiki slice’a, potem M4, M5 itd. K
 - **Do oceny na ucho:** głośność całości (muzyka, efekty, tło), czy uderzenia trafiają w ruch narzędzia, czy nowy gwar z odgłosami wsi brzmi dobrze w grze, czy muzyka nie męczy.
 - **Partia 2 (2026-11-14, start na prośbę właściciela „Zaczynaj!”):** piła, ogień w piecu i kuźni, skrzypienie żaren i kołowrotów; zagrody i dzikie stada odzywają się co kilka sekund (owce, konie, świnie i dziki, pszczoły); bitwa ze zdarzeń gry (szczęk broni, łuk, padający, taran w mur) i **muzyka bitewna** (włącza się przy walce w oglądanej prowincji, gaśnie 20 s po ostatnim ciosie; utwory czekają na wybór właściciela, do tego czasu gra muzyka spokojna); kliknięcia przycisków, postawienie, zburzenie i ukończenie budynku, monety przy sprzedaży; tło portu przy nabrzeżach. Odsłuch, runda 3: ta sama strona z odtwarzaczami (sceny „Gospodarstwo” i „Bitwa przy murze”, każdy dźwięk z „Do wymiany”, 24 utwory do walki). **Wynik rundy 3 (2026-11-14):** do wymiany nic; 14 utworów do walki z 24 (m.in. „Medieval: Battle”, „Call to War”, „QaziJamJam”, „Battle Theme A”; ART_SPEC §11). Następne partie: piła, młyn, piekarnia, zwierzęta w zagrodach, statki i port, dźwięki interfejsu, bitwa, kolejne utwory.
 
+**Część 1, stan na koniec (2026-11-14):** dźwięk i muzyka gotowe na gałęzi roboczej (partie 1 i 2, trzy rundy odsłuchu); ocenę w grze właściciel zrobi później (ankieta 2026-11-14: „Od razu część 2”).
+
+**Część 2, stan (2026-11-14):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **Wersja na Windows:** `eksportuj.ps1` w folderze gry (pierwszy raz pobiera szablony eksportu Godota, ok. 1,3 GB) buduje `build\windows\YourKingdom.exe`: jeden plik z całą grą (ok. 190 MB), do grania bez Godota. W chmurze zbudowany i sprawdzony odpowiednik na Linuksa (ARCHITECTURE §8, CLOUD_SETUP).
+- **Autozapis:** co 5 minut gry i przy zamknięciu okna, do osobnego slotu niż F5; „Wczytaj grę” i F9 biorą nowszy zapis; komunikat „Zapisano automatycznie”. Każdy zapis przez plik tymczasowy (awaria w trakcie nie niszczy poprzedniego). Format zapisu bez zmian (v44).
+- **Dziennik błędów:** Godot zapisuje dziennik do pliku (10 ostatnich), gra dopisuje na starcie wersję (0.9.0), system i to, co wczytała; przycisk „Folder dziennika błędów” w menu pauzy (i w narzędziach menu głównego).
+- **Próba:** `tools/export_game.sh linux` buduje grę i uruchamia ją bez ekranu z `--smoke` (nowa gra, autozapis, wczytanie, dalsza gra): bez błędów gry. Jedyny komunikat to znany szum silnika przy zamykaniu okien menu w wersji bez ekranu (nie z kodu gry).
+- **Testy:** zapis przez plik tymczasowy i wybór nowszego zapisu (`test_save_service.gd`).
+- **Do oceny na laptopie:** czy `eksportuj.ps1` buduje grę i czy `.exe` startuje; czy autozapis nie przycina gry na dużym mieście (zapis trwa chwilę); czy przycisk otwiera folder dziennika.
+
 ---
 
 ## Po wersji 1.0 [PÓŹNIEJ]

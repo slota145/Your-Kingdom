@@ -33,6 +33,8 @@ func _ready() -> void:
 	theme = UiKit.theme()
 	add_child(MenuBackdrop.new())
 	Music.play_mood(&"menu")
+	if Game.smoke_seconds > 0.0:
+		_smoke_start.call_deferred()
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -92,9 +94,10 @@ func _ready() -> void:
 	var worlds := Data.registry.all_of(&"world")
 	_new_game = _menu_button(box, "ui.main.new_game", open_new_game)
 	_new_game.disabled = worlds.is_empty()
-	var quick := SaveService.slot_path("quick")
-	_load_game = _menu_button(box, "ui.main.load_game", _start_game.bind(quick))
-	_load_game.disabled = not FileAccess.file_exists(quick)
+	# The newest of the quick save and the autosave (M10 part 2).
+	var latest := SaveService.latest_slot_path()
+	_load_game = _menu_button(box, "ui.main.load_game", _start_game.bind(latest))
+	_load_game.disabled = latest == ""
 	_maps_button = _menu_button(box, "ui.main.single_provinces", func() -> void:
 		_maps.visible = not _maps.visible
 		_tools.visible = false)
@@ -121,6 +124,7 @@ func _ready() -> void:
 			Game.start_request = {"world": worlds[0].id, "early_raid": true}
 			_open(GAME_SCENE))
 	_menu_button(_tools, "ui.main.open_sandbox", _open.bind(SANDBOX_SCENE))
+	_menu_button(_tools, "ui.pause.logs", SaveService.open_logs)
 	_menu_button(_tools, "ui.main.open_benchmark", _open.bind(BENCHMARK_SCENE))
 	var glyphs := UiKit.label("ui.main.glyph_test")
 	glyphs.custom_minimum_size.x = MENU_WIDTH - 40.0
@@ -165,6 +169,13 @@ func _menu_button(parent: Control, key: String, on_pressed: Callable) -> Button:
 
 func _open(scene: String) -> void:
 	get_tree().change_scene_to_file(scene)
+
+
+## A smoke run (Game.smoke_seconds): straight into a new game in the first world.
+func _smoke_start() -> void:
+	var worlds := Data.registry.all_of(&"world")
+	Game.start_request = {"world": worlds[0].id} if not worlds.is_empty() else {}
+	_open(GAME_SCENE)
 
 
 func _start_game(load_path: String) -> void:

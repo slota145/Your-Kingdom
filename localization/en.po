@@ -320,6 +320,12 @@ msgstr "Main menu"
 msgid "ui.pause.quit"
 msgstr "Quit the game"
 
+msgid "ui.pause.logs"
+msgstr "Error log folder"
+
+msgid "ui.pause.logs_tip"
+msgstr "Opens the folder with the game's log. After a problem, send the newest file."
+
 msgid "ui.pause.hint"
 msgstr "Esc: back to the game · F5 save · F9 load"
 
@@ -592,6 +598,9 @@ msgstr "A resident left: %s"
 
 msgid "ui.note.saved"
 msgstr "Game saved."
+
+msgid "ui.note.autosaved"
+msgstr "Autosaved"
 
 msgid "ui.note.save_failed"
 msgstr "Could not save the game."

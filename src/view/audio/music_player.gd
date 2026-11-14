@@ -37,6 +37,9 @@ func _ready() -> void:
 	_rng.randomize()
 	ui = UiSounds.new()
 	add_child(ui)
+	# For the log header (Diagnostics): what sound the game found.
+	print("audio: %d sounds, %d backgrounds, %d pieces of music" % [SoundBank.sounds().size(),
+			SoundBank.ambiences().size(), SoundBank.music().size()])
 
 
 ## Plays music for [param new_mood] (&"menu", &"peace"); nothing changes when it already does.
