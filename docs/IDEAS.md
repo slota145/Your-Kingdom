@@ -37,6 +37,7 @@ Lista z rozmowy po G3 część 2b. **Ankieta 2026-11-13: wszystkie punkty weszł
     2. **Dla graczy (`.exe`):** gra sprawdza najnowsze wydanie (GitHub Releases), pokazuje „Dostępna wersja 0.9.1” i pobiera nowy `.exe`. Trudności: repozytorium jest prywatne, więc wydania musiałyby leżeć w publicznym miejscu (publiczne repo z samymi wydaniami albo itch.io/Steam, które same aktualizują gry); działający `.exe` nie może nadpisać sam siebie, więc potrzebny jest mały pomocnik albo podmiana przy następnym starcie; pobrany plik trzeba sprawdzić (suma kontrolna), żeby nie uruchomić czegoś obcego. Koszt średni.
     - Rekomendacja: teraz wariant 1 (szybki i bezpieczny), a wariant 2 przy prawdziwym wydaniu, najlepiej przez itch.io albo Steam zamiast własnego aktualizatora. Pasuje do M10 część 5 albo do etapu wydania; wymaga zgody właściciela.
     - **Ankieta 2026-11-14: wariant 1 zrobiony** (ROADMAP, M10, „Przycisk aktualizacji”); wariant 2 czeka na etap wydania.
+    - **Stan dla kolegów (2026-11-14):** `.exe` nie ma przycisku aktualizacji, a repozytorium jest prywatne, więc dziś nową wersję trzeba wysłać ręcznie (zapisy kolegi zostają, leżą poza `.exe` i nowa wersja je wczytuje; Windows może ostrzec przy pierwszym uruchomieniu, bo `.exe` nie jest podpisany). Do wyboru później (ankieta bez decyzji): **itch.io** (rekomendacja: ukryta strona dla znajomych, aplikacja itch sama aktualizuje grę, potrzebny tylko skrypt wysyłania), ręczne wysyłanie albo własny aktualizator z publicznym miejscem na wydania.
 
 ## Ekonomia (pomysły po UI-2)
 
