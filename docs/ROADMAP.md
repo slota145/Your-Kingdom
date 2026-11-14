@@ -1919,6 +1919,15 @@ Partiami, w kolejności etapów: najpierw grafiki slice’a, potem M4, M5 itd. K
 - **Testy:** zapis przez plik tymczasowy i wybór nowszego zapisu (`test_save_service.gd`).
 - **Do oceny na laptopie:** czy `eksportuj.ps1` buduje grę i czy `.exe` startuje; czy autozapis nie przycina gry na dużym mieście (zapis trwa chwilę); czy przycisk otwiera folder dziennika.
 
+**Część 3, plan i decyzje (ankieta 2026-11-14, „Zaczniemy część 3 tutaj”):** ikonka gry: **ratusz**; ekran: tryb, rozmiar okna, V-Sync oraz **skala interfejsu, limit klatek, licznik FPS**; dźwięk: głośność ogólna, muzyki, efektów, tła oraz **wycisz w tle, osobny suwak interfejsu, muzyka bitewna wł./wył.**; zakładka „Gra”: **co ile autozapis, przesuwanie krawędzią (z szybkością kamery), język z listy**; zmiana klawiszy.
+
+**Część 3, stan (2026-11-14):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **Ikonka:** ratusz na niebie i trawie w dębowej ramce jak panele gry (`tools/make_icon.py` → `icon.png` okna i paska zadań, `icon.ico` w pliku `.exe`; sprawdzone: ikonka jest w środku `.exe`).
+- **Okno „Opcje”** (menu główne i menu pauzy) z zakładkami Ekran, Dźwięk, Sterowanie i Gra; wszystko działa od razu i zapisuje się w `settings.cfg`, osobno od zapisów (ARCHITECTURE §6.10). „Przywróć domyślne” i „Przywróć domyślne klawisze”.
+- **Klawisze:** 20 czynności do zmiany, klawisz zabrany innej czynności jest z niej zdejmowany (z komunikatem); F5 i F9 też do zmiany, podpowiedź w menu pauzy pokazuje aktualne klawisze.
+- **Testy:** `tests/unit/ui/test_options.gd` (zapis i odczyt, zły plik, głośność szyny, przenoszenie klawisza, nazwy czynności po polsku i angielsku, rozmiary okna, skala interfejsu, okno z 4 zakładkami). Zrzuty: `menu_shot.tscn -- --open=options --tab=0..3 [--ui_scale=1.25]`.
+- **Do oceny na laptopie:** pełny ekran i rozmiary okna, czy skala interfejsu 125% i 150% jest ostra (czcionka pikselowa przy skali niecałkowitej może być nierówna), czy wyciszanie w tle i suwaki działają, zmiana klawiszy w grze.
+
 ---
 
 ## Po wersji 1.0 [PÓŹNIEJ]

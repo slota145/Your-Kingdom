@@ -14,7 +14,8 @@ config/name="Your Kingdom"
 config/version="0.9.0"
 run/main_scene="res://src/main/main.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
+config/windows_native_icon="res://icon.ico"
 run/max_fps=60
 
 [autoload]
@@ -26,6 +27,7 @@ Game="*res://src/core/game.gd"
 SaveService="*res://src/core/save_service.gd"
 Diagnostics="*res://src/core/diagnostics.gd"
 Music="*res://src/view/audio/music_player.gd"
+Options="*res://src/core/options.gd"
 
 [debug]
 

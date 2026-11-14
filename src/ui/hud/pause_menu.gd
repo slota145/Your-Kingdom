@@ -2,7 +2,7 @@ class_name PauseMenu
 extends Control
 ## The pause menu (UI-2 part 1, owner 2026-11-13): Esc, or the "Menu" button of the top bar,
 ## opens it over the dimmed game, which stands still while it is open. Back to the game, quick
-## save and load, the language, the main menu, quitting, the folder of the error log.
+## save and load, the options, the language, the main menu, quitting, the folder of the error log.
 
 signal resumed
 signal save_requested
@@ -10,10 +10,12 @@ signal load_requested
 signal main_menu_requested
 signal quit_requested
 signal logs_requested
+signal options_requested
 
 const DIM := Color(0.05, 0.03, 0.02, 0.55)
 
 var _language: Button
+var _hint: Label
 
 
 func _init() -> void:
@@ -40,6 +42,7 @@ func _init() -> void:
 	box.add_child(UiKit.button("ui.pause.resume", func() -> void: resumed.emit()))
 	box.add_child(UiKit.button("ui.pause.save", func() -> void: save_requested.emit()))
 	box.add_child(UiKit.button("ui.pause.load", func() -> void: load_requested.emit()))
+	box.add_child(UiKit.button("ui.pause.options", func() -> void: options_requested.emit()))
 	_language = UiKit.button("ui.hud.language", Loc.cycle_locale)
 	_language.tooltip_text = "ui.pause.language_tip"
 	box.add_child(_language)
@@ -49,9 +52,17 @@ func _init() -> void:
 	logs.tooltip_text = "ui.pause.logs_tip"
 	logs.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
 	box.add_child(logs)
-	var hint := UiKit.label("ui.pause.hint", false)
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
-	hint.add_theme_color_override(&"font_color", UiKit.INK_SOFT)
-	box.add_child(hint)
+	_hint = UiKit.label("", false)
+	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
+	_hint.add_theme_color_override(&"font_color", UiKit.INK_SOFT)
+	box.add_child(_hint)
+	# The keys of saving and loading as they are now (they can be changed in the options).
+	visibility_changed.connect(_refresh_hint)
+	EventBus.language_changed.connect(func(_locale: String) -> void: _refresh_hint())
+	_refresh_hint()
+
+
+func _refresh_hint() -> void:
+	_hint.text = tr("ui.pause.hint") % [OptionsWindow.key_name(&"quick_save"), OptionsWindow.key_name(&"quick_load")]
 

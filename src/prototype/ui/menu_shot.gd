@@ -2,6 +2,7 @@ extends Node
 ## UI-1 prototype: opens the main menu (or a game scene) and saves a screenshot.
 ## Run (cloud): xvfb-run -a "$GODOT" --path . --rendering-driver opengl3 \
 ##   res://src/prototype/ui/menu_shot.tscn -- --out=/tmp/menu.png [--frames=60] [--open=maps|tools|new_game_panel [--scenario=0..3]]
+##   M10 part 3, the options window: --open=options [--tab=0..3] [--ui_scale=1.5]
 ##   UI-2 part 3, the "New game" window with its live preview: --open=new_game_panel
 ##   [--scenario=0..3] [--seed=<n>] [--provinces=9..60] [--islands=0..] [--kingdom] [--reroll] [--archipelago]
 ##   [--shift=x,y]  holds the backdrop layers as if the mouse were at x,y (-1..1, 1 = the
@@ -11,6 +12,9 @@ var _frames: int = 0
 var _wait: int = 60
 var _out: String = ""
 var _open: String = ""
+## M10 part 3: --open=options [--tab=0..3] [--ui_scale=1.5]
+var _tab: int = 0
+var _ui_scale: float = 0.0
 var _menu: Control
 var _shift: Vector2 = Vector2.INF
 ## --scenario=<0..3> (M8 part 5): the scenario chosen in the "New game" panel.
@@ -40,6 +44,10 @@ func _ready() -> void:
 			_provinces = int(arg.trim_prefix("--provinces="))
 		elif arg.begins_with("--islands="):
 			_islands = int(arg.trim_prefix("--islands="))
+		elif arg.begins_with("--tab="):
+			_tab = int(arg.trim_prefix("--tab="))
+		elif arg.begins_with("--ui_scale="):
+			_ui_scale = float(arg.trim_prefix("--ui_scale="))
 		elif arg == "--kingdom":
 			_kingdom = true
 		elif arg == "--archipelago":
@@ -59,7 +67,15 @@ func _process(_delta: float) -> void:
 	_frames += 1
 	if _shift != Vector2.INF:
 		_menu.get_child(0).set("_mouse", _shift)
-	if _frames == 5 and _open != "" and _open != "new_game_panel":
+	if _frames == 5 and _open == "options":
+		if _ui_scale > 0.0:
+			Options.set("path", "")   # do not write the player's settings file
+			Options.set_value("display/ui_scale", _ui_scale)
+		_menu.get("_menu_panel").set("visible", false)
+		var options := _menu.get("_options") as OptionsWindow
+		options.open()
+		options.get("_tabs").set("current_tab", _tab)
+	elif _frames == 5 and _open != "" and _open != "new_game_panel":
 		_menu.get("_" + _open).set("visible", true)
 		if _open == "start_picker":
 			var settings := GameSettings.new()

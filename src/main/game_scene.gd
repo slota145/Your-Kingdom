@@ -22,6 +22,7 @@ var _map_id: StringName = START_MAP
 var _world_id: StringName = &""
 const QUICK_SLOT := SaveService.QUICK_SLOT
 ## Seconds of play (not paused) between two autosaves (M10 part 2).
+## (Options, "game/autosave_minutes"; 0 = no autosave, M10 part 3.)
 const AUTOSAVE_SECONDS := 300.0
 ## Screen pixels around a person's feet that count as clicking them.
 ## A person is picked only when clicked close to the body, so clicks near people still
@@ -65,6 +66,8 @@ var _locks_time: float = 0.0
 var _world_map: WorldMapScreen
 var _notes: Notifications
 var _pause_menu: PauseMenu
+## The options window (M10 part 3), over the pause menu.
+var _options: OptionsWindow
 ## Whether the game was paused before the pause menu opened (it stays so when the menu closes).
 var _paused_before_menu: bool = false
 ## "Developer mode" in the corner while it is on (E4 part 1; F12 switches it).
@@ -104,6 +107,10 @@ const BOX_MIN := 6.0
 
 ## Seconds of play left until the next autosave.
 var _autosave_left: float = AUTOSAVE_SECONDS
+
+
+func _autosave_every() -> float:
+	return Options.autosave_seconds()
 
 
 func _ready() -> void:
@@ -248,6 +255,7 @@ func _build_ui() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.theme = UiKit.theme()
 	_ui.add_child(root)
+	UiScaler.attach(root)
 	_top = TopBar.new()
 	_top.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	_top.menu_requested.connect(_open_pause_menu)
@@ -354,6 +362,7 @@ func _build_ui() -> void:
 	top_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top_root.theme = root.theme
 	top_layer.add_child(top_root)
+	UiScaler.attach(top_root)
 	top_root.add_child(_result)
 	_battle_window = FieldBattleWindow.new()
 	_battle_window.set_anchors_preset(Control.PRESET_CENTER)
@@ -458,6 +467,13 @@ func _build_ui() -> void:
 		get_tree().quit())
 	_pause_menu.logs_requested.connect(SaveService.open_logs)
 	root.add_child(_pause_menu)
+	_options = OptionsWindow.new()
+	_options.visible = false
+	_options.set_anchors_preset(Control.PRESET_CENTER)
+	_options.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_options.grow_vertical = Control.GROW_DIRECTION_BOTH
+	root.add_child(_options)
+	_pause_menu.options_requested.connect(_options.open)
 	# UI-2 part 1: on the world map the messages go to the bottom-left corner, off the map's
 	# own names (top-left in the province, under the top bar).
 	_world_map.visibility_changed.connect(_place_notes)
@@ -687,8 +703,8 @@ func _process(delta: float) -> void:
 	if sim == null:
 		return
 	_time += delta
-	if not Game.paused:
-		_autosave_left -= delta
+	if not Game.paused and _autosave_every() > 0.0:
+		_autosave_left = minf(_autosave_left - delta, _autosave_every())
 		if _autosave_left <= 0.0:
 			_autosave()
 	_build.lock_to(sim.province.first_building)
@@ -994,6 +1010,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_extend_drag(_hover)
 			_update_preview()
 		return
+	if _options.visible:
+		if event.is_action_pressed(&"ui_cancel"):
+			_options.close()
+		return
 	if _pause_menu.visible:
 		if event.is_action_pressed(&"ui_cancel"):
 			_close_pause_menu()
@@ -1002,7 +1022,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_action_pressed(&"ui_cancel") or event.is_action_pressed(&"world_map"):
 			_toggle_world_map()
 		return
-	if event.is_action_pressed(&"world_map"):
+	if event.is_action_pressed(&"quick_save"):
+		_quick_save()
+	elif event.is_action_pressed(&"quick_load"):
+		_quick_load()
+	elif event.is_action_pressed(&"world_map"):
 		_toggle_world_map()
 	elif event.is_action_pressed(&"toggle_build_menu"):
 		_show_build_menu(not _build.visible)
@@ -1042,8 +1066,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		pass
 	elif event is InputEventKey and event.pressed and not event.echo:
 		match (event as InputEventKey).physical_keycode:
-			KEY_F5: _quick_save()
-			KEY_F9: _quick_load()
 			KEY_F11: _toggle_pseudolocalization()
 			KEY_F7: _execute(StartRaidCommand.new())   # a bandit raid now (M7 part 2, to try the defence)
 			KEY_F12: _execute(SetDevModeCommand.new(not sim.dev_mode))   # the developer mode (E4 part 1)
@@ -1421,7 +1443,7 @@ func _smoke_run() -> void:
 ## Every [constant AUTOSAVE_SECONDS] of play into its own slot, so F5 saves are not
 ## overwritten; "Load game" takes whichever is newer.
 func _autosave() -> void:
-	_autosave_left = AUTOSAVE_SECONDS
+	_autosave_left = _autosave_every() if _autosave_every() > 0.0 else AUTOSAVE_SECONDS
 	var error := SaveService.save_simulation(SaveService.slot_path(SaveService.AUTO_SLOT), sim)
 	_notes.push(tr("ui.note.autosaved") if error == OK else tr("ui.note.save_failed"))
 

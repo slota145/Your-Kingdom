@@ -452,6 +452,15 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
 - **Muzyka:** autoload `Music` gra utwory pasujące do nastroju po kolei z ciszą 20–50 s między nimi (bitwa bez przerw); zmiana nastroju (menu → gra) nie przerywa utworu, który pasuje do obu, a gdy nie ma muzyki dla nastroju, gra dalej to, co gra; inaczej utwór wycisza się i wchodzi nowy. Utwór wraca dopiero po ok. połowie pozostałych. **Bitwa:** każdy cios, strzał i uderzenie w mur w oglądanej prowincji (`unit_struck`, `arrow_shot`, `wall_damaged`) włącza nastrój `war` na 20 s.
 - **Szyny dźwięku** (`default_bus_layout.tres`): `Music`, `Effects`, `Ambience` pod `Master`; głośności na razie stałe w pliku, suwaki w części 3 M10 (opcje).
 
+### 6.10 Opcje gracza (M10 część 3)
+
+- **Autoload `Options`** trzyma ustawienia w `user://settings.cfg` (`ConfigFile`, sekcje `display`, `audio`, `game`, `keys`), osobno od zapisów gry, i stosuje każde od razu po zmianie oraz na starcie. Zły typ albo nieznany klawisz w pliku: wartość domyślna.
+- **Ekran:** okno lub pełny ekran, rozmiar okna (lista mieszcząca się na ekranie), V-Sync, limit klatek (`Engine.max_fps`), licznik FPS (własna warstwa autoloadu). **Skala interfejsu** (100–200%) nie skaluje mapy: `UiScaler` przy korzeniu interfejsu (gra: obie warstwy UI, menu główne) skaluje ten `Control` i daje mu rozmiar ekranu podzielony przez skalę, więc wszystko zakotwiczone dalej się mieści, a piksele mapy zostają ostre.
+- **Dźwięk:** suwak 0–100% na szynę (`Master`, `Music`, `Effects`, `Ambience` i nowa `Interface`) mnoży głośność z `default_bus_layout.tres` (`Options.volume_db`); 0% wycisza szynę. `SoundDef.bus` kieruje kliknięcia, postawienie, zburzenie, ukończenie i monety na `Interface`. „Wycisz w tle”: utrata fokusu okna wycisza `Master`. „Muzyka bitewna” wyłączona: `ProvinceView` zostaje przy nastroju `peace`.
+- **Gra:** autozapis co 2/5/10 min albo wcale (`Options.autosave_seconds`, `game_scene`), przesuwanie mapy przy krawędzi i szybkość kamery (`GameCamera`), język (zmiana przyciskiem też trafia do pliku).
+- **Klawisze:** `Options.REBINDABLE` (kamera, przybliżenia, pauza, prędkość, menu budowy, obrót, wygląd, mapa świata, siatka, obniżanie budynków, brama, szybki zapis i wczytanie; F5 i F9 to teraz akcje `quick_save` i `quick_load`). `bind` zmienia pierwszy klawisz akcji, a inna akcja z tym klawiszem go traci; zapisywane są tylko zmienione akcje. Klawisze deweloperskie (F7, F11, F12) zostają na sztywno.
+- **Okno `OptionsWindow`** (zakładki Ekran, Dźwięk, Sterowanie, Gra) z menu głównego i menu pauzy; przebudowuje się po zmianie języka. Zrzut: `menu_shot.tscn -- --out=<plik> --open=options [--tab=0..3] [--ui_scale=1.5]`.
+
 ## 7. Prowincje nieoglądane: symulacja dwutrybowa
 
 **Decyzja:**
@@ -770,5 +779,6 @@ Zasady:
 | `SaveService` | zapis, odczyt i migracje |
 | `Diagnostics` | nagłówek dziennika błędów na starcie (wersja, system, wczytane dane), M10 część 2, §8 |
 | `Music` | muzyka według nastroju (menu, gra, bitwa) i kliknięcia przycisków, M10 część 1, §6.9 |
+| `Options` | ustawienia gracza w `user://settings.cfg` (ekran, dźwięk, gra, klawisze), M10 część 3, §6.10 |
 
 Symulacja **nie** korzysta z autoloadów (poza `Data`, przekazywanym jawnie przez konstruktor, co ułatwia testy).

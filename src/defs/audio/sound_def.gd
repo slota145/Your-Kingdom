@@ -19,6 +19,9 @@ extends Resource
 ## Seconds between two calls of one herd (min, max).
 @export var interval: Vector2 = Vector2(8.0, 20.0)
 @export_range(-40.0, 12.0) var volume_db: float = 0.0
+## The audio bus (a volume slider in the options): &"Effects" for the world, &"Interface" for
+## clicks and the sounds of the player's own doing (M10 part 3).
+@export var bus: StringName = &"Effects"
 ## Each blow is played this much higher or lower at random (0.08 = ±8%), so a row of
 ## woodcutters does not sound like one machine.
 @export_range(0.0, 0.5) var pitch_jitter: float = 0.08

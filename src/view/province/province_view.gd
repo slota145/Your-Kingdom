@@ -196,7 +196,8 @@ func update_sounds(visible_rect: Rect2, zoom: float, paused: bool, delta: float)
 	work_sounds.update_sounds(agents, visible_rect, zoom, paused)
 	ambience.update_sounds(province, visible_rect, agents.visible_count, delta)
 	battle_left = maxf(0.0, battle_left - delta)
-	Music.play_mood(&"war" if battle_left > 0.0 else &"peace")
+	var battle := battle_left > 0.0 and bool(Options.get_value("audio/battle_music"))
+	Music.play_mood(&"war" if battle else &"peace")
 
 
 ## The sound of a simulation event, where it happened (M10 part 1).

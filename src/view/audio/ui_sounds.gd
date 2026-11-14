@@ -3,7 +3,7 @@ extends Node
 ## A click for every button in the game (M10 part 1): watches the scene tree for buttons
 ## and plays the &"ui_click" sound (data/audio/sounds) when one is pressed.
 
-const BUS := &"Effects"
+const BUS := &"Interface"
 
 var _player: AudioStreamPlayer
 var _rng := RandomNumberGenerator.new()
@@ -29,6 +29,7 @@ func click() -> void:
 	if sound == null or sound.files.is_empty():
 		return
 	_player.stream = SoundBank.stream(sound.files[_rng.randi() % sound.files.size()])
+	_player.bus = sound.bus
 	_player.volume_db = sound.volume_db
 	_player.pitch_scale = 1.0 + _rng.randf_range(-sound.pitch_jitter, sound.pitch_jitter)
 	_player.play()

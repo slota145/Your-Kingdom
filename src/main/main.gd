@@ -26,6 +26,7 @@ var _plural_list: Label
 var _menu_box: VBoxContainer
 var _menu_panel: PanelContainer
 var _new_game_window: NewGameWindow
+var _options: OptionsWindow
 var _start_picker: StartPicker
 
 
@@ -80,6 +81,14 @@ func _ready() -> void:
 		_start_picker.visible = false
 		_new_game_window.open())
 	add_child(_start_picker)
+	_options = OptionsWindow.new()
+	_options.visible = false
+	_options.set_anchors_preset(Control.PRESET_CENTER)
+	_options.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_options.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_options.closed.connect(func() -> void: panel.visible = true)
+	add_child(_options)
+	UiScaler.attach(self)
 	_title = UiKit.title("ui.main.title")
 	_title.add_theme_font_size_override(&"font_size", 56)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -111,6 +120,9 @@ func _ready() -> void:
 			_open(GAME_SCENE))
 		button.set_meta(&"map", map.id)
 		button.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE + 4)
+	_menu_button(box, "ui.main.options", func() -> void:
+		_menu_panel.visible = false
+		_options.open())
 	_language = _menu_button(box, "ui.main.toggle_language", Loc.cycle_locale)
 	_tools_button = _menu_button(box, "ui.main.tools", func() -> void:
 		_tools.visible = not _tools.visible

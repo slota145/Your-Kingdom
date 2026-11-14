@@ -97,6 +97,7 @@ func update_sounds(pool: AgentViewPool, view: Rect2, zoom: float, paused: bool) 
 		player.stream = SoundBank.stream(sound.files[_rng.randi() % sound.files.size()])
 		if player.stream == null:
 			continue
+		player.bus = sound.bus
 		player.global_position = pick["at"]
 		player.volume_db = sound.volume_db + zoom_db(zoom)
 		player.pitch_scale = 1.0 + _rng.randf_range(-sound.pitch_jitter, sound.pitch_jitter)

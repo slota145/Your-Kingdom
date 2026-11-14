@@ -41,7 +41,7 @@ func visible_world_rect() -> Rect2:
 
 func _process(delta: float) -> void:
 	var dir := Input.get_vector(&"camera_left", &"camera_right", &"camera_up", &"camera_down")
-	if edge_pan and get_window().has_focus():
+	if (edge_pan or bool(Options.get_value("game/edge_scroll"))) and get_window().has_focus():
 		var mouse := get_viewport().get_mouse_position()
 		var size := get_viewport().get_visible_rect().size
 		if mouse.x < EDGE_MARGIN: dir.x = -1.0
@@ -49,7 +49,7 @@ func _process(delta: float) -> void:
 		if mouse.y < EDGE_MARGIN: dir.y = -1.0
 		elif mouse.y > size.y - EDGE_MARGIN: dir.y = 1.0
 	if dir != Vector2.ZERO:
-		position += dir * PAN_SPEED * delta / zoom.x
+		position += dir * PAN_SPEED * float(Options.get_value("game/camera_speed")) * delta / zoom.x
 		_clamp()
 
 
