@@ -20,7 +20,11 @@ func _init() -> void:
 	custom_minimum_size = Vector2(760, 540)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_build()
-	EventBus.language_changed.connect(func(_locale: String) -> void: _rebuild.call_deferred())
+	EventBus.language_changed.connect(_on_language_changed)
+
+
+func _on_language_changed(_locale: String) -> void:
+	_rebuild.call_deferred()
 
 
 ## The name of the first key of [param action] ("F5", "Space"…), or "-" when it has none.
@@ -28,9 +32,12 @@ static func key_name(action: StringName) -> String:
 	var keys := Options.keys_of(action)
 	if keys.is_empty():
 		return "-"
-	var keycode := DisplayServer.keyboard_get_keycode_from_physical(keys[0] as Key)
-	if keycode == KEY_NONE:
-		keycode = keys[0] as Key
+	var keycode := keys[0] as Key
+	# The letter this key gives on the player's keyboard layout (none without a screen).
+	if DisplayServer.get_name() != "headless":
+		var local := DisplayServer.keyboard_get_keycode_from_physical(keycode)
+		if local != KEY_NONE:
+			keycode = local
 	return OS.get_keycode_string(keycode)
 
 

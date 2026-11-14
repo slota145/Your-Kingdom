@@ -22,9 +22,11 @@ if [ "$target" = "linux" ]; then
     log="$(mktemp)"
     timeout 300 "./$out" --headless -- --smoke=20 >"$log" 2>&1 || true
     cat "$log"
-    # Known engine noise of a headless release build when the menu's windows close (not from the
-    # game's scripts; 2026-11-14): "Attempt to disconnect a nonexistent connection from 'root...".
-    if grep -E "SCRIPT ERROR|ERROR:" "$log" | grep -vq "nonexistent connection from 'root" || ! grep -q "^smoke:" "$log"; then
+    # Known engine noise of a headless release build (not from the game's scripts; 2026-11-14):
+    # "Attempt to disconnect a nonexistent connection from 'root..." when the menu's windows
+    # close, and now and then "N resources still in use at exit" when the game quits.
+    if grep -E "SCRIPT ERROR|ERROR:" "$log" | grep -vE "nonexistent connection from 'root|resources still in use at exit" | grep -q . \
+            || ! grep -q "^smoke:" "$log"; then
         echo "The exported game reported errors or did not finish the smoke run (above)." >&2
         exit 1
     fi

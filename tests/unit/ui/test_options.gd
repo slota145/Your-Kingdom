@@ -118,3 +118,23 @@ func test_options_window_opens_on_every_tab() -> void:
 		assert_bool(tabs.get_tab_title(i).begins_with("ui.")).is_false()
 	window.close()
 	assert_bool(window.visible).is_false()
+
+
+## A freed interface must not be called when an option or the language changes: the cause of
+## a crash of the exported game (main menu left for the game, M10 part 3).
+func test_freed_interfaces_drop_their_connections() -> void:
+	var root := Control.new()
+	add_child(root)
+	var scaler := UiScaler.attach(root)
+	var window := OptionsWindow.new()
+	add_child(window)
+	await get_tree().process_frame
+	var before_options := Options.changed.get_connections().size()
+	var before_language := EventBus.language_changed.get_connections().size()
+	root.free()
+	window.free()
+	assert_int(Options.changed.get_connections().size()).is_less(before_options)
+	assert_int(EventBus.language_changed.get_connections().size()).is_less(before_language)
+	Options.changed.emit("display/ui_scale")
+	EventBus.language_changed.emit(Loc.get_locale())
+	assert_bool(is_instance_valid(scaler)).is_false()

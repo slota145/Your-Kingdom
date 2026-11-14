@@ -59,7 +59,11 @@ func _init() -> void:
 	box.add_child(_hint)
 	# The keys of saving and loading as they are now (they can be changed in the options).
 	visibility_changed.connect(_refresh_hint)
-	EventBus.language_changed.connect(func(_locale: String) -> void: _refresh_hint())
+	EventBus.language_changed.connect(_on_language_changed)
+	_refresh_hint()
+
+
+func _on_language_changed(_locale: String) -> void:
 	_refresh_hint()
 
 

@@ -16,15 +16,20 @@ static func attach(root: Control) -> UiScaler:
 
 
 func _ready() -> void:
-	Options.changed.connect(func(key: String) -> void:
-		if key == "display/ui_scale" or key == "":
-			fit())
+	# Methods, not lambdas: Godot drops these connections when this node is freed (a lambda
+	# would be called on a freed node and crash an exported game).
+	Options.changed.connect(_on_option_changed)
 	get_viewport().size_changed.connect(fit)
 	fit.call_deferred()
 
 
+func _on_option_changed(key: String) -> void:
+	if key == "display/ui_scale" or key == "":
+		fit()
+
+
 func fit() -> void:
-	if target == null or not is_instance_valid(target):
+	if not is_inside_tree() or target == null or not is_instance_valid(target):
 		return
 	var factor := float(Options.get_value("display/ui_scale"))
 	var screen := get_viewport().get_visible_rect().size
