@@ -1890,6 +1890,14 @@ Partiami, w kolejności etapów: najpierw grafiki slice’a, potem M4, M5 itd. K
 - stabilność,
 - eksport na Windows.
 
+**Plan (2026-11-14, ankieta właściciela, do akceptacji):** poprawek z oceny G3 5b brak. Stan wyjściowy: w grze nie ma żadnego dźwięku, okna opcji (okno zawsze 1600×900), autozapisu ani ustawień eksportu. Części po kolei, ocena po każdej:
+1. **Dźwięk i muzyka** (pierwsze, decyzja z ankiety): dźwięki pracy przypięte do czynności postaci (siekiera, młot, piła, kilof, zwierzęta) słychać tylko z miejsca pracy na ekranie, ciszej przy oddaleniu kamery; tło (las, morze, gwar miasta zależny od liczby mieszkańców), dźwięki interfejsu, bitwy, 4–6 utworów muzyki. **Źródło: darmowe paczki CC0** (ankieta); lista plików z autorem i licencją w `assets/audio/CREDITS.md`. Głośność na razie stała w kodzie (suwaki w części 3). Partiami jak grafiki w G3, ocena odsłuchu na laptopie.
+2. **Wersja na Windows i stabilność:** ustawienia eksportu i plik .exe, autozapis co kilka minut (bez zmiany formatu zapisu), zapis błędów do pliku w `user://`.
+3. **Opcje:** ekran (okno lub pełny ekran, rozdzielczość, synchronizacja pionowa), głośność (ogólna, muzyka, efekty), zmiana klawiszy; z menu głównego i menu pauzy; ustawienia w `user://settings.cfg`, osobno od zapisu gry.
+4. **Samouczek: podpowiedzi w grze** (ankieta): krótkie okienka przy pierwszym razie (pierwszy dom, brak drewna, pierwszy kupiec…), każdą można wyłączyć, wszystkie wyłącza opcja.
+5. **Dopracowanie UI i balans:** poprawki z zaległych ocen (M8, Z1, M7, B1, W1, J1) i z grania; balans z pomiarów automatycznego gracza i władców, ostatnie słowo ma granie właściciela.
+- **Ryzyka:** w chmurze `opengameart.org` jest osiągalne, a `kenney.nl`, `freesound.org` i `sonniss.com` są zablokowane (2026-11-14); jeśli zabraknie dźwięków, poprosić o dodanie hosta albo właściciel pobiera paczkę na laptopie. Mieszanie stylów z różnych paczek: wybierać mało autorów. Wiele dźwięków naraz przy 400+ postaciach: limit jednoczesnych głosów i grupowanie tych samych dźwięków.
+
 ---
 
 ## Po wersji 1.0 [PÓŹNIEJ]
