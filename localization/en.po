@@ -5027,3 +5027,12 @@ msgid "ui.main.update_ready"
 msgid_plural "ui.main.update_ready_plural"
 msgstr[0] "A new version of the game (%d change): update"
 msgstr[1] "A new version of the game (%d changes): update"
+
+msgid "ui.main.release_ready"
+msgstr "New version %s: download and start"
+
+msgid "ui.main.update_downloading"
+msgstr "Downloading the new version… %d%%"
+
+msgid "ui.main.update_failed"
+msgstr "The download failed: open the game's page"

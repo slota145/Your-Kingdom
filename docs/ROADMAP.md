@@ -1931,6 +1931,11 @@ Partiami, w kolejności etapów: najpierw grafiki slice’a, potem M4, M5 itd. K
 
 **Przycisk aktualizacji (2026-11-14, pomysł właściciela, ankieta: „Najpierw przycisk aktualizacji”):** gotowy, czeka na ocenę na laptopie.
 
+**Wydania dla graczy (2026-11-14, ankiety właściciela: osobne publiczne repozytorium `YourKingdom-Releases`, `.exe` sam się pobiera i podmienia, publikuje sesja Claude):** gotowe na gałęzi, czekają na jednorazowe kroki właściciela (repozytorium, token, sekret `RELEASES_TOKEN`; CLOUD_SETUP, „Wydania”) i pierwsze wydanie.
+- Workflow `.github/workflows/release.yml` (uruchamiany ręcznie na `main`): Godot i szablony, próba `--smoke` na Linuksie, `.exe` dla Windows, SHA-256, wydanie `v<wersja>` w publicznym repozytorium.
+- `.exe` przy starcie pyta o najnowsze wydanie; jeśli jest nowsze, menu pokazuje „Nowa wersja 0.9.1: pobierz i uruchom”: pobieranie z postępem w procentach, sprawdzenie sumy SHA-256, podmiana działającego pliku (stary dostaje nazwę `.old.exe` i znika przy następnym starcie), uruchomienie nowej wersji; przy błędzie przycisk otwiera stronę wydania, żeby pobrać ręcznie. Zapisy i ustawienia leżą osobno i zostają.
+- **Testy:** `tests/unit/test_updates.gd` (porównanie wersji, odczyt wydania, suma kontrolna, nazwy plików przy podmianie, workflow publikuje tam, gdzie gra szuka). **Na laptopie do sprawdzenia:** pierwsza prawdziwa aktualizacja `.exe` (podmiana pliku działa tylko na Windows).
+
 **Scalenie (2026-11-14):** części 1–3 M10 i przycisk aktualizacji scalone do `main` na prośbę właściciela; szybkie (747) i długie testy oraz próba wyeksportowanej gry przechodzą.
 - Gra uruchomiona z folderu z repozytorium na Windows (nie `.exe`) sprawdza w tle, czy na GitHubie (`main`) jest coś nowego (autoload `Updates`: `git fetch`, liczba nowych commitów). Jeśli tak, menu główne pokazuje złoty przycisk „Nowa wersja gry (3 zmiany): zaktualizuj”; ten sam zawsze jest w „Narzędziach twórców”.
 - Przycisk zamyka grę i uruchamia `aktualizuj.ps1 -Restart -Godot <ten Godot>` w okienku: skrypt czeka na zamknięcie gry, pobiera `main`, wczytuje grafiki i dźwięki i sam uruchamia grę z powrotem; przy problemie okienko czeka na Enter, żeby dało się przeczytać komunikat.
