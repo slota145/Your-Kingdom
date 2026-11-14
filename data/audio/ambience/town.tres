@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AmbienceDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/audio/ambience_def.gd" id="1_amb"]
+
+[resource]
+script = ExtResource("1_amb")
+id = &"town"
+source = 2
+bed = "ambience/town_bed.ogg"
+bed_db = -12.0
+scatter = PackedStringArray("ambience/rooster_1.ogg", "ambience/rooster_2.ogg", "ambience/hens_1.ogg", "ambience/hens_2.ogg", "ambience/dogs_1.ogg", "ambience/dogs_2.ogg", "ambience/bell_1.ogg", "ambience/goats_1.ogg", "ambience/barrow_1.ogg")
+scatter_db = -12.0
+scatter_every = Vector2(6, 14)
+full_at = 0.6

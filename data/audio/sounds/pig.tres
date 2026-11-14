@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SoundDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/audio/sound_def.gd" id="1_snd"]
+
+[resource]
+script = ExtResource("1_snd")
+id = &"pig"
+files = PackedStringArray("sfx/animals/pig_1.ogg", "sfx/animals/pig_2.ogg", "sfx/animals/pig_3.ogg")
+animals = Array[StringName]([&"pig", &"boar"])
+interval = Vector2(8, 20)
+volume_db = -9.0
+pitch_jitter = 0.1
+hit = 0.5
+every = 1
+chance = 1.0
+max_voices = 2

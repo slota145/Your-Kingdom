@@ -49,6 +49,18 @@ var wild: WildLayer
 var moods: MoodLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
+## The blows of the people at work and the background of forest, water and town (M10 part 1).
+var work_sounds: WorkSounds
+var ambience: AmbiencePlayer
+var animal_voices := AnimalVoices.new()
+## Seconds of battle music left: every blow and arrow on the map sets it back to the full
+## [constant BATTLE_MUSIC_HOLD].
+var battle_left: float = 0.0
+
+## Seconds the battle music goes on after the last blow.
+const BATTLE_MUSIC_HOLD := 20.0
+## Events that mean fighting in the province (the music turns to battle).
+const BATTLE_EVENTS: Array[StringName] = [&"unit_struck", &"arrow_shot", &"wall_damaged"]
 
 var _field_timer: float = 0.0
 var _buildings_dirty: bool = false
@@ -138,6 +150,10 @@ func setup(source: ProvinceSim) -> void:
 	cranes.z_index = 1
 	add_child(cranes)
 	cranes.setup(province)
+	work_sounds = WorkSounds.new()
+	add_child(work_sounds)
+	ambience = AmbiencePlayer.new()
+	add_child(ambience)
 
 
 func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -> void:
@@ -169,7 +185,51 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 		vines.refresh()
 
 
+## The work sounds and the background, after [method update_view] has drawn the people.
+## [param listener]: the middle of the screen in world pixels.
+func update_sounds(visible_rect: Rect2, zoom: float, paused: bool, delta: float) -> void:
+	if not paused:
+		var herds := pens.voices(visible_rect)
+		herds.append_array(wild.voices(visible_rect))
+		for call: Dictionary in animal_voices.update(herds, delta):
+			work_sounds.queue(call["sound"], call["at"], false)
+	work_sounds.update_sounds(agents, visible_rect, zoom, paused)
+	ambience.update_sounds(province, visible_rect, agents.visible_count, delta)
+	battle_left = maxf(0.0, battle_left - delta)
+	var battle := battle_left > 0.0 and bool(Options.get_value("audio/battle_music"))
+	Music.play_mood(&"war" if battle else &"peace")
+
+
+## The sound of a simulation event, where it happened (M10 part 1).
+func _event_sound(event: Dictionary) -> void:
+	var type: StringName = event["type"]
+	if BATTLE_EVENTS.has(type):
+		battle_left = BATTLE_MUSIC_HOLD
+	var sound := SoundBank.for_event(type)
+	if sound != null:
+		work_sounds.queue(sound, event_point(province, event))
+
+
+## Where [param event] happened in world pixels, or null when it has no place (a building
+## already gone: heard in the middle of the screen).
+static func event_point(source: ProvinceSim, event: Dictionary) -> Variant:
+	if event.has("pos"):
+		return IsoMath.grid_to_screen(event["pos"])
+	if event.has("agent"):
+		var agent := source.agents.get_agent(int(event["agent"]))
+		if agent != null:
+			return IsoMath.grid_to_screen(agent.pos)
+	if event.has("building"):
+		var building := source.buildings.get_building(int(event["building"]))
+		if building != null:
+			return IsoMath.grid_to_screen(Vector2(building.origin) + Vector2(building.def.footprint) * 0.5)
+	if event.has("tile"):
+		return IsoMath.tile_center_screen(event["tile"])
+	return null
+
+
 func on_sim_event(event: Dictionary) -> void:
+	_event_sound(event)
 	nature.on_sim_event(event)
 	paving_plan.on_sim_event(event)
 	forts.on_sim_event(event)

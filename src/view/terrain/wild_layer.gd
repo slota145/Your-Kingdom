@@ -104,6 +104,20 @@ func update_view(delta: float) -> void:
 		_arrows.queue_redraw()
 
 
+## The wild herds on screen, for their calls (M10 part 1): {"key", "kind", "at"} per herd
+## with an animal in [param rect] (world pixels).
+func voices(rect: Rect2) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if province == null:
+		return result
+	for herd: WildHerds.Herd in province.wild.herds.values():
+		for animal: _Animal in _herds.get(herd.id, []):
+			if rect.has_point(animal.sprite.position):
+				result.append({"key": "wild_%d" % herd.id, "kind": herd.kind, "at": animal.sprite.position})
+				break
+	return result
+
+
 ## Matches the animals of [param herd] to its count and its spot.
 func _sync(herd: WildHerds.Herd) -> void:
 	var animals: Array = _herds.get(herd.id, [])

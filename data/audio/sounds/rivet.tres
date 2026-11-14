@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/audio/sound_def.gd" id="1_snd"]
+
+[resource]
+script = ExtResource("1_snd")
+id = &"rivet"
+files = PackedStringArray("sfx/work/anvil_1.ogg", "sfx/work/anvil_3.ogg")
+activities = Array[StringName]([&"rivet"])
+volume_db = -9.0
+hit = 0.75
+chance = 1.0
+max_voices = 2

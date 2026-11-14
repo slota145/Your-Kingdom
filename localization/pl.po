@@ -325,8 +325,14 @@ msgstr "Menu główne"
 msgid "ui.pause.quit"
 msgstr "Wyjdź z gry"
 
+msgid "ui.pause.logs"
+msgstr "Folder dziennika błędów"
+
+msgid "ui.pause.logs_tip"
+msgstr "Otwiera folder z dziennikiem gry. Po błędzie wyślij najnowszy plik."
+
 msgid "ui.pause.hint"
-msgstr "Esc: wróć do gry · F5 zapis · F9 wczytanie"
+msgstr "Esc: wróć do gry · %s zapis · %s wczytanie"
 
 msgid "ui.build.cost"
 msgstr "Koszt: %s"
@@ -597,6 +603,9 @@ msgstr "Mieszkaniec odszedł z domu: %s"
 
 msgid "ui.note.saved"
 msgstr "Gra zapisana."
+
+msgid "ui.note.autosaved"
+msgstr "Zapisano automatycznie"
 
 msgid "ui.note.save_failed"
 msgstr "Nie udało się zapisać gry."
@@ -4876,3 +4885,189 @@ msgstr "zapas doszedł do limitu"
 
 msgid "ui.command_error.not_limited"
 msgstr "Zwierząt nie ogranicza się limitem."
+
+msgid "ui.main.options"
+msgstr "Opcje"
+
+msgid "ui.pause.options"
+msgstr "Opcje"
+
+msgid "ui.options.title"
+msgstr "Opcje"
+
+msgid "ui.options.tab_screen"
+msgstr "Ekran"
+
+msgid "ui.options.tab_sound"
+msgstr "Dźwięk"
+
+msgid "ui.options.tab_controls"
+msgstr "Sterowanie"
+
+msgid "ui.options.tab_game"
+msgstr "Gra"
+
+msgid "ui.options.defaults"
+msgstr "Przywróć domyślne"
+
+msgid "ui.options.close"
+msgstr "Zamknij"
+
+msgid "ui.options.window_mode"
+msgstr "Tryb wyświetlania"
+
+msgid "ui.options.windowed"
+msgstr "Okno"
+
+msgid "ui.options.fullscreen"
+msgstr "Pełny ekran"
+
+msgid "ui.options.resolution"
+msgstr "Rozmiar okna"
+
+msgid "ui.options.vsync"
+msgstr "Synchronizacja pionowa (V-Sync)"
+
+msgid "ui.options.ui_scale"
+msgstr "Skala interfejsu"
+
+msgid "ui.options.max_fps"
+msgstr "Limit klatek na sekundę"
+
+msgid "ui.options.no_limit"
+msgstr "Bez limitu"
+
+msgid "ui.options.show_fps"
+msgstr "Licznik klatek (FPS)"
+
+msgid "ui.options.fps_counter"
+msgstr "FPS: %d"
+
+msgid "ui.options.master"
+msgstr "Głośność ogólna"
+
+msgid "ui.options.music"
+msgstr "Muzyka"
+
+msgid "ui.options.effects"
+msgstr "Efekty (praca, zwierzęta, bitwa)"
+
+msgid "ui.options.ambience"
+msgstr "Tło (las, woda, miasto)"
+
+msgid "ui.options.interface"
+msgstr "Interfejs (kliknięcia, budowanie)"
+
+msgid "ui.options.mute_in_background"
+msgstr "Wycisz, gdy gra jest w tle"
+
+msgid "ui.options.battle_music"
+msgstr "Muzyka bitewna podczas walki"
+
+msgid "ui.options.keys_hint"
+msgstr "Kliknij klawisz obok czynności, a potem naciśnij nowy (Esc: anuluj)."
+
+msgid "ui.options.press_key"
+msgstr "Naciśnij klawisz…"
+
+msgid "ui.options.key_taken"
+msgstr "Klawisz %s zabrano czynności: %s"
+
+msgid "ui.options.keys_defaults"
+msgstr "Przywróć domyślne klawisze"
+
+msgid "ui.options.autosave"
+msgstr "Autozapis"
+
+msgid "ui.options.autosave_off"
+msgstr "Wyłączony"
+
+msgid "ui.options.autosave_every"
+msgstr "co %d min"
+
+msgid "ui.options.edge_scroll"
+msgstr "Przesuwanie mapy przy krawędzi ekranu"
+
+msgid "ui.options.camera_speed"
+msgstr "Szybkość kamery"
+
+msgid "ui.options.language"
+msgstr "Język"
+
+msgid "ui.options.language_pl"
+msgstr "Polski"
+
+msgid "ui.options.language_en"
+msgstr "English"
+
+msgid "ui.action.camera_up"
+msgstr "Kamera w górę"
+
+msgid "ui.action.camera_down"
+msgstr "Kamera w dół"
+
+msgid "ui.action.camera_left"
+msgstr "Kamera w lewo"
+
+msgid "ui.action.camera_right"
+msgstr "Kamera w prawo"
+
+msgid "ui.action.camera_zoom_1"
+msgstr "Przybliżenie 0,5×"
+
+msgid "ui.action.camera_zoom_2"
+msgstr "Przybliżenie 1×"
+
+msgid "ui.action.camera_zoom_3"
+msgstr "Przybliżenie 2×"
+
+msgid "ui.action.camera_zoom_4"
+msgstr "Przybliżenie 3×"
+
+msgid "ui.action.toggle_pause"
+msgstr "Pauza"
+
+msgid "ui.action.game_speed_up"
+msgstr "Szybciej"
+
+msgid "ui.action.game_speed_down"
+msgstr "Wolniej"
+
+msgid "ui.action.toggle_build_menu"
+msgstr "Menu budowy"
+
+msgid "ui.action.rotate_building"
+msgstr "Obróć budynek"
+
+msgid "ui.action.cycle_look"
+msgstr "Zmień wygląd budynku"
+
+msgid "ui.action.world_map"
+msgstr "Mapa świata"
+
+msgid "ui.action.toggle_grid"
+msgstr "Siatka kafli"
+
+msgid "ui.action.toggle_lower_buildings"
+msgstr "Obniż budynki"
+
+msgid "ui.action.toggle_gate"
+msgstr "Otwórz lub zamknij bramę"
+
+msgid "ui.action.quick_save"
+msgstr "Szybki zapis"
+
+msgid "ui.action.quick_load"
+msgstr "Wczytaj zapis"
+
+msgid "ui.options.percent"
+msgstr "%d%%"
+
+msgid "ui.main.update_game"
+msgstr "Aktualizuj grę"
+
+msgid "ui.main.update_ready"
+msgid_plural "ui.main.update_ready_plural"
+msgstr[0] "Nowa wersja gry (%d zmiana): zaktualizuj"
+msgstr[1] "Nowa wersja gry (%d zmiany): zaktualizuj"
+msgstr[2] "Nowa wersja gry (%d zmian): zaktualizuj"

@@ -23,6 +23,8 @@ const DEFAULTS: Dictionary[StringName, Array] = {
 	&"cycle_look": [KEY_T],
 	&"world_map": [KEY_M],
 	&"toggle_build_menu": [KEY_B],
+	&"quick_save": [KEY_F5],
+	&"quick_load": [KEY_F9],
 }
 
 

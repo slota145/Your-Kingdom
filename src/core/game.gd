@@ -12,6 +12,18 @@ var paused: bool = false
 var speed_index: int = 0
 ## Average duration of one simulation tick in microseconds (debug HUD).
 var tick_usec_avg: float = 0.0
+## Seconds of a smoke run (M10 part 2): started with "-- --smoke[=<seconds>]", the game opens a
+## new game by itself, plays this long at the highest speed, autosaves and quits, to check
+## an exported build (tools/export_game.sh). 0 = a normal start.
+var smoke_seconds: float = 0.0
+
+
+func _ready() -> void:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg == "--smoke":
+			smoke_seconds = 20.0
+		elif arg.begins_with("--smoke="):
+			smoke_seconds = maxf(1.0, float(arg.trim_prefix("--smoke=")))
 
 
 func start(simulation: Simulation) -> void:

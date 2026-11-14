@@ -7,10 +7,43 @@ extends Node
 const SAVE_VERSION := SaveMigrations.CURRENT_VERSION
 const SAVE_DIR := "user://saves"
 const EXTENSION := ".sav"
+## Slots: F5 and the pause menu, and the autosave every few minutes (M10 part 2).
+const QUICK_SLOT := "quick"
+const AUTO_SLOT := "auto"
+## Godot writes its log here (debug/file_logging, project settings).
+const LOG_DIR := "user://logs"
 
 
 func slot_path(slot_name: String) -> String:
 	return SAVE_DIR.path_join(slot_name + EXTENSION)
+
+
+## The newest of the quick save and the autosave ("" when there is none): what "Load
+## game" continues from.
+func latest_slot_path() -> String:
+	return newest([slot_path(QUICK_SLOT), slot_path(AUTO_SLOT)])
+
+
+## The most recently written of [param paths] that exist ("" when none does).
+func newest(paths: Array[String]) -> String:
+	var best := ""
+	var best_time := -1
+	for path: String in paths:
+		if not FileAccess.file_exists(path):
+			continue
+		var time := FileAccess.get_modified_time(path)
+		if time > best_time:
+			best_time = time
+			best = path
+	return best
+
+
+## Opens the folder with the game's log files (errors and warnings, M10 part 2), so the
+## owner can send the newest one after a crash.
+func open_logs() -> void:
+	var folder := ProjectSettings.globalize_path(LOG_DIR)
+	DirAccess.make_dir_recursive_absolute(folder)
+	OS.shell_open(folder)
 
 
 func save_simulation(path: String, sim: Simulation) -> Error:
@@ -25,8 +58,21 @@ func load_simulation(path: String, registry: DataRegistry) -> Simulation:
 	return Simulation.from_dict(state, registry)
 
 
+## Writes to a temporary file first and puts it in place only when it is complete, so a
+## crash or a power cut while saving keeps the previous save (M10 part 2).
 func save_state(path: String, state: Dictionary) -> Error:
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	var temp := path + ".tmp"
+	var error := _write(temp, state)
+	if error != OK:
+		DirAccess.remove_absolute(temp)
+		return error
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)
+	return DirAccess.rename_absolute(temp, path)
+
+
+func _write(path: String, state: Dictionary) -> Error:
 	var file := FileAccess.open_compressed(path, FileAccess.WRITE, FileAccess.COMPRESSION_ZSTD)
 	if file == null:
 		return FileAccess.get_open_error()

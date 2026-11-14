@@ -1890,6 +1890,53 @@ Partiami, w kolejności etapów: najpierw grafiki slice’a, potem M4, M5 itd. K
 - stabilność,
 - eksport na Windows.
 
+**Plan (2026-11-14, ankieta właściciela, zaakceptowany):** poprawek z oceny G3 5b brak. Stan wyjściowy: w grze nie ma żadnego dźwięku, okna opcji (okno zawsze 1600×900), autozapisu ani ustawień eksportu. Części po kolei, ocena po każdej:
+1. **Dźwięk i muzyka** (pierwsze, decyzja z ankiety): dźwięki pracy przypięte do czynności postaci (siekiera, młot, piła, kilof, zwierzęta) słychać tylko z miejsca pracy na ekranie, ciszej przy oddaleniu kamery; tło (las, morze, gwar miasta zależny od liczby mieszkańców), dźwięki interfejsu, bitwy, 4–6 utworów muzyki. **Źródło: darmowe paczki CC0** (ankieta); lista plików z autorem i licencją w `assets/audio/CREDITS.md`. Głośność na razie stała w kodzie (suwaki w części 3). Partiami jak grafiki w G3, ocena odsłuchu na laptopie.
+2. **Wersja na Windows i stabilność:** ustawienia eksportu i plik .exe, autozapis co kilka minut (bez zmiany formatu zapisu), zapis błędów do pliku w `user://`.
+3. **Opcje:** ekran (okno lub pełny ekran, rozdzielczość, synchronizacja pionowa), głośność (ogólna, muzyka, efekty), zmiana klawiszy; z menu głównego i menu pauzy; ustawienia w `user://settings.cfg`, osobno od zapisu gry.
+4. **Samouczek: podpowiedzi w grze** (ankieta): krótkie okienka przy pierwszym razie (pierwszy dom, brak drewna, pierwszy kupiec…), każdą można wyłączyć, wszystkie wyłącza opcja.
+5. **Dopracowanie UI i balans:** poprawki z zaległych ocen (M8, Z1, M7, B1, W1, J1) i z grania; balans z pomiarów automatycznego gracza i władców, ostatnie słowo ma granie właściciela.
+- **Plan zaakceptowany 2026-11-14** („Zacznij według planu”).
+- **Ryzyka:** w chmurze `opengameart.org` jest osiągalne, a `kenney.nl`, `freesound.org` i `sonniss.com` są zablokowane (2026-11-14); jeśli zabraknie dźwięków, poprosić o dodanie hosta albo właściciel pobiera paczkę na laptopie. Mieszanie stylów z różnych paczek: wybierać mało autorów. Wiele dźwięków naraz przy 400+ postaciach: limit jednoczesnych głosów i grupowanie tych samych dźwięków.
+
+**Część 1, stan (2026-11-14):** partia 1 dźwięków gotowa na gałęzi roboczej, czeka na odsłuch na laptopie.
+- **Dźwięki pracy** (opis: ARCHITECTURE §6.9, pliki: ART_SPEC §11): siekiera drwala, kilof kamieniarza i górnika, dłuto przy obróbce kamienia, młotek budowniczego i cieśli okrętowego, kowadło kowala, nitowanie płatnerza, łopata kopacza gliny i przy sadzeniu, beczenie owcy przy strzyży (co piąte cięcie). Uderzenie pada w tej klatce, w której narzędzie trafia, raz na pętlę animacji; słychać tylko tych, których widać, z ich miejsca (lewo-prawo), ciszej z dala od środka ekranu i przy oddaleniu kamery; najwyżej 12 naraz, najbliższe wygrywają. Pauza wycisza uderzenia.
+- **Tło:** las (ptaki), woda (fale i mewy), miasto (gwar) robią się głośniejsze, gdy na ekranie jest więcej lasu, wody albo ludzi.
+- **Muzyka:** 11 utworów w menu i w grze, między nimi 20–50 s ciszy; utwór wraca dopiero po ok. połowie pozostałych.
+- **Odsłuch, runda 2 (2026-11-14, strona z odtwarzaczami):** gwar z nagrania tłumu „za współczesny”, więc właściciel wybrał samą rozmowę ok. 25 osób (BigSoundBank, CC0) z kogutem, kurami, psami, dzwonem, kozami i taczkami co kilka sekund; z 21 utworów CC0 wybrał 11 (ART_SPEC §11).
+- **Bez zmian w symulacji i zapisie.** Wszystko jest z CC0, lista autorów w `assets/audio/CREDITS.md`; pliki robi `tools/audio/prepare_audio.py`.
+- **Testy:** `tests/unit/view/test_sounds.gd` (pliki są i mają autorów, czynności istnieją, uderzenie raz na pętlę, limit głosów, szansa niezależna od klatek, tło z udziału lasu i wody, muzyka bez powtórki, szyny). Próba: `src/prototype/m10/sound_probe.tscn -- [--seconds=60] [--zoom=1]` (ile uderzeń daje duże miasto).
+- **Do oceny na ucho:** głośność całości (muzyka, efekty, tło), czy uderzenia trafiają w ruch narzędzia, czy nowy gwar z odgłosami wsi brzmi dobrze w grze, czy muzyka nie męczy.
+- **Partia 2 (2026-11-14, start na prośbę właściciela „Zaczynaj!”):** piła, ogień w piecu i kuźni, skrzypienie żaren i kołowrotów; zagrody i dzikie stada odzywają się co kilka sekund (owce, konie, świnie i dziki, pszczoły); bitwa ze zdarzeń gry (szczęk broni, łuk, padający, taran w mur) i **muzyka bitewna** (włącza się przy walce w oglądanej prowincji, gaśnie 20 s po ostatnim ciosie; utwory czekają na wybór właściciela, do tego czasu gra muzyka spokojna); kliknięcia przycisków, postawienie, zburzenie i ukończenie budynku, monety przy sprzedaży; tło portu przy nabrzeżach. Odsłuch, runda 3: ta sama strona z odtwarzaczami (sceny „Gospodarstwo” i „Bitwa przy murze”, każdy dźwięk z „Do wymiany”, 24 utwory do walki). **Wynik rundy 3 (2026-11-14):** do wymiany nic; 14 utworów do walki z 24 (m.in. „Medieval: Battle”, „Call to War”, „QaziJamJam”, „Battle Theme A”; ART_SPEC §11). Następne partie: piła, młyn, piekarnia, zwierzęta w zagrodach, statki i port, dźwięki interfejsu, bitwa, kolejne utwory.
+
+**Część 1, stan na koniec (2026-11-14):** dźwięk i muzyka gotowe na gałęzi roboczej (partie 1 i 2, trzy rundy odsłuchu); ocenę w grze właściciel zrobi później (ankieta 2026-11-14: „Od razu część 2”).
+
+**Część 2, stan (2026-11-14):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **Wersja na Windows:** `eksportuj.ps1` w folderze gry (pierwszy raz pobiera szablony eksportu Godota, ok. 1,3 GB) buduje `build\windows\YourKingdom.exe`: jeden plik z całą grą (ok. 190 MB), do grania bez Godota. W chmurze zbudowany i sprawdzony odpowiednik na Linuksa (ARCHITECTURE §8, CLOUD_SETUP).
+- **Autozapis:** co 5 minut gry i przy zamknięciu okna, do osobnego slotu niż F5; „Wczytaj grę” i F9 biorą nowszy zapis; komunikat „Zapisano automatycznie”. Każdy zapis przez plik tymczasowy (awaria w trakcie nie niszczy poprzedniego). Format zapisu bez zmian (v44).
+- **Dziennik błędów:** Godot zapisuje dziennik do pliku (10 ostatnich), gra dopisuje na starcie wersję (0.9.0), system i to, co wczytała; przycisk „Folder dziennika błędów” w menu pauzy (i w narzędziach menu głównego).
+- **Próba:** `tools/export_game.sh linux` buduje grę i uruchamia ją bez ekranu z `--smoke` (nowa gra, autozapis, wczytanie, dalsza gra): bez błędów gry. Jedyny komunikat to znany szum silnika przy zamykaniu okien menu w wersji bez ekranu (nie z kodu gry).
+- **Testy:** zapis przez plik tymczasowy i wybór nowszego zapisu (`test_save_service.gd`).
+- **Do oceny na laptopie:** czy `eksportuj.ps1` buduje grę i czy `.exe` startuje; czy autozapis nie przycina gry na dużym mieście (zapis trwa chwilę); czy przycisk otwiera folder dziennika.
+
+**Część 3, plan i decyzje (ankieta 2026-11-14, „Zaczniemy część 3 tutaj”):** ikonka gry: **ratusz**; ekran: tryb, rozmiar okna, V-Sync oraz **skala interfejsu, limit klatek, licznik FPS**; dźwięk: głośność ogólna, muzyki, efektów, tła oraz **wycisz w tle, osobny suwak interfejsu, muzyka bitewna wł./wył.**; zakładka „Gra”: **co ile autozapis, przesuwanie krawędzią (z szybkością kamery), język z listy**; zmiana klawiszy.
+
+**Część 3, stan (2026-11-14):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **Ikonka:** ratusz na niebie i trawie w dębowej ramce jak panele gry (`tools/make_icon.py` → `icon.png` okna i paska zadań, `icon.ico` w pliku `.exe`; sprawdzone: ikonka jest w środku `.exe`).
+- **Okno „Opcje”** (menu główne i menu pauzy) z zakładkami Ekran, Dźwięk, Sterowanie i Gra; wszystko działa od razu i zapisuje się w `settings.cfg`, osobno od zapisów (ARCHITECTURE §6.10). „Przywróć domyślne” i „Przywróć domyślne klawisze”.
+- **Klawisze:** 20 czynności do zmiany, klawisz zabrany innej czynności jest z niej zdejmowany (z komunikatem); F5 i F9 też do zmiany, podpowiedź w menu pauzy pokazuje aktualne klawisze.
+- **Testy:** `tests/unit/ui/test_options.gd` (zapis i odczyt, zły plik, głośność szyny, przenoszenie klawisza, nazwy czynności po polsku i angielsku, rozmiary okna, skala interfejsu, okno z 4 zakładkami). Zrzuty: `menu_shot.tscn -- --open=options --tab=0..3 [--ui_scale=1.25]`.
+- **Złapane próbą wyeksportowanej gry (2026-11-14):** po wejściu z menu do gry wyeksportowana wersja się wysypywała (skalowanie interfejsu i okno opcji menu reagowały jeszcze po usunięciu menu, przez połączenia przez funkcje anonimowe); poprawione na połączenia przez metody, które Godot sam zrywa, test `test_freed_interfaces_drop_their_connections`. Zasada: do sygnałów autoloadów (`Options`, `EventBus`) z węzłów, które znikają, łączymy się metodami, nie funkcjami anonimowymi.
+- **Do oceny na laptopie:** pełny ekran i rozmiary okna, czy skala interfejsu 125% i 150% jest ostra (czcionka pikselowa przy skali niecałkowitej może być nierówna), czy wyciszanie w tle i suwaki działają, zmiana klawiszy w grze.
+
+**Przycisk aktualizacji (2026-11-14, pomysł właściciela, ankieta: „Najpierw przycisk aktualizacji”):** gotowy, czeka na ocenę na laptopie.
+
+**Scalenie (2026-11-14):** części 1–3 M10 i przycisk aktualizacji scalone do `main` na prośbę właściciela; szybkie (747) i długie testy oraz próba wyeksportowanej gry przechodzą.
+- Gra uruchomiona z folderu z repozytorium na Windows (nie `.exe`) sprawdza w tle, czy na GitHubie (`main`) jest coś nowego (autoload `Updates`: `git fetch`, liczba nowych commitów). Jeśli tak, menu główne pokazuje złoty przycisk „Nowa wersja gry (3 zmiany): zaktualizuj”; ten sam zawsze jest w „Narzędziach twórców”.
+- Przycisk zamyka grę i uruchamia `aktualizuj.ps1 -Restart -Godot <ten Godot>` w okienku: skrypt czeka na zamknięcie gry, pobiera `main`, wczytuje grafiki i dźwięki i sam uruchamia grę z powrotem; przy problemie okienko czeka na Enter, żeby dało się przeczytać komunikat.
+- `.exe` dla graczy: bez przycisku (IDEAS, wariant 2, przy wydaniu).
+- **Testy:** `tests/unit/test_updates.gd` (polecenie aktualizacji, odczyt liczby z gita, brak przycisku poza Windows). Zrzut: `menu_shot.tscn -- --out=<plik> --updates=3`. W chmurze nie da się uruchomić PowerShella: **pierwszą aktualizację przyciskiem trzeba sprawdzić na laptopie** (czy gra się zamyka, okienko pobiera zmiany i gra wraca).
+
 ---
 
 ## Po wersji 1.0 [PÓŹNIEJ]

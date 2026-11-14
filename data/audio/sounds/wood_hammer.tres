@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/audio/sound_def.gd" id="1_snd"]
+
+[resource]
+script = ExtResource("1_snd")
+id = &"wood_hammer"
+files = PackedStringArray("sfx/work/wood_hammer_1.ogg", "sfx/work/wood_hammer_2.ogg", "sfx/work/wood_hammer_3.ogg", "sfx/work/wood_hammer_4.ogg")
+activities = Array[StringName]([&"build", &"hammer"])
+volume_db = -4.0
+hit = 0.83
+chance = 1.0
+max_voices = 4

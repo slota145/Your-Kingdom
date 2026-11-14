@@ -29,6 +29,15 @@ Lista z rozmowy po G3 część 2b. **Ankieta 2026-11-13: wszystkie punkty weszł
 9. [właściciel] **Ikony zamiast napisów** dla narzędzi: droga, bruk, burzenie itp. (napisy zajmują dużo miejsca).
    - Ocena (Claude): koszt mały; ikony z podpowiedzią po najechaniu myszą (nazwa i skrót klawisza), żeby nie zgadywać. Ikony narysować w stylu reszty interfejsu.
 
+## Wydanie i aktualizacje (pomysły po M10)
+
+- [właściciel, 2026-11-14] **Przycisk „Aktualizuj grę”:** gdy na GitHubie pojawi się nowa wersja, gra to pokazuje i jednym przyciskiem ją pobiera.
+  - Ocena (Claude): dobry pomysł, bo oszczędza ręcznego uruchamiania skryptów, ale to dwie różne rzeczy:
+    1. **Dla właściciela (gra z Godota, z folderu z repozytorium):** przycisk w menu głównym (narzędzia), który uruchamia `aktualizuj.ps1`, czeka i prosi o ponowne uruchomienie. Gra może też przy starcie sprawdzić, czy na `main` jest coś nowszego (`git fetch`) i pokazać „Jest nowa wersja”. Koszt mały, ryzyko małe.
+    2. **Dla graczy (`.exe`):** gra sprawdza najnowsze wydanie (GitHub Releases), pokazuje „Dostępna wersja 0.9.1” i pobiera nowy `.exe`. Trudności: repozytorium jest prywatne, więc wydania musiałyby leżeć w publicznym miejscu (publiczne repo z samymi wydaniami albo itch.io/Steam, które same aktualizują gry); działający `.exe` nie może nadpisać sam siebie, więc potrzebny jest mały pomocnik albo podmiana przy następnym starcie; pobrany plik trzeba sprawdzić (suma kontrolna), żeby nie uruchomić czegoś obcego. Koszt średni.
+    - Rekomendacja: teraz wariant 1 (szybki i bezpieczny), a wariant 2 przy prawdziwym wydaniu, najlepiej przez itch.io albo Steam zamiast własnego aktualizatora. Pasuje do M10 część 5 albo do etapu wydania; wymaga zgody właściciela.
+    - **Ankieta 2026-11-14: wariant 1 zrobiony** (ROADMAP, M10, „Przycisk aktualizacji”); wariant 2 czeka na etap wydania.
+
 ## Ekonomia (pomysły po UI-2)
 
 - [właściciel, 2026-11-13] **Limit towaru w magazynie:** dla każdego towaru gracz ustawia limit (np. 100 desek); po jego osiągnięciu warsztaty, które go robią, przestają pracować, dopóki zapas nie spadnie poniżej limitu.

@@ -320,8 +320,14 @@ msgstr "Main menu"
 msgid "ui.pause.quit"
 msgstr "Quit the game"
 
+msgid "ui.pause.logs"
+msgstr "Error log folder"
+
+msgid "ui.pause.logs_tip"
+msgstr "Opens the folder with the game's log. After a problem, send the newest file."
+
 msgid "ui.pause.hint"
-msgstr "Esc: back to the game · F5 save · F9 load"
+msgstr "Esc: back to the game · %s save · %s load"
 
 msgid "ui.build.cost"
 msgstr "Cost: %s"
@@ -592,6 +598,9 @@ msgstr "A resident left: %s"
 
 msgid "ui.note.saved"
 msgstr "Game saved."
+
+msgid "ui.note.autosaved"
+msgstr "Autosaved"
 
 msgid "ui.note.save_failed"
 msgstr "Could not save the game."
@@ -4833,3 +4842,188 @@ msgstr "the stock reached its limit"
 
 msgid "ui.command_error.not_limited"
 msgstr "Animals have no limit."
+
+msgid "ui.main.options"
+msgstr "Options"
+
+msgid "ui.pause.options"
+msgstr "Options"
+
+msgid "ui.options.title"
+msgstr "Options"
+
+msgid "ui.options.tab_screen"
+msgstr "Screen"
+
+msgid "ui.options.tab_sound"
+msgstr "Sound"
+
+msgid "ui.options.tab_controls"
+msgstr "Controls"
+
+msgid "ui.options.tab_game"
+msgstr "Game"
+
+msgid "ui.options.defaults"
+msgstr "Restore defaults"
+
+msgid "ui.options.close"
+msgstr "Close"
+
+msgid "ui.options.window_mode"
+msgstr "Display mode"
+
+msgid "ui.options.windowed"
+msgstr "Window"
+
+msgid "ui.options.fullscreen"
+msgstr "Full screen"
+
+msgid "ui.options.resolution"
+msgstr "Window size"
+
+msgid "ui.options.vsync"
+msgstr "Vertical sync (V-Sync)"
+
+msgid "ui.options.ui_scale"
+msgstr "Interface scale"
+
+msgid "ui.options.max_fps"
+msgstr "Frame rate limit"
+
+msgid "ui.options.no_limit"
+msgstr "No limit"
+
+msgid "ui.options.show_fps"
+msgstr "Frame counter (FPS)"
+
+msgid "ui.options.fps_counter"
+msgstr "FPS: %d"
+
+msgid "ui.options.master"
+msgstr "Master volume"
+
+msgid "ui.options.music"
+msgstr "Music"
+
+msgid "ui.options.effects"
+msgstr "Effects (work, animals, battle)"
+
+msgid "ui.options.ambience"
+msgstr "Background (forest, water, town)"
+
+msgid "ui.options.interface"
+msgstr "Interface (clicks, building)"
+
+msgid "ui.options.mute_in_background"
+msgstr "Mute when the game is in the background"
+
+msgid "ui.options.battle_music"
+msgstr "Battle music during fights"
+
+msgid "ui.options.keys_hint"
+msgstr "Click the key next to an action, then press the new one (Esc: cancel)."
+
+msgid "ui.options.press_key"
+msgstr "Press a key…"
+
+msgid "ui.options.key_taken"
+msgstr "Key %s was taken from: %s"
+
+msgid "ui.options.keys_defaults"
+msgstr "Restore default keys"
+
+msgid "ui.options.autosave"
+msgstr "Autosave"
+
+msgid "ui.options.autosave_off"
+msgstr "Off"
+
+msgid "ui.options.autosave_every"
+msgstr "every %d min"
+
+msgid "ui.options.edge_scroll"
+msgstr "Scroll the map at the screen edge"
+
+msgid "ui.options.camera_speed"
+msgstr "Camera speed"
+
+msgid "ui.options.language"
+msgstr "Language"
+
+msgid "ui.options.language_pl"
+msgstr "Polski"
+
+msgid "ui.options.language_en"
+msgstr "English"
+
+msgid "ui.action.camera_up"
+msgstr "Camera up"
+
+msgid "ui.action.camera_down"
+msgstr "Camera down"
+
+msgid "ui.action.camera_left"
+msgstr "Camera left"
+
+msgid "ui.action.camera_right"
+msgstr "Camera right"
+
+msgid "ui.action.camera_zoom_1"
+msgstr "Zoom 0.5×"
+
+msgid "ui.action.camera_zoom_2"
+msgstr "Zoom 1×"
+
+msgid "ui.action.camera_zoom_3"
+msgstr "Zoom 2×"
+
+msgid "ui.action.camera_zoom_4"
+msgstr "Zoom 3×"
+
+msgid "ui.action.toggle_pause"
+msgstr "Pause"
+
+msgid "ui.action.game_speed_up"
+msgstr "Faster"
+
+msgid "ui.action.game_speed_down"
+msgstr "Slower"
+
+msgid "ui.action.toggle_build_menu"
+msgstr "Build menu"
+
+msgid "ui.action.rotate_building"
+msgstr "Turn the building"
+
+msgid "ui.action.cycle_look"
+msgstr "Change the building's look"
+
+msgid "ui.action.world_map"
+msgstr "World map"
+
+msgid "ui.action.toggle_grid"
+msgstr "Tile grid"
+
+msgid "ui.action.toggle_lower_buildings"
+msgstr "Lower the buildings"
+
+msgid "ui.action.toggle_gate"
+msgstr "Open or close the gate"
+
+msgid "ui.action.quick_save"
+msgstr "Quick save"
+
+msgid "ui.action.quick_load"
+msgstr "Load the save"
+
+msgid "ui.options.percent"
+msgstr "%d%%"
+
+msgid "ui.main.update_game"
+msgstr "Update the game"
+
+msgid "ui.main.update_ready"
+msgid_plural "ui.main.update_ready_plural"
+msgstr[0] "A new version of the game (%d change): update"
+msgstr[1] "A new version of the game (%d changes): update"
