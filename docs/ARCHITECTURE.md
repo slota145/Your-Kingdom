@@ -780,5 +780,6 @@ Zasady:
 | `Diagnostics` | nagłówek dziennika błędów na starcie (wersja, system, wczytane dane), M10 część 2, §8 |
 | `Music` | muzyka według nastroju (menu, gra, bitwa) i kliknięcia przycisków, M10 część 1, §6.9 |
 | `Options` | ustawienia gracza w `user://settings.cfg` (ekran, dźwięk, gra, klawisze), M10 część 3, §6.10 |
+| `Updates` | tylko gra z folderu repozytorium na Windows: w tle sprawdza nowe commity na `main` i uruchamia `aktualizuj.ps1 -Restart` (przycisk w menu głównym) |
 
 Symulacja **nie** korzysta z autoloadów (poza `Data`, przekazywanym jawnie przez konstruktor, co ułatwia testy).

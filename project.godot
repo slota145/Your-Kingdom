@@ -28,6 +28,7 @@ SaveService="*res://src/core/save_service.gd"
 Diagnostics="*res://src/core/diagnostics.gd"
 Music="*res://src/view/audio/music_player.gd"
 Options="*res://src/core/options.gd"
+Updates="*res://src/core/updates.gd"
 
 [debug]
 

@@ -27,6 +27,8 @@ var _menu_box: VBoxContainer
 var _menu_panel: PanelContainer
 var _new_game_window: NewGameWindow
 var _options: OptionsWindow
+## "A new version of the game is out" (Updates autoload, the owner's folder only).
+var _update_button: Button
 var _start_picker: StartPicker
 
 
@@ -100,6 +102,11 @@ func _ready() -> void:
 	_subtitle.custom_minimum_size.x = MENU_WIDTH - 40.0
 	box.add_child(_subtitle)
 	box.add_child(HSeparator.new())
+	# Shown when GitHub has something new (the owner's game folder on Windows).
+	_update_button = _menu_button(box, "", Updates.update_now)
+	_update_button.add_theme_color_override(&"font_color", UiKit.GOLD)
+	_update_button.visible = false
+	Updates.checked.connect(_on_updates_checked)
 	var worlds := Data.registry.all_of(&"world")
 	_new_game = _menu_button(box, "ui.main.new_game", open_new_game)
 	_new_game.disabled = worlds.is_empty()
@@ -137,6 +144,8 @@ func _ready() -> void:
 			_open(GAME_SCENE))
 	_menu_button(_tools, "ui.main.open_sandbox", _open.bind(SANDBOX_SCENE))
 	_menu_button(_tools, "ui.pause.logs", SaveService.open_logs)
+	if Updates.available():
+		_menu_button(_tools, "ui.main.update_game", Updates.update_now)
 	_menu_button(_tools, "ui.main.open_benchmark", _open.bind(BENCHMARK_SCENE))
 	var glyphs := UiKit.label("ui.main.glyph_test")
 	glyphs.custom_minimum_size.x = MENU_WIDTH - 40.0
@@ -199,7 +208,18 @@ func _on_language_changed(_locale: String) -> void:
 	_refresh()
 
 
+func _on_updates_checked(_behind: int) -> void:
+	_refresh_update_button()
+
+
+func _refresh_update_button() -> void:
+	_update_button.visible = Updates.behind > 0
+	if Updates.behind > 0:
+		_update_button.text = tr_n("ui.main.update_ready", "ui.main.update_ready_plural", Updates.behind) % Updates.behind
+
+
 func _refresh() -> void:
+	_refresh_update_button()
 	for child: Node in _maps.get_children():
 		if child is Button and child.has_meta(&"map"):
 			var id: StringName = child.get_meta(&"map")

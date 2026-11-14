@@ -1929,6 +1929,12 @@ Partiami, w kolejności etapów: najpierw grafiki slice’a, potem M4, M5 itd. K
 - **Złapane próbą wyeksportowanej gry (2026-11-14):** po wejściu z menu do gry wyeksportowana wersja się wysypywała (skalowanie interfejsu i okno opcji menu reagowały jeszcze po usunięciu menu, przez połączenia przez funkcje anonimowe); poprawione na połączenia przez metody, które Godot sam zrywa, test `test_freed_interfaces_drop_their_connections`. Zasada: do sygnałów autoloadów (`Options`, `EventBus`) z węzłów, które znikają, łączymy się metodami, nie funkcjami anonimowymi.
 - **Do oceny na laptopie:** pełny ekran i rozmiary okna, czy skala interfejsu 125% i 150% jest ostra (czcionka pikselowa przy skali niecałkowitej może być nierówna), czy wyciszanie w tle i suwaki działają, zmiana klawiszy w grze.
 
+**Przycisk aktualizacji (2026-11-14, pomysł właściciela, ankieta: „Najpierw przycisk aktualizacji”):** gotowy na gałęzi, czeka na ocenę na laptopie.
+- Gra uruchomiona z folderu z repozytorium na Windows (nie `.exe`) sprawdza w tle, czy na GitHubie (`main`) jest coś nowego (autoload `Updates`: `git fetch`, liczba nowych commitów). Jeśli tak, menu główne pokazuje złoty przycisk „Nowa wersja gry (3 zmiany): zaktualizuj”; ten sam zawsze jest w „Narzędziach twórców”.
+- Przycisk zamyka grę i uruchamia `aktualizuj.ps1 -Restart -Godot <ten Godot>` w okienku: skrypt czeka na zamknięcie gry, pobiera `main`, wczytuje grafiki i dźwięki i sam uruchamia grę z powrotem; przy problemie okienko czeka na Enter, żeby dało się przeczytać komunikat.
+- `.exe` dla graczy: bez przycisku (IDEAS, wariant 2, przy wydaniu).
+- **Testy:** `tests/unit/test_updates.gd` (polecenie aktualizacji, odczyt liczby z gita, brak przycisku poza Windows). Zrzut: `menu_shot.tscn -- --out=<plik> --updates=3`. W chmurze nie da się uruchomić PowerShella: **pierwszą aktualizację przyciskiem trzeba sprawdzić na laptopie** (czy gra się zamyka, okienko pobiera zmiany i gra wraca).
+
 ---
 
 ## Po wersji 1.0 [PÓŹNIEJ]

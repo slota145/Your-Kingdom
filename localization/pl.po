@@ -5062,3 +5062,12 @@ msgstr "Wczytaj zapis"
 
 msgid "ui.options.percent"
 msgstr "%d%%"
+
+msgid "ui.main.update_game"
+msgstr "Aktualizuj grę"
+
+msgid "ui.main.update_ready"
+msgid_plural "ui.main.update_ready_plural"
+msgstr[0] "Nowa wersja gry (%d zmiana): zaktualizuj"
+msgstr[1] "Nowa wersja gry (%d zmiany): zaktualizuj"
+msgstr[2] "Nowa wersja gry (%d zmian): zaktualizuj"
