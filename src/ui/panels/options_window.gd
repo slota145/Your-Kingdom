@@ -119,7 +119,8 @@ func _screen_tab() -> VBoxContainer:
 	_check(list, "ui.options.vsync", "display/vsync")
 	var scales: Array[String] = []
 	for f: float in Options.UI_SCALES:
-		scales.append(tr("ui.options.percent") % roundi(f * 100.0))
+		scales.append(tr("ui.options.ui_scale_auto") % roundi(Options.ui_scale_for_auto() * 100.0) if f == Options.AUTO_UI_SCALE
+				else tr("ui.options.percent") % roundi(f * 100.0))
 	_choice(list, "ui.options.ui_scale", scales, _index_of(Options.UI_SCALES, float(Options.get_value("display/ui_scale"))),
 			func(i: int) -> void: Options.set_value("display/ui_scale", Options.UI_SCALES[i]))
 	var limits: Array[String] = []

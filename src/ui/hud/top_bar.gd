@@ -6,6 +6,8 @@ extends PanelContainer
 
 ## The pause menu (UI-2 part 1).
 signal menu_requested
+## The history of messages (M10 part 5).
+signal messages_requested
 signal stocks_requested
 signal world_requested
 signal routes_requested
@@ -28,6 +30,9 @@ var _grace: Label
 var _pause: Button
 var _speeds: Array[Button] = []
 
+
+var _messages: Button
+var _unread: int = 0
 
 func _init() -> void:
 	# A wooden board with light text and icons (ROADMAP UI-1).
@@ -53,6 +58,11 @@ func _init() -> void:
 			if Game.paused:
 				Game.toggle_pause()))
 	row.add_child(_spacer())
+	_messages = UiKit.button("", func() -> void: messages_requested.emit())
+	_messages.tooltip_text = "ui.hud.messages_tip"
+	row.add_child(_messages)
+	set_unread(0)
+	EventBus.language_changed.connect(_on_language_changed)
 	row.add_child(UiKit.button("ui.hud.world", func() -> void: world_requested.emit()))
 	row.add_child(UiKit.button("ui.hud.stocks", func() -> void: stocks_requested.emit()))
 	row.add_child(UiKit.button("ui.hud.routes", func() -> void: routes_requested.emit()))
@@ -77,6 +87,17 @@ static func _spacer() -> Control:
 
 ## A wooden button with a time icon (pause, 1x, 2x, 4x); [method _process] keeps the active
 ## one pressed.
+func _on_language_changed(_locale: String) -> void:
+	set_unread(_unread)
+
+
+## The messages button: its label and, when there are new ones, their number in gold.
+func set_unread(count: int) -> void:
+	_unread = count
+	_messages.text = tr("ui.hud.messages_new") % count if count > 0 else tr("ui.hud.messages")
+	_messages.add_theme_color_override(&"font_color", UiKit.GOLD if count > 0 else UiKit.LIGHT)
+
+
 func _time_button(row: HBoxContainer, icon: String, tip: String, on_pressed: Callable) -> Button:
 	var b := Button.new()
 	b.icon = load(UiKit.UI_ART + "icon_%s.png" % icon) as Texture2D

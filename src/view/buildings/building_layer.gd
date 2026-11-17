@@ -6,10 +6,12 @@ extends Node2D
 ## Child of the y-sorted world. Rebuilt per building on simulation events; stacks and
 ## material piles are refreshed every frame from the same stockpile data as the UI.
 
-## Marker shown over buildings that miss workers (GDD §3.4).
-const NO_WORKERS_MARK := "!"
-## Marker shown over buildings whose production the player paused (M4b-1).
-const PAUSED_MARK := "II"
+## A building short of workers this long (ticks, 20 s) is reported in a message (M10 part 5):
+## just after it is finished its first workers are still on their way. Badges over buildings
+## that miss workers (GDD §3.4) or that the player paused (M4b-1): BuildingMark.
+const MISSING_REPORT_TICKS := 200
+
+signal workers_missing(building_id: int)
 ## Art key suffix of a mirrored art (BuildingView.setup mirrored).
 const MIRROR_SUFFIX := "@m"
 ## Opacity of the placement preview building.
@@ -34,7 +36,11 @@ var _keys: Dictionary[int, String] = {}
 var _site_piles: Dictionary[int, StackSprite] = {}
 var _stockpiles: Array[StockpileView] = []
 var _quays: Array[QuayYard] = []
-var _marks: Dictionary[int, Label] = {}
+var _marks: Dictionary[int, BuildingMark] = {}
+## Building id -> the tick its workers went missing (M10 part 5: a message when it lasts).
+var _missing_since: Dictionary[int, int] = {}
+## Buildings already reported as missing workers (until they have them again).
+var _reported: Dictionary[int, bool] = {}
 var _ghost: BuildingView
 var _ghost_key: String = ""
 
@@ -233,6 +239,8 @@ func _drop(id: int) -> void:
 	if _marks.has(id):
 		_marks[id].queue_free()
 		_marks.erase(id)
+	_missing_since.erase(id)
+	_reported.erase(id)
 
 
 func _house_rows() -> Dictionary[int, String]:
@@ -277,23 +285,46 @@ func building_at(world_pos: Vector2) -> int:
 
 func _update_mark(building: BuildingState) -> void:
 	var missing := building.is_complete() and building.workers.size() < building.def.worker_count()
-	var mark: Label = _marks.get(building.id)
+	_watch_missing(building, missing)
+	var mark: BuildingMark = _marks.get(building.id)
 	if not missing and not building.paused:
 		if mark != null:
 			mark.visible = false
 		return
 	if mark == null:
-		mark = Label.new()
-		mark.add_theme_font_size_override(&"font_size", 32)
-		mark.add_theme_color_override(&"font_color", Color(1, 0.3, 0.2))
-		mark.add_theme_color_override(&"font_outline_color", Color.BLACK)
-		mark.add_theme_constant_override(&"outline_size", 6)
+		mark = BuildingMark.new()
 		var top := IsoMath.grid_to_screen(Vector2(building.origin) + Vector2(building.def.footprint) * 0.5)
-		mark.position = top - Vector2(6, 110)
+		mark.position = top - Vector2(0, 96)
 		mark.z_index = 10
 		add_child(mark)
 		_marks[building.id] = mark
 	# Paused shows first: its workers are idle on purpose.
-	mark.text = PAUSED_MARK if building.paused else NO_WORKERS_MARK
-	mark.add_theme_color_override(&"font_color", Color(1, 0.8, 0.2) if building.paused else Color(1, 0.3, 0.2))
+	var kind := BuildingMark.Kind.PAUSED if building.paused else BuildingMark.Kind.NO_WORKERS
+	if mark.kind != kind:
+		mark.kind = kind
 	mark.visible = true
+
+
+## The building whose badge is at [param world_pos], or 0.
+func mark_at(world_pos: Vector2) -> int:
+	for id: int in _marks:
+		if _marks[id].covers(world_pos):
+			return id
+	return 0
+
+
+## Whether building [param id] shows a badge now.
+func has_mark(id: int) -> bool:
+	return _marks.has(id) and _marks[id].visible
+
+
+func _watch_missing(building: BuildingState, missing: bool) -> void:
+	if not missing or building.paused:
+		_missing_since.erase(building.id)
+		_reported.erase(building.id)
+		return
+	if not _missing_since.has(building.id):
+		_missing_since[building.id] = province.tick
+	elif not _reported.has(building.id) and province.tick - _missing_since[building.id] >= MISSING_REPORT_TICKS:
+		_reported[building.id] = true
+		workers_missing.emit(building.id)
