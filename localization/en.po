@@ -5036,3 +5036,33 @@ msgstr "Downloading the new version… %d%%"
 
 msgid "ui.main.update_failed"
 msgstr "The download failed: open the game's page"
+
+msgid "ui.options.ui_scale_auto"
+msgstr "Automatic (now %d%%)"
+
+msgid "ui.hud.messages"
+msgstr "Messages"
+
+msgid "ui.hud.messages_new"
+msgstr "Messages (%d)"
+
+msgid "ui.hud.messages_tip"
+msgstr "History of messages: what happened and where"
+
+msgid "ui.messages.title"
+msgstr "Messages"
+
+msgid "ui.messages.empty"
+msgstr "Nothing has happened yet."
+
+msgid "ui.messages.show"
+msgstr "Show"
+
+msgid "ui.note.workers_missing"
+msgstr "Workers missing: %s"
+
+msgid "ui.mark.no_workers"
+msgstr "%s: workers missing (%d of %d). More people are needed: build houses or free people in another building."
+
+msgid "ui.mark.paused"
+msgstr "%s: paused. Resume work in the building's panel."

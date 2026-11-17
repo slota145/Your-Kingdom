@@ -85,6 +85,10 @@ static func theme() -> Theme:
 	return t
 
 
+## The dark outline of light text on the wooden bars.
+const BOARD_OUTLINE := Color(0.12, 0.07, 0.04)
+
+
 ## The theme of the wooden bars (top bar, build menu): a board of planks, light text.
 static func board_theme() -> Theme:
 	if _board_theme != null:
@@ -102,11 +106,18 @@ static func board_theme() -> Theme:
 	board.content_margin_bottom = 6
 	for type: StringName in [&"PanelContainer", &"Panel"]:
 		t.set_stylebox(&"panel", type, board)
+	# A thick dark outline round light letters: readable on the wood at any screen size
+	# (friend's playtest 2026-11-17, M10 part 5).
 	t.set_color(&"font_color", &"Label", LIGHT)
-	t.set_color(&"font_outline_color", &"Label", Color(0.14, 0.08, 0.05))
-	t.set_constant(&"outline_size", &"Label", 4)
+	t.set_color(&"font_outline_color", &"Label", BOARD_OUTLINE)
+	t.set_constant(&"outline_size", &"Label", 6)
 	# Smaller buttons on the boards: the top bar fits 1280 px with all its buttons.
 	t.set_font_size(&"font_size", &"Button", 20)
+	for colour: StringName in [&"font_color", &"font_hover_color", &"font_focus_color", &"font_hover_pressed_color"]:
+		t.set_color(colour, &"Button", LIGHT)
+	t.set_color(&"font_pressed_color", &"Button", GOLD)
+	t.set_color(&"font_outline_color", &"Button", BOARD_OUTLINE)
+	t.set_constant(&"outline_size", &"Button", 6)
 	for state: String in ["normal", "hover", "pressed", "disabled"]:
 		t.set_stylebox(state, &"Button", _texture_box("button_%s.png" % state, BUTTON_MARGIN, 8, 4,
 				2 if state == "pressed" else 0))

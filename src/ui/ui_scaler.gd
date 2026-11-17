@@ -1,7 +1,7 @@
 class_name UiScaler
 extends Node
 ## Makes the interface under [member target] bigger or smaller (Options "display/ui_scale",
-## M10 part 3) while the map stays as it is: the target Control is scaled and sized to the
+## M10 part 3; automatic by default, it grows with the window) while the map stays as it is: the target Control is scaled and sized to the
 ## screen divided by the scale, so everything anchored in it still fits the screen.
 ## Add it as a child of the full-screen root Control of an interface.
 
@@ -31,7 +31,7 @@ func _on_option_changed(key: String) -> void:
 func fit() -> void:
 	if not is_inside_tree() or target == null or not is_instance_valid(target):
 		return
-	var factor := float(Options.get_value("display/ui_scale"))
+	var factor: float = Options.ui_scale()
 	var screen := get_viewport().get_visible_rect().size
 	target.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	target.position = Vector2.ZERO

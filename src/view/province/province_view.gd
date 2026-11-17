@@ -50,6 +50,8 @@ var moods: MoodLayer
 ## The travelling merchant's cart while he trades (M4b-2).
 var cart: Sprite2D
 ## The blows of the people at work and the background of forest, water and town (M10 part 1).
+## The building entrances while a road is laid (M10 part 5).
+var entrances: EntranceLayer
 var work_sounds: WorkSounds
 var ambience: AmbiencePlayer
 var animal_voices := AnimalVoices.new()
@@ -150,6 +152,9 @@ func setup(source: ProvinceSim) -> void:
 	cranes.z_index = 1
 	add_child(cranes)
 	cranes.setup(province)
+	entrances = EntranceLayer.new()
+	entrances.province = province
+	add_child(entrances)
 	work_sounds = WorkSounds.new()
 	add_child(work_sounds)
 	ambience = AmbiencePlayer.new()
@@ -172,6 +177,7 @@ func update_view(alpha: float, visible_rect: Rect2, time: float, delta: float) -
 	pens.update_view(delta)
 	wild.update_view(delta)
 	moods.update_view(delta)
+	entrances.update_view(delta)
 	buildings.update_view()
 	forts.update_view()
 	var merchant := province.merchant

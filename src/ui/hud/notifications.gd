@@ -1,10 +1,16 @@
 class_name Notifications
 extends VBoxContainer
 ## Short messages about what happened (building finished, house upgraded or declining...).
-## Each fades out after a while; only the newest few are kept.
+## Each fades out after a while; only the newest few are shown. Every message also goes to
+## [member history] (M10 part 5, friend's playtest 2026-11-17) with the game time and, when it
+## is about a place (a building, a fight), that place, for the "Messages" window.
+
+signal history_changed
 
 const LIFETIME := 7.0
 const MAX_SHOWN := 5
+## Messages kept in the history.
+const HISTORY_SIZE := 50
 
 ## Simulation event type -> localization key of the message (%s = building name).
 const MESSAGES: Dictionary[StringName, String] = {
@@ -16,9 +22,35 @@ const MESSAGES: Dictionary[StringName, String] = {
 }
 
 var province: ProvinceSim
+## Newest first: {"text", "time" (game time, "12:05"), "at" (world pixels or null)}.
+var history: Array[Dictionary] = []
+## Messages since the history was last opened.
+var unread: int = 0
+## Where the event being turned into a message happened (null outside on_sim_event).
+var _event_at: Variant = null
 
 
 func on_sim_event(event: Dictionary) -> void:
+	_event_at = ProvinceView.event_point(province, event) if province != null else null
+	_on_sim_event(event)
+	_event_at = null
+
+
+## The history was opened: nothing unread.
+func mark_read() -> void:
+	unread = 0
+	history_changed.emit()
+
+
+## Game time of [param tick] as minutes and seconds ("12:05"), hours when there are some.
+static func game_time(tick: int) -> String:
+	var seconds := tick / SimClock.TICKS_PER_SECOND
+	if seconds >= 3600:
+		return "%d:%02d:%02d" % [seconds / 3600, (seconds / 60) % 60, seconds % 60]
+	return "%d:%02d" % [seconds / 60, seconds % 60]
+
+
+func _on_sim_event(event: Dictionary) -> void:
 	var type: StringName = event["type"]
 	if type == &"command_rejected":
 		push(tr("ui.command_error.%s" % event["reason"]))
@@ -79,7 +111,16 @@ func on_sim_event(event: Dictionary) -> void:
 	push(tr(MESSAGES[type]) % name)
 
 
-func push(text: String) -> void:
+## Shows [param text] for a while and keeps it in the history, with [param at] (world pixels)
+## when the message is about a place.
+func push(text: String, at: Variant = null) -> void:
+	var where: Variant = at if at != null else _event_at
+	history.push_front({"text": text, "time": game_time(province.tick) if province != null else "",
+			"at": where})
+	if history.size() > HISTORY_SIZE:
+		history.resize(HISTORY_SIZE)
+	unread += 1
+	history_changed.emit()
 	var l := UiKit.label(text)
 	# Over the town, not on parchment: light text with a dark outline.
 	l.add_theme_color_override(&"font_color", UiKit.LIGHT)

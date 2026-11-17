@@ -148,6 +148,9 @@ func _ready() -> void:
 			_paved = true
 		elif arg == "--plan_paving":
 			_plan_paving = true
+		elif arg == "--road_tool":
+			# M10 part 5: the road tool on, with the building entrances marked.
+			_build_tool = &"_road"
 		elif arg.begins_with("--build="):
 			_build_tool = StringName(arg.trim_prefix("--build="))
 		elif arg == "--carts":
@@ -353,7 +356,9 @@ func _arrange() -> void:
 		_place_yards(sim, _tile if _tile.x >= 0 else sim.province.grid.size / 2)
 	if _focus.x >= 0:
 		camera.position = IsoMath.tile_center_screen(_focus)
-	if _build_tool != &"":
+	if _build_tool == &"_road":
+		_game.call("_set_tool", {"kind": &"road"})
+	elif _build_tool != &"":
 		_game.call("_set_tool", {"kind": &"building", "def": _build_tool})
 		get_viewport().warp_mouse(get_viewport().get_visible_rect().size / 2.0)
 	for b: BuildingState in sim.province.buildings.all():

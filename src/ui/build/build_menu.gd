@@ -257,6 +257,21 @@ func _fit_name(name: Label) -> void:
 	name.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE)
 	name.add_theme_constant_override(&"line_spacing", -2)
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# A dark plate with a thin light frame under the name (friend's playtest 2026-11-17, M10
+	# part 5): the light letters no longer melt into the wood and the picture.
+	var plate := StyleBoxFlat.new()
+	plate.bg_color = Color(0.1, 0.06, 0.03, 0.78)
+	plate.border_color = Color(0.78, 0.62, 0.38, 0.9)
+	plate.set_border_width_all(1)
+	plate.set_corner_radius_all(3)
+	plate.content_margin_left = 4
+	plate.content_margin_right = 4
+	plate.content_margin_top = 1
+	plate.content_margin_bottom = 2
+	name.add_theme_stylebox_override(&"normal", plate)
+	name.add_theme_color_override(&"font_color", UiKit.LIGHT)
+	name.add_theme_color_override(&"font_outline_color", UiKit.BOARD_OUTLINE)
+	name.add_theme_constant_override(&"outline_size", 4)
 
 
 ## The finished building's art (a storage yard has none: its menu picture, else its second construction phase).

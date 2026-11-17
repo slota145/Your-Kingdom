@@ -5080,3 +5080,33 @@ msgstr "Pobieranie nowej wersji… %d%%"
 
 msgid "ui.main.update_failed"
 msgstr "Nie udało się pobrać: otwórz stronę z grą"
+
+msgid "ui.options.ui_scale_auto"
+msgstr "Automatyczna (teraz %d%%)"
+
+msgid "ui.hud.messages"
+msgstr "Wiadomości"
+
+msgid "ui.hud.messages_new"
+msgstr "Wiadomości (%d)"
+
+msgid "ui.hud.messages_tip"
+msgstr "Historia komunikatów: co się wydarzyło i gdzie"
+
+msgid "ui.messages.title"
+msgstr "Wiadomości"
+
+msgid "ui.messages.empty"
+msgstr "Na razie nic się nie wydarzyło."
+
+msgid "ui.messages.show"
+msgstr "Pokaż"
+
+msgid "ui.note.workers_missing"
+msgstr "Brak pracowników: %s"
+
+msgid "ui.mark.no_workers"
+msgstr "%s: brak pracowników (%d z %d). Potrzeba więcej mieszkańców: zbuduj domy albo zwolnij ludzi w innym budynku."
+
+msgid "ui.mark.paused"
+msgstr "%s: wstrzymany. Wznów pracę w panelu budynku."

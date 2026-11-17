@@ -15,7 +15,12 @@ const FULLSCREEN := 1
 ## Window sizes offered (those that fit the screen).
 const RESOLUTIONS: Array[Vector2i] = [Vector2i(1280, 720), Vector2i(1366, 768), Vector2i(1600, 900),
 		Vector2i(1920, 1080), Vector2i(2560, 1440), Vector2i(3840, 2160)]
-const UI_SCALES: PackedFloat32Array = [1.0, 1.25, 1.5, 2.0]
+## 0 = automatic (AUTO_UI_SCALE): fits the window, so a 1920×1080 screen gets 150%.
+const UI_SCALES: PackedFloat32Array = [0.0, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]
+const AUTO_UI_SCALE := 0.0
+## The version of the settings file: 2 made the interface scale automatic (friend's playtest
+## 2026-11-17: the top bar was hard to read on a big screen), older files get "automatic".
+const SETTINGS_VERSION := 2
 ## 0 = no limit.
 const FPS_LIMITS: PackedInt32Array = [0, 30, 60, 120, 144]
 ## 0 = no autosave.
@@ -32,7 +37,7 @@ const DEFAULTS: Dictionary[String, Variant] = {
 	"display/mode": WINDOWED,
 	"display/resolution": Vector2i(1600, 900),
 	"display/vsync": true,
-	"display/ui_scale": 1.0,
+	"display/ui_scale": AUTO_UI_SCALE,
 	"display/max_fps": 0,
 	"display/show_fps": false,
 	"audio/master": 1.0,
@@ -113,6 +118,8 @@ func load_file() -> void:
 			var stored: Variant = file.get_value(parts[0], parts[1])
 			if typeof(stored) == typeof(DEFAULTS[key]) or (DEFAULTS[key] is float and stored is int):
 				values[key] = stored
+	if int(file.get_value("meta", "version", 1)) < 2:
+		values["display/ui_scale"] = AUTO_UI_SCALE
 	if file.has_section("keys"):
 		for action: String in file.get_section_keys("keys"):
 			var keys: Variant = file.get_value("keys", action)
@@ -124,6 +131,7 @@ func save_file() -> void:
 	if path == "":
 		return
 	var file := ConfigFile.new()
+	file.set_value("meta", "version", SETTINGS_VERSION)
 	for key: String in values:
 		var parts := key.split("/")
 		file.set_value(parts[0], parts[1], values[key])
@@ -242,6 +250,26 @@ func _apply_volume(bus: StringName, level: float) -> void:
 	AudioServer.set_bus_volume_db(index, volume_db(_base_db.get(bus, 0.0), level))
 	if bus != &"Master":
 		AudioServer.set_bus_mute(index, level <= 0.0)
+
+
+## The interface scale in use: the chosen one, or for "automatic" the visible height of the
+## window over the 720 px the interface was made for, in steps of 25% (1 to 3): 1920×1080
+## (one screen pixel per game pixel) gives 1.5, 2560×1440 (two per pixel) gives 1.
+func ui_scale() -> float:
+	var chosen := float(get_value("display/ui_scale"))
+	if chosen > 0.0:
+		return chosen
+	var height := get_viewport().get_visible_rect().size.y if is_inside_tree() else 720.0
+	return auto_ui_scale(height)
+
+
+## What "automatic" gives now (shown in the options).
+func ui_scale_for_auto() -> float:
+	return auto_ui_scale(get_viewport().get_visible_rect().size.y if is_inside_tree() else 720.0)
+
+
+static func auto_ui_scale(visible_height: float) -> float:
+	return clampf(floorf(visible_height / 720.0 * 4.0 + 0.001) / 4.0, 1.0, 3.0)
 
 
 ## Decibels of a bus at [param level] (0..1) when its layout volume is [param base_db].

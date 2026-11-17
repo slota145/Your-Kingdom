@@ -68,6 +68,9 @@ var _notes: Notifications
 var _pause_menu: PauseMenu
 ## The options window (M10 part 3), over the pause menu.
 var _options: OptionsWindow
+## The history of messages and the hint over a building's badge (M10 part 5).
+var _messages: MessagesWindow
+var _mark_tip: Label
 ## Whether the game was paused before the pause menu opened (it stays so when the menu closes).
 var _paused_before_menu: bool = false
 ## "Developer mode" in the corner while it is on (E4 part 1; F12 switches it).
@@ -206,6 +209,7 @@ func _show_province() -> void:
 	camera.make_current()
 	_top.province = sim.province
 	_notes.province = sim.province
+	view.buildings.workers_missing.connect(_on_workers_missing)
 	_stocks.visible = false
 	_routes.visible = false
 	_research.visible = false
@@ -259,6 +263,7 @@ func _build_ui() -> void:
 	_top = TopBar.new()
 	_top.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	_top.menu_requested.connect(_open_pause_menu)
+	_top.messages_requested.connect(_toggle_messages)
 	_top.stocks_requested.connect(_toggle_stocks)
 	_top.world_requested.connect(_toggle_world_map)
 	_top.routes_requested.connect(_toggle_routes)
@@ -452,6 +457,29 @@ func _build_ui() -> void:
 	_notes.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_notes)
 	_place_notes()
+	_messages = MessagesWindow.new()
+	_messages.notes = _notes
+	_messages.visible = false
+	_messages.set_anchors_preset(Control.PRESET_CENTER)
+	_messages.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_messages.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_messages.show_requested.connect(_show_message_place)
+	root.add_child(_messages)
+	_notes.history_changed.connect(_on_history_changed)
+	_mark_tip = UiKit.label("", false)
+	var tip_box := StyleBoxFlat.new()
+	tip_box.bg_color = Color(0.12, 0.07, 0.04, 0.9)
+	tip_box.border_color = UiKit.GOLD
+	tip_box.set_border_width_all(1)
+	tip_box.set_corner_radius_all(4)
+	tip_box.set_content_margin_all(8)
+	_mark_tip.add_theme_stylebox_override(&"normal", tip_box)
+	_mark_tip.add_theme_color_override(&"font_color", UiKit.LIGHT)
+	_mark_tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_mark_tip.custom_minimum_size.x = 300
+	_mark_tip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_mark_tip.visible = false
+	root.add_child(_mark_tip)
 	_pause_menu = PauseMenu.new()
 	_pause_menu.visible = false
 	_pause_menu.resumed.connect(_close_pause_menu)
@@ -703,6 +731,7 @@ func _process(delta: float) -> void:
 	if sim == null:
 		return
 	_time += delta
+	_update_mark_tip()
 	if not Game.paused and _autosave_every() > 0.0:
 		_autosave_left = minf(_autosave_left - delta, _autosave_every())
 		if _autosave_left <= 0.0:
@@ -773,6 +802,9 @@ func _set_tool(tool: Dictionary) -> void:
 	var tool_kind: StringName = tool.get("kind", &"")
 	_build.show_hint("ui.build.rotate_hint" if tool_kind == &"building"
 			else "ui.build.line_hint" if tool_kind == &"road" or tool_kind == &"paving" else "")
+	# M10 part 5: where the roads should go, while a road is laid.
+	if view != null:
+		view.entrances.show_entrances(tool_kind == &"road" or tool_kind == &"paving")
 	if not tool.is_empty():
 		_close_panels()
 	_update_preview()
@@ -1009,6 +1041,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif _drag_tiles.is_empty() or _drag_tiles.back() != _hover:
 			_extend_drag(_hover)
 			_update_preview()
+		return
+	if _messages.visible:
+		if event.is_action_pressed(&"ui_cancel"):
+			_messages.close()
 		return
 	if _options.visible:
 		if event.is_action_pressed(&"ui_cancel"):
@@ -1453,6 +1489,65 @@ func _notification(what: int) -> void:
 		if sim != null:
 			SaveService.save_simulation(SaveService.slot_path(SaveService.AUTO_SLOT), sim)
 		get_tree().quit()
+
+
+# --- Messages and badges (M10 part 5, friend's playtest 2026-11-17) ------------------------
+
+func _toggle_messages() -> void:
+	if _messages.visible:
+		_messages.close()
+	else:
+		_messages.open()
+
+
+func _on_history_changed() -> void:
+	_top.set_unread(_notes.unread)
+	_messages.on_history_changed()
+
+
+## "Show" in the messages: the camera goes to the place.
+func _show_message_place(at: Vector2) -> void:
+	_messages.close()
+	if _world_map.visible:
+		_toggle_world_map()
+	camera.position = at
+
+
+func _on_workers_missing(building_id: int) -> void:
+	var building := sim.province.buildings.get_building(building_id)
+	if building == null:
+		return
+	_notes.push(tr("ui.note.workers_missing") % tr(building.def.name_key()),
+			ProvinceView.event_point(sim.province, {"building": building_id}))
+
+
+## What a badge over a building means, under the mouse on the badge or the building.
+func _update_mark_tip() -> void:
+	var text := ""
+	if not _world_map.visible and not _pause_menu.visible and not _options.visible and not _messages.visible:
+		var at := get_global_mouse_position()
+		var id := view.buildings.mark_at(at)
+		if id == 0:
+			var under := view.buildings.building_at(at)
+			id = under if under != 0 and view.buildings.has_mark(under) else 0
+		if id != 0:
+			text = mark_text(sim.province.buildings.get_building(id))
+	_mark_tip.visible = text != ""
+	if text != "":
+		_mark_tip.text = text
+		var root := _mark_tip.get_parent() as Control
+		var mouse := root.get_local_mouse_position()
+		_mark_tip.position = Vector2(minf(mouse.x + 18.0, root.size.x - _mark_tip.size.x - 4.0), mouse.y + 18.0)
+
+
+## The hint of a building's badge: why it is there and what to do.
+static func mark_text(building: BuildingState) -> String:
+	if building == null:
+		return ""
+	var name := TranslationServer.translate(building.def.name_key())
+	if building.paused:
+		return TranslationServer.translate("ui.mark.paused") % name
+	return TranslationServer.translate("ui.mark.no_workers") % [name, building.workers.size(), building.def.worker_count()]
 
 
 ## Loads the newest save: the quick save or the autosave.
