@@ -273,7 +273,7 @@ msgstr "New game"
 
 
 msgid "ui.main.load_game"
-msgstr "Load quick save"
+msgstr "Load game"
 
 msgid "ui.close"
 msgstr "Close"
@@ -309,7 +309,7 @@ msgid "ui.pause.save"
 msgstr "Save the game"
 
 msgid "ui.pause.load"
-msgstr "Load the save"
+msgstr "Load game"
 
 msgid "ui.pause.language_tip"
 msgstr "Change the game's language"
@@ -4794,19 +4794,19 @@ msgid "building.barracks_small.name"
 msgstr "Small barracks"
 
 msgid "building.barracks_small.desc"
-msgstr "A wooden guardhouse: 10 beds. Recruit archers and spearmen here. Soldiers eat from the stores and rest inside."
+msgstr "A wooden guardhouse: 16 beds. Recruit archers and spearmen here. Soldiers eat from the stores and rest inside."
 
 msgid "building.barracks_large.name"
 msgstr "Large barracks"
 
 msgid "building.barracks_large.desc"
-msgstr "Stone barracks with a courtyard: 30 beds and every kind of soldier. Soldiers drill in the courtyard."
+msgstr "Stone barracks with a courtyard: 50 beds and every kind of soldier. Soldiers drill in the courtyard."
 
 msgid "research.large_barracks.name"
 msgstr "Large barracks"
 
 msgid "research.large_barracks.desc"
-msgstr "Stone barracks with a courtyard: 30 beds, every kind of soldier and drill in the courtyard."
+msgstr "Stone barracks with a courtyard: 50 beds, every kind of soldier and drill in the courtyard."
 
 msgid "ui.command_error.not_in_these_barracks"
 msgstr "These barracks train only archers and spearmen."
@@ -5066,3 +5066,198 @@ msgstr "%s: workers missing (%d of %d). More people are needed: build houses or 
 
 msgid "ui.mark.paused"
 msgstr "%s: paused. Resume work in the building's panel."
+
+msgid "ui.build.rate_made"
+msgstr "Makes per minute (full crew): %s"
+
+msgid "ui.build.rate_used"
+msgstr "Uses per minute: %s"
+
+msgid "ui.build.rate_item"
+msgstr "%s %.1f"
+
+msgid "ui.building.rate_made"
+msgstr "Made per minute (last 5 min): %s"
+
+msgid "ui.building.rate_used"
+msgstr "Used per minute (last 5 min): %s"
+
+msgid "ui.building.rate_item"
+msgstr "%s %.1f of %.1f possible"
+
+msgid "ui.notes.open"
+msgstr "Notifications: fold"
+
+msgid "ui.notes.folded"
+msgstr "Notifications: unfold"
+
+msgid "ui.notes.folded_new"
+msgstr "Notifications (%d new): unfold"
+
+msgid "ui.notes.header_tip"
+msgstr "Fold or unfold the notifications. They all stay in the Messages window."
+
+msgid "ui.pinned.food"
+msgstr "All food"
+
+msgid "ui.pinned.add_tip"
+msgstr "Choose the goods shown on this strip"
+
+msgid "ui.note.loose_goods_stored"
+msgstr "The goods lying around went into the new storage: %s"
+
+msgid "ui.main.continue"
+msgstr "Continue"
+
+msgid "ui.saves.title_save"
+msgstr "Save game"
+
+msgid "ui.saves.title_load"
+msgstr "Load game"
+
+msgid "ui.saves.close"
+msgstr "Close"
+
+msgid "ui.saves.save_new"
+msgstr "Save as new"
+
+msgid "ui.saves.default_name"
+msgstr "My kingdom, %s"
+
+msgid "ui.saves.none"
+msgstr "There are no saves yet."
+
+msgid "ui.saves.quick"
+msgstr "Quick save"
+
+msgid "ui.saves.auto"
+msgstr "Autosave"
+
+msgid "ui.saves.saved_at"
+msgstr "Saved %s"
+
+msgid "ui.saves.game_time"
+msgstr "game time %s"
+
+msgid "ui.saves.load"
+msgstr "Load"
+
+msgid "ui.saves.overwrite"
+msgstr "Overwrite"
+
+msgid "ui.saves.delete"
+msgstr "Delete"
+
+msgid "ui.saves.sure"
+msgstr "Sure?"
+
+msgid "ui.note.saved_as"
+msgstr "Game saved: %s"
+
+msgid "ui.saves.unnamed"
+msgstr "Save %s"
+
+msgid "building.soldier_quarters.name"
+msgstr "Soldier quarters"
+
+msgid "building.soldier_quarters.desc"
+msgstr "Wooden quarters: 12 beds for the soldiers of the nearest barracks. Soldiers sleep here and drill and enlist at the barracks. Needs a barracks."
+
+msgid "ui.command_error.needs_barracks"
+msgstr "Build a barracks first"
+
+msgid "ui.barracks.quarters"
+msgstr "Of them %d beds in soldier quarters (%d)"
+
+msgid "ui.quarters.beds"
+msgstr "Beds: %d for: %s"
+
+msgid "ui.quarters.no_barracks"
+msgstr "No barracks: the beds wait for one."
+
+msgid "ui.main.news"
+msgstr "What's new"
+
+msgid "ui.news.title"
+msgstr "What's new in the game"
+
+msgid "ui.news.close"
+msgstr "Close"
+
+msgid "ui.news.version"
+msgstr "Version %s (%s): %s"
+
+msgid "changelog.0_9_3.title"
+msgstr "soldiers, saves and clarity"
+
+msgid "changelog.0_9_3.1"
+msgstr "Many saves: a Save / Load window with names, dates and game time, and Continue in the menu."
+
+msgid "changelog.0_9_3.2"
+msgstr "A bigger start: the ship brings 60 bread and 30 fish, and the goods on the beach go straight into the first storage."
+
+msgid "changelog.0_9_3.3"
+msgstr "A strip with chosen goods under the top bar (wood, stone, planks, food; + picks others)."
+
+msgid "changelog.0_9_3.4"
+msgstr "Readable build-menu tooltips with how much a building makes and uses per minute, in the building panel too."
+
+msgid "changelog.0_9_3.5"
+msgstr "Notifications take less room and fold away with one click."
+
+msgid "changelog.0_9_3.6"
+msgstr "Barracks hold more soldiers (16 and 50), and new soldier quarters give the nearest barracks 12 beds."
+
+msgid "changelog.0_9_3.7"
+msgstr "After an order you see where each soldier is going, and a target appears over the enemy they attack."
+
+msgid "changelog.0_9_3.8"
+msgstr "New cursors: a gauntlet, a pennant with soldiers selected, a sword over enemies, a hammer, an anchor and a no-way sign."
+
+msgid "changelog.0_9_3.9"
+msgstr "This window: What's new shows what every version brought."
+
+msgid "changelog.0_9_2.title"
+msgstr "fixes after the first players"
+
+msgid "changelog.0_9_2.1"
+msgstr "The interface sizes itself to the screen (for example 150% at 1920×1080)."
+
+msgid "changelog.0_9_2.2"
+msgstr "Clearer text on the wooden bars and building names in the build menu."
+
+msgid "changelog.0_9_2.3"
+msgstr "Badges over buildings without workers or paused, with a hint what to do."
+
+msgid "changelog.0_9_2.4"
+msgstr "A Messages window with the last 50 messages; Show moves the camera there."
+
+msgid "changelog.0_9_2.5"
+msgstr "While laying a road the building entrances show: red without a road, green with one."
+
+msgid "changelog.0_9_1.title"
+msgstr "an update test"
+
+msgid "changelog.0_9_1.1"
+msgstr "Only a new version number, to check that the game updates itself."
+
+msgid "changelog.0_9_0.title"
+msgstr "the first release"
+
+msgid "changelog.0_9_0.1"
+msgstr "The whole game: a kingdom map with provinces, towns, economy, trade, ships, research and war."
+
+msgid "changelog.0_9_0.2"
+msgstr "Sounds of work, animals and battles, forest, sea and town in the background, and music."
+
+msgid "changelog.0_9_0.3"
+msgstr "A Windows version in one file, with an autosave every few minutes."
+
+msgid "changelog.0_9_0.4"
+msgstr "An Options window: screen, volume, keys, language and more."
+
+msgid "changelog.0_9_0.5"
+msgstr "An error log you can send to the maker after a crash."
+
+msgid "changelog.0_9_0.6"
+msgstr "The game checks for a new version by itself and gets it with one button."

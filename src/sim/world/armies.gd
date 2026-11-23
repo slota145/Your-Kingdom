@@ -760,7 +760,7 @@ static func _free_beds(sim: Simulation, id: int) -> int:
 	var free := 0
 	for building: BuildingState in province.buildings.all():
 		if building.def.soldier_beds > 0 and building.is_complete():
-			free += building.def.soldier_beds - Barracks.beds_taken(building)
+			free += Barracks.free_beds(province, building)
 	return free
 
 
@@ -784,7 +784,7 @@ static func join_barracks(sim: Simulation, army: Army) -> bool:
 				continue
 			if not building.def.houses_unit(unit):
 				continue   # E4 part 4: knights do not fit in the small barracks
-			while army.units.get(unit, 0) > 0 and Barracks.beds_taken(building) < building.def.soldier_beds:
+			while army.units.get(unit, 0) > 0 and Barracks.beds_taken(building) < Barracks.beds(province, building):
 				army.add(unit, -1)
 				if viewed and entry != Agent.NO_TILE:
 					var agent := province.spawn_agent(unit, entry)

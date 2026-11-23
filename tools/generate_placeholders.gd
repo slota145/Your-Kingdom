@@ -699,6 +699,9 @@ const SLICE_BUILDINGS := {
 			"wall": Color(0.55, 0.4, 0.26), "roof_color": Color(0.45, 0.35, 0.25), "extra": "barrels"},
 	"barracks_large": {"footprint": Vector2i(5, 5), "entrance": Vector2i(3, 4), "walls": 44.0, "roof": 26.0,
 			"wall": Color(0.62, 0.62, 0.64), "roof_color": Color(0.35, 0.36, 0.42), "extra": "barrels"},
+	# UI-3 part 3: soldier quarters.
+	"soldier_quarters": {"footprint": Vector2i(2, 2), "entrance": Vector2i(1, 1), "walls": 24.0, "roof": 20.0,
+			"wall": Color(0.5, 0.36, 0.22), "roof_color": Color(0.42, 0.33, 0.24), "extra": "barrels"},
 }
 
 

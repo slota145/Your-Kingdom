@@ -1265,7 +1265,7 @@ func _breed_herds() -> void:
 		if building.breed_ticks >= due:
 			building.breed_ticks = 0
 			building.yard.add(good, 1)
-			ledger.made(good, 1, tick)
+			ledger.made(good, 1, tick, building.id)
 			events.emit(&"animal_born", {"building": building.id, "good": good, "herd": herd + 1})
 
 
@@ -1329,6 +1329,7 @@ func remove_building(id: int) -> void:
 	var building := buildings.get_building(id)
 	if building == null:
 		return
+	ledger.forget_building(id)
 	for worker_id: int in building.workers.duplicate():
 		var worker := agents.get_agent(worker_id)
 		if worker != null:
@@ -3177,6 +3178,43 @@ func drop_goods(tile: Vector2i, good: StringName, amount: int) -> int:
 		events.emit(&"pile_created", {"pile": pile.id, "tile": tile, "good": good})
 		last = pile.id
 	return last
+
+
+## Whether [param storage] is the only finished storage of the province (UI-3 part 2: the
+## first one gets the start kit at once).
+func is_first_storage(storage: BuildingState) -> bool:
+	for building: BuildingState in storage_buildings():
+		if building.id != storage.id and building.stock != null and not building.under_construction:
+			return false
+	return true
+
+
+## Everything lying on the ground goes into [param storage] at once, as far as it has room
+## (UI-3 part 2, owner's choice 2026-11-23, a deliberate exception to goods being carried:
+## the start kit on the beach does not keep the porters busy for minutes). Goods a porter is
+## already coming for stay and are carried as before.
+func store_loose_goods(storage: BuildingState) -> void:
+	var moved: Dictionary[StringName, int] = {}
+	var ids: Array = piles.keys()
+	ids.sort()
+	for id: int in ids:
+		var pile := piles[id] as GroundPile
+		for good: StringName in pile.stock.totals().keys():
+			var free := pile.stock.available(good)
+			var room := free
+			while room > 0 and not storage.stock.can_accept(good, room):
+				room -= 1
+			if room <= 0:
+				continue
+			pile.stock.remove(good, room)
+			storage.stock.add(good, room)
+			moved[good] = moved.get(good, 0) + room
+			# What is left (a porter on the way, no room) keeps a request of its size.
+			if not pile.stock.is_empty():
+				jobs.set_amount(good, pile.id, 0, pile.stock.available(good))
+	_remove_empty_piles()
+	if not moved.is_empty():
+		events.emit(&"loose_goods_stored", {"building": storage.id, "goods": moved})
 
 
 func _pile_at(tile: Vector2i) -> int:

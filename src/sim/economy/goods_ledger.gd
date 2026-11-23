@@ -29,13 +29,43 @@ func _init() -> void:
 var made_total: Dictionary[StringName, int] = {}
 
 
-func made(good: StringName, amount: int, tick: int) -> void:
+## Building id -> its own ledger (UI-3 part 1: the building panel shows what the building
+## really made and used in the last minutes).
+var _buildings: Dictionary[int, GoodsLedger] = {}
+
+
+## [param amount] units of [param good] came into being; [param building_id] (0 = none) is the
+## building whose work made them.
+func made(good: StringName, amount: int, tick: int, building_id: int = 0) -> void:
 	made_total[good] = made_total.get(good, 0) + amount
 	_add(_made, good, amount, tick)
+	if building_id != 0 and amount > 0:
+		of_building(building_id).made(good, amount, tick)
 
 
-func used(good: StringName, amount: int, tick: int) -> void:
+func used(good: StringName, amount: int, tick: int, building_id: int = 0) -> void:
 	_add(_used, good, amount, tick)
+	if building_id != 0 and amount > 0:
+		of_building(building_id).used(good, amount, tick)
+
+
+## The ledger of one building (created on first use).
+func of_building(building_id: int) -> GoodsLedger:
+	var ledger: GoodsLedger = _buildings.get(building_id)
+	if ledger == null:
+		ledger = GoodsLedger.new()
+		_buildings[building_id] = ledger
+	return ledger
+
+
+## Whether the building made or used anything since recording started.
+func has_building(building_id: int) -> bool:
+	return _buildings.has(building_id)
+
+
+## Forgets a building (demolished).
+func forget_building(building_id: int) -> void:
+	_buildings.erase(building_id)
 
 
 ## Units of [param good] made per minute, averaged over the window up to [param tick].

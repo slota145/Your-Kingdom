@@ -278,7 +278,7 @@ msgstr "Nowa gra"
 
 
 msgid "ui.main.load_game"
-msgstr "Wczytaj szybki zapis"
+msgstr "Wczytaj grę"
 
 msgid "ui.close"
 msgstr "Zamknij"
@@ -314,7 +314,7 @@ msgid "ui.pause.save"
 msgstr "Zapisz grę"
 
 msgid "ui.pause.load"
-msgstr "Wczytaj zapis"
+msgstr "Wczytaj grę"
 
 msgid "ui.pause.language_tip"
 msgstr "Zmień język gry"
@@ -4837,19 +4837,19 @@ msgid "building.barracks_small.name"
 msgstr "Małe koszary"
 
 msgid "building.barracks_small.desc"
-msgstr "Drewniana strażnica: 10 łóżek. Tu rekrutujesz łuczników i włóczników. Żołnierze jedzą z magazynu i odpoczywają w środku."
+msgstr "Drewniana strażnica: 16 łóżek. Tu rekrutujesz łuczników i włóczników. Żołnierze jedzą z magazynu i odpoczywają w środku."
 
 msgid "building.barracks_large.name"
 msgstr "Duże koszary"
 
 msgid "building.barracks_large.desc"
-msgstr "Kamienne koszary z dziedzińcem: 30 łóżek i wszystkie rodzaje wojska. Żołnierze ćwiczą na dziedzińcu."
+msgstr "Kamienne koszary z dziedzińcem: 50 łóżek i wszystkie rodzaje wojska. Żołnierze ćwiczą na dziedzińcu."
 
 msgid "research.large_barracks.name"
 msgstr "Duże koszary"
 
 msgid "research.large_barracks.desc"
-msgstr "Kamienne koszary z dziedzińcem: 30 łóżek, wszystkie rodzaje wojska i musztra na dziedzińcu."
+msgstr "Kamienne koszary z dziedzińcem: 50 łóżek, wszystkie rodzaje wojska i musztra na dziedzińcu."
 
 msgid "ui.command_error.not_in_these_barracks"
 msgstr "Te koszary szkolą tylko łuczników i włóczników."
@@ -5110,3 +5110,198 @@ msgstr "%s: brak pracowników (%d z %d). Potrzeba więcej mieszkańców: zbuduj 
 
 msgid "ui.mark.paused"
 msgstr "%s: wstrzymany. Wznów pracę w panelu budynku."
+
+msgid "ui.build.rate_made"
+msgstr "Daje na minutę (pełna załoga): %s"
+
+msgid "ui.build.rate_used"
+msgstr "Zużywa na minutę: %s"
+
+msgid "ui.build.rate_item"
+msgstr "%s %.1f"
+
+msgid "ui.building.rate_made"
+msgstr "Dał na minutę (ostatnie 5 min): %s"
+
+msgid "ui.building.rate_used"
+msgstr "Zużył na minutę (ostatnie 5 min): %s"
+
+msgid "ui.building.rate_item"
+msgstr "%s %.1f z %.1f możliwych"
+
+msgid "ui.notes.open"
+msgstr "Powiadomienia: zwiń"
+
+msgid "ui.notes.folded"
+msgstr "Powiadomienia: rozwiń"
+
+msgid "ui.notes.folded_new"
+msgstr "Powiadomienia (nowe: %d): rozwiń"
+
+msgid "ui.notes.header_tip"
+msgstr "Zwiń albo rozwiń powiadomienia. Wszystkie są też w oknie „Wiadomości”."
+
+msgid "ui.pinned.food"
+msgstr "Jedzenie razem"
+
+msgid "ui.pinned.add_tip"
+msgstr "Wybierz, które towary widać na tym pasku"
+
+msgid "ui.note.loose_goods_stored"
+msgstr "Zapasy z ziemi trafiły do nowego magazynu: %s"
+
+msgid "ui.main.continue"
+msgstr "Kontynuuj"
+
+msgid "ui.saves.title_save"
+msgstr "Zapisz grę"
+
+msgid "ui.saves.title_load"
+msgstr "Wczytaj grę"
+
+msgid "ui.saves.close"
+msgstr "Zamknij"
+
+msgid "ui.saves.save_new"
+msgstr "Zapisz jako nowy"
+
+msgid "ui.saves.default_name"
+msgstr "Moje królestwo, %s"
+
+msgid "ui.saves.none"
+msgstr "Nie ma jeszcze żadnych zapisów."
+
+msgid "ui.saves.quick"
+msgstr "Szybki zapis"
+
+msgid "ui.saves.auto"
+msgstr "Autozapis"
+
+msgid "ui.saves.saved_at"
+msgstr "Zapisano %s"
+
+msgid "ui.saves.game_time"
+msgstr "czas gry %s"
+
+msgid "ui.saves.load"
+msgstr "Wczytaj"
+
+msgid "ui.saves.overwrite"
+msgstr "Nadpisz"
+
+msgid "ui.saves.delete"
+msgstr "Usuń"
+
+msgid "ui.saves.sure"
+msgstr "Na pewno?"
+
+msgid "ui.note.saved_as"
+msgstr "Gra zapisana: %s"
+
+msgid "ui.saves.unnamed"
+msgstr "Zapis %s"
+
+msgid "building.soldier_quarters.name"
+msgstr "Baraki"
+
+msgid "building.soldier_quarters.desc"
+msgstr "Drewniane baraki: 12 łóżek dla żołnierzy najbliższych koszar. Żołnierze tu śpią, a ćwiczą i werbują się w koszarach. Potrzebne są koszary."
+
+msgid "ui.command_error.needs_barracks"
+msgstr "Najpierw zbuduj koszary"
+
+msgid "ui.barracks.quarters"
+msgstr "W tym %d łóżek w barakach (%d)"
+
+msgid "ui.quarters.beds"
+msgstr "Łóżka: %d dla koszar: %s"
+
+msgid "ui.quarters.no_barracks"
+msgstr "Brak koszar: łóżka czekają na koszary."
+
+msgid "ui.main.news"
+msgstr "Co nowego"
+
+msgid "ui.news.title"
+msgstr "Co nowego w grze"
+
+msgid "ui.news.close"
+msgstr "Zamknij"
+
+msgid "ui.news.version"
+msgstr "Wersja %s (%s): %s"
+
+msgid "changelog.0_9_3.title"
+msgstr "wojsko, zapisy i czytelność"
+
+msgid "changelog.0_9_3.1"
+msgstr "Wiele zapisów: okno „Zapisz / Wczytaj” z nazwami, datą i czasem gry, a w menu przycisk „Kontynuuj”."
+
+msgid "changelog.0_9_3.2"
+msgstr "Większy start: statek przywozi 60 chleba i 30 ryb, a zapasy z plaży od razu trafiają do pierwszego magazynu."
+
+msgid "changelog.0_9_3.3"
+msgstr "Pasek z wybranymi towarami pod górnym paskiem (drewno, kamień, deski, jedzenie; „+” dobiera inne)."
+
+msgid "changelog.0_9_3.4"
+msgstr "Czytelne dymki w menu budowy i liczby: ile budynek daje i zużywa na minutę, także w panelu stojącego budynku."
+
+msgid "changelog.0_9_3.5"
+msgstr "Powiadomienia zajmują mniej miejsca i zwijają się jednym kliknięciem."
+
+msgid "changelog.0_9_3.6"
+msgstr "Koszary mieszczą więcej żołnierzy (16 i 50), a nowe baraki dają 12 łóżek najbliższym koszarom."
+
+msgid "changelog.0_9_3.7"
+msgstr "Po rozkazie widać, dokąd idzie każdy żołnierz, a nad atakowanym wrogiem pojawia się celownik."
+
+msgid "changelog.0_9_3.8"
+msgstr "Nowe kursory: rękawica, proporzec przy zaznaczonym wojsku, miecz nad wrogiem, młot, kotwica i znak „nie da się tam dojść”."
+
+msgid "changelog.0_9_3.9"
+msgstr "To okno: „Co nowego” pokazuje zmiany każdej wersji."
+
+msgid "changelog.0_9_2.title"
+msgstr "poprawki po pierwszych graczach"
+
+msgid "changelog.0_9_2.1"
+msgstr "Interfejs sam dobiera wielkość do ekranu (np. 150% przy 1920×1080)."
+
+msgid "changelog.0_9_2.2"
+msgstr "Wyraźniejsze napisy na drewnianych paskach i nazwy budynków w menu budowy."
+
+msgid "changelog.0_9_2.3"
+msgstr "Znaczki nad budynkami bez pracowników albo wstrzymanymi, z podpowiedzią, co zrobić."
+
+msgid "changelog.0_9_2.4"
+msgstr "Okno „Wiadomości” z ostatnimi 50 wiadomościami; „Pokaż” przenosi kamerę na miejsce."
+
+msgid "changelog.0_9_2.5"
+msgstr "Przy stawianiu drogi widać wejścia do budynków: czerwone bez drogi, zielone z drogą."
+
+msgid "changelog.0_9_1.title"
+msgstr "próba aktualizacji"
+
+msgid "changelog.0_9_1.1"
+msgstr "Tylko nowy numer wersji, żeby sprawdzić, czy gra sama się aktualizuje."
+
+msgid "changelog.0_9_0.title"
+msgstr "pierwsze wydanie"
+
+msgid "changelog.0_9_0.1"
+msgstr "Cała gra: mapa królestwa z prowincjami, miasta, gospodarka, handel, statki, badania i wojna."
+
+msgid "changelog.0_9_0.2"
+msgstr "Dźwięki pracy, zwierząt i bitew, tło lasu, morza i miasta oraz muzyka."
+
+msgid "changelog.0_9_0.3"
+msgstr "Wersja na Windows w jednym pliku, z autozapisem co kilka minut."
+
+msgid "changelog.0_9_0.4"
+msgstr "Okno „Opcje”: ekran, głośność, klawisze, język i więcej."
+
+msgid "changelog.0_9_0.5"
+msgstr "Dziennik błędów, który można wysłać twórcy po awarii."
+
+msgid "changelog.0_9_0.6"
+msgstr "Gra sama sprawdza, czy jest nowa wersja, i pobiera ją jednym przyciskiem."

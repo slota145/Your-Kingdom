@@ -1691,6 +1691,78 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Ryzyka:** stos zawsze daje dużo więcej pracy tragarzom (na starcie może ich zabraknąć, a ekonomia zwolni albo przyspieszy: trzeba porównać próby przed i po); budowniczy noszący może zostawiać budowy bez rąk do pracy; przezroczystość musi działać z cięciem budynków na paski (sortowanie głębi).
 
+## UI-3 — Druga partia poprawek z gry kolegi
+
+> Uwagi kolegi i właściciela z 2026-11-23 (po M10 część 5). **Plan i decyzje z ankiety 2026-11-23**, trzy części, ocena po każdej.
+
+**Część 1: czytelność i informacje.**
+- Dymek budynku w menu budowy: większa, wyraźna czcionka na ciemnym tle z ramką (dziś „bardzo nieczytelna”).
+- **Produkcja i zużycie na minutę** (ankieta: „Menu: pełna załoga, panel: naprawdę”): w dymku menu budowy liczby z receptury przy pełnej załodze; w panelu stojącego budynku obie: ile może dać i ile naprawdę dał w ostatnich 5 minutach.
+- **Surowce na górnym pasku:** domyślnie drewno, kamień, deski i suma jedzenia; przycisk „+” dobiera i zdejmuje towary. Wybór w `settings.cfg` (ustawienie gracza, nie zapisu gry).
+- **Wiadomości po prawej:** mniejsze okienko powiadomień, zwijane jednym kliknięciem (zwinięte pokazuje tylko liczbę nowych); historia zostaje w oknie „Wiadomości”.
+
+**Część 1, stan (2026-11-23):** gotowa na gałęzi roboczej, **zaakceptowana** („Super! Kontynuujemy! :D”).
+- **Dymki:** w menu budowy nazwa budynku na górze (czerwonobrązowa), pod nią opis, koszt i liczby na minutę, atramentem na pergaminie, czcionka 22 px, zawijane do 460 px. Paski z drewna (górny pasek, menu budowy) dostały te same dymki (dotąd brały małe szare z Godota, stąd „nieczytelne”).
+- **Na minutę:** liczone z receptury tak samo jak w prowincjach, na które nikt nie patrzy (praca, droga do magazynu 10 kafli i z powrotem, droga do drzewa, stada albo skały, rośnięcie pól przy wszystkich polach, badania przyspieszające pracę); oddawanie towaru na stos przy drzwiach nie liczy się jako droga. Tartak: 5,3 desek i 2,6 drewna na minutę; w próbie na żywo tartak bliżej magazynu (ok. 8 kafli) dał ok. 7 desek na minutę, więc liczba z menu to rozsądna miara, nie obietnica. Panel budynku: na przykład „Dał na minutę (ostatnie 5 min): Deski 4.1 z 5.3 możliwych” i to samo dla zużycia; każdy budynek ma własny licznik (nie w zapisie, po wczytaniu liczy od nowa, jak okno „Zapasy”). Myśliwy nie „zużywa” zwierzyny, którą sam upolował.
+- **Pasek surowców** pod górnym paskiem, po lewej: ikona i liczba (drewno, kamień, deski, jedzenie razem; dymek jedzenia rozpisuje chleb, ryby, mięso, jabłka), „+” otwiera listę wszystkich towarów z ptaszkami, najwyżej 10 naraz. Wybór w `settings.cfg` (`game/pinned_goods`). Na mapie świata ukryty.
+- **Powiadomienia:** pod paskiem surowców, najwyżej 3 naraz (było 5), węższe (340 px), nad nimi przycisk „Powiadomienia: zwiń”; zwinięte pokazują tylko „Powiadomienia (nowe: 2): rozwiń”. Zwinięcie zapamiętane w `settings.cfg` (`game/notes_folded`); historia dalej w oknie „Wiadomości”.
+- **Zapis bez zmian (v44).** Testy: `tests/unit/sim/province/test_production_estimate.gd`, `tests/unit/ui/test_ui3_readability.gd`, licznik budynku w `test_goods_ledger.gd`. Zrzut: `town_shot.tscn -- --shot=<plik> --minutes=20 --zoom=1 --notes --tip=sawmill` (`--fold_notes`: zwinięte), `--select=sawmill` (panel). Wszystkie budynki: `"$GODOT" --headless --path . -s res://src/prototype/ui3/rates_probe.gd`.
+- **Do oceny na laptopie:** czy dymek jest teraz czytelny przy skali 125% i 150%, czy liczby „na minutę” zgadzają się z tym, co widać w grze, czy pasek surowców i zwinięte powiadomienia nie zasłaniają.
+
+**Część 2: zapisy i start.**
+- **Okno „Zapisz / Wczytaj”** z wieloma miejscami na zapis (nazwa, data, czas gry, scenariusz; usuwanie z potwierdzeniem), w menu pauzy i w menu głównym. F5/F9 i autozapis zostają jako osobne miejsca na liście.
+- **Więcej jedzenia na start** (ankieta: „60 chleba + 30 ryb”): statek daje 60 chleba, 30 ryb i 90 drewna (dziś 20 chleba i 90 drewna).
+- **Zapasy startowe od razu w pierwszym magazynie** (ankieta: „Pojawiają się od razu”, świadomy wyjątek od zasady noszenia towarów): gdy stanie pierwszy magazyn (obóz pionierów nie ma miejsca na towary, więc to pierwszy „Magazyn” po obozie), wszystko, co jeszcze leży na ziemi, od razu w nim jest. Format zapisu bez zmian.
+
+**Część 2, stan (2026-11-23):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **Okno „Zapisz / Wczytaj”:** w menu pauzy „Zapisz grę” i „Wczytaj grę” otwierają listę zapisów (najnowsze na górze): nazwa, „Zapisano 2026-11-23 11:15 · czas gry 1:57:16 · scenariusz”. Zapis: pole z nazwą (domyślnie „Moje królestwo, data”) i „Zapisz jako nowy”, przy własnych zapisach „Nadpisz” i „Usuń”; oba pytają drugim kliknięciem („Na pewno?”). Wczytywanie: każdy zapis, także „Szybki zapis” (F5) i „Autozapis” (tych dwóch nie da się nadpisać z listy ani usunąć). Menu główne: nowy przycisk „Kontynuuj” (najnowszy zapis) i „Wczytaj grę” z tą samą listą. F5, F9 i autozapis działają jak dotąd. Esc zamyka okno.
+- **Start:** statek przywozi 60 chleba, 30 ryb i 90 drewna (mapy „Wybrzeże” i „Wyspy”, czyli każdy start ze statku). Wyprawy osadników do nowych prowincji zostają bez zmian (20 chleba, 90 drewna).
+- **Pierwszy magazyn:** gdy budowniczy skończy pierwszy magazyn prowincji, wszystko, co leży na ziemi (resztka zestawu z plaży), od razu w nim jest, z powiadomieniem „Zapasy z ziemi trafiły do nowego magazynu: …”. Towar, po który tragarz już idzie, zostaje i jest noszony jak dotąd. W próbie lądowania osadnicy mieszkają w chatach po 2 minutach zamiast po 3,3 (tragarze nie noszą zestawu, tylko budują).
+- **Długa partia „Podzielony kontynent” (świat 5, trudny):** dotąd władca brał miasto automatycznego gracza w 78. minucie; z lepszym startem gracz się broni i po 180 minutach trwa wojna (prowincja 9 przechodzi z rąk do rąk ok. 20 razy). Decyzja właściciela (ankieta 2026-11-23, „Uznać trwającą wojnę”): test przechodzi przy rozstrzygnięciu albo prawdziwej wojnie (co najmniej 10 zdobytych prowincji); balans władców w M10, część 5.
+- **Zapis bez zmian (v44)**; opisy zapisów w osobnych plikach `.sav.meta` (ARCHITECTURE §8). Testy: `test_save_service.gd` (lista, nazwy, nadpisanie, usuwanie, okno), `tests/unit/sim/economy/test_start_kit.gd`, `test_m5_landing.gd`. Zrzuty: `menu_shot.tscn -- --out=<plik> --open=saves` (wczytywanie) i `--open=saves_save` (zapisywanie).
+- **Do oceny na laptopie:** okno zapisów w grze i w menu, czy start z 60 chleba i 30 ryb jest teraz wygodny, czy zapasy pojawiają się w magazynie.
+
+**Część 3: wojsko** (ankieta: „Więcej łóżek + baraki”).
+- Małe koszary 10 → 16 łóżek, duże 30 → 50.
+- **Baraki:** nowy budynek 2×2 z 12 łóżkami, do postawienia, gdy stoją jakieś koszary; grafika i etapy budowy ze SpriteKiln. Żołnierze śpią w barakach, ćwiczą i werbują się dalej w koszarach. Władcy też je stawiają. Zapis: nowa wersja tylko, jeśli będzie potrzebna.
+
+**Część 3, stan (2026-11-23):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie (start na prośbę właściciela „Róbmy od razu część 3”, część 2 jeszcze nieoceniona).
+- **Łóżka:** małe koszary 16 (było 10), duże 50 (było 30); opisy w menu budowy też.
+- **Baraki** (zakładka „Wojsko”, 2×2, 10 desek, 2 kamienie, 20 zł, 12 łóżek): do postawienia, gdy stoją gotowe koszary („Najpierw zbuduj koszary”). Każde gotowe baraki należą do najbliższych gotowych koszar i dokładają im łóżka: werbunek, wojska wracające do domu i panel koszar („Żołnierze: 20 z 28 łóżek”, „W tym 12 łóżek w barakach (1)”) liczą je razem. Żołnierze ponad łóżka koszar idą spać do baraków (stoją przy ich drzwiach), ćwiczą i jedzą dalej przy koszarach. Panel baraków: „Łóżka: 12 dla koszar: Małe koszary”. Zburzone baraki nikogo nie wyrzucają; koszary są wtedy przepełnione i nie werbują, póki się nie zwolni miejsce.
+- **Władcy** stawiają jedne baraki po dużych koszarach (plan miasta), tylko gdy mają koszary.
+- **Grafika ze SpriteKiln** z etapami budowy (ART_SPEC §10.34), placeholder w `tools/generate_placeholders.gd`.
+- **Zapis bez zmian (v44):** baraki to zwykły budynek, łóżka liczą się na bieżąco. Testy: `tests/scenario/test_ui3_quarters.gd`, `test_e4_barracks.gd` (nowe liczby łóżek).
+- **Do oceny na laptopie:** wygląd baraków, czy żołnierze chodzą spać do baraków, czy więcej łóżek nie psuje balansu walk (więcej wojska u gracza i u władców).
+
+**Testy i sprawdzenie:** szybkie testy w każdej części; testy symulacji dla liczenia produkcji, zapasów startowych, łóżek i baraków; zrzuty dymka, paska, okienka powiadomień i okna zapisów; długie testy przed scaleniem do `main`.
+
+**Ryzyka:** więcej jedzenia i łóżek zmienia balans (pomiary automatycznego gracza i władców przed i po); pasek przy wielu przypiętych towarach i skali 150% może się nie zmieścić (limit liczby przypiętych).
+
+## UI-4 — Rozkazy dla wojska widać, kursory i „Co nowego”
+
+> Prośba właściciela 2026-11-23 (po UI-3). **Plan i decyzje z ankiety 2026-11-23**, dwie części, start od razu.
+
+**Część 1: znaczniki i kursory.**
+- **Znaczniki celu** (ankieta: „Do dojścia, przy zaznaczonych”): po rozkazie ruchu każdy żołnierz ma mały znacznik na swoim miejscu w szyku i cienką przerywaną linię od siebie do niego; widać je, póki oddział jest zaznaczony, a znacznik gaśnie, gdy żołnierz dojdzie.
+- **Atak:** prawy przycisk na wrogu to rozkaz ataku (już działa); nad głową atakowanego wroga znacznik celu (czerwony), póki zaznaczeni żołnierze mają go za cel.
+- **Kursory ze SpriteKiln** (ankieta): zwykły (stalowa rękawica wskazująca palcem), bojowy, gdy są zaznaczone jednostki (proporzec na drzewcu), miecz nad wrogiem, oraz (ankieta, wszystkie trzy) młot nad murem, bramą lub ratuszem wroga do zburzenia, kotwica nad okrętem, na który można wejść, przekreślenie tam, gdzie nie da się dojść.
+- Zapis bez zmian (to tylko widok).
+
+**Część 1, stan (2026-11-23):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **Znaczniki:** zaznaczeni żołnierze z rozkazem ruchu mają żółty romb na swoim miejscu w szyku i przerywaną linię od stóp do niego; romb gaśnie, gdy żołnierz dojdzie (0,35 kafla). Nad wrogiem, którego zaznaczeni atakują, czerwony pulsujący celownik.
+- **Kursory** (`assets/ui/cursors/<rodzaj>_32|48.png`, punkty kliknięcia w `cursors.json`; ART_SPEC §10.35): rękawica (zwykły, także w menu), włócznia z proporcem (zaznaczone jednostki), miecz (wróg pod kursorem), młot (mur, brama albo drzwi ratusza wroga do zburzenia), kotwica (okręt wojenny, na który można wejść), czerwony znak zakazu (nie da się tam dojść; sprawdzane raz na kafel). Nad oknami i paskami zawsze rękawica. 48 px od skali interfejsu 125%.
+- **Bez zmian w symulacji i zapisie.** Testy: `tests/unit/ui/test_ui4_cursors.gd`. Zrzut: `game_shot.tscn -- --shot=<plik> --m7=orders --zoom=2` (12 żołnierzy w drodze ze znacznikami, 4 atakują bandytę; kursora systemowego nie widać na zrzucie).
+- **Do oceny na laptopie:** czy kursory są dobrze widoczne i trafiają tam, gdzie wskazują, czy znaczniki nie zaśmiecają ekranu przy dużej armii.
+
+**Część 2: okno „Co nowego”** (ankieta: „Wydania + samo się otwiera”): przycisk w menu głównym, wersje 0.9.0–0.9.3 prostym językiem, najnowsza na górze, po polsku i angielsku; po aktualizacji okno otwiera się samo raz (zapamiętana ostatnio pokazana wersja w `settings.cfg`). Nowa wersja gry 0.9.3 (UI-3 i UI-4).
+
+**Część 2, stan (2026-11-23):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **„Co nowego”:** przycisk w menu głównym nad „Opcjami”, okno z przewijaną listą wersji (najnowsza na górze): „Wersja 0.9.3 (2026-11-23): wojsko, zapisy i czytelność” i punkty prostym językiem; 0.9.3 (9 punktów: UI-3 i UI-4), 0.9.2 (5), 0.9.1 (1), 0.9.0 (6). Teksty w `localization/*.po` (`changelog.<wersja>.<n>`), lista wersji w `ChangelogWindow.VERSIONS`. Okno otwiera się samo raz na wersję (`game/news_seen` w `settings.cfg`), także przy pierwszym uruchomieniu; Esc albo „Zamknij” wraca do menu.
+- **Wersja gry 0.9.3** (`project.godot`); przy każdym następnym wydaniu wpis w „Co nowego” (CLOUD_SETUP, „Wydania”).
+- Testy: `tests/unit/ui/test_ui4_news.gd`. Zrzut: `menu_shot.tscn -- --out=<plik> --open=news` (zrzuty menu same nie otwierają okna).
+
+**Ryzyka:** kursor sprzętowy w Godocie ma najwyżej 256×256 px i nie skaluje się z interfejsem (rozmiar trzeba dobrać do skali 100–150%); sprawdzanie, co jest pod kursorem, co klatkę przy dużej armii.
+
 ## E5 — Limit towaru w magazynie
 
 > Pomysł właściciela 2026-11-13 (IDEAS, „Ekonomia (pomysły po UI-2)”). **Ankieta 2026-11-13: krótki osobny kawałek po UI-2, przed częścią 3 G3. Plan zaakceptowany 2026-11-13 („Zaczynaj według planu”); część 1 gotowa, czeka na ocenę („Część 1, stan”).** Część 2 UI-2 dalej czeka na ocenę w grze (właściciel jeszcze nie grał); poprawki z tej oceny mają pierwszeństwo.

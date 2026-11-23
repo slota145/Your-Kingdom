@@ -50,7 +50,7 @@ func run(province: ProvinceSim, agent: Agent, def: StepDef) -> Status:
 				var amount := farm.take_field_yield(step, province.field_yield())
 				agent.carry_good = step.harvest_good
 				agent.carry_amount = amount
-				province.ledger.made(step.harvest_good, amount, province.tick)
+				province.ledger.made(step.harvest_good, amount, province.tick, agent.workplace_id)
 				province.note_output(agent, step.harvest_good, amount)
 				province.events.emit(&"good_harvested", {"agent": agent.id, "tile": tile,
 						"good": step.harvest_good, "amount": amount})

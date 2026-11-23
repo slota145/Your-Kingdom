@@ -397,6 +397,76 @@ def siege_workshop():
     return P, p, 320, 2.4
 
 
+# =================================================================================================
+# Soldier quarters (2x2, door in the right face by the entrance tile (1, 1); UI-3 part 3, owner
+# 2026-11-23): a long log bunkhouse on a fieldstone plinth under a mossy shingle roof whose ridge
+# runs along game y, a row of small shuttered windows, a fieldstone chimney, the kingdom's shields
+# on the gable, a red pennant on a pole; soldiers' washing on a line in the yard (shirts, a red
+# surcoat, hose), a water trough with a bucket, firewood
+# stacked against the gable, a spear and a shield leaning by the door, a bench with a helmet.
+# =================================================================================================
+def soldier_quarters():
+    P, p = Plot(2), Parts()
+    house = (0.1, 1.05, 0.1, 1.5)
+    K.plinth(p, P, "plinth", house, h=0.22, mat="fieldstone")
+    K.log_walls(p, P, "walls", house, 0.22, 1.5, course=0.18)
+    g = Gable(P, "house", house, "gy", 1.5, 2.75, over=0.32, end_over=0.2)
+    g.infill(p, "board")
+    g.gable_frame(p)
+    g.roof(p, "shingle", "shingle_dark", course=0.11, spots=("moss", 0.1, 0.24, 47))
+    g.bargeboards(p)
+    p.footprints = [house]
+    p.roofs = [g]
+    x0, x1, z0, z1 = P.rect(*house)
+    K.chimney(p, P, "chimney", 0.55, 0.35, 2.1, 3.3, w=0.2, mat="fieldstone")
+    p["chimney"]["paint"] = [{"material": "stone_dark", "spots": {"scale": 0.07, "density": 0.38, "seed": 5}}]
+    # the door by the entrance tile, a row of small windows on the long face, two on the gable
+    K.door_right(p, P, "door", 1.15, z1, 0.22, w=0.46, h=1.0, arch=False)
+    for gy in (0.3, 0.72):
+        K.window_right(p, P, gy, z1, 1.0, w=0.26, h=0.28)
+    for gx in (0.32, 0.82):
+        K.window_left(p, P, gx, x0, 1.0, w=0.24, h=0.28, open_=False)
+    K.lantern(p, P, 1.42, z1, 1.4)
+    # the kingdom's shields on the gable, under the eaves; a red pennant on a pole at the corner
+    for i, gx in enumerate((0.32, 0.82)):
+        shield(p, x0 - 0.04, 1.75, P.m(gx, 0)[2], mat="cloth_red" if i == 0 else "cloth_blue", name="gable_shields")
+    px, _, pz = P.m(0.03, 1.62)
+    p.add("pennant_pole", "post", cyl([px, 0, pz], [px, 3.15, pz], 0.035), "prop", priority=2)
+    p.add("pennant_knob", "gilt", sph([px, 3.17, pz], 0.05), "prop")
+    p.add("pennant", "cloth_red", ext([px, 2.88, pz], [[0, -0.14], [0.55, -0.04], [0.55, 0.04], [0, 0.14]], 0.02,
+                                       rot=[0, -0.6, 0]), "prop")
+    # firewood stacked against the gable, a chopping block with an axe
+    K.woodpile(p, P, "firewood", 0.55, 0.98, 1.6, 2, r=0.07)
+    K.stump(p, P, 0.22, 1.85, r=0.16, h=0.28)
+    K.axe_in(p, P, 0.22, 1.85, 0.28, yaw=0.6)
+    # by the door: a bench with a helmet, a spear and a shield leaning on the wall, a water trough
+    top_ = workbench(p, P, 1.22, 1.62, along="gy", h=0.42, L=0.22, W_=0.12)
+    helmet(p, P, 1.22, 1.55, top_[1] + 0.09, name="bench_helm", r=0.09)
+    sx, _, sz = P.m(1.12, 1.48)
+    p.add("leaning_spear", "haft", cyl([sx + 0.05, 0, sz + 0.06], [sx - 0.05, 2.05, sz + 0.02], 0.022), "prop", priority=2)
+    p.add("leaning_spear_tip", "steel", cone([sx - 0.05, 2.05, sz + 0.02], [sx - 0.06, 2.3, sz + 0.02], 0.045, 0.0), "prop")
+    shield(p, sx, 0.42, sz + 0.12, mat="cloth_red", name="door_shield", face="+z", r=0.18)
+    K.tub(p, P, "trough", 1.82, 1.25, 0.2, 0.32, fill="water")
+    K.bucket(p, P, 1.9, 1.62, fill="water")
+    # the soldiers' washing on a line across the yard
+    ax, _, az = P.m(1.78, 0.12)
+    bx, _, bz = P.m(1.78, 0.92)
+    for (x, z) in ((ax, az), (bx, bz)):
+        p.add("line_posts", "post", cyl([x, 0, z], [x, 1.45, z], 0.035), "prop", priority=2)
+    p.add("washing_line", "rope", cyl([ax, 1.4, az], [bx, 1.4, bz], 0.01), "prop", priority=3, min_cover=1)
+    for k, (mat, w, h) in enumerate((("canvas_white", 0.17, 0.36), ("cloth_red", 0.2, 0.46), ("canvas_white", 0.16, 0.34),
+                                     ("cloth_blue", 0.12, 0.42))):
+        t = (k + 0.7) / 4.6
+        x, z = ax + (bx - ax) * t, az + (bz - az) * t
+        p.add(f"washing_{k}", mat, box([x, 1.38 - h / 2, z], [w, h / 2, 0.015]), "prop")
+    # the red surcoat with the kingdom's golden cross
+    p.paint("washing_1", "gilt", prims=[box([ax + (bx - ax) * (1.7 / 4.6), 1.2, az + (bz - az) * (1.7 / 4.6)], [0.03, 0.1, 0.05]),
+                                        box([ax + (bx - ax) * (1.7 / 4.6), 1.24, az + (bz - az) * (1.7 / 4.6)], [0.1, 0.03, 0.05])])
+    K.tufts(p, P, [(1.95, 0.4), (0.05, 1.97), (1.97, 1.97), (1.4, 1.95)])
+    p.heap = (1.5, 0.5)
+    return P, p, 240, 2.0
+
+
 BUILDINGS = {
     "armourer": (armourer, "Your Kingdom armourer (G3 part 5b), 2x2 tiles: a narrow house, fieldstone and ochre half-"
                  "timbering under red tiles, a brick forge with a glowing hearth under a pentice, bellows, a bench with a "
@@ -410,8 +480,12 @@ BUILDINGS = {
     "siege_workshop": (siege_workshop, "Your Kingdom siege workshop (G3 part 5b), 3x3 tiles: a great open timber shed "
                        "with king-post trusses under shingles, a ram being built on trestles inside, spare wheels, a "
                        "ballista's arms on a trestle, a windlass, squared timber"),
+    "soldier_quarters": (soldier_quarters, "Your Kingdom soldier quarters (UI-3 part 3), 2x2 tiles: a long log "
+                         "bunkhouse on a fieldstone plinth under a mossy shingle roof, small shuttered windows, a chimney, "
+                         "shields on the gable, a red pennant, soldiers' washing on a line, a water "
+                         "trough, firewood, a spear and a shield by the door, a bench with a helmet"),
 }
-ENTRANCES = {"armourer": (1, 1), "bowyer": (1, 1), "armoury": (2, 1), "siege_workshop": (2, 1)}
+ENTRANCES = {"armourer": (1, 1), "bowyer": (1, 1), "armoury": (2, 1), "siege_workshop": (2, 1), "soldier_quarters": (1, 1)}
 
 
 if __name__ == "__main__":

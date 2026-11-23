@@ -48,6 +48,8 @@ static func research_error(province: ProvinceSim, def: BuildingDef) -> StringNam
 		return &"needs_burghers" if def.needs_house_level == 2 else &"needs_patricians"
 	if def.needs_building != &"" and not province.has_finished(def.needs_building):
 		return StringName("needs_" + String(def.needs_building))
+	if def.extra_beds > 0 and not Barracks.has_barracks(province):
+		return &"needs_barracks"   # UI-3 part 3: soldier quarters
 	return &""
 
 

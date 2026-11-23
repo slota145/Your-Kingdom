@@ -79,7 +79,9 @@ func test_settlers_land_from_the_ship_and_build_the_pioneer_camp() -> void:
 	assert_int(spots.size()).is_greater_equal(4)
 	assert_int(province.agents.count()).is_equal(6)
 	assert_int(province.kingdom_stock(&"wood")).is_equal(90)
-	assert_int(province.kingdom_stock(&"bread")).is_equal(20)
+	# UI-3 part 2 (owner 2026-11-23): more food at the start.
+	assert_int(province.kingdom_stock(&"bread")).is_equal(60)
+	assert_int(province.kingdom_stock(&"fish")).is_equal(30)
 	for pile: GroundPile in province.piles.values():
 		assert_int((pile.tile - beach).length_squared()).is_less_equal(32)
 	# The camp first; a second one is refused.
@@ -91,17 +93,33 @@ func test_settlers_land_from_the_ship_and_build_the_pioneer_camp() -> void:
 	# The builder and two porters work for the camp; the ship is gone.
 	assert_int(camp.workers.size()).is_equal(3)
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return not province.ships.has(landing.ship_id), 300)).is_true()
-	# Then a storage and huts: the other settlers move in.
-	_place(sim, &"stockpile", camp.origin + Vector2i(5, 0))
+	# Then a storage and huts: the other settlers move in. UI-3 part 2: the first storage
+	# gets what is left of the kit at once.
+	var store := _place(sim, &"stockpile", camp.origin + Vector2i(5, 0))
 	var huts: Array[BuildingState] = []
 	for i: int in 3:
 		huts.append(_place(sim, &"hut", camp.origin + Vector2i(-1 + 3 * i, -5)))
+	var on_beach := 0
+	for pile: GroundPile in province.piles.values():
+		on_beach += pile.stock.total(&"bread") + pile.stock.total(&"fish")
+	assert_int(on_beach).is_greater(0)
+	assert_bool(SimFixture.run_until(sim, func() -> bool: return store.is_complete(), 600)).is_true()
+	assert_int(store.stock.total(&"fish")).is_equal(30)
+	assert_int(store.stock.total(&"bread")).is_greater_equal(50)
+	for pile: GroundPile in province.piles.values():
+		assert_int(pile.stock.total(&"fish")).is_equal(0)
 	assert_bool(SimFixture.run_until(sim, func() -> bool: return province.landing == null, 900)).is_true()
-	var residents := 0
-	for hut: BuildingState in huts:
-		residents += hut.house.residents
-	print("landing over at tick ", province.tick, "; residents ", residents)
-	assert_int(residents).is_greater_equal(3)
+	# The settlers have a home now; they walk in (UI-3 part 2: sooner than before, the porters
+	# no longer carry the kit to the storage first).
+	print("landing over at tick ", province.tick)
+	var residents := {"n": 0}
+	assert_bool(SimFixture.run_until(sim, func() -> bool:
+		residents["n"] = 0
+		for hut: BuildingState in huts:
+			if hut.house != null:
+				residents["n"] += hut.house.residents
+		return int(residents["n"]) >= 3, 120)).is_true()
+	assert_int(int(residents["n"])).is_greater_equal(3)
 	assert_array(Array(province.dangling_holds())).is_empty()
 
 

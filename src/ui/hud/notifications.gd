@@ -4,11 +4,18 @@ extends VBoxContainer
 ## Each fades out after a while; only the newest few are shown. Every message also goes to
 ## [member history] (M10 part 5, friend's playtest 2026-11-17) with the game time and, when it
 ## is about a place (a building, a fight), that place, for the "Messages" window.
+## UI-3 part 1 (a friend's playtest 2026-11-23: the messages "covered the screen"): at most
+## three at a time, narrower, under a small header that folds them away with one click (the
+## choice is kept in the options); folded, the header counts the messages that came meanwhile.
 
 signal history_changed
 
 const LIFETIME := 7.0
-const MAX_SHOWN := 5
+const MAX_SHOWN := 3
+## Widest a message gets before it wraps.
+const WIDTH := 340.0
+## The option keeping the messages folded.
+const FOLDED_KEY := "game/notes_folded"
 ## Messages kept in the history.
 const HISTORY_SIZE := 50
 
@@ -28,6 +35,66 @@ var history: Array[Dictionary] = []
 var unread: int = 0
 ## Where the event being turned into a message happened (null outside on_sim_event).
 var _event_at: Variant = null
+## The header (folds and unfolds) and the messages under it.
+var _header: Button
+var _list: VBoxContainer
+## Messages that came while folded.
+var _missed: int = 0
+
+
+func _init() -> void:
+	add_theme_constant_override(&"separation", 4)
+	_header = Button.new()
+	_header.theme = UiKit.board_theme()
+	_header.focus_mode = Control.FOCUS_NONE
+	_header.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_header.mouse_filter = Control.MOUSE_FILTER_STOP
+	_header.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE + 2)
+	_header.pressed.connect(_on_header_pressed)
+	_header.tooltip_text = "ui.notes.header_tip"
+	add_child(_header)
+	_list = VBoxContainer.new()
+	_list.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_list.add_theme_constant_override(&"separation", 4)
+	add_child(_list)
+	_list.visible = not folded()
+	_refresh_header()
+
+
+## Whether the messages are folded away (the player's choice, kept in the options).
+func folded() -> bool:
+	return bool(Options.get_value(FOLDED_KEY))
+
+
+func set_folded(on: bool) -> void:
+	Options.set_value(FOLDED_KEY, on)
+	_list.visible = not on
+	if not on:
+		_missed = 0
+	_refresh_header()
+
+
+## Messages on show now.
+func shown_count() -> int:
+	return _list.get_child_count()
+
+
+func _on_header_pressed() -> void:
+	set_folded(not folded())
+
+
+func _refresh_header() -> void:
+	if folded():
+		_header.text = tr("ui.notes.folded_new") % _missed if _missed > 0 else tr("ui.notes.folded")
+		_header.add_theme_color_override(&"font_color", UiKit.GOLD if _missed > 0 else UiKit.LIGHT)
+	else:
+		_header.text = tr("ui.notes.open")
+		_header.add_theme_color_override(&"font_color", UiKit.LIGHT)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and _header != null:
+		_refresh_header()
 
 
 func on_sim_event(event: Dictionary) -> void:
@@ -78,6 +145,10 @@ func _on_sim_event(event: Dictionary) -> void:
 		&"siege_engine_built":
 			push(tr("ui.note.siege_engine_built") % tr("unit.%s.name" % event["unit"]))
 			return
+	if type == &"loose_goods_stored":
+		# UI-3 part 2: the start kit went into the first storage at once.
+		push(tr("ui.note.loose_goods_stored") % UiKit.goods_list(event["goods"]))
+		return
 	if type == &"merchant_arrived":
 		push(tr("ui.note.merchant_arrived"))
 		return
@@ -121,7 +192,12 @@ func push(text: String, at: Variant = null) -> void:
 		history.resize(HISTORY_SIZE)
 	unread += 1
 	history_changed.emit()
+	if folded():
+		_missed += 1
+		_refresh_header()
+		return
 	var l := UiKit.label(text)
+	l.custom_minimum_size.x = WIDTH
 	# Over the town, not on parchment: light text with a dark outline.
 	l.add_theme_color_override(&"font_color", UiKit.LIGHT)
 	l.add_theme_color_override(&"font_outline_color", Color(0.14, 0.08, 0.05))
@@ -137,12 +213,12 @@ func push(text: String, at: Variant = null) -> void:
 	strip.content_margin_bottom = 2.0
 	l.add_theme_stylebox_override(&"normal", strip)
 	l.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	add_child(l)
+	_list.add_child(l)
 	var tween := l.create_tween()
 	tween.tween_interval(LIFETIME)
 	tween.tween_property(l, "modulate:a", 0.0, 1.0)
 	tween.tween_callback(l.queue_free)
-	while get_child_count() > MAX_SHOWN:
-		var old := get_child(0)
-		remove_child(old)
+	while _list.get_child_count() > MAX_SHOWN:
+		var old := _list.get_child(0)
+		_list.remove_child(old)
 		old.queue_free()

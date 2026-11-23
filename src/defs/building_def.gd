@@ -195,6 +195,10 @@ const PEN_ANIMALS := 2
 ## The player builds it only when this building stands finished in the province (E4 part 3: the
 ## university after a school); empty = always.
 @export var needs_building: StringName = &""
+## Soldier quarters (UI-3 part 3, owner 2026-11-23): beds for the soldiers of the nearest
+## barracks (Barracks.beds); the soldiers sleep here and drill and enlist at their barracks.
+## Built only while a barracks stands. 0 = no quarters.
+@export_range(0, 99) var extra_beds: int = 0
 
 
 ## Whether a barracks of this kind recruits and houses [param unit] (E4 part 4).

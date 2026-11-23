@@ -20,9 +20,14 @@ func run(province: ProvinceSim, agent: Agent, _def: StepDef) -> Status:
 	if bb.has("_placed") and (province.tick + agent.id) % Barracks.RECHECK_TICKS != 0:
 		_drill(province, agent, bb)
 		return Status.RUNNING
-	var post := Barracks.post_of(province, barracks, barracks.soldiers.find(agent.id))
+	var index := barracks.soldiers.find(agent.id)
+	var post := Barracks.post_of(province, barracks, index)
 	var inside := post.x < 0.0
-	var goal := barracks.entrance_tile() if inside else Vector2i(floori(post.x), floori(post.y))
+	# UI-3 part 3: those past the barracks' own beds rest in its soldier quarters.
+	var rest := Barracks.rest_tile(province, barracks, index)
+	if inside:
+		post = Vector2(-1, -1) if rest == barracks.entrance_tile() else Vector2(-2 - rest.x, -2 - rest.y)
+	var goal := rest if inside else Vector2i(floori(post.x), floori(post.y))
 	var px := roundi(post.x * 100.0)
 	var py := roundi(post.y * 100.0)
 	if int(bb.get("_px", -1)) != px or int(bb.get("_py", -1)) != py:

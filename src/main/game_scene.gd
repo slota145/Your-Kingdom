@@ -65,6 +65,10 @@ var _research: ResearchWindow
 var _locks_time: float = 0.0
 var _world_map: WorldMapScreen
 var _notes: Notifications
+## Save and load with many saves (UI-3 part 2).
+var _saves: SavesWindow
+## The goods the player keeps an eye on, under the top bar (UI-3 part 1).
+var _goods_strip: GoodsStrip
 var _pause_menu: PauseMenu
 ## The options window (M10 part 3), over the pause menu.
 var _options: OptionsWindow
@@ -209,6 +213,7 @@ func _show_province() -> void:
 	camera.make_current()
 	_top.province = sim.province
 	_notes.province = sim.province
+	_goods_strip.province = sim.province
 	view.buildings.workers_missing.connect(_on_workers_missing)
 	_stocks.visible = false
 	_routes.visible = false
@@ -273,6 +278,12 @@ func _build_ui() -> void:
 		if view != null:
 			view.moods.show_all = on)
 	root.add_child(_top)
+	_goods_strip = GoodsStrip.new()
+	_goods_strip.setup(Data.registry)
+	_goods_strip.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	root.add_child(_goods_strip)
+	_top.resized.connect(_place_notes)
+	_goods_strip.resized.connect(_place_notes)
 	_build = BuildMenu.new()
 	_build.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	_build.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -483,18 +494,23 @@ func _build_ui() -> void:
 	_pause_menu = PauseMenu.new()
 	_pause_menu.visible = false
 	_pause_menu.resumed.connect(_close_pause_menu)
-	_pause_menu.save_requested.connect(func() -> void:
-		_close_pause_menu()
-		_quick_save())
-	_pause_menu.load_requested.connect(func() -> void:
-		_close_pause_menu()
-		_quick_load())
+	# UI-3 part 2: saving and loading go through the list of saves (F5 and F9 stay quick).
+	_pause_menu.save_requested.connect(func() -> void: _saves.open(SavesWindow.Mode.SAVE))
+	_pause_menu.load_requested.connect(func() -> void: _saves.open(SavesWindow.Mode.LOAD))
 	_pause_menu.main_menu_requested.connect(_back_to_menu)
 	_pause_menu.quit_requested.connect(func() -> void:
 		_quick_save()
 		get_tree().quit())
 	_pause_menu.logs_requested.connect(SaveService.open_logs)
 	root.add_child(_pause_menu)
+	_saves = SavesWindow.new()
+	_saves.visible = false
+	_saves.set_anchors_preset(Control.PRESET_CENTER)
+	_saves.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_saves.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_saves.save_chosen.connect(_save_into)
+	_saves.load_chosen.connect(_load_from)
+	root.add_child(_saves)
 	_options = OptionsWindow.new()
 	_options.visible = false
 	_options.set_anchors_preset(Control.PRESET_CENTER)
@@ -508,6 +524,12 @@ func _build_ui() -> void:
 
 
 func _place_notes() -> void:
+	if _notes == null or _world_map == null:
+		return
+	# UI-3 part 1: the goods strip right under the top bar (the province only), the messages
+	# under it.
+	_goods_strip.visible = not _world_map.visible
+	_goods_strip.position = Vector2(12, _top.size.y + 4)
 	if _world_map.visible:
 		_notes.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, 12)
 		_notes.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -516,7 +538,7 @@ func _place_notes() -> void:
 		_notes.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 		_notes.grow_vertical = Control.GROW_DIRECTION_END
 		_notes.alignment = BoxContainer.ALIGNMENT_BEGIN
-		_notes.position = Vector2(12, 64)
+		_notes.position = Vector2(12, _goods_strip.position.y + _goods_strip.size.y + 6)
 
 
 ## Battles of the player's armies and fleets on the world map (M8 part 2): the choice how to
@@ -732,6 +754,7 @@ func _process(delta: float) -> void:
 		return
 	_time += delta
 	_update_mark_tip()
+	_update_cursor()
 	if not Game.paused and _autosave_every() > 0.0:
 		_autosave_left = minf(_autosave_left - delta, _autosave_every())
 		if _autosave_left <= 0.0:
@@ -1049,6 +1072,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _options.visible:
 		if event.is_action_pressed(&"ui_cancel"):
 			_options.close()
+		return
+	if _saves.visible:
+		if event.is_action_pressed(&"ui_cancel"):
+			_saves.close()
 		return
 	if _pause_menu.visible:
 		if event.is_action_pressed(&"ui_cancel"):
@@ -1524,7 +1551,8 @@ func _on_workers_missing(building_id: int) -> void:
 ## What a badge over a building means, under the mouse on the badge or the building.
 func _update_mark_tip() -> void:
 	var text := ""
-	if not _world_map.visible and not _pause_menu.visible and not _options.visible and not _messages.visible:
+	if not _world_map.visible and not _pause_menu.visible and not _options.visible and not _messages.visible \
+			and not _saves.visible:
 		var at := get_global_mouse_position()
 		var id := view.buildings.mark_at(at)
 		if id == 0:
@@ -1548,6 +1576,70 @@ static func mark_text(building: BuildingState) -> String:
 	if building.paused:
 		return TranslationServer.translate("ui.mark.paused") % name
 	return TranslationServer.translate("ui.mark.no_workers") % [name, building.workers.size(), building.def.worker_count()]
+
+
+## A save into [param path] under [param save_name] from the list of saves.
+func _save_into(path: String, save_name: String) -> void:
+	var error := SaveService.save_simulation(path, sim, save_name)
+	_notes.push(tr("ui.note.saved_as") % SavesWindow.title_of(SaveService.read_meta(path).merged(
+			{"kind": "slot", "slot": path.get_file().get_basename()})) if error == OK else tr("ui.note.save_failed"))
+	_saves.close()
+	_close_pause_menu()
+
+
+## A save chosen in the list of saves.
+func _load_from(path: String) -> void:
+	var loaded: Simulation = SaveService.load_simulation(path, Data.registry) \
+			if FileAccess.file_exists(path) else null
+	if loaded == null:
+		_notes.push(tr("ui.note.load_failed"))
+		return
+	_saves.close()
+	_close_pause_menu()
+	_start(loaded)
+	_notes.push(tr("ui.note.loaded"))
+
+
+# --- Cursors (UI-4 part 1) -------------------------------------------------------------------
+
+## Tile and level of the last "can they get there" check and its answer (the check is dear).
+var _reach_key: Vector3i = Vector3i(-1, -1, -1)
+var _reach_ok: bool = true
+
+
+func _update_cursor() -> void:
+	Cursors.show(cursor_kind())
+
+
+## The cursor for what a right click would do now: with soldiers selected in the province, a
+## sword over an enemy, an anchor over a warship to board, a hammer over what they can break,
+## a "no way" sign where they cannot go, else the spear with the pennant; the gauntlet otherwise
+## (over the interface too).
+func cursor_kind() -> StringName:
+	if sim == null or view == null or _selected.is_empty() or _world_map.visible or _pause_menu.visible \
+			or _options.visible or _saves.visible or _messages.visible:
+		return Cursors.POINTER
+	if get_viewport().gui_get_hovered_control() != null:
+		return Cursors.POINTER
+	var at := get_global_mouse_position()
+	var ship_id := _ship_at(at)
+	if ship_id != 0 and TroopTransport.carries_troops(sim.province, sim.province.ships[ship_id]):
+		return Cursors.BOARD
+	if _enemy_at(at) != null:
+		return Cursors.ATTACK
+	var target := _ground_or_wall(at)
+	var tile: Vector2i = target[0]
+	if sim.province.home_faction != CombatState.PLAYER:
+		var under := tile
+		if target[1] == MilitaryNav.GROUND and not Troops.structure_standing(sim.province, under):
+			under = ProvinceView.tile_at(at + Vector2(0, BlockWallModel.HEIGHT / 2.0))
+		if Troops.structure_standing(sim.province, under):
+			return Cursors.BREAK
+	var key := Vector3i(tile.x, tile.y, int(target[1]))
+	if key != _reach_key:
+		_reach_key = key
+		_reach_ok = not Troops.formation(sim.province, tile, int(target[1]), 1, CombatState.PLAYER).is_empty()
+	return Cursors.COMMAND if _reach_ok else Cursors.BLOCKED
 
 
 ## Loads the newest save: the quick save or the autosave.

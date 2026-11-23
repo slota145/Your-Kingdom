@@ -96,6 +96,8 @@ static func _close(province: ProvinceSim, site: ConstructionSite, finished: bool
 		building.finish(province.data)
 		province.events.emit(&"building_completed", {"building": building.id,
 				"def": building.def.id})
+		if building.def.storage_slots > 0 and province.is_first_storage(building):
+			province.store_loose_goods(building)
 
 
 ## Cancels the site of a building being removed and puts its materials on the ground.

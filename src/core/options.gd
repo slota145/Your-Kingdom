@@ -51,6 +51,12 @@ const DEFAULTS: Dictionary[String, Variant] = {
 	"game/edge_scroll": false,
 	"game/camera_speed": 1.0,
 	"game/language": "pl",
+	# UI-3 part 1: the messages folded away, the goods shown under the top bar ("food" = all
+	# the food together).
+	"game/notes_folded": false,
+	"game/pinned_goods": ["wood", "stone", "planks", "food"],
+	# UI-4 part 2: the version whose "What's new" was shown last ("" = none yet).
+	"game/news_seen": "",
 }
 
 ## Actions the player can give other keys, in the order shown (InputSetup has them all).
