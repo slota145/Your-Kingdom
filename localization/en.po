@@ -5174,3 +5174,90 @@ msgstr "Beds: %d for: %s"
 
 msgid "ui.quarters.no_barracks"
 msgstr "No barracks: the beds wait for one."
+
+msgid "ui.main.news"
+msgstr "What's new"
+
+msgid "ui.news.title"
+msgstr "What's new in the game"
+
+msgid "ui.news.close"
+msgstr "Close"
+
+msgid "ui.news.version"
+msgstr "Version %s (%s): %s"
+
+msgid "changelog.0_9_3.title"
+msgstr "soldiers, saves and clarity"
+
+msgid "changelog.0_9_3.1"
+msgstr "Many saves: a Save / Load window with names, dates and game time, and Continue in the menu."
+
+msgid "changelog.0_9_3.2"
+msgstr "A bigger start: the ship brings 60 bread and 30 fish, and the goods on the beach go straight into the first storage."
+
+msgid "changelog.0_9_3.3"
+msgstr "A strip with chosen goods under the top bar (wood, stone, planks, food; + picks others)."
+
+msgid "changelog.0_9_3.4"
+msgstr "Readable build-menu tooltips with how much a building makes and uses per minute, in the building panel too."
+
+msgid "changelog.0_9_3.5"
+msgstr "Notifications take less room and fold away with one click."
+
+msgid "changelog.0_9_3.6"
+msgstr "Barracks hold more soldiers (16 and 50), and new soldier quarters give the nearest barracks 12 beds."
+
+msgid "changelog.0_9_3.7"
+msgstr "After an order you see where each soldier is going, and a target appears over the enemy they attack."
+
+msgid "changelog.0_9_3.8"
+msgstr "New cursors: a gauntlet, a pennant with soldiers selected, a sword over enemies, a hammer, an anchor and a no-way sign."
+
+msgid "changelog.0_9_3.9"
+msgstr "This window: What's new shows what every version brought."
+
+msgid "changelog.0_9_2.title"
+msgstr "fixes after the first players"
+
+msgid "changelog.0_9_2.1"
+msgstr "The interface sizes itself to the screen (for example 150% at 1920×1080)."
+
+msgid "changelog.0_9_2.2"
+msgstr "Clearer text on the wooden bars and building names in the build menu."
+
+msgid "changelog.0_9_2.3"
+msgstr "Badges over buildings without workers or paused, with a hint what to do."
+
+msgid "changelog.0_9_2.4"
+msgstr "A Messages window with the last 50 messages; Show moves the camera there."
+
+msgid "changelog.0_9_2.5"
+msgstr "While laying a road the building entrances show: red without a road, green with one."
+
+msgid "changelog.0_9_1.title"
+msgstr "an update test"
+
+msgid "changelog.0_9_1.1"
+msgstr "Only a new version number, to check that the game updates itself."
+
+msgid "changelog.0_9_0.title"
+msgstr "the first release"
+
+msgid "changelog.0_9_0.1"
+msgstr "The whole game: a kingdom map with provinces, towns, economy, trade, ships, research and war."
+
+msgid "changelog.0_9_0.2"
+msgstr "Sounds of work, animals and battles, forest, sea and town in the background, and music."
+
+msgid "changelog.0_9_0.3"
+msgstr "A Windows version in one file, with an autosave every few minutes."
+
+msgid "changelog.0_9_0.4"
+msgstr "An Options window: screen, volume, keys, language and more."
+
+msgid "changelog.0_9_0.5"
+msgstr "An error log you can send to the maker after a crash."
+
+msgid "changelog.0_9_0.6"
+msgstr "The game checks for a new version by itself and gets it with one button."

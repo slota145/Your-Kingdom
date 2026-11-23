@@ -64,6 +64,10 @@ func _ready() -> void:
 			_shift = Vector2(float(parts[0]), float(parts[1]))
 	# Runs after the backdrop, so the held shift wins over the real mouse.
 	process_priority = 10
+	# UI-4 part 2: "What's new" opens by itself once per version; shots show it only with
+	# --open=news (and without writing the player's settings).
+	Options.set("path", "")
+	Options.set_value(ChangelogWindow.SEEN_KEY, ChangelogWindow.game_version())
 	_menu = (load("res://src/main/main.tscn") as PackedScene).instantiate() as Control
 	add_child(_menu)
 
@@ -75,6 +79,9 @@ func _process(_delta: float) -> void:
 	if _frames == 5 and _updates > 0:
 		Updates.set("behind", _updates)
 		Updates.emit_signal("checked", _updates)
+	if _frames == 5 and _open == "news":
+		_menu.get("_menu_panel").set("visible", false)
+		(_menu.get("_news") as ChangelogWindow).open()
 	if _frames == 5 and _open.begins_with("saves"):
 		# UI-3 part 2: --open=saves (load) or --open=saves_save, three saves in a folder of its own.
 		SaveService.save_dir = "user://shot_saves"

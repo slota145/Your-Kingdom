@@ -57,5 +57,6 @@ Gra dla kolegów to `.exe` z publicznego repozytorium **`slota145/YourKingdom-Re
 
 **Nowa wersja (może ją zrobić sesja Claude):**
 1. Podbij `config/version` w `project.godot` (np. `0.9.0` → `0.9.1`) w zmianie, która trafia do `main` (wersja jest numerem wydania, `v0.9.1`; to samo wydanie drugi raz się nie utworzy).
+   Razem z tym (UI-4 część 2) dopisz wersję na górze `ChangelogWindow.VERSIONS` (`src/ui/panels/changelog_window.gd`: wersja, data, liczba punktów) i jej teksty `changelog.<wersja z _>.title`, `.1`, `.2`… w obu plikach `localization/*.po`, prostym językiem dla graczy; test `test_ui4_news.gd` pilnuje, że pierwsza na liście to wersja gry. Te same punkty nadają się do pola „Co nowego” workflowu.
 2. Uruchom workflow **Release** na `main` (GitHub: Actions → Release → Run workflow, z polem „Co nowego”; z sesji: narzędzie GitHuba do uruchamiania workflowów). Buduje on grę na Linuksie GitHuba, robi próbę `--smoke`, buduje `.exe`, liczy SHA-256 i publikuje wydanie z plikami `YourKingdom.exe` i `YourKingdom.exe.sha256`.
 3. Gry kolegów przy następnym starcie pokażą „Nowa wersja 0.9.1: pobierz i uruchom”.

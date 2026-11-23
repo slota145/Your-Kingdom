@@ -55,6 +55,8 @@ const DEFAULTS: Dictionary[String, Variant] = {
 	# the food together).
 	"game/notes_folded": false,
 	"game/pinned_goods": ["wood", "stone", "planks", "food"],
+	# UI-4 part 2: the version whose "What's new" was shown last ("" = none yet).
+	"game/news_seen": "",
 }
 
 ## Actions the player can give other keys, in the order shown (InputSetup has them all).

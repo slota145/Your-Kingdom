@@ -29,6 +29,8 @@ var _new_game_window: NewGameWindow
 var _options: OptionsWindow
 ## The list of saves (UI-3 part 2).
 var _saves: SavesWindow
+## "What's new" (UI-4 part 2).
+var _news: ChangelogWindow
 ## "A new version of the game is out" (Updates autoload, the owner's folder only).
 var _update_button: Button
 ## The download of a new version for players failed: the button opens the release page.
@@ -103,6 +105,13 @@ func _ready() -> void:
 	_saves.closed.connect(_on_saves_closed)
 	_saves.load_chosen.connect(_start_game)
 	add_child(_saves)
+	_news = ChangelogWindow.new()
+	_news.visible = false
+	_news.set_anchors_preset(Control.PRESET_CENTER)
+	_news.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_news.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_news.closed.connect(_on_news_closed)
+	add_child(_news)
 	UiScaler.attach(self)
 	_title = UiKit.title("ui.main.title")
 	_title.add_theme_font_size_override(&"font_size", 56)
@@ -147,6 +156,9 @@ func _ready() -> void:
 			_open(GAME_SCENE))
 		button.set_meta(&"map", map.id)
 		button.add_theme_font_size_override(&"font_size", UiKit.SMALL_FONT_SIZE + 4)
+	_menu_button(box, "ui.main.news", func() -> void:
+		_menu_panel.visible = false
+		_news.open())
 	_menu_button(box, "ui.main.options", func() -> void:
 		_menu_panel.visible = false
 		_options.open())
@@ -182,6 +194,7 @@ func _ready() -> void:
 	_menu_button(box, "ui.main.quit", func() -> void: get_tree().quit())
 	EventBus.language_changed.connect(_on_language_changed)
 	_refresh()
+	_show_news_once.call_deferred()
 
 
 ## Opens the "New game" window in place of the menu (UI-2 part 3).
@@ -217,6 +230,17 @@ func _smoke_start() -> void:
 	var worlds := Data.registry.all_of(&"world")
 	Game.start_request = {"world": worlds[0].id} if not worlds.is_empty() else {}
 	_open(GAME_SCENE)
+
+
+func _on_news_closed() -> void:
+	_menu_panel.visible = true
+
+
+## After an update the news open by themselves, once (not in a smoke run).
+func _show_news_once() -> void:
+	if Game.smoke_seconds <= 0.0 and ChangelogWindow.take_unseen():
+		_menu_panel.visible = false
+		_news.open()
 
 
 func _on_saves_closed() -> void:

@@ -1756,6 +1756,11 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Część 2: okno „Co nowego”** (ankieta: „Wydania + samo się otwiera”): przycisk w menu głównym, wersje 0.9.0–0.9.3 prostym językiem, najnowsza na górze, po polsku i angielsku; po aktualizacji okno otwiera się samo raz (zapamiętana ostatnio pokazana wersja w `settings.cfg`). Nowa wersja gry 0.9.3 (UI-3 i UI-4).
 
+**Część 2, stan (2026-11-23):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **„Co nowego”:** przycisk w menu głównym nad „Opcjami”, okno z przewijaną listą wersji (najnowsza na górze): „Wersja 0.9.3 (2026-11-23): wojsko, zapisy i czytelność” i punkty prostym językiem; 0.9.3 (9 punktów: UI-3 i UI-4), 0.9.2 (5), 0.9.1 (1), 0.9.0 (6). Teksty w `localization/*.po` (`changelog.<wersja>.<n>`), lista wersji w `ChangelogWindow.VERSIONS`. Okno otwiera się samo raz na wersję (`game/news_seen` w `settings.cfg`), także przy pierwszym uruchomieniu; Esc albo „Zamknij” wraca do menu.
+- **Wersja gry 0.9.3** (`project.godot`); przy każdym następnym wydaniu wpis w „Co nowego” (CLOUD_SETUP, „Wydania”).
+- Testy: `tests/unit/ui/test_ui4_news.gd`. Zrzut: `menu_shot.tscn -- --out=<plik> --open=news` (zrzuty menu same nie otwierają okna).
+
 **Ryzyka:** kursor sprzętowy w Godocie ma najwyżej 256×256 px i nie skaluje się z interfejsem (rozmiar trzeba dobrać do skali 100–150%); sprawdzanie, co jest pod kursorem, co klatkę przy dużej armii.
 
 ## E5 — Limit towaru w magazynie

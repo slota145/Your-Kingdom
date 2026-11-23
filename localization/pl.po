@@ -5218,3 +5218,90 @@ msgstr "Łóżka: %d dla koszar: %s"
 
 msgid "ui.quarters.no_barracks"
 msgstr "Brak koszar: łóżka czekają na koszary."
+
+msgid "ui.main.news"
+msgstr "Co nowego"
+
+msgid "ui.news.title"
+msgstr "Co nowego w grze"
+
+msgid "ui.news.close"
+msgstr "Zamknij"
+
+msgid "ui.news.version"
+msgstr "Wersja %s (%s): %s"
+
+msgid "changelog.0_9_3.title"
+msgstr "wojsko, zapisy i czytelność"
+
+msgid "changelog.0_9_3.1"
+msgstr "Wiele zapisów: okno „Zapisz / Wczytaj” z nazwami, datą i czasem gry, a w menu przycisk „Kontynuuj”."
+
+msgid "changelog.0_9_3.2"
+msgstr "Większy start: statek przywozi 60 chleba i 30 ryb, a zapasy z plaży od razu trafiają do pierwszego magazynu."
+
+msgid "changelog.0_9_3.3"
+msgstr "Pasek z wybranymi towarami pod górnym paskiem (drewno, kamień, deski, jedzenie; „+” dobiera inne)."
+
+msgid "changelog.0_9_3.4"
+msgstr "Czytelne dymki w menu budowy i liczby: ile budynek daje i zużywa na minutę, także w panelu stojącego budynku."
+
+msgid "changelog.0_9_3.5"
+msgstr "Powiadomienia zajmują mniej miejsca i zwijają się jednym kliknięciem."
+
+msgid "changelog.0_9_3.6"
+msgstr "Koszary mieszczą więcej żołnierzy (16 i 50), a nowe baraki dają 12 łóżek najbliższym koszarom."
+
+msgid "changelog.0_9_3.7"
+msgstr "Po rozkazie widać, dokąd idzie każdy żołnierz, a nad atakowanym wrogiem pojawia się celownik."
+
+msgid "changelog.0_9_3.8"
+msgstr "Nowe kursory: rękawica, proporzec przy zaznaczonym wojsku, miecz nad wrogiem, młot, kotwica i znak „nie da się tam dojść”."
+
+msgid "changelog.0_9_3.9"
+msgstr "To okno: „Co nowego” pokazuje zmiany każdej wersji."
+
+msgid "changelog.0_9_2.title"
+msgstr "poprawki po pierwszych graczach"
+
+msgid "changelog.0_9_2.1"
+msgstr "Interfejs sam dobiera wielkość do ekranu (np. 150% przy 1920×1080)."
+
+msgid "changelog.0_9_2.2"
+msgstr "Wyraźniejsze napisy na drewnianych paskach i nazwy budynków w menu budowy."
+
+msgid "changelog.0_9_2.3"
+msgstr "Znaczki nad budynkami bez pracowników albo wstrzymanymi, z podpowiedzią, co zrobić."
+
+msgid "changelog.0_9_2.4"
+msgstr "Okno „Wiadomości” z ostatnimi 50 wiadomościami; „Pokaż” przenosi kamerę na miejsce."
+
+msgid "changelog.0_9_2.5"
+msgstr "Przy stawianiu drogi widać wejścia do budynków: czerwone bez drogi, zielone z drogą."
+
+msgid "changelog.0_9_1.title"
+msgstr "próba aktualizacji"
+
+msgid "changelog.0_9_1.1"
+msgstr "Tylko nowy numer wersji, żeby sprawdzić, czy gra sama się aktualizuje."
+
+msgid "changelog.0_9_0.title"
+msgstr "pierwsze wydanie"
+
+msgid "changelog.0_9_0.1"
+msgstr "Cała gra: mapa królestwa z prowincjami, miasta, gospodarka, handel, statki, badania i wojna."
+
+msgid "changelog.0_9_0.2"
+msgstr "Dźwięki pracy, zwierząt i bitew, tło lasu, morza i miasta oraz muzyka."
+
+msgid "changelog.0_9_0.3"
+msgstr "Wersja na Windows w jednym pliku, z autozapisem co kilka minut."
+
+msgid "changelog.0_9_0.4"
+msgstr "Okno „Opcje”: ekran, głośność, klawisze, język i więcej."
+
+msgid "changelog.0_9_0.5"
+msgstr "Dziennik błędów, który można wysłać twórcy po awarii."
+
+msgid "changelog.0_9_0.6"
+msgstr "Gra sama sprawdza, czy jest nowa wersja, i pobiera ją jednym przyciskiem."
