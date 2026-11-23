@@ -1691,6 +1691,29 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Ryzyka:** stos zawsze daje dużo więcej pracy tragarzom (na starcie może ich zabraknąć, a ekonomia zwolni albo przyspieszy: trzeba porównać próby przed i po); budowniczy noszący może zostawiać budowy bez rąk do pracy; przezroczystość musi działać z cięciem budynków na paski (sortowanie głębi).
 
+## UI-3 — Druga partia poprawek z gry kolegi
+
+> Uwagi kolegi i właściciela z 2026-11-23 (po M10 część 5). **Plan i decyzje z ankiety 2026-11-23**, trzy części, ocena po każdej.
+
+**Część 1: czytelność i informacje.**
+- Dymek budynku w menu budowy: większa, wyraźna czcionka na ciemnym tle z ramką (dziś „bardzo nieczytelna”).
+- **Produkcja i zużycie na minutę** (ankieta: „Menu: pełna załoga, panel: naprawdę”): w dymku menu budowy liczby z receptury przy pełnej załodze; w panelu stojącego budynku obie: ile może dać i ile naprawdę dał w ostatnich 5 minutach.
+- **Surowce na górnym pasku:** domyślnie drewno, kamień, deski i suma jedzenia; przycisk „+” dobiera i zdejmuje towary. Wybór w `settings.cfg` (ustawienie gracza, nie zapisu gry).
+- **Wiadomości po prawej:** mniejsze okienko powiadomień, zwijane jednym kliknięciem (zwinięte pokazuje tylko liczbę nowych); historia zostaje w oknie „Wiadomości”.
+
+**Część 2: zapisy i start.**
+- **Okno „Zapisz / Wczytaj”** z wieloma miejscami na zapis (nazwa, data, czas gry, scenariusz; usuwanie z potwierdzeniem), w menu pauzy i w menu głównym. F5/F9 i autozapis zostają jako osobne miejsca na liście.
+- **Więcej jedzenia na start** (ankieta: „60 chleba + 30 ryb”): statek daje 60 chleba, 30 ryb i 90 drewna (dziś 20 chleba i 90 drewna).
+- **Zapasy startowe od razu w pierwszym magazynie** (ankieta: „Pojawiają się od razu”, świadomy wyjątek od zasady noszenia towarów): gdy stanie pierwszy budynek z magazynem (obóz pionierów), wszystko, co jeszcze leży na plaży ze statku, od razu w nim jest. Format zapisu prawdopodobnie bez zmian.
+
+**Część 3: wojsko** (ankieta: „Więcej łóżek + baraki”).
+- Małe koszary 10 → 16 łóżek, duże 30 → 50.
+- **Baraki:** nowy budynek 2×2 z 12 łóżkami, do postawienia, gdy stoją jakieś koszary; grafika i etapy budowy ze SpriteKiln. Żołnierze śpią w barakach, ćwiczą i werbują się dalej w koszarach. Władcy też je stawiają. Zapis: nowa wersja tylko, jeśli będzie potrzebna.
+
+**Testy i sprawdzenie:** szybkie testy w każdej części; testy symulacji dla liczenia produkcji, zapasów startowych, łóżek i baraków; zrzuty dymka, paska, okienka powiadomień i okna zapisów; długie testy przed scaleniem do `main`.
+
+**Ryzyka:** więcej jedzenia i łóżek zmienia balans (pomiary automatycznego gracza i władców przed i po); pasek przy wielu przypiętych towarach i skali 150% może się nie zmieścić (limit liczby przypiętych).
+
 ## E5 — Limit towaru w magazynie
 
 > Pomysł właściciela 2026-11-13 (IDEAS, „Ekonomia (pomysły po UI-2)”). **Ankieta 2026-11-13: krótki osobny kawałek po UI-2, przed częścią 3 G3. Plan zaakceptowany 2026-11-13 („Zaczynaj według planu”); część 1 gotowa, czeka na ocenę („Część 1, stan”).** Część 2 UI-2 dalej czeka na ocenę w grze (właściciel jeszcze nie grał); poprawki z tej oceny mają pierwszeństwo.
