@@ -65,6 +65,8 @@ var _research: ResearchWindow
 var _locks_time: float = 0.0
 var _world_map: WorldMapScreen
 var _notes: Notifications
+## The goods the player keeps an eye on, under the top bar (UI-3 part 1).
+var _goods_strip: GoodsStrip
 var _pause_menu: PauseMenu
 ## The options window (M10 part 3), over the pause menu.
 var _options: OptionsWindow
@@ -209,6 +211,7 @@ func _show_province() -> void:
 	camera.make_current()
 	_top.province = sim.province
 	_notes.province = sim.province
+	_goods_strip.province = sim.province
 	view.buildings.workers_missing.connect(_on_workers_missing)
 	_stocks.visible = false
 	_routes.visible = false
@@ -273,6 +276,12 @@ func _build_ui() -> void:
 		if view != null:
 			view.moods.show_all = on)
 	root.add_child(_top)
+	_goods_strip = GoodsStrip.new()
+	_goods_strip.setup(Data.registry)
+	_goods_strip.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	root.add_child(_goods_strip)
+	_top.resized.connect(_place_notes)
+	_goods_strip.resized.connect(_place_notes)
 	_build = BuildMenu.new()
 	_build.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	_build.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -508,6 +517,12 @@ func _build_ui() -> void:
 
 
 func _place_notes() -> void:
+	if _notes == null or _world_map == null:
+		return
+	# UI-3 part 1: the goods strip right under the top bar (the province only), the messages
+	# under it.
+	_goods_strip.visible = not _world_map.visible
+	_goods_strip.position = Vector2(12, _top.size.y + 4)
 	if _world_map.visible:
 		_notes.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, 12)
 		_notes.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -516,7 +531,7 @@ func _place_notes() -> void:
 		_notes.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 		_notes.grow_vertical = Control.GROW_DIRECTION_END
 		_notes.alignment = BoxContainer.ALIGNMENT_BEGIN
-		_notes.position = Vector2(12, 64)
+		_notes.position = Vector2(12, _goods_strip.position.y + _goods_strip.size.y + 6)
 
 
 ## Battles of the player's armies and fleets on the world map (M8 part 2): the choice how to

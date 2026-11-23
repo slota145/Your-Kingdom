@@ -57,8 +57,7 @@ static func theme() -> Theme:
 	for c: StringName in [&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color",
 			&"font_hover_pressed_color"]:
 		t.set_color(c, &"CheckBox", INK)
-	t.set_stylebox(&"panel", &"TooltipPanel", _texture_box("tooltip.png", 2, 10, 6))
-	t.set_color(&"font_color", &"TooltipLabel", INK)
+	_tooltip_style(t)
 	var line := StyleBoxLine.new()
 	line.color = Color(0.42, 0.27, 0.15)
 	line.thickness = 2
@@ -85,6 +84,46 @@ static func theme() -> Theme:
 	return t
 
 
+## Tooltips: parchment with ink at the panels' size, on the boards too (UI-3 part 1: the
+## boards had none, so their tooltips fell back to Godot's small grey ones).
+static func _tooltip_style(t: Theme) -> void:
+	t.set_stylebox(&"panel", &"TooltipPanel", _texture_box("tooltip.png", 2, 12, 8))
+	t.set_color(&"font_color", &"TooltipLabel", INK)
+	t.set_font_size(&"font_size", &"TooltipLabel", TOOLTIP_FONT_SIZE)
+	t.set_constant(&"outline_size", &"TooltipLabel", 0)
+
+
+## Widest a tooltip's text gets before it wraps.
+const TOOLTIP_WIDTH := 460.0
+const TOOLTIP_FONT_SIZE := 22
+
+
+## A tooltip's content (TipButton): [param title] as a red-brown heading (none when empty)
+## over [param text] in ink, wrapped at [constant TOOLTIP_WIDTH].
+static func tooltip(text: String, title: String = "") -> Control:
+	var box := VBoxContainer.new()
+	box.theme = theme()
+	box.add_theme_constant_override(&"separation", 4)
+	if title != "":
+		var head := Label.new()
+		head.text = title
+		head.add_theme_color_override(&"font_color", HEADING)
+		head.add_theme_font_size_override(&"font_size", TOOLTIP_FONT_SIZE + 4)
+		box.add_child(head)
+	var body := Label.new()
+	body.text = text
+	body.add_theme_color_override(&"font_color", INK)
+	body.add_theme_font_size_override(&"font_size", TOOLTIP_FONT_SIZE)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var font := body.get_theme_font(&"font")
+	var widest := 0.0
+	for line: String in text.split("\n"):
+		widest = maxf(widest, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, TOOLTIP_FONT_SIZE).x)
+	body.custom_minimum_size.x = minf(ceilf(widest) + 2.0, TOOLTIP_WIDTH)
+	box.add_child(body)
+	return box
+
+
 ## The dark outline of light text on the wooden bars.
 const BOARD_OUTLINE := Color(0.12, 0.07, 0.04)
 
@@ -106,6 +145,7 @@ static func board_theme() -> Theme:
 	board.content_margin_bottom = 6
 	for type: StringName in [&"PanelContainer", &"Panel"]:
 		t.set_stylebox(&"panel", type, board)
+	_tooltip_style(t)
 	# A thick dark outline round light letters: readable on the wood at any screen size
 	# (friend's playtest 2026-11-17, M10 part 5).
 	t.set_color(&"font_color", &"Label", LIGHT)

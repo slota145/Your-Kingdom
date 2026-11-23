@@ -476,6 +476,7 @@ Postać przesuwa się po punktach ścieżki z prędkością `base_speed / move_c
   rate = outputs / cycle_time × efektywność(zadowolenie, obsada)
   ```
   Wejścia są pobierane proporcjonalnie, a przy braku wejść produkcja się zatrzymuje.
+- Wzór szacunku czasu cyklu jest w `ProductionEstimate.cycle_seconds` (UI-3 część 1) i służy też interfejsowi: menu budowy pokazuje z niego produkcję i zużycie na minutę przy pełnej załodze (`full_crew`: magazyn 10 kafli dalej, oddanie na stos przy drzwiach bez drogi). Rzeczywistą produkcję budynku liczy `GoodsLedger.of_building` (statystyka, nie w zapisie).
 - `travel_estimate`:
   - kalibrowane **średnią kroczącą rzeczywistych czasów transportu** zmierzonych, gdy prowincja była oglądana (zapisaną per budynek),
   - jeśli takich pomiarów nie ma: estymata z długości ścieżki do najbliższego magazynu × 2 / prędkość.

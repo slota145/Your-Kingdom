@@ -1265,7 +1265,7 @@ func _breed_herds() -> void:
 		if building.breed_ticks >= due:
 			building.breed_ticks = 0
 			building.yard.add(good, 1)
-			ledger.made(good, 1, tick)
+			ledger.made(good, 1, tick, building.id)
 			events.emit(&"animal_born", {"building": building.id, "good": good, "herd": herd + 1})
 
 
@@ -1329,6 +1329,7 @@ func remove_building(id: int) -> void:
 	var building := buildings.get_building(id)
 	if building == null:
 		return
+	ledger.forget_building(id)
 	for worker_id: int in building.workers.duplicate():
 		var worker := agents.get_agent(worker_id)
 		if worker != null:

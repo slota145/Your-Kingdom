@@ -342,35 +342,21 @@ func estimated_cycle_seconds(building: BuildingState) -> float:
 	var walk := _walk_to_storage(building)
 	# The owner's research (E4 part 2: forestry, fishing) speeds the work up (a measured rate
 	# has it already).
-	var work := cycle.work_seconds / detail.research.work_speed(detail.data, building.def.id)
+	var speed := detail.research.work_speed(detail.data, building.def.id)
+	var factor := 1.0
 	if building.def.paced_work():
 		# A flock shears faster when bigger, and gives nothing without sheep (Z1 part 2).
 		if not building.has_work_source():
 			return INF
-		work *= building.work_factor()
-	var seconds := work + cycle.trips * 2.0 * walk / Movement.BASE_SPEED
-	if cycle.hunts:
-		# Out to a herd and back with the carcass: about half the hunting radius each way.
-		seconds += 2.0 * maxf(building.def.work_radius / 2.0, 1.0) / Movement.BASE_SPEED
-	if cycle.gather != &"" and not cycle.by_sea:
-		seconds += 2.0 * maxf(building.def.work_radius / 2.0, 1.0) / Movement.BASE_SPEED
-	if cycle.by_sea:
-		seconds += SAIL_SECONDS
-	if cycle.plants != &"":
-		seconds += 2.0 * maxf(building.def.work_radius / 2.0, 1.0) / Movement.BASE_SPEED
+		factor = building.work_factor()
+	var count := 0
 	if cycle.fields:
-		# One field gives a harvest every grow time plus its three jobs; a farmer works one at
-		# a time. E1 part 2: the whole field now waits for its last tile and grows once, and
-		# the extra yield makes up for it (measured in the detailed mode: a farm harvests as
-		# much an hour as before, farm_yield_probe), so the estimate stays as it was.
 		if _fields.is_empty():
 			_fields = detail.fields.counts()
-		var count: int = _fields.get(building.id, 0)
-		if count == 0:
-			return INF
-		var per_field := building.def.field_grow_time + cycle.work_seconds
-		seconds = maxf(seconds, per_field / count)
-	return maxf(seconds, 1.0)
+		count = _fields.get(building.id, 0)
+	# E1 part 2: the whole field waits for its last tile and grows once, and the extra yield
+	# makes up for it (farm_yield_probe), so the estimate stays per tile.
+	return ProductionEstimate.cycle_seconds(building.def, cycle, walk, speed, factor, count)
 
 
 func _walk_to_storage(building: BuildingState) -> float:
@@ -440,7 +426,7 @@ func _cycle(building: BuildingState, cycle: WorkCycle) -> bool:
 		var need := cycle.inputs[good]
 		if building.supply != null and building.house == null:
 			need -= building.supply.remove(good, need)
-			p.ledger.used(good, cycle.inputs[good] - need, p.tick)
+			p.ledger.used(good, cycle.inputs[good] - need, p.tick, building.id)
 		while need > 0:
 			var store := _source(good)
 			if store == null:
@@ -449,7 +435,7 @@ func _cycle(building: BuildingState, cycle: WorkCycle) -> bool:
 			if got <= 0:
 				break
 			need -= got
-			p.ledger.used(good, got, p.tick)
+			p.ledger.used(good, got, p.tick, building.id)
 	if node != Agent.NO_TILE:
 		var node_def := p.resources.def_at(node)
 		var taken := p.resources.take(node)
@@ -469,7 +455,7 @@ func _cycle(building: BuildingState, cycle: WorkCycle) -> bool:
 		var amount := cycle.outputs[good]
 		if cycle.fields:
 			amount += building.fertile_extra(amount, p.field_yield())   # E3 part 4
-		p.ledger.made(good, amount, p.tick)
+		p.ledger.made(good, amount, p.tick, building.id)
 		var left := _store(good, amount)
 		if left > 0 and building.yard != null:
 			left = building.yard.add(good, left)

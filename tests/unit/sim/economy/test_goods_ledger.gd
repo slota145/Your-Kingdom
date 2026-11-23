@@ -27,3 +27,20 @@ func test_province_counts_production_and_consumption() -> void:
 	SimFixture.woodcutter_scene(sim)
 	sim.run_ticks(SimFixture.ticks(120))
 	assert_float(sim.province.ledger.made_per_minute(&"wood", sim.province.tick)).is_greater(0.0)
+
+
+func test_each_building_keeps_its_own_record() -> void:
+	# UI-3 part 1: the building panel shows what this building made and used.
+	var ledger := GoodsLedger.new()
+	ledger.made(&"planks", 4, 0, 7)
+	ledger.used(&"wood", 2, 0, 7)
+	ledger.made(&"planks", 6, 0, 8)
+	ledger.made(&"planks", 10, 0)
+	assert_float(ledger.made_per_minute(&"planks", 599)).is_equal_approx(20.0, 0.01)
+	assert_bool(ledger.has_building(7)).is_true()
+	assert_float(ledger.of_building(7).made_per_minute(&"planks", 599)).is_equal_approx(4.0, 0.01)
+	assert_float(ledger.of_building(7).used_per_minute(&"wood", 599)).is_equal_approx(2.0, 0.01)
+	assert_float(ledger.of_building(8).made_per_minute(&"planks", 599)).is_equal_approx(6.0, 0.01)
+	ledger.forget_building(7)
+	assert_bool(ledger.has_building(7)).is_false()
+	assert_bool(ledger.has_building(9)).is_false()

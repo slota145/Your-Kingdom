@@ -49,11 +49,15 @@ var _lock_text: Dictionary[StringName, String] = {}
 ## The stone wall's padlock (E4 part 3).
 var _wall_lock: TextureRect
 var _wall_lock_button: Button
+## Data and the province on screen, for the per-minute numbers in the tooltips (UI-3 part 1).
+var _data: DataRegistry
+var _province: ProvinceSim
 ## The only building allowed now (a start from a ship: the pioneer camp first, M5 part 3).
 var _locked_to: StringName = &""
 
 
 func setup(registry: DataRegistry) -> void:
+	_data = registry
 	theme = UiKit.board_theme()   # a wooden board like the top bar (ROADMAP UI-1)
 	var box := VBoxContainer.new()
 	add_child(box)
@@ -117,6 +121,7 @@ func lock_to(only: StringName) -> void:
 ## Padlocks on the buildings [param province] may not build yet (E4 part 2): a research it
 ## needs, or the house level the school waits for. Cheap enough to call twice a second.
 func refresh_locks(province: ProvinceSim) -> void:
+	_province = province
 	if _wall_lock != null:
 		var research := province.research.needed_for_tool(province.data, BuildWallCommand.STONE_TOOL)
 		_wall_lock.visible = research != &""
@@ -157,9 +162,42 @@ func _show_tab(index: int) -> void:
 		_tab_buttons[i].set_pressed_no_signal(i == index)
 
 
+## The tooltip text of a building button (under its name): why it is locked, what it does,
+## its cost, what it makes and uses per minute.
+func building_tip(def: BuildingDef) -> String:
+	var lines := PackedStringArray([tr(def.desc_key()), tr("ui.build.cost") % UiKit.goods_list(def.build_cost)])
+	if _lock_text.has(def.id):
+		lines.insert(0, _lock_text[def.id])
+	if def.gold_cost > 0:
+		lines.append(tr("ui.build.gold_cost") % def.gold_cost)
+	lines.append_array(_rate_lines(def))
+	return "\n".join(lines)
+
+
+## What [param def] makes and uses per minute with a full crew (UI-3 part 1), sped up by the
+## research of the province on screen.
+func _rate_lines(def: BuildingDef) -> PackedStringArray:
+	var lines := PackedStringArray()
+	if _data == null:
+		return lines
+	var speed := _province.research.work_speed(_data, def.id) if _province != null else 1.0
+	var full := ProductionEstimate.full_crew(def, _data, speed)
+	for kind: String in ["made", "used"]:
+		var rates: Dictionary = full[kind]
+		if rates.is_empty():
+			continue
+		var goods: Array = rates.keys()
+		goods.sort()
+		var parts := PackedStringArray()
+		for good: StringName in goods:
+			parts.append(tr("ui.build.rate_item") % [tr("good.%s.name" % good), float(rates[good])])
+		lines.append(tr("ui.build.rate_%s" % kind) % ", ".join(parts))
+	return lines
+
+
 ## A picture of the building with its name under it.
 func _building_button(def: BuildingDef) -> Button:
-	var b := Button.new()
+	var b := TipButton.new()
 	b.custom_minimum_size = BUTTON_SIZE
 	b.pressed.connect(func() -> void: tool_selected.emit({"kind": &"building", "def": def.id}))
 	var content := VBoxContainer.new()
@@ -189,18 +227,14 @@ func _building_button(def: BuildingDef) -> Button:
 	_locks[def.id] = lock
 	b.tooltip_text = def.desc_key()
 	b.mouse_entered.connect(func() -> void:
-		var lines := PackedStringArray([tr(def.desc_key()), tr("ui.build.cost") % UiKit.goods_list(def.build_cost)])
-		if _lock_text.has(def.id):
-			lines.insert(0, _lock_text[def.id])
-		if def.gold_cost > 0:
-			lines.append(tr("ui.build.gold_cost") % def.gold_cost)
-		b.tooltip_text = "\n".join(lines))
+		b.tip_title = tr(def.name_key())
+		b.tooltip_text = building_tip(def))
 	return b
 
 
 ## A wall tool (M7 part 2): drag a line of palisade, stone wall or stairs.
 func _wall_button(tool: StringName) -> Button:
-	var b := Button.new()
+	var b := TipButton.new()
 	b.custom_minimum_size = BUTTON_SIZE
 	b.pressed.connect(func() -> void: tool_selected.emit({"kind": tool}))
 	var content := VBoxContainer.new()
@@ -221,6 +255,7 @@ func _wall_button(tool: StringName) -> Button:
 	_fit_name(name)
 	content.add_child(name)
 	b.tooltip_text = key + "_tip"
+	b.mouse_entered.connect(func() -> void: b.tip_title = tr(key))
 	if tool == BuildWallCommand.STONE_TOOL:
 		# E4 part 3: the stone wall waits for "Defensive masonry".
 		var lock := UiKit.icon("lock")
@@ -237,13 +272,15 @@ func _wall_button(tool: StringName) -> Button:
 
 ## A tool as a picture button; the tooltip gives its name over its use ([param key] and key_tip).
 func _tool_button(tool: StringName, key: String, on_pressed: Callable) -> Button:
-	var b := Button.new()
+	var b := TipButton.new()
 	b.icon = load("res://assets/ui/tool_%s.png" % tool) as Texture2D
 	b.custom_minimum_size = Vector2(44, 36)
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.tooltip_text = key
 	# Built when shown, so it follows a change of language.
-	b.mouse_entered.connect(func() -> void: b.tooltip_text = "\n".join([tr(key), tr(key + "_tip")]))
+	b.mouse_entered.connect(func() -> void:
+		b.tip_title = tr(key)
+		b.tooltip_text = tr(key + "_tip"))
 	b.pressed.connect(on_pressed)
 	return b
 

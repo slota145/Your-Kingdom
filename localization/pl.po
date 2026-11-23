@@ -5110,3 +5110,39 @@ msgstr "%s: brak pracowników (%d z %d). Potrzeba więcej mieszkańców: zbuduj 
 
 msgid "ui.mark.paused"
 msgstr "%s: wstrzymany. Wznów pracę w panelu budynku."
+
+msgid "ui.build.rate_made"
+msgstr "Daje na minutę (pełna załoga): %s"
+
+msgid "ui.build.rate_used"
+msgstr "Zużywa na minutę: %s"
+
+msgid "ui.build.rate_item"
+msgstr "%s %.1f"
+
+msgid "ui.building.rate_made"
+msgstr "Dał na minutę (ostatnie 5 min): %s"
+
+msgid "ui.building.rate_used"
+msgstr "Zużył na minutę (ostatnie 5 min): %s"
+
+msgid "ui.building.rate_item"
+msgstr "%s %.1f z %.1f możliwych"
+
+msgid "ui.notes.open"
+msgstr "Powiadomienia: zwiń"
+
+msgid "ui.notes.folded"
+msgstr "Powiadomienia: rozwiń"
+
+msgid "ui.notes.folded_new"
+msgstr "Powiadomienia (nowe: %d): rozwiń"
+
+msgid "ui.notes.header_tip"
+msgstr "Zwiń albo rozwiń powiadomienia. Wszystkie są też w oknie „Wiadomości”."
+
+msgid "ui.pinned.food"
+msgstr "Jedzenie razem"
+
+msgid "ui.pinned.add_tip"
+msgstr "Wybierz, które towary widać na tym pasku"

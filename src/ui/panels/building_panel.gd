@@ -317,6 +317,7 @@ func _refresh() -> void:
 			lines.append(tr("ui.building.service_range"))
 			if b.def.service_needs_supply and not b.provides_service(province.tick):
 				lines.append(tr("ui.building.stalls_empty" if not b.def.stall_goods.is_empty() 						else "ui.building.service_needs_supply"))
+		lines.append_array(_rate_lines(b))
 		if b.house != null:
 			lines.append_array(_house_lines(b))
 		elif b.supply != null and b.def.stall_goods.is_empty() and b.def.soldier_beds == 0:
@@ -636,6 +637,30 @@ func _keep_text(good: StringName, amount: int) -> String:
 
 
 ## Market: what is on the stalls and where the travelling merchant is.
+## What the building made and used per minute in the last minutes next to what it can at
+## full crew (UI-3 part 1, ProductionEstimate).
+func _rate_lines(b: BuildingState) -> PackedStringArray:
+	var lines := PackedStringArray()
+	var speed := province.research.work_speed(province.data, b.def.id)
+	var full := ProductionEstimate.full_crew(b.def, province.data, speed)
+	var ledger := province.ledger.of_building(b.id) if province.ledger.has_building(b.id) else null
+	for kind: String in ["made", "used"]:
+		var rates: Dictionary = full[kind]
+		if rates.is_empty():
+			continue
+		var parts := PackedStringArray()
+		var goods: Array = rates.keys()
+		goods.sort()
+		for good: StringName in goods:
+			var real := 0.0
+			if ledger != null:
+				real = ledger.made_per_minute(good, province.tick) if kind == "made" \
+						else ledger.used_per_minute(good, province.tick)
+			parts.append(tr("ui.building.rate_item") % [tr("good.%s.name" % good), real, float(rates[good])])
+		lines.append(tr("ui.building.rate_%s" % kind) % ", ".join(parts))
+	return lines
+
+
 func _market_lines(b: BuildingState) -> PackedStringArray:
 	var lines := PackedStringArray()
 	var stalls := b.supply.totals()

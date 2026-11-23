@@ -34,6 +34,11 @@ var _stocks: bool = false
 var _limits: Dictionary[StringName, int] = {}
 ## --hide_build (2026-11-07): the build bar hidden, the "Build" button in its place.
 var _hide_build: bool = false
+## --notes (UI-3 part 1): three messages pushed; --fold_notes: then folded away (two more come).
+var _notes: bool = false
+var _fold_notes: bool = false
+## --tip=<building id> (UI-3 part 1): that building's build-menu tooltip shown over the menu.
+var _tip: StringName = &""
 ## Block name -> grid point the camera looks at (set by _add_quarter).
 var _blocks: Dictionary[String, Vector2] = {}
 
@@ -85,6 +90,13 @@ func _ready() -> void:
 			_behind = true
 		elif arg == "--hide_build":
 			_hide_build = true
+		elif arg == "--notes":
+			_notes = true
+		elif arg == "--fold_notes":
+			_notes = true
+			_fold_notes = true
+		elif arg.begins_with("--tip="):
+			_tip = StringName(arg.trim_prefix("--tip="))
 		elif arg.begins_with("--focus="):
 			_focus = arg.trim_prefix("--focus=")
 		elif arg.begins_with("--limit="):
@@ -122,6 +134,24 @@ func _arrange() -> void:
 		_game.call("_show_build_menu", false)
 	if _moods:
 		(_game.get("view") as ProvinceView).moods.show_all = true
+	if _notes:
+		var notes: Notifications = _game.get("_notes")
+		notes.set_folded(false)
+		notes.push("Zbudowano: Tartak")
+		notes.push("Dom podniesiony: Dom mieszczan, przy rynku nad rzeką")
+		notes.push("Kupiec przybył na targowisko")
+		if _fold_notes:
+			notes.set_folded(true)
+			notes.push("Zbudowano: Piekarnia")
+			notes.push("Zbudowano: Młyn")
+	if _tip != &"":
+		var menu: BuildMenu = _game.get("_build")
+		var def := sim.data.get_building(_tip)
+		var panel := PanelContainer.new()
+		panel.theme_type_variation = &"TooltipPanel"
+		panel.add_child(UiKit.tooltip(menu.building_tip(def), tr(def.name_key())))
+		menu.get_parent().add_child(panel)
+		panel.position = Vector2(140, 300)
 	if _layout and _blocks.has(_focus):
 		camera.position = IsoMath.grid_to_screen(_blocks[_focus])
 	for b: BuildingState in sim.province.buildings.all():

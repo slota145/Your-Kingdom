@@ -5066,3 +5066,39 @@ msgstr "%s: workers missing (%d of %d). More people are needed: build houses or 
 
 msgid "ui.mark.paused"
 msgstr "%s: paused. Resume work in the building's panel."
+
+msgid "ui.build.rate_made"
+msgstr "Makes per minute (full crew): %s"
+
+msgid "ui.build.rate_used"
+msgstr "Uses per minute: %s"
+
+msgid "ui.build.rate_item"
+msgstr "%s %.1f"
+
+msgid "ui.building.rate_made"
+msgstr "Made per minute (last 5 min): %s"
+
+msgid "ui.building.rate_used"
+msgstr "Used per minute (last 5 min): %s"
+
+msgid "ui.building.rate_item"
+msgstr "%s %.1f of %.1f possible"
+
+msgid "ui.notes.open"
+msgstr "Notifications: fold"
+
+msgid "ui.notes.folded"
+msgstr "Notifications: unfold"
+
+msgid "ui.notes.folded_new"
+msgstr "Notifications (%d new): unfold"
+
+msgid "ui.notes.header_tip"
+msgstr "Fold or unfold the notifications. They all stay in the Messages window."
+
+msgid "ui.pinned.food"
+msgstr "All food"
+
+msgid "ui.pinned.add_tip"
+msgstr "Choose the goods shown on this strip"
