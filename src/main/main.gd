@@ -38,6 +38,7 @@ var _start_picker: StartPicker
 
 func _ready() -> void:
 	theme = UiKit.theme()
+	Cursors.show(Cursors.POINTER)   # UI-4 part 1: the gauntlet
 	add_child(MenuBackdrop.new())
 	Music.play_mood(&"menu")
 	if Game.smoke_seconds > 0.0:

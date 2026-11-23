@@ -725,6 +725,11 @@ Powód: kredyty PixelLab skończyły się po ok. 2 tygodniach. Szukamy darmowych
 - **Baraki** (`soldier_quarters`, 2×2, wejście (1, 1)) w `tools/spritekiln/gen_military.py` (funkcja `soldier_quarters`), render i eksport jak budynki wojska: `tools/spritekiln/build_military.sh soldier_quarters`. Pierwszy eksport nowego budynku potrzebuje plików `assets/buildings/<id>/*.json` (stopa, wejście): skopiować je z placeholdera (`tools/generate_placeholders.gd`, wpis w `SLICE_BUILDINGS`), potem `export_building.py <id> --stages`.
 - Wygląd: długa chata z bali na kamiennej podmurówce pod omszałym gontem (kalenica wzdłuż osi y gry), komin z kamienia polnego, rząd małych okien, drzwi z latarnią przy kaflu wejścia, tarcze królestwa (czerwona i niebieska) na szczycie, czerwona chorągiewka na tyczce przy narożniku; na podwórku sznur z praniem żołnierzy (koszule, czerwony wams ze złotym krzyżem, niebieskie nogawice), koryto z wodą i wiadro, drewno pod szczytem, pieniek z siekierą, ława z hełmem, włócznia i tarcza przy drzwiach. Zrzut z gry: `game_shot.tscn -- --shot=<plik> --plain --tile=48,56 --focus=45,56 --zoom=3 --yards=barracks_small,soldier_quarters --fields_seconds=5`.
 
+### 10.35 Kursory ze SpriteKiln (UI-4, część 1, 2026-11-23)
+
+- `tools/spritekiln/gen_cursors.py` pisze 12 speców `cursor_<rodzaj>_<32|48>` (widok z przodu, kierunek `s`, pitch 12, model leży w płaszczyźnie ekranu: +x w prawo, +y w górę; ostrze, palec i grot w lewo do góry), render jak zwykle (`spritekiln render`), `python3 tools/spritekiln/export_cursors.py` kopiuje je do `assets/ui/cursors/` i liczy punkty kliknięcia (`cursors.json`: dla rękawicy, włóczni i miecza najdalszy w lewo i w górę nieprzezroczysty piksel, dla reszty środek). Rozmiar modeli: `SPAN` (1,88 jednostki na 32 px; więcej i QA zgłasza dotknięcie krawędzi).
+- Rodzaje: `pointer` (stalowa rękawica wskazująca palcem, skórzany mankiet ze złotym brzegiem), `command` (włócznia z czerwonym proporcem z jaskółczym ogonem), `attack` (miecz ze złotym jelcem i głowicą), `break` (młot bojowy z kolcem), `board` (żelazna kotwica z drewnianym poprzeczkiem), `blocked` (czerwone koło z kreską i złotym brzegiem).
+
 ---
 
 ## 11. Dźwięk i muzyka (M10)

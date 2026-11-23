@@ -780,7 +780,7 @@ func _place_m7(sim: Simulation, at: Vector2i) -> void:
 	if _m7 == "ballista":
 		_place_ballistas(sim, at)
 		return
-	if _m7 == "army" or _m7 == "army2" or _m7 == "army3" or _m7 == "barracks":
+	if _m7 == "army" or _m7 == "army2" or _m7 == "army3" or _m7 == "barracks" or _m7 == "orders":
 		_place_army(sim, at)
 		return
 	if _m7 == "siege":
@@ -898,6 +898,43 @@ func _place_army(sim: Simulation, at: Vector2i) -> void:
 	sim.run_ticks(12 if _drill else 0)
 	Game.paused = true
 	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(barracks.entrance_tile() + Vector2i(1, 2))
+	if _m7 == "orders":
+		_give_orders(sim, barracks)
+
+
+## UI-4 part 1 (--m7=orders): twelve soldiers sent off in formation (their markers and lines),
+## four on a bandit (the target over his head), all selected, a moment after the order.
+func _give_orders(sim: Simulation, barracks: BuildingState) -> void:
+	var p := sim.province
+	var movers: Array[int] = []
+	var attackers: Array[int] = []
+	for i: int in barracks.soldiers.size():
+		(movers if i < 12 else attackers).append(barracks.soldiers[i])
+	var view: ProvinceView = _game.get("view")
+	_game.call("_select_soldiers", movers)
+	_game.call("_order_at", IsoMath.tile_center_screen(barracks.entrance_tile() + Vector2i(7, 6)))
+	Game.paused = false
+	sim.run_ticks(3)
+	Game.paused = true
+	for event: Dictionary in sim.events.drain():
+		view.on_sim_event(event)
+	# A bandit standing his ground under orders (else, with nothing to do, he would leave).
+	var bandit := p.spawn_agent(&"spearman", barracks.entrance_tile() + Vector2i(-2, 8))
+	bandit.combat = CombatState.new(sim.data.get_unit(&"spearman").combat.hp)
+	bandit.combat.faction = CombatState.BANDITS
+	bandit.combat.stance = CombatState.Stance.HOLD
+	Troops.order_move(p, [bandit] as Array[Agent], bandit.tile(), MilitaryNav.GROUND)
+	_game.call("_select_soldiers", attackers)
+	print("orders: attack ", _game.call("_execute", OrderTroopsCommand.new(attackers, OrderTroopsCommand.ATTACK,
+			Vector2i(-1, -1), 0, bandit.id)), " by ", attackers.size(), " bandit ", bandit.id, " ", p.agents.has_agent(bandit.id))
+	Game.paused = false
+	sim.run_ticks(12)
+	Game.paused = true
+	for event: Dictionary in sim.events.drain():
+		view.on_sim_event(event)
+	_game.call("_select_soldiers", movers + attackers)
+	print("orders: cursor ", _game.call("cursor_kind"))
+	(_game.get("camera") as GameCamera).position = IsoMath.tile_center_screen(barracks.entrance_tile() + Vector2i(2, 5))
 
 
 ## J1 part 2 (--m7=ballista [--raid_seconds=<s>]): two ballistas of the kingdom shooting at

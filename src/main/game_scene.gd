@@ -754,6 +754,7 @@ func _process(delta: float) -> void:
 		return
 	_time += delta
 	_update_mark_tip()
+	_update_cursor()
 	if not Game.paused and _autosave_every() > 0.0:
 		_autosave_left = minf(_autosave_left - delta, _autosave_every())
 		if _autosave_left <= 0.0:
@@ -1597,6 +1598,48 @@ func _load_from(path: String) -> void:
 	_close_pause_menu()
 	_start(loaded)
 	_notes.push(tr("ui.note.loaded"))
+
+
+# --- Cursors (UI-4 part 1) -------------------------------------------------------------------
+
+## Tile and level of the last "can they get there" check and its answer (the check is dear).
+var _reach_key: Vector3i = Vector3i(-1, -1, -1)
+var _reach_ok: bool = true
+
+
+func _update_cursor() -> void:
+	Cursors.show(cursor_kind())
+
+
+## The cursor for what a right click would do now: with soldiers selected in the province, a
+## sword over an enemy, an anchor over a warship to board, a hammer over what they can break,
+## a "no way" sign where they cannot go, else the spear with the pennant; the gauntlet otherwise
+## (over the interface too).
+func cursor_kind() -> StringName:
+	if sim == null or view == null or _selected.is_empty() or _world_map.visible or _pause_menu.visible \
+			or _options.visible or _saves.visible or _messages.visible:
+		return Cursors.POINTER
+	if get_viewport().gui_get_hovered_control() != null:
+		return Cursors.POINTER
+	var at := get_global_mouse_position()
+	var ship_id := _ship_at(at)
+	if ship_id != 0 and TroopTransport.carries_troops(sim.province, sim.province.ships[ship_id]):
+		return Cursors.BOARD
+	if _enemy_at(at) != null:
+		return Cursors.ATTACK
+	var target := _ground_or_wall(at)
+	var tile: Vector2i = target[0]
+	if sim.province.home_faction != CombatState.PLAYER:
+		var under := tile
+		if target[1] == MilitaryNav.GROUND and not Troops.structure_standing(sim.province, under):
+			under = ProvinceView.tile_at(at + Vector2(0, BlockWallModel.HEIGHT / 2.0))
+		if Troops.structure_standing(sim.province, under):
+			return Cursors.BREAK
+	var key := Vector3i(tile.x, tile.y, int(target[1]))
+	if key != _reach_key:
+		_reach_key = key
+		_reach_ok = not Troops.formation(sim.province, tile, int(target[1]), 1, CombatState.PLAYER).is_empty()
+	return Cursors.COMMAND if _reach_ok else Cursors.BLOCKED
 
 
 ## Loads the newest save: the quick save or the autosave.

@@ -1738,6 +1738,26 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 
 **Ryzyka:** więcej jedzenia i łóżek zmienia balans (pomiary automatycznego gracza i władców przed i po); pasek przy wielu przypiętych towarach i skali 150% może się nie zmieścić (limit liczby przypiętych).
 
+## UI-4 — Rozkazy dla wojska widać, kursory i „Co nowego”
+
+> Prośba właściciela 2026-11-23 (po UI-3). **Plan i decyzje z ankiety 2026-11-23**, dwie części, start od razu.
+
+**Część 1: znaczniki i kursory.**
+- **Znaczniki celu** (ankieta: „Do dojścia, przy zaznaczonych”): po rozkazie ruchu każdy żołnierz ma mały znacznik na swoim miejscu w szyku i cienką przerywaną linię od siebie do niego; widać je, póki oddział jest zaznaczony, a znacznik gaśnie, gdy żołnierz dojdzie.
+- **Atak:** prawy przycisk na wrogu to rozkaz ataku (już działa); nad głową atakowanego wroga znacznik celu (czerwony), póki zaznaczeni żołnierze mają go za cel.
+- **Kursory ze SpriteKiln** (ankieta): zwykły (stalowa rękawica wskazująca palcem), bojowy, gdy są zaznaczone jednostki (proporzec na drzewcu), miecz nad wrogiem, oraz (ankieta, wszystkie trzy) młot nad murem, bramą lub ratuszem wroga do zburzenia, kotwica nad okrętem, na który można wejść, przekreślenie tam, gdzie nie da się dojść.
+- Zapis bez zmian (to tylko widok).
+
+**Część 1, stan (2026-11-23):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **Znaczniki:** zaznaczeni żołnierze z rozkazem ruchu mają żółty romb na swoim miejscu w szyku i przerywaną linię od stóp do niego; romb gaśnie, gdy żołnierz dojdzie (0,35 kafla). Nad wrogiem, którego zaznaczeni atakują, czerwony pulsujący celownik.
+- **Kursory** (`assets/ui/cursors/<rodzaj>_32|48.png`, punkty kliknięcia w `cursors.json`; ART_SPEC §10.35): rękawica (zwykły, także w menu), włócznia z proporcem (zaznaczone jednostki), miecz (wróg pod kursorem), młot (mur, brama albo drzwi ratusza wroga do zburzenia), kotwica (okręt wojenny, na który można wejść), czerwony znak zakazu (nie da się tam dojść; sprawdzane raz na kafel). Nad oknami i paskami zawsze rękawica. 48 px od skali interfejsu 125%.
+- **Bez zmian w symulacji i zapisie.** Testy: `tests/unit/ui/test_ui4_cursors.gd`. Zrzut: `game_shot.tscn -- --shot=<plik> --m7=orders --zoom=2` (12 żołnierzy w drodze ze znacznikami, 4 atakują bandytę; kursora systemowego nie widać na zrzucie).
+- **Do oceny na laptopie:** czy kursory są dobrze widoczne i trafiają tam, gdzie wskazują, czy znaczniki nie zaśmiecają ekranu przy dużej armii.
+
+**Część 2: okno „Co nowego”** (ankieta: „Wydania + samo się otwiera”): przycisk w menu głównym, wersje 0.9.0–0.9.3 prostym językiem, najnowsza na górze, po polsku i angielsku; po aktualizacji okno otwiera się samo raz (zapamiętana ostatnio pokazana wersja w `settings.cfg`). Nowa wersja gry 0.9.3 (UI-3 i UI-4).
+
+**Ryzyka:** kursor sprzętowy w Godocie ma najwyżej 256×256 px i nie skaluje się z interfejsem (rozmiar trzeba dobrać do skali 100–150%); sprawdzanie, co jest pod kursorem, co klatkę przy dużej armii.
+
 ## E5 — Limit towaru w magazynie
 
 > Pomysł właściciela 2026-11-13 (IDEAS, „Ekonomia (pomysły po UI-2)”). **Ankieta 2026-11-13: krótki osobny kawałek po UI-2, przed częścią 3 G3. Plan zaakceptowany 2026-11-13 („Zaczynaj według planu”); część 1 gotowa, czeka na ocenę („Część 1, stan”).** Część 2 UI-2 dalej czeka na ocenę w grze (właściciel jeszcze nie grał); poprawki z tej oceny mają pierwszeństwo.
