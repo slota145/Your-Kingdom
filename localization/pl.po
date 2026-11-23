@@ -278,7 +278,7 @@ msgstr "Nowa gra"
 
 
 msgid "ui.main.load_game"
-msgstr "Wczytaj szybki zapis"
+msgstr "Wczytaj grę"
 
 msgid "ui.close"
 msgstr "Zamknij"
@@ -314,7 +314,7 @@ msgid "ui.pause.save"
 msgstr "Zapisz grę"
 
 msgid "ui.pause.load"
-msgstr "Wczytaj zapis"
+msgstr "Wczytaj grę"
 
 msgid "ui.pause.language_tip"
 msgstr "Zmień język gry"
@@ -5146,3 +5146,57 @@ msgstr "Jedzenie razem"
 
 msgid "ui.pinned.add_tip"
 msgstr "Wybierz, które towary widać na tym pasku"
+
+msgid "ui.note.loose_goods_stored"
+msgstr "Zapasy z ziemi trafiły do nowego magazynu: %s"
+
+msgid "ui.main.continue"
+msgstr "Kontynuuj"
+
+msgid "ui.saves.title_save"
+msgstr "Zapisz grę"
+
+msgid "ui.saves.title_load"
+msgstr "Wczytaj grę"
+
+msgid "ui.saves.close"
+msgstr "Zamknij"
+
+msgid "ui.saves.save_new"
+msgstr "Zapisz jako nowy"
+
+msgid "ui.saves.default_name"
+msgstr "Moje królestwo, %s"
+
+msgid "ui.saves.none"
+msgstr "Nie ma jeszcze żadnych zapisów."
+
+msgid "ui.saves.quick"
+msgstr "Szybki zapis"
+
+msgid "ui.saves.auto"
+msgstr "Autozapis"
+
+msgid "ui.saves.saved_at"
+msgstr "Zapisano %s"
+
+msgid "ui.saves.game_time"
+msgstr "czas gry %s"
+
+msgid "ui.saves.load"
+msgstr "Wczytaj"
+
+msgid "ui.saves.overwrite"
+msgstr "Nadpisz"
+
+msgid "ui.saves.delete"
+msgstr "Usuń"
+
+msgid "ui.saves.sure"
+msgstr "Na pewno?"
+
+msgid "ui.note.saved_as"
+msgstr "Gra zapisana: %s"
+
+msgid "ui.saves.unnamed"
+msgstr "Zapis %s"

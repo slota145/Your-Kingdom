@@ -145,6 +145,10 @@ func _on_sim_event(event: Dictionary) -> void:
 		&"siege_engine_built":
 			push(tr("ui.note.siege_engine_built") % tr("unit.%s.name" % event["unit"]))
 			return
+	if type == &"loose_goods_stored":
+		# UI-3 part 2: the start kit went into the first storage at once.
+		push(tr("ui.note.loose_goods_stored") % UiKit.goods_list(event["goods"]))
+		return
 	if type == &"merchant_arrived":
 		push(tr("ui.note.merchant_arrived"))
 		return

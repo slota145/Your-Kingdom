@@ -10,12 +10,23 @@ const EXTENSION := ".sav"
 ## Slots: F5 and the pause menu, and the autosave every few minutes (M10 part 2).
 const QUICK_SLOT := "quick"
 const AUTO_SLOT := "auto"
+## The player's own saves (UI-3 part 2, a friend's playtest 2026-11-23: "only one slot"):
+## slot_1, slot_2…, each with a small description next to it (name, time, game time), so the
+## list of saves never opens the big save files themselves.
+const SLOT_PREFIX := "slot_"
+const META_EXTENSION := ".meta"
+## Longest name of a save.
+const NAME_LENGTH := 40
 ## Godot writes its log here (debug/file_logging, project settings).
 const LOG_DIR := "user://logs"
 
 
+## The folder of the saves (tests use their own).
+var save_dir: String = SAVE_DIR
+
+
 func slot_path(slot_name: String) -> String:
-	return SAVE_DIR.path_join(slot_name + EXTENSION)
+	return save_dir.path_join(slot_name + EXTENSION)
 
 
 ## The newest of the quick save and the autosave ("" when there is none): what "Load
@@ -46,8 +57,84 @@ func open_logs() -> void:
 	OS.shell_open(folder)
 
 
-func save_simulation(path: String, sim: Simulation) -> Error:
-	return save_state(path, sim.to_dict())
+## Saves [param sim] to [param path] with its description beside it; [param save_name] is the
+## player's name for it (kept from an earlier save when empty).
+func save_simulation(path: String, sim: Simulation, save_name: String = "") -> Error:
+	var error := save_state(path, sim.to_dict())
+	if error == OK:
+		var old := read_meta(path)
+		var name := save_name.strip_edges().left(NAME_LENGTH)
+		if name == "":
+			name = String(old.get("name", ""))
+		var scenario := ""
+		if sim.world != null and sim.world.settings != null:
+			scenario = String(sim.world.settings.scenario)
+		write_meta(path, {"name": name, "saved_at": Time.get_datetime_string_from_system(false, true),
+				"game_seconds": int(sim.clock.seconds()), "scenario": scenario})
+	return error
+
+
+## The description of the save at [param path] ({} when it has none: older saves).
+func read_meta(path: String) -> Dictionary:
+	var file := FileAccess.open(path + META_EXTENSION, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	return parsed if parsed is Dictionary else {}
+
+
+func write_meta(path: String, meta: Dictionary) -> void:
+	var file := FileAccess.open(path + META_EXTENSION, FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify(meta))
+
+
+## Every save there is, newest first: {"slot", "path", "name", "saved_at", "game_seconds",
+## "scenario", "modified" (file time), "kind" ("quick", "auto" or "slot")}.
+func list_saves() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var dir := DirAccess.open(save_dir)
+	if dir == null:
+		return result
+	for file: String in dir.get_files():
+		if not file.ends_with(EXTENSION):
+			continue
+		var slot := file.trim_suffix(EXTENSION)
+		var kind := "quick" if slot == QUICK_SLOT else ("auto" if slot == AUTO_SLOT \
+				else ("slot" if slot.begins_with(SLOT_PREFIX) else ""))
+		if kind == "":
+			continue
+		var path := slot_path(slot)
+		var entry := read_meta(path)
+		entry["slot"] = slot
+		entry["path"] = path
+		entry["kind"] = kind
+		entry["modified"] = FileAccess.get_modified_time(path)
+		result.append(entry)
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a["modified"]) > int(b["modified"]) or (int(a["modified"]) == int(b["modified"]) \
+				and String(a["slot"]) < String(b["slot"])))
+	return result
+
+
+## A slot no save uses yet (slot_1, slot_2…).
+func free_slot() -> String:
+	var n := 1
+	while FileAccess.file_exists(slot_path(SLOT_PREFIX + str(n))):
+		n += 1
+	return SLOT_PREFIX + str(n)
+
+
+## Removes a save and its description.
+func delete_save(path: String) -> void:
+	DirAccess.remove_absolute(path)
+	DirAccess.remove_absolute(path + META_EXTENSION)
+
+
+## The newest save of all ("" when there is none): "Continue" in the main menu.
+func newest_save_path() -> String:
+	var saves := list_saves()
+	return String(saves[0]["path"]) if not saves.is_empty() else ""
 
 
 ## Returns null when the file cannot be read.

@@ -1701,7 +1701,7 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - **Surowce na górnym pasku:** domyślnie drewno, kamień, deski i suma jedzenia; przycisk „+” dobiera i zdejmuje towary. Wybór w `settings.cfg` (ustawienie gracza, nie zapisu gry).
 - **Wiadomości po prawej:** mniejsze okienko powiadomień, zwijane jednym kliknięciem (zwinięte pokazuje tylko liczbę nowych); historia zostaje w oknie „Wiadomości”.
 
-**Część 1, stan (2026-11-23):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+**Część 1, stan (2026-11-23):** gotowa na gałęzi roboczej, **zaakceptowana** („Super! Kontynuujemy! :D”).
 - **Dymki:** w menu budowy nazwa budynku na górze (czerwonobrązowa), pod nią opis, koszt i liczby na minutę, atramentem na pergaminie, czcionka 22 px, zawijane do 460 px. Paski z drewna (górny pasek, menu budowy) dostały te same dymki (dotąd brały małe szare z Godota, stąd „nieczytelne”).
 - **Na minutę:** liczone z receptury tak samo jak w prowincjach, na które nikt nie patrzy (praca, droga do magazynu 10 kafli i z powrotem, droga do drzewa, stada albo skały, rośnięcie pól przy wszystkich polach, badania przyspieszające pracę); oddawanie towaru na stos przy drzwiach nie liczy się jako droga. Tartak: 5,3 desek i 2,6 drewna na minutę; w próbie na żywo tartak bliżej magazynu (ok. 8 kafli) dał ok. 7 desek na minutę, więc liczba z menu to rozsądna miara, nie obietnica. Panel budynku: na przykład „Dał na minutę (ostatnie 5 min): Deski 4.1 z 5.3 możliwych” i to samo dla zużycia; każdy budynek ma własny licznik (nie w zapisie, po wczytaniu liczy od nowa, jak okno „Zapasy”). Myśliwy nie „zużywa” zwierzyny, którą sam upolował.
 - **Pasek surowców** pod górnym paskiem, po lewej: ikona i liczba (drewno, kamień, deski, jedzenie razem; dymek jedzenia rozpisuje chleb, ryby, mięso, jabłka), „+” otwiera listę wszystkich towarów z ptaszkami, najwyżej 10 naraz. Wybór w `settings.cfg` (`game/pinned_goods`). Na mapie świata ukryty.
@@ -1712,7 +1712,14 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 **Część 2: zapisy i start.**
 - **Okno „Zapisz / Wczytaj”** z wieloma miejscami na zapis (nazwa, data, czas gry, scenariusz; usuwanie z potwierdzeniem), w menu pauzy i w menu głównym. F5/F9 i autozapis zostają jako osobne miejsca na liście.
 - **Więcej jedzenia na start** (ankieta: „60 chleba + 30 ryb”): statek daje 60 chleba, 30 ryb i 90 drewna (dziś 20 chleba i 90 drewna).
-- **Zapasy startowe od razu w pierwszym magazynie** (ankieta: „Pojawiają się od razu”, świadomy wyjątek od zasady noszenia towarów): gdy stanie pierwszy budynek z magazynem (obóz pionierów), wszystko, co jeszcze leży na plaży ze statku, od razu w nim jest. Format zapisu prawdopodobnie bez zmian.
+- **Zapasy startowe od razu w pierwszym magazynie** (ankieta: „Pojawiają się od razu”, świadomy wyjątek od zasady noszenia towarów): gdy stanie pierwszy magazyn (obóz pionierów nie ma miejsca na towary, więc to pierwszy „Magazyn” po obozie), wszystko, co jeszcze leży na ziemi, od razu w nim jest. Format zapisu bez zmian.
+
+**Część 2, stan (2026-11-23):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie.
+- **Okno „Zapisz / Wczytaj”:** w menu pauzy „Zapisz grę” i „Wczytaj grę” otwierają listę zapisów (najnowsze na górze): nazwa, „Zapisano 2026-11-23 11:15 · czas gry 1:57:16 · scenariusz”. Zapis: pole z nazwą (domyślnie „Moje królestwo, data”) i „Zapisz jako nowy”, przy własnych zapisach „Nadpisz” i „Usuń”; oba pytają drugim kliknięciem („Na pewno?”). Wczytywanie: każdy zapis, także „Szybki zapis” (F5) i „Autozapis” (tych dwóch nie da się nadpisać z listy ani usunąć). Menu główne: nowy przycisk „Kontynuuj” (najnowszy zapis) i „Wczytaj grę” z tą samą listą. F5, F9 i autozapis działają jak dotąd. Esc zamyka okno.
+- **Start:** statek przywozi 60 chleba, 30 ryb i 90 drewna (mapy „Wybrzeże” i „Wyspy”, czyli każdy start ze statku). Wyprawy osadników do nowych prowincji zostają bez zmian (20 chleba, 90 drewna).
+- **Pierwszy magazyn:** gdy budowniczy skończy pierwszy magazyn prowincji, wszystko, co leży na ziemi (resztka zestawu z plaży), od razu w nim jest, z powiadomieniem „Zapasy z ziemi trafiły do nowego magazynu: …”. Towar, po który tragarz już idzie, zostaje i jest noszony jak dotąd. W próbie lądowania osadnicy mieszkają w chatach po 2 minutach zamiast po 3,3 (tragarze nie noszą zestawu, tylko budują).
+- **Zapis bez zmian (v44)**; opisy zapisów w osobnych plikach `.sav.meta` (ARCHITECTURE §8). Testy: `test_save_service.gd` (lista, nazwy, nadpisanie, usuwanie, okno), `tests/unit/sim/economy/test_start_kit.gd`, `test_m5_landing.gd`. Zrzuty: `menu_shot.tscn -- --out=<plik> --open=saves` (wczytywanie) i `--open=saves_save` (zapisywanie).
+- **Do oceny na laptopie:** okno zapisów w grze i w menu, czy start z 60 chleba i 30 ryb jest teraz wygodny, czy zapasy pojawiają się w magazynie.
 
 **Część 3: wojsko** (ankieta: „Więcej łóżek + baraki”).
 - Małe koszary 10 → 16 łóżek, duże 30 → 50.

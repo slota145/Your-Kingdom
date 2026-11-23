@@ -273,7 +273,7 @@ msgstr "New game"
 
 
 msgid "ui.main.load_game"
-msgstr "Load quick save"
+msgstr "Load game"
 
 msgid "ui.close"
 msgstr "Close"
@@ -309,7 +309,7 @@ msgid "ui.pause.save"
 msgstr "Save the game"
 
 msgid "ui.pause.load"
-msgstr "Load the save"
+msgstr "Load game"
 
 msgid "ui.pause.language_tip"
 msgstr "Change the game's language"
@@ -5102,3 +5102,57 @@ msgstr "All food"
 
 msgid "ui.pinned.add_tip"
 msgstr "Choose the goods shown on this strip"
+
+msgid "ui.note.loose_goods_stored"
+msgstr "The goods lying around went into the new storage: %s"
+
+msgid "ui.main.continue"
+msgstr "Continue"
+
+msgid "ui.saves.title_save"
+msgstr "Save game"
+
+msgid "ui.saves.title_load"
+msgstr "Load game"
+
+msgid "ui.saves.close"
+msgstr "Close"
+
+msgid "ui.saves.save_new"
+msgstr "Save as new"
+
+msgid "ui.saves.default_name"
+msgstr "My kingdom, %s"
+
+msgid "ui.saves.none"
+msgstr "There are no saves yet."
+
+msgid "ui.saves.quick"
+msgstr "Quick save"
+
+msgid "ui.saves.auto"
+msgstr "Autosave"
+
+msgid "ui.saves.saved_at"
+msgstr "Saved %s"
+
+msgid "ui.saves.game_time"
+msgstr "game time %s"
+
+msgid "ui.saves.load"
+msgstr "Load"
+
+msgid "ui.saves.overwrite"
+msgstr "Overwrite"
+
+msgid "ui.saves.delete"
+msgstr "Delete"
+
+msgid "ui.saves.sure"
+msgstr "Sure?"
+
+msgid "ui.note.saved_as"
+msgstr "Game saved: %s"
+
+msgid "ui.saves.unnamed"
+msgstr "Save %s"

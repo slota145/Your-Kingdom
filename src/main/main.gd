@@ -27,6 +27,8 @@ var _menu_box: VBoxContainer
 var _menu_panel: PanelContainer
 var _new_game_window: NewGameWindow
 var _options: OptionsWindow
+## The list of saves (UI-3 part 2).
+var _saves: SavesWindow
 ## "A new version of the game is out" (Updates autoload, the owner's folder only).
 var _update_button: Button
 ## The download of a new version for players failed: the button opens the release page.
@@ -92,6 +94,14 @@ func _ready() -> void:
 	_options.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_options.closed.connect(func() -> void: panel.visible = true)
 	add_child(_options)
+	_saves = SavesWindow.new()
+	_saves.visible = false
+	_saves.set_anchors_preset(Control.PRESET_CENTER)
+	_saves.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_saves.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_saves.closed.connect(_on_saves_closed)
+	_saves.load_chosen.connect(_start_game)
+	add_child(_saves)
 	UiScaler.attach(self)
 	_title = UiKit.title("ui.main.title")
 	_title.add_theme_font_size_override(&"font_size", 56)
@@ -115,9 +125,13 @@ func _ready() -> void:
 	var worlds := Data.registry.all_of(&"world")
 	_new_game = _menu_button(box, "ui.main.new_game", open_new_game)
 	_new_game.disabled = worlds.is_empty()
-	# The newest of the quick save and the autosave (M10 part 2).
-	var latest := SaveService.latest_slot_path()
-	_load_game = _menu_button(box, "ui.main.load_game", _start_game.bind(latest))
+	# UI-3 part 2: "Continue" takes the newest save of all, "Load game" opens the list.
+	var latest := SaveService.newest_save_path()
+	var resume := _menu_button(box, "ui.main.continue", _start_game.bind(latest))
+	resume.disabled = latest == ""
+	_load_game = _menu_button(box, "ui.main.load_game", func() -> void:
+		_menu_panel.visible = false
+		_saves.open(SavesWindow.Mode.LOAD))
 	_load_game.disabled = latest == ""
 	_maps_button = _menu_button(box, "ui.main.single_provinces", func() -> void:
 		_maps.visible = not _maps.visible
@@ -202,6 +216,12 @@ func _smoke_start() -> void:
 	var worlds := Data.registry.all_of(&"world")
 	Game.start_request = {"world": worlds[0].id} if not worlds.is_empty() else {}
 	_open(GAME_SCENE)
+
+
+func _on_saves_closed() -> void:
+	_menu_panel.visible = true
+	# A deleted last save leaves nothing to load.
+	_load_game.disabled = SaveService.newest_save_path() == ""
 
 
 func _start_game(load_path: String) -> void:

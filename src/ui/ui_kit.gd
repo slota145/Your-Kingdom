@@ -196,6 +196,11 @@ static func _texture_box(file: String, margin: int, content_h: float, content_v:
 	return box
 
 
+## A sunken parchment box (rows of a list, UI-3 part 2).
+static func inset_box() -> StyleBox:
+	return _texture_box("panel_inset.png", PANEL_MARGIN, 10, 6)
+
+
 static func _flat(colour: Color) -> StyleBoxFlat:
 	var box := StyleBoxFlat.new()
 	box.bg_color = colour

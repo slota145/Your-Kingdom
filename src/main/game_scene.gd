@@ -65,6 +65,8 @@ var _research: ResearchWindow
 var _locks_time: float = 0.0
 var _world_map: WorldMapScreen
 var _notes: Notifications
+## Save and load with many saves (UI-3 part 2).
+var _saves: SavesWindow
 ## The goods the player keeps an eye on, under the top bar (UI-3 part 1).
 var _goods_strip: GoodsStrip
 var _pause_menu: PauseMenu
@@ -492,18 +494,23 @@ func _build_ui() -> void:
 	_pause_menu = PauseMenu.new()
 	_pause_menu.visible = false
 	_pause_menu.resumed.connect(_close_pause_menu)
-	_pause_menu.save_requested.connect(func() -> void:
-		_close_pause_menu()
-		_quick_save())
-	_pause_menu.load_requested.connect(func() -> void:
-		_close_pause_menu()
-		_quick_load())
+	# UI-3 part 2: saving and loading go through the list of saves (F5 and F9 stay quick).
+	_pause_menu.save_requested.connect(func() -> void: _saves.open(SavesWindow.Mode.SAVE))
+	_pause_menu.load_requested.connect(func() -> void: _saves.open(SavesWindow.Mode.LOAD))
 	_pause_menu.main_menu_requested.connect(_back_to_menu)
 	_pause_menu.quit_requested.connect(func() -> void:
 		_quick_save()
 		get_tree().quit())
 	_pause_menu.logs_requested.connect(SaveService.open_logs)
 	root.add_child(_pause_menu)
+	_saves = SavesWindow.new()
+	_saves.visible = false
+	_saves.set_anchors_preset(Control.PRESET_CENTER)
+	_saves.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_saves.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_saves.save_chosen.connect(_save_into)
+	_saves.load_chosen.connect(_load_from)
+	root.add_child(_saves)
 	_options = OptionsWindow.new()
 	_options.visible = false
 	_options.set_anchors_preset(Control.PRESET_CENTER)
@@ -1065,6 +1072,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_action_pressed(&"ui_cancel"):
 			_options.close()
 		return
+	if _saves.visible:
+		if event.is_action_pressed(&"ui_cancel"):
+			_saves.close()
+		return
 	if _pause_menu.visible:
 		if event.is_action_pressed(&"ui_cancel"):
 			_close_pause_menu()
@@ -1539,7 +1550,8 @@ func _on_workers_missing(building_id: int) -> void:
 ## What a badge over a building means, under the mouse on the badge or the building.
 func _update_mark_tip() -> void:
 	var text := ""
-	if not _world_map.visible and not _pause_menu.visible and not _options.visible and not _messages.visible:
+	if not _world_map.visible and not _pause_menu.visible and not _options.visible and not _messages.visible \
+			and not _saves.visible:
 		var at := get_global_mouse_position()
 		var id := view.buildings.mark_at(at)
 		if id == 0:
@@ -1563,6 +1575,28 @@ static func mark_text(building: BuildingState) -> String:
 	if building.paused:
 		return TranslationServer.translate("ui.mark.paused") % name
 	return TranslationServer.translate("ui.mark.no_workers") % [name, building.workers.size(), building.def.worker_count()]
+
+
+## A save into [param path] under [param save_name] from the list of saves.
+func _save_into(path: String, save_name: String) -> void:
+	var error := SaveService.save_simulation(path, sim, save_name)
+	_notes.push(tr("ui.note.saved_as") % SavesWindow.title_of(SaveService.read_meta(path).merged(
+			{"kind": "slot", "slot": path.get_file().get_basename()})) if error == OK else tr("ui.note.save_failed"))
+	_saves.close()
+	_close_pause_menu()
+
+
+## A save chosen in the list of saves.
+func _load_from(path: String) -> void:
+	var loaded: Simulation = SaveService.load_simulation(path, Data.registry) \
+			if FileAccess.file_exists(path) else null
+	if loaded == null:
+		_notes.push(tr("ui.note.load_failed"))
+		return
+	_saves.close()
+	_close_pause_menu()
+	_start(loaded)
+	_notes.push(tr("ui.note.loaded"))
 
 
 ## Loads the newest save: the quick save or the autosave.

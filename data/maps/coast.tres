@@ -13,7 +13,8 @@ landing_tile = Vector2i(75, 86)
 beach_tile = Vector2i(70, 86)
 start_settlers = Array[StringName]([&"builder", &"porter", &"porter", &"porter", &"porter", &"porter"])
 start_pile = Dictionary[StringName, int]({
-&"bread": 20,
+&"bread": 60,
+&"fish": 30,
 &"wood": 90
 })
 first_building = &"pioneer_camp"
