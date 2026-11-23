@@ -4794,19 +4794,19 @@ msgid "building.barracks_small.name"
 msgstr "Small barracks"
 
 msgid "building.barracks_small.desc"
-msgstr "A wooden guardhouse: 10 beds. Recruit archers and spearmen here. Soldiers eat from the stores and rest inside."
+msgstr "A wooden guardhouse: 16 beds. Recruit archers and spearmen here. Soldiers eat from the stores and rest inside."
 
 msgid "building.barracks_large.name"
 msgstr "Large barracks"
 
 msgid "building.barracks_large.desc"
-msgstr "Stone barracks with a courtyard: 30 beds and every kind of soldier. Soldiers drill in the courtyard."
+msgstr "Stone barracks with a courtyard: 50 beds and every kind of soldier. Soldiers drill in the courtyard."
 
 msgid "research.large_barracks.name"
 msgstr "Large barracks"
 
 msgid "research.large_barracks.desc"
-msgstr "Stone barracks with a courtyard: 30 beds, every kind of soldier and drill in the courtyard."
+msgstr "Stone barracks with a courtyard: 50 beds, every kind of soldier and drill in the courtyard."
 
 msgid "ui.command_error.not_in_these_barracks"
 msgstr "These barracks train only archers and spearmen."
@@ -5156,3 +5156,21 @@ msgstr "Game saved: %s"
 
 msgid "ui.saves.unnamed"
 msgstr "Save %s"
+
+msgid "building.soldier_quarters.name"
+msgstr "Soldier quarters"
+
+msgid "building.soldier_quarters.desc"
+msgstr "Wooden quarters: 12 beds for the soldiers of the nearest barracks. Soldiers sleep here and drill and enlist at the barracks. Needs a barracks."
+
+msgid "ui.command_error.needs_barracks"
+msgstr "Build a barracks first"
+
+msgid "ui.barracks.quarters"
+msgstr "Of them %d beds in soldier quarters (%d)"
+
+msgid "ui.quarters.beds"
+msgstr "Beds: %d for: %s"
+
+msgid "ui.quarters.no_barracks"
+msgstr "No barracks: the beds wait for one."

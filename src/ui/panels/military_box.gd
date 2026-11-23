@@ -121,7 +121,10 @@ func _refresh_barracks(province: ProvinceSim, b: BuildingState) -> void:
 	for unit_id: StringName in b.garrison:
 		counts[unit_id] = counts.get(unit_id, 0) + 1
 	var lines := PackedStringArray()
-	lines.append(tr("ui.barracks.beds") % [Barracks.strength(b), b.def.soldier_beds])
+	lines.append(tr("ui.barracks.beds") % [Barracks.strength(b), Barracks.beds(province, b)])
+	var quarters := Barracks.quarters_of(province, b)
+	if not quarters.is_empty():
+		lines.append(tr("ui.barracks.quarters") % [Barracks.beds(province, b) - b.def.soldier_beds, quarters.size()])
 	for unit: UnitDef in province.data.units():
 		if counts.get(unit.id, 0) > 0:
 			lines.append("  %s: %d" % [tr(unit.name_key()), counts[unit.id]])

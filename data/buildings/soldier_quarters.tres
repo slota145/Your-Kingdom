@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://src/defs/building_def.gd" id="1_bld"]
+
+[resource]
+script = ExtResource("1_bld")
+category = &"military"
+footprint = Vector2i(2, 2)
+entrance = Vector2i(1, 1)
+build_cost = Dictionary[StringName, int]({
+&"planks": 10,
+&"stone": 2
+})
+build_time = 25.0
+gold_cost = 20
+door_sides = &"one"
+extra_beds = 12
+id = &"soldier_quarters"

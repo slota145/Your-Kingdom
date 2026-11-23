@@ -33,7 +33,7 @@ const PLAN: Array[Array] = [
 	# patricians 3), and food on a map without water.
 	[&"orchard", 1], [&"forester", 1], [&"hunter_lodge", 1], [&"hut", 9], [&"town_hall", 1], [&"woodcutter", 3], [&"chapel", 1],
 	[&"market", 1], [&"school", 1], [&"well", 2], [&"hut", 12], [&"stockpile", 2], [&"hop_farm", 1],
-	[&"brewery", 1], [&"farm", 2], [&"orchard", 2], [&"hut", 15], [&"barracks_small", 1], [&"university", 1], [&"barracks_large", 1], [&"trading_post", 1], [&"builders_hut", 1],
+	[&"brewery", 1], [&"farm", 2], [&"orchard", 2], [&"hut", 15], [&"barracks_small", 1], [&"university", 1], [&"barracks_large", 1], [&"soldier_quarters", 1], [&"trading_post", 1], [&"builders_hut", 1],
 	[&"sheep_farm", 1], [&"weaver", 1], [&"tar_kiln", 1], [&"port", 1], [&"shipyard", 1],
 	[&"hut", 18], [&"tailor", 1], [&"fishing_hut", 2], [&"tavern", 1], [&"bakery", 2],
 	[&"mill", 2], [&"farm", 3], [&"hut", 22], [&"church", 1],
@@ -358,6 +358,8 @@ static func _allowed(town: ProvinceSim, def: BuildingDef) -> bool:
 		return false
 	if def.needs_building != &"" and not town.has_finished(def.needs_building):
 		return false
+	if def.extra_beds > 0 and not Barracks.has_barracks(town):
+		return false   # UI-3 part 3: soldier quarters
 	return true
 
 

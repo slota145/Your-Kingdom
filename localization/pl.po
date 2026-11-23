@@ -4837,19 +4837,19 @@ msgid "building.barracks_small.name"
 msgstr "Małe koszary"
 
 msgid "building.barracks_small.desc"
-msgstr "Drewniana strażnica: 10 łóżek. Tu rekrutujesz łuczników i włóczników. Żołnierze jedzą z magazynu i odpoczywają w środku."
+msgstr "Drewniana strażnica: 16 łóżek. Tu rekrutujesz łuczników i włóczników. Żołnierze jedzą z magazynu i odpoczywają w środku."
 
 msgid "building.barracks_large.name"
 msgstr "Duże koszary"
 
 msgid "building.barracks_large.desc"
-msgstr "Kamienne koszary z dziedzińcem: 30 łóżek i wszystkie rodzaje wojska. Żołnierze ćwiczą na dziedzińcu."
+msgstr "Kamienne koszary z dziedzińcem: 50 łóżek i wszystkie rodzaje wojska. Żołnierze ćwiczą na dziedzińcu."
 
 msgid "research.large_barracks.name"
 msgstr "Duże koszary"
 
 msgid "research.large_barracks.desc"
-msgstr "Kamienne koszary z dziedzińcem: 30 łóżek, wszystkie rodzaje wojska i musztra na dziedzińcu."
+msgstr "Kamienne koszary z dziedzińcem: 50 łóżek, wszystkie rodzaje wojska i musztra na dziedzińcu."
 
 msgid "ui.command_error.not_in_these_barracks"
 msgstr "Te koszary szkolą tylko łuczników i włóczników."
@@ -5200,3 +5200,21 @@ msgstr "Gra zapisana: %s"
 
 msgid "ui.saves.unnamed"
 msgstr "Zapis %s"
+
+msgid "building.soldier_quarters.name"
+msgstr "Baraki"
+
+msgid "building.soldier_quarters.desc"
+msgstr "Drewniane baraki: 12 łóżek dla żołnierzy najbliższych koszar. Żołnierze tu śpią, a ćwiczą i werbują się w koszarach. Potrzebne są koszary."
+
+msgid "ui.command_error.needs_barracks"
+msgstr "Najpierw zbuduj koszary"
+
+msgid "ui.barracks.quarters"
+msgstr "W tym %d łóżek w barakach (%d)"
+
+msgid "ui.quarters.beds"
+msgstr "Łóżka: %d dla koszar: %s"
+
+msgid "ui.quarters.no_barracks"
+msgstr "Brak koszar: łóżka czekają na koszary."

@@ -59,6 +59,68 @@ static func strength(barracks: BuildingState) -> int:
 	return barracks.soldiers.size() + barracks.garrison.size()
 
 
+## Beds of [param barracks]: its own and those of the soldier quarters that belong to it
+## (UI-3 part 3: each finished quarters belongs to the nearest finished barracks).
+static func beds(province: ProvinceSim, barracks: BuildingState) -> int:
+	var total := barracks.def.soldier_beds
+	for quarters: BuildingState in quarters_of(province, barracks):
+		total += quarters.def.extra_beds
+	return total
+
+
+## Free beds of [param barracks] (none below 0: quarters pulled down leave it overfull).
+static func free_beds(province: ProvinceSim, barracks: BuildingState) -> int:
+	return maxi(beds(province, barracks) - beds_taken(barracks), 0)
+
+
+## The finished soldier quarters belonging to [param barracks], by id.
+static func quarters_of(province: ProvinceSim, barracks: BuildingState) -> Array[BuildingState]:
+	var result: Array[BuildingState] = []
+	if barracks.def.soldier_beds <= 0 or not barracks.is_complete():
+		return result
+	for building: BuildingState in province.buildings.all():
+		if building.def.extra_beds > 0 and building.is_complete() \
+				and home_barracks(province, building) == barracks:
+			result.append(building)
+	result.sort_custom(func(a: BuildingState, b: BuildingState) -> bool: return a.id < b.id)
+	return result
+
+
+## The finished barracks nearest to [param quarters] (ties: the lower id), or null.
+static func home_barracks(province: ProvinceSim, quarters: BuildingState) -> BuildingState:
+	var best: BuildingState = null
+	var best_d := 1 << 30
+	for building: BuildingState in province.buildings.all():
+		if building.def.soldier_beds <= 0 or not building.is_complete():
+			continue
+		var d := (building.entrance_tile() - quarters.entrance_tile()).length_squared()
+		if d < best_d or (d == best_d and best != null and building.id < best.id):
+			best_d = d
+			best = building
+	return best
+
+
+## Whether a finished barracks stands in [param province] (soldier quarters need one).
+static func has_barracks(province: ProvinceSim) -> bool:
+	for building: BuildingState in province.buildings.all():
+		if building.def.soldier_beds > 0 and building.is_complete():
+			return true
+	return false
+
+
+## Where the soldier at [param index] of the barracks' soldiers sleeps and rests: the barracks'
+## door for the first soldier_beds of them, then the door of each of its quarters in turn
+## (UI-3 part 3).
+static func rest_tile(province: ProvinceSim, barracks: BuildingState, index: int) -> Vector2i:
+	var room := barracks.def.soldier_beds
+	if index >= room:
+		for quarters: BuildingState in quarters_of(province, barracks):
+			room += quarters.def.extra_beds
+			if index < room:
+				return quarters.entrance_tile()
+	return barracks.entrance_tile()
+
+
 ## Beds taken by soldiers and recruits on their way.
 static func beds_taken(barracks: BuildingState) -> int:
 	return strength(barracks) + barracks.recruits.size()
@@ -136,7 +198,7 @@ static func recruit_error(province: ProvinceSim, barracks: BuildingState, unit: 
 		return &"needs_research"   # E4 part 3
 	if not barracks.is_complete():
 		return &"not_finished"
-	if beds_taken(barracks) >= barracks.def.soldier_beds:
+	if beds_taken(barracks) >= beds(province, barracks):
 		return &"barracks_full"
 	if not province.treasury.can_pay(unit.gold_cost):
 		return &"not_enough_gold"
@@ -324,7 +386,7 @@ static func courtyard_at(province: ProvinceSim, tile: Vector2i) -> BuildingState
 static func with_bed_for(province: ProvinceSim, unit: StringName) -> BuildingState:
 	for building: BuildingState in province.buildings.all():
 		if building.def.houses_unit(unit) and building.is_complete() \
-				and beds_taken(building) < building.def.soldier_beds:
+				and beds_taken(building) < beds(province, building):
 			return building
 	return null
 

@@ -318,6 +318,11 @@ func _refresh() -> void:
 			if b.def.service_needs_supply and not b.provides_service(province.tick):
 				lines.append(tr("ui.building.stalls_empty" if not b.def.stall_goods.is_empty() 						else "ui.building.service_needs_supply"))
 		lines.append_array(_rate_lines(b))
+		if b.def.extra_beds > 0:
+			# UI-3 part 3: soldier quarters belong to the nearest barracks.
+			var home := Barracks.home_barracks(province, b)
+			lines.append(tr("ui.quarters.beds") % [b.def.extra_beds, tr(home.def.name_key())] if home != null \
+					else tr("ui.quarters.no_barracks"))
 		if b.house != null:
 			lines.append_array(_house_lines(b))
 		elif b.supply != null and b.def.stall_goods.is_empty() and b.def.soldier_beds == 0:

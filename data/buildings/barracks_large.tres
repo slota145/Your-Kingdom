@@ -13,7 +13,7 @@ build_cost = Dictionary[StringName, int]({
 })
 build_time = 90.0
 gold_cost = 250
-soldier_beds = 30
+soldier_beds = 50
 parade_slots = 16
 parade_tiles = Array[Vector2i]([Vector2i(2, 2), Vector2i(3, 2), Vector2i(4, 2), Vector2i(2, 3), Vector2i(3, 3), Vector2i(4, 3), Vector2i(2, 4), Vector2i(4, 4)])
 door_sides = &"one"

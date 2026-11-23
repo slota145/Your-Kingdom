@@ -1726,6 +1726,14 @@ Podzielony na dwie części (decyzja 2026-11-05). Każda kończy się Twoją gr�
 - Małe koszary 10 → 16 łóżek, duże 30 → 50.
 - **Baraki:** nowy budynek 2×2 z 12 łóżkami, do postawienia, gdy stoją jakieś koszary; grafika i etapy budowy ze SpriteKiln. Żołnierze śpią w barakach, ćwiczą i werbują się dalej w koszarach. Władcy też je stawiają. Zapis: nowa wersja tylko, jeśli będzie potrzebna.
 
+**Część 3, stan (2026-11-23):** gotowa na gałęzi roboczej, czeka na ocenę na laptopie (start na prośbę właściciela „Róbmy od razu część 3”, część 2 jeszcze nieoceniona).
+- **Łóżka:** małe koszary 16 (było 10), duże 50 (było 30); opisy w menu budowy też.
+- **Baraki** (zakładka „Wojsko”, 2×2, 10 desek, 2 kamienie, 20 zł, 12 łóżek): do postawienia, gdy stoją gotowe koszary („Najpierw zbuduj koszary”). Każde gotowe baraki należą do najbliższych gotowych koszar i dokładają im łóżka: werbunek, wojska wracające do domu i panel koszar („Żołnierze: 20 z 28 łóżek”, „W tym 12 łóżek w barakach (1)”) liczą je razem. Żołnierze ponad łóżka koszar idą spać do baraków (stoją przy ich drzwiach), ćwiczą i jedzą dalej przy koszarach. Panel baraków: „Łóżka: 12 dla koszar: Małe koszary”. Zburzone baraki nikogo nie wyrzucają; koszary są wtedy przepełnione i nie werbują, póki się nie zwolni miejsce.
+- **Władcy** stawiają jedne baraki po dużych koszarach (plan miasta), tylko gdy mają koszary.
+- **Grafika ze SpriteKiln** z etapami budowy (ART_SPEC §10.34), placeholder w `tools/generate_placeholders.gd`.
+- **Zapis bez zmian (v44):** baraki to zwykły budynek, łóżka liczą się na bieżąco. Testy: `tests/scenario/test_ui3_quarters.gd`, `test_e4_barracks.gd` (nowe liczby łóżek).
+- **Do oceny na laptopie:** wygląd baraków, czy żołnierze chodzą spać do baraków, czy więcej łóżek nie psuje balansu walk (więcej wojska u gracza i u władców).
+
 **Testy i sprawdzenie:** szybkie testy w każdej części; testy symulacji dla liczenia produkcji, zapasów startowych, łóżek i baraków; zrzuty dymka, paska, okienka powiadomień i okna zapisów; długie testy przed scaleniem do `main`.
 
 **Ryzyka:** więcej jedzenia i łóżek zmienia balans (pomiary automatycznego gracza i władców przed i po); pasek przy wielu przypiętych towarach i skali 150% może się nie zmieścić (limit liczby przypiętych).

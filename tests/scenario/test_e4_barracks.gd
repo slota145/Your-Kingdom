@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
 ## E4 part 4: the small and large barracks (owner's surveys 2026-11-11). The small barracks (2x2,
-## 10 beds, archers and spearmen, nobody drills) stand from the start; the large "castle" barracks
-## (5x5, 30 beds, every unit, drill in the courtyard) after the university's "Large barracks". The
+## 10 beds, 16 since UI-3 part 3, archers and spearmen, nobody drills) stand from the start; the large "castle" barracks
+## (5x5, 30 beds, 50 since UI-3 part 3, every unit, drill in the courtyard) after the university's "Large barracks". The
 ## old 3x3 barracks are no longer built; those standing work on.
 
 
@@ -48,7 +48,7 @@ func test_small_barracks_take_archers_and_spearmen_only() -> void:
 	var sim := _locked()
 	var small := SimFixture.place(sim, &"barracks_small", Vector2i(20, 20))
 	var data := sim.data
-	assert_int(small.def.soldier_beds).is_equal(10)
+	assert_int(small.def.soldier_beds).is_equal(16)   # UI-3 part 3: 10 -> 16
 	sim.research.complete(&"armouring")
 	sim.research.complete(&"chivalry")
 	assert_str(String(Barracks.recruit_error(sim.province, small, data.get_unit(&"swordsman")))).is_equal("not_in_these_barracks")
@@ -56,7 +56,7 @@ func test_small_barracks_take_archers_and_spearmen_only() -> void:
 	assert_str(String(Barracks.recruit_error(sim.province, small, data.get_unit(&"spearman")))).is_not_equal("not_in_these_barracks")
 	assert_str(String(Barracks.recruit_error(sim.province, small, data.get_unit(&"archer")))).is_not_equal("not_in_these_barracks")
 	var large := SimFixture.place(sim, &"barracks_large", Vector2i(30, 30))
-	assert_int(large.def.soldier_beds).is_equal(30)
+	assert_int(large.def.soldier_beds).is_equal(50)   # UI-3 part 3: 30 -> 50
 	assert_str(String(Barracks.recruit_error(sim.province, large, data.get_unit(&"knight")))).is_not_equal("not_in_these_barracks")
 	assert_object(Barracks.with_bed_for(sim.province, &"knight")).is_same(large)
 
